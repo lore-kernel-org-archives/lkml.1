@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbYCHWKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbYCHWNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbYCHWKS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 17:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYCHWKE
+	id S1752645AbYCHWNO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 17:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYCHWM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 17:10:04 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:20035 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbYCHWKD (ORCPT
+	Sat, 8 Mar 2008 17:12:59 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:56922 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbYCHWM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 17:10:03 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=e1Ui24E5hoj+U+y4RNXEBDVc4gRWDAB3EYfdOae9FjCLUKhzuUxHHtnZOmcWACo8I
-	TFm6Jf5RPTCjMfd4stgrw==
-Date: Sat, 8 Mar 2008 14:09:11 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       Eric Whitney <eric.whitney@hp.com>
-Subject: Re: Regression:  Re: [patch -mm 2/4] mempolicy: create mempolicy_operations
- structure
-In-Reply-To: <1205002171.4918.2.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0803081403460.12095@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0803061135001.18590@chino.kir.corp.google.com>  <alpine.DEB.1.00.0803061135560.18590@chino.kir.corp.google.com>  <1204922646.5340.73.camel@localhost>  <alpine.DEB.1.00.0803071341090.26765@chino.kir.corp.google.com>
- <1205002171.4918.2.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sat, 8 Mar 2008 17:12:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=VENoOCwiaZBcPItpPTxZ88LT2OXu/Z/xJZe+u5cUe3FujA6sLXCnYwjMBYeieJxCOlCAS/MI9GVZ//eXGps/DIEdiySkqU/5hPp9uQ13ieawS1Jv0WoHI92cHmHq74vFPRzrTEFIHpNs03uNQ1Pue5NeNCxSLcne8eXDeOJ326s=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology, Karnataka
+To: Greg KH <gregkh@suse.de>, Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [PATCH] Mark kobjects as unitialized
+Date: Sun, 9 Mar 2008 03:37:16 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200803062223.18857.balajirrao@gmail.com> <200803062320.50296.balajirrao@gmail.com> <20080306180559.GA14934@suse.de>
+In-Reply-To: <20080306180559.GA14934@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803090337.16253.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Mar 2008, Lee Schermerhorn wrote:
-
-> > Excuse me, but there was significant discussion about this on LKML and I 
-> > eventually did force MPOL_DEFAULT to require a non-empty nodemask 
-
-Correction: s/non-empty/empty
-
-> > specifically because of your demand that it should.  It didn't originally 
-> > require this in my patchset, and now you're removing the exact same 
-> > requirement that you demanded.
+On Thursday 06 March 2008 11:35:59 pm Greg KH wrote:
+> On Thu, Mar 06, 2008 at 11:20:50PM +0530, Balaji Rao wrote:
+> > On Thursday 06 March 2008 10:35:14 pm Greg KH wrote:
+> > <snip>
+> > > Where exactly in the code does that happen?  kobjects should not be
+> > > "reused" as that implies that they are static, and not dynamically
+> > > allocated, right?
+> > >
+> > > Which kobject is this?
+> > Yes, its static. Here's the code from virt/kvm_main.c:1269
 > > 
-> > You said on February 13:
+> > static struct sys_device kvm_sysdev = {
+> >         .id = 0,
+> >         .cls = &kvm_sysdev_class,
+> > };
 > > 
-> > 	1) we've discussed the issue of returning EINVAL for non-empty
-> > 	nodemasks with MPOL_DEFAULT.  By removing this restriction, we run
-> > 	the risk of breaking applications if we should ever want to define
-> > 	a semantic to non-empty node mask for MPOL_DEFAULT.
-> > 
-> > If you want to remove this requirement now (please get agreement from 
-> > Paul) and are sure of your position, you'll at least need an update to 
-> > Documentation/vm/numa-memory-policy.txt.
+> > this sys_device is being registered/unregistered when kvm-intel is 
+> > loaded/unloaded.
 > 
-> Excuse me.  I thought that the discussion--my position, anyway--was
-> about preserving existing behavior for MPOL_DEFAULT which is to require
-> an EMPTY [or NULL--same effect] nodemask.  Not a NON-EMPTY one.  See:
-> http://www.kernel.org/doc/man-pages/online/pages/man2/set_mempolicy.2.html
-> It does appear that your patches now require a non-empty nodemask.  This
-> was intentional?
+> Ah, ok.  I'll add this patch then.
 > 
-
-The first and second set did not have this requirement, but the third set 
-does (not currently in -mm), so I've changed it back.  Hopefully there's 
-no confusion and we can settle on a solution without continuously 
-revisiting the topic.
-
-My position was originally to allow any type of nodemask to be passed with 
-MPOL_DEFAULT since its not used.  You asked for strict argument checking 
-and so after some debate I changed it to require an empty nodemask mainly 
-because I didn't want the patchset to stall on such a minor point.  But in 
-your regression fix, you expressed the desire once again to allow it to 
-accept any nodemask because the testsuite does not check for it.
-
-So if you'd like to do that, I'd encourage you to submit it as a separate 
-patch and open it up for review.
-
-What is currently in -mm and what I will be posting shortly is the updated 
-regression fix.  All of these patches require that MPOL_DEFAULT include a 
-NULL pointer or empty nodemask passed via the two syscalls.
-
-> Note:  in the subject patch, I didn't enforce this behavior because your
-> patch didn't [it enforced just the opposite], and I've pretty much given
-> up.  Although I prefer current behavior [before your series], if we
-> change it, we will need to change the man pages to remove the error
-> condition for non-empty nodemasks with MPOL_DEFAULT.
+> > > Ugh, is this the sys_device stuff?  I hate that code...
+> > >
+> > Yes it is! But, why do you hate it ?
 > 
+> For reasons like this :)
+> 
+> kobjects should not be static.  the sysdevice stuff was a hack when it
+> was originally created and never touched since the mid 2.5 days.  It
+> needs to be fixed up a lot, and is on my TODO list, slowly getting
+> closer to the top...
+Hi,
 
-With my patches it still requires a NULL pointer or empty nodemask and 
-I've updated Documentation/vm/numa_memory_policy.txt to explicitly say its 
-an error if a non-empty nodemask is passed.
+This patch does not fix it all! The problem is in fact more involved. I also get these BUG reports when I reload kvm-intel.
+
+BUG kmalloc-8: Object already free
+[  74.696570] -----------------------------------------------------------------------------
+[   74.696596] 
+[   74.697310] INFO: Allocated in strndup_user+0x30/0x62 age=587 cpu=2 pid=1439
+[   74.697845] INFO: Freed in kobject_set_name_vargs+0x29/0x32 age=559 cpu=3 pid=1439
+[   74.698008] INFO: Slab 0xc16f93a0 used=10 fp=0xf7c9d2d8 flags=0x10000c3
+[   74.698008] INFO: Object 0xf7c9d1f8 @offset=504 fp=0xf7c9d578
+
+This happens because, sysdev_class_register assigns a name to the kobject, and kfrees the old name if any. The 
+poisoned 'name' object persists in case of statically allocated kobjects and as its passed to kfree again when re 
+registered, we get the above warning.
+
+So, AFAICS the best way to solve this is by fixing the kobject users (kvm, oprofile etc.) to use dynamic kobjects instead 
+of static ones or memset the kobject to zero before passing it to sysdev_register.
+
+Greg ?
+
+-- 
+regards,
+balaji rao
+3rd year,
+Dept. of Mechanical Engineering,
+National Institute of Technology, Karnataka
