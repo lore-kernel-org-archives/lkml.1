@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYCHMG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbYCHMIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYCHMG2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 07:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYCHMGT
+	id S1755340AbYCHMIl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 07:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYCHMId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 07:06:19 -0500
-Received: from phunq.net ([64.81.85.152]:36285 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753017AbYCHMGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 07:06:18 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] An alternative interface to device mapper
-Date: Sat, 8 Mar 2008 04:06:15 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
-References: <200803050129.43172.phillips@phunq.net> <20080308113803.GB4016@ucw.cz>
-In-Reply-To: <20080308113803.GB4016@ucw.cz>
+	Sat, 8 Mar 2008 07:08:33 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:15355 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753260AbYCHMIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 07:08:32 -0500
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [7/7] Allow swiotlb to move block data bouncing to the block layer
+References: <200803071013.837692778@firstfloor.org>
+	<20080307091328.138F61B419C@basil.firstfloor.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 08 Mar 2008 13:08:27 +0100
+In-Reply-To: <20080307091328.138F61B419C@basil.firstfloor.org>
+Message-ID: <87ve3xe7us.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803080406.16305.phillips@phunq.net>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Mar 2008 12:01:56.0809 (UTC) FILETIME=[34F88390:01C88114]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+Andi Kleen <andi@firstfloor.org> writes:
 
-On Saturday 08 March 2008 03:38, Pavel Machek wrote:
-> > Unlike a pipe, there is no waiting for input on a ddlink: if there is 
-> > nothing to read then the read returns immediately with zero length.  If 
-> > some other behavior is desired it can be obtained using poll.
-> 
-> That's kind of strange, no?
+> The block layer is generally in a better position to bounce
+> than swiotlb because it is allowed to sleep at
+> the right places. swiotlb cannot do that and is thus more prone
+> to panic and failing on overflow.
 
-It doesn't feel strange in practice.  The ddlink framework itself does
-not implement this, the module does (e.g. ddsetup).  So you can put a
-poll wait in your read method if that suits your interface.  It just
-does not seem to be useful for ddsetup, which does not produce any
-data of the kind that needs an application to sit in a loop waiting for
-something to arrive.  If there is an application like that, it would
-probably want to poll the ddlink anyway, to avoid having a whole thread
-dedicated to just that.
+[...]
 
-Maybe the reason it does not feel strange to omit the wait is, reading
-from proc never waits.  A ddlink fd is more like proc than like a pipe.
-It was Trond who started called his thing a "pipefs", blame him ;-)
- 
-> Should not description of interface go to Doc* somewhere?
+The patch in this form right now is not a good idea. It really
+depends on another patch which I had dropped from the public
+posting. In the current form it would lead to all block swiotlb
+bounces go through the low 16MB zone because block layer doesn't know
+yet how to allocate bounce buffers above it and the block layer
+would force it through its 16MB limited isa mempool.
 
-Yes, will fix.
+I fixed that now properly for the next spin, with proper mask bouncing.
 
-Daniel
+Anyways, just if anybody wants to test don't apply this patch
+or use the latest patchkit from ftp://firstfloor.org/pub/ak/mask/patches/
+which will bounce properly (and which also has some other improvements) 
+
+-Andi
