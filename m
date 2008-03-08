@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbYCHKfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbYCHKhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753445AbYCHKfo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 05:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYCHKff
+	id S1753789AbYCHKhS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 05:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYCHKhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 05:35:35 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52158 "EHLO
+	Sat, 8 Mar 2008 05:37:06 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52227 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbYCHKfe (ORCPT
+	with ESMTP id S1751935AbYCHKhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 05:35:34 -0500
-Message-ID: <47D269AB.2010306@zytor.com>
-Date: Sat, 08 Mar 2008 11:25:47 +0100
+	Sat, 8 Mar 2008 05:37:04 -0500
+Message-ID: <47D26A00.7050308@zytor.com>
+Date: Sat, 08 Mar 2008 11:27:12 +0100
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
-CC: Pavel Machek <pavel@ucw.cz>, Rick van Rein <rick@vanrein.org>,
-       linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+CC: devzero@web.de, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       rick@vanrein.org
 Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-References: <20080302134221.GA25196@phantom.vanrein.org>	 <20080303141438.GD12606@elf.ucw.cz> <2f11576a0803030841g43f673d9w6b9a5cc8c6e35340@mail.gmail.com>
-In-Reply-To: <2f11576a0803030841g43f673d9w6b9a5cc8c6e35340@mail.gmail.com>
+References: <182234194@web.de> <20080304132724.GB32383@elte.hu>
+In-Reply-To: <20080304132724.GB32383@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi!
+Ingo Molnar wrote:
+> * devzero@web.de <devzero@web.de> wrote:
 > 
->>  > This is the latest version of the BadRAM patch, which makes it possible to
->>  > run Linux on broken memory.  The patch supports the use of a lesser grade
->>  > of memory, which could be marketed more cheaply and which would thereby
->>  > decrease the environmental stress caused by the process of (memory) chip
->>  > manufacturing.
+>>> What is wrong with mem=exactmap?
+>> probably no ordinary user knows how to use it instead of badram?
+>> http://lists.opensuse.org/opensuse/2007-04/msg00501.html
 >>
->>  What is wrong with mem=exactmap?
+>> someone please show us how to use that instead of badram or how this 
+>> can replace what badram does.
 > 
-> Agghh,
-> I had forgotten that.
+> as i said it in another reply to this thread, it would be perfectly 
+> acceptable for upstream to merge an easier to use boot option - be that 
+> badmem=addr$size or excludemem=addr$size. Please send a patch :-)
 > 
-> you are right, may be.
 
-More importantly:
+It already called:
 
-	memmap=<size>$<len>
+	memmap=addr$size
 
-already allows you to knock arbitrary holes in the memory map.
+
+... and has been implemented for years.  Does the badram patch do 
+anything different?  (And yes, I agree the $/@/# is ugly.)
 
 	-hpa
-
