@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYCHDm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbYCHDna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbYCHDm6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 22:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYCHDmq
+	id S1760886AbYCHDna (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 22:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbYCHDnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 22:42:46 -0500
-Received: from mga03.intel.com ([143.182.124.21]:48845 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbYCHDmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 22:42:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,465,1199692800"; 
-   d="scan'208";a="216207187"
-Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
-From: Dan Williams <dan.j.williams@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Milan Broz <mbroz@redhat.com>,
-       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
-       Alasdair G Kergon <agk@redhat.com>,
+	Fri, 7 Mar 2008 22:43:18 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:23277 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758583AbYCHDnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 22:43:17 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=X6srNiHZ/dNPZApZFwvs1enyFT182uqO0gKpVnrmyXjmwQym23bj0kWLos7Ob7EoRUPB2b9501DPfIhOD6EesDwIfpEFSohIBFiE9r1ishhDM4u7+dHCqsu8Re1Yuc7zCzChQORBtex/FlVqIrMJGJqfGUmv6lvMPEvDaRIF6fQ=  ;
+X-YMail-OSG: IQ4OE2wVM1kQdEjPrSSF0yVXfF.ZJpxbm3Yc7ilS7i.JWkE1mq94E3VPZBOWKHlyEs64fCpJuQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
+Date: Fri, 7 Mar 2008 19:43:14 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       dm-crypt@saout.de
-In-Reply-To: <20080308012438.GA24236@gondor.apana.org.au>
-References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com>
-	 <47BC0DA9.1030607@redhat.com> <20080220172449.GD27726@gondor.apana.org.au>
-	 <47BC67CE.9070407@redhat.com> <20080220175819.GA28246@gondor.apana.org.au>
-	 <20080222123423.GA12678@gondor.apana.org.au>
-	 <e9c3a7c20803071014s6388b7b2l12f217bfdff5caa3@mail.gmail.com>
-	 <20080308012438.GA24236@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Fri, 07 Mar 2008 20:42:44 -0700
-Message-Id: <1204947764.27096.4.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
-Content-Transfer-Encoding: 7bit
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main>
+In-Reply-To: <1204827056.15360.147.camel@a10323.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200803071943.14805.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-07 at 18:24 -0700, Herbert Xu wrote:
-> On Fri, Mar 07, 2008 at 11:14:07AM -0700, Dan Williams wrote:
-> >
-> > I believe this is in mainline as 76fc60a2 "[CRYPTO] skcipher: Move
-> > chainiv/seqiv into crypto_blkcipher module".  With a iop13xx_defconfig
-> >  I get:
-> >
-> > `chainiv_module_exit' referenced in section `.init.text' of
-> > crypto/built-in.o: defined in discarded section `.exit.text' of
-> > crypto/built-in.o
-> > `chainiv_module_exit' referenced in section `__ksymtab_gpl' of
-> > crypto/built-in.o: defined in discarded section `.exit.text' of
-> > crypto/built-in.o
-> > `eseqiv_module_exit' referenced in section `__ksymtab_gpl' of
-> > crypto/built-in.o: defined in discarded section `.exit.text' of
-> > crypto/built-in.o
-> > make: *** [.tmp_vmlinux1] Error 1
-> 
-> Does this help?
-> 
-Yup, and doing the same for eseqiv_module_exit completes the fix.
+On Thursday 06 March 2008, Liam Girdwood wrote:
+> +static inline int uA_to_A(int uA) { return uA / 1000000; }
 
-  LD      arch/arm/boot/compressed/vmlinux
-  OBJCOPY arch/arm/boot/zImage
-  Kernel: arch/arm/boot/zImage is ready
+So:  999999 uA == 0A ... should DIV_ROUND_UP() or another
+rounding function be involved in some of these conversions?
+ 
+Or maybe the dividing conversions should not be provided, and
+code should just be doing math in units that don't encourage
+such problems to appear.  I don't think one rounding policy
+can fit all (including truncation, as above).
 
-Thanks,
-Dan
 
+> +struct regulator *__must_check regulator_get(struct device *dev,
+> +                                            const char *id);
+
+The semantics of "id" and "dev" are unspecified in this patch,
+so this isn't a good definition of the consumer interface!
+
+Plus, that works more like a "lookup" than a "get" ... the
+usual convention is that "get" and "put" update refcounts.
+But I think I see an assumption here that a regulator may
+have only one user...
+
+
+> +int regulator_set_voltage(struct regulator *regulator, int uV);
+
+You described a mode where consumers could set ranges that
+might overlap (e.g. 1.6 to 1.9V, 1.8 to 2.0) and the result
+would be some compatible result.  But I don't see how that
+could be achieved, since that's the only call to provide
+a consumer's constraints.
+
+Presumably one configures a voltage then enables it?  How
+does one turn a voltage supply on or off?  I'm guessing
+that zero volts doesn't equate to "off"...
+
+Something that's lacking here is simple examples.  Like:  how
+do I get the power supply associated with an MMC/SD card socket,
+turn it on (to, say, 3V3), set it to supply a different voltage
+(maybe 1V8), then turn it off?  How would I cope with that
+voltage supply being shared by two sockets, with cards that may
+support different voltage ranges and have different current
+requirements?  (Configurations of interest include two cards
+that can coexist at 1V8, and two that can't ... one might not
+support 1V8, or it might demand too much power.  Also, zero
+and one cards present.)
+
+- Dave
 
