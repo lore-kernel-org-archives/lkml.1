@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbYCHBkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762552AbYCHBkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758967AbYCHBkT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 20:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYCHBkG
+	id S1762552AbYCHBkl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 20:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYCHBkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 20:40:06 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:41066 "HELO
+	Fri, 7 Mar 2008 20:40:07 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:41085 "HELO
 	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751218AbYCHBkF (ORCPT
+	by vger.kernel.org with SMTP id S1752515AbYCHBkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 20:40:05 -0500
+	Fri, 7 Mar 2008 20:40:06 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=YRT3r/hMxAYFs/tSEpcKy3vy+u+qFuEZMb2wsNfZit0oP6LoaSOH/QB47eyi7y3/2eethfXR2MTLslh7x6Wz5Y+dYC3OQqb7RUDhlnPdExkKgSn0Ma61yXwi80vCTXiI9GoAZ8/ushiVmEN0oYPXGho7TTi1+xKZHsI24Z3M9k0=  ;
-X-YMail-OSG: jYIhqZwVM1kDgpneAcecCrfBM2PTVjyoTC9W9NDFELDOzTcK1s9qar4eO9R0bUcGD1GtJpDIQQ--
+  b=VfXWHJvZnbchP7jHnkDmx5PRokcGiwoX2qcLoIOaEZSWXBrk8aRLTz6+dIaeYLUJTEf+teJjRn+avFwHEVgQLQL4yN4/YuTWh4cqBLjG8w/fVfpZzn9WllJWrbyCs7aeKlaQz810rTOUf4XVa34xbeIqw1l+5lhPExqwI3QWs0Q=  ;
+X-YMail-OSG: gIsLEUAVM1lvc79o6U5QUu8JFnPP_tOfpZwkLOgPLFVnYr_GO8c0nF75ghk724lO6Q83Po0Ghw--
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: linux-arm-kernel@lists.arm.linux.org.uk
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [UPDATED v3][PATCH 5/7] regulator: sysfs ABI
-Date: Fri, 7 Mar 2008 17:13:57 -0800
+Date: Fri, 7 Mar 2008 17:17:43 -0800
 User-Agent: KMail/1.9.6
-Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, Greg KH <greg@kroah.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
-References: <1204827125.15360.151.camel@a10323.wolfsonmicro.main>
-In-Reply-To: <1204827125.15360.151.camel@a10323.wolfsonmicro.main>
+References: <1204827125.15360.151.camel@a10323.wolfsonmicro.main> <20080307161212.GD28439@kroah.com> <20080307211714.GA26534@sirena.org.uk>
+In-Reply-To: <20080307211714.GA26534@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803071713.57795.david-b@pacbell.net>
+Message-Id: <200803071717.44028.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 March 2008, Liam Girdwood wrote:
+On Friday 07 March 2008, Mark Brown wrote:
+> On Fri, Mar 07, 2008 at 08:12:12AM -0800, Greg KH wrote:
+> > On Thu, Mar 06, 2008 at 06:12:05PM +0000, Liam Girdwood wrote:
+> 
+> > > +		Some regulator directories will contain a link called parent.
+> > > +		This points to the parent or supply regulator if one exists.
+> 
+> > I don't think this is needed, why not just parent the device properly in
+> > the device tree itself?
+> 
+> The device tree would tend to show parent for the the control interfaces
+> for the regulators (typically I2C or SPI) but there is likely to be
+> little or no relationship between that and the power distribution in the
+> system.
 
-> +What:		/sys/class/regulator/.../microvolts
-> +	...
-> +
-> +What:		/sys/class/regulator/.../microamps
-> +	...
-
-Versus Documentation/hwmon/sysfs-interface which uses
-millivolts and milliamperes respectively.
-
-Why not adopt the same convention?  (This applies to
-many attributes, not just these two.)
-
-
-Also, I'm kind of curious what you've thought about
-power budgeting.  Example, a power supply ("regulator")
-may be able to supply a voltage within a given range,
-but only up to a maximum of 200 mA worth.
-
-The model visible through these sysfs attributes seems to
-be an either/or thing ... either regulating voltage, or
-current, but not addressing the corresponding constraints
-on the other one.
-
-
-> +               NOTE: this will return the string 'constraint not defined'
-
-How about just "undefined" for all those min/max values?
-
-
-> +What:		/sys/class/regulator/.../requested_microamps
-> +	...
-
-Ditto re "milli" vs "micro".  Also, "requested" seems a bit opaque.
-As a sum, maybe "total_mi{lli,cro}amps" would be more explanatory.
+I find "parent" a bit awkward, and Greg won't be the only one to
+be asking that question.  Maybe it'd be better named "supply"?
 
 - Dave
-
