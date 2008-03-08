@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbYCHBYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYCHBZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759396AbYCHBYv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 20:24:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbYCHBYn
+	id S1757212AbYCHBZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 20:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759980AbYCHBZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 20:24:43 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:48653 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756292AbYCHBYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 20:24:42 -0500
-Subject: Re: [regression]2.6.25-rc4: boot panic on alpha
-In-Reply-To: <20080307162116.GA18563@jurassic.park.msu.ru> "from Ivan Kokshaysky
- at Mar 7, 2008 07:21:16 pm"
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Date: Fri, 7 Mar 2008 19:24:40 -0600 (CST)
-CC: FUJITA Tomonori <tomof@acm.org>, rct@frus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Fri, 7 Mar 2008 20:25:04 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:48931 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759931AbYCHBZB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 20:25:01 -0500
+Date: Sat, 8 Mar 2008 09:24:38 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Milan Broz <mbroz@redhat.com>,
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       Alasdair G Kergon <agk@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dm-crypt@saout.de
+Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
+Message-ID: <20080308012438.GA24236@gondor.apana.org.au>
+References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com> <47BC0DA9.1030607@redhat.com> <20080220172449.GD27726@gondor.apana.org.au> <47BC67CE.9070407@redhat.com> <20080220175819.GA28246@gondor.apana.org.au> <20080222123423.GA12678@gondor.apana.org.au> <e9c3a7c20803071014s6388b7b2l12f217bfdff5caa3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080308012440.39177DBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9c3a7c20803071014s6388b7b2l12f217bfdff5caa3@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> Bob, can you give it a try?
+On Fri, Mar 07, 2008 at 11:14:07AM -0700, Dan Williams wrote:
 > 
-> Ivan.
+> I believe this is in mainline as 76fc60a2 "[CRYPTO] skcipher: Move
+> chainiv/seqiv into crypto_blkcipher module".  With a iop13xx_defconfig
+>  I get:
 > 
-> diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
-> index be6fa10..e07a23f 100644
-> --- a/arch/alpha/kernel/pci_iommu.c
-> +++ b/arch/alpha/kernel/pci_iommu.c
+> `chainiv_module_exit' referenced in section `.init.text' of
+> crypto/built-in.o: defined in discarded section `.exit.text' of
+> crypto/built-in.o
+> `chainiv_module_exit' referenced in section `__ksymtab_gpl' of
+> crypto/built-in.o: defined in discarded section `.exit.text' of
+> crypto/built-in.o
+> `eseqiv_module_exit' referenced in section `__ksymtab_gpl' of
+> crypto/built-in.o: defined in discarded section `.exit.text' of
+> crypto/built-in.o
+> make: *** [.tmp_vmlinux1] Error 1
 
-This fixes things for me.  I'm running 2.6.25-rc4 + the above patch as
-I type this.
+Does this help?
 
-Thanks!
-
+Thanks,
 -- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/chainiv.c b/crypto/chainiv.c
+index 0a7cac6..a23e1ce 100644
+--- a/crypto/chainiv.c
++++ b/crypto/chainiv.c
+@@ -320,7 +320,7 @@ int __init chainiv_module_init(void)
+ }
+ EXPORT_SYMBOL_GPL(chainiv_module_init);
+ 
+-void __exit chainiv_module_exit(void)
++void chainiv_module_exit(void)
+ {
+ 	crypto_unregister_template(&chainiv_tmpl);
+ }
+diff --git a/include/crypto/internal/skcipher.h b/include/crypto/internal/skcipher.h
+index a8f1264..ccc32ba 100644
+--- a/include/crypto/internal/skcipher.h
++++ b/include/crypto/internal/skcipher.h
+@@ -68,7 +68,7 @@ void skcipher_geniv_exit(struct crypto_tfm *tfm);
+ int __init eseqiv_module_init(void);
+ void __exit eseqiv_module_exit(void);
+ int __init chainiv_module_init(void);
+-void __exit chainiv_module_exit(void);
++void chainiv_module_exit(void);
+ 
+ static inline struct crypto_ablkcipher *skcipher_geniv_cipher(
+ 	struct crypto_ablkcipher *geniv)
