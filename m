@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752276AbYCHUiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbYCHUkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752276AbYCHUiS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 15:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYCHUiH
+	id S1752711AbYCHUkn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 15:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYCHUkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 15:38:07 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:57505 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYCHUiH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 15:38:07 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 8 Mar 2008 12:38:00 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Rik van Riel <riel@redhat.com>
-cc: Jeff Roberson <jroberson@chesapeake.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] eventfd signal race in aio_complete()
-In-Reply-To: <20080308102321.4527372e@bree.surriel.com>
-Message-ID: <Pine.LNX.4.64.0803081236440.9905@alien.or.mcafeemobile.com>
-References: <20080307161854.E920@desktop> <Pine.LNX.4.64.0803071955490.13626@alien.or.mcafeemobile.com>
- <20080308102321.4527372e@bree.surriel.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 8 Mar 2008 15:40:36 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:54656 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751050AbYCHUkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 15:40:35 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18386.63798.151688.687781@harpo.it.uu.se>
+Date: Sat, 8 Mar 2008 21:38:14 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Greg KH <gregkh@suse.de>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 sysdev API problem
+In-Reply-To: <20080308184717.GA7476@suse.de>
+References: <18386.46903.998159.519599@harpo.it.uu.se>
+	<20080308184717.GA7476@suse.de>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Mar 2008, Rik van Riel wrote:
+Greg KH writes:
+ > On Sat, Mar 08, 2008 at 04:56:39PM +0100, Mikael Pettersson wrote:
+ > > In kernels up to and including 2.6.24, it was possible to
+ > > register-then-unregister a sysdev_class/sys_device pair
+ > > multiple times. Starting with the 2.6.24-git1 kernel, doing
+ > > so causes a warning
+ > > 
+ > > kobject (f88e96c8): tried to init an initialized object, something is seriously wrong
+ > 
+ > This is a warning only, I have a patch queued up to fix this.  I've
+ > included it below.
+ > 
+ > > the second time the class/device pair is registered, followed
+ > > soon thereafter by random BUG()s and a kernel panic.
+ > 
+ > That's odd.  I don't think that is related, but it might be.  Can you
+ > try the patch and let me know if it still happens?
 
-> On Fri, 7 Mar 2008 20:29:20 -0800 (PST)
-> Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > The second solution/patch simply moves the eventfd_signal() call before 
-> > the __aio_put_req() call, but after the event has beed "ringed".
-> > We should be clear to go with the shorter/nicer second solution. Those 
-> > patches builds, but I'm not even signing them off till I tested them.
-> 
-> If there are no spinlock ordering issues between &ctx->ctx_lock
-> and &ctx->wqh.lock (taken inside eventfd_signal), then the second
-> patch is indeed preferable.
-> 
-> Jeff and I did look at that briefly last night, but were not
-> familiar enough with the code to decide whether or not that was
-> safe.
+The patch silenced the warning, but I still got a BUG() in
+cache_alloc_refill() shortly after loading the test module.
 
-There's no interlocking between the two, so let's go with #2.
-Jeff, would you mind giving patch #2 a spin in your test suite?
+(The machine needs some activity before the BUG() happens,
+a few sync;dmesg;ps commands suffice for me.)
 
+If I change the test module to do the sysdev_register stuff
+once in module_init and the unregister stuff once in module_exit,
+as opposed to once per "session" using the device, then things
+work fine and I can't crash the kernel even if I repeatedly
+insmod and rmmod the module. This indicates that some other part
+of the sysdev object's state, apart from the state_initialized
+flag, must also be cleaned up in the unregister() path.
 
+I'll continue investigating this tomorrow.
 
-- Davide
-
-
+/Mikael
