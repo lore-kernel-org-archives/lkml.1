@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbYCHWu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYCHWzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753085AbYCHWu6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 17:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYCHWuv
+	id S1753188AbYCHWzM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 17:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYCHWzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 17:50:51 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:34224 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751523AbYCHWuu (ORCPT
+	Sat, 8 Mar 2008 17:55:00 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:57667 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbYCHWy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 17:50:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UbX7IQWoRgkJXFgI6jw94k47JsS8GlmamCLBdT3XitM68Tc8Sqy01EF2fC/LHjAgq8nwm2E+8XEgaj959s04bCk6CCYsHCWhrprp7AwS5JCxKdF+lqdAFaz032esLWGzbKVCQTPpLWhUfKgIF8SWGKF3Cb/Mp7IKBuplH6NH5VE=  ;
-X-YMail-OSG: ILuf8boVM1nN1XkeZZKhkCJyyz_ULNEWTsdwy0cho3THJP_TjQ99e7ITR8Zsk31koCksolCR_w--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: WARN_ON(): proc_dir_entry 'rtc' already registered
-Date: Sat, 8 Mar 2008 14:50:48 -0800
-User-Agent: KMail/1.9.6
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20080212132626.GA1534@elf.ucw.cz> <200802180308.17115.david-b@pacbell.net> <20080219101246.GB2202@elf.ucw.cz>
-In-Reply-To: <20080219101246.GB2202@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200803081450.48579.david-b@pacbell.net>
+	Sat, 8 Mar 2008 17:54:59 -0500
+Subject: Re: 2.6.25-rc4 OOMs itself dead on bootup (modprobe bug?)
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Jon Masters <jcm@redhat.com>
+Cc: Frank Sorenson <frank@tuxrocks.com>, Matt Domsch <Matt_Domsch@dell.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <1205013197.5484.81.camel@perihelion>
+References: <47D02940.1030707@tuxrocks.com> <20080306184954.GA15492@elte.hu>
+	 <47D1971A.7070500@tuxrocks.com> <47D23B7E.3020505@tuxrocks.com>
+	 <20080308135318.GA8036@auslistsprd01.us.dell.com>
+	 <47D29CAB.50301@tuxrocks.com>  <1205013197.5484.81.camel@perihelion>
+Content-Type: text/plain
+Date: Sat, 08 Mar 2008 23:54:44 +0100
+Message-Id: <1205016884.24056.1.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.91 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+cNkJeUx+Z134YZLkkkM45BArZeAHNX5ZFL93
+ ulKO7XweRIVFCJq5C3/vhm/mBlHkgEzYStBeYwuu6eg3HOtRRg
+ NjnZp4s9/lq3thFLrnZqf/YINvOfCWC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008, Pavel Machek wrote:
-> On Mon 2008-02-18 03:08:16, David Brownell wrote:
-> > On Monday 18 February 2008, Pavel Machek wrote:
-> > > > How to fix ... how about:  instead of just warning folk
-> > > > off such legacy RTC drivers [1] we just wrap them with
-> > > > an "if RTC_LIB != n" so this mistake won't be possible.
-> > > 
-> > > Yes, disabling bad configs in Kconfig seems like way to go.
-> > 
-> > Problem is ... that also disables valid configs that
-> > get assembled by picking the right module(s) for the
-> > target system.
+On Sat, 2008-03-08 at 16:53 -0500, Jon Masters wrote:
+> On Sat, 2008-03-08 at 08:03 -0600, Frank Sorenson wrote:
 > 
-> Is there any reason to use the old rtc subsystem?
+> > It's module-init-tools-3.4-2.fc8.x86_64 (most recent Fedora rpm available).
 > 
-> At least OLD_RTC=y NEW_RTC=y should be disabled... even if OLD_RTC=m
-> NEW_RTC=m makes some sense.
+> Ok, so I'll see if I can find a Dell system in the office to reproduce
+> this on Monday. Any Dell should do, right Matt?
 
-The patch I sent earlier today makes the two mutually exclusive.
+Should not be needed:
+  http://lkml.org/lkml/2008/3/8/91
 
-Note by the way that there is no OLD_RTC analogue ... just a bunch
-of individual drivers.
+Cheers,
+Kay
 
