@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbYCHSpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbYCHSrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbYCHSpz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 13:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYCHSpr
+	id S1757063AbYCHSrh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 13:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbYCHSra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 13:45:47 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38995 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754198AbYCHSpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 13:45:46 -0500
-Date: Sat, 8 Mar 2008 13:45:43 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>, sct@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/3] jbd2: replace potentially false assertion with if
-	block
-Message-ID: <20080308184543.GA4284@infradead.org>
-References: <5e28cd633c71f6354a203a43000cbe5fef045589.1204844851.git.duaneg@dghda.com> <48afbb3a44aa24dc1e31835c14e86c3c6c1c3b0a.1204844851.git.duaneg@dghda.com> <20080307212336.GE1881@webber.adilger.int> <20080308150229.GA22430@infradead.org> <e9e943910803080840u251ade36j92612f6150de6cf9@mail.gmail.com> <20080308164258.GA30512@infradead.org> <e9e943910803081037w5e7a8743p449b999001b94281@mail.gmail.com>
+	Sat, 8 Mar 2008 13:47:30 -0500
+Received: from ns2.suse.de ([195.135.220.15]:48956 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750718AbYCHSr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 13:47:29 -0500
+Date: Sat, 8 Mar 2008 10:47:17 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 sysdev API problem
+Message-ID: <20080308184717.GA7476@suse.de>
+References: <18386.46903.998159.519599@harpo.it.uu.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e9e943910803081037w5e7a8743p449b999001b94281@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <18386.46903.998159.519599@harpo.it.uu.se>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 08, 2008 at 06:37:08PM +0000, Duane Griffin wrote:
-> Sorry if I'm missing something here, but I think the caches do need to
-> be checked. If jbd/ext3 are not modular then even if initialisation
-> fails the journal code may still be called later. I noticed this when
-> testing the failure modes after making my original fix.
+On Sat, Mar 08, 2008 at 04:56:39PM +0100, Mikael Pettersson wrote:
+> In kernels up to and including 2.6.24, it was possible to
+> register-then-unregister a sysdev_class/sys_device pair
+> multiple times. Starting with the 2.6.24-git1 kernel, doing
+> so causes a warning
+> 
+> kobject (f88e96c8): tried to init an initialized object, something is seriously wrong
 
-Doh, I think you're right.  Just because jbd initialization fails
-ext3 could succeed later on.   We probably want to make ext3
-initialization fail early in that case through an exported flag.
+This is a warning only, I have a patch queued up to fix this.  I've
+included it below.
 
-> I've modified my changes to match the way you suggested doing things
-> in your earlier reply (and thanks for the review, BTW). If you would
-> prefer I'll rework my changes as a separate patch on top. Just let me
-> know.
+> the second time the class/device pair is registered, followed
+> soon thereafter by random BUG()s and a kernel panic.
 
-I don't really care how it's delivered.  Just consider my patches a 
-scetch and do whatever you think is best with them.
+That's odd.  I don't think that is related, but it might be.  Can you
+try the patch and let me know if it still happens?
 
+thanks,
+
+greg k-h
+
+
+From: Balaji Rao <balajirrao@gmail.com>
+Date: Thu, 6 Mar 2008 22:23:18 +0530
+Subject: kobjects: mark cleaned up kobjects as unitialized
+To: gregkh@suse.de
+Cc: <kvm-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
+Message-ID: <200803062223.18857.balajirrao@gmail.com>
+Content-Disposition: inline
+
+
+When I remove only the kvm-intel module without removing the kvm module
+itself, I get an error saying that a kobject is trying to be
+reinitialized. Its because of the fact that kvm reuses a kobject in
+kvm_init when calling sysdev_register.
+
+This patch fixes kobject_cleanup by marking the kobject as uninitialized
+when we cleanup to allow kobjects to be reused.
+
+Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ lib/kobject.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -577,6 +577,9 @@ static void kobject_cleanup(struct kobje
+ 		pr_debug("kobject: '%s': free name\n", name);
+ 		kfree(name);
+ 	}
++
++	/* Set the state to uninitialized */
++	kobj->state_initialized = 0;
+ }
+ 
+ static void kobject_release(struct kref *kref)
