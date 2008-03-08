@@ -1,135 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762786AbYCHB0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbYCHB3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762786AbYCHB0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 20:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760445AbYCHBZR
+	id S1760589AbYCHB3D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 20:29:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbYCHB2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 20:25:17 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:56904 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760309AbYCHBZP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 20:25:15 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	user-agent:mime-version:content-type;
-	b=Rd7vH2PeuRnYm+2GEl92GzQuL9KWbdEeuKBLB605qaxOWJqqne1P9URWM7V5Qb7v6
-	ISHA19Wx661BE3KN7cRMg==
-Date: Fri, 7 Mar 2008 17:24:15 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: [patch -mm 1/2] mempolicy: disallow static or relative flags for
- local preferred mode
-Message-ID: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Mar 2008 20:28:53 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:52724 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756235AbYCHB2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 20:28:53 -0500
+Date: Fri, 7 Mar 2008 19:28:45 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm 2/2] mempolicy: use default_policy mode instead of
+ MPOL_DEFAULT
+Message-Id: <20080307192845.0492c6f9.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0803071722170.4611@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0803071722170.4611@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MPOL_F_STATIC_NODES and MPOL_F_RELATIVE_NODES don't mean anything for
-MPOL_PREFERRED policies that were created with an empty nodemask (for
-purely local allocations).  They'll never be invalidated because the
-allowed mems of a task changes or need to be rebound relative to a
-cpuset's placement.
+David wrote:
+> So instead of checking for comparisons against a mempolicy's mode to
+> MPOL_DEFAULT or falling back stricly to MPOL_DEFAULT throughout the code,
+> we should use the mode that is defined in this struct.
 
-Also fixes a bug identified by Lee Schermerhorn that disallowed empty
-nodemasks to be passed to MPOL_PREFERRED to specify local allocations.
+Is this just a stylistic choice?  That is, is the same machine
+code produced either way?
 
-Cc: Paul Jackson <pj@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- Documentation/vm/numa_memory_policy.txt |   16 ++++++++++++++--
- mm/mempolicy.c                          |   17 ++++++++++++-----
- 2 files changed, 26 insertions(+), 7 deletions(-)
+If that's the case, could you briefly explain why you prefer
+one style (default_policy.policy) over the other (MPOL_DEFAULT)?
 
-diff --git a/Documentation/vm/numa_memory_policy.txt b/Documentation/vm/numa_memory_policy.txt
---- a/Documentation/vm/numa_memory_policy.txt
-+++ b/Documentation/vm/numa_memory_policy.txt
-@@ -210,6 +210,12 @@ Components of Memory Policies
- 	    local allocation for a specific range of addresses--i.e. for
- 	    VMA policies.
- 
-+	    It is possible for the user to specify that local allocation is
-+	    always preferred by passing an empty nodemask with this mode.
-+	    If an empty nodemask is passed, the policy cannot use the
-+	    MPOL_F_STATIC_NODES or MPOL_F_RELATIVE_NODES flags described
-+	    below.
-+
- 	MPOL_INTERLEAVED:  This mode specifies that page allocations be
- 	interleaved, on a page granularity, across the nodes specified in
- 	the policy.  This mode also behaves slightly differently, based on
-@@ -259,7 +265,10 @@ Components of Memory Policies
- 	    occurs over that node.  If no nodes from the user's nodemask are
- 	    now allowed, the Default behavior is used.
- 
--	    MPOL_F_STATIC_NODES cannot be used with MPOL_F_RELATIVE_NODES.
-+	    MPOL_F_STATIC_NODES cannot be combined with the
-+	    MPOL_F_RELATIVE_NODES flag.  It also cannot be used for
-+	    MPOL_PREFERRED policies that were created with an empty nodemask
-+	    (local allocation).
- 
- 	MPOL_F_RELATIVE_NODES:  This flag specifies that the nodemask passed
- 	by the user will be mapped relative to the set of the task or VMA's
-@@ -306,7 +315,10 @@ Components of Memory Policies
- 	    set of memory nodes allowed by the task's cpuset, as that may
- 	    change over time.
- 
--	    MPOL_F_RELATIVE_NODES cannot be used with MPOL_F_STATIC_NODES.
-+	    MPOL_F_RELATIVE_NODES cannot be combined with the
-+	    MPOL_F_STATIC_NODES flag.  It also cannot be used for
-+	    MPOL_PREFERRED policies that were created with an empty nodemask
-+	    (local allocation).
- 
- MEMORY POLICY APIs
- 
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -151,9 +151,7 @@ static int mpol_new_interleave(struct mempolicy *pol, const nodemask_t *nodes)
- 
- static int mpol_new_preferred(struct mempolicy *pol, const nodemask_t *nodes)
- {
--	if (nodes_empty(*nodes))
--		return -EINVAL;
--	pol->v.preferred_node = first_node(*nodes);
-+	pol->v.preferred_node = !nodes_empty(*nodes) ? first_node(*nodes) : -1;
- 	return 0;
- }
- 
-@@ -176,7 +174,16 @@ static struct mempolicy *mpol_new(unsigned short mode, unsigned short flags,
- 	pr_debug("setting mode %d flags %d nodes[0] %lx\n",
- 		 mode, flags, nodes ? nodes_addr(*nodes)[0] : -1);
- 
--	if (nodes && nodes_empty(*nodes) && mode != MPOL_PREFERRED)
-+	/*
-+	 * MPOL_PREFERRED cannot be used with MPOL_F_STATIC_NODES or
-+	 * MPOL_F_RELATIVE_NODES if the nodemask is empty (local allocation).
-+	 * All other modes require a valid pointer to a non-empty nodemask.
-+	 */
-+	if (mode == MPOL_PREFERRED) {
-+		if (nodes_empty(*nodes) && ((flags & MPOL_F_STATIC_NODES) ||
-+					    (flags & MPOL_F_RELATIVE_NODES)))
-+			return ERR_PTR(-EINVAL);
-+	} else if (nodes && nodes_empty(*nodes))
- 		return ERR_PTR(-EINVAL);
- 	if (mode == MPOL_DEFAULT)
- 		return NULL;
-@@ -250,7 +257,7 @@ static void mpol_rebind_preferred(struct mempolicy *pol,
- 	} else if (pol->flags & MPOL_F_RELATIVE_NODES) {
- 		mpol_relative_nodemask(&tmp, &pol->w.user_nodemask, nodes);
- 		pol->v.preferred_node = first_node(tmp);
--	} else {
-+	} else if (pol->v.preferred_node != -1) {
- 		pol->v.preferred_node = node_remap(pol->v.preferred_node,
- 						   pol->w.cpuset_mems_allowed,
- 						   *nodes);
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
