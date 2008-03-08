@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYCHBqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbYCHBwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758084AbYCHBqH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 20:46:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbYCHBp4
+	id S1758250AbYCHBwx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 20:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbYCHBwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 20:45:56 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:10073 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYCHBpz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 20:45:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CTKeGGCSadw6vCVNf1X20BbGPJXXl8JpBkLJ/i5CKWa+W6Pr/B3nEhFGv/MTohsPMlcv/JPtU+pBDJGHMfE7qtEPHlX/TMvA9Zo5Qz/+tVH68fLHrgc2PZdk3pkqRcdmxPsSUO+7SuJwjtavhT+VDTmktAyfh+SPVdY1TE9Pmyo=
-Message-ID: <86802c440803071745l33584535jb998b262e59a915a@mail.gmail.com>
-Date: Fri, 7 Mar 2008 17:45:54 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH] x86_64: reserve dma32 early for gart
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200803080020.50474.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 20:52:43 -0500
+Received: from mga01.intel.com ([192.55.52.88]:5127 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751922AbYCHBwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 20:52:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,465,1199692800"; 
+   d="scan'208";a="530631303"
+Date: Fri, 7 Mar 2008 17:50:45 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, dmitry.adamushko@gmail.com,
+       ego@in.ibm.com, mingo@elte.hu, oleg@tv-sign.ru, yi.y.yang@intel.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
+Message-ID: <20080308015045.GB15909@linux-os.sc.intel.com>
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080307230126.GA15909@linux-os.sc.intel.com> <20080307152934.5c4052db.akpm@linux-foundation.org> <200803080043.16817.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440803071502o50a06199i6afeb5996f207c6d@mail.gmail.com>
-	 <200803080020.50474.ak@suse.de>
+In-Reply-To: <200803080043.16817.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 7, 2008 at 3:20 PM, Andi Kleen <ak@suse.de> wrote:
-> On Saturday 08 March 2008 00:02:50 Yinghai Lu wrote:
->  >
->  >
->
->
->
->  >solution will be:
->  >1. make memmap allocation get memory above 4G...
->  >2. reserve some dma32 range early before we try to set up memmap for all.
->  >and release that before pci_iommu_alloc, so gart or swiotlb could get some
->  >range under 4g limit for sure.
->
->  Funny we had (1) before vmemmap for some time, but it looks like
->  that regressed with vmemmap Anyways I think (1) alone should be enough, is (2)
->  really needed?
+On Sat, Mar 08, 2008 at 12:43:15AM +0100, Rafael J. Wysocki wrote:
+> On Saturday, 8 of March 2008, Andrew Morton wrote:
+> > On Fri, 7 Mar 2008 15:01:26 -0800
+> > Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > 
+> > > 
+> > > Andrew, Please check if the appended patch fixes your power-off problem aswell.
+> > > ...
+> > >
+> > > --- a/kernel/sched.c
+> > > +++ b/kernel/sched.c
+> > > @@ -5882,6 +5882,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+> > >  		break;
+> > >  
+> > >  	case CPU_DOWN_PREPARE:
+> > > +	case CPU_DOWN_PREPARE_FROZEN:
+> > >  		/* Update our root-domain */
+> > >  		rq = cpu_rq(cpu);
+> > >  		spin_lock_irqsave(&rq->lock, flags);
+> > 
+> > No, it does not.
+> 
+> Well, this is a bug nevertheless.
+> 
 
-even vmemmap is disabled, still need (2).
+Well, my previous root cause needs some small changes.
 
-(1) is not there yet.
+During the notifier call chain for CPU_DOWN(till 'update_sched_domains'
+is called atleast), all the cpu's are attached to 'def_root_domain', for whom
+online mask still has the offline cpu.
 
-YH
+This is because, during CPU_DOWN_PREPARE, migration_call() first clears
+the root_domain->online, and later during the DOWN_PREPARE call chain
+detach_destroy_domains() attach to def_root_domain with cpu_online_map(which
+still has the just about to die 'cpu' set).
+
+So essentially, during the notifier call chain of CPU_DOWN (before
+'update_sched_domains' is called atleast), any one doing RT process
+wakeup's (for example: kthread_stop()) can still end up on the dead cpu.
+
+Andrew, Can you please try one more patch(appended) to see if it helps?
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 0a6d2e5..8cb707c 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -597,7 +597,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
+ 	int       count       = 0;
+ 	int       cpu;
+ 
+-	cpus_and(*lowest_mask, task_rq(task)->rd->online, task->cpus_allowed);
++	cpus_and(*lowest_mask, task->cpus_allowed, cpu_online_map);
+ 
+ 	/*
+ 	 * Scan each rq for the lowest prio.
