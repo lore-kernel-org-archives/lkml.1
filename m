@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYCHPGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYCHPH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbYCHPGd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 10:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbYCHPGX
+	id S1757349AbYCHPH2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 10:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbYCHPGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 10:06:23 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:34558 "EHLO mail.screens.ru"
+	Sat, 8 Mar 2008 10:06:24 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:34560 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbYCHPGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 10:06:22 -0500
-Date: Sat, 8 Mar 2008 18:10:21 +0300
+	id S1755668AbYCHPGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 10:06:23 -0500
+Date: Sat, 8 Mar 2008 18:10:25 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6] signals: move the definition of __group_complete_signal() up
-Message-ID: <20080308151021.GA25179@tv-sign.ru>
+Subject: [PATCH 5/6] signals: unify send_sigqueue/send_group_sigqueue completely
+Message-ID: <20080308151025.GA25191@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,217 +24,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the unchanged definition of __group_complete_signal() so that send_signal
-can see it. To simplify the reading of the next patches.
+Suggested by Pavel Emelyanov.
 
+send_sigqueue/send_group_sigqueue are only differ in how they lock ->siglock.
+Unify them. send_group_sigqueue() uses spin_lock() because it knows the task
+can't exit, but in that case lock_task_sighand() can't fail and doesn't hurt.
+
+Note that the "sig" argument is ignored, it is always equal to ->si_signo.
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/signal.c~1_GCS_MOVE	2008-03-08 16:16:22.000000000 +0300
-+++ 25/kernel/signal.c	2008-03-08 16:16:52.000000000 +0300
-@@ -652,6 +652,102 @@ static void handle_stop_signal(int sig, 
+--- 25/kernel/signal.c~5_SSQ_UNIFY	2008-03-08 16:54:57.000000000 +0300
++++ 25/kernel/signal.c	2008-03-08 17:15:59.000000000 +0300
+@@ -1240,14 +1240,27 @@ void sigqueue_free(struct sigqueue *q)
+ 	__sigqueue_free(q);
+ }
+ 
+-static int do_send_sigqueue(int sig, struct sigqueue *q, struct task_struct *t,
++static int do_send_sigqueue(struct sigqueue *q, struct task_struct *t,
+ 				int group)
+ {
++	int sig = q->info.si_signo;
+ 	struct sigpending *pending;
++	unsigned long flags;
++	int ret;
+ 
+ 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
++
++	ret = -1;
++	if (!likely(lock_task_sighand(t, &flags)))
++		goto ret;
++
+ 	handle_stop_signal(sig, t);
+ 
++	ret = 1;
++	if (sig_ignored(t, sig))
++		goto out;
++
++	ret = 0;
+ 	if (unlikely(!list_empty(&q->list))) {
+ 		/*
+ 		 * If an SI_TIMER entry is already queue just increment
+@@ -1256,58 +1269,29 @@ static int do_send_sigqueue(int sig, str
+ 
+ 		BUG_ON(q->info.si_code != SI_TIMER);
+ 		q->info.si_overrun++;
+-		return 0;
++		goto out;
  	}
- }
  
-+/*
-+ * Test if P wants to take SIG.  After we've checked all threads with this,
-+ * it's equivalent to finding no threads not blocking SIG.  Any threads not
-+ * blocking SIG were ruled out because they are not running and already
-+ * have pending signals.  Such threads will dequeue from the shared queue
-+ * as soon as they're available, so putting the signal on the shared queue
-+ * will be equivalent to sending it to one such thread.
-+ */
-+static inline int wants_signal(int sig, struct task_struct *p)
-+{
-+	if (sigismember(&p->blocked, sig))
-+		return 0;
-+	if (p->flags & PF_EXITING)
-+		return 0;
-+	if (sig == SIGKILL)
-+		return 1;
-+	if (task_is_stopped_or_traced(p))
-+		return 0;
-+	return task_curr(p) || !signal_pending(p);
-+}
-+
-+static void
-+__group_complete_signal(int sig, struct task_struct *p)
-+{
-+	struct signal_struct *signal = p->signal;
-+	struct task_struct *t;
-+
-+	/*
-+	 * Now find a thread we can wake up to take the signal off the queue.
-+	 *
-+	 * If the main thread wants the signal, it gets first crack.
-+	 * Probably the least surprising to the average bear.
-+	 */
-+	if (wants_signal(sig, p))
-+		t = p;
-+	else if (thread_group_empty(p))
-+		/*
-+		 * There is just one thread and it does not need to be woken.
-+		 * It will dequeue unblocked signals before it runs again.
-+		 */
-+		return;
-+	else {
-+		/*
-+		 * Otherwise try to find a suitable thread.
-+		 */
-+		t = signal->curr_target;
-+		while (!wants_signal(sig, t)) {
-+			t = next_thread(t);
-+			if (t == signal->curr_target)
-+				/*
-+				 * No thread needs to be woken.
-+				 * Any eligible threads will see
-+				 * the signal in the queue soon.
-+				 */
-+				return;
-+		}
-+		signal->curr_target = t;
-+	}
-+
-+	/*
-+	 * Found a killable thread.  If the signal will be fatal,
-+	 * then start taking the whole group down immediately.
-+	 */
-+	if (sig_fatal(p, sig) && !(signal->flags & SIGNAL_GROUP_EXIT) &&
-+	    !sigismember(&t->real_blocked, sig) &&
-+	    (sig == SIGKILL || !(t->ptrace & PT_PTRACED))) {
-+		/*
-+		 * This signal will be fatal to the whole group.
-+		 */
-+		if (!sig_kernel_coredump(sig)) {
-+			/*
-+			 * Start a group exit and wake everybody up.
-+			 * This way we don't have other threads
-+			 * running and doing things after a slower
-+			 * thread has the fatal signal pending.
-+			 */
-+			signal->flags = SIGNAL_GROUP_EXIT;
-+			signal->group_exit_code = sig;
-+			signal->group_stop_count = 0;
-+			t = p;
-+			do {
-+				sigaddset(&t->pending.signal, SIGKILL);
-+				signal_wake_up(t, 1);
-+			} while_each_thread(p, t);
-+			return;
-+		}
-+	}
-+
-+	/*
-+	 * The signal is already in the shared-pending queue.
-+	 * Tell the chosen thread to wake up and dequeue it.
-+	 */
-+	signal_wake_up(t, sig == SIGKILL);
-+	return;
-+}
-+
- static inline int legacy_queue(struct sigpending *signals, int sig)
- {
- 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
-@@ -817,102 +913,6 @@ force_sig_specific(int sig, struct task_
- 	force_sig_info(sig, SEND_SIG_FORCED, t);
- }
- 
--/*
-- * Test if P wants to take SIG.  After we've checked all threads with this,
-- * it's equivalent to finding no threads not blocking SIG.  Any threads not
-- * blocking SIG were ruled out because they are not running and already
-- * have pending signals.  Such threads will dequeue from the shared queue
-- * as soon as they're available, so putting the signal on the shared queue
-- * will be equivalent to sending it to one such thread.
-- */
--static inline int wants_signal(int sig, struct task_struct *p)
--{
--	if (sigismember(&p->blocked, sig))
--		return 0;
--	if (p->flags & PF_EXITING)
--		return 0;
--	if (sig == SIGKILL)
+-	if (sig_ignored(t, sig))
 -		return 1;
--	if (task_is_stopped_or_traced(p))
--		return 0;
--	return task_curr(p) || !signal_pending(p);
--}
 -
--static void
--__group_complete_signal(int sig, struct task_struct *p)
--{
--	struct signal_struct *signal = p->signal;
--	struct task_struct *t;
+ 	signalfd_notify(t, sig);
+ 	pending = group ? &t->signal->shared_pending : &t->pending;
+ 	list_add_tail(&q->list, &pending->list);
+ 	sigaddset(&pending->signal, sig);
+ 	complete_signal(sig, t, group);
 -
--	/*
--	 * Now find a thread we can wake up to take the signal off the queue.
--	 *
--	 * If the main thread wants the signal, it gets first crack.
--	 * Probably the least surprising to the average bear.
--	 */
--	if (wants_signal(sig, p))
--		t = p;
--	else if (thread_group_empty(p))
--		/*
--		 * There is just one thread and it does not need to be woken.
--		 * It will dequeue unblocked signals before it runs again.
--		 */
--		return;
--	else {
--		/*
--		 * Otherwise try to find a suitable thread.
--		 */
--		t = signal->curr_target;
--		while (!wants_signal(sig, t)) {
--			t = next_thread(t);
--			if (t == signal->curr_target)
--				/*
--				 * No thread needs to be woken.
--				 * Any eligible threads will see
--				 * the signal in the queue soon.
--				 */
--				return;
--		}
--		signal->curr_target = t;
--	}
--
--	/*
--	 * Found a killable thread.  If the signal will be fatal,
--	 * then start taking the whole group down immediately.
--	 */
--	if (sig_fatal(p, sig) && !(signal->flags & SIGNAL_GROUP_EXIT) &&
--	    !sigismember(&t->real_blocked, sig) &&
--	    (sig == SIGKILL || !(t->ptrace & PT_PTRACED))) {
--		/*
--		 * This signal will be fatal to the whole group.
--		 */
--		if (!sig_kernel_coredump(sig)) {
--			/*
--			 * Start a group exit and wake everybody up.
--			 * This way we don't have other threads
--			 * running and doing things after a slower
--			 * thread has the fatal signal pending.
--			 */
--			signal->flags = SIGNAL_GROUP_EXIT;
--			signal->group_exit_code = sig;
--			signal->group_stop_count = 0;
--			t = p;
--			do {
--				sigaddset(&t->pending.signal, SIGKILL);
--				signal_wake_up(t, 1);
--			} while_each_thread(p, t);
--			return;
--		}
--	}
--
--	/*
--	 * The signal is already in the shared-pending queue.
--	 * Tell the chosen thread to wake up and dequeue it.
--	 */
--	signal_wake_up(t, sig == SIGKILL);
--	return;
--}
--
- int
- __group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+-	return 0;
++out:
++	unlock_task_sighand(t, &flags);
++ret:
++	return ret;
+ }
+ 
+ int send_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
  {
+-	unsigned long flags;
+-	int ret = -1;
+-
+-	/*
+-	 * The rcu based delayed sighand destroy makes it possible to
+-	 * run this without tasklist lock held. The task struct itself
+-	 * cannot go away as create_timer did get_task_struct().
+-	 *
+-	 * We return -1, when the task is marked exiting, so
+-	 * posix_timer_event can redirect it to the group leader
+-	 */
+-	if (!likely(lock_task_sighand(p, &flags)))
+-		goto out_err;
+-
+-	ret = do_send_sigqueue(sig, q, p, 0);
+-
+-	unlock_task_sighand(p, &flags);
+-out_err:
+-	return ret;
++	return do_send_sigqueue(q, p, 0);
+ }
+ 
+ int
+ send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
+ {
+-	unsigned long flags;
+-	int ret;
+-
+-	/* Since it_lock is held, p->sighand cannot be NULL. */
+-	spin_lock_irqsave(&p->sighand->siglock, flags);
+-
+-	ret = do_send_sigqueue(sig, q, p, 1);
+-
+-	spin_unlock_irqrestore(&p->sighand->siglock, flags);
+-
+-	return ret;
++	return do_send_sigqueue(q, p, 1);
+ }
+ 
+ /*
 
