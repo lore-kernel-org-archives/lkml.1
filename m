@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYCHQNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYCHQeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYCHQNk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 11:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYCHQNa
+	id S1754725AbYCHQeu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 11:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYCHQel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 11:13:30 -0500
-Received: from saeurebad.de ([85.214.36.134]:37221 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbYCHQNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 11:13:30 -0500
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] add time_now_after and other macros which compare with jiffies
-References: <200803080735.06984.hidave.darkstar@gmail.com>
-Date: Sat, 08 Mar 2008 17:12:00 +0100
-In-Reply-To: <200803080735.06984.hidave.darkstar@gmail.com> (Dave Young's
-	message of "Sat, 8 Mar 2008 07:35:06 +0800")
-Message-ID: <877igd6vqn.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sat, 8 Mar 2008 11:34:41 -0500
+Received: from [212.12.190.88] ([212.12.190.88]:34715 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752560AbYCHQel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 11:34:41 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
+Date: Sat, 8 Mar 2008 19:34:03 +0300
+User-Agent: KMail/1.5
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200803081710.24137.a1426z@gawab.com> <alpine.DEB.1.00.0803081522240.7522@sheep.housecafe.de>
+In-Reply-To: <alpine.DEB.1.00.0803081522240.7522@sheep.housecafe.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803081934.03331.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave, Andrew and all
+Christian Kujau wrote:
+> On Sat, 8 Mar 2008, Al Boldi wrote:
+> > Nice try, but this only works on the surface.  Try remounting root to see
+> > what I mean.
+>
+> Are you suggesting that hpa's init= thingy doesn't support remounting
+> root?
 
-Dave Young <hidave.darkstar@gmail.com> writes:
+Exactly.
 
-> +/* time_now_after(a) return true if now (jiffies) is after a */
-> +#define time_now_after(a) time_after(jiffies, a)
-> +
-> +/* time_now_before(a) return true if now (jiffies) is before a */
-> +#define time_now_before(a) time_before(jiffies, a)
-> +
-> +/* time_now_after_eq(a) return true if now (jiffies) is after or equal to a */
-> +#define time_now_after_eq(a) time_after_eq(jiffies, a)
-> +
-> +/* time_now_before_eq(a) return true if now (jiffies) is before or equal to a */
-> +#define time_now_before_eq(a) time_before_eq(jiffies, a)
+> If so, it'd have to be mentioned in kernel-parameters.txt as well.
+>
+> > Now, for a patch that actually does what we want, try this:
+> > [PATCH][retry-2] init: Introduce rootdir bootparm to select which dir
+> > to sys_chroot
+>
+> I didn't intend to introduce another bootparam, because of -ENOSKILL.
+> But somewhere in this thread is a patch for the chroot= bootparam, I
+> have not tested it though...
 
-How about even more obvious names like time_is_past(), time_is_future(),
-...?
+Sure,  your doc effort is much appreciated, but neither the proposed patch nor 
+the init= trick works as advertised, due to some strange /dev/root 
+dependencies.
 
-Sorry, I missed v1.  Should have proposed that earlier.
+Now, the rootdir= patch works around this by binding the rootdir before 
+sys_chroot.
 
-	Hannes
+
+Thanks!
+
+--
+Al
+
