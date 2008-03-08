@@ -1,40 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYCHByn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbYCHCAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbYCHByn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 20:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYCHBye
+	id S1759356AbYCHCAP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 21:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYCHCAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 20:54:34 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:46974 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753453AbYCHBye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 20:54:34 -0500
-Date: Sat, 8 Mar 2008 02:54:26 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: David Chinner <dgc@sgi.com>
-cc: LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
-In-Reply-To: <alpine.DEB.1.00.0803080032020.7723@sheep.housecafe.de>
-Message-ID: <alpine.DEB.1.00.0803080251110.4325@sheep.housecafe.de>
-References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080307224040.GV155259@sgi.com> <alpine.DEB.1.00.0803080032020.7723@sheep.housecafe.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 7 Mar 2008 21:00:03 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:58481 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753357AbYCHCAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 21:00:00 -0500
+Date: Fri, 7 Mar 2008 17:59:38 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Jackson <pj@sgi.com>
+cc: David Rientjes <rientjes@google.com>, akpm@linux-foundation.org,
+       Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm 2/2] mempolicy: use default_policy mode instead of
+ MPOL_DEFAULT
+In-Reply-To: <20080307193543.6a55ff8d.pj@sgi.com>
+Message-ID: <Pine.LNX.4.64.0803071754250.12037@schroedinger.engr.sgi.com>
+References: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>
+ <alpine.DEB.1.00.0803071722170.4611@chino.kir.corp.google.com>
+ <20080307192845.0492c6f9.pj@sgi.com> <alpine.DEB.1.00.0803071730340.6241@chino.kir.corp.google.com>
+ <20080307193543.6a55ff8d.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Mar 2008, Christian Kujau wrote:
-> I have 7 processes in D state so far:
+And where is the patch to set the system (or cpuset....) default policy? 
+;-)
 
-FWIW, it's 100% reproducible with 2.6.25-rc3 too...sigh :-\
-So, the last working kernel for me is 2.6.24.1 - that's a lot of bisecting 
-and I fear that compile errors will invalidate the bisecting results again 
-or make it impossible at all....I'll try anyway....tomorrow...
+Note that the system default policy changes during bootup. Could that be 
+done with the default policy? We had some issues a while back with 
+processes spawned at boot inheriting the interleave policy. If they could 
+refer to default_policy instead then a change of default_policy would 
+switch all spawned processes to use MPOL_DEFAULT?
 
-C.
--- 
-BOFH excuse #285:
-
-Telecommunications is upgrading.
