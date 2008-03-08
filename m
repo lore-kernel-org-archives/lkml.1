@@ -1,111 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYCHApb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbYCHBGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759873AbYCHApb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 19:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYCHApU
+	id S1760861AbYCHBGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 20:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYCHBGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 19:45:20 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54418 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333AbYCHApT (ORCPT
+	Fri, 7 Mar 2008 20:06:42 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:10407 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753869AbYCHBGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 19:45:19 -0500
-Date: Sat, 8 Mar 2008 01:46:54 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [0/13] General DMA zone rework
-Message-ID: <20080308004654.GQ7365@one.firstfloor.org>
-References: <200803071007.493903088@firstfloor.org> <20080307175148.3a49d8d3@mandriva.com.br>
-Mime-Version: 1.0
+	Fri, 7 Mar 2008 20:06:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dj2LScI0b/73iVcoccGq2Y6owdQsq6MVHiwmtjExS5xSYhmX/Qa0TYnHSIkEazdMH7tC3vLr3vnuOgPHLPD2u124wBhFFg35kCrM9lJyiv9fz511nN5iF75F7Ti4oYBnBEYRrWnJ5K0I7sUDDUQTc0TmjuiKParHM8AHU9rTZGE=
+Message-ID: <47D1E696.5060308@gmail.com>
+Date: Sat, 08 Mar 2008 10:06:30 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: FUJITA Tomonori <tomof@acm.org>
+CC: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
+       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
+       efault@gmx.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
+   count
+References: <20080306134146A.fujita.tomonori@lab.ntt.co.jp>	<20080306134138.GF17940@kernel.dk>	<47D0873B.6090705@gmail.com> <20080308000718H.tomof@acm.org>
+In-Reply-To: <20080308000718H.tomof@acm.org>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307175148.3a49d8d3@mandriva.com.br>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 05:51:48PM -0300, Luiz Fernando N. Capitulino wrote:
-> Em Fri,  7 Mar 2008 10:07:10 +0100 (CET)
-> Andi Kleen <andi@firstfloor.org> escreveu:
+FUJITA Tomonori wrote:
+> On Fri, 07 Mar 2008 09:07:23 +0900
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> | I chose to implement a new "maskable memory" allocator to solve these
-> | problems. The existing page buddy allocator is not really suited for
-> | this because the data structures don't allow cheap allocation by physical 
-> | address boundary. 
+>> Jens Axboe wrote:
+>>>>> If we want the use paradigm shared between block and driver, then I
+>>>>> think the best approach is to keep all the bios the same (so not adjust
+>>>>> for padding), but do adjust in the blk_rq_map_sg().  That way we have
+>>>>> the padding and draining unwind information by comparing with the bio.
+>>>> Adjusting only sg in blk_rq_map_sg (like drain) looks much
+>>>> better. This works with libata for me.
+>>> Looks like a much better solution to me. Anyone have any valid
+>>> objections against moving the padding to the sg map time?
+>> Not necessarily objections but some concerns.
+>>
+>> * As completion is done in bio terms, it makes completion from LLDs a
+>> bit cumbersome, but this is unavoidable if we break sum(bio) == sum(sg).
 > 
->  These patches are supposed to work, I think?
+> What do you mean? How does sub(bio) affect LLDs?
 
-Yes they work fine here and survived quite some stress testing.
-But of course I only have limited configurations.
+LLDs which loop over sg's trying to complete rq incrementally will see
+rq going away sooner than it expected.
 
+>> * I've been wondering why we are not using sg chain / table or whatever
+>> directly in bios and maybe rq_map_sg can go away in future.
 > 
->  I've tried to give them a try but got some problems. First, the
-> simple test case seems to fail miserably:
+> You mean that LLDs use bios directly? For me, sg and bio have very
+> different objectives and it's a clean layer separation.
 
-Hmm I guess you got a pretty filled up 16MB area already.
-Do you have a full log? It just couldn't allocate some memory
-for the 24bit mask, but that is likely because it just ran out of 
-memory.
+Actually the other way, block layer use sg instead of bio_vec in bio.
+Layer separation doesn't necessarily require copying about the same
+information to differently formatted data structure.  I'm not sure it
+will be a clean win tho.  Requests hang longer in scheduler queue and
+and bio_vec is smaller and scatterlist.
 
-I suppose it will work if you cut down the allocations in the 
-test case a bit, e.g. decrease NUMALLOC to 10 and perhaps MAX_LEN to
-5*PAGE_SIZE. Did that in my copy.
+The thing is that, to me, blk_rq_map_sg() doesn't really look necessary,
+it can be done just as well when the request is fetched from the queue
+by block driver. (continued below...)
 
+>> How about separating out the padding / draining adjustment into a
+>> separate interface?  Say, blk_rq_apply_extra() and blk_rq_undo_extra()
+>> and make it the responsibility of the LLD which requested
+>> padding/draining to apply and undo the adjustments?  It can undo the
+>> adjustments when it returns the the request to its upper layer.  If rq
+>> completion is handled by upper layer, it will do the right thing.  If rq
+>> completion is handled by LLD, it can see the bio it wants to see.
 > 
-> """
-> testing mask alloc upto 24 bits
-> gpm1 3 mask 3fffff size 20440 total 62KB failed
-> gpm1 4 mask 3fffff size 24369 total 62KB failed
-> gpm1 6 mask 3fffff size 15255 total 64KB failed
-> gpm1 7 mask 3fffff size 12676 total 64KB failed
-> gpm1 8 mask 3fffff size 23917 total 64KB failed
-> gpm1 9 mask 3fffff size 11682 total 64KB failed
-> gpm1 10 mask 3fffff size 23091 total 64KB failed
-> gpm1 11 mask 3fffff size 16880 total 64KB failed
-> gpm1 12 mask 3fffff size 17257 total 64KB failed
-> gpm1 13 mask 3fffff size 8686 total 64KB failed
-> gpm1 14 mask 3fffff size 9871 total 64KB failed
-> gpm1 15 mask 3fffff size 19740 total 64KB failed
-> gpm1 16 mask 3fffff size 11557 total 64KB failed
-> gpm1 18 mask 3fffff size 23723 total 67KB failed
-> gpm1 19 mask 3fffff size 16136 total 67KB failed
-> gpm2 6 mask 3fffff size 4471 failed
-> gpm2 7 mask 3fffff size 16868 failed
-> gpm2 8 mask 3fffff size 22093 failed
-> gpm2 9 mask 3fffff size 17666 failed
-> gpm2 11 mask 3fffff size 14416 failed
-> gpm2 12 mask 3fffff size 10825 failed
-> gpm2 13 mask 3fffff size 3918 failed
-> gpm2 14 mask 3fffff size 6255 failed
-> gpm2 15 mask 3fffff size 2428 failed
-> gpm2 16 mask 3fffff size 517 failed
-> gpm2 18 mask 3fffff size 12890 failed
-> gpm2 19 mask 3fffff size 3211 failed
-> verify & free
-> mask fffff
-> mask 1fffff
-> mask 3fffff
-> mask 7fffff
-> mask ffffff
-> done
-> """
-> 
->  Then boot up goes on and while init is running I get this:
+> If possible, I'd like to avoid creating APIs for them. I think that
+> the current approach is much better than such APIs.
 
-Ah, I see the problem. Your sound driver allocates a dma area < 16 bytes.
-I had added a BUG_ON for that to catch some mistakes (of passing 
-order instead of size), but it triggers here incorrectly. 
+And, so, I'm not too sure whether putting more mechanisms into it is a
+good idea.
 
-Didn't see that in my testing. 
+Thanks.
 
-I put up an updated patchkit on ftp://firstfloor.org/pub/ak/mask/patches/
-It also has some other fixes.
-
-Can you retest with that please?
-
-Thanks for testing.
-
--Andi
+-- 
+tejun
