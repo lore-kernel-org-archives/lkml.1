@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYCHLzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYCHL47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYCHLzc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 06:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYCHLzZ
+	id S1755191AbYCHL47 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 06:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYCHL4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 06:55:25 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47382 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbYCHLzZ (ORCPT
+	Sat, 8 Mar 2008 06:56:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49561
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752833AbYCHL4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 06:55:25 -0500
-Date: Sat, 8 Mar 2008 12:57:03 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [0/13] General DMA zone rework
-Message-ID: <20080308115703.GD27074@one.firstfloor.org>
-References: <200803071007.493903088@firstfloor.org> <Pine.LNX.4.64.0803071841020.12220@schroedinger.engr.sgi.com>
+	Sat, 8 Mar 2008 06:56:46 -0500
+Date: Sat, 08 Mar 2008 03:56:47 -0800 (PST)
+Message-Id: <20080308.035647.193709286.davem@davemloft.net>
+To: komurojun-mbn@nifty.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [BUG kernel 2.6.25-rc3 IPV6] ping6 -I eth0 ff02::1 causes
+ system hang.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080308134410.69d07a2d.komurojun-mbn@nifty.com>
+References: <20071014073658.d4352b8c.komurojun@nifty.com>
+	<20080302210716.69727582.komurojun-mbn@nifty.com>
+	<20080308134410.69d07a2d.komurojun-mbn@nifty.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803071841020.12220@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 06:42:21PM -0800, Christoph Lameter wrote:
-> On Fri, 7 Mar 2008, Andi Kleen wrote:
-> 
-> > The longer term goal is to convert all GFP_DMA allocations
-> > to always specify the correct mask and then eventually remove
-> > GFP_DMA.
-> > 
-> > Especially I hope kmalloc/kmem_cache_alloc GFP_DMA can be
-> > removed soon. I have some patches to eliminate those users.
-> > Then slab wouldn't need to maintain DMA caches anymore.
-> 
-> That would be greatly appreciated. Thanks for doing this.
+From: Komuro <komurojun-mbn@nifty.com>
+Date: Sat, 8 Mar 2008 13:44:10 +0900
 
-I'm afraid it would not help you directly because you would still need 
-to maintain that code for s390 (seems to be a heavy GFP_DMA user)
-and probably some other architectures (unless you can get these
-maintainers to get rid of GFP_DMA too) With my plan it can be just ifdefed
-and the ifdef not enabled on x86.
+> The bad commit is below.
+> 
+> 69cc64d8d92bf852f933e90c888dfff083bd4fc9 is first bad commit
+> commit 69cc64d8d92bf852f933e90c888dfff083bd4fc9
+> Author: David S. Miller <davem@davemloft.net>
+> Date:   Mon Feb 11 21:45:44 2008 -0800
+> 
+>     [NDISC]: Fix race in generic address resolution
+> 
+>     Frank Blaschka provided the bug report and the initial suggested fix
+>     for this bug.  He also validated this version of this fix.
 
--Andi
+This was a known bad commit and got reverted more than a week ago.
