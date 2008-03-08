@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759061AbYCHGNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYCHGfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759061AbYCHGNX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 01:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYCHGMj
+	id S1756955AbYCHGfq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 01:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYCHGfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 01:12:39 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57493 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbYCHGM2 (ORCPT
+	Sat, 8 Mar 2008 01:35:37 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:26864 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbYCHGfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 01:12:28 -0500
-Date: Fri, 7 Mar 2008 22:04:10 -0800
-From: Greg KH <greg@kroah.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080308060410.GC13434@kroah.com>
-References: <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <20080307173542.GA2552@sergelap.austin.ibm.com> <20080307181431.GA4915@kroah.com> <20080307185052.GA4428@sergelap.austin.ibm.com>
+	Sat, 8 Mar 2008 01:35:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bDVE1F8UMMpvNx/pMcj+4inY1lmgbtjy7thaYPWuMEpkoiqmXvcY2Y6Z0gUPmOTiez7spuoJUnrQsv+iX7sH8qTP8FDvIK0bXG/q77xmWFsZ6uW57PKqgnnEbuS0YHbFcoblaXYLpA9q1/0eyif+kVBqhfr78u4SRRoazLpyanw=
+Message-ID: <86802c440803072235r3ca6013cufae3ed62cd67e60f@mail.gmail.com>
+Date: Fri, 7 Mar 2008 22:35:35 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH] [8/13] Enable the mask allocator for x86
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0803071832500.12220@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080307185052.GA4428@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <200803071007.493903088@firstfloor.org>
+	 <20080307090718.A609E1B419C@basil.firstfloor.org>
+	 <Pine.LNX.4.64.0803071832500.12220@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 12:50:52PM -0600, Serge E. Hallyn wrote:
-> Quoting Greg KH (greg@kroah.com):
-> > On Fri, Mar 07, 2008 at 11:35:42AM -0600, Serge E. Hallyn wrote:
-> > > > Do you really want to run other LSMs within a containerd kernel?  Is
-> > > > that a requirement?  It would seem to run counter to the main goal of
-> > > > containers to me.
-> > > 
-> > > Until user namespaces are complete, selinux seems the only good solution
-> > > to offer isolation.
-> > 
-> > Great, use that instead :)
-> 
-> That can't work as is since you can't specify major:minor in policy.
+On Fri, Mar 7, 2008 at 6:37 PM, Christoph Lameter <clameter@sgi.com> wrote:
+> On Fri, 7 Mar 2008, Andi Kleen wrote:
+>
+>  > - Disable old ZONE_DMA
+>  > No fixed size ZONE_DMA now anymore. All existing users of __GFP_DMA rely
+>  > on the compat call to the maskable allocator in alloc/free_pages
+>  > - Call maskable allocator initialization functions at boot
+>  > - Add TRAD_DMA_MASK for the compat functions
+>  > - Remove dma_reserve call
+>
+>  This looks okay for the disabling part. But note that there are various
+>  uses of MAX_DMA_ADDRESS (sparsemem, bootmem allocator) that are currently
+>  suboptimal because they set a boundary at 16MB for allocation of
+>  potentially large operating system structures. That boundary continues to
+>  exist despite the removal of ZONE_DMA?
+>
+>  It would be better to remove ZONE_DMA32 instead and enlarge ZONE_DMA so
+>  that it can take over the role of ZONE_DMA. Set the boundary for
+>  MAX_DMA_ADDRESS to the boundary for ZONE_DMA32. Then the
+>  allocations for sparse and bootmem will be allocated above 4GB which
+>  leaves lots of the lower space available for 32 bit DMA capable devices.
 
-Your LSM can not, or the LSM interface does not allow this to happen?
+good. i like the idea...
 
-> So all we could do again is simply refuse all mknod, which we can
-> already do with per-process capability bounding sets.
+How about system with only 4G or less?
 
-I thought we passed that info down to the LSM module, can't you do your
-selection at that point in time?
-
-And then, just mediate open() like always, right?
-
-thanks,
-
-greg k-h
+YH
