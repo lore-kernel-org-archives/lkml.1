@@ -1,93 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYCHFYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYCHFeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbYCHFYq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 00:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYCHFYg
+	id S1754022AbYCHFeZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 00:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYCHFeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 00:24:36 -0500
-Received: from userg501.nifty.com ([202.248.238.81]:48650 "EHLO
-	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYCHFYf (ORCPT
+	Sat, 8 Mar 2008 00:34:16 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33716 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbYCHFeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 00:24:35 -0500
-DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=iqfOd7RDcTiLcQ+MV7G+1uR0GTlfKdjNYgnLLZeU3LcqsMV04w5jH8x/ndSFQBech
-	2/LR1iHcUKGGRbVjO0/cA==
-X-Nifty-SrcIP: [219.116.17.165]
-Date: Sat, 8 Mar 2008 14:20:50 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Komuro <komurojun-mbn@nifty.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yoshfuji@linux-ipv6.org
-Subject: Re: [BUG  kernel 2.6.25-rc3  IPV6]  ping6 -I eth0 ff02::1 causes
- system hang.
-Message-Id: <20080308142050.0af62ced.komurojun-mbn@nifty.com>
-In-Reply-To: <20080308134410.69d07a2d.komurojun-mbn@nifty.com>
-References: <20071006132601.f944f461.komurojun@nifty.com>
-	<20071014073658.d4352b8c.komurojun@nifty.com>
-	<20080302210716.69727582.komurojun-mbn@nifty.com>
-	<20080308134410.69d07a2d.komurojun-mbn@nifty.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 8 Mar 2008 00:34:15 -0500
+Date: Sat, 08 Mar 2008 14:33:45 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Fix memory hotplug and bouncing in block layer
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
+In-Reply-To: <20080306204124.GA17154@basil.nowhere.org>
+References: <20080306204124.GA17154@basil.nowhere.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080308141539.0498.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+Oh, thanks for your fixing.
 
-sorry, this problem exist on 2.6.25-rc2.
-but it seems to be fixed on 2.6.25-rc3.
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
 
-Best Regards
-Komuro
-
-> Hi,
+> Fix memory hotplug and bouncing in block layer
 > 
-> >Hmm, I've never seen this on our testlab.  Anyone else?
+> Only noticed this while hacking something else, no test case.
 > 
-> Could you send 20(twenty) or more ping packets?
+> blk_max_low_pfn is initialized once at bootup by the block layer
+> from max_low_pfn. But max_low_pfn is not necessarily constant
+> over the runtime of the system when you consider memory hotplug.
+> What could happen if that someone adds memory later the block
+> layer wouldn't get updated and then start bouncing memory unnecessarily.
 > 
+> Also on 64bit blk_max_low_pfn actually isn't needed because
+> it just disables bouncing essentially and there is no highmem.
+> And nobody can pass pfns > max_low_pfn to the block layer, 
+> because those wouldn't have a struct page and I suspect
+> block layer wouldn't be very happy without that.
 > 
-> >It would be great if you have chance to bisect it...On Sun, 2 Mar 2008 21:07:16 +0900
+> So set BLK_BOUNCE_HIGH to infinity (-1ULL) on 64bit. That
+> avoids the problem of having to update it on memory hotadd.
 > 
-> The bad commit is below.
+> On 32bit I kept the same behaviour because at least on i386
+> memory hotadd only adds HIGHMEM, never lowmem.
 > 
-> 69cc64d8d92bf852f933e90c888dfff083bd4fc9 is first bad commit
-> commit 69cc64d8d92bf852f933e90c888dfff083bd4fc9
-> Author: David S. Miller <davem@davemloft.net>
-> Date:   Mon Feb 11 21:45:44 2008 -0800
+> BLK_BOUNCE_ANY is always set to infinity on both 32 and 64bit.
 > 
->     [NDISC]: Fix race in generic address resolution
+> Signed-off-by: Andi Kleen <ak@suse.de>
 > 
->     Frank Blaschka provided the bug report and the initial suggested fix
->     for this bug.  He also validated this version of this fix.
+> ---
+>  include/linux/blkdev.h |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> 
-> 
-> 
-> > Hi,
-> > 
-> > On kernel 2.6.25-rc3, IPV6 multicast ping causes system hang
-> > after sending several multicast ping packet.
-> > 
-> > >ping6 -I eth0 ff02::1 
-> > 
-> > This problem does not happen on kernel 2.6.24.
-> > (does not depend on NIC)
-> 
->  
-> Best Regards
-> Komuro
->  
->  
-> 
-
+> Index: linux/include/linux/blkdev.h
+> ===================================================================
+> --- linux.orig/include/linux/blkdev.h
+> +++ linux/include/linux/blkdev.h
+> @@ -532,8 +532,13 @@ extern unsigned long blk_max_low_pfn, bl
+>   * BLK_BOUNCE_ANY	: don't bounce anything
+>   * BLK_BOUNCE_ISA	: bounce pages above ISA DMA boundary
+>   */
+> +
+> +#if BITS_PER_LONG == 32
+>  #define BLK_BOUNCE_HIGH		((u64)blk_max_low_pfn << PAGE_SHIFT)
+> -#define BLK_BOUNCE_ANY		((u64)blk_max_pfn << PAGE_SHIFT)
+> +#else
+> +#define BLK_BOUNCE_HIGH		-1ULL
+> +#endif
+> +#define BLK_BOUNCE_ANY		(-1ULL)
+>  #define BLK_BOUNCE_ISA		(ISA_DMA_THRESHOLD)
 
 -- 
-Komuro <komurojun-mbn@nifty.com>
+Yasunori Goto 
+
+
