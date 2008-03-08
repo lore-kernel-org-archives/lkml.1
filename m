@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYCHDSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYCHDm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbYCHDSN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 22:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYCHDR7
+	id S1757986AbYCHDm6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 22:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYCHDmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 22:17:59 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:30175 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755411AbYCHDRz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 22:17:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=yGkZSq89Qbqn8lixHB/Q2IXvZa5rB+aC+Qt1XRXww49ZzmYj5bb2TqFloYoiTjCSUII7qT0rmKqqpaVSvZNIfgNrGfqgtOEOTLE0ON1YoA7ki9ZARk53nGkNJ+FltylzMfjFXtwai6v+yAiBEnJUk3dDc1HIH3nc1HuDE7libUg=
-Message-ID: <86802c440803071917s3e60ae97r201d1854972c97e8@mail.gmail.com>
-Date: Fri, 7 Mar 2008 19:17:55 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86_64: sort address_markers for dump_pagetables
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_28213_26352384.1204946275646"
+	Fri, 7 Mar 2008 22:42:46 -0500
+Received: from mga03.intel.com ([143.182.124.21]:48845 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751212AbYCHDmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 22:42:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,465,1199692800"; 
+   d="scan'208";a="216207187"
+Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
+From: Dan Williams <dan.j.williams@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Milan Broz <mbroz@redhat.com>,
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       Alasdair G Kergon <agk@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dm-crypt@saout.de
+In-Reply-To: <20080308012438.GA24236@gondor.apana.org.au>
+References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com>
+	 <47BC0DA9.1030607@redhat.com> <20080220172449.GD27726@gondor.apana.org.au>
+	 <47BC67CE.9070407@redhat.com> <20080220175819.GA28246@gondor.apana.org.au>
+	 <20080222123423.GA12678@gondor.apana.org.au>
+	 <e9c3a7c20803071014s6388b7b2l12f217bfdff5caa3@mail.gmail.com>
+	 <20080308012438.GA24236@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Fri, 07 Mar 2008 20:42:44 -0700
+Message-Id: <1204947764.27096.4.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_28213_26352384.1204946275646
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 2008-03-07 at 18:24 -0700, Herbert Xu wrote:
+> On Fri, Mar 07, 2008 at 11:14:07AM -0700, Dan Williams wrote:
+> >
+> > I believe this is in mainline as 76fc60a2 "[CRYPTO] skcipher: Move
+> > chainiv/seqiv into crypto_blkcipher module".  With a iop13xx_defconfig
+> >  I get:
+> >
+> > `chainiv_module_exit' referenced in section `.init.text' of
+> > crypto/built-in.o: defined in discarded section `.exit.text' of
+> > crypto/built-in.o
+> > `chainiv_module_exit' referenced in section `__ksymtab_gpl' of
+> > crypto/built-in.o: defined in discarded section `.exit.text' of
+> > crypto/built-in.o
+> > `eseqiv_module_exit' referenced in section `__ksymtab_gpl' of
+> > crypto/built-in.o: defined in discarded section `.exit.text' of
+> > crypto/built-in.o
+> > make: *** [.tmp_vmlinux1] Error 1
+> 
+> Does this help?
+> 
+Yup, and doing the same for eseqiv_module_exit completes the fix.
+
+  LD      arch/arm/boot/compressed/vmlinux
+  OBJCOPY arch/arm/boot/zImage
+  Kernel: arch/arm/boot/zImage is ready
+
+Thanks,
+Dan
 
 
-
-------=_Part_28213_26352384.1204946275646
-Content-Type: text/x-patch; name=x86_sort_dump_pagetables.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdjm7jk60
-Content-Disposition: attachment; filename=x86_sort_dump_pagetables.patch
-
-W1BBVENIXSB4ODZfNjQ6IHNvcnQgYWRkcmVzc19tYXJrZXJzIGZvciBkdW1wX3BhZ2V0YWJsZXMK
-Cm90aGVyd2lzZSBWbWVtbWFwIGFuZCBIaWdoIEtlcm5lbCBNYXBwaW5nIHN0cmluZyBpcyBub3Qg
-c2hvd2luZyB1cC4KClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdtYWls
-LmNvbT4KCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9tbS9kdW1wX3BhZ2V0YWJsZXMuYyBiL2FyY2gv
-eDg2L21tL2R1bXBfcGFnZXRhYmxlcy5jCmluZGV4IDZkODQwMzMuLjY3OTFiODMgMTAwNjQ0Ci0t
-LSBhL2FyY2gveDg2L21tL2R1bXBfcGFnZXRhYmxlcy5jCisrKyBiL2FyY2gveDg2L21tL2R1bXBf
-cGFnZXRhYmxlcy5jCkBAIC00NCwxMCArNDQsMTAgQEAgc3RhdGljIHN0cnVjdCBhZGRyX21hcmtl
-ciBhZGRyZXNzX21hcmtlcnNbXSA9IHsKIAl7IDB4ODAwMDAwMDAwMDAwMDAwMFVMLCAiS2VybmVs
-IFNwYWNlIiB9LAogCXsgMHhmZmZmODEwMDAwMDAwMDAwVUwsICJMb3cgS2VybmVsIE1hcHBpbmci
-IH0sCiAJeyBWTUFMTE9DX1NUQVJULCAgICAgICAgInZtYWxsb2MoKSBBcmVhIiB9LAotCXsgTU9E
-VUxFU19WQUREUiwgICAgICAgICJNb2R1bGVzIiB9LAotCXsgTU9EVUxFU19FTkQsICAgICAgICAg
-ICJFbmQgTW9kdWxlcyIgfSwKIAl7IFZNRU1NQVBfU1RBUlQsICAgICAgICAiVm1lbW1hcCIgfSwK
-IAl7IF9fU1RBUlRfS0VSTkVMX21hcCwgICAiSGlnaCBLZXJuZWwgTWFwcGluZyIgfSwKKwl7IE1P
-RFVMRVNfVkFERFIsICAgICAgICAiTW9kdWxlcyIgfSwKKwl7IE1PRFVMRVNfRU5ELCAgICAgICAg
-ICAiRW5kIE1vZHVsZXMiIH0sCiAjZWxzZQogCXsgUEFHRV9PRkZTRVQsICAgICAgICAgICJLZXJu
-ZWwgTWFwcGluZyIgfSwKIAl7IDAvKiBWTUFMTE9DX1NUQVJUICovLCAidm1hbGxvYygpIEFyZWEi
-IH0sCg==
-------=_Part_28213_26352384.1204946275646--
