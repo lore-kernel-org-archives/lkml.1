@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752830AbYCHWUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYCHWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752830AbYCHWUn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 17:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYCHWUf
+	id S1752772AbYCHWrS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 17:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYCHWrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 17:20:35 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:19541 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbYCHWUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 17:20:34 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=hTEiSwX766d1XYrxgI/CqHdkuO/BzNJfvHygD3PCh3zzKeWkzQSoJizeJETqQrL5r
-	WXpaQ99a+uxdBoH5qx1zQ==
-Date: Sat, 8 Mar 2008 14:20:14 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, clameter@sgi.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm 2/2] mempolicy: use default_policy mode instead of
- MPOL_DEFAULT
-In-Reply-To: <1205003580.4918.21.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0803081414460.12095@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>  <alpine.DEB.1.00.0803071722170.4611@chino.kir.corp.google.com>  <20080307192845.0492c6f9.pj@sgi.com>  <alpine.DEB.1.00.0803071730340.6241@chino.kir.corp.google.com>
- <1205003580.4918.21.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sat, 8 Mar 2008 17:47:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:52671 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751805AbYCHWrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 17:47:08 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX183a/o/0Y034zsgkxhck8/aFTGvEED9NzNWX/J/km
+	m4/HC/43UhNNDL
+Date: Sat, 8 Mar 2008 23:47:09 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Tejun Heo <htejun@gmail.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: Re: Unknown SATA PIIX PCI device ID 0x29b6
+In-Reply-To: <47D0C9E6.8090301@gmail.com>
+Message-ID: <Pine.LNX.4.64.0803082345000.6749@axis700.grange>
+References: <Pine.LNX.4.64.0802282306190.10087@axis700.grange>
+ <20080228225603.2764bfd1@core> <Pine.LNX.4.64.0802290010320.10498@axis700.grange>
+ <47CFADDF.20200@gmail.com> <Pine.LNX.4.64.0803061248070.5670@axis700.grange>
+ <47D0C9E6.8090301@gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Mar 2008, Lee Schermerhorn wrote:
+On Fri, 7 Mar 2008, Tejun Heo wrote:
 
-> I have a patch queued up, waiting for things to settle down in
-> mempolicy.c, to replace the policy/mode in default_policy with
-> MPOL_PREFERRED with preferred_node = -1.  Then, we can remove all of the
-> MPOL_DEFAULT cases out of the switches in the allocation paths and
-> "clean up" the documentation, including man pages.  MPOL_DEFAULT becomes
-> simply an API mechanism to request fall back to the surrounding policy
-> scope which, to my mind, is what "default policy" means.
+> > Looks like almost a minute to me? On another occurence I see about 1.5 
+> > minutes, then "port is slow to respond, please be patient (Status 0x80)" 
+> > has been repeated 3 times. On cold-plug also 3 times, I think, about the 
+> > same time then (time is not updated in the log).
 > 
+> I see.  Does the attached patch make any difference?
 
-Ok, I'll await your patch that switches default_policy.policy to 
-MPOL_PREFERRED.
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4fbcce7..abebdcc 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -6712,6 +6712,7 @@ int sata_link_init_spd(struct ata_link *link)
+ 	spd = (scontrol >> 4) & 0xf;
+ 	if (spd)
+ 		link->hw_sata_spd_limit &= (1 << spd) - 1;
++	link->hw_sata_spd_limit = 1;
+ 
+ 	ata_force_spd_limit(link);
+ 
+Hm, this would force 1.5Gbps on all ports and devices, right? Cannot I 
+just boot with "libata.force=4:1.5Gbps"?
 
-Using MPOL_DEFAULT purely for falling back to the task or system-wide 
-policy, however, seems confusing.  The semantics seem to indicate that 
-MPOL_DEFAULT represents the system-wide default policy without any 
-preferred node or set of nodes to bind or interleave.  So if a VMA has a 
-policy of MPOL_DEFAULT then, to me, it seems like that indicates the 
-absence of a specific policy, not a mandate to fallback to the task 
-policy.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
