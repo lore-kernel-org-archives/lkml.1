@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbYCHKR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbYCHKZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbYCHKR5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 05:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYCHKRs
+	id S1753338AbYCHKZT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 05:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYCHKZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 05:17:48 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:39740 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbYCHKRr (ORCPT
+	Sat, 8 Mar 2008 05:25:07 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50218 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbYCHKZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 05:17:47 -0500
-Message-ID: <47D26836.4090403@abinetworks.biz>
-Date: Sat, 08 Mar 2008 11:19:34 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
+	Sat, 8 Mar 2008 05:25:06 -0500
+Message-ID: <47D26731.4000800@zytor.com>
+Date: Sat, 08 Mar 2008 11:15:13 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Process segfault causing sys resource block
+To: WANG Cong <xiyou.wangcong@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Antonino Daplas <adaplas@gmail.com>
+Subject: Re: [PATCH] x86: remove pointless comments
+References: <20080308.181506.04857887.xiyou.wangcong@gmail.com>
+In-Reply-To: <20080308.181506.04857887.xiyou.wangcong@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+WANG Cong wrote:
+> Since arch/i386 directory is non-existed yet, those comments are
+> pointless. Remove them all.
+> 
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
 
-I want to submit this case which in my understanding is quite abnormal. 
-I have found on a production server (2.6.20)
-three segfaulted apache child  that are marked as 'D'efunct.
-Stopping apache caused init to adopt them. But they dont respond (i 
-think because being segfaulted they're probably not in a good mood)
-and they (one of them) keep locked:
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-- TCP port 80 (Got open/freezed socket)
-- The nfs mount over which they read files
+One of the modules were by Antonino Daplas, who should be allowed to ACK 
+it too.
 
-Result: i have three 'defunct' processes that are basically locking main 
-system resources. Cant restart apache, cant restart NFS.
-Only solution (for me): rebooting (and thats what i did).
-
-Is there any other way to wipe these processes and/or freeing sys 
-resources without rebooting ?
-If not, wouldnt it be a good thing to avoid userspace crashes like this 
-to cause deadlocks/DOS ?
-
-Thanks for any help/opinion,
-
-Gianluca
-
-
+	-hpa
