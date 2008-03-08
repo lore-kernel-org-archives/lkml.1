@@ -1,33 +1,37 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759237AbYCGXpL (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 7 Mar 2008 18:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764695AbYCGXo1
+	id S1756739AbYCHRkc (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 8 Mar 2008 12:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYCHRkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 18:44:27 -0500
-Received: from qb-out-0506.google.com ([72.14.204.224]:47920 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764680AbYCGXo0 (ORCPT
+	Sat, 8 Mar 2008 12:40:21 -0500
+Received: from mailfilter3.ihug.co.nz ([203.109.136.3]:42942 "EHLO
+	mailfilter3.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbYCHRkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 18:44:26 -0500
-Message-ID: <492f29fb0803071544l6a2a624ejc968ca832d60de07@mail.gmail.com>
-Date: Sat, 8 Mar 2008 07:44:18 +0800
-From: "=?BIG5?B?p2Swtqex?=" <d82f8mb753z@gmail.com>
-To: linxx419@umn.edu
-Subject: =?BIG5?B?s9/Fd62rpGao/aq6pXjGV69UoUG307lMqNOs3a3y?=
+	Sat, 8 Mar 2008 12:40:19 -0500
+X-Greylist: delayed 583 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Mar 2008 12:40:18 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkF3AF5c0kfLbYkY/2dsb2JhbABDgVaILod+mF0
+X-IronPort-AV: E=Sophos;i="4.25,467,1199617200"; 
+   d="scan'208";a="76543848"
+Ironport-Content-Filter: send-to-smtp
+Ironport-OCF: send-to-smtp
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Date: Sat, 08 Mar 2008 13:44:29 +1300
+From: MR DAVID MARK <info@yahoo.es>
+To: info@yahoo.it
+Subject: ATM CARD
+Organization: MR DAVID MARK
+Reply-To: mrslinda.hill@hotmail.com
+Message-ID: <5dd7b05296f4e51fa21f65f5ec0d5622@ihug.co.nz>
+User-Agent: ihug Webmail/0.1b
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759237AbYCGXpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756739AbYCHRkc@vger.kernel.org>
 
-b2V6ejhFTFRTMnVXRHRqbWY0Tm1mT1FFUFYxVjI1Y2M5M0g5OVJFOG93bHhoCjQyNzA1MDk4MjMz
-Nzk0NDA0NjQ0NDQzMzU2MjA3MDI3Mzc0MTM1NTYwOTUwMDgKCgqn2qxPu7as/KzcoUG3UafkpEiy
-4aTRttw/Cgqz38V3raukZqj9qrqleMZXr1ShQbfTuUyo06zdrfIKCqfas8yz38V3suGk0aFCsNu6
-caFCrN25cbx2rVmnQcHZpKO/+cV3qu+o06fkp9qhSQoKv0Wxoaq6qV2x36FLtMGs36dBqrqo7KjT
-oUsKCr3QvLeltDA5NDE1MzAyMDgoqEMzMKztMqS4KQoKCk5MTGdFeEV5bTdCdG9RbzVzN3VPejF5
-MU1ZOEpYZVNhWnpYdzFiYWdKQmMzSQp4VUd2QXUyUWg4SmIzcldxM3lFektVbUpON1ZBVWgxZ2NM
-cmxEZGpvbndWNWYKRnIxeDBiTU9kWk1KNUtKQ0poakYwYVBOaTZjQUdRRlZ1M0phcm56UjF3QUFX
-Cnhmbng2Nnh6T3Q4VUdFbFhwa3NIMnphWFp5cTNaNGVWTm9PTGFSY2JweGVQaAo=
+
+-- 
+This is to officially inform you that(ATM Card Number;5438 4001 2345
+6789)has been accredited in your favor.Contact mrslinda.hill@hotmail.com
