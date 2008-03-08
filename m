@@ -1,93 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbYCHWNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbYCHWPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752645AbYCHWNO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 17:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYCHWM7
+	id S1753075AbYCHWPa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 17:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYCHWPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 17:12:59 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:56922 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbYCHWM6 (ORCPT
+	Sat, 8 Mar 2008 17:15:20 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:19428 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYCHWPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 17:12:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VENoOCwiaZBcPItpPTxZ88LT2OXu/Z/xJZe+u5cUe3FujA6sLXCnYwjMBYeieJxCOlCAS/MI9GVZ//eXGps/DIEdiySkqU/5hPp9uQ13ieawS1Jv0WoHI92cHmHq74vFPRzrTEFIHpNs03uNQ1Pue5NeNCxSLcne8eXDeOJ326s=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology, Karnataka
-To: Greg KH <gregkh@suse.de>, Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH] Mark kobjects as unitialized
-Date: Sun, 9 Mar 2008 03:37:16 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200803062223.18857.balajirrao@gmail.com> <200803062320.50296.balajirrao@gmail.com> <20080306180559.GA14934@suse.de>
-In-Reply-To: <20080306180559.GA14934@suse.de>
+	Sat, 8 Mar 2008 17:15:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	user-agent:mime-version:content-type;
+	b=Xx20v+F0UTgsP7i/1lYYy3uWHtuyKjpa9joLBoYIb/rnFocGWj8lFI9f5hczy2PuD
+	CTvNUP/e2F3vLUSn5HRpA==
+Date: Sat, 8 Mar 2008 14:14:33 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: [patch -mm v2] mempolicy: disallow static or relative flags for
+ local preferred mode
+Message-ID: <alpine.DEB.1.00.0803081409260.12095@chino.kir.corp.google.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803090337.16253.balajirrao@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 March 2008 11:35:59 pm Greg KH wrote:
-> On Thu, Mar 06, 2008 at 11:20:50PM +0530, Balaji Rao wrote:
-> > On Thursday 06 March 2008 10:35:14 pm Greg KH wrote:
-> > <snip>
-> > > Where exactly in the code does that happen?  kobjects should not be
-> > > "reused" as that implies that they are static, and not dynamically
-> > > allocated, right?
-> > >
-> > > Which kobject is this?
-> > Yes, its static. Here's the code from virt/kvm_main.c:1269
-> > 
-> > static struct sys_device kvm_sysdev = {
-> >         .id = 0,
-> >         .cls = &kvm_sysdev_class,
-> > };
-> > 
-> > this sys_device is being registered/unregistered when kvm-intel is 
-> > loaded/unloaded.
-> 
-> Ah, ok.  I'll add this patch then.
-> 
-> > > Ugh, is this the sys_device stuff?  I hate that code...
-> > >
-> > Yes it is! But, why do you hate it ?
-> 
-> For reasons like this :)
-> 
-> kobjects should not be static.  the sysdevice stuff was a hack when it
-> was originally created and never touched since the mid 2.5 days.  It
-> needs to be fixed up a lot, and is on my TODO list, slowly getting
-> closer to the top...
-Hi,
+MPOL_F_STATIC_NODES and MPOL_F_RELATIVE_NODES don't mean anything for
+MPOL_PREFERRED policies that were created with an empty nodemask (for
+purely local allocations).  They'll never be invalidated because the
+allowed mems of a task changes or need to be rebound relative to a
+cpuset's placement.
 
-This patch does not fix it all! The problem is in fact more involved. I also get these BUG reports when I reload kvm-intel.
+Also fixes a bug identified by Lee Schermerhorn that disallowed empty
+nodemasks to be passed to MPOL_PREFERRED to specify local allocations.
 
-BUG kmalloc-8: Object already free
-[  74.696570] -----------------------------------------------------------------------------
-[   74.696596] 
-[   74.697310] INFO: Allocated in strndup_user+0x30/0x62 age=587 cpu=2 pid=1439
-[   74.697845] INFO: Freed in kobject_set_name_vargs+0x29/0x32 age=559 cpu=3 pid=1439
-[   74.698008] INFO: Slab 0xc16f93a0 used=10 fp=0xf7c9d2d8 flags=0x10000c3
-[   74.698008] INFO: Object 0xf7c9d1f8 @offset=504 fp=0xf7c9d578
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ Documentation/vm/numa_memory_policy.txt |   16 ++++++++++++++--
+ mm/mempolicy.c                          |   24 +++++++++++++++++-------
+ 2 files changed, 31 insertions(+), 9 deletions(-)
 
-This happens because, sysdev_class_register assigns a name to the kobject, and kfrees the old name if any. The 
-poisoned 'name' object persists in case of statically allocated kobjects and as its passed to kfree again when re 
-registered, we get the above warning.
-
-So, AFAICS the best way to solve this is by fixing the kobject users (kvm, oprofile etc.) to use dynamic kobjects instead 
-of static ones or memset the kobject to zero before passing it to sysdev_register.
-
-Greg ?
-
--- 
-regards,
-balaji rao
-3rd year,
-Dept. of Mechanical Engineering,
-National Institute of Technology, Karnataka
+diff --git a/Documentation/vm/numa_memory_policy.txt b/Documentation/vm/numa_memory_policy.txt
+--- a/Documentation/vm/numa_memory_policy.txt
++++ b/Documentation/vm/numa_memory_policy.txt
+@@ -210,6 +210,12 @@ Components of Memory Policies
+ 	    local allocation for a specific range of addresses--i.e. for
+ 	    VMA policies.
+ 
++	    It is possible for the user to specify that local allocation is
++	    always preferred by passing an empty nodemask with this mode.
++	    If an empty nodemask is passed, the policy cannot use the
++	    MPOL_F_STATIC_NODES or MPOL_F_RELATIVE_NODES flags described
++	    below.
++
+ 	MPOL_INTERLEAVED:  This mode specifies that page allocations be
+ 	interleaved, on a page granularity, across the nodes specified in
+ 	the policy.  This mode also behaves slightly differently, based on
+@@ -259,7 +265,10 @@ Components of Memory Policies
+ 	    occurs over that node.  If no nodes from the user's nodemask are
+ 	    now allowed, the Default behavior is used.
+ 
+-	    MPOL_F_STATIC_NODES cannot be used with MPOL_F_RELATIVE_NODES.
++	    MPOL_F_STATIC_NODES cannot be combined with the
++	    MPOL_F_RELATIVE_NODES flag.  It also cannot be used for
++	    MPOL_PREFERRED policies that were created with an empty nodemask
++	    (local allocation).
+ 
+ 	MPOL_F_RELATIVE_NODES:  This flag specifies that the nodemask passed
+ 	by the user will be mapped relative to the set of the task or VMA's
+@@ -306,7 +315,10 @@ Components of Memory Policies
+ 	    set of memory nodes allowed by the task's cpuset, as that may
+ 	    change over time.
+ 
+-	    MPOL_F_RELATIVE_NODES cannot be used with MPOL_F_STATIC_NODES.
++	    MPOL_F_RELATIVE_NODES cannot be combined with the
++	    MPOL_F_STATIC_NODES flag.  It also cannot be used for
++	    MPOL_PREFERRED policies that were created with an empty nodemask
++	    (local allocation).
+ 
+ MEMORY POLICY APIs
+ 
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -151,9 +151,7 @@ static int mpol_new_interleave(struct mempolicy *pol, const nodemask_t *nodes)
+ 
+ static int mpol_new_preferred(struct mempolicy *pol, const nodemask_t *nodes)
+ {
+-	if (nodes_empty(*nodes))
+-		return -EINVAL;
+-	pol->v.preferred_node = first_node(*nodes);
++	pol->v.preferred_node = !nodes_empty(*nodes) ? first_node(*nodes) : -1;
+ 	return 0;
+ }
+ 
+@@ -176,10 +174,22 @@ static struct mempolicy *mpol_new(unsigned short mode, unsigned short flags,
+ 	pr_debug("setting mode %d flags %d nodes[0] %lx\n",
+ 		 mode, flags, nodes ? nodes_addr(*nodes)[0] : -1);
+ 
+-	if (nodes && nodes_empty(*nodes) && mode != MPOL_PREFERRED)
+-		return ERR_PTR(-EINVAL);
+-	if (mode == MPOL_DEFAULT)
++	if (mode == MPOL_DEFAULT) {
++		if (nodes && !nodes_empty(*nodes))
++			return ERR_PTR(-EINVAL);
+ 		return NULL;
++	}
++	/*
++	 * MPOL_PREFERRED cannot be used with MPOL_F_STATIC_NODES or
++	 * MPOL_F_RELATIVE_NODES if the nodemask is empty (local allocation).
++	 * All other modes require a valid pointer to a non-empty nodemask.
++	 */
++	if (mode == MPOL_PREFERRED) {
++		if (nodes_empty(*nodes) && ((flags & MPOL_F_STATIC_NODES) ||
++					    (flags & MPOL_F_RELATIVE_NODES)))
++			return ERR_PTR(-EINVAL);
++	} else if (nodes_empty(*nodes))
++		return ERR_PTR(-EINVAL);
+ 	policy = kmem_cache_alloc(policy_cache, GFP_KERNEL);
+ 	if (!policy)
+ 		return ERR_PTR(-ENOMEM);
+@@ -250,7 +260,7 @@ static void mpol_rebind_preferred(struct mempolicy *pol,
+ 	} else if (pol->flags & MPOL_F_RELATIVE_NODES) {
+ 		mpol_relative_nodemask(&tmp, &pol->w.user_nodemask, nodes);
+ 		pol->v.preferred_node = first_node(tmp);
+-	} else {
++	} else if (pol->v.preferred_node != -1) {
+ 		pol->v.preferred_node = node_remap(pol->v.preferred_node,
+ 						   pol->w.cpuset_mems_allowed,
+ 						   *nodes);
