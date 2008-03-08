@@ -1,372 +1,519 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbYCHAJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYCHASt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341AbYCHAJU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 19:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYCHAI6
+	id S1762213AbYCHASt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 19:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYCHASj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 19:08:58 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56061 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753401AbYCHAI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 19:08:57 -0500
-Subject: Re: [RFC] JBD ordered mode rewrite
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andreas Dilger <adilger@sun.com>
-Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080307235210.GM1881@webber.adilger.int>
-References: <20080306174209.GA14193@duck.suse.cz>
-	 <20080307235210.GM1881@webber.adilger.int>
+	Fri, 7 Mar 2008 19:18:39 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2399 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYCHASi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 19:18:38 -0500
+Subject: [PATCH] drivers/char/agp - use bool
+From: Joe Perches <joe@perches.com>
+To: David Airlie <airlied@linux.ie>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 07 Mar 2008 16:08:20 -0800
-Message-Id: <1204934901.14884.68.camel@localhost.localdomain>
+Date: Fri, 07 Mar 2008 16:17:41 -0800
+Message-Id: <1204935461.5541.101.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+X-Mailer: Evolution 2.12.3-1.1mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-07 at 16:52 -0700, Andreas Dilger wrote:
-> On Mar 06, 2008  18:42 +0100, Jan Kara wrote:
-> >   Below is my rewrite of ordered mode in JBD. Now we don't have a list of
-> > data buffers that need syncing on transaction commit but a list of inodes
-> > that need writeout during commit. This brings all sorts of advantages such
-> > as possibility to get rid of journal heads and buffer heads for data
-> > buffers in ordered mode, better ordering of writes on transaction commit,
-> > simplification of some JBD code, no more anonymous pages when truncate of
-> > data being committed happens. The patch has survived some light testing
-> > but it still has some potential of eating your data so beware :) I've run
-> > dbench to see whether we didn't decrease performance by different handling
-> > of truncate and the throughput I'm getting on my machine is the same (OK,
-> > is lower by 0.5%) if I disable the code in truncate waiting for commit to
-> > finish... Also the throughput of dbench is about 2% better with my patch
-> > than with current JBD.
-> >   Any comments or testing most welcome.
-> 
-> Looks like a very good patch - thanks for your effort in moving this
-> beyond the "hand-waving" stage that it's been in for the past few years.
-> 
-> I'm looking at what implications this has for delayed allocation in ext4,
-> because the vast majority of file data will be unmapped in that case
-> and a journal commit in ordered mode will no longer cause the data to
-> be flushed to disk.
-> 
-> I _think_ is OK, because the pdflushd will now be totally in charge of
-> flushing the dirty pages to disk, instead of this previously being done
-> by ordered mode in the journal.
+Signed-off-by: Joe Perches <joe@perches.com>
 
-I missed something here, just trying to understand: if a journal commit
-in ordered mode will no longer cause the data to be flushed to disk, how
-could we ensure the ordering? Are you suggesting with delayed allocation
-the journalling mode falls back to writeback mode?
+ include/linux/agp_backend.h     |   14 +++-----------
+ drivers/char/agp/agp.h          |    6 +++---
+ drivers/char/agp/alpha-agp.c    |    4 ++--
+ drivers/char/agp/amd-k7-agp.c   |    4 ++--
+ drivers/char/agp/amd64-agp.c    |    4 ++--
+ drivers/char/agp/ati-agp.c      |    4 ++--
+ drivers/char/agp/efficeon-agp.c |    6 +++---
+ drivers/char/agp/generic.c      |   24 ++++++++++++------------
+ drivers/char/agp/hp-agp.c       |    6 +++---
+ drivers/char/agp/i460-agp.c     |    2 +-
+ drivers/char/agp/intel-agp.c    |   10 +++++-----
+ drivers/char/agp/nvidia-agp.c   |    4 ++--
+ drivers/char/agp/parisc-agp.c   |    6 +++---
+ drivers/char/agp/sgi-agp.c      |    8 ++++----
+ drivers/char/agp/sworks-agp.c   |    6 +++---
+ drivers/char/agp/uninorth-agp.c |   10 +++++-----
+ 16 files changed, 55 insertions(+), 63 deletions(-)
 
->   I know there have been some bugs in this
-> area in the past, but I guess it isn't much different than running in
-> writeback mode.  That said, I don't know how many users run in writeback
-> mode unless they are running a database, and the database is doing a lot
-> of explicit fsync of file data so there may still be bugs lurking...
-> 
-> Some care is still needed here because with ext4 delayed allocation the
-> common case will be unmapped buffers, while the ext3 implementation will
-> only have this in very rare cases (unmapped mmap writes), but it looks
-> like the right mechanism is already in place for both.
-> 
-> I'll just put a bunch of comments inline, not necessarily problems, just
-> walking through the code to ensure I understand what is going on...
-> 
-> > @@ -1675,7 +1675,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
-> >  			 */
-> >  			clear_buffer_dirty(bh);
-> >  			set_buffer_uptodate(bh);
-> > -		} else if (!buffer_mapped(bh) && buffer_dirty(bh)) {
-> > +		} else if (!buffer_mapped(bh) && buffer_dirty(bh)
-> > +			   && !wbc->skip_unmapped) {
-> 
-> (comment) This is skipping writeout of unmapped pages during journal commit -
-> good, otherwise we would deadlock trying to add block mappings...
-> 
-> > @@ -183,6 +184,8 @@ void ext3_delete_inode (struct inode * inode)
-> >  {
-> >  	handle_t *handle;
-> >  
-> > +	if (ext3_should_order_data(inode))
-> > +		ext3_begin_ordered_truncate(inode, 0);
-> 
-> (comment) This is flushing out pages allocated in the previous transaction
-> to keep consistent semantics in case of a crash loses the delete...  There
-> is some possibility for optimization here - comments below at
-> journal_begin_ordered_truncate().
-> 
-> > @@ -1487,46 +1462,49 @@ static int ext3_ordered_writepage(struct page *page,
-> > +	if (!wbc->skip_unmapped) {
-> > +		handle = ext3_journal_start(inode,
-> > +				ext3_writepage_trans_blocks(inode));
-> > +		if (IS_ERR(handle)) {
-> > +			ret = PTR_ERR(handle);
-> > +			goto out_fail;
-> > +		}
-> >  	}
-> 
-> I guess the common case here for delalloc is that if someone cares to fsync
-> the file then that inode would be added to the journal list and the pages
-> would be mapped here in the process context and flushed with the journal
-> commit.  This is ideal because it avoids syncing out all of the dirty pages
-> for inodes that were NOT fsync'd and fixes the "one process doing fsync
-> kills performance for streaming writes" problem in ordered mode that was
-> recently discussed on the list.
-> 
-> We in fact win twice because fsync_page_range() will potentially only
-> map and flush the range of pages that the application cares about and
-> does not necessarily have to write out all pages (though that will still
-> happen in ordered mode if the pages had previously been mapped).
-> 
-> > +	else if (!PageMappedToDisk(page))
-> > +		goto out_fail;
-> 
-> (style) } else if (...) {
-> 		goto out_fail;
-> 	}
-> 
-> > +	/* This can go as soon as someone cares about that ;) */
-> >  	if (!page_has_buffers(page)) {
-> >  		create_empty_buffers(page, inode->i_sb->s_blocksize,
-> >  				(1 << BH_Dirty)|(1 << BH_Uptodate));
-> >  	}
-> 
-> Is there any reason to keep this in the non-data-journal case?  Adding
-> buffer heads to every page is a non-trivial amount of RAM usage.
-> 
-> > @@ -2989,7 +2973,14 @@ int ext3_write_inode(struct inode *inode, int wait)
-> >   * be freed, so we have a strong guarantee that no future commit will
-> >   * leave these blocks visible to the user.)
-> >   *
-> > - * Called with inode->sem down.
-> > + * Another thing we have to asure is that if we are in ordered mode
-> 
-> s/asure/assure/
-> 
-> > + * and inode is still attached to the committing transaction, we must
-> > + * we start writeout of all the dirty buffers which are being truncated.
-> 
-> s/buffers/pages/
-> 
-> > @@ -3032,6 +3023,13 @@ int ext3_setattr(struct dentry *dentry, struct iattr *attr)
-> >  	    attr->ia_valid & ATTR_SIZE && attr->ia_size < inode->i_size) {
-> >  		handle_t *handle;
-> >  
-> > +		if (ext3_should_order_data(inode)) {
-> > +			error = ext3_begin_ordered_truncate(inode,
-> > +					attr->ia_size);
-> 
-> (style) align "attr->ia_size" with previous '('.
-> 
-> > @@ -520,6 +520,8 @@ static void ext3_clear_inode(struct inode *inode)
-> >  	EXT3_I(inode)->i_block_alloc_info = NULL;
-> >  	if (unlikely(rsv))
-> >  		kfree(rsv);
-> > +	journal_release_jbd_inode(EXT3_SB(inode->i_sb)->s_journal,
-> > +		&EXT3_I(inode)->jinode);
-> 
-> (style) align with '(' on previous line.
-> 
-> >  /*
-> > - * When an ext3-ordered file is truncated, it is possible that many pages are
-> > - * not sucessfully freed, because they are attached to a committing transaction.
-> > + * When an ext3 file is truncated, it is possible that some pages are not
-> > + * sucessfully freed, because they are attached to a committing transaction.
-> 
-> s/sucessfully/successfully/
-> 
-> > -static int inverted_lock(journal_t *journal, struct buffer_head *bh)
-> > -{
-> > -	if (!jbd_trylock_bh_state(bh)) {
-> > -		spin_unlock(&journal->j_list_lock);
-> > -		schedule();
-> > -		return 0;
-> > -	}
-> > -	return 1;
-> > -}
-> 
-> Always nice to see unpleasant code like this be removed.
-> 
-> > +static int journal_submit_data_buffers(journal_t *journal,
-> > +		transaction_t *commit_transaction)
-> >  {
-> > +	/*
-> > +	 * We are in a committing transaction. Therefore no new inode
-> > +	 * can be added to our inode list. We use JI_COMMIT_RUNNING
-> > +	 * flag to protect inode we currently operate on from being
-> > +	 * released while we write out pages.
-> > +	 */
-> 
-> Should we J_ASSERT() this is true?  Probably better to put this comment
-> before the function instead of inside it.
-> 
-> > +	spin_lock(&journal->j_list_lock);
-> > +	list_for_each_entry(jinode, &commit_transaction->t_inode_list, i_list) {
-> > +		mapping = jinode->i_vfs_inode->i_mapping;
-> > +		if (!mapping_cap_writeback_dirty(mapping))
-> > +			continue;
-> > +		wbc.nr_to_write = mapping->nrpages * 2;
-> > +		jinode->i_flags |= JI_COMMIT_RUNNING;
-> > +		spin_unlock(&journal->j_list_lock);
-> > +		err = do_writepages(jinode->i_vfs_inode->i_mapping, &wbc);
-> > +		if (!ret)
-> > +			ret = err;
-> > +		spin_lock(&journal->j_list_lock);
-> > +		jinode->i_flags &= ~JI_COMMIT_RUNNING;
-> > +		wake_up_bit(&jinode->i_flags, __JI_COMMIT_RUNNING);
-> >  	}
-> > +	spin_unlock(&journal->j_list_lock);
-> 
-> Hmm, this is one area I'm a bit worried about.  In the old code the number
-> of buffers to sync for a transaction are bounded because they can only be
-> added to the transaction while it is open.  With this new inode-list code
-> there could be a process busily adding new dirty + mapped pages to the
-> inode(s) in the running transaction, while we are blocked here writing
-> out the pages in kjournald trying to commit the previous transaction.
-> 
-> At some point we will eventually no longer be able to add new pages to the
-> running transaction (because it is full or was closed due to timeout) and
-> we won't be able to start a new transaction because the committing transaction
-> has not yet committed.  At that point we would be able to finish the commit
-> of the previous transaction, but not until we had reached the point of
-> blocking all operations in the filesystem waiting for the new transaction
-> to open.  This would essentially lead to livelock of the system, with
-> stop-start-stop cycles for the transactions and IO.
-> 
-> What would be needed is some kind of mechanism to separate the dirty pages
-> on the inode into "dirty from current transaction" and "dirty from the
-> previous transaction".  That seems non-trivial, however.  I guess we could
-> also force any process doing writing to flush out all of the dirty and
-> mapped pages on the inode if it detects the inode is in two transactions.
-> 
-> This would at least parallelize the IO submission and also throttle the
-> addition of new pages until the dirty ones on the committing transaction
-> had been flushed but may essentially mean sync IO performance for streaming
-> writes on large files without delalloc (which would not add new pages that
-> are mapped normally).
-> 
-> > +static int journal_finish_data_buffers(journal_t *journal,
-> > +		transaction_t *commit_transaction)
-> >  {
-> > +	/* Now refile inode to proper lists */
-> > +	list_for_each_entry_safe(jinode, next_i,
-> > +			&commit_transaction->t_inode_list, i_list) {
-> 
-> (style) align with '(' on previous line
-> 
-> > +		list_del(&jinode->i_list);
-> > +		if (jinode->i_next_transaction) {
-> > +			jinode->i_transaction = jinode->i_next_transaction;
-> > +			jinode->i_next_transaction = NULL;
-> > +			list_add(&jinode->i_list,
-> > +				&jinode->i_transaction->t_inode_list);
-> >  		}
-> > +		else
-> > +			jinode->i_transaction = NULL;
-> 
-> (style)		} else {
-> 			jinode->i_transaction = NULL;
-> 		}
-> 
-> > @@ -655,7 +565,14 @@ start_journal_io:
-> >  	   so we incur less scheduling load.
-> >  	*/
-> >  
-> > -	jbd_debug(3, "JBD: commit phase 4\n");
-> > +	jbd_debug(3, "JBD: commit phase 3\n");
-> 
-> Rather than numbering these phases, which has little meaning and often
-> means they just get renumbered like here, it is probably more useful to
-> give them descriptive names like "JBD: commit wait for data buffers", etc.
-> 
-> > @@ -1504,10 +1327,10 @@ __blist_del_buffer(struct journal_head **list, struct journal_head *jh)
-> >   * Remove a buffer from the appropriate transaction list.
-> >   *
-> >   * Note that this function can *change* the value of
-> > - * bh->b_transaction->t_sync_datalist, t_buffers, t_forget,
-> > - * t_iobuf_list, t_shadow_list, t_log_list or t_reserved_list.  If the caller
-> > - * is holding onto a copy of one of thee pointers, it could go bad.
-> > - * Generally the caller needs to re-read the pointer from the transaction_t.
-> > + * bh->b_transaction->t_buffers, t_forget, t_iobuf_list, t_shadow_list,
-> > + * t_log_list or t_reserved_list.  If the caller is holding onto a copy of one
-> > + * of thee pointers, it could go bad.  Generally the caller needs to re-read
-> 
-> s/thee/these/
-> 
-> > +/*
-> > + * File inode in the inode list of the handle's transaction
-> > + */
-> > +int journal_file_inode(handle_t *handle, struct jbd_inode *jinode)
-> > +{
-> > +	transaction_t *transaction = handle->h_transaction;
-> > +	journal_t *journal = transaction->t_journal;
-> > +
-> > +	if (is_handle_aborted(handle))
-> > +		return 0;
-> 
-> Should we be returning an error back to the caller at this point?
-> 
-> > +	jbd_debug(4, "Adding inode %lu, tid:%d\n", jinode->i_vfs_inode->i_ino,
-> > +			transaction->t_tid);
-> > +
-> > +	spin_lock(&journal->j_list_lock);
-> > +
-> > +	if (jinode->i_transaction == transaction ||
-> > +	    jinode->i_next_transaction == transaction)
-> > +		goto done;
-> 
-> Is it possible/safe to do the above check outside of the j_list_lock
-> as an optimization?  We will be calling this function for every page
-> that is dirtied and it will likely be quite highly contended.  It used
-> to be that we HAD to get this lock because we were almost certainly
-> adding the new buffers to the transaction list, but in this updated
-> code the common case is that the inode will already be on the list...
-> 
-> > +/*
-> > + * This function must be called when inode is journaled in ordered mode
-> > + * before truncation happens. It starts writeout of truncated part in
-> > + * case it is in the committing transaction so that we stand to ordered
-> > + * mode consistency guarantees.
-> > + */
-> > +int journal_begin_ordered_truncate(struct jbd_inode *inode, loff_t new_size)
-> > +{
-> > +	journal_t *journal;
-> > +	transaction_t *commit_trans;
-> > +	int ret = 0;
-> > +
-> > +	if (!inode->i_transaction && !inode->i_next_transaction)
-> > +		goto out;
-> > +	journal = inode->i_transaction->t_journal;
-> > +	spin_lock(&journal->j_state_lock);
-> > +	commit_trans = journal->j_committing_transaction;
-> > +	spin_unlock(&journal->j_state_lock);
-> > +	if (inode->i_transaction == commit_trans) {
-> > +		ret = __filemap_fdatawrite_range(inode->i_vfs_inode->i_mapping,
-> > +			new_size, LLONG_MAX, WB_SYNC_ALL);
-> > +		if (ret)
-> > +			journal_abort(journal, ret);
-> > +	}
-> 
-> Is there any way here to entirely avoid writing blocks which were just
-> allocated during the current transaction (e.g. temp files during compile
-> or whatever)?  One possibility is to store the transaction number when
-> the inode was created (or first dirtied?) in ext3_inode_info and if that is
-> equal to the committing transaction then we don't need to write anything
-> at all?
-> 
-> Cheers, Andreas
-> --
-> Andreas Dilger
-> Sr. Staff Engineer, Lustre Group
-> Sun Microsystems of Canada, Inc.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/include/linux/agp_backend.h b/include/linux/agp_backend.h
+index 03e3454..3698939 100644
+--- a/include/linux/agp_backend.h
++++ b/include/linux/agp_backend.h
+@@ -32,14 +32,6 @@
+ 
+ #ifdef __KERNEL__
+ 
+-#ifndef TRUE
+-#define TRUE 1
+-#endif
+-
+-#ifndef FALSE
+-#define FALSE 0
+-#endif
+-
+ enum chipset_type {
+ 	NOT_SUPPORTED,
+ 	SUPPORTED,
+@@ -59,7 +51,7 @@ struct agp_kern_info {
+ 	size_t aper_size;
+ 	int max_memory;		/* In pages */
+ 	int current_memory;
+-	int cant_use_aperture;
++	bool cant_use_aperture;
+ 	unsigned long page_mask;
+ 	struct vm_operations_struct *vm_ops;
+ };
+@@ -85,8 +77,8 @@ struct agp_memory {
+ 	off_t pg_start;
+ 	u32 type;
+ 	u32 physical;
+-	u8 is_bound;
+-	u8 is_flushed;
++	bool is_bound;
++	bool is_flushed;
+         u8 vmalloc_flag;
+ };
+ 
+diff --git a/drivers/char/agp/agp.h b/drivers/char/agp/agp.h
+index c69f795..9abddea 100644
+--- a/drivers/char/agp/agp.h
++++ b/drivers/char/agp/agp.h
+@@ -99,8 +99,8 @@ struct agp_bridge_driver {
+ 	const void *aperture_sizes;
+ 	int num_aperture_sizes;
+ 	enum aper_size_type size_type;
+-	int cant_use_aperture;
+-	int needs_scratch_page;
++	bool cant_use_aperture;
++	bool needs_scratch_page;
+ 	const struct gatt_mask *masks;
+ 	int (*fetch_size)(void);
+ 	int (*configure)(void);
+@@ -278,7 +278,7 @@ void agp_generic_destroy_page(void *addr, int flags);
+ void agp_free_key(int key);
+ int agp_num_entries(void);
+ u32 agp_collect_device_status(struct agp_bridge_data *bridge, u32 mode, u32 command);
+-void agp_device_command(u32 command, int agp_v3);
++void agp_device_command(u32 command, bool agp_v3);
+ int agp_3_5_enable(struct agp_bridge_data *bridge);
+ void global_cache_flush(void);
+ void get_agp_version(struct agp_bridge_data *bridge);
+diff --git a/drivers/char/agp/alpha-agp.c b/drivers/char/agp/alpha-agp.c
+index e77c178..5da89f6 100644
+--- a/drivers/char/agp/alpha-agp.c
++++ b/drivers/char/agp/alpha-agp.c
+@@ -80,7 +80,7 @@ static void alpha_core_agp_enable(struct agp_bridge_data *bridge, u32 mode)
+ 	agp->mode.bits.enable = 1;
+ 	agp->ops->configure(agp);
+ 
+-	agp_device_command(agp->mode.lw, 0);
++	agp_device_command(agp->mode.lw, false);
+ }
+ 
+ static int alpha_core_agp_insert_memory(struct agp_memory *mem, off_t pg_start,
+@@ -126,7 +126,7 @@ struct agp_bridge_driver alpha_core_agp_driver = {
+ 	.aperture_sizes		= alpha_core_agp_sizes,
+ 	.num_aperture_sizes	= 1,
+ 	.size_type		= FIXED_APER_SIZE,
+-	.cant_use_aperture	= 1,
++	.cant_use_aperture	= true,
+ 	.masks			= NULL,
+ 
+ 	.fetch_size		= alpha_core_agp_fetch_size,
+diff --git a/drivers/char/agp/amd-k7-agp.c b/drivers/char/agp/amd-k7-agp.c
+index d286699..10359a2 100644
+--- a/drivers/char/agp/amd-k7-agp.c
++++ b/drivers/char/agp/amd-k7-agp.c
+@@ -314,9 +314,9 @@ static int amd_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+index d8200ac..13665db 100644
+--- a/drivers/char/agp/amd64-agp.c
++++ b/drivers/char/agp/amd64-agp.c
+@@ -90,9 +90,9 @@ static int amd64_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+diff --git a/drivers/char/agp/ati-agp.c b/drivers/char/agp/ati-agp.c
+index 55c97f6..b0066d9 100644
+--- a/drivers/char/agp/ati-agp.c
++++ b/drivers/char/agp/ati-agp.c
+@@ -287,10 +287,10 @@ static int ati_insert_memory(struct agp_memory * mem,
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		/*CACHE_FLUSH(); */
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+diff --git a/drivers/char/agp/efficeon-agp.c b/drivers/char/agp/efficeon-agp.c
+index cac0009..8ca6f26 100644
+--- a/drivers/char/agp/efficeon-agp.c
++++ b/drivers/char/agp/efficeon-agp.c
+@@ -249,9 +249,9 @@ static int efficeon_insert_memory(struct agp_memory * mem, off_t pg_start, int t
+ 	if (type != 0 || mem->type != 0)
+ 		return -EINVAL;
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	last_page = NULL;
+@@ -329,7 +329,7 @@ static const struct agp_bridge_driver efficeon_driver = {
+ 	.free_gatt_table	= efficeon_free_gatt_table,
+ 	.insert_memory		= efficeon_insert_memory,
+ 	.remove_memory		= efficeon_remove_memory,
+-	.cant_use_aperture	= 0,	// 1 might be faster?
++	.cant_use_aperture	= false,	// true might be faster?
+ 
+ 	// Generic
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
+index 7fc0c99..653ca3b 100644
+--- a/drivers/char/agp/generic.c
++++ b/drivers/char/agp/generic.c
+@@ -188,7 +188,7 @@ void agp_free_memory(struct agp_memory *curr)
+ 	if (curr == NULL)
+ 		return;
+ 
+-	if (curr->is_bound == TRUE)
++	if (curr->is_bound)
+ 		agp_unbind_memory(curr);
+ 
+ 	if (curr->type >= AGP_USER_TYPES) {
+@@ -411,20 +411,20 @@ int agp_bind_memory(struct agp_memory *curr, off_t pg_start)
+ 	if (curr == NULL)
+ 		return -EINVAL;
+ 
+-	if (curr->is_bound == TRUE) {
++	if (curr->is_bound) {
+ 		printk(KERN_INFO PFX "memory %p is already bound!\n", curr);
+ 		return -EINVAL;
+ 	}
+-	if (curr->is_flushed == FALSE) {
++	if (!curr->is_flushed) {
+ 		curr->bridge->driver->cache_flush();
+-		curr->is_flushed = TRUE;
++		curr->is_flushed = true;
+ 	}
+ 	ret_val = curr->bridge->driver->insert_memory(curr, pg_start, curr->type);
+ 
+ 	if (ret_val != 0)
+ 		return ret_val;
+ 
+-	curr->is_bound = TRUE;
++	curr->is_bound = true;
+ 	curr->pg_start = pg_start;
+ 	return 0;
+ }
+@@ -446,7 +446,7 @@ int agp_unbind_memory(struct agp_memory *curr)
+ 	if (curr == NULL)
+ 		return -EINVAL;
+ 
+-	if (curr->is_bound != TRUE) {
++	if (!curr->is_bound) {
+ 		printk(KERN_INFO PFX "memory %p was not bound!\n", curr);
+ 		return -EINVAL;
+ 	}
+@@ -456,7 +456,7 @@ int agp_unbind_memory(struct agp_memory *curr)
+ 	if (ret_val != 0)
+ 		return ret_val;
+ 
+-	curr->is_bound = FALSE;
++	curr->is_bound = false;
+ 	curr->pg_start = 0;
+ 	return 0;
+ }
+@@ -754,7 +754,7 @@ u32 agp_collect_device_status(struct agp_bridge_data *bridge, u32 requested_mode
+ EXPORT_SYMBOL(agp_collect_device_status);
+ 
+
+-void agp_device_command(u32 bridge_agpstat, int agp_v3)
++void agp_device_command(u32 bridge_agpstat, bool agp_v3)
+ {
+ 	struct pci_dev *device = NULL;
+ 	int mode;
+@@ -818,7 +818,7 @@ void agp_generic_enable(struct agp_bridge_data *bridge, u32 requested_mode)
+ 			/* If we have 3.5, we can do the isoch stuff. */
+ 			if (bridge->minor_version >= 5)
+ 				agp_3_5_enable(bridge);
+-			agp_device_command(bridge_agpstat, TRUE);
++			agp_device_command(bridge_agpstat, true);
+ 			return;
+ 		} else {
+ 		    /* Disable calibration cycle in RX91<1> when not in AGP3.0 mode of operation.*/
+@@ -835,7 +835,7 @@ void agp_generic_enable(struct agp_bridge_data *bridge, u32 requested_mode)
+ 	}
+ 
+ 	/* AGP v<3 */
+-	agp_device_command(bridge_agpstat, FALSE);
++	agp_device_command(bridge_agpstat, false);
+ }
+ EXPORT_SYMBOL(agp_generic_enable);
+ 
+@@ -1083,9 +1083,9 @@ int agp_generic_insert_memory(struct agp_memory * mem, off_t pg_start, int type)
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		bridge->driver->cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+diff --git a/drivers/char/agp/hp-agp.c b/drivers/char/agp/hp-agp.c
+index cbb0444..80d7317 100644
+--- a/drivers/char/agp/hp-agp.c
++++ b/drivers/char/agp/hp-agp.c
+@@ -353,9 +353,9 @@ hp_zx1_insert_memory (struct agp_memory *mem, off_t pg_start, int type)
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = io_pg_start; i < mem->page_count; i++) {
+@@ -437,7 +437,7 @@ const struct agp_bridge_driver hp_zx1_driver = {
+ 	.agp_alloc_page		= agp_generic_alloc_page,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+-	.cant_use_aperture	= 1,
++	.cant_use_aperture	= true,
+ };
+ 
+ static int __init
+diff --git a/drivers/char/agp/i460-agp.c b/drivers/char/agp/i460-agp.c
+index 76f581c..e587eeb 100644
+--- a/drivers/char/agp/i460-agp.c
++++ b/drivers/char/agp/i460-agp.c
+@@ -580,7 +580,7 @@ const struct agp_bridge_driver intel_i460_driver = {
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+-	.cant_use_aperture	= 1,
++	.cant_use_aperture	= true,
+ };
+ 
+ static int __devinit agp_intel_i460_probe(struct pci_dev *pdev,
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index eeea50a..a759694 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -1656,7 +1656,7 @@ static const struct agp_bridge_driver intel_810_driver = {
+ 	.aperture_sizes		= intel_i810_sizes,
+ 	.size_type		= FIXED_APER_SIZE,
+ 	.num_aperture_sizes	= 2,
+-	.needs_scratch_page	= TRUE,
++	.needs_scratch_page	= true,
+ 	.configure		= intel_i810_configure,
+ 	.fetch_size		= intel_i810_fetch_size,
+ 	.cleanup		= intel_i810_cleanup,
+@@ -1705,7 +1705,7 @@ static const struct agp_bridge_driver intel_830_driver = {
+ 	.aperture_sizes		= intel_i830_sizes,
+ 	.size_type		= FIXED_APER_SIZE,
+ 	.num_aperture_sizes	= 4,
+-	.needs_scratch_page	= TRUE,
++	.needs_scratch_page	= true,
+ 	.configure		= intel_i830_configure,
+ 	.fetch_size		= intel_i830_fetch_size,
+ 	.cleanup		= intel_i830_cleanup,
+@@ -1876,7 +1876,7 @@ static const struct agp_bridge_driver intel_915_driver = {
+ 	.aperture_sizes		= intel_i830_sizes,
+ 	.size_type		= FIXED_APER_SIZE,
+ 	.num_aperture_sizes	= 4,
+-	.needs_scratch_page	= TRUE,
++	.needs_scratch_page	= true,
+ 	.configure		= intel_i915_configure,
+ 	.fetch_size		= intel_i9xx_fetch_size,
+ 	.cleanup		= intel_i915_cleanup,
+@@ -1902,7 +1902,7 @@ static const struct agp_bridge_driver intel_i965_driver = {
+        .aperture_sizes         = intel_i830_sizes,
+        .size_type              = FIXED_APER_SIZE,
+        .num_aperture_sizes     = 4,
+-       .needs_scratch_page     = TRUE,
++       .needs_scratch_page     = true,
+        .configure              = intel_i915_configure,
+        .fetch_size             = intel_i9xx_fetch_size,
+        .cleanup                = intel_i915_cleanup,
+@@ -1952,7 +1952,7 @@ static const struct agp_bridge_driver intel_g33_driver = {
+ 	.aperture_sizes         = intel_i830_sizes,
+ 	.size_type              = FIXED_APER_SIZE,
+ 	.num_aperture_sizes     = 4,
+-	.needs_scratch_page     = TRUE,
++	.needs_scratch_page     = true,
+ 	.configure              = intel_i915_configure,
+ 	.fetch_size             = intel_i9xx_fetch_size,
+ 	.cleanup                = intel_i915_cleanup,
+diff --git a/drivers/char/agp/nvidia-agp.c b/drivers/char/agp/nvidia-agp.c
+index 225ed2a..eaceb61 100644
+--- a/drivers/char/agp/nvidia-agp.c
++++ b/drivers/char/agp/nvidia-agp.c
+@@ -214,9 +214,9 @@ static int nvidia_insert_memory(struct agp_memory *mem, off_t pg_start, int type
+ 			return -EBUSY;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+ 		writel(agp_bridge->driver->mask_memory(agp_bridge,
+diff --git a/drivers/char/agp/parisc-agp.c b/drivers/char/agp/parisc-agp.c
+index 2939e35..8c42dcc 100644
+--- a/drivers/char/agp/parisc-agp.c
++++ b/drivers/char/agp/parisc-agp.c
+@@ -141,9 +141,9 @@ parisc_agp_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = io_pg_start; i < mem->page_count; i++) {
+@@ -226,7 +226,7 @@ static const struct agp_bridge_driver parisc_agp_driver = {
+ 	.agp_alloc_page		= agp_generic_alloc_page,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+-	.cant_use_aperture	= 1,
++	.cant_use_aperture	= true,
+ };
+ 
+ static int __init
+diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
+index 98cf8ab..713453a 100644
+--- a/drivers/char/agp/sgi-agp.c
++++ b/drivers/char/agp/sgi-agp.c
+@@ -182,9 +182,9 @@ static int sgi_tioca_insert_memory(struct agp_memory *mem, off_t pg_start,
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		bridge->driver->cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+@@ -264,8 +264,8 @@ const struct agp_bridge_driver sgi_tioca_driver = {
+ 	.agp_alloc_page = sgi_tioca_alloc_page,
+ 	.agp_destroy_page = agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+-	.cant_use_aperture = 1,
+-	.needs_scratch_page = 0,
++	.cant_use_aperture = true,
++	.needs_scratch_page = false,
+ 	.num_aperture_sizes = 1,
+ };
+ 
+diff --git a/drivers/char/agp/sworks-agp.c b/drivers/char/agp/sworks-agp.c
+index e08934e..0e054c1 100644
+--- a/drivers/char/agp/sworks-agp.c
++++ b/drivers/char/agp/sworks-agp.c
+@@ -339,9 +339,9 @@ static int serverworks_insert_memory(struct agp_memory *mem,
+ 		j++;
+ 	}
+ 
+-	if (mem->is_flushed == FALSE) {
++	if (!mem->is_flushed) {
+ 		global_cache_flush();
+-		mem->is_flushed = TRUE;
++		mem->is_flushed = true;
+ 	}
+ 
+ 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+@@ -412,7 +412,7 @@ static void serverworks_agp_enable(struct agp_bridge_data *bridge, u32 mode)
+ 			       bridge->capndx + PCI_AGP_COMMAND,
+ 			       command);
+ 
+-	agp_device_command(command, 0);
++	agp_device_command(command, false);
+ }
+ 
+ static const struct agp_bridge_driver sworks_driver = {
+diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
+index 42c0a60..d2fa3cf 100644
+--- a/drivers/char/agp/uninorth-agp.c
++++ b/drivers/char/agp/uninorth-agp.c
+@@ -281,10 +281,10 @@ static void uninorth_agp_enable(struct agp_bridge_data *bridge, u32 mode)
+ 
+ 	if (uninorth_rev >= 0x30) {
+ 		/* This is an AGP V3 */
+-		agp_device_command(command, (status & AGPSTAT_MODE_3_0));
++		agp_device_command(command, (status & AGPSTAT_MODE_3_0) != 0);
+ 	} else {
+ 		/* AGP V2 */
+-		agp_device_command(command, 0);
++		agp_device_command(command, false);
+ 	}
+ 
+ 	uninorth_tlbflush(NULL);
+@@ -511,7 +511,7 @@ const struct agp_bridge_driver uninorth_agp_driver = {
+ 	.agp_alloc_page		= agp_generic_alloc_page,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+-	.cant_use_aperture	= 1,
++	.cant_use_aperture	= true,
+ };
+ 
+ const struct agp_bridge_driver u3_agp_driver = {
+@@ -536,8 +536,8 @@ const struct agp_bridge_driver u3_agp_driver = {
+ 	.agp_alloc_page		= agp_generic_alloc_page,
+ 	.agp_destroy_page	= agp_generic_destroy_page,
+ 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
+-	.cant_use_aperture	= 1,
+-	.needs_scratch_page	= 1,
++	.cant_use_aperture	= true,
++	.needs_scratch_page	= true,
+ };
+ 
+ static struct agp_device_ids uninorth_agp_device_ids[] __devinitdata = {
+
 
