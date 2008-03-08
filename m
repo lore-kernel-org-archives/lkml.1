@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbYCHM3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYCHMf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbYCHM3V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 07:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYCHM3I
+	id S1753906AbYCHMf2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 07:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYCHMfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 07:29:08 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:45204 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751085AbYCHM3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 07:29:07 -0500
-Date: Sat, 8 Mar 2008 20:28:50 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Milan Broz <mbroz@redhat.com>,
-       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
-       Alasdair G Kergon <agk@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       dm-crypt@saout.de
-Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
-Message-ID: <20080308122850.GA27182@gondor.apana.org.au>
-References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com> <47BC0DA9.1030607@redhat.com> <20080220172449.GD27726@gondor.apana.org.au> <47BC67CE.9070407@redhat.com> <20080220175819.GA28246@gondor.apana.org.au> <20080222123423.GA12678@gondor.apana.org.au> <e9c3a7c20803071014s6388b7b2l12f217bfdff5caa3@mail.gmail.com> <20080308012438.GA24236@gondor.apana.org.au> <1204947764.27096.4.camel@dwillia2-linux.ch.intel.com>
-MIME-Version: 1.0
+	Sat, 8 Mar 2008 07:35:20 -0500
+Received: from 1wt.eu ([62.212.114.60]:2326 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbYCHMfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 07:35:19 -0500
+Date: Sat, 8 Mar 2008 13:34:36 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chris Snook <csnook@redhat.com>,
+       Andrew Buehler <abuehler.kernel@gmail.com>,
+       Frederik Deweerdt <deweerdt@free.fr>, belcampo <belcampo@zonnet.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Hyperthreading performance oddities
+Message-ID: <20080308123436.GA24982@1wt.eu>
+References: <47BE9781.3030304@zonnet.nl> <20080222100630.GE5906@slug> <47D14526.2070103@gmail.com> <47D192BF.5090501@redhat.com> <87zltae3y7.fsf@basil.nowhere.org> <20080308073000.GH8953@1wt.eu> <20080308114655.GB27074@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1204947764.27096.4.camel@dwillia2-linux.ch.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080308114655.GB27074@one.firstfloor.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 08:42:44PM -0700, Dan Williams wrote:
-> On Fri, 2008-03-07 at 18:24 -0700, Herbert Xu wrote:
-> > On Fri, Mar 07, 2008 at 11:14:07AM -0700, Dan Williams wrote:
-> > >
-> > > I believe this is in mainline as 76fc60a2 "[CRYPTO] skcipher: Move
-> > > chainiv/seqiv into crypto_blkcipher module".  With a iop13xx_defconfig
-> > >  I get:
-> > >
-> > > `chainiv_module_exit' referenced in section `.init.text' of
-> > > crypto/built-in.o: defined in discarded section `.exit.text' of
-> > > crypto/built-in.o
-> > > `chainiv_module_exit' referenced in section `__ksymtab_gpl' of
-> > > crypto/built-in.o: defined in discarded section `.exit.text' of
-> > > crypto/built-in.o
-> > > `eseqiv_module_exit' referenced in section `__ksymtab_gpl' of
-> > > crypto/built-in.o: defined in discarded section `.exit.text' of
-> > > crypto/built-in.o
-> > > make: *** [.tmp_vmlinux1] Error 1
-> > 
-> > Does this help?
-> > 
-> Yup, and doing the same for eseqiv_module_exit completes the fix.
+On Sat, Mar 08, 2008 at 12:46:55PM +0100, Andi Kleen wrote:
+> > Well, in my experience, except for compiling, HT has always caused
+> > massive slowdowns, especially on network-intensive applications.
+> > Basically, network perf took a 20-30% hit, while compiling took
 > 
->   LD      arch/arm/boot/compressed/vmlinux
->   OBJCOPY arch/arm/boot/zImage
->   Kernel: arch/arm/boot/zImage is ready
+> What network workload?
 
-Oh right I should remove the exports since they're in the same
-module.
+high session rate HTTP traffic. That means high packet rates, high
+session lookup rates, etc...
+
+> Networking tends to have a lot of cache misses
+> and unless you're exceeding your memory bandwidth HT normally does 
+> well on such workloads because it can do other things while the 
+> CPU is waiting for loads.
+
+On SMP, the load is generally divided with user-space on once CPU
+and IRQs on the other one, but not well balanced though (less IRQ),
+which means that SMP is rarely more than 50-60% faster than UP. On
+HT, I normally observe lower performance than on UP.
+
+> > 20-30% boost. But I must admit that I never tried HT on anything
+> > more recent than a P4, maybe things have changed since.
+> 
+> There's nothing more recent out yet (unless you're talking non x86), 
+> but there were many different P4 generations. In particular Prescott
+> (90nm) was quite different from the earlier ones, but even before
+> and after there were some improvements and changes.
+
+OK. Amusingly, the HT flag is present on my C2D E8200 :
+
+model name      : Intel(R) Core(TM)2 Duo CPU     E8200  @ 2.66GHz
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr lahf_lm
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+willy
+
