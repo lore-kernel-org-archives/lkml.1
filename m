@@ -1,113 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbYCHTMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758405AbYCHTNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbYCHTMB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 14:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbYCHTLx
+	id S1758405AbYCHTNS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 14:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYCHTNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 14:11:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32855 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbYCHTLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 14:11:52 -0500
-To: Olivier Galibert <galibert@pobox.com>
-Cc: David Daney <ddaney@avtrex.com>, Michael Matz <matz@suse.de>,
-       Joe Buck <Joe.Buck@synopsys.COM>, Jan Hubicka <hubicka@ucw.cz>,
-       Aurelien Jarno <aurelien@aurel32.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction   flag
-References: <20080305195834.GA17267@synopsys.com>
-	<20080305202319.GA17053@volta.aurel32.net>
-	<Pine.LNX.4.64.0803052133400.20583@wotan.suse.de>
-	<20080305204234.GB17267@synopsys.com>
-	<20080305204945.GB14011@atrey.karlin.mff.cuni.cz>
-	<Pine.LNX.4.64.0803052158270.20583@wotan.suse.de>
-	<20080305212005.GC17267@synopsys.com>
-	<Pine.LNX.4.64.0803052241170.20583@wotan.suse.de>
-	<20080305231712.GC2649@dspnet.fr.eu.org> <47CF2B07.2050503@avtrex.com>
-	<20080306140620.GB5236@dspnet.fr.eu.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sat, 08 Mar 2008 16:10:10 -0300
-In-Reply-To: <20080306140620.GB5236@dspnet.fr.eu.org> (Olivier Galibert's message of "Thu\, 6 Mar 2008 15\:06\:20 +0100")
-Message-ID: <orzlt9rq0d.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 8 Mar 2008 14:13:07 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:4017 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754430AbYCHTNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 14:13:06 -0500
+Subject: Re: [patch -mm 2/2] mempolicy: use default_policy mode instead of
+	MPOL_DEFAULT
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, clameter@sgi.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.00.0803071730340.6241@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0803071722170.4611@chino.kir.corp.google.com>
+	 <20080307192845.0492c6f9.pj@sgi.com>
+	 <alpine.DEB.1.00.0803071730340.6241@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Sat, 08 Mar 2008 14:13:00 -0500
+Message-Id: <1205003580.4918.21.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar  6, 2008, Olivier Galibert <galibert@pobox.com> wrote:
+On Fri, 2008-03-07 at 17:33 -0800, David Rientjes wrote:
+> On Fri, 7 Mar 2008, Paul Jackson wrote:
+> 
+> > > So instead of checking for comparisons against a mempolicy's mode to
+> > > MPOL_DEFAULT or falling back stricly to MPOL_DEFAULT throughout the code,
+> > > we should use the mode that is defined in this struct.
+> > 
+> > Is this just a stylistic choice?  That is, is the same machine
+> > code produced either way?
+> > 
+> > If that's the case, could you briefly explain why you prefer
+> > one style (default_policy.policy) over the other (MPOL_DEFAULT)?
+> > 
+> 
+> Very fast response!
+> 
+> Yes, the same code is generated since default_policy.policy is statically 
+> declared as MPOL_DEFAULT.
+> 
+> I chose this because checks in mpol_new() to return NULL if the mode is 
+> MPOL_DEFAULT is purely based on the fact that, as the default system 
+> policy, policy task or VMA pointers are set to &default_policy.
 
-> It's extremely rare, no doubt about it.  It's just that it *yells*
-> security issue in the making.  It's not a source bug, i.e. not easily
-> reviewable.  It's related to signal handlers which are the mark of a
-> server and/or more failure-conscious program than usual.  It's obscure
-> (breaking a stringop, probably memset, or a not-paranoid-enough inline
-> asm in a signal handler through a running memmove in the main program,
-> oh my) but reasonably predictable for someone looking for an
-> exploitable flaw.
+Do I understand that you're saying that when mode is specified as
+MPOL_DEFAULT, the current task policy [in the case of set_mempolicy()]
+or the indicated vma policy [in the case of mbind()] is set to
+&default_policy?  If that's not what you're saying, please disregard the
+rest of this message.
 
-> It's gcc's job to adapt to the realities of its running environment,
-> not the other way around.
+If that is what you're saying:   This is not the case.  When mode is
+specified as MPOL_DEFAULT,  mpol_new() returns NULL and
+do_set_mempolicy() or do_mbind() [via it's helper functions] replaces
+the existing task or vma policy with the NULL, freeing [releasing a
+reference on] the existing policy, if any.  This results in the target
+policy--task or vma--"falling back" to the surrounding policy scope.
+This seems to have been the behavior as far back as I have looked.
 
-I smell a false dilemma here.
+In fact, the only place that MPOL_DEFAULT occurs in the policy [mode]
+member of struct mempolicy is in the system default_policy.  [As
+Christoph noted, this is not the case during system initialization.]  In
+this context, it means "local allocation".  This requires us to have the
+MPOL_DEFAULT case in the switches throughout mempolicy.c.
 
-The problem doesn't have to be fixed/worked-around in either the
-kernel or GCC.  Per your argument, one might claim it's the userland
-library's, or even the application's job to adapt to the realities of
-its running environment.
+I have a patch queued up, waiting for things to settle down in
+mempolicy.c, to replace the policy/mode in default_policy with
+MPOL_PREFERRED with preferred_node = -1.  Then, we can remove all of the
+MPOL_DEFAULT cases out of the switches in the allocation paths and
+"clean up" the documentation, including man pages.  MPOL_DEFAULT becomes
+simply an API mechanism to request fall back to the surrounding policy
+scope which, to my mind, is what "default policy" means.
 
-GCC doesn't know what functions are signal handlers to insert cld in
-them.  How could it fix the problem, then?  How could it possibly fix
-custom assembly?  How could it possibly fix object code containing
-signal handlers, compiled by other compilers?
+I don't have a problem with this patch in the context of the current
+implementation, altho' it does seem a bit pointless to me, unless you
+have something further that you're trying to to accomplish.
 
-A userland system library, in theory, knows what functions are signal
-handlers.  It could wrap function pointers passed as arguments to
-signal() such that they get cld.  But then, applications that couldn't
-care less about this would take a hit.
+I'll move the aforementioned patch to the head of my queue and send it
+out early this coming week for review atop whatever mempolicy patches
+Andrew has added to the tree at that time.
 
-Applications, on the other hand, know when they might need cld.  So,
-per your argument, they should adapt to the realities of their running
-environment, and add asm("cld"); to signal handlers that might need
-it.  At times, it may be hard for them to know whether they need it,
-because too many factors may affect this need.  E.g.:
+Later,
+Lee
 
-- if the kernel does cld for them, then they don't need it.  But
-that's a run-time property, so it can't be tested at build time: the
-code may run on a different kernel that doesn't do it.
 
-- if none of the libraries they use mess with this flag, or none of
-the libraries they use from signal handlers depend on this flag, then
-they don't need it.  But then, again, libraries may vary over time,
-and you can't assume the (dynamic) library that's available at build
-time will behave the same way at run time.
-
-So an application would have to do it conservatively, adding cld to
-their signal handlers just in case.
-
-But then, it would be more convenient if the library did it.
-
-And then, by the same argument, it would be more convenient if the
-kernel did it.
-
-(Compiler can't do it, since it doesn't know what's a signal handler
-in the general case.)
-
-And that's an argument to support the ABI specs as they are.
-
-It would be just silly to try to work around this deviation from the
-specs, at a performance penalty, in every affected compiler, library
-*and* application.  And anything less than fixing all of them would be
-an incomplete work around.
-
-Which is not an argument against providing work arounds where
-possible, just an argument in favor of fixing the problem where it can
-be fixed for good.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
