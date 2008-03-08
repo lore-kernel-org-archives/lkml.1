@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYCHPH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYCHPI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbYCHPH4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 10:07:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbYCHPG1
+	id S1756656AbYCHPI2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 10:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYCHPGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 10:06:27 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:34561 "EHLO mail.screens.ru"
+	Sat, 8 Mar 2008 10:06:41 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:34566 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755904AbYCHPG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 10:06:26 -0500
-Date: Sat, 8 Mar 2008 18:10:22 +0300
+	id S1752166AbYCHPGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 10:06:39 -0500
+Date: Sat, 8 Mar 2008 18:10:26 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] signals: change send_signal/do_send_sigqueue to take "boolean group" parameter
-Message-ID: <20080308151022.GA25182@tv-sign.ru>
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 6/6] signals: join send_sigqueue() with send_group_sigqueue()
+Message-ID: <20080308151026.GA25194@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,112 +25,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-send_signal() is used either with ->pending or with ->signal->shared_pending.
-Change it to take "int group" instead, this argument will be re-used later.
+We export send_sigqueue() and send_group_sigqueue() for the only user,
+posix_timer_event(). This is a bit silly, because both are just trivial helpers
+on top of do_send_sigqueue() and because the we pass the unused .si_signo
+parameter.
+
+Kill them both, rename do_send_sigqueue() to send_sigqueue(), and export it.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/signal.c~2_SS_BOOL_GROUP	2008-03-08 16:16:52.000000000 +0300
-+++ 25/kernel/signal.c	2008-03-08 16:26:43.000000000 +0300
-@@ -754,18 +754,21 @@ static inline int legacy_queue(struct si
+ include/linux/sched.h |    3 +--
+ kernel/signal.c       |   15 +--------------
+ kernel/posix-timers.c |    6 ++----
+ 3 files changed, 4 insertions(+), 20 deletions(-)
+
+--- 25/include/linux/sched.h~6_SSQ_UNIFY	2008-03-07 17:26:31.000000000 +0300
++++ 25/include/linux/sched.h	2008-03-08 17:35:43.000000000 +0300
+@@ -1708,8 +1708,7 @@ extern void zap_other_threads(struct tas
+ extern int kill_proc(pid_t, int, int);
+ extern struct sigqueue *sigqueue_alloc(void);
+ extern void sigqueue_free(struct sigqueue *);
+-extern int send_sigqueue(int, struct sigqueue *,  struct task_struct *);
+-extern int send_group_sigqueue(int, struct sigqueue *,  struct task_struct *);
++extern int send_sigqueue(struct sigqueue *,  struct task_struct *, int group);
+ extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
+ extern int do_sigaltstack(const stack_t __user *, stack_t __user *, unsigned long);
+ 
+--- 25/kernel/signal.c~6_SSQ_UNIFY	2008-03-08 17:15:59.000000000 +0300
++++ 25/kernel/signal.c	2008-03-08 17:38:50.000000000 +0300
+@@ -1240,8 +1240,7 @@ void sigqueue_free(struct sigqueue *q)
+ 	__sigqueue_free(q);
  }
  
- static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
--			struct sigpending *signals)
-+			int group)
+-static int do_send_sigqueue(struct sigqueue *q, struct task_struct *t,
+-				int group)
++int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
  {
-+	struct sigpending *pending;
- 	struct sigqueue *q;
+ 	int sig = q->info.si_signo;
+ 	struct sigpending *pending;
+@@ -1266,7 +1265,6 @@ static int do_send_sigqueue(struct sigqu
+ 		 * If an SI_TIMER entry is already queue just increment
+ 		 * the overrun count.
+ 		 */
+-
+ 		BUG_ON(q->info.si_code != SI_TIMER);
+ 		q->info.si_overrun++;
+ 		goto out;
+@@ -1283,17 +1281,6 @@ ret:
+ 	return ret;
+ }
  
- 	assert_spin_locked(&t->sighand->siglock);
- 	handle_stop_signal(sig, t);
-+
-+	pending = group ? &t->signal->shared_pending : &t->pending;
- 	/*
- 	 * Short-circuit ignored signals and support queuing
- 	 * exactly one non-rt signal, so that we can get more
- 	 * detailed information about the cause of the signal.
- 	 */
--	if (sig_ignored(t, sig) || legacy_queue(signals, sig))
-+	if (sig_ignored(t, sig) || legacy_queue(pending, sig))
- 		return 0;
+-int send_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
+-{
+-	return do_send_sigqueue(q, p, 0);
+-}
+-
+-int
+-send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
+-{
+-	return do_send_sigqueue(q, p, 1);
+-}
+-
+ /*
+  * Wake up any threads in the parent blocked in wait* syscalls.
+  */
+--- 25/kernel/posix-timers.c~6_SSQ_UNIFY	2008-02-15 16:59:17.000000000 +0300
++++ 25/kernel/posix-timers.c	2008-03-08 17:41:18.000000000 +0300
+@@ -311,8 +311,7 @@ int posix_timer_event(struct k_itimer *t
  
- 	/*
-@@ -793,7 +796,7 @@ static int send_signal(int sig, struct s
- 					     (is_si_special(info) ||
- 					      info->si_code >= 0)));
- 	if (q) {
--		list_add_tail(&q->list, &signals->list);
-+		list_add_tail(&q->list, &pending->list);
- 		switch ((unsigned long) info) {
- 		case (unsigned long) SEND_SIG_NOINFO:
- 			q->info.si_signo = sig;
-@@ -823,7 +826,7 @@ static int send_signal(int sig, struct s
+ 	if (timr->it_sigev_notify & SIGEV_THREAD_ID) {
+ 		struct task_struct *leader;
+-		int ret = send_sigqueue(timr->it_sigev_signo, timr->sigq,
+-					timr->it_process);
++		int ret = send_sigqueue(timr->sigq, timr->it_process, 0);
+ 
+ 		if (likely(ret >= 0))
+ 			return ret;
+@@ -323,8 +322,7 @@ int posix_timer_event(struct k_itimer *t
+ 		timr->it_process = leader;
  	}
  
- out_set:
--	sigaddset(&signals->signal, sig);
-+	sigaddset(&pending->signal, sig);
- 	return 1;
+-	return send_group_sigqueue(timr->it_sigev_signo, timr->sigq,
+-				   timr->it_process);
++	return send_sigqueue(timr->sigq, timr->it_process, 1);
  }
- 
-@@ -864,7 +867,7 @@ specific_send_sig_info(int sig, struct s
- {
- 	int ret;
- 
--	ret = send_signal(sig, info, t, &t->pending);
-+	ret = send_signal(sig, info, t, 0);
- 	if (ret <= 0)
- 		return ret;
- 
-@@ -923,7 +926,7 @@ __group_send_sig_info(int sig, struct si
- 	 * We always use the shared queue for process-wide signals,
- 	 * to avoid several races.
- 	 */
--	ret = send_signal(sig, info, p, &p->signal->shared_pending);
-+	ret = send_signal(sig, info, p, 1);
- 	if (ret <= 0)
- 		return ret;
- 
-@@ -1258,8 +1261,10 @@ void sigqueue_free(struct sigqueue *q)
- }
- 
- static int do_send_sigqueue(int sig, struct sigqueue *q, struct task_struct *t,
--				struct sigpending *pending)
-+				int group)
- {
-+	struct sigpending *pending;
-+
- 	handle_stop_signal(sig, t);
- 
- 	if (unlikely(!list_empty(&q->list))) {
-@@ -1277,8 +1282,10 @@ static int do_send_sigqueue(int sig, str
- 		return 1;
- 
- 	signalfd_notify(t, sig);
-+	pending = group ? &t->signal->shared_pending : &t->pending;
- 	list_add_tail(&q->list, &pending->list);
- 	sigaddset(&pending->signal, sig);
-+
- 	return 0;
- }
- 
-@@ -1300,7 +1307,7 @@ int send_sigqueue(int sig, struct sigque
- 	if (!likely(lock_task_sighand(p, &flags)))
- 		goto out_err;
- 
--	ret = do_send_sigqueue(sig, q, p, &p->pending);
-+	ret = do_send_sigqueue(sig, q, p, 0);
- 
- 	if (!sigismember(&p->blocked, sig))
- 		signal_wake_up(p, sig == SIGKILL);
-@@ -1321,7 +1328,7 @@ send_group_sigqueue(int sig, struct sigq
- 	/* Since it_lock is held, p->sighand cannot be NULL. */
- 	spin_lock_irqsave(&p->sighand->siglock, flags);
- 
--	ret = do_send_sigqueue(sig, q, p, &p->signal->shared_pending);
-+	ret = do_send_sigqueue(sig, q, p, 1);
- 
- 	__group_complete_signal(sig, p);
+ EXPORT_SYMBOL_GPL(posix_timer_event);
  
 
