@@ -1,207 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYCHSih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYCHSi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbYCHSih (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 13:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYCHShw
+	id S1758675AbYCHSi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 13:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbYCHShy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 13:37:52 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:2234 "EHLO kumera.dghda.com"
+	Sat, 8 Mar 2008 13:37:54 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:2242 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756763AbYCHShu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 13:37:50 -0500
+	id S1757030AbYCHShw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 13:37:52 -0500
 From: "Duane Griffin" <duaneg@dghda.com>
 To: linux-ext4@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
        Theodore Tso <tytso@mit.edu>, sct@redhat.com, akpm@linux-foundation.org,
        adilger@clusterfs.com, Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH] jbd2: eliminate duplicated code in revocation table init/destroy functions
-Date: Sat,  8 Mar 2008 18:37:35 +0000
-Message-Id: <1205001459-5291-3-git-send-email-duaneg@dghda.com>
+Subject: [PATCH] jbd: tidy up revoke cache initialisation and destruction
+Date: Sat,  8 Mar 2008 18:37:36 +0000
+Message-Id: <1205001459-5291-4-git-send-email-duaneg@dghda.com>
 X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1205001459-5291-2-git-send-email-duaneg@dghda.com>
+In-Reply-To: <1205001459-5291-3-git-send-email-duaneg@dghda.com>
 References: <1205001459-5291-1-git-send-email-duaneg@dghda.com>
  <1205001459-5291-2-git-send-email-duaneg@dghda.com>
+ <1205001459-5291-3-git-send-email-duaneg@dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The revocation table initialisation/destruction code is repeated for each of
-the two revocation tables stored in the journal. Refactoring the duplicated
-code into functions is tidier, simplifies the logic in initialisation in
-particular, and slightly reduces the code size.
-
-There should not be any functional change.
+Make revocation cache destruction safe to call if initialisation fails
+partially or entirely. This allows it to be used to cleanup in the case of
+initialisation failure, simplifying that code slightly.
 
 Signed-off-by: Duane Griffin <duaneg@dghda.com>
 ---
- fs/jbd2/revoke.c |  127 ++++++++++++++++++++++--------------------------------
- 1 files changed, 51 insertions(+), 76 deletions(-)
+ fs/jbd/revoke.c |   35 ++++++++++++++++++++---------------
+ 1 files changed, 20 insertions(+), 15 deletions(-)
 
-diff --git a/fs/jbd2/revoke.c b/fs/jbd2/revoke.c
-index df36f42..07e4703 100644
---- a/fs/jbd2/revoke.c
-+++ b/fs/jbd2/revoke.c
-@@ -196,109 +196,84 @@ void jbd2_journal_destroy_revoke_caches(void)
- 	jbd2_revoke_table_cache = NULL;
+diff --git a/fs/jbd/revoke.c b/fs/jbd/revoke.c
+index 1ef5c80..c1fcd62 100644
+--- a/fs/jbd/revoke.c
++++ b/fs/jbd/revoke.c
+@@ -166,33 +166,38 @@ static struct jbd_revoke_record_s *find_revoke_record(journal_t *journal,
+ 	return NULL;
  }
  
--/* Initialise the revoke table for a given journal to a given size. */
--
--int jbd2_journal_init_revoke(journal_t *journal, int hash_size)
-+static struct jbd2_revoke_table_s *jbd2_journal_init_revoke_table(int hash_size)
++void journal_destroy_revoke_caches(void)
++{
++	if (revoke_record_cache) {
++		kmem_cache_destroy(revoke_record_cache);
++		revoke_record_cache = NULL;
++	}
++	if (revoke_table_cache) {
++		kmem_cache_destroy(revoke_table_cache);
++		revoke_table_cache = NULL;
++	}
++}
++
+ int __init journal_init_revoke_caches(void)
  {
--	int shift, tmp;
-+	int shift = 0;
-+	int tmp = hash_size;
-+	struct jbd2_revoke_table_s *table;
- 
--	J_ASSERT (journal->j_revoke_table[0] == NULL);
-+	table = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_KERNEL);
-+	if (!table)
-+		goto out;
- 
--	shift = 0;
--	tmp = hash_size;
- 	while((tmp >>= 1UL) != 0UL)
- 		shift++;
- 
--	journal->j_revoke_table[0] = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_KERNEL);
--	if (!journal->j_revoke_table[0])
--		return -ENOMEM;
--	journal->j_revoke = journal->j_revoke_table[0];
--
--	/* Check that the hash_size is a power of two */
--	J_ASSERT(is_power_of_2(hash_size));
--
--	journal->j_revoke->hash_size = hash_size;
--
--	journal->j_revoke->hash_shift = shift;
--
--	journal->j_revoke->hash_table =
-+	table->hash_size = hash_size;
-+	table->hash_shift = shift;
-+	table->hash_table =
- 		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
--	if (!journal->j_revoke->hash_table) {
--		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
--		journal->j_revoke = NULL;
--		return -ENOMEM;
-+	if (!table->hash_table) {
-+		kmem_cache_free(jbd2_revoke_table_cache, table);
-+		table = NULL;
-+		goto out;
- 	}
- 
- 	for (tmp = 0; tmp < hash_size; tmp++)
--		INIT_LIST_HEAD(&journal->j_revoke->hash_table[tmp]);
-+		INIT_LIST_HEAD(&table->hash_table[tmp]);
- 
--	journal->j_revoke_table[1] = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_KERNEL);
--	if (!journal->j_revoke_table[1]) {
--		kfree(journal->j_revoke_table[0]->hash_table);
--		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
--		return -ENOMEM;
-+out:
-+	return table;
-+}
++	J_ASSERT(!revoke_record_cache);
++	J_ASSERT(!revoke_table_cache);
 +
-+static void jbd2_journal_destroy_revoke_table(struct jbd2_revoke_table_s *table)
-+{
-+	int i;
-+	struct list_head *hash_list;
-+
-+	for (i = 0; i < table->hash_size; i++) {
-+		hash_list = &table->hash_table[i];
-+		J_ASSERT(list_empty(hash_list));
- 	}
- 
--	journal->j_revoke = journal->j_revoke_table[1];
-+	kfree(table->hash_table);
-+	kmem_cache_free(jbd2_revoke_table_cache, table);
-+}
- 
--	/* Check that the hash_size is a power of two */
-+/* Initialise the revoke table for a given journal to a given size. */
-+int jbd2_journal_init_revoke(journal_t *journal, int hash_size)
-+{
-+	J_ASSERT(journal->j_revoke_table[0] == NULL);
- 	J_ASSERT(is_power_of_2(hash_size));
- 
--	journal->j_revoke->hash_size = hash_size;
-+	journal->j_revoke_table[0] = jbd2_journal_init_revoke_table(hash_size);
-+	if (!journal->j_revoke_table[0])
-+		goto fail0;
- 
--	journal->j_revoke->hash_shift = shift;
-+	journal->j_revoke_table[1] = jbd2_journal_init_revoke_table(hash_size);
-+	if (!journal->j_revoke_table[1])
-+		goto fail1;
- 
--	journal->j_revoke->hash_table =
--		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
--	if (!journal->j_revoke->hash_table) {
--		kfree(journal->j_revoke_table[0]->hash_table);
--		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
--		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[1]);
--		journal->j_revoke = NULL;
+ 	revoke_record_cache = kmem_cache_create("revoke_record",
+ 					   sizeof(struct jbd_revoke_record_s),
+ 					   0,
+ 					   SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY,
+ 					   NULL);
+-	if (revoke_record_cache == 0)
 -		return -ENOMEM;
--	}
 -
--	for (tmp = 0; tmp < hash_size; tmp++)
--		INIT_LIST_HEAD(&journal->j_revoke->hash_table[tmp]);
-+	journal->j_revoke = journal->j_revoke_table[1];
- 
- 	spin_lock_init(&journal->j_revoke_lock);
- 
- 	return 0;
+ 	revoke_table_cache = kmem_cache_create("revoke_table",
+ 					   sizeof(struct jbd_revoke_table_s),
+ 					   0, SLAB_TEMPORARY, NULL);
+-	if (revoke_table_cache == 0) {
+-		kmem_cache_destroy(revoke_record_cache);
+-		revoke_record_cache = NULL;
++
++	if (revoke_record_cache && revoke_table_cache) {
++		return 0;
++	} else {
++		journal_destroy_revoke_caches();
+ 		return -ENOMEM;
+ 	}
+-	return 0;
 -}
- 
--/* Destoy a journal's revoke table.  The table must already be empty! */
-+fail1:
-+	jbd2_journal_destroy_revoke_table(journal->j_revoke_table[0]);
-+fail0:
-+	return -ENOMEM;
-+}
- 
-+/* Destroy a journal's revoke table.  The table must already be empty! */
- void jbd2_journal_destroy_revoke(journal_t *journal)
- {
--	struct jbd2_revoke_table_s *table;
--	struct list_head *hash_list;
--	int i;
 -
--	table = journal->j_revoke_table[0];
--	if (!table)
--		return;
--
--	for (i=0; i<table->hash_size; i++) {
--		hash_list = &table->hash_table[i];
--		J_ASSERT (list_empty(hash_list));
--	}
--
--	kfree(table->hash_table);
--	kmem_cache_free(jbd2_revoke_table_cache, table);
--	journal->j_revoke = NULL;
--
--	table = journal->j_revoke_table[1];
--	if (!table)
--		return;
--
--	for (i=0; i<table->hash_size; i++) {
--		hash_list = &table->hash_table[i];
--		J_ASSERT (list_empty(hash_list));
--	}
--
--	kfree(table->hash_table);
--	kmem_cache_free(jbd2_revoke_table_cache, table);
- 	journal->j_revoke = NULL;
-+	if (journal->j_revoke_table[0])
-+		jbd2_journal_destroy_revoke_table(journal->j_revoke_table[0]);
-+	if (journal->j_revoke_table[1])
-+		jbd2_journal_destroy_revoke_table(journal->j_revoke_table[1]);
+-void journal_destroy_revoke_caches(void)
+-{
+-	kmem_cache_destroy(revoke_record_cache);
+-	revoke_record_cache = NULL;
+-	kmem_cache_destroy(revoke_table_cache);
+-	revoke_table_cache = NULL;
  }
  
- 
+ static struct jbd_revoke_table_s *journal_init_revoke_table(int hash_size)
 -- 
 1.5.3.7
 
