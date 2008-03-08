@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbYCHVsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYCHVwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbYCHVsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 16:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbYCHVsE
+	id S1754226AbYCHVwK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 16:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbYCHVv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 16:48:04 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:45609 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754472AbYCHVsB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 16:48:01 -0500
-Date: Sat, 8 Mar 2008 15:47:57 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080308214757.GA22701@sergelap.austin.ibm.com>
-References: <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <20080307173542.GA2552@sergelap.austin.ibm.com> <20080307181431.GA4915@kroah.com> <20080307185052.GA4428@sergelap.austin.ibm.com> <20080308060410.GC13434@kroah.com>
+	Sat, 8 Mar 2008 16:51:56 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:60559 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbYCHVvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 16:51:55 -0500
+Date: Sat, 8 Mar 2008 23:51:40 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>, davem@davemloft.net
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6.25 patch] crypto/ section fixes
+Message-ID: <20080308215140.GC12621@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080308060410.GC13434@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH (greg@kroah.com):
-> On Fri, Mar 07, 2008 at 12:50:52PM -0600, Serge E. Hallyn wrote:
-> > Quoting Greg KH (greg@kroah.com):
-> > > On Fri, Mar 07, 2008 at 11:35:42AM -0600, Serge E. Hallyn wrote:
-> > > > > Do you really want to run other LSMs within a containerd kernel?  Is
-> > > > > that a requirement?  It would seem to run counter to the main goal of
-> > > > > containers to me.
-> > > > 
-> > > > Until user namespaces are complete, selinux seems the only good solution
-> > > > to offer isolation.
-> > > 
-> > > Great, use that instead :)
-> > 
-> > That can't work as is since you can't specify major:minor in policy.
-> 
-> Your LSM can not, or the LSM interface does not allow this to happen?
+This patch fixes the following issues introduced by
+commit 76fc60a2e3c6aa6e98cd3a5cb81a1855c637b274:
+- the exports of {chainiv,eseqiv}_module_{init,exit} are unneeded
+- calling {chainiv,eseqiv}_module_init from a module would anyway have 
+  resulted in an Oops
+- chainiv_module_exit() mustn't be exit since it's now called from 
+  the __init blkcipher_module_init()
 
-No my lsm in fact does, you just can't do it with selinux policy at the
-moment.  I was still responding to your "just use selinux" :)
+On architectures that discard __exit code at build time these issues led 
+to build errors.
 
-> > So all we could do again is simply refuse all mknod, which we can
-> > already do with per-process capability bounding sets.
-> 
-> I thought we passed that info down to the LSM module, can't you do your
-> selection at that point in time?
-> 
-> And then, just mediate open() like always, right?
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Yup, the patch I included inline does that.
+---
 
-An LSM can address the problem.  It just felt like more of a
-patch-over-the-real-problem kind of solution.
+ crypto/chainiv.c                   |    4 +---
+ crypto/eseqiv.c                    |    2 --
+ include/crypto/internal/skcipher.h |    2 +-
+ 3 files changed, 2 insertions(+), 6 deletions(-)
 
-thanks,
--serge
+320c91127c5a53a109feda13c9e29c72df0edac0 foobar
+diff --git a/crypto/chainiv.c b/crypto/chainiv.c
+index 0a7cac6..6da3f57 100644
+--- a/crypto/chainiv.c
++++ b/crypto/chainiv.c
+@@ -318,10 +318,8 @@ int __init chainiv_module_init(void)
+ {
+ 	return crypto_register_template(&chainiv_tmpl);
+ }
+-EXPORT_SYMBOL_GPL(chainiv_module_init);
+ 
+-void __exit chainiv_module_exit(void)
++void chainiv_module_exit(void)
+ {
+ 	crypto_unregister_template(&chainiv_tmpl);
+ }
+-EXPORT_SYMBOL_GPL(chainiv_module_exit);
+diff --git a/crypto/eseqiv.c b/crypto/eseqiv.c
+index 6f2cd06..b14f14e 100644
+--- a/crypto/eseqiv.c
++++ b/crypto/eseqiv.c
+@@ -251,10 +251,8 @@ int __init eseqiv_module_init(void)
+ {
+ 	return crypto_register_template(&eseqiv_tmpl);
+ }
+-EXPORT_SYMBOL_GPL(eseqiv_module_init);
+ 
+ void __exit eseqiv_module_exit(void)
+ {
+ 	crypto_unregister_template(&eseqiv_tmpl);
+ }
+-EXPORT_SYMBOL_GPL(eseqiv_module_exit);
+diff --git a/include/crypto/internal/skcipher.h b/include/crypto/internal/skcipher.h
+index a8f1264..ccc32ba 100644
+--- a/include/crypto/internal/skcipher.h
++++ b/include/crypto/internal/skcipher.h
+@@ -68,7 +68,7 @@ void skcipher_geniv_exit(struct crypto_tfm *tfm);
+ int __init eseqiv_module_init(void);
+ void __exit eseqiv_module_exit(void);
+ int __init chainiv_module_init(void);
+-void __exit chainiv_module_exit(void);
++void chainiv_module_exit(void);
+ 
+ static inline struct crypto_ablkcipher *skcipher_geniv_cipher(
+ 	struct crypto_ablkcipher *geniv)
+
