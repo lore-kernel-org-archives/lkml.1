@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYCHIct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752102AbYCHIhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbYCHIct (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 03:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYCHIcj
+	id S1752102AbYCHIhT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 03:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbYCHIhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 03:32:39 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38696 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753070AbYCHIcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 03:32:39 -0500
-Date: Sat, 08 Mar 2008 17:33:06 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Kentaro Makita <k-makita@np.css.fujitsu.com>
-Subject: Re: [PATCH][BUGFIX][RFC] fix soft lock up at NFS mount by making limitation of dentry_unused
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org, dgc@sgi.com
-In-Reply-To: <47CF9A1F.50300@np.css.fujitsu.com>
-References: <20080306055416.GF155407@sgi.com> <47CF9A1F.50300@np.css.fujitsu.com>
-Message-Id: <20080308171911.E365.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 8 Mar 2008 03:37:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59932 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbYCHIhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 03:37:05 -0500
+Date: Sat, 8 Mar 2008 09:36:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "G. Vaughan" <gvaughan@jpl.nasa.gov>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Fix check after use in kernel/exit.c
+Message-ID: <20080308083637.GA23555@elte.hu>
+References: <20080308.161105.253167431.xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080308.161105.253167431.xiyou.wangcong@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi makita-san
 
-in general, I agreed with many people disallow >1min hang up.
+* WANG Cong <xiyou.wangcong@gmail.com> wrote:
 
-> > No, we need a smarter free list structure. There have been several attempts
-> > at this in the past. Two that I can recall off the top of my head:
-> > 
-> > 	- per node unused LRUs
-> > 	- per superblock unusued LRUs
-> 
->  I know there is such attempt already, but they are not in main-line.
->  I think this is not a smart but simple way to avoid this ploblem.
+> mm_release won't check the mm_struct pointer, so it should be checked 
+> before this call.
 
-I think 2 improvement is not exclusive.
-your patch is nice, but we need David's patch too. 
+> @@ -582,9 +582,9 @@ static void exit_mm(struct task_struct * tsk)
+>  {
+>  	struct mm_struct *mm = tsk->mm;
+>  
+> -	mm_release(tsk, mm);
+>  	if (!mm)
+>  		return;
+> +	mm_release(tsk, mm);
 
-because 2 patch purpose is different.
+thanks, applied. I'm wondering why this never seems to hit in practice.
 
-per superblock lru:   improve typical performance.
-limit of unused list: prevent too long hang up.
-
-many time hang up happend at worst case even introduce per superblock lru.
-and
-unused list traversal doesn't improvement even introduce limit of unused list.
-
-I hope both.
-
-
-> >> Tested on Intel Itanium 2 9050 (dualcore) x12 MEM 24GB , kernel-2.6.25-rc4
-> >> I found no peformance regression in my tests.
-> > 
-> > Try something that relies on leaving the working set on the unused
-> > list, like NFS server benchmarks that have a working set of tens of
-> > million of files....
-> > 
->  Okay, I'll try some benchmarks and report results...
-
-good luck.
-
-
->   	spin_unlock(&dentry->d_lock);
->  	spin_unlock(&dcache_lock);
-> +	/* Prune unused dentry over threshold level */
-> +	int nr_in_use = (dentry_stat.nr_dentry - dentry_stat.nr_unused);
-> +	if (dentry_stat.nr_dentry > nr_in_use * (dentry_unused_ratio / 100))
-> +		prune_dcache(dentry_stat.nr_unused * 5 / 100 , NULL);
->  	return;
-
-Why don't you make sysctl adjustable interface of dentry_unused_ratio?
-
-
-- kosaki
-
-
+	Ingo
