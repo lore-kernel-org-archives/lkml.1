@@ -1,67 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYCHR5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYCHSBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYCHR5s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 12:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYCHR5h
+	id S1755572AbYCHSBT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 13:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYCHSBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 12:57:37 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:2492 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYCHR5h convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 12:57:37 -0500
-Message-Id: <47D28BAC.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Sat, 08 Mar 2008 10:50:52 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <dmitry.adamushko@gmail.com>, <ego@in.ibm.com>,
-       <suresh.b.siddha@intel.com>, <yi.y.yang@intel.com>,
-       <tglx@linutronix.de>, <akpm@linux-foundation.org>, <rjw@sisk.pl>,
-       <oleg@sign.ru>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] adjust root-domain->online span in response to
-	hotplugevent
-References: <20080308015045.GB15909@linux-os.sc.intel.com>
- <20080308050627.4831.87630.stgit@novell1.haskins.net>
- <20080308084118.GA24552@elte.hu>
-In-Reply-To: <20080308084118.GA24552@elte.hu>
+	Sat, 8 Mar 2008 13:01:10 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:59055 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751867AbYCHSBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 13:01:09 -0500
+Date: Sat, 8 Mar 2008 21:05:39 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: mt-exec && signals
+Message-ID: <20080308180539.GA28398@tv-sign.ru>
+References: <20080307095813.GA8894@tv-sign.ru> <20080307193159.1AFF127010F@magilla.localdomain> <20080307201346.GA107@tv-sign.ru> <20080307211955.A876226F990@magilla.localdomain> <20080307213217.GA2584@tv-sign.ru> <20080307215134.6E6BC26F990@magilla.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080307215134.6E6BC26F990@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Sat, Mar 8, 2008 at  3:41 AM, in message <20080308084118.GA24552@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
+(trim CC list, change the subject)
 
-> * Gregory Haskins <ghaskins@novell.com> wrote:
+On 03/07, Roland McGrath wrote:
+>
+> > Btw, a question: we are buggy or just "not perfect" ? After all, the
+> > main thread actually exits although this is just linux's implementation
+> > detail.
+>
+> I think it's buggy.  The SIGKILL should kill the whole process.
+
+OK, thanks... but the question above was only about the exiting leader in
+the middle of exec...
+
+Do we behave correctly when we send the specific "special" KILL/STOP/CONT
+signal to the zombie leader when the thread group is alive?
+
+For example, SIGKILL is silently (has subtle side effect) ignored, SIGSTOP
+doesn't stop but has side effects, SIGCONT works.
+
+Hmm? If this is not correct we can fix it.
+
+> > > This is the big problem with exec that I've cited before.  It can even
+> > > happen with group-wide signals that should be fatal, but avoided the
+> > > __group_complete_signal special fatal case.  (e.g. the thread racing with
+> > > the exec thread just now unblocked the signal and dequeued it.)  IIRC it
+> > > was the biggest reason we wanted to revisit the whole MT exec plan.
+> > 
+> > Oh. Could you clarify? Afaics, currently exec() can't miss the fatal group
+> > signal?
 > 
->>    Unfortunately, this patch will introduce its own set of bugs. 
->> However, your analysis was spot-on.  I think I see the problem now.  
->> It was introduced when I put a hack in to "fix" s2ram problems in -mm 
->> as a result of the new root-domain logic.  I think the following patch 
->> will fix both issues:
->> 
->> (I verified that I could take a cpu offline/online, but I don't have 
->> an s2ram compatible machine handy.  Andrew, I believe you could 
->> reproduce the s2ram problem a few months ago when that issue popped 
->> up.  So if you could, please verify that s2ram also works with this 
->> patch applied, in addition to the hotplug problem.
+> Threads A and B both block SIGTERM.  An outside process sends SIGTERM,
+> so it is queued in shared_pending but noone wakes.
 > 
-> thanks Gregory, i've queued up your fix. If it passes all tests over the 
-> day i'll send it to Linus in about 12 hours.
+> A starts an exec.		
 > 
+> B unblocks SIGTERM.  
+> B enters get_signal_to_deliver, locks, dequeues SIGTERM, unlocks.
+> Now B is e.g. just before "current->flags |= PF_SIGNALED;".
+> 
+> A locks.  No group-exit is in yet progress.  
+> A does zap_other_threads, and unlocks.
+> 
+> B enters do_group_exit.  A group-exit is in progress, so it just exits.
+> SIGTERM is lost.
 
+Ah, this. Yes I know, we can lost the non-fatal group-wide signal
+on mt-exec. Note that we don't need to block the signal, it could
+be stealed by sub-thread anyway.
 
-After thinking about it some more, I am not sure if I got this fix quite right. The first two hunks are technically fine and should ultimately go in.  The last hunk is questionable.
+> But for me it is just an
+> example of why we still need to step back and think over the whole
+> exec picture.
 
-Ultimately, I believe the root cause of these reported issues is that cpu_online_map and rd->online can get out of sync.  I fear that while the current patch may fix the hotplug/s2ram case, it potentially breaks the disjoint cpuset topology change case.  I will run a few cpuset tests ASAP to confirm, though I may not have a chance until Monday.
+Yes sure.
 
-What I probably need is to tie the code that sets/clears cpu_online_map to the root-domain rd->online map somehow.  However, a cursory cscope inspection has failed to reveal the location that this cpu_online_map manipulation occurs.  If anyone knows where cpu_online_map is actually updated, please let me know.  Otherwise, let me think about this some more and get back to you.
+But I already thought about this, and actually I was almost going
+to send something like the (incomplete) patch below.
 
-In the meantime, cpu_and'ing "task->cpus_allowed & cpu_online_map & rd->online" in the place that Suresh identified should technically fix the hotplug issue without adding more bugs, at the expense of requiring two calls to cpu_and().  The expense should be more or less negligible on mainstream kernels, but may hurt our big-iron (e.g. SGI) brethren.  Hopefully I will come up with a real fix shortly, before it becomes a real issue.
+What do you think? Do you agree it should fix all problems with
+the group signals vs exec?
 
-Regards,
--Greg
+Oleg.
+
+--- kernel/signal.c	2008-03-08 19:15:00.000000000 +0300
++++ kernel/signal.c	2008-03-08 21:00:44.883423954 +0300
+@@ -379,6 +379,9 @@ int dequeue_signal(struct task_struct *t
+ {
+ 	int signr;
+ 
++	if (signal_group_exit(tsk->signal))
++		return SIGKILL;
++
+ 	/* We only dequeue private signals from ourselves, we don't let
+ 	 * signalfd steal them
+ 	 */
+@@ -428,8 +431,7 @@ int dequeue_signal(struct task_struct *t
+ 		 * is to alert stop-signal processing code when another
+ 		 * processor has come along and cleared the flag.
+ 		 */
+-		if (!(tsk->signal->flags & SIGNAL_GROUP_EXIT))
+-			tsk->signal->flags |= SIGNAL_STOP_DEQUEUED;
++		tsk->signal->flags |= SIGNAL_STOP_DEQUEUED;
+ 	}
+ 	if ((info->si_code & __SI_MASK) == __SI_TIMER && info->si_sys_private) {
+ 		/*
+
