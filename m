@@ -1,110 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbYCHRXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYCHRY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbYCHRXP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 12:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYCHRW7
+	id S1756718AbYCHRY7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 12:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYCHRYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 12:22:59 -0500
-Received: from mail2.iitk.ac.in ([203.197.196.2]:42498 "EHLO mail2.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753533AbYCHRW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 12:22:59 -0500
-Date: Sat, 8 Mar 2008 22:52:47 +0530 (IST)
-From: Arun Raghavan <arunsr@cse.iitk.ac.in>
-X-X-Sender: arun@peripatetic.hades
-To: linux-kernel@vger.kernel.org
-cc: dhowells@redhat.com, satyam@infradead.org
-Subject: [PATCH] keyring: Incorrect permissions checking in __keyring_search_one()
-Message-ID: <Pine.LNX.4.64.0803082235430.27953@peripatetic.hades>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 8 Mar 2008 12:24:51 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39796 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753691AbYCHRYu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 12:24:50 -0500
+Subject: Re: [UPDATED v3][PATCH 4/7] regulator: framework core
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20080307003910.72fb8043.akpm@linux-foundation.org>
+References: <1204827115.15360.150.camel@a10323.wolfsonmicro.main>
+	 <20080307003910.72fb8043.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 08 Mar 2008 17:24:46 +0000
+Message-Id: <1204997086.13653.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The __keyring_search_one() function currently has 2 issues with regards
-to permissions:
+On Fri, 2008-03-07 at 00:39 -0800, Andrew Morton wrote:
+> On Thu, 06 Mar 2008 18:11:54 +0000 Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+> 
+> > This patch provides the regulator framework core. The core also provides a
+> > sysfs interface for userspace information.
+> > 
+> > +/* gets the regulator for a given consumer device */
+> > +static struct regulator *get_device_regulator(struct device *dev)
+> > +{
+> > +	struct regulator *regulator = NULL;
+> > +	struct regulator_cdev *rcdev;
+> > +
+> > +	mutex_lock(&regulator_list_mutex);
+> > +	list_for_each_entry(rcdev, &regulator_list, list) {
+> > +		mutex_lock(&rcdev->mutex);
+> > +		list_for_each_entry(regulator, &rcdev->consumer_list, list) {
+> > +			if (regulator->dev == dev) {
+> > +				mutex_unlock(&rcdev->mutex);
+> > +				return regulator;
+> > +			}
+> > +		}
+> > +		mutex_unlock(&rcdev->mutex);
+> > +	}
+> > +	mutex_unlock(&regulator_list_mutex);
+> > +	return NULL;
+> > +}
+> 
+> Is this really supposed to return with the list lock held?  If so, some
+> comment describing the overall locking design here would be better than
+> having to reverse-engineer it.
+> 
+> > +static inline int get_lowest_stable_voltage(struct regulator_cdev *rcdev)
+> > +{
+> > +	struct regulator *regulator;
+> > +	int highest_uV = 0;
+> > +
+> > +	/* lock is held by caller */
+> > +	list_for_each_entry(regulator, &rcdev->consumer_list, list) {
+> > +		if (regulator->enabled && regulator->uV_required > highest_uV)
+> > +			highest_uV = regulator->uV_required;
+> > +	}
+> > +	return highest_uV;
+> > +}
+> 
+> Too large to inline - the compiler will do this for you if it is a benefit
+> to do so.
+> 
+> > +/* Calculate the new optimum regulator operating mode based on the new total
+> > + * consumer load. All locks held by caller */
+> > +static void drms_uA_update(struct regulator_cdev *rcdev)
+> > +{
+> > +	struct regulator *sibling;
+> > +	int current_uA = 0, output_uV, input_uV, err;
+> > +	unsigned int mode;
+> > +
+> > +	err = regulator_check_drms(rcdev);
+> > +	if (err < 0 || !rcdev->desc->ops->get_optimum_mode ||
+> > +	    !rcdev->desc->ops->get_voltage || !rcdev->desc->ops->set_mode);
+> > +	return;
+> > +
+> > +	/* get output voltage */
+> > +	output_uV = rcdev->desc->ops->get_voltage(rcdev);
+> > +
+> > +	/* get input voltage */
+> > +	if (rcdev->parent && rcdev->parent->desc->ops->get_voltage)
+> > +		input_uV = rcdev->parent->desc->ops->get_voltage(rcdev->parent);
+> > +	else
+> > +		input_uV = rcdev->constraints->input_uV;
+> > +
+> > +	/* calc total requested load */
+> > +	list_for_each_entry(sibling, &rcdev->consumer_list, list)
+> > +	    current_uA += sibling->uA_load;
+> 
+> Should be indented with a tab, not spacespacespacespace
 
- 1. It does not check for KEY_SEARCH on the keyring before performing a
-    search
+This patch releases the lock in get_device_regulator(), makes
+get_lowest_stable_voltage() non inline and fixes a minor indentation
+issue.
 
- 2. It accepts a "perm" parameter to check whether a given key in the
-    keyring may be returned. This is incorrect, because it *must* check
-    for KEY_SEARCH on the key before considering it a candidate for a
-    match (and only KEY_SEARCH, since it is merely a search function).
-    In fact, it's only caller, key_create_or_update() passes 0 as the
-    permissions to check for (=> a key will be returned even if it
-    doesn't have KEY_SEARCH set)
+Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/reg-core.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-The second was discovered by Satyam Sharma <satyam@infradead.org>. Here
-is a patch that fixes both issues.
-
-Signed-off-by: Arun Raghavan <arunsr@cse.iitk.ac.in>
-Acked-by: Satyam Sharma <satyam@infradead.org>
-
-diff --git a/security/keys/internal.h b/security/keys/internal.h
-index d36d693..94bffb8 100644
---- a/security/keys/internal.h
-+++ b/security/keys/internal.h
-@@ -83,8 +83,7 @@ extern int __key_link(struct key *keyring, struct key *key);
+diff --git a/drivers/regulator/reg-core.c b/drivers/regulator/reg-core.c
+index 56367ab..e29584f 100644
+--- a/drivers/regulator/reg-core.c
++++ b/drivers/regulator/reg-core.c
+@@ -85,6 +85,7 @@ static struct regulator *get_device_regulator(struct device *dev)
+ 		list_for_each_entry(regulator, &rcdev->consumer_list, list) {
+ 			if (regulator->dev == dev) {
+ 				mutex_unlock(&rcdev->mutex);
++				mutex_unlock(&regulator_list_mutex);
+ 				return regulator;
+ 			}
+ 		}
+@@ -336,7 +337,7 @@ struct class regulator_class = {
+ };
  
- extern key_ref_t __keyring_search_one(key_ref_t keyring_ref,
- 				      const struct key_type *type,
--				      const char *description,
--				      key_perm_t perm);
-+				      const char *description);
- 
- extern struct key *keyring_search_instkey(struct key *keyring,
- 					  key_serial_t target_id);
-diff --git a/security/keys/key.c b/security/keys/key.c
-index ca1d921..524249a 100644
---- a/security/keys/key.c
-+++ b/security/keys/key.c
-@@ -800,8 +800,7 @@ key_ref_t key_create_or_update(key_ref_t keyring_ref,
- 	 * update that instead if possible
- 	 */
- 	if (ktype->update) {
--		key_ref = __keyring_search_one(keyring_ref, ktype, description,
--					       0);
-+		key_ref = __keyring_search_one(keyring_ref, ktype, description);
- 		if (!IS_ERR(key_ref))
- 			goto found_matching_key;
- 	}
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index 88292e3..c7f6fd2 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -446,17 +446,22 @@ EXPORT_SYMBOL(keyring_search);
-  */
- key_ref_t __keyring_search_one(key_ref_t keyring_ref,
- 			       const struct key_type *ktype,
--			       const char *description,
--			       key_perm_t perm)
-+			       const char *description)
+ /* find the lowest stable voltage that all enabled clients can operate at */
+-static inline int get_lowest_stable_voltage(struct regulator_cdev *rcdev)
++static int get_lowest_stable_voltage(struct regulator_cdev *rcdev)
  {
- 	struct keyring_list *klist;
- 	unsigned long possessed;
- 	struct key *keyring, *key;
- 	int loop;
-+	long err;
+ 	struct regulator *regulator;
+ 	int highest_uV = 0;
+@@ -387,7 +388,7 @@ static void drms_uA_update(struct regulator_cdev *rcdev)
  
- 	keyring = key_ref_to_ptr(keyring_ref);
- 	possessed = is_key_possessed(keyring_ref);
+ 	/* calc total requested load */
+ 	list_for_each_entry(sibling, &rcdev->consumer_list, list)
+-	    current_uA += sibling->uA_load;
++			   current_uA += sibling->uA_load;
  
-+	/* the keyring must have search permission to begin the search */
-+	err = key_permission(keyring_ref, KEY_SEARCH);
-+	if (err < 0)
-+		return ERR_PTR(err);
-+
- 	rcu_read_lock();
- 
- 	klist = rcu_dereference(keyring->payload.subscriptions);
-@@ -468,7 +473,7 @@ key_ref_t __keyring_search_one(key_ref_t keyring_ref,
- 			    (!key->type->match ||
- 			     key->type->match(key, description)) &&
- 			    key_permission(make_key_ref(key, possessed),
--					   perm) == 0 &&
-+					   KEY_SEARCH) == 0 &&
- 			    !test_bit(KEY_FLAG_REVOKED, &key->flags)
- 			    )
- 				goto found;
+ 	/* now get the optimum mode for our new total regulator load */
+ 	mode = rcdev->desc->ops->get_optimum_mode(rcdev, input_uV,
+-- 
+1.5.4.3
+
+
+
