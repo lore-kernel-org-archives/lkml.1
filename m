@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbYCHCLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbYCHCPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbYCHCLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 21:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYCHCLE
+	id S1759960AbYCHCPX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 21:15:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbYCHCPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 21:11:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54934 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751265AbYCHCLC (ORCPT
+	Fri, 7 Mar 2008 21:15:11 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:58258 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756290AbYCHCPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 21:11:02 -0500
-Date: Fri, 7 Mar 2008 18:09:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, dmitry.adamushko@gmail.com,
-       ego@in.ibm.com, mingo@elte.hu, oleg@tv-sign.ru, yi.y.yang@intel.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
- dealocked when cpu is set to offline
-Message-Id: <20080307180959.41498329.akpm@linux-foundation.org>
-In-Reply-To: <20080308015045.GB15909@linux-os.sc.intel.com>
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
-	<20080307230126.GA15909@linux-os.sc.intel.com>
-	<20080307152934.5c4052db.akpm@linux-foundation.org>
-	<200803080043.16817.rjw@sisk.pl>
-	<20080308015045.GB15909@linux-os.sc.intel.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 21:15:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=PP72m28fNa+VtuiAg+C7DE4BlBgL+6mFr5sEIFcbMmFzn+c9vcN5zutP+tIs56sZM
+	cfC5QwXpj+DmUMgY43ERQ==
+Date: Fri, 7 Mar 2008 18:14:56 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org,
+       Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm 2/2] mempolicy: use default_policy mode instead of
+ MPOL_DEFAULT
+In-Reply-To: <Pine.LNX.4.64.0803071754250.12037@schroedinger.engr.sgi.com>
+Message-ID: <alpine.DEB.1.00.0803071809010.13800@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com> <alpine.DEB.1.00.0803071722170.4611@chino.kir.corp.google.com> <20080307192845.0492c6f9.pj@sgi.com> <alpine.DEB.1.00.0803071730340.6241@chino.kir.corp.google.com> <20080307193543.6a55ff8d.pj@sgi.com>
+ <Pine.LNX.4.64.0803071754250.12037@schroedinger.engr.sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008 17:50:45 -0800 Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+On Fri, 7 Mar 2008, Christoph Lameter wrote:
 
-> Andrew, Can you please try one more patch(appended) to see if it helps?
+> And where is the patch to set the system (or cpuset....) default policy? 
+> ;-)
 > 
 
-Not until Monday, sorry - the offending machine is at work and (due to
-this bug) cannot be woken via LAN.
+The system default policy is inherently defined in get_vma_policy() and 
+alloc_pages_current().
 
-> ---
+> Note that the system default policy changes during bootup. Could that be 
+> done with the default policy? We had some issues a while back with 
+> processes spawned at boot inheriting the interleave policy. If they could 
+> refer to default_policy instead then a change of default_policy would 
+> switch all spawned processes to use MPOL_DEFAULT?
 > 
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index 0a6d2e5..8cb707c 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -597,7 +597,7 @@ static int find_lowest_cpus(struct task_struct *task, cpumask_t *lowest_mask)
->  	int       count       = 0;
->  	int       cpu;
->  
-> -	cpus_and(*lowest_mask, task_rq(task)->rd->online, task->cpus_allowed);
-> +	cpus_and(*lowest_mask, task->cpus_allowed, cpu_online_map);
+
+With the patch, get_vma_policy() would return the VMA's policy if it has 
+its own get_policy() function that returns a valid policy or differs from 
+the default, otherwise it would refer to whatever default_policy is 
+statically allocated to represent.
+
+For task mempolicies, alloc_pages_current() has always used default_policy 
+if current->mempolicy is NULL.  So you can change default_policy.policy to 
+be anything you want (and its v.nodes or v.preferred_node members) and 
+that will be the effected policy for any task that doesn't have a valid 
+->mempolicy.
