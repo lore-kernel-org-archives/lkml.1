@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYCIU2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYCIU3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbYCIU2n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYCIU2f
+	id S1755194AbYCIU3J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 16:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYCIU2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:28:35 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:1627 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbYCIU2f (ORCPT
+	Sun, 9 Mar 2008 16:28:51 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:39922 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbYCIU2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:28:35 -0400
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       heukelum@fastmail.fm
-Subject: Re: [PATCH] x86: Change x86 to use generic find_next_bit
-References: <20080309200103.GA895@mailshack.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 09 Mar 2008 21:28:32 +0100
-In-Reply-To: <20080309200103.GA895@mailshack.com>
-Message-ID: <87zlt7zlov.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sun, 9 Mar 2008 16:28:50 -0400
+From: Junio C Hamano <junio@pobox.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.4.4
+References: <7vr6f31iwj.fsf@gitster.siamese.dyndns.org>
+ <7vr6eknpjf.fsf@gitster.siamese.dyndns.org> <47D416C8.1020903@garzik.org>
+Date: Sun, 09 Mar 2008 13:28:39 -0700
+In-Reply-To: <47D416C8.1020903@garzik.org> (Jeff Garzik's message of "Sun, 09
+ Mar 2008 12:56:40 -0400")
+Message-ID: <7v1w6jod54.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Mar 2008 20:22:01.0658 (UTC) FILETIME=[3BAAE1A0:01C88223]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum <heukelum@mailshack.com> writes:
-> 
-> If the bitmap size is not a multiple of BITS_PER_LONG, and no set 
-> (cleared) bit is found, find_next_bit (find_next_zero_bit) returns a 
-> value outside of the range [0,size]. The generic version always returns 
-> exactly size.
+Jeff Garzik <jeff@garzik.org> writes:
 
-With that change it is likely possible to remove the min(NR_CPUS in
-lib/cpumask.c __first/__next_cpu. iirc it was just a workaround for
-the x86 quirk. I suspect with such a change it would be possible to
-inline those again, possibly speeding up some loops who do cpumask
-walking (iirc the scheduler used to do that frequently)
+> Junio C Hamano wrote:
+>> The latest maintenance release GIT 1.5.4.4 is available at the
+>> usual places:
+>>
+>>   http://www.kernel.org/pub/software/scm/git/
+>>
+>>   git-1.5.4.4.tar.{gz,bz2}			(tarball)
+>>   git-htmldocs-1.5.4.4.tar.{gz,bz2}		(preformatted docs)
+>>   git-manpages-1.5.4.4.tar.{gz,bz2}		(preformatted docs)
+>>   RPMS/$arch/git-*-1.5.4.4-1.$arch.rpm	(RPM)
+>
+> Does it address the following issue, present in git-core-1.5.4.1-1.fc8?
+>
+> http://marc.info/?l=git&m=120423022832530&w=2
 
--Andi
+I do not think so.
+
+Is it really an issue, or is it just a warning message unread/unfollowed?
+
+I am comparing the last line you quoted from the command output in that
+message, which suggests the user to run 'git prune', and your comment on
+the next line in that message that says "I regularly run 'git gc'", and
+scratching my head.  I cannot tell if you regularly run 'git prune' or not
+from it...
+
 
