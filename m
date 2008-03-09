@@ -1,95 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYCIRIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYCIRJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbYCIRIj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 13:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYCIRIc
+	id S1754018AbYCIRJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 13:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYCIRJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 13:08:32 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:56499 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbYCIRIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 13:08:32 -0400
-Message-ID: <1205082504.47d41988f0db5@imp.free.fr>
-Date: Sun, 09 Mar 2008 18:08:24 +0100
-From: bruno.roussel@free.fr
-To: linux-kernel@vger.kernel.org
-Subject: possible recursive locking detected
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 82.249.157.153
+	Sun, 9 Mar 2008 13:09:17 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:59689 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750818AbYCIRJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 13:09:16 -0400
+Message-Id: <20080309170925.857156000@chello.nl>
+References: <20080309170850.256853000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Sun, 09 Mar 2008 18:08:51 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC/PATCH 01/17] sched: mix tasks and groups
+Content-Disposition: inline; filename=dhaval-fairness-model.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch allows tasks and groups to exist in the same cfs_rq. With this
+change the CFS group scheduling follows a 1/(M+N) model from a 1/(1+N)
+fairness model where M tasks and N groups exist at the cfs_rq level.
 
-Hi !
+[a.p.zijlstra@chello.nl: rt bits]
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c      |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/sched_fair.c |   48 +++++++++++++++++++++++++++++++++++++++++++---
+ kernel/sched_rt.c   |   15 ++++++++------
+ 3 files changed, 106 insertions(+), 11 deletions(-)
 
-Sorry for the next message without object !
+Index: linux-2.6-2/kernel/sched.c
+===================================================================
+--- linux-2.6-2.orig/kernel/sched.c
++++ linux-2.6-2/kernel/sched.c
+@@ -273,18 +273,23 @@ struct task_group {
+ };
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
++
++#ifdef CONFIG_USER_SCHED
+ /* Default task group's sched entity on each cpu */
+ static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+ /* Default task group's cfs_rq on each cpu */
+ static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
++#endif
+ 
+ static struct sched_entity *init_sched_entity_p[NR_CPUS];
+ static struct cfs_rq *init_cfs_rq_p[NR_CPUS];
+ #endif
+ 
+ #ifdef CONFIG_RT_GROUP_SCHED
++#ifdef CONFIG_USER_SCHED
+ static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
++#endif
+ 
+ static struct sched_rt_entity *init_sched_rt_entity_p[NR_CPUS];
+ static struct rt_rq *init_rt_rq_p[NR_CPUS];
+@@ -7279,6 +7284,10 @@ static void init_tg_cfs_entry(struct rq 
+ 		list_add(&cfs_rq->leaf_cfs_rq_list, &rq->leaf_cfs_rq_list);
+ 
+ 	tg->se[cpu] = se;
++	/* se could be NULL for init_task_group */
++	if (!se)
++		return;
++
+ 	se->cfs_rq = &rq->cfs;
+ 	se->my_q = cfs_rq;
+ 	se->load.weight = tg->shares;
+@@ -7301,6 +7310,9 @@ static void init_tg_rt_entry(struct rq *
+ 		list_add(&rt_rq->leaf_rt_rq_list, &rq->leaf_rt_rq_list);
+ 
+ 	tg->rt_se[cpu] = rt_se;
++	if (!rt_se)
++		return;
++
+ 	rt_se->rt_rq = &rq->rt;
+ 	rt_se->my_q = rt_rq;
+ 	rt_se->parent = NULL;
+@@ -7343,18 +7355,56 @@ void __init sched_init(void)
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 		init_task_group.shares = init_task_group_load;
+ 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
++#ifdef CONFIG_CGROUP_SCHED
++		/*
++		 * How much cpu bandwidth does init_task_group get?
++		 *
++		 * In case of task-groups formed thr' the cgroup filesystem, it
++		 * gets 100% of the cpu resources in the system. This overall
++		 * system cpu resource is divided among the tasks of
++		 * init_task_group and its child task-groups in a fair manner,
++		 * based on each entity's (task or task-group's) weight
++		 * (se->load.weight).
++		 *
++		 * In other words, if init_task_group has 10 tasks of weight
++		 * 1024) and two child groups A0 and A1 (of weight 1024 each),
++		 * then A0's share of the cpu resource is:
++		 *
++		 * 	A0's bandwidth = 1024 / (10*1024 + 1024 + 1024) = 8.33%
++		 *
++		 * We achieve this by letting init_task_group's tasks sit
++		 * directly in rq->cfs (i.e init_task_group->se[] = NULL).
++		 */
++		init_tg_cfs_entry(rq, &init_task_group, &rq->cfs, NULL, i, 1);
++#elif defined CONFIG_USER_SCHED
++		/*
++		 * In case of task-groups formed thr' the user id of tasks,
++		 * init_task_group represents tasks belonging to root user.
++		 * Hence it forms a sibling of all subsequent groups formed.
++		 * In this case, init_task_group gets only a fraction of overall
++		 * system cpu resource, based on the weight assigned to root
++		 * user's cpu share (INIT_TASK_GROUP_LOAD). This is accomplished
++		 * by letting tasks of init_task_group sit in a separate cfs_rq
++		 * (init_cfs_rq) and having one entity represent this group of
++		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
++		 */
+ 		init_tg_cfs_entry(rq, &init_task_group,
+ 				&per_cpu(init_cfs_rq, i),
+ 				&per_cpu(init_sched_entity, i), i, 1);
+ 
+ #endif
++#endif /* CONFIG_FAIR_GROUP_SCHED */
++
++		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
+ #ifdef CONFIG_RT_GROUP_SCHED
+ 		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
++#ifdef CONFIG_CGROUP_SCHED
++		init_tg_rt_entry(rq, &init_task_group, &rq->rt, NULL, i, 1);
++#elif defined CONFIG_USER_SCHED
+ 		init_tg_rt_entry(rq, &init_task_group,
+ 				&per_cpu(init_rt_rq, i),
+ 				&per_cpu(init_sched_rt_entity, i), i, 1);
+-#else
+-		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
++#endif
+ #endif
+ 
+ 		for (j = 0; j < CPU_LOAD_IDX_MAX; j++)
+Index: linux-2.6-2/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-2.orig/kernel/sched_fair.c
++++ linux-2.6-2/kernel/sched_fair.c
+@@ -1029,6 +1029,17 @@ out_set_cpu:
+ }
+ #endif /* CONFIG_SMP */
+ 
++/* return depth at which a sched entity is present in the hierarchy */
++static inline int depth_se(struct sched_entity *se)
++{
++	int depth = 0;
++
++	for_each_sched_entity(se)
++		depth++;
++
++	return depth;
++}
++
+ 
+ /*
+  * Preempt the current task with a newly woken task if needed:
+@@ -1039,6 +1050,7 @@ static void check_preempt_wakeup(struct 
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+ 	struct sched_entity *se = &curr->se, *pse = &p->se;
+ 	unsigned long gran;
++	int se_depth, pse_depth;
+ 
+ 	if (unlikely(rt_prio(p->prio))) {
+ 		update_rq_clock(rq);
+@@ -1056,6 +1068,27 @@ static void check_preempt_wakeup(struct 
+ 	if (!sched_feat(WAKEUP_PREEMPT))
+ 		return;
+ 
++	/*
++	 * preemption test can be made between sibling entities who are in the
++	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
++	 * both tasks until we find their ancestors who are siblings of common
++	 * parent.
++	 */
++
++	/* First walk up until both entities are at same depth */
++	se_depth = depth_se(se);
++	pse_depth = depth_se(pse);
++
++	while (se_depth > pse_depth) {
++		se_depth--;
++		se = parent_entity(se);
++	}
++
++	while (pse_depth > se_depth) {
++		pse_depth--;
++		pse = parent_entity(pse);
++	}
++
+ 	while (!is_same_group(se, pse)) {
+ 		se = parent_entity(se);
+ 		pse = parent_entity(pse);
+@@ -1122,13 +1155,22 @@ static void put_prev_task_fair(struct rq
+ static struct task_struct *
+ __load_balance_iterator(struct cfs_rq *cfs_rq, struct rb_node *curr)
+ {
+-	struct task_struct *p;
++	struct task_struct *p = NULL;
++	struct sched_entity *se;
+ 
+ 	if (!curr)
+ 		return NULL;
+ 
+-	p = rb_entry(curr, struct task_struct, se.run_node);
+-	cfs_rq->rb_load_balance_curr = rb_next(curr);
++	/* Skip over entities that are not tasks */
++	do {
++		se = rb_entry(curr, struct sched_entity, run_node);
++		curr = rb_next(curr);
++	} while (curr && !entity_is_task(se));
++
++	cfs_rq->rb_load_balance_curr = curr;
++
++	if (entity_is_task(se))
++		p = task_of(se);
+ 
+ 	return p;
+ }
+Index: linux-2.6-2/kernel/sched_rt.c
+===================================================================
+--- linux-2.6-2.orig/kernel/sched_rt.c
++++ linux-2.6-2/kernel/sched_rt.c
+@@ -374,11 +374,15 @@ static void update_curr_rt(struct rq *rq
+ 	curr->se.exec_start = rq->clock;
+ 	cpuacct_charge(curr, delta_exec);
+ 
+-	spin_lock(&rt_rq->rt_runtime_lock);
+-	rt_rq->rt_time += delta_exec;
+-	if (sched_rt_runtime_exceeded(rt_rq))
+-		resched_task(curr);
+-	spin_unlock(&rt_rq->rt_runtime_lock);
++	for_each_sched_rt_entity(rt_se) {
++		rt_rq = rt_rq_of_se(rt_se);
++
++		spin_lock(&rt_rq->rt_runtime_lock);
++		rt_rq->rt_time += delta_exec;
++		if (sched_rt_runtime_exceeded(rt_rq))
++			resched_task(curr);
++		spin_unlock(&rt_rq->rt_runtime_lock);
++	}
+ }
+ 
+ static inline
+@@ -477,7 +481,6 @@ static void dequeue_rt_entity(struct sch
+  * entries, we must remove entries top - down.
+  *
+  * XXX: O(1/2 h^2) because we can only walk up, not down the chain.
+- *      doesn't matter much for now, as h=2 for GROUP_SCHED.
+  */
+ static void dequeue_rt_stack(struct task_struct *p)
+ {
 
+--
 
-I have this report in dmesg :
-
-
-saa7146_vv: saa7146 (0): registered device video0 [v4l2]
-saa7146_vv: saa7146 (0): registered device vbi0 [v4l2]
-usb-storage: device found at 2
-usb-storage: waiting for device to settle before scanning
-dvb-usb: found a 'Hauppauge WinTV-NOVA-T usb2' in warm state.
-dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-DVB: registering new adapter (Hauppauge WinTV-NOVA-T usb2)
-dvb-usb: MAC address: 00:0d:fe:00:00:00
-DVB: registering frontend 1 (DiBcom 3000MC/P)...
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.24.2-1mdv #1
----------------------------------------------
-modprobe/2082 is trying to acquire lock:
- (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
-
-but task is already holding lock:
- (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
-
-other info that might help us debug this:
-1 lock held by modprobe/2082:
- #0:  (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b
-[i2c_core]
-
-stack backtrace:
-Pid: 2082, comm: modprobe Not tainted 2.6.24.2-1mdv #1
- [<c01054c2>] show_trace_log_lvl+0x1a/0x2f
- [<c0105ccf>] show_trace+0x12/0x14
- [<c0105fd7>] dump_stack+0x6a/0x70
- [<c0139e5b>] __lock_acquire+0x16b/0xc32
- [<c013ad80>] lock_acquire+0x70/0x92
- [<c02c937f>] mutex_lock_nested+0xf9/0x2a4
- [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
- [<eef611fb>] dibx000_i2c_gated_tuner_xfer+0x172/0x18c [dibx000_common]
- [<eeed4140>] i2c_transfer+0x39/0x4b [i2c_core]
- [<eefbc17c>] mt2060_readreg+0x48/0x68 [mt2060]
- [<eefbc486>] mt2060_attach+0x49/0x1ef [mt2060]
- [<eefa3527>] dibusb_dib3000mc_tuner_attach+0x145/0x1fb [dvb_usb_dibusb_common]
- [<eef83c49>] dvb_usb_adapter_frontend_init+0xc4/0xe8 [dvb_usb]
- [<eef837aa>] dvb_usb_device_init+0x3e8/0x4ce [dvb_usb]
- [<eef7f01c>] nova_t_probe+0x1c/0x1e [dvb_usb_nova_t_usb2]
- [<eeeb1f51>] usb_probe_interface+0xd5/0x112 [usbcore]
- [<c02420bb>] driver_probe_device+0xca/0x14d
- [<c0242225>] __driver_attach+0x4a/0x7f
- [<c024164f>] bus_for_each_dev+0x38/0x5a
- [<c0241f25>] driver_attach+0x19/0x1b
- [<c0241966>] bus_add_driver+0x76/0x194
- [<c02423dd>] driver_register+0x67/0x6c
- [<eeeb1ae7>] usb_register_driver+0x7e/0xe5 [usbcore]
- [<eef8d01b>] nova_t_module_init+0x1b/0x38 [dvb_usb_nova_t_usb2]
- [<c0140e78>] sys_init_module+0x12c6/0x1394
- [<c0103e12>] sysenter_past_esp+0x6b/0xc9
- =======================
-input: IR-receiver inside an USB DVB receiver as /class/input/input2
-dvb-usb: schedule remote query interval to 100 msecs.
-dvb-usb: Hauppauge WinTV-NOVA-T usb2 successfully initialized and connected.
-usbcore: registered new interface driver dvb_usb_nova_t_usb2
-DVB: registering frontend 0 (ST STV0299 DVB-S)...
-input: DVB on-card IR receiver as /class/input/input3
-dvb-ttpci: found av7110-0.
