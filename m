@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYCIKts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYCILFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbYCIKts (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 06:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYCIKtl
+	id S1753264AbYCILFq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 07:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYCILFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 06:49:41 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:62365 "EHLO aun.it.uu.se"
+	Sun, 9 Mar 2008 07:05:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37102 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbYCIKtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 06:49:40 -0400
+	id S1751233AbYCILFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 07:05:36 -0400
+Date: Sun, 9 Mar 2008 12:05:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC, PATCH] signals: print_fatal_signal: fix the signr
+	"calculation"
+Message-ID: <20080309110511.GA18128@elte.hu>
+References: <20080308172453.GA28323@tv-sign.ru> <20080308190311.779B326F990@magilla.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18387.49334.235230.751065@harpo.it.uu.se>
-Date: Sun, 9 Mar 2008 11:49:26 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, Mikael Pettersson <mikpe@it.uu.se>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Mark kobjects as unitialized
-In-Reply-To: <200803091251.15428.balajirrao@gmail.com>
-References: <200803062223.18857.balajirrao@gmail.com>
-	<200803091206.02680.balajirrao@gmail.com>
-	<20080309070307.GA6154@suse.de>
-	<200803091251.15428.balajirrao@gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+In-Reply-To: <20080308190311.779B326F990@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balaji Rao writes:
- > Yes the idea works. One more memset is needed in sysdev_register. Here's the final patch.
- > 
- > diff --git a/drivers/base/sys.c b/drivers/base/sys.c
- > index 2f79c55..7c839d9 100644
- > --- a/drivers/base/sys.c
- > +++ b/drivers/base/sys.c
- > @@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_class * cls)
- >         pr_debug("Registering sysdev class '%s'\n",
- >                  kobject_name(&cls->kset.kobj));
- >         INIT_LIST_HEAD(&cls->drivers);
- > +       memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
- >         cls->kset.kobj.parent = &system_kset->kobj;
- >         cls->kset.kobj.ktype = &ktype_sysdev_class;
- >         cls->kset.kobj.kset = system_kset;
- > @@ -227,6 +228,7 @@ int sysdev_register(struct sys_device * sysdev)
- >  
- >         pr_debug("Registering sys device '%s'\n", kobject_name(&sysdev->kobj));
- >  
- > +       memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
- >         /* Make sure the kset is set */
- >         sysdev->kobj.kset = &cls->kset;
- > 
 
-Thanks, 2.6.25-rc4 + these two memset()s is finally stable for
-me with no warnings, BUG()s, or panics.
+* Roland McGrath <roland@redhat.com> wrote:
 
-(However, the patch is whitespace damaged with initial tabs
-converted to spaces.)
+> I'm not sure print-fatal-signals was really ever intended for 
+> non-coredump signals.  It doesn't seem like it would be all that 
+> useful.  It's probably even undesireable for every normal C-c killing 
+> something to cause a printk.
 
-If you want to pass this on to Linus, you can add a
+correct. We used to have them for SIGKILL but even that was confusing to 
+users - so the intent very much is to only have them for truly 
+unexpected, non-user generated and 'fatal', coredump-generating signals.
 
-Tested-by: Mikael Pettersson <mikpe@it.uu.se>
-
-/Mikael
+	Ingo
