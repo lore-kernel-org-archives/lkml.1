@@ -1,37 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYCIUQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYCIURI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbYCIUQt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYCIUQ3
+	id S1755165AbYCIURI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 16:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYCIUQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:16:29 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:35594 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbYCIUQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:16:27 -0400
-Date: Sun, 9 Mar 2008 21:14:28 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
-       Lee Revell <rlrevell@joe-job.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080309211428.5d93f042@mjolnir.drzeus.cx>
-In-Reply-To: <20080309193009.GD27193@khazad-dum.debian.net>
-References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
-	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
-	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
-	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
-	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
-	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
-	<20080306092730.4412d085@mjolnir.drzeus.cx>
-	<20080309151659.63d54f38@mjolnir.drzeus.cx>
-	<20080309193009.GD27193@khazad-dum.debian.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+	Sun, 9 Mar 2008 16:16:44 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44475 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754752AbYCIUQn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 16:16:43 -0400
+Date: Sun, 9 Mar 2008 20:03:39 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Dave Young" <hidave.darkstar@gmail.com>,
+       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] add time_now_after and other macros which compare
+ with jiffies
+Message-ID: <20080309200339.1e39689a@core>
+In-Reply-To: <20080309113601.b8552a79.akpm@linux-foundation.org>
+References: <200803080735.06984.hidave.darkstar@gmail.com>
+	<877igd6vqn.fsf@saeurebad.de>
+	<a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
+	<20080309095802.70d91c7b@core>
+	<20080309113601.b8552a79.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -39,24 +35,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Mar 2008 16:30:09 -0300
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> a) the existing macros are (I believe) a right royal pita.  It's very
+>    hard to remember which order the args are supposed to be in.
 
-> On Sun, 09 Mar 2008, Pierre Ossman wrote:
-> > I'm beginning to think this is a lost cause. I've tried several variants, all without satisfactory results.
-> 
-> THIS will work:
-> http://www.nordichardware.com/image3.php?id=1446
-> 
-> ThinkPad owners have known this for a while...
-> 
+Its operator(first, second) - the C++ infix operators aren't available in
+C so there isn't much choice.
 
-Odd. The thinkpad sites I've been looking at all agree that glue doesn't help at all. Do you have some more info about that "fix"?
+Really we should be trying to stamp out all these uses of jiffies tests
+so that we can make tickless work ever better.
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Alan
