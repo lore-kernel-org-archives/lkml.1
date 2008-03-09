@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbYCIUby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYCIUl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbYCIUby (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYCIUbq
+	id S1754075AbYCIUl3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 16:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYCIUlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:31:46 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:57560 "EHLO
+	Sun, 9 Mar 2008 16:41:19 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38739 "EHLO
 	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751379AbYCIUbp (ORCPT
+	by vger.kernel.org with ESMTP id S1751002AbYCIUlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:31:45 -0400
-Message-Id: <1205094704.6430.1241420859@webmail.messagingengine.com>
-X-Sasl-Enc: abbO8qiJXEQusUIuqiH2vlLT+6ZztHCVVfmDylqp2KWC 1205094704
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Sun, 9 Mar 2008 16:41:18 -0400
+X-Sasl-enc: kQKZEAqJaPCgFPJw9WxTnnELcYo4RqduT3LotGtfs2CJ 1205095277
+Date: Sun, 9 Mar 2008 17:41:15 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080309204115.GF27193@khazad-dum.debian.net>
+References: <20080304040048.GA31562@codemonkey.org.uk> <20080304071423.0e6b71c1@mjolnir.drzeus.cx> <20080304181924.70aaf8c1@mjolnir.drzeus.cx> <924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com> <20080305070201.0d16cd40@mjolnir.drzeus.cx> <20080305094023.6486ebdf@mjolnir.drzeus.cx> <20080306092730.4412d085@mjolnir.drzeus.cx> <20080309151659.63d54f38@mjolnir.drzeus.cx> <20080309193009.GD27193@khazad-dum.debian.net> <20080309211428.5d93f042@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080309200103.GA895@mailshack.com> <20080309201152.GB28454@elte.hu>
-Subject: Re: [PATCH] x86: Change x86 to use generic find_next_bit
-In-Reply-To: <20080309201152.GB28454@elte.hu>
-Date: Sun, 09 Mar 2008 21:31:44 +0100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080309211428.5d93f042@mjolnir.drzeus.cx>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 9 Mar 2008 21:11:52 +0100, "Ingo Molnar" <mingo@elte.hu> said:
-> * Alexander van Heukelum <heukelum@mailshack.com> wrote:
-> > --- a/lib/find_next_bit.c
-> > +++ b/lib/find_next_bit.c
-> > @@ -15,6 +15,8 @@
-> >  #include <asm/byteorder.h>
-> >  
-> >  #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
-> > +#undef find_next_bit
-> > +#undef find_next_zero_bit
+On Sun, 09 Mar 2008, Pierre Ossman wrote:
+> On Sun, 9 Mar 2008 16:30:09 -0300
+> Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> > On Sun, 09 Mar 2008, Pierre Ossman wrote:
+> > > I'm beginning to think this is a lost cause. I've tried several variants, all without satisfactory results.
+> > 
+> > THIS will work:
+> > http://www.nordichardware.com/image3.php?id=1446
+> > 
+> > ThinkPad owners have known this for a while...
 > 
-> this bit looks weird - did you need it for testing?
+> Odd. The thinkpad sites I've been looking at all agree that glue doesn't help at all. Do you have some more info about that "fix"?
 
-Worse, it's needed to get x86_64 to compile.
+I asked for some pictures for thinkwiki, but nobody sent them in yet :(
 
-They are defined in include/asm-x86/bitops_64.h (which gets
-included). They are used to optimize the case where the
-bitmap size is known at compile time and not larger than
-BITS_PER_LONG. Undeffing them here is the easiest way to get
-things to compile, here.
+You also need to know what glue to use (it needs to be one that is *not* too
+hard when cured or it will just propagate the high frequencies instead of
+dampening them), and where to apply it (it may be the chip, the capacitor,
+or one of the inductors, etc).
 
-Greetings,
-    Alexander
+As soon as the warranty on my T43 is over, I will do some heavy research on
+the subject and hardware-mod it with Arcric ice, a PLL/ICH heatsink and
+noise dampening.
 
 -- 
-http://www.fastmail.fm - The way an email service should be
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
