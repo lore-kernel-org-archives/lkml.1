@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbYCIRFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYCIRIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbYCIRFR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 13:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYCIREd
+	id S1753845AbYCIRIj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 13:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYCIRIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 13:04:33 -0400
-Received: from marge.padd.com ([66.127.62.138]:59027 "EHLO marge.padd.com"
+	Sun, 9 Mar 2008 13:08:32 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:56499 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633AbYCIREc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 13:04:32 -0400
-Date: Sun, 9 Mar 2008 12:53:59 -0400
-From: Pete Wyckoff <pw@osc.edu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [BUG 1/3] bsg queue oops with iscsi logout
-Message-ID: <20080309165359.GA24388@osc.edu>
+	id S1750798AbYCIRIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 13:08:32 -0400
+Message-ID: <1205082504.47d41988f0db5@imp.free.fr>
+Date: Sun, 09 Mar 2008 18:08:24 +0100
+From: bruno.roussel@free.fr
+To: linux-kernel@vger.kernel.org
+Subject: possible recursive locking detected
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.8
+X-Originating-IP: 82.249.157.153
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's an oops.  Mount a target with iscsi.  Start a process that
-holds open the bsg device, in the debugger perhaps.  Then use
-iscsiadm to logout.  Let the bsg process try to submit another
-command.  Its queue is no longer usable, as blk_get_request() finds
-a NULL q->elevator->ops.
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000070
-IP: [<ffffffff802e6adb>] elv_may_queue+0xb/0x20
-PGD 3e8e1067 PUD 3e4ce067 PMD 0 
-Oops: 0000 [1] SMP 
-CPU 1 
-Modules linked in: crc32c libcrc32c rdma_ucm rdma_cm iw_cm ib_addr ib_ipoib ib_ucm ib_cm ib_sa ib_umad ib_uverbs ib_mthca iscsi_tcp libiscsi scsi_transport_iscsi ext3 jbd ib_mad ib_core i2c_nforce2 i2c_core sg sd_mod sata_nv tg3 nfs lockd sunrpc
-Pid: 3000, comm: sgio Not tainted 2.6.25-rc4-bidi-pw #29
-RIP: 0010:[<ffffffff802e6adb>]  [<ffffffff802e6adb>] elv_may_queue+0xb/0x20
-RSP: 0018:ffff81007d15fd28  EFLAGS: 00010046
-RAX: 0000000000000000 RBX: ffff81007d54d468 RCX: 0000000000000010
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff81007d54d468
-RBP: ffff81007d15fd28 R08: 0000000000000001 R09: ffff81007d093e88
-R10: 0000000000000000 R11: 0000000000000000 R12: ffff81007d54d468
-R13: ffff81007d54d488 R14: 0000000000000000 R15: 0000000000000000
-FS:  00002b05a4a17b00(0000) GS:ffff81007f600840(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000070 CR3: 000000003e497000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-Process sgio (pid: 3000, threadinfo ffff81007d15e000, task ffff81007f712830)
-Stack:  ffff81007d15fd98 ffffffff802ea129 ffff810040005358 ffff810040005350
- 00000010000612d0 0000000000000000 ffff81007cda6a68 ffff81007d9de020
- 0000000000000086 0000000000000000 ffff81007d54d468 0000000000000000
-Call Trace:
- [<ffffffff802ea129>] get_request+0x39/0x330
- [<ffffffff802ea44f>] get_request_wait+0x2f/0x1c0
- [<ffffffff80286b27>] ? cache_grow+0x1b7/0x260
- [<ffffffff802ea7d8>] blk_get_request+0x38/0x80
- [<ffffffff802f171c>] bsg_map_hdr+0x9c/0x340
- [<ffffffff802f1aac>] bsg_write+0xec/0x2e0
- [<ffffffff8028d4a7>] vfs_write+0xc7/0x150
- [<ffffffff8028db10>] sys_write+0x50/0x90
- [<ffffffff8020b58b>] system_call_after_swapgs+0x7b/0x80
+Hi !
+
+Sorry for the next message without object !
 
 
-Code: 55 48 8b 47 18 48 89 e5 48 8b 00 48 8b 40 68 48 85 c0 74 05 48 89 f7 ff d0 c9 c3 0f 1f 44 00 00 48 8b 47 18 55 48 89 e5 48 8b 00 <48> 8b 50 70 31 c0 48 85 d2 74 02 ff d2 c9 c3 66 0f 1f 44 00 00 
-RIP  [<ffffffff802e6adb>] elv_may_queue+0xb/0x20
- RSP <ffff81007d15fd28>
-CR2: 0000000000000070
----[ end trace a020f2a7368afcb4 ]---
+I have this report in dmesg :
 
-I think this used not to happen; not sure.  But I changed two things
-lately.  2.6.25-rc1 to -rc4 and fedora 8 iscsi-initiator-utils (865) to
-fedora devel (868).  Bidi and varlen patches always too.
 
-I'll follow with some more variations on this theme.  Looks like bsg
-needs to protect more carefully against the device going away.  Any
-ideas how best to do this?  What was the approach in sg?
+saa7146_vv: saa7146 (0): registered device video0 [v4l2]
+saa7146_vv: saa7146 (0): registered device vbi0 [v4l2]
+usb-storage: device found at 2
+usb-storage: waiting for device to settle before scanning
+dvb-usb: found a 'Hauppauge WinTV-NOVA-T usb2' in warm state.
+dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
+DVB: registering new adapter (Hauppauge WinTV-NOVA-T usb2)
+dvb-usb: MAC address: 00:0d:fe:00:00:00
+DVB: registering frontend 1 (DiBcom 3000MC/P)...
 
-		-- Pete
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.24.2-1mdv #1
+---------------------------------------------
+modprobe/2082 is trying to acquire lock:
+ (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
+
+but task is already holding lock:
+ (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
+
+other info that might help us debug this:
+1 lock held by modprobe/2082:
+ #0:  (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b
+[i2c_core]
+
+stack backtrace:
+Pid: 2082, comm: modprobe Not tainted 2.6.24.2-1mdv #1
+ [<c01054c2>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105ccf>] show_trace+0x12/0x14
+ [<c0105fd7>] dump_stack+0x6a/0x70
+ [<c0139e5b>] __lock_acquire+0x16b/0xc32
+ [<c013ad80>] lock_acquire+0x70/0x92
+ [<c02c937f>] mutex_lock_nested+0xf9/0x2a4
+ [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
+ [<eef611fb>] dibx000_i2c_gated_tuner_xfer+0x172/0x18c [dibx000_common]
+ [<eeed4140>] i2c_transfer+0x39/0x4b [i2c_core]
+ [<eefbc17c>] mt2060_readreg+0x48/0x68 [mt2060]
+ [<eefbc486>] mt2060_attach+0x49/0x1ef [mt2060]
+ [<eefa3527>] dibusb_dib3000mc_tuner_attach+0x145/0x1fb [dvb_usb_dibusb_common]
+ [<eef83c49>] dvb_usb_adapter_frontend_init+0xc4/0xe8 [dvb_usb]
+ [<eef837aa>] dvb_usb_device_init+0x3e8/0x4ce [dvb_usb]
+ [<eef7f01c>] nova_t_probe+0x1c/0x1e [dvb_usb_nova_t_usb2]
+ [<eeeb1f51>] usb_probe_interface+0xd5/0x112 [usbcore]
+ [<c02420bb>] driver_probe_device+0xca/0x14d
+ [<c0242225>] __driver_attach+0x4a/0x7f
+ [<c024164f>] bus_for_each_dev+0x38/0x5a
+ [<c0241f25>] driver_attach+0x19/0x1b
+ [<c0241966>] bus_add_driver+0x76/0x194
+ [<c02423dd>] driver_register+0x67/0x6c
+ [<eeeb1ae7>] usb_register_driver+0x7e/0xe5 [usbcore]
+ [<eef8d01b>] nova_t_module_init+0x1b/0x38 [dvb_usb_nova_t_usb2]
+ [<c0140e78>] sys_init_module+0x12c6/0x1394
+ [<c0103e12>] sysenter_past_esp+0x6b/0xc9
+ =======================
+input: IR-receiver inside an USB DVB receiver as /class/input/input2
+dvb-usb: schedule remote query interval to 100 msecs.
+dvb-usb: Hauppauge WinTV-NOVA-T usb2 successfully initialized and connected.
+usbcore: registered new interface driver dvb_usb_nova_t_usb2
+DVB: registering frontend 0 (ST STV0299 DVB-S)...
+input: DVB on-card IR receiver as /class/input/input3
+dvb-ttpci: found av7110-0.
