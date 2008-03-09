@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYCIUyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYCIU4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755082AbYCIUyz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYCIUyq
+	id S1754809AbYCIU4a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 16:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYCIU4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:54:46 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:39759 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753357AbYCIUyp (ORCPT
+	Sun, 9 Mar 2008 16:56:23 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:40284 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751002AbYCIU4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:54:45 -0400
-X-Sasl-enc: NByv3ZAJwn+RynyiCvq22aZmQ4xJoIs680LXvFqjVlVk 1205096084
-Date: Sun, 9 Mar 2008 17:54:42 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
-       Lee Revell <rlrevell@joe-job.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080309205442.GG27193@khazad-dum.debian.net>
-References: <20080304071423.0e6b71c1@mjolnir.drzeus.cx> <20080304181924.70aaf8c1@mjolnir.drzeus.cx> <924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com> <20080305070201.0d16cd40@mjolnir.drzeus.cx> <20080305094023.6486ebdf@mjolnir.drzeus.cx> <20080306092730.4412d085@mjolnir.drzeus.cx> <20080309151659.63d54f38@mjolnir.drzeus.cx> <20080309193009.GD27193@khazad-dum.debian.net> <20080309211428.5d93f042@mjolnir.drzeus.cx> <20080309204115.GF27193@khazad-dum.debian.net>
+	Sun, 9 Mar 2008 16:56:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=JqJ5wUUs0S+lPlHktryKgyztT93mXru4xHrmV3n8phukt/pNUK7JND2MLYfAfmQLyKZHK+2AHoYMlOE/TpinH07iy67yme/vzdQ+ppB++SrWJTLCOiZraadL2auc4jUjkLtWwIuPMb4niMM271Q7wfmMPoZCGppFIaAFK1m53oM=  ;
+X-YMail-OSG: YPjbhiEVM1mXfsTcvKm1hE80Cv0p1DWSakKWYkXArdWX8JadV9tgLFl.GBrJMxpfWf.1D8cnvA--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.25-rc4] gpio/pca953x bugfix: mark as can_sleep
+Date: Sun, 9 Mar 2008 12:56:19 -0800
+User-Agent: KMail/1.9.6
+Cc: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>,
+       eric miao <eric.y.miao@gmail.com>, lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080309204115.GF27193@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803091356.20024.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 09 Mar 2008, Henrique de Moraes Holschuh wrote:
-> As soon as the warranty on my T43 is over, I will do some heavy research on
-> the subject and hardware-mod it with Arcric ice, a PLL/ICH heatsink and
-> noise dampening.
+The pca953x driver is an I2C driver so gpio_chip->can_sleep should be set.
+This lets upper layers know they should use the gpio_*_cansleep() calls
+to access values, and may not access them from nonsleeping contexts.
 
-I mean Arctic Silver, the thermal-transfer paste (must be the heat here
-playing tricks with my mind :p).
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+Merge before 2.6.25-final, please.  This will for example prevent
+leds-gpio from issuing blocking I2C calls from timer/irq contexts.
 
-It is better than what Lenovo used on the T43 (but not by much, unless you
-did get a defective part to begin with).
+ drivers/gpio/pca953x.c |    1 +
+ 1 file changed, 1 insertion(+)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--- g26.orig/drivers/gpio/pca953x.c	2008-03-08 11:17:22.000000000 -0800
++++ g26/drivers/gpio/pca953x.c	2008-03-09 13:51:13.000000000 -0700
+@@ -184,6 +184,7 @@ static void pca953x_setup_gpio(struct pc
+ 	gc->direction_output = pca953x_gpio_direction_output;
+ 	gc->get = pca953x_gpio_get_value;
+ 	gc->set = pca953x_gpio_set_value;
++	gc->can_sleep = 1;
+ 
+ 	gc->base = chip->gpio_start;
+ 	gc->ngpio = gpios;
