@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbYCISGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYCISJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbYCISGO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 14:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYCISGD
+	id S1753423AbYCISJI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 14:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYCISI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 14:06:03 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:47495 "EHLO mail.g-house.de"
+	Sun, 9 Mar 2008 14:08:56 -0400
+Received: from mail.dunaweb.hu ([81.17.184.3]:41760 "EHLO mail.dunaweb.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbYCISGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 14:06:02 -0400
-Date: Sun, 9 Mar 2008 19:05:53 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Eric Sandeen <sandeen@sandeen.net>
-cc: David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com
-Subject: Re: 2.6.25-rc hangs
-In-Reply-To: <47D413FA.50602@sandeen.net>
-Message-ID: <alpine.DEB.1.00.0803091858480.5349@sheep.housecafe.de>
-References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080307224040.GV155259@sgi.com> <alpine.DEB.1.00.0803080032020.7723@sheep.housecafe.de> <alpine.DEB.1.00.0803080251110.4325@sheep.housecafe.de> <alpine.DEB.1.00.0803090658040.5349@sheep.housecafe.de>
- <47D413FA.50602@sandeen.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	id S1750778AbYCISI4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 14:08:56 -0400
+Message-ID: <47D427B2.6020204@dunaweb.hu>
+Date: Sun, 09 Mar 2008 19:08:50 +0100
+From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       prakash@punnoor.de, pchen@nvidia.com, kluo@nvidia.com
+Subject: Re: SWNCQ should be enabled by default
+References: <47CFE29E.8080107@dunaweb.hu> <47D41E58.6030303@dunaweb.hu> <47D41F4E.7050403@shaw.ca>
+In-Reply-To: <47D41F4E.7050403@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Mar 2008, Eric Sandeen wrote:
->> I tried to follow the git-bisect manpage (and have successfully used
->> bisect in the past a few times), but I think ~5700 revisions between
->> 2.6.24 and 2.6.25 are just too much fuzz. The bisect logs so far, with
->> my comments inbetween:
+Robert Hancock írta:
+> Zoltan Boszormenyi wrote:
+>> Ping. Now with patch.
+>>
+>> Zoltan Boszormenyi írta:
+>>> Hi,
+>>>
+>>> the patch is already upstream, thanks for that.
+>>> I am using it without any problems. Currently I am
+>>> using kernel-2.6.24.3-12.fc8 from the updates-testing
+>>> repository of Fedora 8. I had to add
+>>>
+>>> options scsi_hostadapter1 swncq=1
+>>> options sata_nv swncq=1
+>>>
+>>> before upgrading to get it enabled.
+>>> Can we enable it by default for 2.6.25?
+>>> It's completely independent from ADMA and its problems.
+>>> E.g. my machine has 8GB memory now, no problems at all.
+>>>
+>>> Best regards,
+>>> Zoltán Böszörményi
+>>
 >
-> Christian, what is the test you are using for the bisect?
+> I'll ACK this, at least for -mm..
 
-Sorry, I don't understand: which "test" do you mean?
+Thanks. On the other hand, the meat of the SWNCQ patch
+had its exposure in -mm, there were no problem reports...
 
-I did the bisect as per the bisect log and then just rebooted. Which gave 
-me no usable results yet. I'm trying to boot 2.6.25-rc1 in a few moments 
-and see if the hang is there as well. If it is, I'll start bisecting again 
-and hope that "halfway between -rc1 and .24" will be a bootable kernel 
-this time...
 
-The "error" I'm trying to chase is a system "hang", but no instant lockup. 
-I can reproduce this by increasing disk I/O. I did this primarily with 
-rsync from different filesystems to my backup XFS partition. After a few 
-minutes, the INFO: messages[0] appeared.
-
-Thanks,
-Christian.
-
-[0] http://lkml.org/lkml/2008/3/7/308
--- 
-BOFH excuse #2:
-
-solar flares
