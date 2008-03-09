@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYCIJYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbYCIKLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYCIJYV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 05:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYCIJYE
+	id S1752846AbYCIKLN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 06:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYCIKLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 05:24:04 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4471 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752475AbYCIJX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 05:23:29 -0400
-Date: Sun, 9 Mar 2008 00:36:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.25-rc4
-Message-ID: <20080308233604.GA3866@ucw.cz>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu> <20080306125929.GD17940@kernel.dk> <20080306130643.GB21359@elte.hu> <20080307085341.GA23814@elte.hu>
+	Sun, 9 Mar 2008 06:11:03 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57467 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751269AbYCIKLB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 06:11:01 -0400
+Date: Sun, 9 Mar 2008 09:58:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: "Johannes Weiner" <hannes@saeurebad.de>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] add time_now_after and other macros which compare
+ with jiffies
+Message-ID: <20080309095802.70d91c7b@core>
+In-Reply-To: <a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
+References: <200803080735.06984.hidave.darkstar@gmail.com>
+	<877igd6vqn.fsf@saeurebad.de>
+	<a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307085341.GA23814@elte.hu>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > Presumably any hw issues would get noticed (like missing interrupt) 
-> > > and trigger the error handler, so it looks like this IO is still 
-> > > stuck in the queue somewhere. That mainly points the finger at AS, 
-> > > but given that you cannot reproduce I'm not sure how best to proceed 
-> > > with this...
-> > 
-> > me neither... just wanted to give notice that something's brewing in 
-> > this area. Will know more after tonight's qa series i guess, if it 
-> > gets above 100 bootups ;-)
+> >  > +/* time_now_before_eq(a) return true if now (jiffies) is before or equal to a */
+> >  > +#define time_now_before_eq(a) time_before_eq(jiffies, a)
+> >
+> >  How about even more obvious names like time_is_past(), time_is_future(),
+> >  ...?
 > 
-> no luck - a few hundred successful randconfig bootups overnight (with a 
-> rather complex userspace startup to full X plus networking, and the 
-> testbox is used via the network to compile the next random kernel as 
-> well - etc.) and no failure at all. So there's not much we can do at 
-> this point - i'll keep you updated if anything new happens in the tests.
+> Thanks for comment.
+> 
+> Then how do we name the _eq version?  IMHO, the time_now_* is enough.
 
-How many machines are there in your test farm? Would it be possible to
-make the neccessary scripts available somewhere? I guess I could make
-one or two machines do some automated testing...
+Why do you even need them. I don't see the point of *any* of these extra
+macros as they simply obfuscate code and hide what is actually going on.
+The initial macros were added because of the type safety and correct
+comparison rules being complex. They have a purpose.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Even if you want these you can use !time_future() if you don't want the
+_eq variants. Generally speaking drivers should be using timers not
+polled loops, and most of our loops comparing with jiffies want removing.
 
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan
