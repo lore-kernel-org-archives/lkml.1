@@ -1,91 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbYCIPGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYCIPIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbYCIPGn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 11:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYCIPGg
+	id S1753266AbYCIPIt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 11:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYCIPIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 11:06:36 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:46620
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbYCIPGg (ORCPT
+	Sun, 9 Mar 2008 11:08:41 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:36770 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751777AbYCIPIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 11:06:36 -0400
-Message-ID: <47D3FCF6.70908@microgate.com>
-Date: Sun, 09 Mar 2008 09:06:30 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/char/synclink drivers/pcmcia/synclink - BOOLEAN
- to	bool conversion
-References: <1205046574.656.37.camel@localhost>
-In-Reply-To: <1205046574.656.37.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 9 Mar 2008 11:08:40 -0400
+Subject: Re: kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: mjt@tls.msk.ru, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+In-Reply-To: <20080309212916T.tomof@acm.org>
+References: <47D3C8A1.6040409@msgid.tls.msk.ru>
+	 <20080309212916T.tomof@acm.org>
+Content-Type: text/plain
+Date: Sun, 09 Mar 2008 10:08:35 -0500
+Message-Id: <1205075315.3792.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> Remove more TRUE/FALSE defines and uses
-> Remove == TRUE tests
-> Convert BOOLEAN to bool
-> Convert int to bool where appropriate
+On Sun, 2008-03-09 at 21:29 +0900, FUJITA Tomonori wrote:
+> On Sun, 09 Mar 2008 14:23:13 +0300
+> Michael Tokarev <mjt@tls.msk.ru> wrote:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> > Just got quite.. bad situation on a production server
+> > here.  The machine locked up hard several times in a
+> > row (required hard reboot).  So I finally enabled watchdog
+> > subsystem which helped.
+> > 
+> > Now I see the following (over netconsole):
+> > 
+> > DMA: Out of SW-IOMMU space for 65536 bytes at device 0000:08:07.0
+> > ------------[ cut here ]------------
+> > kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
 > 
->  include/linux/synclink.h          |    4 -
->  drivers/char/pcmcia/synclink_cs.c |  125 +++++++++---------
->  drivers/char/synclink.c           |  258 ++++++++++++++++++-------------------
->  drivers/char/synclink_gt.c        |   88 +++++++-------
->  drivers/char/synclinkmp.c         |  157 +++++++++++-----------
->  5 files changed, 312 insertions(+), 320 deletions(-)
+> Seems that you was out of swiommu space (and aic79xx can't handle it
+> though it should). This happened because:
 > 
-...
-> diff --git a/drivers/char/synclink_gt.c b/drivers/char/synclink_gt.c
-...
-> @@ -4475,14 +4476,13 @@ static void reset_rbufs(struct slgt_info *info)
->  /*
->   * pass receive HDLC frame to upper layer
->   *
-> - * return 1 if frame available, otherwise 0
-> + * return true if frame available, otherwise false
->   */
->  static int rx_get_frame(struct slgt_info *info)
->  {
->  	unsigned int start, end;
->  	unsigned short status;
->  	unsigned int framesize = 0;
-> -	int rc = 0;
->  	unsigned long flags;
->  	struct tty_struct *tty = info->tty;
->  	unsigned char addr_field = 0xff;
-> @@ -4606,10 +4606,10 @@ check_again:
->  		}
->  	}
->  	free_rbufs(info, start, end);
-> -	rc = 1;
-> +	return true;
->  
->  cleanup:
-> -	return rc;
-> +	return false;
->  }
+> a) you produced more I/Os than swiommu can handle.
+> 
+> b) swiommu space leaks due to bugs.
+> 
+> If you hit this problem due to a), the following boot option might
+> help:
+> 
+> swiotlb=65536
+> 
+> The same machine run well with old kernels? If so, probably, 2.6.24
+> has new bugs that lead to swiommu space leak.
 
-If you return bool values from this function
-it would make sense to also change the return value
-of the function declaration to bool.
+Actually, it's worse than this.  The aic79xx is a fully 64 bit capable
+PCI card, it shouldn't be using the iommu at all.  However, it has three
+DMA modes:  64 bit, 39 bit and 32 bit; with a corresponding resource
+cost increasing with the number of bits.  It employs special APIs to
+size the masks according to the memory, in aic79xx_osm_pci.c:
 
-Overall the patch seems reasonable. I need to spend
-time tomorrow going over it more carefully,
-compiling it, and testing it with hardware.
+	if (sizeof(dma_addr_t) > 4) {
+		const u64 required_mask = dma_get_required_mask(dev);
 
-You may wish to shorten the subject line to:
-[PATCH] synclink drivers bool conversion
+		if (required_mask > DMA_39BIT_MASK &&
+		    dma_set_mask(dev, DMA_64BIT_MASK) == 0)
+			ahd->flags |= AHD_64BIT_ADDRESSING;
+		else if (required_mask > DMA_32BIT_MASK &&
+			 dma_set_mask(dev, DMA_39BIT_MASK) == 0)
+			ahd->flags |= AHD_39BIT_ADDRESSING;
+		else
+			dma_set_mask(dev, DMA_32BIT_MASK);
+	} else {
+		dma_set_mask(dev, DMA_32BIT_MASK);
+	}
 
-It is more readable and covers all of the
-patch changes including int to bool conversions.
+Could you firstly tell me how much memory you have, and secondly
+instrument this code with the patch below to see if we can work out what
+it's doing?
 
---
-Paul
+Thanks,
+
+James
+
+---
+
+diff --git a/drivers/scsi/aic7xxx/aic79xx_osm_pci.c b/drivers/scsi/aic7xxx/aic79xx_osm_pci.c
+index dfaaae5..d6e46ce 100644
+--- a/drivers/scsi/aic7xxx/aic79xx_osm_pci.c
++++ b/drivers/scsi/aic7xxx/aic79xx_osm_pci.c
+@@ -194,14 +194,21 @@ ahd_linux_pci_dev_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (sizeof(dma_addr_t) > 4) {
+ 		const u64 required_mask = dma_get_required_mask(dev);
+ 
++		printk("DEBUG: RETURNED REQUIRED MASK %llx\n",
++		       (unsigned long long)required_mask);
++
+ 		if (required_mask > DMA_39BIT_MASK &&
+-		    dma_set_mask(dev, DMA_64BIT_MASK) == 0)
++		    dma_set_mask(dev, DMA_64BIT_MASK) == 0) {
++			printk("DEBUG: SET 64 BIT ADDRESSING\n");
+ 			ahd->flags |= AHD_64BIT_ADDRESSING;
+-		else if (required_mask > DMA_32BIT_MASK &&
+-			 dma_set_mask(dev, DMA_39BIT_MASK) == 0)
++		} else if (required_mask > DMA_32BIT_MASK &&
++			   dma_set_mask(dev, DMA_39BIT_MASK) == 0) {
++			printk("DEBUG: SET 39 BIT ADDRESSING\n");
+ 			ahd->flags |= AHD_39BIT_ADDRESSING;
+-		else
++		} else {
++			printk("DEBUG: SET 32 BIT ADDRESSING\n");
+ 			dma_set_mask(dev, DMA_32BIT_MASK);
++		}
+ 	} else {
+ 		dma_set_mask(dev, DMA_32BIT_MASK);
+ 	}
+
+
