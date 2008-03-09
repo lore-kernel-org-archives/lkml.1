@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYCIUUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYCIUVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbYCIUUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYCIUT6
+	id S1754496AbYCIUVt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 16:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYCIUVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:19:58 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34131 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751313AbYCIUT5 (ORCPT
+	Sun, 9 Mar 2008 16:21:42 -0400
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:18811 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751313AbYCIUVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:19:57 -0400
-Date: Sun, 9 Mar 2008 20:06:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Sun, 9 Mar 2008 16:21:41 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Dave Young" <hidave.darkstar@gmail.com>,
-       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] add time_now_after and other macros which compare
- with jiffies
-Message-ID: <20080309200655.256c8c32@core>
-In-Reply-To: <20080309120133.2d1363e4.akpm@linux-foundation.org>
-References: <200803080735.06984.hidave.darkstar@gmail.com>
-	<877igd6vqn.fsf@saeurebad.de>
-	<a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
-	<20080309095802.70d91c7b@core>
-	<a8e1da0803090344l7f468326r8d3844e20ede08a3@mail.gmail.com>
-	<20080309110808.2249aa3a@core>
-	<20080309120133.2d1363e4.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: quicklists confuse meminfo
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+	<20080309111456.GA21690@elte.hu>
+	<20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu>
+	<20080309114640.85c9c3eb.akpm@linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 09 Mar 2008 21:21:38 +0100
+In-Reply-To: <20080309114640.85c9c3eb.akpm@linux-foundation.org>
+Message-ID: <8763vv1wdp.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Mar 2008 20:15:07.0174 (UTC) FILETIME=[449DA460:01C88222]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We could call them time_is_after_jiffies(), time_is_before_jiffies(), etc.
-> 
-> Those names are actually better than time_after_now(), etc.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Agreed - and if you think its worth doing I bow to your expertise on
-buggy patch submissions..
+> On Sun, 9 Mar 2008 13:34:32 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > the right solution is to get rid of quicklists altogether
+> 
+> Yes, I think so.
+> 
+> - They are pretty marginal from a performance POV (iirc)
+
+One general issue -- as noted again by Christoph Lameter recently --
+is that the order 0 fast path in page_alloc.c isn't actually very 
+fast. That is why people keep inventing their own...
+
+ > - As I said when we merged them (under protest): Private object caches
+>   like this are just a bad idea - caches should be *shared*, because some
+>   other code path which wants a zeroed page wants a cache-warm one, not a
+>   cache-cold one from the allocator (iirc there was doubt over how
+>   cache-warm these pages are, however).
+> 
+>   Making __GFP_ZERO smarter/more efficient would be a preferable way of
+>   addressing any performance problems we have in there.
+
+To do the same as quicklists you would need a __free_pages_zeroed()
+and separate buddy lists I think.  Later is probably somewhat ugly.
+Or perhaps do it only for order 0?
+
+Or perhaps idle time zeroing should be reinvestigated on modern CPUs,
+but I'm always a little sceptical of that.
+
+-Andi
