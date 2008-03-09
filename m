@@ -1,116 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbYCIVN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYCIVQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318AbYCIVN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 17:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYCIVNR
+	id S1754555AbYCIVQh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 17:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYCIVQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 17:13:17 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34473 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751071AbYCIVNQ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 17:13:16 -0400
-Message-Id: <1205097195.13205.1241421773@webmail.messagingengine.com>
-X-Sasl-Enc: e0eBDXeVgVFj4JxDH25w0jI1K2uB7jVRBjOW9IOpuEIy 1205097195
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="ISO-8859-1"
+	Sun, 9 Mar 2008 17:16:29 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:39420 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751002AbYCIVQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 17:16:29 -0400
+Date: Sun, 9 Mar 2008 22:16:24 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: bruno.roussel@free.fr
+cc: LKML <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org, jikos@jikos.cz
+Subject: Re: possible recursive locking detected
+In-Reply-To: <1205082504.47d41988f0db5@imp.free.fr>
+Message-ID: <alpine.DEB.1.00.0803092215010.5349@sheep.housecafe.de>
+References: <1205082504.47d41988f0db5@imp.free.fr>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: Re: [PATCH] x86: Change x86 to use generic find_next_bit
-In-Reply-To: <20080309201016.GA28454@elte.hu>
-Date: Sun, 09 Mar 2008 22:13:15 +0100
-References: <20080309200103.GA895@mailshack.com> <20080309201016.GA28454@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Mar 2008 21:10:16 +0100, "Ingo Molnar" <mingo@elte.hu> said:
-> > 		Athlon		Xeon		Opteron 32/64bit
-> > x86-specific:	0m3.692s	0m2.820s	0m3.196s / 0m2.480s
-> > generic:	0m2.622s	0m1.662s	0m2.100s / 0m1.572s
-> 
-> ok, that's rather convincing.
-> 
-> the generic version in lib/find_next_bit.c is open-coded C which gcc can 
-> optimize pretty nicely.
-> 
-> the hand-coded assembly versions in arch/x86/lib/bitops_32.c mostly use 
-> the special x86 'bit search forward' (BSF) instruction - which i know 
-> from the days when the scheduler relied on it has some non-trivial setup 
-> costs. So especially when there's _small_ bitmasks involved, it's more 
-> expensive.
+On Sun, 9 Mar 2008, bruno.roussel@free.fr wrote:
+> I have this report in dmesg :
+>
+> saa7146_vv: saa7146 (0): registered device video0 [v4l2]
+> saa7146_vv: saa7146 (0): registered device vbi0 [v4l2]
+> usb-storage: device found at 2
+> usb-storage: waiting for device to settle before scanning
+> dvb-usb: found a 'Hauppauge WinTV-NOVA-T usb2' in warm state.
+> dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
+> DVB: registering new adapter (Hauppauge WinTV-NOVA-T usb2)
+> dvb-usb: MAC address: 00:0d:fe:00:00:00
+> DVB: registering frontend 1 (DiBcom 3000MC/P)...
+>
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.24.2-1mdv #1
+> ---------------------------------------------
 
-Hi,
+Hm, strange: a similiar looking issue has been reported back in 2006, it
+even comes with a patch: http://lkml.org/lkml/2006/10/14/38
 
-BSF is fine, it doesn't need any special setup. The problem is probably
-that the old versions use find_first_bit and find_first_zero_bit,
-which are also hand optimized versions... and they use "repe scasl/q".
-That's another little project ;).
+..but I cannot tell if the patch made it into mainline. I've Cc'ed the i2c
+folks, maybe they can tell what's going on here.
 
-> > If the bitmap size is not a multiple of BITS_PER_LONG, and no set 
-> > (cleared) bit is found, find_next_bit (find_next_zero_bit) returns a 
-> > value outside of the range [0,size]. The generic version always 
-> > returns exactly size. The generic version also uses unsigned long 
-> > everywhere, while the x86 versions use a mishmash of int, unsigned 
-> > (int), long and unsigned long.
-> 
-> i'm not surprised that the hand-coded assembly versions had a bug ...
+C.
 
-Not surprised about the bug, but it was in fact noticed, and fixed
-in x86_64!
-
-> [ this means we have to test it quite carefully though, as lots of code 
->   only ever gets tested on x86 so code could have built dependency on 
->   the buggy behavior. ]
-
-Agreed.
-
-> > Using the generic version does give a slightly bigger kernel, though.
-> > 
-> > defconfig:	   text    data     bss     dec     hex filename
-> > x86-specific:	4738555  481232  626688 5846475  5935cb vmlinux (32 bit)
-> > generic:	4738621  481232  626688 5846541  59360d vmlinux (32 bit)
-> > x86-specific:	5392395  846568  724424 6963387  6a40bb vmlinux (64 bit)
-> > generic:	5392458  846568  724424 6963450  6a40fa vmlinux (64 bit)
-> 
-> i'd not worry about that too much. Have you tried to build with:
-
-I don't but I needed to compile something to test the build anyhow ;)
-
->   CONFIG_CC_OPTIMIZE_FOR_SIZE=y
->   CONFIG_OPTIMIZE_INLINING=y
-
-This was defconfig in -x86#testing, they were both already enabled. 
-Here is what you get with those options turned off ;).
-
-                   text    data     bss     dec     hex filename
-x86-specific:   5543996  481232  626688 6651916  65800c vmlinux (32 bit)
-generic:        5543880  481232  626688 6651800  657f98 vmlinux (32 bit)
-x86-specific:   6111834  846568  724424 7682826  753b0a vmlinux (64 bit)
-generic:        6111882  846568  724424 7682874  753b3a vmlinux (64 bit)
-
-(and I double-checked the i386 results)
-
-> (the latter only available in x86.git)
-> 
-> > Patch is against -x86#testing. It compiles.
-> 
-> i've picked it up into x86.git, lets see how it goes in practice.
-
-Thanks,
-    Alexander
-
-> 	Ingo
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+> modprobe/2082 is trying to acquire lock:
+> (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
+>
+> but task is already holding lock:
+> (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
+>
+> other info that might help us debug this:
+> 1 lock held by modprobe/2082:
+> #0:  (&adap->bus_lock){--..}, at: [<eeed4133>] i2c_transfer+0x2c/0x4b
+> [i2c_core]
+>
+> stack backtrace:
+> Pid: 2082, comm: modprobe Not tainted 2.6.24.2-1mdv #1
+> [<c01054c2>] show_trace_log_lvl+0x1a/0x2f
+> [<c0105ccf>] show_trace+0x12/0x14
+> [<c0105fd7>] dump_stack+0x6a/0x70
+> [<c0139e5b>] __lock_acquire+0x16b/0xc32
+> [<c013ad80>] lock_acquire+0x70/0x92
+> [<c02c937f>] mutex_lock_nested+0xf9/0x2a4
+> [<eeed4133>] i2c_transfer+0x2c/0x4b [i2c_core]
+> [<eef611fb>] dibx000_i2c_gated_tuner_xfer+0x172/0x18c [dibx000_common]
+> [<eeed4140>] i2c_transfer+0x39/0x4b [i2c_core]
+> [<eefbc17c>] mt2060_readreg+0x48/0x68 [mt2060]
+> [<eefbc486>] mt2060_attach+0x49/0x1ef [mt2060]
+> [<eefa3527>] dibusb_dib3000mc_tuner_attach+0x145/0x1fb [dvb_usb_dibusb_common]
+> [<eef83c49>] dvb_usb_adapter_frontend_init+0xc4/0xe8 [dvb_usb]
+> [<eef837aa>] dvb_usb_device_init+0x3e8/0x4ce [dvb_usb]
+> [<eef7f01c>] nova_t_probe+0x1c/0x1e [dvb_usb_nova_t_usb2]
+> [<eeeb1f51>] usb_probe_interface+0xd5/0x112 [usbcore]
+> [<c02420bb>] driver_probe_device+0xca/0x14d
+> [<c0242225>] __driver_attach+0x4a/0x7f
+> [<c024164f>] bus_for_each_dev+0x38/0x5a
+> [<c0241f25>] driver_attach+0x19/0x1b
+> [<c0241966>] bus_add_driver+0x76/0x194
+> [<c02423dd>] driver_register+0x67/0x6c
+> [<eeeb1ae7>] usb_register_driver+0x7e/0xe5 [usbcore]
+> [<eef8d01b>] nova_t_module_init+0x1b/0x38 [dvb_usb_nova_t_usb2]
+> [<c0140e78>] sys_init_module+0x12c6/0x1394
+> [<c0103e12>] sysenter_past_esp+0x6b/0xc9
+> =======================
+> input: IR-receiver inside an USB DVB receiver as /class/input/input2
+> dvb-usb: schedule remote query interval to 100 msecs.
+> dvb-usb: Hauppauge WinTV-NOVA-T usb2 successfully initialized and connected.
+> usbcore: registered new interface driver dvb_usb_nova_t_usb2
+> DVB: registering frontend 0 (ST STV0299 DVB-S)...
+> input: DVB on-card IR receiver as /class/input/input3
+> dvb-ttpci: found av7110-0.
+> --
 
 -- 
-http://www.fastmail.fm - And now for something completely different…
+BOFH excuse #274:
 
+It was OK before you touched it.
