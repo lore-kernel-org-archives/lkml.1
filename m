@@ -1,98 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYCHXdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYCIAbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbYCHXdB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 18:33:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbYCHXcy
+	id S1752772AbYCIAbg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 19:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYCIAb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 18:32:54 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:42140 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752160AbYCHXcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 18:32:53 -0500
-Date: Sat, 8 Mar 2008 20:35:55 -0300
-From: Marcelo Tosatti <marcelo@kvack.org>
-To: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] pagemap: proper read error handling
-Message-ID: <20080308233555.GA21461@dmt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sat, 8 Mar 2008 19:31:26 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:61271 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbYCIAbZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 19:31:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=b/ct4zJHKkfJTqx1dkyIT+bJHsvTxFZP4NE9Fd1QqA3VWQPrP+4xrzyQYpEaP4K1g8BeOg/4GHq8Mvwge5Xkh5Sld5pKvmgx1qK1QbLlvqfrIwY0lQ3l6vVz7YrmNOB9/L1WcJ1BXemyFDr8elWxX11lWAA8Zn7wONxp+e8iXS4=
+Message-ID: <b647ffbd0803081631y282cfe1blb7343eb1c979b871@mail.gmail.com>
+Date: Sun, 9 Mar 2008 01:31:24 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [PATCH] adjust root-domain->online span in response to hotplugevent
+Cc: "Ingo Molnar" <mingo@elte.hu>, ego@in.ibm.com, suresh.b.siddha@intel.com,
+       yi.y.yang@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       rjw@sisk.pl, oleg@sign.ru, linux-kernel@vger.kernel.org
+In-Reply-To: <47D28BAC.BA47.005A.0@novell.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_11362_9378027.1205022684360"
+References: <20080308015045.GB15909@linux-os.sc.intel.com>
+	 <20080308050627.4831.87630.stgit@novell1.haskins.net>
+	 <20080308084118.GA24552@elte.hu> <47D28BAC.BA47.005A.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_11362_9378027.1205022684360
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Fix pagemap_read() error handling by releasing acquired resources and
-checking for get_user_pages() partial failure.
+On 08/03/2008, Gregory Haskins <ghaskins@novell.com> wrote:
+> >>> On Sat, Mar 8, 2008 at  3:41 AM, in message <20080308084118.GA24552@elte.hu>,
+>  Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  > * Gregory Haskins <ghaskins@novell.com> wrote:
+>  >
+>  >>    Unfortunately, this patch will introduce its own set of bugs.
+>  >> However, your analysis was spot-on.  I think I see the problem now.
+>  >> It was introduced when I put a hack in to "fix" s2ram problems in -mm
+>  >> as a result of the new root-domain logic.  I think the following patch
+>  >> will fix both issues:
+>  >>
+>  >> (I verified that I could take a cpu offline/online, but I don't have
+>  >> an s2ram compatible machine handy.  Andrew, I believe you could
+>  >> reproduce the s2ram problem a few months ago when that issue popped
+>  >> up.  So if you could, please verify that s2ram also works with this
+>  >> patch applied, in addition to the hotplug problem.
+>  >
+>  > thanks Gregory, i've queued up your fix. If it passes all tests over the
+>  > day i'll send it to Linus in about 12 hours.
+>  >
+>
+>
+>
+> After thinking about it some more, I am not sure if I got this fix quite right. The first two hunks are technically fine and should ultimately go in.  The last hunk is questionable.
+>
+>  Ultimately, I believe the root cause of these reported issues is that cpu_online_map and rd->online can get out of sync.  I fear that while the current patch may fix the hotplug/s2ram case, it potentially breaks the disjoint cpuset topology change case.  I will run a few cpuset tests ASAP to confirm, though I may not have a chance until Monday.
+>
+>  What I probably need is to tie the code that sets/clears cpu_online_map to the root-domain rd->online map somehow.  However, a cursory cscope inspection has failed to reveal the location that this cpu_online_map manipulation occurs.  If anyone knows where cpu_online_map is actually updated, please let me know.
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+I guess, it's in arch-specific code. e.g. for x86-64,
+
+down:
+
+kernel/cpu.c :: _cpu_down -> take_cpu_down() -> __cpu_disable() [
+arch/x86/kernel/smpboot_64.c ] -> cpu_clear(cpu, cpu_online_map)
+
+up:
+
+kernel/cpu.c :: _cpu_up() -> __cpu_up [ arch/x86/kernel/smpboot_64.c ]
+-> do_boot_cpu() -> start_secondary() [ runs on a to-be-online cpu ]
+-> cpu_set(smp_processor_id(), cpu_online_map)
+
+there are cpu-notification events available before a cpu gets removed
+from cpu_online_map or after it gets added, so I guess (a first guess.
+I'll also look at the code) they should be a sync. point.
+
+I have a small patch to record some events during the cpu_down/up. I
+have a trace but will already analyze it tomorrow.
+[ the patch is enclosed (err.. it also includes Gregory's fix... I
+just forgot to commit it previously :-/) ]
+
+e.g. it should print a message if a task is placed on the 'offline'
+cpu. Note, the 'cpu' is removed from the cpu_online_map before
+migrate_live_tasks() runs. So if any task remains on the offline cpu,
+it has been likely placed there already after migrate_live_tasks().
 
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 6dc0334..4206454 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -640,17 +640,17 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
- 
- 	ret = -EACCES;
- 	if (!ptrace_may_attach(task))
--		goto out;
-+		goto out_task;
- 
- 	ret = -EINVAL;
- 	/* file position must be aligned */
- 	if (*ppos % PM_ENTRY_BYTES)
--		goto out;
-+		goto out_task;
- 
- 	ret = 0;
- 	mm = get_task_mm(task);
- 	if (!mm)
--		goto out;
-+		goto out_task;
- 
- 	ret = -ENOMEM;
- 	uaddr = (unsigned long)buf & PAGE_MASK;
-@@ -658,7 +658,7 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
- 	pagecount = (PAGE_ALIGN(uend) - uaddr) / PAGE_SIZE;
- 	pages = kmalloc(pagecount * sizeof(struct page *), GFP_KERNEL);
- 	if (!pages)
--		goto out_task;
-+		goto out_mm;
- 
- 	down_read(&current->mm->mmap_sem);
- 	ret = get_user_pages(current, current->mm, uaddr, pagecount,
-@@ -668,6 +668,12 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
- 	if (ret < 0)
- 		goto out_free;
- 
-+	if (ret != pagecount) {
-+		pagecount = ret;
-+		ret = -EFAULT;
-+		goto out_pages;
-+	}
-+
- 	pm.out = buf;
- 	pm.end = buf + count;
- 
-@@ -699,15 +705,17 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
- 			ret = pm.out - buf;
- 	}
- 
-+out_pages:
- 	for (; pagecount; pagecount--) {
- 		page = pages[pagecount-1];
- 		if (!PageReserved(page))
- 			SetPageDirty(page);
- 		page_cache_release(page);
- 	}
--	mmput(mm);
- out_free:
- 	kfree(pages);
-+out_mm:
-+	mmput(mm);
- out_task:
- 	put_task_struct(task);
- out:
+>  Regards,
+>  -Greg
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
+
+------=_Part_11362_9378027.1205022684360
+Content-Type: text/x-patch; name=debug-stop_machine-2.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdkv6ybo
+Content-Disposition: attachment; filename=debug-stop_machine-2.patch
+
+ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9zbXBib290XzY0LmMgYi9hcmNoL3g4Ni9rZXJu
+ZWwvc21wYm9vdF82NC5jCmluZGV4IDA4ODBmMmMuLmE4MzMyYzYgMTAwNjQ0Ci0tLSBhL2FyY2gv
+eDg2L2tlcm5lbC9zbXBib290XzY0LmMKKysrIGIvYXJjaC94ODYva2VybmVsL3NtcGJvb3RfNjQu
+YwpAQCAtMzgxLDYgKzM4MSw4IEBAIHZvaWQgX19jcHVpbml0IHN0YXJ0X3NlY29uZGFyeSh2b2lk
+KQogCiAJc2V0dXBfc2Vjb25kYXJ5X2Nsb2NrKCk7CiAKKwlwcmludGsoIioqKiAtPiBvbmxpbmUg
+Y3B1ICVpXG4iLCBzbXBfcHJvY2Vzc29yX2lkKCkpOworCiAJY3B1X2lkbGUoKTsKIH0KIApAQCAt
+MTA2Myw2ICsxMDY1LDkgQEAgaW50IF9fY3B1X2Rpc2FibGUodm9pZCkKIAlzcGluX2xvY2soJnZl
+Y3Rvcl9sb2NrKTsKIAkvKiBJdCdzIG5vdyBzYWZlIHRvIHJlbW92ZSB0aGlzIHByb2Nlc3NvciBm
+cm9tIHRoZSBvbmxpbmUgbWFwICovCiAJY3B1X2NsZWFyKGNwdSwgY3B1X29ubGluZV9tYXApOwor
+CisJcHJpbnRrKEtFUk5fRVJSICIqKiogPC0gZG93biBjcHUgJWlcbiIsIGNwdSk7CisKIAlzcGlu
+X3VubG9jaygmdmVjdG9yX2xvY2spOwogCXJlbW92ZV9jcHVfZnJvbV9tYXBzKCk7CiAJZml4dXBf
+aXJxcyhjcHVfb25saW5lX21hcCk7CmRpZmYgLS1naXQgYS9rZXJuZWwvY3B1LmMgYi9rZXJuZWwv
+Y3B1LmMKaW5kZXggMmVmZjNmNi4uZDM3NGMyNyAxMDA2NDQKLS0tIGEva2VybmVsL2NwdS5jCisr
+KyBiL2tlcm5lbC9jcHUuYwpAQCAtMTk4LDYgKzE5OCw4IEBAIHN0YXRpYyBpbnQgdGFrZV9jcHVf
+ZG93bih2b2lkICpfcGFyYW0pCiAJcmV0dXJuIDA7CiB9CiAKK2V4dGVybiB2b2lkIHdha2VfdXBf
+d2F0Y2hkb2coaW50IGNwdSk7CisKIC8qIFJlcXVpcmVzIGNwdV9hZGRfcmVtb3ZlX2xvY2sgdG8g
+YmUgaGVsZCAqLwogc3RhdGljIGludCBfY3B1X2Rvd24odW5zaWduZWQgaW50IGNwdSwgaW50IHRh
+c2tzX2Zyb3plbikKIHsKQEAgLTI1NSw2ICsyNTcsOCBAQCBzdGF0aWMgaW50IF9jcHVfZG93bih1
+bnNpZ25lZCBpbnQgY3B1LCBpbnQgdGFza3NfZnJvemVuKQogCXdoaWxlICghaWRsZV9jcHUoY3B1
+KSkKIAkJeWllbGQoKTsKIAorCXdha2VfdXBfd2F0Y2hkb2coY3B1KTsKKwogCS8qIFRoaXMgYWN0
+dWFsbHkga2lsbHMgdGhlIENQVS4gKi8KIAlfX2NwdV9kaWUoY3B1KTsKIApkaWZmIC0tZ2l0IGEv
+a2VybmVsL3NjaGVkLmMgYi9rZXJuZWwvc2NoZWQuYwppbmRleCA1MmI5ODY3Li42MDg3MTYxIDEw
+MDY0NAotLS0gYS9rZXJuZWwvc2NoZWQuYworKysgYi9rZXJuZWwvc2NoZWQuYwpAQCAtMTc4Nyw3
+ICsxNzg3LDcgQEAgc3RhdGljIGludCBzY2hlZF9iYWxhbmNlX3NlbGYoaW50IGNwdSwgaW50IGZs
+YWcpCiAgKi8KIHN0YXRpYyBpbnQgdHJ5X3RvX3dha2VfdXAoc3RydWN0IHRhc2tfc3RydWN0ICpw
+LCB1bnNpZ25lZCBpbnQgc3RhdGUsIGludCBzeW5jKQogewotCWludCBjcHUsIG9yaWdfY3B1LCB0
+aGlzX2NwdSwgc3VjY2VzcyA9IDA7CisJaW50IGNwdSA9IC0xLCBvcmlnX2NwdSwgdGhpc19jcHUs
+IHN1Y2Nlc3MgPSAwLCBvZmZsaW5lID0gMDsKIAl1bnNpZ25lZCBsb25nIGZsYWdzOwogCWxvbmcg
+b2xkX3N0YXRlOwogCXN0cnVjdCBycSAqcnE7CkBAIC0xODUxLDYgKzE4NTEsOSBAQCBvdXRfYWN0
+aXZhdGU6CiAJCXNjaGVkc3RhdF9pbmMocCwgc2UubnJfd2FrZXVwc19sb2NhbCk7CiAJZWxzZQog
+CQlzY2hlZHN0YXRfaW5jKHAsIHNlLm5yX3dha2V1cHNfcmVtb3RlKTsKKworCW9mZmxpbmUgPSBj
+cHVfaXNfb2ZmbGluZShjcHUpOworCiAJdXBkYXRlX3JxX2Nsb2NrKHJxKTsKIAlhY3RpdmF0ZV90
+YXNrKHJxLCBwLCAxKTsKIAljaGVja19wcmVlbXB0X2N1cnIocnEsIHApOwpAQCAtMTg2NSw5ICsx
+ODY4LDM2IEBAIG91dF9ydW5uaW5nOgogb3V0OgogCXRhc2tfcnFfdW5sb2NrKHJxLCAmZmxhZ3Mp
+OwogCisJaWYgKGNwdSAhPSAtMSAmJiBvZmZsaW5lKQorCQlwcmludGsoS0VSTl9FUlIgIiEhISB0
+cnlfdG9fd2FrZV91cCglcykgb24gb2ZmbGluZSBjcHUgJWlcbiIsCisJCQlwLT5jb21tLCBjcHUp
+OworCiAJcmV0dXJuIHN1Y2Nlc3M7CiB9CiAKK2V4dGVybiBzdHJ1Y3QgdGFza19zdHJ1Y3QgKiBn
+ZXRfd2F0Y2hkb2dfdGFzayhpbnQgY3B1KTsKKwordm9pZCB3YWtlX3VwX3dhdGNoZG9nKGludCBj
+cHUpCit7CisJdW5zaWduZWQgbG9uZyBmbGFnczsKKwlzdHJ1Y3QgcnEgKnJxOworCXN0cnVjdCB0
+YXNrX3N0cnVjdCAqcCA9IGdldF93YXRjaGRvZ190YXNrKGNwdSk7CisJaW50IHJldCA9IDA7CisK
+KwlycSA9IHRhc2tfcnFfbG9jayhwLCAmZmxhZ3MpOworCisJaWYgKHAtPnN0YXRlICE9IFRBU0tf
+UlVOTklORyAmJiAhcC0+c2Uub25fcnEpIHsKKwkJcmV0ID0gMTsKKwkJdXBkYXRlX3JxX2Nsb2Nr
+KHJxKTsKKwkJYWN0aXZhdGVfdGFzayhycSwgcCwgMSk7CisJCXAtPnN0YXRlID0gVEFTS19SVU5O
+SU5HOworCX0KKworCXRhc2tfcnFfdW5sb2NrKHJxLCAmZmxhZ3MpOworCisJcHJpbnRrKEtFUk5f
+RVJSICJ3YXRjaGRvZyhjcHU6ICVpKSAtPiB3YWtlIHVwICglaSlcbiIsIGNwdSwgcmV0KTsKK30K
+KwogaW50IHdha2VfdXBfcHJvY2VzcyhzdHJ1Y3QgdGFza19zdHJ1Y3QgKnApCiB7CiAJcmV0dXJu
+IHRyeV90b193YWtlX3VwKHAsIFRBU0tfQUxMLCAwKTsKQEAgLTUzNDUsNyArNTM3NSw3IEBAIEVY
+UE9SVF9TWU1CT0xfR1BMKHNldF9jcHVzX2FsbG93ZWQpOwogc3RhdGljIGludCBfX21pZ3JhdGVf
+dGFzayhzdHJ1Y3QgdGFza19zdHJ1Y3QgKnAsIGludCBzcmNfY3B1LCBpbnQgZGVzdF9jcHUpCiB7
+CiAJc3RydWN0IHJxICpycV9kZXN0LCAqcnFfc3JjOwotCWludCByZXQgPSAwLCBvbl9ycTsKKwlp
+bnQgcmV0ID0gMCwgb25fcnEgPSAtMTsKIAogCWlmICh1bmxpa2VseShjcHVfaXNfb2ZmbGluZShk
+ZXN0X2NwdSkpKQogCQlyZXR1cm4gcmV0OwpAQCAtNTM3Myw2ICs1NDAzLDExIEBAIHN0YXRpYyBp
+bnQgX19taWdyYXRlX3Rhc2soc3RydWN0IHRhc2tfc3RydWN0ICpwLCBpbnQgc3JjX2NwdSwgaW50
+IGRlc3RfY3B1KQogCXJldCA9IDE7CiBvdXQ6CiAJZG91YmxlX3JxX3VubG9jayhycV9zcmMsIHJx
+X2Rlc3QpOworCisJaWYgKGNwdV9pc19vZmZsaW5lKHNyY19jcHUpKQorCQlwcmludGsoIl9fbWln
+cmF0ZV90YXNrKCAlcywgb25fcnE6ICVpICkgZnJvbSAlaSB0byAlaSAtPiAlaVxuIiwKKwkJCXAt
+PmNvbW0sIG9uX3JxLCBzcmNfY3B1LCBkZXN0X2NwdSwgcmV0KTsKKwogCXJldHVybiByZXQ7CiB9
+CiAKQEAgLTU4MDIsNiArNTgzNyw4IEBAIG1pZ3JhdGlvbl9jYWxsKHN0cnVjdCBub3RpZmllcl9i
+bG9jayAqbmZiLCB1bnNpZ25lZCBsb25nIGFjdGlvbiwgdm9pZCAqaGNwdSkKIAl1bnNpZ25lZCBs
+b25nIGZsYWdzOwogCXN0cnVjdCBycSAqcnE7CiAKKwlwcmludGsoS0VSTl9FUlIgIi0+IG1pZ3Jh
+dGlvbl9jYWxsKGNwdTogJWksIGFjdGlvbjogJWx1KVxuIiwgY3B1LCBhY3Rpb24pOworCiAJc3dp
+dGNoIChhY3Rpb24pIHsKIAogCWNhc2UgQ1BVX1VQX1BSRVBBUkU6CkBAIC01ODEzLDIzICs1ODUw
+LDI1IEBAIG1pZ3JhdGlvbl9jYWxsKHN0cnVjdCBub3RpZmllcl9ibG9jayAqbmZiLCB1bnNpZ25l
+ZCBsb25nIGFjdGlvbiwgdm9pZCAqaGNwdSkKIAkJLyogTXVzdCBiZSBoaWdoIHByaW86IHN0b3Bf
+bWFjaGluZSBleHBlY3RzIHRvIHlpZWxkIHRvIGl0LiAqLwogCQlycSA9IHRhc2tfcnFfbG9jayhw
+LCAmZmxhZ3MpOwogCQlfX3NldHNjaGVkdWxlcihycSwgcCwgU0NIRURfRklGTywgTUFYX1JUX1BS
+SU8tMSk7CisKKwkJLyogVXBkYXRlIG91ciByb290LWRvbWFpbiAqLworCQlpZiAocnEtPnJkKSB7
+CisJCQlCVUdfT04oIWNwdV9pc3NldChjcHUsIHJxLT5yZC0+c3BhbikpOworCQkJY3B1X3NldChj
+cHUsIHJxLT5yZC0+b25saW5lKTsKKwkJfQorCiAJCXRhc2tfcnFfdW5sb2NrKHJxLCAmZmxhZ3Mp
+OwogCQljcHVfcnEoY3B1KS0+bWlncmF0aW9uX3RocmVhZCA9IHA7CisKKwkJcHJpbnRrKEtFUk5f
+RVJSICItLT4gbWlncmF0aW9uX2NhbGwoKSA6IGNwdSglaSAtICVwKSBvbmxpbmVcbiIsCisJCQlj
+cHUsIHJxLT5yZCk7CisKIAkJYnJlYWs7CiAKIAljYXNlIENQVV9PTkxJTkU6CiAJY2FzZSBDUFVf
+T05MSU5FX0ZST1pFTjoKIAkJLyogU3RyaWN0bHkgdW5uZWNlc3NhcnksIGFzIGZpcnN0IHVzZXIg
+d2lsbCB3YWtlIGl0LiAqLwogCQl3YWtlX3VwX3Byb2Nlc3MoY3B1X3JxKGNwdSktPm1pZ3JhdGlv
+bl90aHJlYWQpOwotCi0JCS8qIFVwZGF0ZSBvdXIgcm9vdC1kb21haW4gKi8KLQkJcnEgPSBjcHVf
+cnEoY3B1KTsKLQkJc3Bpbl9sb2NrX2lycXNhdmUoJnJxLT5sb2NrLCBmbGFncyk7Ci0JCWlmIChy
+cS0+cmQpIHsKLQkJCUJVR19PTighY3B1X2lzc2V0KGNwdSwgcnEtPnJkLT5zcGFuKSk7Ci0JCQlj
+cHVfc2V0KGNwdSwgcnEtPnJkLT5vbmxpbmUpOwotCQl9Ci0JCXNwaW5fdW5sb2NrX2lycXJlc3Rv
+cmUoJnJxLT5sb2NrLCBmbGFncyk7CiAJCWJyZWFrOwogCiAjaWZkZWYgQ09ORklHX0hPVFBMVUdf
+Q1BVCkBAIC01ODkwLDkgKzU5MjksMTQgQEAgbWlncmF0aW9uX2NhbGwoc3RydWN0IG5vdGlmaWVy
+X2Jsb2NrICpuZmIsIHVuc2lnbmVkIGxvbmcgYWN0aW9uLCB2b2lkICpoY3B1KQogCQkJY3B1X2Ns
+ZWFyKGNwdSwgcnEtPnJkLT5vbmxpbmUpOwogCQl9CiAJCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUo
+JnJxLT5sb2NrLCBmbGFncyk7CisKKwkJcHJpbnRrKEtFUk5fRVJSICItLT4gbWlncmF0aW9uX2Nh
+bGwoKSA6IGNwdSglaSAtICVwKSBvZmZsaW5lXG4iLAorCQkJY3B1LCBycS0+cmQpOwogCQlicmVh
+azsKICNlbmRpZgogCX0KKwlwcmludGsoS0VSTl9FUlIgIjwtIG1pZ3JhdGlvbl9jYWxsKGNwdTog
+JWksIGFjdGlvbjogJWx1KVxuIiwgY3B1LCBhY3Rpb24pOworCiAJcmV0dXJuIE5PVElGWV9PSzsK
+IH0KIApAQCAtNjA4Myw2ICs2MTI3LDcgQEAgc3RhdGljIHZvaWQgcnFfYXR0YWNoX3Jvb3Qoc3Ry
+dWN0IHJxICpycSwgc3RydWN0IHJvb3RfZG9tYWluICpyZCkKIHsKIAl1bnNpZ25lZCBsb25nIGZs
+YWdzOwogCWNvbnN0IHN0cnVjdCBzY2hlZF9jbGFzcyAqY2xhc3M7CisJaW50IGNsZWFyID0gMDsK
+IAogCXNwaW5fbG9ja19pcnFzYXZlKCZycS0+bG9jaywgZmxhZ3MpOwogCkBAIC02MDk3LDYgKzYx
+NDIsOCBAQCBzdGF0aWMgdm9pZCBycV9hdHRhY2hfcm9vdChzdHJ1Y3QgcnEgKnJxLCBzdHJ1Y3Qg
+cm9vdF9kb21haW4gKnJkKQogCQljcHVfY2xlYXIocnEtPmNwdSwgb2xkX3JkLT5zcGFuKTsKIAkJ
+Y3B1X2NsZWFyKHJxLT5jcHUsIG9sZF9yZC0+b25saW5lKTsKIAorCQljbGVhciA9IDE7CisKIAkJ
+aWYgKGF0b21pY19kZWNfYW5kX3Rlc3QoJm9sZF9yZC0+cmVmY291bnQpKQogCQkJa2ZyZWUob2xk
+X3JkKTsKIAl9CkBAIC02MTA1LDggKzYxNTIsNiBAQCBzdGF0aWMgdm9pZCBycV9hdHRhY2hfcm9v
+dChzdHJ1Y3QgcnEgKnJxLCBzdHJ1Y3Qgcm9vdF9kb21haW4gKnJkKQogCXJxLT5yZCA9IHJkOwog
+CiAJY3B1X3NldChycS0+Y3B1LCByZC0+c3Bhbik7Ci0JaWYgKGNwdV9pc3NldChycS0+Y3B1LCBj
+cHVfb25saW5lX21hcCkpCi0JCWNwdV9zZXQocnEtPmNwdSwgcmQtPm9ubGluZSk7CiAKIAlmb3Ig
+KGNsYXNzID0gc2NoZWRfY2xhc3NfaGlnaGVzdDsgY2xhc3M7IGNsYXNzID0gY2xhc3MtPm5leHQp
+IHsKIAkJaWYgKGNsYXNzLT5qb2luX2RvbWFpbikKQEAgLTYxMTQsNiArNjE1OSw4IEBAIHN0YXRp
+YyB2b2lkIHJxX2F0dGFjaF9yb290KHN0cnVjdCBycSAqcnEsIHN0cnVjdCByb290X2RvbWFpbiAq
+cmQpCiAJfQogCiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcnEtPmxvY2ssIGZsYWdzKTsKKwor
+CXByaW50ayhLRVJOX0VSUiAiKiBycV9hdHRhY2hfcm9vdChjcHU6ICVpKSAtLSBjbGVhciAoJWkp
+XG4iLCBycS0+Y3B1LCBjbGVhcik7CiB9CiAKIHN0YXRpYyB2b2lkIGluaXRfcm9vdGRvbWFpbihz
+dHJ1Y3Qgcm9vdF9kb21haW4gKnJkKQpkaWZmIC0tZ2l0IGEva2VybmVsL3NvZnRsb2NrdXAuYyBi
+L2tlcm5lbC9zb2Z0bG9ja3VwLmMKaW5kZXggMDFiNjUyMi4uNGY0NzhjMiAxMDA2NDQKLS0tIGEv
+a2VybmVsL3NvZnRsb2NrdXAuYworKysgYi9rZXJuZWwvc29mdGxvY2t1cC5jCkBAIC0yNyw2ICsy
+NywxMSBAQCBzdGF0aWMgREVGSU5FX1BFUl9DUFUoc3RydWN0IHRhc2tfc3RydWN0ICosIHdhdGNo
+ZG9nX3Rhc2spOwogc3RhdGljIGludCBfX3JlYWRfbW9zdGx5IGRpZF9wYW5pYzsKIHVuc2lnbmVk
+IGxvbmcgX19yZWFkX21vc3RseSBzb2Z0bG9ja3VwX3RocmVzaCA9IDYwOwogCitzdHJ1Y3QgdGFz
+a19zdHJ1Y3QgKiBnZXRfd2F0Y2hkb2dfdGFzayhpbnQgY3B1KQoreworCXJldHVybiBwZXJfY3B1
+KHdhdGNoZG9nX3Rhc2ssIGNwdSk7Cit9CisKIHN0YXRpYyBpbnQKIHNvZnRsb2NrX3BhbmljKHN0
+cnVjdCBub3RpZmllcl9ibG9jayAqdGhpcywgdW5zaWduZWQgbG9uZyBldmVudCwgdm9pZCAqcHRy
+KQogewpAQCAtMjUwLDYgKzI1NSw4IEBAIGNwdV9jYWxsYmFjayhzdHJ1Y3Qgbm90aWZpZXJfYmxv
+Y2sgKm5mYiwgdW5zaWduZWQgbG9uZyBhY3Rpb24sIHZvaWQgKmhjcHUpCiAJaW50IGhvdGNwdSA9
+ICh1bnNpZ25lZCBsb25nKWhjcHU7CiAJc3RydWN0IHRhc2tfc3RydWN0ICpwOwogCisJcHJpbnRr
+KEtFUk5fRVJSICItLT4gY3B1X2NhbGxiYWNrKGNwdTogJWksIGFjdGlvbjogJWx1KVxuIiwgaG90
+Y3B1LCBhY3Rpb24pOworCiAJc3dpdGNoIChhY3Rpb24pIHsKIAljYXNlIENQVV9VUF9QUkVQQVJF
+OgogCWNhc2UgQ1BVX1VQX1BSRVBBUkVfRlJPWkVOOgpAQCAtMjk0LDYgKzMwMSw5IEBAIGNwdV9j
+YWxsYmFjayhzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5mYiwgdW5zaWduZWQgbG9uZyBhY3Rpb24s
+IHZvaWQgKmhjcHUpCiAJCWJyZWFrOwogI2VuZGlmIC8qIENPTkZJR19IT1RQTFVHX0NQVSAqLwog
+CX0KKworCXByaW50ayhLRVJOX0VSUiAiPC0tIGNwdV9jYWxsYmFjayhjcHU6ICVpLCBhY3Rpb246
+ICVsdSlcbiIsIGhvdGNwdSwgYWN0aW9uKTsKKwogCXJldHVybiBOT1RJRllfT0s7CiB9CiAK
+------=_Part_11362_9378027.1205022684360--
