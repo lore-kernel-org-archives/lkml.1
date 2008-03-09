@@ -1,111 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYCIP7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbYCIQHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbYCIP7q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 11:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbYCIP7g
+	id S1753067AbYCIQHr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 12:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbYCIQHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 11:59:36 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49027 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750822AbYCIP7f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 11:59:35 -0400
-Subject: Re: kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: FUJITA Tomonori <tomof@acm.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-In-Reply-To: <47D40567.7070409@msgid.tls.msk.ru>
-References: <47D3C8A1.6040409@msgid.tls.msk.ru>
-	 <20080309212916T.tomof@acm.org>
-	 <1205075315.3792.12.camel@localhost.localdomain>
-	 <47D402C6.3070505@msgid.tls.msk.ru>  <47D40567.7070409@msgid.tls.msk.ru>
-Content-Type: text/plain
-Date: Sun, 09 Mar 2008 10:59:30 -0500
-Message-Id: <1205078371.3792.20.camel@localhost.localdomain>
+	Sun, 9 Mar 2008 12:07:38 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51753 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751146AbYCIQHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 12:07:37 -0400
+Date: Sun, 9 Mar 2008 19:11:53 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC, PATCH] signals: print_fatal_signal: fix the signr "calculation"
+Message-ID: <20080309161153.GA76@tv-sign.ru>
+References: <20080308172453.GA28323@tv-sign.ru> <20080308190311.779B326F990@magilla.localdomain> <20080309110511.GA18128@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080309110511.GA18128@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-03-09 at 18:42 +0300, Michael Tokarev wrote:
-> Michael Tokarev wrote:
-> > James Bottomley wrote:
-> >> On Sun, 2008-03-09 at 21:29 +0900, FUJITA Tomonori wrote:
-> >>> On Sun, 09 Mar 2008 14:23:13 +0300
-> >>> Michael Tokarev <mjt@tls.msk.ru> wrote:
-> >>>
-> >>>> Just got quite.. bad situation on a production server
-> >>>> here.  The machine locked up hard several times in a
-> >>>> row (required hard reboot).  So I finally enabled watchdog
-> >>>> subsystem which helped.
-> >>>>
-> >>>> Now I see the following (over netconsole):
-> >>>>
-> >>>> DMA: Out of SW-IOMMU space for 65536 bytes at device 0000:08:07.0
-> >>>> ------------[ cut here ]------------
-> >>>> kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
-> >>> Seems that you was out of swiommu space (and aic79xx can't handle it
-> >>> though it should). This happened because:
-> >>>
-> >>> a) you produced more I/Os than swiommu can handle.
-> >>>
-> >>> b) swiommu space leaks due to bugs.
-> >>>
-> >>> If you hit this problem due to a), the following boot option might
-> >>> help:
-> >>>
-> >>> swiotlb=65536
-> > 
-> > Running with this parameter now - no lockups so far.
-> > 
-> >> Actually, it's worse than this.  The aic79xx is a fully 64 bit capable
-> >> PCI card, it shouldn't be using the iommu at all.  However, it has three
-> >> DMA modes:  64 bit, 39 bit and 32 bit; with a corresponding resource
-> >> cost increasing with the number of bits.  It employs special APIs to
-> >> size the masks according to the memory, in aic79xx_osm_pci.c:
-> > []
-> >> Could you firstly tell me how much memory you have, and secondly
-> >> instrument this code with the patch below to see if we can work out what
-> >> it's doing?
-> > 
-> > The memory map is below (6Gb total).  The patch - kernel is being compiled
-> > right now.
+On 03/09, Ingo Molnar wrote:
 > 
-> And here's the result (without swiotlb=65536):
+> * Roland McGrath <roland@redhat.com> wrote:
 > 
-> DEBUG: RETURNED REQUIRED MASK ffffffff
-> DEBUG: SET 32 BIT ADDRESSING
+> > I'm not sure print-fatal-signals was really ever intended for 
+> > non-coredump signals.  It doesn't seem like it would be all that 
+> > useful.  It's probably even undesireable for every normal C-c killing 
+> > something to cause a printk.
 > 
-> (which doesn't look like a good thing, provided this
-> machine has 6Gb of memory...)
+> correct. We used to have them for SIGKILL but even that was confusing to 
+> users - so the intent very much is to only have them for truly 
+> unexpected, non-user generated and 'fatal', coredump-generating signals.
 
-That's the root cause then.
+Yes, I see now, thanks.
 
-There's a bug in the generic implementation of dma_get_required_mask(),
-a fix for which is below, if you could try it (still with the debugging
-patches to make sure it's working).
+Let me clarify why I started this thread. I'm thinking how we can "improve"
+fatal signals. Let's look at this patch
 
-James
+	http://marc.info/?l=linux-kernel&m=120498888702466
 
----
+(under discussion, let's suppose it will be accepted). In short: with this
+patch the thread-specific SIGKILL shutdowns the whole thread group early on
+signal delivery, the same way like the group-wide SIGKILL does.
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index efaf282..911ec60 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -648,7 +648,7 @@ u64 dma_get_required_mask(struct device *dev)
- 		high_totalram += high_totalram - 1;
- 		mask = (((u64)high_totalram) << 32) + 0xffffffff;
- 	}
--	return mask & *dev->dma_mask;
-+	return mask;
- }
- EXPORT_SYMBOL_GPL(dma_get_required_mask);
- #endif
+For various reasons we can't currently do the same for sig_kernel_coredump()
+signals. But, when rlim[RLIMIT_CORE] == 0, we don't actually need coredumping?
+So, we could do something like
 
 
+	-	if (!sig_kernel_coredump(sig)) {
+	+	if (!sig_kernel_coredump(sig) || !signal->rlim[RLIMIT_CORE]) {
 
+			// shutdown the whole group,
+			// send SIGKILL to each thread
+
+to speedup the processing of fatal coredump signals (to clarify: this issue
+is minor, just for example. and the change above is not exactly right).
+
+However, this breaks print_fatal_signal(), because with this change nobody
+will dequeue the "right" signal to report, it was transformed to the "global"
+SIGKILL.
+
+So, if we change the behaviour of thread-specific coredump signals, then
+we should "fix" print_fatal_signal(). At least, now I know which signals
+should be reported.
+
+Thanks!
+
+Oleg.
 
