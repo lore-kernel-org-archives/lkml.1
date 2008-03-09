@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYCIUVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYCIUZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbYCIUVt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYCIUVm
+	id S1754594AbYCIUZY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 16:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYCIUZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:21:42 -0400
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:18811 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313AbYCIUVl (ORCPT
+	Sun, 9 Mar 2008 16:25:13 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:58052 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753260AbYCIUZM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:21:41 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
-	<20080309111456.GA21690@elte.hu>
-	<20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu>
-	<20080309114640.85c9c3eb.akpm@linux-foundation.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 09 Mar 2008 21:21:38 +0100
-In-Reply-To: <20080309114640.85c9c3eb.akpm@linux-foundation.org>
-Message-ID: <8763vv1wdp.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Mar 2008 20:15:07.0174 (UTC) FILETIME=[449DA460:01C88222]
+	Sun, 9 Mar 2008 16:25:12 -0400
+Subject: [PATCH] block: send disk "change" event for rescan_partitions()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>, David Zeuthen <david@fubar.dk>
+Content-Type: text/plain
+Date: Sun, 09 Mar 2008 21:26:02 +0100
+Message-Id: <1205094362.2366.2.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.91 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/8fD6/QYnJ6VWZAsWiECBcf1eqkdFojnzvdyl
+ x/puA5GhEH3wNomY+23hsXVClNKu3bfrmUwqKRivVyRZGKVpx0
+ lcjMLlS8HJnt1j5IqZiYy3CF0g3ojeO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: block: send disk "change" event for rescan_partitions()
 
-> On Sun, 9 Mar 2008 13:34:32 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > the right solution is to get rid of quicklists altogether
-> 
-> Yes, I think so.
-> 
-> - They are pretty marginal from a performance POV (iirc)
+Userspace likes to get notified that the disk may have changed, when
+rescan_partitions() is called after partitioning or media change. It will
+make it possible to update the state of the disk with the "change" event,
+before the following partition "add" events are handled.
 
-One general issue -- as noted again by Christoph Lameter recently --
-is that the order 0 fast path in page_alloc.c isn't actually very 
-fast. That is why people keep inventing their own...
+Cc: David Zeuthen <david@fubar.dk>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
 
- > - As I said when we merged them (under protest): Private object caches
->   like this are just a bad idea - caches should be *shared*, because some
->   other code path which wants a zeroed page wants a cache-warm one, not a
->   cache-cold one from the allocator (iirc there was doubt over how
->   cache-warm these pages are, however).
-> 
->   Making __GFP_ZERO smarter/more efficient would be a preferable way of
->   addressing any performance problems we have in there.
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 03f808c..6149e4b 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -473,6 +473,10 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 		return 0;
+ 	if (IS_ERR(state))	/* I/O error reading the partition table */
+ 		return -EIO;
++
++	/* tell userspace that the media / partition table may have changed */
++	kobject_uevent(&disk->dev.kobj, KOBJ_CHANGE);
++
+ 	for (p = 1; p < state->limit; p++) {
+ 		sector_t size = state->parts[p].size;
+ 		sector_t from = state->parts[p].from;
 
-To do the same as quicklists you would need a __free_pages_zeroed()
-and separate buddy lists I think.  Later is probably somewhat ugly.
-Or perhaps do it only for order 0?
 
-Or perhaps idle time zeroing should be reinvestigated on modern CPUs,
-but I'm always a little sceptical of that.
-
--Andi
