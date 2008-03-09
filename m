@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYCIPbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYCIPeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbYCIPbr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 11:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYCIPbh
+	id S1753615AbYCIPeg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 11:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYCIPe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 11:31:37 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:20203 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbYCIPbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 11:31:36 -0400
-Message-ID: <47D402C6.3070505@msgid.tls.msk.ru>
-Date: Sun, 09 Mar 2008 18:31:18 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sun, 9 Mar 2008 11:34:28 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:37345 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbYCIPe2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 11:34:28 -0400
+Date: Sun, 9 Mar 2008 18:34:25 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Bob Tracy <rct@frus.com>
+Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+Subject: Re: [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+Message-ID: <20080309153425.GA1391@jurassic.park.msu.ru>
+References: <20080308035828.E9403DBA2@gherkin.frus.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: FUJITA Tomonori <tomof@acm.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
-References: <47D3C8A1.6040409@msgid.tls.msk.ru>	 <20080309212916T.tomof@acm.org> <1205075315.3792.12.camel@localhost.localdomain>
-In-Reply-To: <1205075315.3792.12.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080308035828.E9403DBA2@gherkin.frus.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2008-03-09 at 21:29 +0900, FUJITA Tomonori wrote:
->> On Sun, 09 Mar 2008 14:23:13 +0300
->> Michael Tokarev <mjt@tls.msk.ru> wrote:
->>
->>> Just got quite.. bad situation on a production server
->>> here.  The machine locked up hard several times in a
->>> row (required hard reboot).  So I finally enabled watchdog
->>> subsystem which helped.
->>>
->>> Now I see the following (over netconsole):
->>>
->>> DMA: Out of SW-IOMMU space for 65536 bytes at device 0000:08:07.0
->>> ------------[ cut here ]------------
->>> kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
->> Seems that you was out of swiommu space (and aic79xx can't handle it
->> though it should). This happened because:
->>
->> a) you produced more I/Os than swiommu can handle.
->>
->> b) swiommu space leaks due to bugs.
->>
->> If you hit this problem due to a), the following boot option might
->> help:
->>
->> swiotlb=65536
+On Fri, Mar 07, 2008 at 09:58:28PM -0600, Bob Tracy wrote:
+> (1) Using the sox-based "play" command to play a short ".wav" file
+>     results in the file being played approx. 1.5 times, i.e., it plays
+>     all the way through, then restarts from the beginning and quits
+>     somewhere in the middle of the second playback.  At least the
+>     sound doesn't seem distorted...
+> 
+> (2) Using "mpg123" results in silence at first, then after about 30
+>     seconds, a tight loop of random repeating sound (doesn't sound like
+>     part of the mp3 file, but it's probably derived from it :-)) until
+>     the process is forcibly killed.
 
-Running with this parameter now - no lockups so far.
+Sounds like a DMA screwup. However, I'm pretty sure that it's not a
+generic ALSA problem with ISA DMA, as my good old GUS MAX still works
+perfectly on lx164 (machine that is very similar to your miata) as
+I checked yesterday with patched 2.6.25-rc4. :-)
 
-> Actually, it's worse than this.  The aic79xx is a fully 64 bit capable
-> PCI card, it shouldn't be using the iommu at all.  However, it has three
-> DMA modes:  64 bit, 39 bit and 32 bit; with a corresponding resource
-> cost increasing with the number of bits.  It employs special APIs to
-> size the masks according to the memory, in aic79xx_osm_pci.c:
-[]
-> Could you firstly tell me how much memory you have, and secondly
-> instrument this code with the patch below to see if we can work out what
-> it's doing?
+> I have to hit <ctrl>C twice to interrupt playback.
+> 
+> /proc/asound/cards looks normal:
+> 
+>  0 [ES1888         ]: ES1888 - ESS AudioDrive ES1888
+>                       ESS AudioDrive ES1888 at 0x220, irq 5, dma1 1, dma2 5
 
-The memory map is below (6Gb total).  The patch - kernel is being compiled
-right now.
+I wonder if it still works on x86 - perhaps you ought to ask ALSA folks.
+I'll search my machine room next week - I recall that there were a dozen
+of old ISA soundcards, maybe there is some es18xx stuff, but chances
+are slim...
 
-Linux version 2.6.24-x86-64 (mjt@paltus.tls.msk.ru) (gcc version 4.2.3 20071123 (prerelease) (Debian 4.2.2-4)) #2.6.24.2 SMP Mon Feb 18 16:04:41 MSK 2008
-Command line: auto BOOT_IMAGE=linux-test ro root=100 swiotlb=65536 panic=30 elevator=deadline
-BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 000000000009dc00 (usable)
-  BIOS-e820: 000000000009dc00 - 00000000000a0000 (reserved)
-  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-  BIOS-e820: 0000000000100000 - 00000000cfffca00 (usable)
-  BIOS-e820: 00000000cfffca00 - 00000000d0000000 (ACPI data)
-  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-  BIOS-e820: 0000000100000000 - 00000001b0000000 (usable)
-
-
-/mjt
+Ivan.
