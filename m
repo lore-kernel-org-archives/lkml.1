@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYCIU4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbYCIVDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYCIU4a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 16:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYCIU4X
+	id S1754438AbYCIVDy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 17:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYCIVDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 16:56:23 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:40284 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751002AbYCIU4W (ORCPT
+	Sun, 9 Mar 2008 17:03:45 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:4189 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYCIVDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 16:56:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=JqJ5wUUs0S+lPlHktryKgyztT93mXru4xHrmV3n8phukt/pNUK7JND2MLYfAfmQLyKZHK+2AHoYMlOE/TpinH07iy67yme/vzdQ+ppB++SrWJTLCOiZraadL2auc4jUjkLtWwIuPMb4niMM271Q7wfmMPoZCGppFIaAFK1m53oM=  ;
-X-YMail-OSG: YPjbhiEVM1mXfsTcvKm1hE80Cv0p1DWSakKWYkXArdWX8JadV9tgLFl.GBrJMxpfWf.1D8cnvA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.25-rc4] gpio/pca953x bugfix: mark as can_sleep
-Date: Sun, 9 Mar 2008 12:56:19 -0800
-User-Agent: KMail/1.9.6
-Cc: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>,
-       eric miao <eric.y.miao@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+	Sun, 9 Mar 2008 17:03:44 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm
+Subject: Re: [PATCH] x86: Change x86 to use generic find_next_bit
+References: <20080309200103.GA895@mailshack.com>
+	<20080309201016.GA28454@elte.hu>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 09 Mar 2008 22:03:42 +0100
+In-Reply-To: <20080309201016.GA28454@elte.hu>
+Message-ID: <87ve3vzk29.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803091356.20024.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Mar 2008 20:57:11.0470 (UTC) FILETIME=[2536A4E0:01C88228]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The pca953x driver is an I2C driver so gpio_chip->can_sleep should be set.
-This lets upper layers know they should use the gpio_*_cansleep() calls
-to access values, and may not access them from nonsleeping contexts.
+Ingo Molnar <mingo@elte.hu> writes:
+> 
+> the generic version in lib/find_next_bit.c is open-coded C which gcc can 
+> optimize pretty nicely.
+> 
+> the hand-coded assembly versions in arch/x86/lib/bitops_32.c mostly use 
+> the special x86 'bit search forward' (BSF) instruction - which i know 
+> from the days when the scheduler relied on it has some non-trivial setup 
 
-Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Merge before 2.6.25-final, please.  This will for example prevent
-leds-gpio from issuing blocking I2C calls from timer/irq contexts.
+~14 cycles on K8 for memory, but if you stay in a register it is 8 cycles
 
- drivers/gpio/pca953x.c |    1 +
- 1 file changed, 1 insertion(+)
+> costs. So especially when there's _small_ bitmasks involved, it's more 
+> expensive.
 
---- g26.orig/drivers/gpio/pca953x.c	2008-03-08 11:17:22.000000000 -0800
-+++ g26/drivers/gpio/pca953x.c	2008-03-09 13:51:13.000000000 -0700
-@@ -184,6 +184,7 @@ static void pca953x_setup_gpio(struct pc
- 	gc->direction_output = pca953x_gpio_direction_output;
- 	gc->get = pca953x_gpio_get_value;
- 	gc->set = pca953x_gpio_set_value;
-+	gc->can_sleep = 1;
- 
- 	gc->base = chip->gpio_start;
- 	gc->ngpio = gpios;
+I had a patchkit some time ago to special case the max_bit <= 63 case
+and always use directly inlined stream lined single instruction
+assembler for that. There was still some issue and I dropped it then,
+but doing something like that makes still sense. Even if the BSF 
+is slightly slower than the open coded version just getting rid
+of the CALL will make it a win and it could be also kept in a register
+so you get the 8 cycle variant (for which I doubt you can do 
+it faster open coded) 
+
+The result would be that a standard for_each_cpu () in a NR_CPUS <= 64
+kernel wouldn't have any unnecessary calls.
+
+In general the problem of walking cpu masks is quite different
+from seaching ext2 bitmaps, so they likely should be special cased
+and optimized for each.
+
+-Andi
+
