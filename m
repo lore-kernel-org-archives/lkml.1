@@ -1,124 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYCIH1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbYCIHii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbYCIH1N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 03:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYCIH1C
+	id S1752904AbYCIHii (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 03:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYCIHi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 03:27:02 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:17953 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbYCIH1A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 03:27:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=Nf4y22Azd+wa6swClY28ivd1E2JdyA6RRrKTZS0FSK7ABHrX5gFzO7vMMGt6d5vsxq9X5nc9KBARTyS8AuWJLtY/rmDsUD7o0Bz25RQTDgGuGmSrENOT1T2sbpYQVBxPRrya2a+LxBUs4pTaNP5hI8Ihns+FyrULsKPr/MYSSWk=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology, Karnataka
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] Mark kobjects as unitialized
-Date: Sun, 9 Mar 2008 12:51:15 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Mikael Pettersson <mikpe@it.uu.se>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200803062223.18857.balajirrao@gmail.com> <200803091206.02680.balajirrao@gmail.com> <20080309070307.GA6154@suse.de>
-In-Reply-To: <20080309070307.GA6154@suse.de>
+	Sun, 9 Mar 2008 03:38:29 -0400
+Received: from smtp04.mtu.ru ([62.5.255.51]:55345 "EHLO smtp04.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751809AbYCIHi2 (ORCPT <rfc822; linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 03:38:28 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [Regression] 2.6.25-rc4-git3: Handling of audio CDs broken on pata_ali
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Date: Sun, 09 Mar 2008 10:38:23 +0300
+References: <200803082246.47987.rjw@sisk.pl>
+User-Agent: KNode/0.10.9
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200803091251.15428.balajirrao@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20080309073824.902DC82CF2E@smtp04.mtu.ru>
+X-DCC-STREAM-Metrics: smtp04.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 March 2008 12:33:07 pm Greg KH wrote:
-<snip>
-> > > > Hi,
-> > > > 
-> > > > This patch does not fix it all! The problem is in fact more involved. I also get these BUG reports when I reload 
-> > kvm-intel.
-> > > > 
-> > > > BUG kmalloc-8: Object already free
-> > > > [  74.696570] -----------------------------------------------------------------------------
-> > > > [   74.696596] 
-> > > > [   74.697310] INFO: Allocated in strndup_user+0x30/0x62 age=587 cpu=2 pid=1439
-> > > > [   74.697845] INFO: Freed in kobject_set_name_vargs+0x29/0x32 age=559 cpu=3 pid=1439
-> > > > [   74.698008] INFO: Slab 0xc16f93a0 used=10 fp=0xf7c9d2d8 flags=0x10000c3
-> > > > [   74.698008] INFO: Object 0xf7c9d1f8 @offset=504 fp=0xf7c9d578
-> > > > 
-> > > > This happens because, sysdev_class_register assigns a name to the
-> > > > kobject, and kfrees the old name if any. The poisoned 'name' object
-> > > > persists in case of statically allocated kobjects and as its passed to
-> > > > kfree again when re registered, we get the above warning.
-> > > > 
-> > > > So, AFAICS the best way to solve this is by fixing the kobject users
-> > > > (kvm, oprofile etc.) to use dynamic kobjects instead of static ones or
-> > > > memset the kobject to zero before passing it to sysdev_register.
-> > > 
-> > > I like the memset idea, how about this patch instead?
-> > > 
-> > > thanks,
-> > > 
-> > > greg k-h
-> > > 
-> > > --- a/drivers/base/sys.c
-> > > +++ b/drivers/base/sys.c
-> > > @@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_
-> > >  	pr_debug("Registering sysdev class '%s'\n",
-> > >  		 kobject_name(&cls->kset.kobj));
-> > >  	INIT_LIST_HEAD(&cls->drivers);
-> > > +	memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
-> > >  	cls->kset.kobj.parent = &system_kset->kobj;
-> > >  	cls->kset.kobj.ktype = &ktype_sysdev_class;
-> > >  	cls->kset.kobj.kset = system_kset;
-> > > 
-> > 
-> > This should work.But I am afraid if we zeroed it, the kfree poison
-> > test wouldn't catch even the genuine cases. Isn't it ?  CMIIW.
-> 
-> What "genuine cases"?  kobjects should always be initialized to zero
-> before they are registered.
-> 
-The cases in which a freed kobject is passed to the register function ? Probably they will be caught when do a memset..
-> > A better fix according to me would be to zero the kobject in the
-> > places where we know it is being re-registered (kvm, oprofile) etc.
-> > This should do for now. But we should fix the sys_device users later,
-> > for the next cycle.
-> 
-> Are you sure you know all of the sysdev_class objects that can be
-> re-registered?
-> 
-Hmm.. Right. No, I only know that KVM and Oprofile use it.
-> Can you test this patch out?
-> 
-Yes the idea works. One more memset is needed in sysdev_register. Here's the final patch.
+Rafael J. Wysocki wrote:
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 2f79c55..7c839d9 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_class * cls)
-        pr_debug("Registering sysdev class '%s'\n",
-                 kobject_name(&cls->kset.kobj));
-        INIT_LIST_HEAD(&cls->drivers);
-+       memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
-        cls->kset.kobj.parent = &system_kset->kobj;
-        cls->kset.kobj.ktype = &ktype_sysdev_class;
-        cls->kset.kobj.kset = system_kset;
-@@ -227,6 +228,7 @@ int sysdev_register(struct sys_device * sysdev)
- 
-        pr_debug("Registering sys device '%s'\n", kobject_name(&sysdev->kobj));
- 
-+       memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
-        /* Make sure the kset is set */
-        sysdev->kobj.kset = &cls->kset;
+> Hi,
+> 
+> On one of my test boxes I'm unable to do just about anything with audio
+> CDs using the current -git (2.6.24 is fine in that respect on the same
+> box).
+> 
+> When an audio CD is inserted into the drive, I get the following errors in
+> dmesg and nothing more happens (quite obviously):
+> 
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd a0/01:00:00:10:00/00:00:00:00:00/a0 tag 0 dma 16400 in
+>          cdb 42 02 40 01 00 00 00 00  10 00 00 00 00 00 00 00
+>          res 40/00:00:00:18:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: soft resetting link
+> ata1.00: configured for UDMA/33
+> ata1: EH complete
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd a0/01:00:00:10:00/00:00:00:00:00/a0 tag 0 dma 16400 in
+>          cdb 42 02 40 01 00 00 00 00  10 00 00 00 00 00 00 00
+>          res 40/00:00:00:18:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: port is slow to respond, please be patient (Status 0x80)
+> ata1: device not ready (errno=-16), forcing hardreset
+> ata1: soft resetting link
+> ata1.00: qc timeout (cmd 0xa1)
+> ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> ata1.00: revalidation failed (errno=-5)
+> ata1: failed to recover some devices, retrying in 5 secs
+> ata1: port is slow to respond, please be patient (Status 0x80)
+> ata1: device not ready (errno=-16), forcing hardreset
+> ata1: soft resetting link
+> ata1.00: qc timeout (cmd 0xa1)
+> ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> ata1.00: revalidation failed (errno=-5)
+> ata1: failed to recover some devices, retrying in 5 secs
+> ata1: port is slow to respond, please be patient (Status 0x80)
+> ata1: device not ready (errno=-16), forcing hardreset
+> ata1: soft resetting link
+> ata1.00: qc timeout (cmd 0xa1)
+> ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> ata1.00: revalidation failed (errno=-5)
+> ata1.00: disabled
+> 
+> where ata1 is:
+> 
+> scsi0 : pata_ali
+> scsi1 : pata_ali
 
--- 
-regards,
-balaji rao
-3rd year,
-Dept. of Mechanical Engineering,
-National Institute of Technology, Karnataka
+Oh, is it only with audio CDs? I am unable to use DVD on pata_ali in DMA at
+all. Have you tried to disable ATAPI DMA (libata.dma=1)?
+
+
+> ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xff00 irq 14
+> ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xff08 irq 15
+> ata1.00: ATAPI: TSSTcorpCD/DVDW SH-S182M, SB03, max UDMA/33
+> ata1.00: configured for UDMA/33
+> scsi 0:0:0:0: CD-ROM            TSSTcorp CD/DVDW SH-S182M SB03 PQ: 0 ANSI:
+> 5
+> 
+> (full dmesg attached).
+> 
+> I can't reproduce this problem on my other test boxes, so I think it's
+> related to pata_ali rather than anything else.
+> 
+> In principle I can try to find the commit that caused this problem to
+> occur, but that would be rather tedious, so if anyone has any ideas of
+> what's up, please let me know.
+> 
+> Thanks,
+> Rafael
+
+
