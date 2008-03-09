@@ -1,68 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYCILP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbYCILRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbYCILP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 07:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYCILPR
+	id S1752925AbYCILRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 07:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYCILRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 07:15:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60980 "EHLO mx2.mail.elte.hu"
+	Sun, 9 Mar 2008 07:17:20 -0400
+Received: from mx1.riseup.net ([204.13.164.18]:60712 "EHLO mx1.riseup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYCILPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 07:15:16 -0400
-Date: Sun, 9 Mar 2008 12:14:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-Message-ID: <20080309111456.GA21690@elte.hu>
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+	id S1752408AbYCILRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 07:17:18 -0400
+Date: Sun, 9 Mar 2008 12:16:27 +0100
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
+       linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] Fusion MPT: convert inactive_list_mutex in a mutex
+Message-ID: <20080309111627.GI2783@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fusion MPT driver: the semaphore inactive_list_mutex is used as a
+mutex, convert it to the mutex API
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
-> Bart reported http://bugzilla.kernel.org/show_bug.cgi?id=9991. He 
-> assumed a memory leak in 32bit kernels when he analyzed the output of 
-> /proc/meminfo.
-> 
-> The leak is not a leak, it's an accounting bug. quicklists keep a 
-> large amount of pages which are accounted as used memory.
-[...]
-> Another strange observation about quicklists is the imbalance of the 
-> quicklists across CPUs. Running the above loop on a 2way machine I can 
-> observe that the quicklist pages are acuumulating on one CPU. Stopping 
-> and restarting the loop a couple of times can shift the accumulation 
-> from one to the other CPU.
+--
 
-hm. I think we should not let this much RAM hang around in a 
-special-purpose allocator like quicklists. Shouldnt the quicklists be 
-temporary in nature, and be trimmed much more agressively?
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index 0c303c8..06557f2 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -2136,7 +2136,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+ 		/*
+ 		 * Initalize link list for inactive raid volumes.
+ 		 */
+-		init_MUTEX(&ioc->raid_data.inactive_list_mutex);
++		mutex_init(&ioc->raid_data.inactive_list_mutex);
+ 		INIT_LIST_HEAD(&ioc->raid_data.inactive_list);
+ 
+ 		if (ioc->bus_type == SAS) {
+@@ -5122,13 +5122,13 @@ mpt_inactive_raid_list_free(MPT_ADAPTER *ioc)
+ 	if (list_empty(&ioc->raid_data.inactive_list))
+ 		return;
+ 
+-	down(&ioc->raid_data.inactive_list_mutex);
++	mutex_lock(&ioc->raid_data.inactive_list_mutex);
+ 	list_for_each_entry_safe(component_info, pNext,
+ 	    &ioc->raid_data.inactive_list, list) {
+ 		list_del(&component_info->list);
+ 		kfree(component_info);
+ 	}
+-	up(&ioc->raid_data.inactive_list_mutex);
++	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
+ }
+ 
+ /**
+@@ -5187,7 +5187,7 @@ mpt_inactive_raid_volumes(MPT_ADAPTER *ioc, u8 channel, u8 id)
+ 	if (!handle_inactive_volumes)
+ 		goto out;
+ 
+-	down(&ioc->raid_data.inactive_list_mutex);
++	mutex_lock(&ioc->raid_data.inactive_list_mutex);
+ 	for (i = 0; i < buffer->NumPhysDisks; i++) {
+ 		if(mpt_raid_phys_disk_pg0(ioc,
+ 		    buffer->PhysDisk[i].PhysDiskNum, &phys_disk) != 0)
+@@ -5207,7 +5207,7 @@ mpt_inactive_raid_volumes(MPT_ADAPTER *ioc, u8 channel, u8 id)
+ 		list_add_tail(&component_info->list,
+ 		    &ioc->raid_data.inactive_list);
+ 	}
+-	up(&ioc->raid_data.inactive_list_mutex);
++	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
+ 
+  out:
+ 	if (buffer)
+diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
+index caadc68..88e7a15 100644
+--- a/drivers/message/fusion/mptbase.h
++++ b/drivers/message/fusion/mptbase.h
+@@ -51,6 +51,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
++#include <linux/mutex.h>
+ 
+ #include "lsi/mpi_type.h"
+ #include "lsi/mpi.h"		/* Fusion MPI(nterface) basic defs */
+@@ -531,7 +532,7 @@ struct inactive_raid_component_info {
+ typedef	struct _RaidCfgData {
+ 	IOCPage2_t	*pIocPg2;		/* table of Raid Volumes */
+ 	IOCPage3_t	*pIocPg3;		/* table of physical disks */
+-	struct semaphore	inactive_list_mutex;
++	struct mutex	inactive_list_mutex;
+ 	struct list_head	inactive_list; /* link list for physical
+ 						disk that belong in
+ 						inactive volumes */
+diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
+index af1de0c..4e70ef4 100644
+--- a/drivers/message/fusion/mptscsih.c
++++ b/drivers/message/fusion/mptscsih.c
+@@ -2295,14 +2295,14 @@ mptscsih_is_phys_disk(MPT_ADAPTER *ioc, u8 channel, u8 id)
+ 	if (list_empty(&ioc->raid_data.inactive_list))
+ 		goto out;
+ 
+-	down(&ioc->raid_data.inactive_list_mutex);
++	mutex_lock(&ioc->raid_data.inactive_list_mutex);
+ 	list_for_each_entry(component_info, &ioc->raid_data.inactive_list,
+ 	    list) {
+ 		if ((component_info->d.PhysDiskID == id) &&
+ 		    (component_info->d.PhysDiskBus == channel))
+ 			rc = 1;
+ 	}
+-	up(&ioc->raid_data.inactive_list_mutex);
++	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
+ 
+  out:
+ 	return rc;
+@@ -2332,14 +2332,14 @@ mptscsih_raid_id_to_num(MPT_ADAPTER *ioc, u8 channel, u8 id)
+ 	if (list_empty(&ioc->raid_data.inactive_list))
+ 		goto out;
+ 
+-	down(&ioc->raid_data.inactive_list_mutex);
++	mutex_lock(&ioc->raid_data.inactive_list_mutex);
+ 	list_for_each_entry(component_info, &ioc->raid_data.inactive_list,
+ 	    list) {
+ 		if ((component_info->d.PhysDiskID == id) &&
+ 		    (component_info->d.PhysDiskBus == channel))
+ 			rc = component_info->d.PhysDiskNum;
+ 	}
+-	up(&ioc->raid_data.inactive_list_mutex);
++	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
+ 
+  out:
+ 	return rc;
+ 
+-- 
+Matthias Kaehlcke
+Linux System Developer
+Barcelona
 
-in fact, we have a check_pgt_cache() call in cpu_idle(), which does:
-
-        quicklist_trim(0, pgd_dtor, 25, 16);
-
-but it appears we dont do quicklist trimming anywhere else! So if a 
-system has no idle time, the quicklist can grow unbounded, and that's a 
-real memory leak IMO.
-
-	Ingo
+         An ounce of practice is worth more than tons of preaching
+                            (Mahatma Gandhi)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
