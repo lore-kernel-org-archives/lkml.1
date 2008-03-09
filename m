@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYCIDPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751841AbYCIDPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbYCIDPN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 22:15:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYCIDO6
+	id S1751841AbYCIDPn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 22:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYCIDPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 22:14:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37782 "EHLO
+	Sat, 8 Mar 2008 22:15:14 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37785 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYCIDO6 (ORCPT
+	with ESMTP id S1753020AbYCIDPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 22:14:58 -0500
-Date: Sat, 8 Mar 2008 19:16:17 -0800
+	Sat, 8 Mar 2008 22:15:12 -0500
+Date: Sat, 8 Mar 2008 19:15:18 -0800
 From: Greg KH <greg@kroah.com>
-To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [UPDATED v3][PATCH 4/7] regulator: framework core
-Message-ID: <20080309031617.GB24955@kroah.com>
-References: <1204827115.15360.150.camel@a10323.wolfsonmicro.main> <20080307161012.GC28439@kroah.com> <1204928391.13653.27.camel@localhost.localdomain> <20080308074116.GA20652@kroah.com> <1205011139.13653.75.camel@localhost.localdomain>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       menage@google.com, sukadev@us.ibm.com
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-ID: <20080309031518.GA24955@kroah.com>
+References: <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <20080307173542.GA2552@sergelap.austin.ibm.com> <20080307181431.GA4915@kroah.com> <20080307185052.GA4428@sergelap.austin.ibm.com> <20080308060410.GC13434@kroah.com> <20080308214757.GA22701@sergelap.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1205011139.13653.75.camel@localhost.localdomain>
+In-Reply-To: <20080308214757.GA22701@sergelap.austin.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 08, 2008 at 09:18:59PM +0000, Liam Girdwood wrote:
-> On Fri, 2008-03-07 at 23:41 -0800, Greg KH wrote:
-> > On Fri, Mar 07, 2008 at 10:19:51PM +0000, Liam Girdwood wrote:
-> > > On Fri, 2008-03-07 at 08:10 -0800, Greg KH wrote:
-> > > > On Thu, Mar 06, 2008 at 06:11:54PM +0000, Liam Girdwood wrote:
+On Sat, Mar 08, 2008 at 03:47:57PM -0600, Serge E. Hallyn wrote:
+> Quoting Greg KH (greg@kroah.com):
+> > On Fri, Mar 07, 2008 at 12:50:52PM -0600, Serge E. Hallyn wrote:
+> > > Quoting Greg KH (greg@kroah.com):
+> > > > On Fri, Mar 07, 2008 at 11:35:42AM -0600, Serge E. Hallyn wrote:
+> > > > > > Do you really want to run other LSMs within a containerd kernel?  Is
+> > > > > > that a requirement?  It would seem to run counter to the main goal of
+> > > > > > containers to me.
+> > > > > 
+> > > > > Until user namespaces are complete, selinux seems the only good solution
+> > > > > to offer isolation.
+> > > > 
+> > > > Great, use that instead :)
 > > > 
-> > > > > +/**
-> > > > > + * struct regulator_cdev
-> > > > > + *
-> > > > > + * Voltage / Current regulator class device. One for each regulator.
-> > > > > + */
-> > > > > +struct regulator_cdev {
-> > > > > +	struct regulator_desc *desc;
-> > > > > +	int use_count;
-> > > > > +
-> > > > > +	struct list_head list;
-> > > > > +	struct list_head consumer_list;
-> > > > > +	struct blocking_notifier_head notifier;
-> > > > > +	struct mutex mutex; /* consumer lock */
-> > > > > +	struct module *owner;
-> > > > > +	struct class_device cdev;
-> > > > 
-> > > > Can you change this to use a "struct device" instead?  We are trying to
-> > > > get rid of class_device, and there are only 3 users of it in the kernel
-> > > > today (memorystick, infiniband, and scsi), and I have patches pending to
-> > > > fix all of these.  For 2.6.26 I would like to be rid of it finally.
-> > > > 
-> > > > If you want, I would be glad to fix this up for you, it should be a
-> > > > pretty simple replacement.
-> > > > 
-> > > 
-> > > Yes please. Much appreciated :)
+> > > That can't work as is since you can't specify major:minor in policy.
 > > 
-> > Ok, it's below, on top of your patch series.  If you want me to merge it
-> > in, I can do that as well.  It's a bit big, as I renamed "cdev" to "dev"
-> > in your structure names and variable names as it isn't a class device
-> > anymore.
+> > Your LSM can not, or the LSM interface does not allow this to happen?
 > 
-> Thanks. I've now committed into Wolfson git. I'll give it a spin on real
-> hardware early next week and then send to Andrew.
-> 
-> > 
-> > > > > +	struct regulation_constraints *constraints;
-> > > > > +	struct regulator_cdev *parent;	/* for tree */
-> > > > 
-> > > > And if when you convert, you can get rid of this pointer, it would not
-> > > > be needed.
-> > > 
-> > > Fwiw, the regulator-parent relationship is established by the platform
-> > > code after the regulator driver has registered all the regulator
-> > > devices. I assume we can just device_move() to re-parent. 
-> > 
-> > Ick, no, just pass the parent into the regulator_register() function.
-> > Otherwise you will get some wierd uevents spit out (run udevmonitor to
-> > see what I mean.)  You should set up the parent linkage before you
-> > register the device with the driver core.
-> 
-> Sorry, I think the 'parent' naming is a little confusing. The device
-> parent would be set at register time and the 'supply' would be set later
-> during platform power config.
+> No my lsm in fact does, you just can't do it with selinux policy at the
+> moment.  I was still responding to your "just use selinux" :)
 
-Heh, we both are confused here.  Your statement is exactly what I was
-recommending :)
+I never said "use selinux", do you think I am crazy?  :)
 
-Feel free to CC: me on your next round of patches if you want me to
-review them.
+Just use your own lsm, that's all I recommended.
+
+> > > So all we could do again is simply refuse all mknod, which we can
+> > > already do with per-process capability bounding sets.
+> > 
+> > I thought we passed that info down to the LSM module, can't you do your
+> > selection at that point in time?
+> > 
+> > And then, just mediate open() like always, right?
+> 
+> Yup, the patch I included inline does that.
+
+Great.  But don't put that other file in the core kernel, put it in
+security/ please.
+
+> An LSM can address the problem.  It just felt like more of a
+> patch-over-the-real-problem kind of solution.
+
+I disagree, it sounds exactly like what LSM is for.
 
 thanks,
 
