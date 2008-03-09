@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYCIQ4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbYCIQ6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYCIQ4z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 12:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYCIQ4o
+	id S1753714AbYCIQ6R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 12:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYCIQ6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 12:56:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49881 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751659AbYCIQ4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 12:56:44 -0400
-Message-ID: <47D416C8.1020903@garzik.org>
-Date: Sun, 09 Mar 2008 12:56:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Junio C Hamano <gitster@pobox.com>
-CC: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.4.4
-References: <7vr6f31iwj.fsf@gitster.siamese.dyndns.org> <7vr6eknpjf.fsf@gitster.siamese.dyndns.org>
-In-Reply-To: <7vr6eknpjf.fsf@gitster.siamese.dyndns.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 9 Mar 2008 12:58:03 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:34391 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751333AbYCIQ6B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 12:58:01 -0400
+Subject: [PATCH] drivers: fix dma_get_required_mask
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>
+Content-Type: text/plain
+Date: Sun, 09 Mar 2008 11:57:56 -0500
+Message-Id: <1205081877.3792.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Junio C Hamano wrote:
-> The latest maintenance release GIT 1.5.4.4 is available at the
-> usual places:
-> 
->   http://www.kernel.org/pub/software/scm/git/
-> 
->   git-1.5.4.4.tar.{gz,bz2}			(tarball)
->   git-htmldocs-1.5.4.4.tar.{gz,bz2}		(preformatted docs)
->   git-manpages-1.5.4.4.tar.{gz,bz2}		(preformatted docs)
->   RPMS/$arch/git-*-1.5.4.4-1.$arch.rpm	(RPM)
+There's a bug in the current implementation of dma_get_required_mask()
+where it ands the returned mask with the current device mask.  This
+rather defeats the purpose if you're using the call to determine what
+your mask should be (since you will at that time have the default
+DMA_32BIT_MASK).  This bug results in any driver that uses this function
+*always* getting a 32 bit mask, which is wrong.
 
-Does it address the following issue, present in git-core-1.5.4.1-1.fc8?
+Fix by removing the and with dev->dma_mask.
 
-http://marc.info/?l=git&m=120423022832530&w=2
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-Thanks,
+---
 
-	Jeff
+This is a pretty nasty bug which can cause mysterious slow downs and
+panics on >4GB machines (we've just had one on an aic79xx production
+system).
+
+It probably also needs to be backported as far as it will go.
+
+James
+
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index efaf282..911ec60 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -648,7 +648,7 @@ u64 dma_get_required_mask(struct device *dev)
+ 		high_totalram += high_totalram - 1;
+ 		mask = (((u64)high_totalram) << 32) + 0xffffffff;
+ 	}
+-	return mask & *dev->dma_mask;
++	return mask;
+ }
+ EXPORT_SYMBOL_GPL(dma_get_required_mask);
+ #endif
 
 
