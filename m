@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbYCIL4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbYCIL45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbYCIL4e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 07:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYCIL4Y
+	id S1753646AbYCIL45 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 07:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYCIL4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 07:56:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39622 "EHLO mx2.mail.elte.hu"
+	Sun, 9 Mar 2008 07:56:45 -0400
+Received: from www.tglx.de ([62.245.132.106]:33821 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751163AbYCIL4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 07:56:24 -0400
-Date: Sun, 9 Mar 2008 12:56:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, hans.rosenfeld@amd.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-Message-ID: <20080309115603.GA951@elte.hu>
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu> <47CC2A3D.1000307@linux.intel.com> <20080303174009.GA19131@elte.hu> <47CC451A.2060501@linux.intel.com> <alpine.LFD.1.00.0803031042230.17889@woody.linux-foundation.org>
+	id S1752896AbYCIL4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 07:56:37 -0400
+Date: Sun, 9 Mar 2008 12:56:11 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: quicklists confuse meminfo
+In-Reply-To: <20080309111456.GA21690@elte.hu>
+Message-ID: <alpine.LFD.1.00.0803091244420.3099@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309111456.GA21690@elte.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803031042230.17889@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 9 Mar 2008, Ingo Molnar wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > I'm half tempted to just do it as inline period ... any objections ?
 > 
-> Yes, I object. I want to understand why it would matter. If this is a 
-> compiler bug, it's a really rather bad one. And if it's just some 
-> stupid bug in our pmd_bad() macro, I still want to know what the 
-> problem was.
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > Bart reported http://bugzilla.kernel.org/show_bug.cgi?id=9991. He 
+> > assumed a memory leak in 32bit kernels when he analyzed the output of 
+> > /proc/meminfo.
+> > 
+> > The leak is not a leak, it's an accounting bug. quicklists keep a 
+> > large amount of pages which are accounted as used memory.
+> [...]
+> > Another strange observation about quicklists is the imbalance of the 
+> > quicklists across CPUs. Running the above loop on a 2way machine I can 
+> > observe that the quicklist pages are acuumulating on one CPU. Stopping 
+> > and restarting the loop a couple of times can shift the accumulation 
+> > from one to the other CPU.
+> 
+> hm. I think we should not let this much RAM hang around in a 
+> special-purpose allocator like quicklists. Shouldnt the quicklists be 
+> temporary in nature, and be trimmed much more agressively?
+> 
+> in fact, we have a check_pgt_cache() call in cpu_idle(), which does:
+> 
+>         quicklist_trim(0, pgd_dtor, 25, 16);
+> 
+> but it appears we dont do quicklist trimming anywhere else! So if a 
+> system has no idle time, the quicklist can grow unbounded, and that's a 
+> real memory leak IMO.
 
-ok, i think i figured it out: on PAE 32-bit we dont properly sign-extend 
-to a 64-bit pmd value in the new pmd_bad() macro - so if any physical 
-RAM is above 4GB (Arjan's laptop had 4GB of RAM in it?) then we'll start 
-seeing those high bits. This definitely needs PAE and more than 4GB of 
-RAM to trigger.
+Right, also the quicklist_trim() in idle() is freeing at max 16 pages
+in one go. According to the quicklist_trim() code we keep up to
+(node_free_pages / 16) in the quicklist unconditionally, which seems
+rather odd as well.
 
-The best fix is the one below (it should solve Arjan's regression with 
-that now-reverted patch redone), as it is the right thing to do [that 
-way sign auto-extend trickles over into PAGE_MASK as well].
-
-It boots fine on a >4GB box of mine but changing the type of PAGE_SIZE 
-affects _everything_ so i'll keep testing it and i'd suggest to delay 
-this fix to shortly after -rc5 is released instead of risking -rc5 with 
-such a late commit. I'll send this and the re-done hugetlbfs fix 
-together early next week.
-
-	Ingo
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Index: linux/include/asm-x86/page.h
-===================================================================
---- linux.orig/include/asm-x86/page.h
-+++ linux/include/asm-x86/page.h
-@@ -5,7 +5,7 @@
- 
- /* PAGE_SHIFT determines the page size */
- #define PAGE_SHIFT	12
--#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
-+#define PAGE_SIZE	(_AC(1,L) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
- #ifdef __KERNEL__
+Thanks,
+	tglx
