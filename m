@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbYCIMKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbYCIM3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbYCIMKL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 08:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYCIMKB
+	id S1752400AbYCIM3y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 08:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbYCIM3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 08:10:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43486 "EHLO mx3.mail.elte.hu"
+	Sun, 9 Mar 2008 08:29:42 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:54003 "EHLO mo10.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbYCIMKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 08:10:00 -0400
-Date: Sun, 9 Mar 2008 13:09:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-Message-ID: <20080309120940.GA1695@elte.hu>
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309111456.GA21690@elte.hu> <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750840AbYCIM3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 08:29:34 -0400
+Date: Sun, 9 Mar 2008 21:29:16 +0900
+To: mjt@tls.msk.ru
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: Re: kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <47D3C8A1.6040409@msgid.tls.msk.ru>
+References: <47D3C8A1.6040409@msgid.tls.msk.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080309212916T.tomof@acm.org>
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 09 Mar 2008 14:23:13 +0300
+Michael Tokarev <mjt@tls.msk.ru> wrote:
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > but it appears we dont do quicklist trimming anywhere else! So if a 
-> > system has no idle time, the quicklist can grow unbounded, and 
-> > that's a real memory leak IMO.
+> Just got quite.. bad situation on a production server
+> here.  The machine locked up hard several times in a
+> row (required hard reboot).  So I finally enabled watchdog
+> subsystem which helped.
 > 
-> I test following method.
+> Now I see the following (over netconsole):
 > 
-> 1. $ hackbench 100 process 1000
-> 2. $ cat /proc/meminfo
-> 
-> quicklist consume 1GB memory of 8GB total memory system.
-> it seems too large cache ;)
-> 
-> IMHO we need shrink pgtable cache mecanism.
+> DMA: Out of SW-IOMMU space for 65536 bytes at device 0000:08:07.0
+> ------------[ cut here ]------------
+> kernel BUG at drivers/scsi/aic7xxx/aic79xx_osm.c:1490!
 
-ouch! Could you try the patch below? How large is the quicklist cache 
-with this applied?
+Seems that you was out of swiommu space (and aic79xx can't handle it
+though it should). This happened because:
 
-	Ingo
+a) you produced more I/Os than swiommu can handle.
 
----------------------->
-Subject: x86: trim quicklist more agressively
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun Mar 09 12:59:41 CET 2008
+b) swiommu space leaks due to bugs.
 
-trim the quicklists more agressively, up to 1024 pages at once.
-(which pretty much means we keep this special-purpose cache as
-small as possible)
+If you hit this problem due to a), the following boot option might
+help:
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pgtable_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+swiotlb=65536
 
-Index: linux-x86.q/arch/x86/mm/pgtable_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/pgtable_32.c
-+++ linux-x86.q/arch/x86/mm/pgtable_32.c
-@@ -358,7 +358,7 @@ void pgd_free(struct mm_struct *mm, pgd_
- 
- void check_pgt_cache(void)
- {
--	quicklist_trim(0, pgd_dtor, 25, 16);
-+	quicklist_trim(0, pgd_dtor, 25, 1024);
- }
- 
- void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+The same machine run well with old kernels? If so, probably, 2.6.24
+has new bugs that lead to swiommu space leak.
