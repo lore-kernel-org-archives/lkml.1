@@ -1,102 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbYCIHii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYCIIIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbYCIHii (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 03:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYCIHi3
+	id S1753005AbYCIIIf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 04:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYCIIIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 03:38:29 -0400
-Received: from smtp04.mtu.ru ([62.5.255.51]:55345 "EHLO smtp04.mtu.ru"
+	Sun, 9 Mar 2008 04:08:14 -0400
+Received: from www.tglx.de ([62.245.132.106]:40524 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751809AbYCIHi2 (ORCPT <rfc822; linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 03:38:28 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [Regression] 2.6.25-rc4-git3: Handling of audio CDs broken on pata_ali
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Date: Sun, 09 Mar 2008 10:38:23 +0300
-References: <200803082246.47987.rjw@sisk.pl>
-User-Agent: KNode/0.10.9
+	id S1751584AbYCIIIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 04:08:07 -0400
+Date: Sun, 9 Mar 2008 09:07:24 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT pull] time(r) fixes for .25
+Message-ID: <alpine.LFD.1.00.0803090857480.3099@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <20080309073824.902DC82CF2E@smtp04.mtu.ru>
-X-DCC-STREAM-Metrics: smtp04.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+Linus,
 
-> Hi,
-> 
-> On one of my test boxes I'm unable to do just about anything with audio
-> CDs using the current -git (2.6.24 is fine in that respect on the same
-> box).
-> 
-> When an audio CD is inserted into the drive, I get the following errors in
-> dmesg and nothing more happens (quite obviously):
-> 
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd a0/01:00:00:10:00/00:00:00:00:00/a0 tag 0 dma 16400 in
->          cdb 42 02 40 01 00 00 00 00  10 00 00 00 00 00 00 00
->          res 40/00:00:00:18:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> ata1.00: status: { DRDY }
-> ata1: soft resetting link
-> ata1.00: configured for UDMA/33
-> ata1: EH complete
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd a0/01:00:00:10:00/00:00:00:00:00/a0 tag 0 dma 16400 in
->          cdb 42 02 40 01 00 00 00 00  10 00 00 00 00 00 00 00
->          res 40/00:00:00:18:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> ata1.00: status: { DRDY }
-> ata1: port is slow to respond, please be patient (Status 0x80)
-> ata1: device not ready (errno=-16), forcing hardreset
-> ata1: soft resetting link
-> ata1.00: qc timeout (cmd 0xa1)
-> ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> ata1.00: revalidation failed (errno=-5)
-> ata1: failed to recover some devices, retrying in 5 secs
-> ata1: port is slow to respond, please be patient (Status 0x80)
-> ata1: device not ready (errno=-16), forcing hardreset
-> ata1: soft resetting link
-> ata1.00: qc timeout (cmd 0xa1)
-> ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> ata1.00: revalidation failed (errno=-5)
-> ata1: failed to recover some devices, retrying in 5 secs
-> ata1: port is slow to respond, please be patient (Status 0x80)
-> ata1: device not ready (errno=-16), forcing hardreset
-> ata1: soft resetting link
-> ata1.00: qc timeout (cmd 0xa1)
-> ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> ata1.00: revalidation failed (errno=-5)
-> ata1.00: disabled
-> 
-> where ata1 is:
-> 
-> scsi0 : pata_ali
-> scsi1 : pata_ali
+please pull time(r) related fixes from:
 
-Oh, is it only with audio CDs? I am unable to use DVD on pata_ali in DMA at
-all. Have you tried to disable ATAPI DMA (libata.dma=1)?
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
 
+Thanks,
+	tglx
 
-> ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xff00 irq 14
-> ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xff08 irq 15
-> ata1.00: ATAPI: TSSTcorpCD/DVDW SH-S182M, SB03, max UDMA/33
-> ata1.00: configured for UDMA/33
-> scsi 0:0:0:0: CD-ROM            TSSTcorp CD/DVDW SH-S182M SB03 PQ: 0 ANSI:
-> 5
-> 
-> (full dmesg attached).
-> 
-> I can't reproduce this problem on my other test boxes, so I think it's
-> related to pata_ali rather than anything else.
-> 
-> In principle I can try to find the commit that caused this problem to
-> occur, but that would be rather tedious, so if anyone has any ideas of
-> what's up, please let me know.
-> 
-> Thanks,
-> Rafael
+David Howells (1):
+      ntp: use unsigned input for do_div()
 
+Karsten Wiese (1):
+      time: don't touch an offlined CPU's ts->tick_stopped in tick_cancel_sched_timer()
 
+Roman Zippel (1):
+      time: remove obsolete CLOCK_TICK_ADJUST
+
+Segher Boessenkool (1):
+      time: prevent the loop in timespec_add_ns() from being optimised away
+
+ include/linux/time.h      |    4 ++++
+ include/linux/timex.h     |    9 +--------
+ kernel/time/ntp.c         |   23 +++++++++++++++++------
+ kernel/time/tick-sched.c  |    2 +-
+ kernel/time/timekeeping.c |    6 ++----
+
+ 5 files changed, 25 insertions(+), 19 deletions(-)
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 2091a19..d32ef0a 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -174,6 +174,10 @@ static inline void timespec_add_ns(struct timespec *a, u64 ns)
+ {
+ 	ns += a->tv_nsec;
+ 	while(unlikely(ns >= NSEC_PER_SEC)) {
++		/* The following asm() prevents the compiler from
++		 * optimising this loop into a modulo operation.  */
++		asm("" : "+r"(ns));
++
+ 		ns -= NSEC_PER_SEC;
+ 		a->tv_sec++;
+ 	}
+diff --git a/include/linux/timex.h b/include/linux/timex.h
+index c3f3747..8ea3e71 100644
+--- a/include/linux/timex.h
++++ b/include/linux/timex.h
+@@ -232,14 +232,7 @@ static inline int ntp_synced(void)
+ #else
+ #define NTP_INTERVAL_FREQ  (HZ)
+ #endif
+-
+-#define CLOCK_TICK_OVERFLOW	(LATCH * HZ - CLOCK_TICK_RATE)
+-#define CLOCK_TICK_ADJUST	(((s64)CLOCK_TICK_OVERFLOW * NSEC_PER_SEC) / \
+-					(s64)CLOCK_TICK_RATE)
+-
+-/* Because using NSEC_PER_SEC would be too easy */
+-#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC * NSEC_PER_USEC * USER_HZ) + \
+-			      CLOCK_TICK_ADJUST) / NTP_INTERVAL_FREQ)
++#define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
+ 
+ /* Returns how long ticks are at present, in ns / 2^(SHIFT_SCALE-10). */
+ extern u64 current_tick_length(void);
+diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+index c88b591..5fd9b94 100644
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -42,12 +42,13 @@ long time_esterror = NTP_PHASE_LIMIT;	/* estimated error (us)		*/
+ long time_freq;				/* frequency offset (scaled ppm)*/
+ static long time_reftime;		/* time at last adjustment (s)	*/
+ long time_adjust;
++static long ntp_tick_adj;
+ 
+ static void ntp_update_frequency(void)
+ {
+ 	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
+ 				<< TICK_LENGTH_SHIFT;
+-	second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
++	second_length += (s64)ntp_tick_adj << TICK_LENGTH_SHIFT;
+ 	second_length += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
+ 
+ 	tick_length_base = second_length;
+@@ -342,14 +343,16 @@ int do_adjtimex(struct timex *txc)
+ 		    freq_adj = shift_right(freq_adj, time_constant * 2 +
+ 					   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
+ 		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
++			u64 utemp64;
+ 			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
+ 			if (time_offset < 0) {
+-			    temp64 = -temp64;
+-			    do_div(temp64, mtemp);
+-			    freq_adj -= temp64;
++			    utemp64 = -temp64;
++			    do_div(utemp64, mtemp);
++			    freq_adj -= utemp64;
+ 			} else {
+-			    do_div(temp64, mtemp);
+-			    freq_adj += temp64;
++			    utemp64 = temp64;
++			    do_div(utemp64, mtemp);
++			    freq_adj += utemp64;
+ 			}
+ 		    }
+ 		    freq_adj += time_freq;
+@@ -400,3 +403,11 @@ leave:	if ((time_status & (STA_UNSYNC|STA_CLOCKERR)) != 0)
+ 	notify_cmos_timer();
+ 	return(result);
+ }
++
++static int __init ntp_tick_adj_setup(char *str)
++{
++	ntp_tick_adj = simple_strtol(str, NULL, 0);
++	return 1;
++}
++
++__setup("ntp_tick_adj=", ntp_tick_adj_setup);
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 2968298..686da82 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -640,7 +640,7 @@ void tick_cancel_sched_timer(int cpu)
+ 
+ 	if (ts->sched_timer.base)
+ 		hrtimer_cancel(&ts->sched_timer);
+-	ts->tick_stopped = 0;
++
+ 	ts->nohz_mode = NOHZ_MODE_INACTIVE;
+ }
+ #endif /* HIGH_RES_TIMERS */
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 1af9fb0..671af61 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -187,8 +187,7 @@ static void change_clocksource(void)
+ 
+ 	clock->error = 0;
+ 	clock->xtime_nsec = 0;
+-	clocksource_calculate_interval(clock,
+-		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
++	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+ 
+ 	tick_clock_notify();
+ 
+@@ -245,8 +244,7 @@ void __init timekeeping_init(void)
+ 	ntp_clear();
+ 
+ 	clock = clocksource_get_next();
+-	clocksource_calculate_interval(clock,
+-		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
++	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+ 	clock->cycle_last = clocksource_read(clock);
+ 
+ 	xtime.tv_sec = sec;
