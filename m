@@ -1,105 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYCISpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYCISrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbYCISpi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 14:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYCISp3
+	id S1753847AbYCISrV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 14:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYCISrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 14:45:29 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:33343
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbYCISp2 (ORCPT
+	Sun, 9 Mar 2008 14:47:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55048 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751708AbYCISrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 14:45:28 -0400
-Date: Sun, 9 Mar 2008 11:45:24 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: linux-usb@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]  mass storage : emulation of sat scsi_pass_thru with ATACB
-Message-ID: <20080309184524.GF2820@one-eyed-alien.net>
-Mail-Followup-To: matthieu castet <castet.matthieu@free.fr>,
-	linux-usb@vger.kernel.org,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <47D2CD95.9070701@free.fr> <20080308183125.GB2820@one-eyed-alien.net> <47D2F23A.4020103@free.fr> <20080308212148.GC2820@one-eyed-alien.net> <47D39E14.9050900@free.fr>
+	Sun, 9 Mar 2008 14:47:11 -0400
+Date: Sun, 9 Mar 2008 11:46:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: quicklists confuse meminfo
+Message-Id: <20080309114640.85c9c3eb.akpm@linux-foundation.org>
+In-Reply-To: <20080309123432.GA3267@elte.hu>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+	<20080309111456.GA21690@elte.hu>
+	<20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080309120940.GA1695@elte.hu>
+	<20080309123432.GA3267@elte.hu>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UnaWdueM1EBWVRzC"
-Content-Disposition: inline
-In-Reply-To: <47D39E14.9050900@free.fr>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Sun, 09 Mar 2008 11:45:24 -0700 (PDT)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 9 Mar 2008 13:34:32 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
---UnaWdueM1EBWVRzC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> the right solution is to get rid of quicklists altogether
 
-On Sun, Mar 09, 2008 at 09:21:40AM +0100, matthieu castet wrote:
-> Hum, may be to avoid confusion with a new protocol handler, I can add my=
-=20
-> hook in usb_stor_control_thread with a new flag.
->=20
-> Something like :
-> [...]
->  /* Handle those devices which need us to fake
->          * their inquiry data */
->         else if ((us->srb->cmnd[0] =3D=3D INQUIRY) &&
->                 (us->flags & US_FL_FIX_INQUIRY)) {
-> [...]
-> 	else if (( (us->srb->cmnd[0] =3D=3D ATA_12) || (us->srb->cmnd[0] =3D=3D=
-=20
-> 	ATA_16)) &&
->                 (us->flags & US_FL_CYPRESS_ATACB)) {
->         US_DEBUGP("emulating ATA pass thru\n");
-> 		call to emulate_pass_thru_with_atacb code
->         }
->=20
->         /* we've got a command, let's do it! */
->         else {
->             US_DEBUG(usb_stor_show_command(us->srb));
->             us->proto_handler(us->srb, us);
->         }
->=20
-> Does it sound better ?
+Yes, I think so.
 
-Somewhat better.  I still like a separate protocol handler better.
+- They are pretty marginal from a performance POV (iirc)
 
-I guess I see this as being more like the ISD200 case.  In that code, it
-attempts to identify the device as ATA or ATAPI.  If it's ATAPI, it
-switches back to the transparent scsi protocol handler.  Here, we're just
-talking about doing it on a command-by-command basis, instead of a one-time
-selection.  But there is no confusion that the ISD200 code handles all
-commands; but it does implement a new 'protocol' (a way to transport
-commands to/from the device), which is exactly what you're doing.
+- They've been a relatively rich source of bugs
 
-Matt
+- As I said when we merged them (under protest): Private object caches
+  like this are just a bad idea - caches should be *shared*, because some
+  other code path which wants a zeroed page wants a cache-warm one, not a
+  cache-cold one from the allocator (iirc there was doubt over how
+  cache-warm these pages are, however).
 
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-I'm seen in many forms.  Now open your mouth.  It's caffeine time.
-					-- Cola Man to Greg
-User Friendly, 10/28/1998
-
---UnaWdueM1EBWVRzC
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFH1DBEHL9iwnUZqnkRAkQ3AKCwVQLvSLgt0woTWIZmDh8hE2aSawCeLW+V
-J+eXYmSWZqwY0VOU1OYLxOs=
-=eRRi
------END PGP SIGNATURE-----
-
---UnaWdueM1EBWVRzC--
+  Making __GFP_ZERO smarter/more efficient would be a preferable way of
+  addressing any performance problems we have in there.
