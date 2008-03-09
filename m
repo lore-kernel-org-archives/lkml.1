@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYCIKaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYCIKnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYCIKaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 06:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYCIK36
+	id S1753222AbYCIKnm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 06:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYCIKnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 06:29:58 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:3594 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYCIK35 (ORCPT
+	Sun, 9 Mar 2008 06:43:32 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:59891 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYCIKnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 06:29:57 -0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <clameter@sgi.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 09 Mar 2008 11:29:54 +0100
-In-Reply-To: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
-Message-ID: <87iqzw197h.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sun, 9 Mar 2008 06:43:31 -0400
+Date: Sun, 9 Mar 2008 10:43:23 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Martin Michlmayr <tbm@cyrius.com>
+Subject: [PATCH] Input: fix cobalt_btns loadable keymap support
+Message-ID: <20080309104323.GA24303@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Mar 2008 10:23:23.0475 (UTC) FILETIME=[9AC31A30:01C881CF]
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-> Bart reported http://bugzilla.kernel.org/show_bug.cgi?id=9991. He
-> assumed a memory leak in 32bit kernels when he analyzed the output of
-> /proc/meminfo.
-> 
-> The leak is not a leak, it's an accounting bug. quicklists keep a
-> large amount of pages which are accounted as used memory.
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-There are various other subsystems which can cache substantial memory
-under the right circumstances. Do you want to add all of them 
-to /proc/meminfo? I'm not sure that will scale long term.
+---
+This patch was submitted about two weeks ago by Yoichi but seems to have
+been lost.  Without this patch the Cobalt defconfig won't build, so it's
+2.6.25 stuff.
 
-One more general possibility would be to integrate this with
-with the shrinker callbacks. Everyone who caches memory should
-have a shrinker. Perhaps that could be integrated with some reporting
-facility that adds a dynamic counter field that is displayed
-somewhere in /proc or /sys.
-
--Andi
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/input/misc/cobalt_btns.c linux/drivers/input/misc/cobalt_btns.c
+--- linux-orig/drivers/input/misc/cobalt_btns.c	2008-02-10 20:16:54.621304697 +0900
++++ linux/drivers/input/misc/cobalt_btns.c	2008-02-10 23:02:30.875539556 +0900
+@@ -1,7 +1,7 @@
+ /*
+  *  Cobalt button interface driver.
+  *
+- *  Copyright (C) 2007  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *  Copyright (C) 2007-2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -15,7 +15,7 @@
+  *
+  *  You should have received a copy of the GNU General Public License
+  *  along with this program; if not, write to the Free Software
+- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  */
+ #include <linux/init.h>
+ #include <linux/input-polldev.h>
+@@ -55,7 +55,7 @@ static void handle_buttons(struct input_
+ 	status = ~readl(bdev->reg) >> 24;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(bdev->keymap); i++) {
+-		if (status & (1UL << i)) {
++		if (status & (1U << i)) {
+ 			if (++bdev->count[i] == BUTTONS_COUNT_THRESHOLD) {
+ 				input_event(input, EV_MSC, MSC_SCAN, i);
+ 				input_report_key(input, bdev->keymap[i], 1);
+@@ -97,16 +97,16 @@ static int __devinit cobalt_buttons_prob
+ 	input->name = "Cobalt buttons";
+ 	input->phys = "cobalt/input0";
+ 	input->id.bustype = BUS_HOST;
+-	input->cdev.dev = &pdev->dev;
++	input->dev.parent = &pdev->dev;
+ 
+-	input->keycode = pdev->keymap;
+-	input->keycodemax = ARRAY_SIZE(pdev->keymap);
++	input->keycode = bdev->keymap;
++	input->keycodemax = ARRAY_SIZE(bdev->keymap);
+ 	input->keycodesize = sizeof(unsigned short);
+ 
+ 	input_set_capability(input, EV_MSC, MSC_SCAN);
+ 	__set_bit(EV_KEY, input->evbit);
+-	for (i = 0; i < ARRAY_SIZE(buttons_map); i++)
+-		__set_bit(input->keycode[i], input->keybit);
++	for (i = 0; i < ARRAY_SIZE(cobalt_map); i++)
++		__set_bit(bdev->keymap[i], input->keybit);
+ 	__clear_bit(KEY_RESERVED, input->keybit);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
