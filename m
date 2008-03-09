@@ -1,110 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbYCITcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYCITiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbYCITcI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 15:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYCITb4
+	id S1753989AbYCITiU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 15:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYCITiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 15:31:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42850 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752820AbYCITbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 15:31:55 -0400
-Date: Sun, 9 Mar 2008 20:31:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-Message-ID: <20080309193137.GA17198@elte.hu>
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309111456.GA21690@elte.hu> <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu> <20080309121103.3f7019d5@laptopd505.fenrus.org> <20080309192514.GA16759@elte.hu> <20080309192745.GA16929@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080309192745.GA16929@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 9 Mar 2008 15:38:10 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4134 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbYCITiJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 15:38:09 -0400
+Subject: [PATCH] x86 - cleanup duplicate includes
+From: Joe Perches <joe@perches.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 09 Mar 2008 12:35:00 -0700
+Message-Id: <1205091300.656.53.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Joe Perches <joe@perches.com>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+ arch/x86/kernel/reboot.c      |    1 -
+ include/asm-x86/elf.h         |    5 ++---
+ include/asm-x86/posix_types.h |    8 +-------
+ include/asm-x86/processor.h   |    3 +--
+ include/asm-x86/unistd.h      |    8 +-------
+ 5 files changed, 5 insertions(+), 20 deletions(-)
 
-> i.e. the patch below should do the trick.
-> 
-> (it's still work in progress but it seems to boot just fine)
-
-updated patch below - Thomas found a bug in the alloc-failure cleanup 
-path. I shouldnt hack late Sunday night :)
-
-	Ingo
-
---------------->
-Subject: x86: patches/remove-quicklists.patch
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun Mar 09 20:04:32 CET 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pgtable_32.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-Index: linux-x86.q/arch/x86/mm/pgtable_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/pgtable_32.c
-+++ linux-x86.q/arch/x86/mm/pgtable_32.c
-@@ -10,7 +10,6 @@
- #include <linux/pagemap.h>
- #include <linux/spinlock.h>
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 55ceb8c..b1e428b 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -1,5 +1,4 @@
  #include <linux/module.h>
--#include <linux/quicklist.h>
+-#include <linux/init.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/pm.h>
+diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
+index fb62f99..7732564 100644
+--- a/include/asm-x86/elf.h
++++ b/include/asm-x86/elf.h
+@@ -82,8 +82,9 @@ extern unsigned int vdso_enabled;
+ #define elf_check_arch_ia32(x) \
+ 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
  
- #include <asm/system.h>
- #include <asm/pgtable.h>
-@@ -338,12 +337,17 @@ static void pgd_mop_up_pmds(struct mm_st
- 
- pgd_t *pgd_alloc(struct mm_struct *mm)
- {
--	pgd_t *pgd = quicklist_alloc(0, GFP_KERNEL, pgd_ctor);
-+	pgd_t *pgd;
+-#ifdef CONFIG_X86_32
+ #include <asm/processor.h>
 +
-+	pgd = (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
-+	if (pgd)
-+		pgd_ctor(pgd);
++#ifdef CONFIG_X86_32
+ #include <asm/system.h>		/* for savesegment */
+ #include <asm/desc.h>
  
- 	mm->pgd = pgd;		/* so that alloc_pd can use it */
+@@ -135,8 +136,6 @@ extern unsigned int vdso_enabled;
  
- 	if (pgd && !pgd_prepopulate_pmd(mm, pgd)) {
--		quicklist_free(0, pgd_dtor, pgd);
-+		pgd_dtor(pgd);
-+		free_page((unsigned long)pgd);
- 		pgd = NULL;
- 	}
+ #else /* CONFIG_X86_32 */
  
-@@ -353,12 +357,12 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- {
- 	pgd_mop_up_pmds(mm, pgd);
--	quicklist_free(0, pgd_dtor, pgd);
-+	pgd_dtor(pgd);
-+	free_page((unsigned long)pgd);
- }
+-#include <asm/processor.h>
+-
+ /*
+  * This is used to ensure we don't load something for the wrong architecture.
+  */
+diff --git a/include/asm-x86/posix_types.h b/include/asm-x86/posix_types.h
+index bb7133d..fe312a5 100644
+--- a/include/asm-x86/posix_types.h
++++ b/include/asm-x86/posix_types.h
+@@ -1,11 +1,5 @@
+ #ifdef __KERNEL__
+-# ifdef CONFIG_X86_32
+-#  include "posix_types_32.h"
+-# else
+-#  include "posix_types_64.h"
+-# endif
+-#else
+-# ifdef __i386__
++# if defined(CONFIG_X86_32) || defined(__i386__)
+ #  include "posix_types_32.h"
+ # else
+ #  include "posix_types_64.h"
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index 45a2f0a..614362e 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -3,8 +3,7 @@
  
- void check_pgt_cache(void)
- {
--	quicklist_trim(0, pgd_dtor, 25, 16);
- }
+ #include <asm/processor-flags.h>
  
- void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+-/* migration helpers, for KVM - will be removed in 2.6.25: */
+-#include <asm/vm86.h>
++/* migration helper, for KVM - will be removed in 2.6.25: */
+ #define Xgt_desc_struct	desc_ptr
+ 
+ /* Forward declaration, a strange C thing */
+diff --git a/include/asm-x86/unistd.h b/include/asm-x86/unistd.h
+index 2a58ed3..effc7ad 100644
+--- a/include/asm-x86/unistd.h
++++ b/include/asm-x86/unistd.h
+@@ -1,11 +1,5 @@
+ #ifdef __KERNEL__
+-# ifdef CONFIG_X86_32
+-#  include "unistd_32.h"
+-# else
+-#  include "unistd_64.h"
+-# endif
+-#else
+-# ifdef __i386__
++# if defined(CONFIG_X86_32) || defined(__i386__)
+ #  include "unistd_32.h"
+ # else
+ #  include "unistd_64.h"
+
+
