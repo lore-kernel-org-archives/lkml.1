@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751841AbYCIDPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbYCIDm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751841AbYCIDPn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 22:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYCIDPO
+	id S1752876AbYCIDm3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 22:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYCIDmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 22:15:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37785 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753020AbYCIDPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 22:15:12 -0500
-Date: Sat, 8 Mar 2008 19:15:18 -0800
-From: Greg KH <greg@kroah.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080309031518.GA24955@kroah.com>
-References: <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <20080307173542.GA2552@sergelap.austin.ibm.com> <20080307181431.GA4915@kroah.com> <20080307185052.GA4428@sergelap.austin.ibm.com> <20080308060410.GC13434@kroah.com> <20080308214757.GA22701@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080308214757.GA22701@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 8 Mar 2008 22:42:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39168 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbYCIDmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Mar 2008 22:42:19 -0500
+Subject: Re: 2.6.25-rc4 OOMs itself dead on bootup (modprobe bug?)
+From: Jon Masters <jcm@redhat.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Frank Sorenson <frank@tuxrocks.com>, Matt Domsch <Matt_Domsch@dell.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <1205016884.24056.1.camel@lov.site>
+References: <47D02940.1030707@tuxrocks.com> <20080306184954.GA15492@elte.hu>
+	 <47D1971A.7070500@tuxrocks.com> <47D23B7E.3020505@tuxrocks.com>
+	 <20080308135318.GA8036@auslistsprd01.us.dell.com>
+	 <47D29CAB.50301@tuxrocks.com>  <1205013197.5484.81.camel@perihelion>
+	 <1205016884.24056.1.camel@lov.site>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Sat, 08 Mar 2008 22:41:32 -0500
+Message-Id: <1205034092.5484.115.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 08, 2008 at 03:47:57PM -0600, Serge E. Hallyn wrote:
-> Quoting Greg KH (greg@kroah.com):
-> > On Fri, Mar 07, 2008 at 12:50:52PM -0600, Serge E. Hallyn wrote:
-> > > Quoting Greg KH (greg@kroah.com):
-> > > > On Fri, Mar 07, 2008 at 11:35:42AM -0600, Serge E. Hallyn wrote:
-> > > > > > Do you really want to run other LSMs within a containerd kernel?  Is
-> > > > > > that a requirement?  It would seem to run counter to the main goal of
-> > > > > > containers to me.
-> > > > > 
-> > > > > Until user namespaces are complete, selinux seems the only good solution
-> > > > > to offer isolation.
-> > > > 
-> > > > Great, use that instead :)
-> > > 
-> > > That can't work as is since you can't specify major:minor in policy.
+
+On Sat, 2008-03-08 at 23:54 +0100, Kay Sievers wrote:
+> On Sat, 2008-03-08 at 16:53 -0500, Jon Masters wrote:
+> > On Sat, 2008-03-08 at 08:03 -0600, Frank Sorenson wrote:
 > > 
-> > Your LSM can not, or the LSM interface does not allow this to happen?
+> > > It's module-init-tools-3.4-2.fc8.x86_64 (most recent Fedora rpm available).
+> > 
+> > Ok, so I'll see if I can find a Dell system in the office to reproduce
+> > this on Monday. Any Dell should do, right Matt?
 > 
-> No my lsm in fact does, you just can't do it with selinux policy at the
-> moment.  I was still responding to your "just use selinux" :)
+> Should not be needed:
+>   http://lkml.org/lkml/2008/3/8/91
 
-I never said "use selinux", do you think I am crazy?  :)
+Oh, all's well that ends well :)
 
-Just use your own lsm, that's all I recommended.
+Jon.
 
-> > > So all we could do again is simply refuse all mknod, which we can
-> > > already do with per-process capability bounding sets.
-> > 
-> > I thought we passed that info down to the LSM module, can't you do your
-> > selection at that point in time?
-> > 
-> > And then, just mediate open() like always, right?
-> 
-> Yup, the patch I included inline does that.
 
-Great.  But don't put that other file in the core kernel, put it in
-security/ please.
-
-> An LSM can address the problem.  It just felt like more of a
-> patch-over-the-real-problem kind of solution.
-
-I disagree, it sounds exactly like what LSM is for.
-
-thanks,
-
-greg k-h
