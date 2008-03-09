@@ -1,730 +1,2190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYCIOam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbYCIOlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbYCIOam (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 10:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYCIOa2
+	id S1752836AbYCIOlW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 10:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYCIOlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 10:30:28 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:37464 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751711AbYCIOa0 (ORCPT
+	Sun, 9 Mar 2008 10:41:06 -0400
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:49259 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751708AbYCIOlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 10:30:26 -0400
-Date: Sun, 09 Mar 2008 14:24:56 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-ID: <4F82D2A650%linux@youmustbejoking.demon.co.uk>
-Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, linux@youmustbejoking.demon.co.uk
-User-Agent: Gemini/2.29e (Qt/3.3.8b) (Linux-x86_64)
-X-SDate: Sun, 5304 Sep 1993 14:24:56 +0000
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="87320080--2085559755--209819346"
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-Subject: Kernel panic (networking-related?)
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on pentagram.youmustbejoking.demon.co.uk)
+	Sun, 9 Mar 2008 10:41:00 -0400
+Date: Sun, 9 Mar 2008 16:40:50 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Pekka Paalanen <pq@iki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC] mmiotrace full patch, preview 2
+Message-ID: <20080309164050.2194461e@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message is in MIME format.
+Hi all,
 
---87320080--2085559755--209819346
-Content-Type: text/plain; charset=us-ascii
+I've made some progress on mmiotrace and now it can actually work as a
+built-in. Previously mmio-mod.c was full of locking bugs, which never
+triggered, because a traced (binary) kernel module depended on the
+mmiotrace module.
 
-I've had occasional apparent hard lockups on one computer here for some time.
-I'd previously been not doing much about it other than pressing the reset
-button, since there was nothing which marked it as a kernel panic (no
-blinkenlights; USB keyboard). However, I'd decided to make use of netconsole;
-this eventually logged the panic at the end of this message.
+Changes between preview 1 and preview 2 include:
 
-The kernel is 2.6.23.17-hrt5 (I had to do a few manual fixups, but nothing
-non-trivial); the DVB modules come from v4l-dvb (cset 127f67dea087); the
-attached mouse patch is in use (my mouse is weird).
+- Bug and style fixes in Kconfig.debug, Makefile, testmmiotrace.c, mutex
+usage, and failure path in register probe function.
+- RCU read-lock held over single stepping in kmmio.c
+- mmio-mod.c is now a built-in with rewritten locking
+- Added debugfs file to enable/disable mmiotracing, since this is not a
+module anymore. (Temporary solution)
+- Marker file moved from /proc into debugfs.
+- mmiotrace entrypoints called directly from ioremap.c, which is why
+this cannot be a module anymore.
 
-The board is an Abit KN8 v1.1 (nForce 4); on-board ethernet is in use. Full
-kernel log & config are attached.
+It still uses relay for pushing data into user space, this would be
+replaced by ftrace, along with the "enabled" debugfs file.
 
+The kernel argument mmiotrace.enable_now=1 can be used to enable
+mmiotracing at boot. I have tried this and it seems to work well,
+I get about 80k events from boot until starting the user space
+logger program by hand. Buffers are big enough that no event is
+missed due to out-of-memory.
 
-Unable to handle kernel NULL pointer dereference at 000000000000007f RIP: 
- [<ffffffff80426872>] tcp_v4_rcv+0x2ae/0x8c8
-PGD 3bb9a067 PUD 1de4d067 PMD 0 
-Oops: 0000 [1] 
-CPU 0 
-Modules linked in: vfat fat usb_storage sd_mod mt2060 dvb_usb_dib0700
-dib7000p dib7000m dvb_usb dib3000mc dibx000_common dib0070 snd_rtctimer
-dvb_pll cx22702 cx88_dvb cx8802 cx88xx videodev v4l1_compat ir_common
-tveeprom btcx_risc videobuf_dvb videobuf_dma_sg videobuf_core dvb_core radeon
-drm ip6t_owner ip6t_LOG xt_tcpudp ip6t_REJECT nf_conntrack_ipv6 xt_state
-nf_conntrack ip6table_mangle ip6table_filter ip6_tables x_tables
-snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_emul
-snd_emu10k1 snd_seq_dummy snd_seq_oss snd_seq_midi snd_seq_midi_event snd_seq
-snd_intel8x0 snd_rawmidi snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss
-snd_pcm snd_seq_device snd_timer snd_util_mem snd_hwdep snd snd_page_alloc
-Pid: 0, comm: swapper Not tainted 2.6.23.17-hrt5 #1
-RIP: 0010:[<ffffffff80426872>]  [<ffffffff80426872>] tcp_v4_rcv+0x2ae/0x8c8
-RSP: 0018:ffffffff8062ade0  EFLAGS: 00010202
-RAX: 000000000000007f RBX: ffff81003fe98a80 RCX: 00000000b7627522
-RDX: ffff81003fb6f7f0 RSI: 0000000014756f7f RDI: 0000000038627a43
-RBP: ffff810024dd1032 R08: 0000000089404612 R09: 0500a8c04cf31d52
-R10: ffff81003fe98940 R11: 0000000000000002 R12: ffff81003fe98a80
-R13: 000000000500a8c0 R14: 00000001085fd2e0 R15: ffff810024dd101e
-FS:  0000000040800950(0000) GS:ffffffff805eb000(0000) knlGS:00000000f74f26c0
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 000000000000007f CR3: 00000000266b3000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-Process swapper (pid: 0, threadinfo ffffffff805f4000, task ffffffff805a5360)
-Stack:  ffff81003e8e2400 ffff81003fe98a80 ffffffff805e3ed0 0000000000000000
- ffffffff8062aef4 00000001085fd2e0 0000000000000040 ffffffff8040d550
- ffff81003fe98a80 ffff81003fe98a80 ffff810024dd101e ffff81003fe98a80
-Call Trace:
- <IRQ>  [<ffffffff8040d550>] ip_local_deliver+0x19e/0x22a
- [<ffffffff8040d37b>] ip_rcv+0x477/0x4ae
- [<ffffffff803f852b>] process_backlog+0x7d/0xf6
- [<ffffffff80210ee9>] nommu_map_single+0x2b/0x42
- [<ffffffff803f86bc>] net_rx_action+0x85/0x15a
- [<ffffffff8022b7b3>] __do_softirq+0x4f/0x9c
- [<ffffffff8020c10c>] call_softirq+0x1c/0x28
- [<ffffffff8020d6a4>] do_softirq+0x2c/0x7d
- [<ffffffff8022b726>] irq_exit+0x3f/0x7d
- [<ffffffff8020d9d1>] do_IRQ+0x11e/0x135
- [<ffffffff8020a6f9>] default_idle+0x0/0x3a
- [<ffffffff8020b961>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffff8020a6f9>] default_idle+0x0/0x3a
- [<ffffffff8020a71f>] default_idle+0x26/0x3a
- [<ffffffff8020a783>] cpu_idle+0x50/0x74
- [<ffffffff805f7935>] start_kernel+0x252/0x25e
- [<ffffffff805f712a>] _sinittext+0x12a/0x12e
+I have also tried tracing Nouveau, started X, and disabled
+mmiotracing while in X. Works fine, the logger program just starts
+to hog cpu. The logger program will become 'cat' when we get to ftrace.
 
-Code: 48 8b 08 0f 18 09 48 8d 58 f8 39 73 2c 75 e9 eb c9 48 8b 42 
-RIP  [<ffffffff80426872>] tcp_v4_rcv+0x2ae/0x8c8
- RSP <ffffffff8062ade0>
-CR2: 000000000000007f
-Kernel panic - not syncing: Aiee, killing interrupt handler!
+Hooking or modifying kernel module files is not needed anymore, mmiotrace
+will trace everything that is ioremapped after it has been enabled.
+Well, everything that __ioremap() actually maps, not including e.g.
+ISA area.
 
--- 
-| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
-| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
-| + Output less CO2 => avoid boiling weather.     TIME IS RUNNING OUT *FAST*.
+The only thing checkpatch.pl complains about is the use of "volatile",
+but that is part of the original declaration of iounmap().
 
-There is nothing so small that it can't be blown out of all proportion.
+The next step would be going for ftrace framework.
+
+This patch is against torvalds/linux-2.6.git master. I will reply to
+this email with a patch for Ingo's x86/testing branch.
 
 
---87320080--2085559755--209819346
-Content-Type: application/x-gzip; name="crash.log.gz"
-Content-Disposition: attachment; filename="crash.log.gz"
-Content-Transfer-Encoding: base64
+Signed-off-by: Pekka Paalanen <pq@iki.fi>
 
-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
+---
+ arch/x86/Kconfig.debug      |   29 ++
+ arch/x86/mm/Makefile        |    5 +
+ arch/x86/mm/fault.c         |   13 +
+ arch/x86/mm/ioremap.c       |    9 +-
+ arch/x86/mm/kmmio.c         |  533 ++++++++++++++++++++++++++++++++++
+ arch/x86/mm/mmio-mod.c      |  666 +++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/mm/pageattr.c      |    1 +
+ arch/x86/mm/pf_in.c         |  489 +++++++++++++++++++++++++++++++
+ arch/x86/mm/pf_in.h         |   39 +++
+ arch/x86/mm/testmmiotrace.c |   71 +++++
+ include/linux/mmiotrace.h   |  120 ++++++++
+ 11 files changed, 1974 insertions(+), 1 deletions(-)
 
---87320080--2085559755--209819346
-Content-Type: application/x-gzip; name="config.gz"
-Content-Disposition: attachment; filename="config.gz"
-Content-Transfer-Encoding: base64
-
-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
-wx29ZMJgQut6mKqDBurLhDVXef8FOzMEBjDBAAA=
-
---87320080--2085559755--209819346
-Content-Type: application/octet-stream; name="browser-mouse.patch"
-Content-Disposition: attachment; filename="browser-mouse.patch"
-Content-Transfer-Encoding: base64
-
-QnV0dG9uIGFuZCB3aGVlbCB0cmFuc2xhdGlvbiBmb3IgQ2hpYyBUZWNobm9sb2d5IENvcnAg
-QnJvd3NlciBNb3VzZSB2aWEgVVNCCgpUaGlzIHBhdGNoIGltcGxlbWVudHMgYSBVU0IgSElE
-IHF1aXJrIGZvciBDaGljIFRlY2hub2xvZ3kgQ29ycCBCcm93c2VyIE1vdXNlCmRldmljZXMu
-IFRoZXNlIGFyZSBzb2xkIGluIGF0IGxlYXN0IHR3byBndWlzZXM7IEkndmUgZW5jb3VudGVy
-ZWQgb25lLCB0aGUKQWR2ZW50IDUtYnV0dG9uIHdpcmVsZXNzIHJlY2hhcmdlYWJsZSBvcHRp
-Y2FsIG1vdXNlLgoKVGhpcyBtb3VzZSBoYXMgdGhlIHVzdWFsIGlucHV0cyBjb21tb24gdG8g
-RXhwbG9yZXJQUy8yIG1pY2U7IGFkZGl0aW9uYWxseSwKdGhlIHdoZWVsIGlzIHRpbHRhYmxl
-IGFuZCB0aGVyZSdzIGFuIGV4dHJhIGJ1dHRvbiB3aGljaCB0aGUgZG9jdW1lbmF0aW9uCmNh
-bGxzIGEgImhvdC1rZXkgYnV0dG9uIi4KCkl0IGlkZW50aWZpZXMgaXRzZWxmIGFzCiAgVmVu
-ZG9yPTB4NWZlIFByb2RJRD0wMDExIFJldj0gMS4wMQogIE1hbnVmYWN0dXJlcj1XaXJlbGVz
-cyBNb3VzZQogIFByb2R1Y3Q9V2lyZWxlc3MgTW91c2UKKGJ1dCBzZWUgYWxzbyBodHRwOi8v
-d3d3LnFiaWsuY2gvdXNiL2RldmljZXMvc2hvd2Rlc2NyLnBocD9pZD0zMjQ0IGZvciBhbgph
-cHBhcmVudGx5IGRpZmZlcmVudCBkZXZpY2Ugd2l0aCB0aGUgc2FtZSB2ZW5kb3IgYW5kIHBy
-b2R1Y3QgSURzKS4KCkl0cyBidXR0b25zIGJlaGF2ZSBpZGVudGljYWxseSB3aGV0aGVyIHRo
-ZSBtb3VzZSBpcyBjb25uZWN0ZWQgdmlhIFBTLzIgb3IKVVNCLiBJJ3ZlIHRlc3RlZCB3aXRo
-IGEgVVNCIHNub29wZXIgb24gYSBXaW5kb3dzIGJveCAod2l0aCB0aGUgbW91c2Uncwpkcml2
-ZXIgaW5zdGFsbGVkKSBhbmQgaXQgc3RpbGwgcmVwb3J0ZWQgdGhlIGJ1dHRvbnMgYXMgSSdk
-IGFscmVhZHkgb2JzZXJ2ZWQKb24gTGludXguCgpUaGUgbW91c2UgYWx3YXlzIHJlcG9ydHMg
-dGhlIGV4dHJhIHRocmVlIGJ1dHRvbnMgYXMgZm9sbG93czoKCiogUHVzaGluZyB0aGUgd2hl
-ZWwgdG8gdGhlIGxlZnQgID0+IGJ1dHRvbnMgMyBhbmQgNCAobWlkZGxlICsgc2lkZSkuCiog
-UHVzaGluZyB0aGUgd2hlZWwgdG8gdGhlIHJpZ2h0ID0+IGJ1dHRvbnMgMyBhbmQgNSAobWlk
-ZGxlICsgZXh0cmEpLgoqIFByZXNzaW5nIHRoZSAiaG90LWtleSIgYnV0dG9uICA9PiBidXR0
-b25zIDIgYW5kIDQgKHJpZ2h0ICsgc2lkZSkuCgpUaGUgcXVpcmsgaGFuZGxlcyB0aGVzZSBi
-eSBtYWtpbmcgdGhlIHdoZWVsIHB1c2hlcyBsb29rIGxpa2UgUkVMX0hXSEVFTApldmVudHMg
-YW5kIHRoZSBob3Qta2V5IGJ1dHRvbiBsb29rIGxpa2UgQlROX0ZPUldBUkQuIChYIG5lZWRz
-IHRvIGJlIHRvbGQgdGhhdAp0aGUgbW91c2UgaGFzIDEwIGJ1dHRvbnMuIFRoZSBob3Qta2V5
-IGJ1dHRvbiBjb3VsZCBiZSBtYXBwZWQgdG8gQlROX1RBU0ssCm1ha2luZyBpdCBhICIxMi1i
-dXR0b24iIG1vdXNlIGFzIGZhciBhcyBYIGlzIGNvbmNlcm5lZC4pCgpSRUxfSFdIRUVMIGV2
-ZW50cyBhcmUgcmVwZWF0ZWQgdXNpbmcgYW4gZXh0cmEgdGltZXIgd2hpY2ggaXMgYWxsb2Nh
-dGVkIGFzCnBhcnQgb2Ygc3RydWN0IGhpZF9kZXZpY2UuCgpTaWduZWQtb2ZmLWJ5OiBEYXJy
-ZW4gU2FsdCA8bGludXhAeW91bXVzdGJlam9raW5nLmRlbW9uLmNvLnVrPgoKZGlmZiAtdXIg
-bGludXgtMi42LjIzLm9yaWcvZHJpdmVycy9oaWQvaGlkLWNvcmUuYyBsaW51eC0yLjYuMjMv
-ZHJpdmVycy9oaWQvaGlkLWNvcmUuYwotLS0gbGludXgtMi42LjIzLm9yaWcvZHJpdmVycy9o
-aWQvaGlkLWNvcmUuYwkyMDA3LTEyLTA2IDIzOjM5OjQwLjAwMDAwMDAwMCArMDAwMAorKysg
-bGludXgtMi42LjIzL2RyaXZlcnMvaGlkL2hpZC1jb3JlLmMJMjAwNy0xMi0wNiAyMzo0MToz
-OC4wMDAwMDAwMDAgKzAwMDAKQEAgLTg2Myw2ICs4NjMsOSBAQAogCQkJCWhpZF9wcm9jZXNz
-X2V2ZW50KGhpZCwgZmllbGQsICZmaWVsZC0+dXNhZ2VbdmFsdWVbbl0gLSBtaW5dLCAxLCBp
-bnRlcnJ1cHQpOwogCX0KIAorCWlmIChoaWQtPmNsYWltZWQgJiBISURfQ0xBSU1FRF9JTlBV
-VCkKKwkJaGlkaW5wdXRfaGlkX3F1aXJrcyhoaWQsIGZpZWxkKTsKKwogCW1lbWNweShmaWVs
-ZC0+dmFsdWUsIHZhbHVlLCBjb3VudCAqIHNpemVvZihfX3MzMikpOwogZXhpdDoKIAlrZnJl
-ZSh2YWx1ZSk7CmRpZmYgLXVyIGxpbnV4LTIuNi4yMy5vcmlnL2RyaXZlcnMvaGlkL2hpZC1p
-bnB1dC5jIGxpbnV4LTIuNi4yMy9kcml2ZXJzL2hpZC9oaWQtaW5wdXQuYwotLS0gbGludXgt
-Mi42LjIzLm9yaWcvZHJpdmVycy9oaWQvaGlkLWlucHV0LmMJMjAwNy0xMi0wNiAyMzozOTo0
-MC4wMDAwMDAwMDAgKzAwMDAKKysrIGxpbnV4LTIuNi4yMy9kcml2ZXJzL2hpZC9oaWQtaW5w
-dXQuYwkyMDA3LTEyLTA2IDIzOjQyOjU0LjAwMDAwMDAwMCArMDAwMApAQCAtMzM0LDYgKzMz
-NCw4NiBAQAogfQogCiAKK3N0cnVjdCBoaWRfcHNldWRvYnV0dG9uX21hcHBpbmdzX3Qgewor
-CV9fdTE2IG1hc2ssIHR5cGUsIGJ1dHRvbjsKKwlfX3MxNiB2YWx1ZTsKK307CisKKy8qIEJ1
-dHRvbiBtYXBwaW5ncyBmb3IgdGhlIENoaWMgYnJvd3NlciBtb3VzZSAoVVNCIElEIDA1RkU6
-MDAxMSkuCisgKiBUaGlzIGlzIHNvbGQgYXMgKGF0IGxlYXN0KToKKyAqCSogQWR2ZW50IDUt
-YnV0dG9uIHdpcmVsZXNzIHJlY2hhcmdlYWJsZSBtb3VzZQorICogSXQgaGFzIHRocmVlIGV4
-dHJhIGJ1dHRvbnMgKHdoZWVsIHB1c2hlZCBzaWRld2F5cywgdGFzayBidXR0b24pIHdoaWNo
-IGFyZQorICogc2lnbmFsbGVkIGFzIHBhaXJzIG9mIHN0YW5kYXJkIGJ1dHRvbnMuCisgKi8K
-K3N0YXRpYyBjb25zdCBzdHJ1Y3QgaGlkX3BzZXVkb2J1dHRvbl9tYXBwaW5nc190IGNoaWNf
-YnJvd3Nlcl9tb3VzZV9idXR0b25zW10gPSB7CisjaWYgMAorCXsgMSA8PCAxIHwgMSA8PCAz
-LCBFVl9LRVksIEJUTl9UQVNLLCAxIH0sCS8qIDIgYW5kIDQgKGhvdC1rZXkpICovCisJeyAx
-IDw8IDIgfCAxIDw8IDMsIEVWX0tFWSwgQlROX0JBQ0ssIDEgfSwJLyogMyBhbmQgNCAod2hl
-ZWwgbGVmdCkgKi8KKwl7IDEgPDwgMiB8IDEgPDwgNCwgRVZfS0VZLCBCVE5fRk9SV0FSRCwg
-MSB9LAkvKiAzIGFuZCA1ICh3aGVlbCByaWdodCkgKi8KKyNlbHNlCisJeyAxIDw8IDEgfCAx
-IDw8IDMsIEVWX0tFWSwgQlROX0ZPUldBUkQsIDEgfSwJLyogMiBhbmQgNCAoaG90LWtleSkg
-Ki8KKwl7IDEgPDwgMiB8IDEgPDwgMywgRVZfUkVMLCBSRUxfSFdIRUVMLCAtMSB9LAkvKiAz
-IGFuZCA0ICh3aGVlbCBsZWZ0KSAqLworCXsgMSA8PCAyIHwgMSA8PCA0LCBFVl9SRUwsIFJF
-TF9IV0hFRUwsIDEgfSwJLyogMyBhbmQgNSAod2hlZWwgcmlnaHQpICovCisjZW5kaWYKKwl7
-fQorfTsKKworLyogUmVwZWF0IGZvciBlLmcuIHBzZXVkby13aGVlbHMuICBXZSB1c2UgdGhl
-IGlucHV0IGRldmljZSdzIG93biByZXBlYXQgdmFsdWVzLiAqLworc3RhdGljIHZvaWQgaGlk
-aW5wdXRfcmVwZWF0X2V2ZW50KHVuc2lnbmVkIGxvbmcgZGF0YSkKK3sKKwlzdHJ1Y3QgaW5w
-dXRfZGV2ICppbnB1dCA9ICh2b2lkICopIGRhdGE7CisJc3RydWN0IGhpZF9kZXZpY2UgKmRl
-dmljZSA9IGlucHV0LT5wcml2YXRlOworCisJaWYgKCFkZXZpY2UtPnJlcGVhdC52YWx1ZSkK
-KwkJcmV0dXJuOworCisJaW5wdXRfZXZlbnQoaW5wdXQsIGRldmljZS0+cmVwZWF0LnR5cGUs
-IGRldmljZS0+cmVwZWF0LmJ1dHRvbiwgZGV2aWNlLT5yZXBlYXQudmFsdWUpOworCWlucHV0
-X3N5bmMoaW5wdXQpOworCisJaWYgKGlucHV0LT5yZXBbUkVQX1BFUklPRF0pCisJCW1vZF90
-aW1lcigmZGV2aWNlLT5yZXBlYXQudGltZXIsIGppZmZpZXMgKyBtc2Vjc190b19qaWZmaWVz
-KGlucHV0LT5yZXBbUkVQX1BFUklPRF0pKTsKK30KKworc3RhdGljIHZvaWQgaGlkaW5wdXRf
-cmVnaXN0ZXJfcHNldWRvYnV0dG9ucyAoc3RydWN0IGhpZF9pbnB1dCAqaGlkaW5wdXQsCisJ
-CQkJCSAgICAgc3RydWN0IGhpZF9maWVsZCAqZmllbGQsCisJCQkJCSAgICAgc3RydWN0IGhp
-ZF91c2FnZSAqdXNhZ2UsCisJCQkJCSAgICAgdW5zaWduZWQgbG9uZyAqYml0LAorCQkJCQkg
-ICAgIGNvbnN0IHN0cnVjdCBoaWRfcHNldWRvYnV0dG9uX21hcHBpbmdzX3QgKmJ1dHRvbnMs
-CisJCQkJCSAgICAgaW50IGFsbG93X3JlcGVhdCkKK3sKKwlpbnQgaTsKKwlpbnQgaGF2ZV93
-aGVlbCA9IDA7CisJc3RydWN0IGhpZF9kZXZpY2UgKmRldmljZSA9IGhpZGlucHV0LT5pbnB1
-dC0+cHJpdmF0ZTsKKworCWZvciAoaSA9IDA7IGJ1dHRvbnNbaV0ubWFzazsgKytpKQorCXsK
-KwkJaWYgKHVzYWdlLT50eXBlICE9IGJ1dHRvbnNbaV0udHlwZSkKKwkJCWNvbnRpbnVlOwor
-CisJCXN3aXRjaCAoYnV0dG9uc1tpXS50eXBlKQorCQl7CisJCQljYXNlIEVWX0tFWToKKwkJ
-CQlpZiAodXNhZ2UtPmNvZGUgPT0gQlROX0VYVFJBKQorCQkJCQlzZXRfYml0KGJ1dHRvbnNb
-aV0uYnV0dG9uLCBiaXQpOworCQkJCWJyZWFrOworCQkJY2FzZSBFVl9SRUw6CisJCQkJaWYg
-KHVzYWdlLT5jb2RlID09IFJFTF9XSEVFTCkgeworCQkJCQloYXZlX3doZWVsID0gYWxsb3df
-cmVwZWF0OworCQkJCQlzZXRfYml0KGJ1dHRvbnNbaV0uYnV0dG9uLCBiaXQpOworCQkJCX0K
-KwkJCQlicmVhazsKKwkJfQorCX0KKworCS8qIElmIHRoZSBxdWlyayBoYXMgaW50cm9kdWNl
-ZCBhbiBleHRyYSB3aGVlbCAoZm9yIGV4YW1wbGUpLAorCSAqIHdlIG5lZWQgdG8gaGFuZGxl
-IG91ciBvd24gcmVwZWF0cy4gKi8KKwlpZiAoaGF2ZV93aGVlbCAmJiAhZGV2aWNlLT5yZXBl
-YXQudGltZXIuZnVuY3Rpb24pIHsKKwkJaW5pdF90aW1lcigmZGV2aWNlLT5yZXBlYXQudGlt
-ZXIpOworCQlkZXZpY2UtPnJlcGVhdC50aW1lci5kYXRhID0gKGxvbmcpIGhpZGlucHV0LT5p
-bnB1dDsKKwkJZGV2aWNlLT5yZXBlYXQudGltZXIuZnVuY3Rpb24gPSBoaWRpbnB1dF9yZXBl
-YXRfZXZlbnQ7CisJfQorfQorCiBzdGF0aWMgdm9pZCBoaWRpbnB1dF9jb25maWd1cmVfdXNh
-Z2Uoc3RydWN0IGhpZF9pbnB1dCAqaGlkaW5wdXQsIHN0cnVjdCBoaWRfZmllbGQgKmZpZWxk
-LAogCQkJCSAgICAgc3RydWN0IGhpZF91c2FnZSAqdXNhZ2UpCiB7CkBAIC04MjQsNiArOTA0
-LDkgQEAKIAkJCW1hcF9rZXkoQlROXzEpOwogCX0KIAorCWlmIChkZXZpY2UtPnF1aXJrcyAm
-IEhJRF9RVUlSS19DSElDX1BTRVVET0JVVFRPTlNfSEFDSykKKwkJaGlkaW5wdXRfcmVnaXN0
-ZXJfcHNldWRvYnV0dG9ucyAoaGlkaW5wdXQsIGZpZWxkLCB1c2FnZSwgYml0LCBjaGljX2Jy
-b3dzZXJfbW91c2VfYnV0dG9ucywgMSk7CisKIAlpZiAoKGRldmljZS0+cXVpcmtzICYgKEhJ
-RF9RVUlSS18yV0hFRUxfTU9VU0VfSEFDS183IHwgSElEX1FVSVJLXzJXSEVFTF9NT1VTRV9I
-QUNLXzUpKSAmJgogCQkgKHVzYWdlLT50eXBlID09IEVWX1JFTCkgJiYgKHVzYWdlLT5jb2Rl
-ID09IFJFTF9XSEVFTCkpCiAJCQlzZXRfYml0KFJFTF9IV0hFRUwsIGJpdCk7CkBAIC05MjQs
-NiArMTAwNywxMiBAQAogCQlyZXR1cm47CiAJfQogCisJaWYgKCEoaGlkLT5xdWlya3MgJiBI
-SURfUVVJUktfQ0hJQ19QU0VVRE9CVVRUT05TX0hBQ0spICYmIAorCSAgICAoaGlkLT5xdWly
-a3MgJiBISURfUVVJUktfMldIRUVMX01PVVNFX0hBQ0tfT04pICYmICh1c2FnZS0+Y29kZSA9
-PSBSRUxfV0hFRUwpKSB7CisJCWlucHV0X2V2ZW50KGlucHV0LCB1c2FnZS0+dHlwZSwgUkVM
-X0hXSEVFTCwgdmFsdWUpOworCQlyZXR1cm47CisJfQorCiAJaWYgKChoaWQtPnF1aXJrcyAm
-IEhJRF9RVUlSS18yV0hFRUxfTU9VU0VfSEFDS19PTikgJiYgKHVzYWdlLT5jb2RlID09IFJF
-TF9XSEVFTCkpIHsKIAkJaW5wdXRfZXZlbnQoaW5wdXQsIHVzYWdlLT50eXBlLCBSRUxfSFdI
-RUVMLCB2YWx1ZSk7CiAJCXJldHVybjsKQEAgLTk3Myw5ICsxMDYyLDIwIEBACiAJCXJldHVy
-bjsKIAl9CiAKKwkvKiBGb3IgcXVpcmtzIHdoZXJlIG9uZSBwaHlzaWNhbCBidXR0b24gbG9v
-a3MgbGlrZSAoYXQgbGVhc3QpIHR3byBvdGhlciBwaHlzaWNhbCBidXR0b25zICovCisJaWYg
-KCh1c2FnZS0+dHlwZSA9PSBFVl9LRVkpICYmICh1c2FnZS0+aGlkID4gMHgwMDA5MDAwMCkg
-JiYgKHVzYWdlLT5oaWQgPD0gMHgwMDA5MDAxMCkpIHsKKwkJaWYgKHZhbHVlKQorCQkJaGlk
-LT5idG5fc3RhdGUgfD0gMSA8PCAodXNhZ2UtPmhpZCAtIDB4MDAwOTAwMDEpOworCQllbHNl
-CisJCQloaWQtPmJ0bl9zdGF0ZSAmPSB+KDEgPDwgKHVzYWdlLT5oaWQgLSAweDAwMDkwMDAx
-KSk7CisJfQorCiAJaWYgKCh1c2FnZS0+dHlwZSA9PSBFVl9LRVkpICYmICh1c2FnZS0+Y29k
-ZSA9PSAwKSkgLyogS2V5IDAgaXMgInVuYXNzaWduZWQiLCBub3QgS0VZX1VOS05PV04gKi8K
-IAkJcmV0dXJuOwogCisJaWYgKCh1c2FnZS0+dHlwZSA9PSBFVl9LRVkpICYmIChoaWQtPnF1
-aXJrcyAmIEhJRF9RVUlSS19DSElDX1BTRVVET0JVVFRPTlNfSEFDSykpIC8qIHNvbWUgYnV0
-dG9ucyBtYXkgaGF2ZSBxdWlya3MgLSAqZG9uJ3QqIGdlbmVyYXRlIGV2ZW50cyBqdXN0IHll
-dCAqLworCQlyZXR1cm47CisKIAlpZiAoKHVzYWdlLT50eXBlID09IEVWX0FCUykgJiYgKGZp
-ZWxkLT5mbGFncyAmIEhJRF9NQUlOX0lURU1fUkVMQVRJVkUpICYmCiAJCQkodXNhZ2UtPmNv
-ZGUgPT0gQUJTX1ZPTFVNRSkpIHsKIAkJaW50IGNvdW50ID0gYWJzKHZhbHVlKTsKQEAgLTEw
-MDYsNiArMTEwNiw2MCBAQAogfQogRVhQT1JUX1NZTUJPTF9HUEwoaGlkaW5wdXRfcmVwb3J0
-X2V2ZW50KTsKIAorc3RhdGljIHZvaWQgaGlkaW5wdXRfaGlkX3F1aXJrX3Byb2Nlc3NfcHNl
-dWRvYnV0dG9ucyAoc3RydWN0IGhpZF9kZXZpY2UgKmhpZCwgc3RydWN0IGlucHV0X2RldiAq
-aW5wdXQsCisJCQkJCQkgICAgICBjb25zdCBzdHJ1Y3QgaGlkX3BzZXVkb2J1dHRvbl9tYXBw
-aW5nc190ICptYXBwaW5nKQoreworCV9fdTE2IGJ1dHRvbnMgPSBoaWQtPmJ0bl9zdGF0ZTsK
-KwlfX3UxNiBwcmV2aW91cyA9IGhpZC0+YnRuX3ByZXZfc3RhdGU7CisJaW50IGk7CisKKwlo
-aWQtPmJ0bl9wcmV2X3N0YXRlID0gaGlkLT5idG5fc3RhdGU7CisKKwlmb3IgKGkgPSAwOyBt
-YXBwaW5nW2ldLm1hc2s7ICsraSkgeworCQkvKiBib3RoIGNsZWFyIC0+IGJvdGggc2V0ID0+
-IGJ1dHRvbiBpcyBub3cgcHJlc3NlZCAqLworCQlpZiAoIShoaWQtPmJ0bl9xdWlya3MgJiAo
-MSA8PCBpKSkKKwkJICAgICYmICgocHJldmlvdXMgJiBtYXBwaW5nW2ldLm1hc2spID09IDAp
-CisJCSAgICAmJiAoKGJ1dHRvbnMgJiBtYXBwaW5nW2ldLm1hc2spID09IG1hcHBpbmdbaV0u
-bWFzaykpIHsKKwkJCWJ1dHRvbnMgJj0gfm1hcHBpbmdbaV0ubWFzazsKKwkJCWhpZC0+YnRu
-X3F1aXJrcyB8PSAxIDw8IGk7CisJCQlpbnB1dF9ldmVudCAoaW5wdXQsIG1hcHBpbmdbaV0u
-dHlwZSwgbWFwcGluZ1tpXS5idXR0b24sIG1hcHBpbmdbaV0udmFsdWUpOworCQkJLyogSWYg
-aXQncyBzb21ldGhpbmcgbGlrZSBhIHBzZXVkb3doZWVsLCBzdGFydCByZXBlYXRpbmcgaXQu
-ICovCisJCQlpZiAoKChtYXBwaW5nW2ldLmJ1dHRvbiA9PSBSRUxfV0hFRUwpIHx8IChtYXBw
-aW5nW2ldLmJ1dHRvbiA9PSBSRUxfSFdIRUVMKSkgJiYKKwkJCSAgICBoaWQtPnJlcGVhdC50
-aW1lci5mdW5jdGlvbiAmJiBpbnB1dC0+cmVwW1JFUF9QRVJJT0RdICYmIGlucHV0LT5yZXBb
-UkVQX0RFTEFZXSkgeworCQkJCWhpZC0+cmVwZWF0LnR5cGUgPSBtYXBwaW5nW2ldLnR5cGU7
-CisJCQkJaGlkLT5yZXBlYXQuYnV0dG9uID0gbWFwcGluZ1tpXS5idXR0b247CisJCQkJaGlk
-LT5yZXBlYXQudmFsdWUgPSBtYXBwaW5nW2ldLnZhbHVlOworCQkJCW1vZF90aW1lcigmaGlk
-LT5yZXBlYXQudGltZXIsIGppZmZpZXMgKyBtc2Vjc190b19qaWZmaWVzKGlucHV0LT5yZXBb
-UkVQX0RFTEFZXSkpOworCQkJfQorCQl9CisJCS8qIGJvdGggc2V0IC0+IGVpdGhlciBjbGVh
-ciA9PiBidXR0b24gaXMgbm93IHJlbGVhc2VkICovCisJCWVsc2UKKwkJaWYgKChoaWQtPmJ0
-bl9xdWlya3MgJiAoMSA8PCBpKSkKKwkJICAgICYmICgocHJldmlvdXMgJiBtYXBwaW5nW2ld
-Lm1hc2spID09IG1hcHBpbmdbaV0ubWFzaykKKwkJICAgICYmICgoYnV0dG9ucyAmIG1hcHBp
-bmdbaV0ubWFzaykgIT0gbWFwcGluZ1tpXS5tYXNrKSkgeworCQkJYnV0dG9ucyAmPSB+bWFw
-cGluZ1tpXS5tYXNrOworCQkJaGlkLT5idG5fcXVpcmtzICY9IH4oMSA8PCBpKTsKKwkJCWlu
-cHV0X2V2ZW50IChpbnB1dCwgbWFwcGluZ1tpXS50eXBlLCBtYXBwaW5nW2ldLmJ1dHRvbiwg
-MCk7CisJCQlpZiAoKG1hcHBpbmdbaV0uYnV0dG9uID09IFJFTF9XSEVFTCkgfHwgKG1hcHBp
-bmdbaV0uYnV0dG9uID09IFJFTF9IV0hFRUwpKQorCQkJCWhpZC0+cmVwZWF0LnZhbHVlID0g
-MDsKKwkJfQorCX0KKworCWZvciAoaSA9IDA7IGkgPCAxNjsgKytpKQorCQlpZiAoKGJ1dHRv
-bnMgXiBwcmV2aW91cykgJiAoMSA8PCBpKSkKKwkJCWlucHV0X2V2ZW50IChpbnB1dCwgRVZf
-S0VZLCBCVE5fTU9VU0UgKyBpLCAoYnV0dG9ucyA+PiBpKSAmIDEpOworfQorCit2b2lkIGhp
-ZGlucHV0X2hpZF9xdWlya3Moc3RydWN0IGhpZF9kZXZpY2UgKmhpZCwgc3RydWN0IGhpZF9m
-aWVsZCAqZmllbGQpCit7CisJaWYgKCFmaWVsZC0+aGlkaW5wdXQpCisJCXJldHVybjsKKwkv
-KiBDaGljIGJyb3dzZXIgbW91c2UgKHNvbGQgYXMsIGF0IGxlYXN0LCBBZHZlbnQgNS1idXR0
-b24pICovCisJaWYgKGhpZC0+cXVpcmtzICYgSElEX1FVSVJLX0NISUNfUFNFVURPQlVUVE9O
-U19IQUNLKQorCQloaWRpbnB1dF9oaWRfcXVpcmtfcHJvY2Vzc19wc2V1ZG9idXR0b25zICho
-aWQsIGZpZWxkLT5oaWRpbnB1dC0+aW5wdXQsIGNoaWNfYnJvd3Nlcl9tb3VzZV9idXR0b25z
-KTsKK30KK0VYUE9SVF9TWU1CT0xfR1BMKGhpZGlucHV0X2hpZF9xdWlya3MpOworCiBpbnQg
-aGlkaW5wdXRfZmluZF9maWVsZChzdHJ1Y3QgaGlkX2RldmljZSAqaGlkLCB1bnNpZ25lZCBp
-bnQgdHlwZSwgdW5zaWduZWQgaW50IGNvZGUsIHN0cnVjdCBoaWRfZmllbGQgKipmaWVsZCkK
-IHsKIAlzdHJ1Y3QgaGlkX3JlcG9ydCAqcmVwb3J0OwpAQCAtMTEyMCw2ICsxMjc0LDEwIEBA
-CiAJaWYgKGhpZGlucHV0KQogCQlpbnB1dF9yZWdpc3Rlcl9kZXZpY2UoaGlkaW5wdXQtPmlu
-cHV0KTsKIAorCWhpZC0+YnRuX3N0YXRlID0gMDsKKwloaWQtPmJ0bl9wcmV2X3N0YXRlID0g
-MDsKKwloaWQtPmJ0bl9xdWlya3MgPSAwOworCiAJcmV0dXJuIDA7CiB9CiBFWFBPUlRfU1lN
-Qk9MX0dQTChoaWRpbnB1dF9jb25uZWN0KTsKQEAgLTExMjksNiArMTI4NywxMSBAQAogCXN0
-cnVjdCBoaWRfaW5wdXQgKmhpZGlucHV0LCAqbmV4dDsKIAogCWxpc3RfZm9yX2VhY2hfZW50
-cnlfc2FmZShoaWRpbnB1dCwgbmV4dCwgJmhpZC0+aW5wdXRzLCBsaXN0KSB7CisJCS8qIFN0
-b3AgYW55IHJlcGVhdCB0aW1lciB3aGljaCBtYXkgaGF2ZSBiZWVuIHJlZ2lzdGVyZWQuICov
-CisJCXN0cnVjdCBoaWRfZGV2aWNlICpkZXZpY2UgPSBoaWRpbnB1dC0+aW5wdXQtPnByaXZh
-dGU7CisJCWlmIChkZXZpY2UtPnJlcGVhdC50aW1lci5mdW5jdGlvbikKKwkJCWRlbF90aW1l
-cl9zeW5jKCZkZXZpY2UtPnJlcGVhdC50aW1lcik7CisJCS8qIFVucmVnaXN0ZXIgdGhlIGRl
-dmljZSBhbmQgY2xlYW4gdXAuICovCiAJCWxpc3RfZGVsKCZoaWRpbnB1dC0+bGlzdCk7CiAJ
-CWlucHV0X3VucmVnaXN0ZXJfZGV2aWNlKGhpZGlucHV0LT5pbnB1dCk7CiAJCWtmcmVlKGhp
-ZGlucHV0KTsKZGlmZiAtdXIgbGludXgtMi42LjIzLm9yaWcvZHJpdmVycy9oaWQvdXNiaGlk
-L2hpZC1xdWlya3MuYyBsaW51eC0yLjYuMjMvZHJpdmVycy9oaWQvdXNiaGlkL2hpZC1xdWly
-a3MuYwotLS0gbGludXgtMi42LjIzLm9yaWcvZHJpdmVycy9oaWQvdXNiaGlkL2hpZC1xdWly
-a3MuYwkyMDA3LTEyLTA2IDIzOjM5OjQwLjAwMDAwMDAwMCArMDAwMAorKysgbGludXgtMi42
-LjIzL2RyaXZlcnMvaGlkL3VzYmhpZC9oaWQtcXVpcmtzLmMJMjAwNy0xMi0wNiAyMzo0MToz
-OC4wMDAwMDAwMDAgKzAwMDAKQEAgLTgyLDYgKzgyLDcgQEAKICNkZWZpbmUgVVNCX0RFVklD
-RV9JRF9DSEVSUllfQ1lNT1RJT04JMHgwMDIzCiAKICNkZWZpbmUgVVNCX1ZFTkRPUl9JRF9D
-SElDCQkweDA1ZmUKKyNkZWZpbmUgVVNCX0RFVklDRV9JRF9DSElDX0JST1dTRVJfTU9VU0Ug
-MHgwMDExCiAjZGVmaW5lIFVTQl9ERVZJQ0VfSURfQ0hJQ19HQU1FUEFECTB4MDAxNAogCiAj
-ZGVmaW5lIFVTQl9WRU5ET1JfSURfQ0lEQwkJMHgxNjc3CkBAIC0zNTUsNiArMzU2LDcgQEAK
-IAogCXsgVVNCX1ZFTkRPUl9JRF9BNFRFQ0gsIFVTQl9ERVZJQ0VfSURfQTRURUNIX1dDUDMy
-UFUsIEhJRF9RVUlSS18yV0hFRUxfTU9VU0VfSEFDS183IH0sCiAJeyBVU0JfVkVORE9SX0lE
-X0NZUFJFU1MsIFVTQl9ERVZJQ0VfSURfQ1lQUkVTU19NT1VTRSwgSElEX1FVSVJLXzJXSEVF
-TF9NT1VTRV9IQUNLXzUgfSwKKwl7IFVTQl9WRU5ET1JfSURfQ0hJQywgVVNCX0RFVklDRV9J
-RF9DSElDX0JST1dTRVJfTU9VU0UsIEhJRF9RVUlSS19DSElDX1BTRVVET0JVVFRPTlNfSEFD
-SyB9LAogCiAJeyBVU0JfVkVORE9SX0lEX0xPR0lURUNILCBVU0JfREVWSUNFX0lEX0xPR0lU
-RUNIX1JFQ0VJVkVSLCBISURfUVVJUktfQkFEX1JFTEFUSVZFX0tFWVMgfSwKIApkaWZmIC11
-ciBsaW51eC0yLjYuMjMub3JpZy9pbmNsdWRlL2xpbnV4L2hpZC5oIGxpbnV4LTIuNi4yMy9p
-bmNsdWRlL2xpbnV4L2hpZC5oCi0tLSBsaW51eC0yLjYuMjMub3JpZy9pbmNsdWRlL2xpbnV4
-L2hpZC5oCTIwMDctMTItMDYgMjM6Mzk6NDkuMDAwMDAwMDAwICswMDAwCisrKyBsaW51eC0y
-LjYuMjMvaW5jbHVkZS9saW51eC9oaWQuaAkyMDA3LTEyLTA2IDIzOjQzOjE1LjAwMDAwMDAw
-MCArMDAwMApAQCAtMjc2LDYgKzI3Niw3IEBACiAjZGVmaW5lIEhJRF9RVUlSS19ISURJTlBV
-VAkJCTB4MDAyMDAwMDAKICNkZWZpbmUgSElEX1FVSVJLX0xPR0lURUNIX0lHTk9SRV9ET1VC
-TEVEX1dIRUVMCTB4MDA0MDAwMDAKICNkZWZpbmUgSElEX1FVSVJLX0xPR0lURUNIX0VYUEFO
-REVEX0tFWU1BUAkweDAwODAwMDAwCisjZGVmaW5lIEhJRF9RVUlSS19DSElDX1BTRVVET0JV
-VFRPTlNfSEFDSwkweDAxMDAwMDAwCiAKIC8qCiAgKiBTZXBhcmF0ZSBxdWlya3MgZm9yIHJ1
-bnRpbWUgcmVwb3J0IGRlc2NyaXB0b3IgZml4dXAKQEAgLTQ2Miw2ICs0NjMsMTYgQEAKIAl1
-bnNpZ25lZCBsb25nIHBiX3ByZXNzZWRfZm5bTkJJVFMoS0VZX01BWCldOwogCXVuc2lnbmVk
-IGxvbmcgcGJfcHJlc3NlZF9udW1sb2NrW05CSVRTKEtFWV9NQVgpXTsKICNlbmRpZgorCisJ
-LyogRm9yIHF1aXJrcyB3aGVyZSBvbmUgcGh5c2ljYWwgYnV0dG9uIGxvb2tzIGxpa2UgKGF0
-IGxlYXN0KSB0d28gb3RoZXIgcGh5c2ljYWwgYnV0dG9ucyAqLworCV9fdTE2IGJ0bl9zdGF0
-ZSwgYnRuX3ByZXZfc3RhdGU7CQkJCS8qIEJ1dHRvbiBtYXAgZGF0YSAqLworCV9fdTMyIGJ0
-bl9xdWlya3M7CQkJCQkJLyogV2hpY2ggb2YgdGhlIGV4dHJhIGJ1dHRvbnMgYXJlIGFjdGl2
-ZSAqLworCisJc3RydWN0IHsKKwkJX191MTYgdHlwZSwgYnV0dG9uOworCQlfX3MxNiB2YWx1
-ZTsKKwkJc3RydWN0IHRpbWVyX2xpc3QgdGltZXI7CisJfSByZXBlYXQ7CiB9OwogCiAjZGVm
-aW5lIEhJRF9HTE9CQUxfU1RBQ0tfU0laRSA0CkBAIC01MDQsNiArNTE1LDcgQEAKIAogZXh0
-ZXJuIHZvaWQgaGlkaW5wdXRfaGlkX2V2ZW50KHN0cnVjdCBoaWRfZGV2aWNlICosIHN0cnVj
-dCBoaWRfZmllbGQgKiwgc3RydWN0IGhpZF91c2FnZSAqLCBfX3MzMik7CiBleHRlcm4gdm9p
-ZCBoaWRpbnB1dF9yZXBvcnRfZXZlbnQoc3RydWN0IGhpZF9kZXZpY2UgKmhpZCwgc3RydWN0
-IGhpZF9yZXBvcnQgKnJlcG9ydCk7CitleHRlcm4gdm9pZCBoaWRpbnB1dF9oaWRfcXVpcmtz
-KHN0cnVjdCBoaWRfZGV2aWNlICosIHN0cnVjdCBoaWRfZmllbGQgKik7CiBleHRlcm4gaW50
-IGhpZGlucHV0X2Nvbm5lY3Qoc3RydWN0IGhpZF9kZXZpY2UgKik7CiBleHRlcm4gdm9pZCBo
-aWRpbnB1dF9kaXNjb25uZWN0KHN0cnVjdCBoaWRfZGV2aWNlICopOwogCg==
-
---87320080--2085559755--209819346--
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 702eb39..6ab0ca2 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -134,6 +134,35 @@ config IOMMU_LEAK
+ 	  Add a simple leak tracer to the IOMMU code. This is useful when you
+ 	  are debugging a buggy device driver that leaks IOMMU mappings.
+ 
++config MMIOTRACE_HOOKS
++	bool
++
++config MMIOTRACE
++	bool "Memory mapped IO tracing"
++	depends on DEBUG_KERNEL && RELAY && DEBUG_FS
++	select MMIOTRACE_HOOKS
++	default y
++	help
++	  Mmiotrace traces Memory Mapped I/O access and is meant for
++	  debugging and reverse engineering. It is called from the ioremap
++	  implementation and works via page faults. A user space program is
++	  required to collect the MMIO data from debugfs files.
++	  Tracing is disabled by default and can be enabled from a debugfs
++	  file.
++
++	  See http://nouveau.freedesktop.org/wiki/MmioTrace
++	  If you are not helping to develop drivers, say N.
++
++config MMIOTRACE_TEST
++	tristate "Test module for mmiotrace"
++	depends on MMIOTRACE && m
++	help
++	  This is a dumb module for testing mmiotrace. It is very dangerous
++	  as it will write garbage to IO memory starting at a given address.
++	  However, it should be safe to use on e.g. unused portion of VRAM.
++
++	  Say N, unless you absolutely know what you are doing.
++
+ #
+ # IO delay types:
+ #
+diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
+index 9832910..3423865 100644
+--- a/arch/x86/mm/Makefile
++++ b/arch/x86/mm/Makefile
+@@ -3,3 +3,8 @@ include ${srctree}/arch/x86/mm/Makefile_32
+ else
+ include ${srctree}/arch/x86/mm/Makefile_64
+ endif
++
++obj-$(CONFIG_MMIOTRACE_HOOKS)	+= kmmio.o
++obj-$(CONFIG_MMIOTRACE) 	+= mmiotrace.o
++mmiotrace-y			:= pf_in.o mmio-mod.o
++obj-$(CONFIG_MMIOTRACE_TEST) 	+= testmmiotrace.o
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index fdc6674..ba6d4c5 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -25,6 +25,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/mmiotrace.h>
+ 
+ #include <asm/system.h>
+ #include <asm/desc.h>
+@@ -49,6 +50,16 @@
+ #define PF_RSVD		(1<<3)
+ #define PF_INSTR	(1<<4)
+ 
++static inline int kmmio_fault(struct pt_regs *regs, unsigned long addr)
++{
++#ifdef CONFIG_MMIOTRACE_HOOKS
++	if (unlikely(is_kmmio_active()))
++		if (kmmio_handler(regs, addr) == 1)
++			return -1;
++#endif
++	return 0;
++}
++
+ static inline int notify_page_fault(struct pt_regs *regs)
+ {
+ #ifdef CONFIG_KPROBES
+@@ -603,6 +614,8 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 
+ 	if (notify_page_fault(regs))
+ 		return;
++	if (unlikely(kmmio_fault(regs, address)))
++		return;
+ 
+ 	/*
+ 	 * We fault-in kernel-space virtual memory on-demand. The
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index ac3c959..bfaa51f 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -12,6 +12,7 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
++#include <linux/mmiotrace.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/e820.h>
+@@ -112,6 +113,7 @@ static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+ 	unsigned long pfn, offset, last_addr, vaddr;
+ 	struct vm_struct *area;
+ 	pgprot_t prot;
++	void __iomem *ret_addr;
+ 
+ 	/* Don't allow wraparound or zero size */
+ 	last_addr = phys_addr + size - 1;
+@@ -171,7 +173,10 @@ static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+ 		return NULL;
+ 	}
+ 
+-	return (void __iomem *) (vaddr + offset);
++	ret_addr = (void __iomem *) (vaddr + offset);
++	mmiotrace_ioremap(phys_addr, size, ret_addr);
++
++	return ret_addr;
+ }
+ 
+ /**
+@@ -229,6 +234,8 @@ void iounmap(volatile void __iomem *addr)
+ 	    addr < phys_to_virt(ISA_END_ADDRESS))
+ 		return;
+ 
++	mmiotrace_iounmap(addr);
++
+ 	addr = (volatile void __iomem *)
+ 		(PAGE_MASK & (unsigned long __force)addr);
+ 
+diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+new file mode 100644
+index 0000000..efb4679
+--- /dev/null
++++ b/arch/x86/mm/kmmio.c
+@@ -0,0 +1,533 @@
++/* Support for MMIO probes.
++ * Benfit many code from kprobes
++ * (C) 2002 Louis Zhuang <louis.zhuang@intel.com>.
++ *     2007 Alexander Eichner
++ *     2008 Pekka Paalanen <pq@iki.fi>
++ */
++
++#include <linux/version.h>
++#include <linux/list.h>
++#include <linux/spinlock.h>
++#include <linux/hash.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/uaccess.h>
++#include <linux/ptrace.h>
++#include <linux/preempt.h>
++#include <linux/percpu.h>
++#include <linux/kdebug.h>
++#include <linux/mutex.h>
++#include <asm/io.h>
++#include <asm/cacheflush.h>
++#include <asm/errno.h>
++#include <asm/tlbflush.h>
++#include <asm/pgtable.h>
++
++#include <linux/mmiotrace.h>
++
++#define KMMIO_PAGE_HASH_BITS 4
++#define KMMIO_PAGE_TABLE_SIZE (1 << KMMIO_PAGE_HASH_BITS)
++
++struct kmmio_fault_page {
++	struct list_head list;
++	struct kmmio_fault_page *release_next;
++	unsigned long page; /* location of the fault page */
++
++	/*
++	 * Number of times this page has been registered as a part
++	 * of a probe. If zero, page is disarmed and this may be freed.
++	 * Used only by writers (RCU).
++	 */
++	int count;
++};
++
++struct kmmio_delayed_release {
++	struct rcu_head rcu;
++	struct kmmio_fault_page *release_list;
++};
++
++struct kmmio_context {
++	struct kmmio_fault_page *fpage;
++	struct kmmio_probe *probe;
++	unsigned long saved_flags;
++	unsigned long addr;
++	int active;
++};
++
++static int kmmio_die_notifier(struct notifier_block *nb, unsigned long val,
++								void *args);
++
++static DEFINE_MUTEX(kmmio_init_mutex);
++static DEFINE_SPINLOCK(kmmio_lock);
++
++/* These are protected by kmmio_lock */
++static int kmmio_initialized;
++unsigned int kmmio_count;
++
++/* Read-protected by RCU, write-protected by kmmio_lock. */
++static struct list_head kmmio_page_table[KMMIO_PAGE_TABLE_SIZE];
++static LIST_HEAD(kmmio_probes);
++
++static struct list_head *kmmio_page_list(unsigned long page)
++{
++	return &kmmio_page_table[hash_long(page, KMMIO_PAGE_HASH_BITS)];
++}
++
++/* Accessed per-cpu */
++static DEFINE_PER_CPU(struct kmmio_context, kmmio_ctx);
++
++/* protected by kmmio_init_mutex */
++static struct notifier_block nb_die = {
++	.notifier_call = kmmio_die_notifier
++};
++
++/**
++ * Makes sure kmmio is initialized and usable.
++ * This must be called before any other kmmio function defined here.
++ * May sleep.
++ */
++void reference_kmmio(void)
++{
++	mutex_lock(&kmmio_init_mutex);
++	spin_lock_irq(&kmmio_lock);
++	if (!kmmio_initialized) {
++		int i;
++		for (i = 0; i < KMMIO_PAGE_TABLE_SIZE; i++)
++			INIT_LIST_HEAD(&kmmio_page_table[i]);
++		if (register_die_notifier(&nb_die))
++			BUG();
++	}
++	kmmio_initialized++;
++	spin_unlock_irq(&kmmio_lock);
++	mutex_unlock(&kmmio_init_mutex);
++}
++EXPORT_SYMBOL_GPL(reference_kmmio);
++
++/**
++ * Clean up kmmio after use. This must be called for every call to
++ * reference_kmmio(). All probes registered after the corresponding
++ * reference_kmmio() must have been unregistered when calling this.
++ * May sleep.
++ */
++void unreference_kmmio(void)
++{
++	bool unreg = false;
++
++	mutex_lock(&kmmio_init_mutex);
++	spin_lock_irq(&kmmio_lock);
++
++	if (kmmio_initialized == 1) {
++		BUG_ON(is_kmmio_active());
++		unreg = true;
++	}
++	kmmio_initialized--;
++	BUG_ON(kmmio_initialized < 0);
++	spin_unlock_irq(&kmmio_lock);
++
++	if (unreg)
++		unregister_die_notifier(&nb_die); /* calls sync_rcu() */
++	mutex_unlock(&kmmio_init_mutex);
++}
++EXPORT_SYMBOL(unreference_kmmio);
++
++/*
++ * this is basically a dynamic stabbing problem:
++ * Could use the existing prio tree code or
++ * Possible better implementations:
++ * The Interval Skip List: A Data Structure for Finding All Intervals That
++ * Overlap a Point (might be simple)
++ * Space Efficient Dynamic Stabbing with Fast Queries - Mikkel Thorup
++ */
++/* Get the kmmio at this addr (if any). You must be holding RCU read lock. */
++static struct kmmio_probe *get_kmmio_probe(unsigned long addr)
++{
++	struct kmmio_probe *p;
++	list_for_each_entry_rcu(p, &kmmio_probes, list) {
++		if (addr >= p->addr && addr <= (p->addr + p->len))
++			return p;
++	}
++	return NULL;
++}
++
++/* You must be holding RCU read lock. */
++static struct kmmio_fault_page *get_kmmio_fault_page(unsigned long page)
++{
++	struct list_head *head;
++	struct kmmio_fault_page *p;
++
++	page &= PAGE_MASK;
++	head = kmmio_page_list(page);
++	list_for_each_entry_rcu(p, head, list) {
++		if (p->page == page)
++			return p;
++	}
++	return NULL;
++}
++
++/** Mark the given page as not present. Access to it will trigger a fault. */
++static void arm_kmmio_fault_page(unsigned long page, int *page_level)
++{
++	unsigned long address = page & PAGE_MASK;
++	int level;
++	pte_t *pte = lookup_address(address, &level);
++
++	if (!pte) {
++		pr_err("kmmio: Error in %s: no pte for page 0x%08lx\n",
++							__func__, page);
++		return;
++	}
++
++	if (level == PG_LEVEL_2M) {
++		pmd_t *pmd = (pmd_t *)pte;
++		set_pmd(pmd, __pmd(pmd_val(*pmd) & ~_PAGE_PRESENT));
++	} else {
++		/* PG_LEVEL_4K */
++		set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_PRESENT));
++	}
++
++	if (page_level)
++		*page_level = level;
++
++	__flush_tlb_one(page);
++}
++
++/** Mark the given page as present. */
++static void disarm_kmmio_fault_page(unsigned long page, int *page_level)
++{
++	unsigned long address = page & PAGE_MASK;
++	int level;
++	pte_t *pte = lookup_address(address, &level);
++
++	if (!pte) {
++		pr_err("kmmio: Error in %s: no pte for page 0x%08lx\n",
++							__func__, page);
++		return;
++	}
++
++	if (level == PG_LEVEL_2M) {
++		pmd_t *pmd = (pmd_t *)pte;
++		set_pmd(pmd, __pmd(pmd_val(*pmd) | _PAGE_PRESENT));
++	} else {
++		/* PG_LEVEL_4K */
++		set_pte(pte, __pte(pte_val(*pte) | _PAGE_PRESENT));
++	}
++
++	if (page_level)
++		*page_level = level;
++
++	__flush_tlb_one(page);
++}
++
++/*
++ * This is being called from do_page_fault().
++ *
++ * We may be in an interrupt or a critical section. Also prefecthing may
++ * trigger a page fault. We may be in the middle of process switch.
++ * We cannot take any locks, because we could be executing especially
++ * within a kmmio critical section.
++ *
++ * Local interrupts are disabled, so preemption cannot happen.
++ * Do not enable interrupts, do not sleep, and watch out for other CPUs.
++ */
++/*
++ * Interrupts are disabled on entry as trap3 is an interrupt gate
++ * and they remain disabled thorough out this function.
++ */
++int kmmio_handler(struct pt_regs *regs, unsigned long addr)
++{
++	struct kmmio_context *ctx;
++	struct kmmio_fault_page *faultpage;
++
++	/*
++	 * Preemption is now disabled to prevent process switch during
++	 * single stepping. We can only handle one active kmmio trace
++	 * per cpu, so ensure that we finish it before something else
++	 * gets to run. We also hold the RCU read lock over single
++	 * stepping to avoid looking up the probe and kmmio_fault_page
++	 * again.
++	 */
++	preempt_disable();
++	rcu_read_lock();
++
++	faultpage = get_kmmio_fault_page(addr);
++	if (!faultpage) {
++		/*
++		 * Either this page fault is not caused by kmmio, or
++		 * another CPU just pulled the kmmio probe from under
++		 * our feet. In the latter case all hell breaks loose.
++		 */
++		goto no_kmmio;
++	}
++
++	ctx = &get_cpu_var(kmmio_ctx);
++	if (ctx->active) {
++		/*
++		 * Prevent overwriting already in-flight context.
++		 * If this page fault really was due to kmmio trap,
++		 * all hell breaks loose.
++		 */
++		pr_emerg("kmmio: recursive probe hit on CPU %d, "
++					"for address 0x%08lx. Ignoring.\n",
++					smp_processor_id(), addr);
++		goto no_kmmio_ctx;
++	}
++	ctx->active++;
++
++	ctx->fpage = faultpage;
++	ctx->probe = get_kmmio_probe(addr);
++	ctx->saved_flags = (regs->flags & (TF_MASK|IF_MASK));
++	ctx->addr = addr;
++
++	if (ctx->probe && ctx->probe->pre_handler)
++		ctx->probe->pre_handler(ctx->probe, regs, addr);
++
++	/*
++	 * Enable single-stepping and disable interrupts for the faulting
++	 * context. Local interrupts must not get enabled during stepping.
++	 */
++	regs->flags |= TF_MASK;
++	regs->flags &= ~IF_MASK;
++
++	/* Now we set present bit in PTE and single step. */
++	disarm_kmmio_fault_page(ctx->fpage->page, NULL);
++
++	/*
++	 * If another cpu accesses the same page while we are stepping,
++	 * the access will not be caught. It will simply succeed and the
++	 * only downside is we lose the event. If this becomes a problem,
++	 * the user should drop to single cpu before tracing.
++	 */
++
++	put_cpu_var(kmmio_ctx);
++	return 1;
++
++no_kmmio_ctx:
++	put_cpu_var(kmmio_ctx);
++no_kmmio:
++	rcu_read_unlock();
++	preempt_enable_no_resched();
++	return 0; /* page fault not handled by kmmio */
++}
++
++/*
++ * Interrupts are disabled on entry as trap1 is an interrupt gate
++ * and they remain disabled thorough out this function.
++ * This must always get called as the pair to kmmio_handler().
++ */
++static int post_kmmio_handler(unsigned long condition, struct pt_regs *regs)
++{
++	int ret = 0;
++	struct kmmio_context *ctx = &get_cpu_var(kmmio_ctx);
++
++	if (!ctx->active)
++		goto out;
++
++	if (ctx->probe && ctx->probe->post_handler)
++		ctx->probe->post_handler(ctx->probe, condition, regs);
++
++	arm_kmmio_fault_page(ctx->fpage->page, NULL);
++
++	regs->flags &= ~TF_MASK;
++	regs->flags |= ctx->saved_flags;
++
++	/* These were acquired in kmmio_handler(). */
++	ctx->active--;
++	BUG_ON(ctx->active);
++	rcu_read_unlock();
++	preempt_enable_no_resched();
++
++	/*
++	 * if somebody else is singlestepping across a probe point, flags
++	 * will have TF set, in which case, continue the remaining processing
++	 * of do_debug, as if this is not a probe hit.
++	 */
++	if (!(regs->flags & TF_MASK))
++		ret = 1;
++out:
++	put_cpu_var(kmmio_ctx);
++	return ret;
++}
++
++/* You must be holding kmmio_lock. */
++static int add_kmmio_fault_page(unsigned long page)
++{
++	struct kmmio_fault_page *f;
++
++	page &= PAGE_MASK;
++	f = get_kmmio_fault_page(page);
++	if (f) {
++		if (!f->count)
++			arm_kmmio_fault_page(f->page, NULL);
++		f->count++;
++		return 0;
++	}
++
++	f = kmalloc(sizeof(*f), GFP_ATOMIC);
++	if (!f)
++		return -1;
++
++	f->count = 1;
++	f->page = page;
++	list_add_rcu(&f->list, kmmio_page_list(f->page));
++
++	arm_kmmio_fault_page(f->page, NULL);
++
++	return 0;
++}
++
++/* You must be holding kmmio_lock. */
++static void release_kmmio_fault_page(unsigned long page,
++				struct kmmio_fault_page **release_list)
++{
++	struct kmmio_fault_page *f;
++
++	page &= PAGE_MASK;
++	f = get_kmmio_fault_page(page);
++	if (!f)
++		return;
++
++	f->count--;
++	BUG_ON(f->count < 0);
++	if (!f->count) {
++		disarm_kmmio_fault_page(f->page, NULL);
++		f->release_next = *release_list;
++		*release_list = f;
++	}
++}
++
++int register_kmmio_probe(struct kmmio_probe *p)
++{
++	unsigned long flags;
++	int ret = 0;
++	unsigned long size = 0;
++
++	spin_lock_irqsave(&kmmio_lock, flags);
++	if (get_kmmio_probe(p->addr)) {
++		ret = -EEXIST;
++		goto out;
++	}
++	kmmio_count++;
++	list_add_rcu(&p->list, &kmmio_probes);
++	while (size < p->len) {
++		if (add_kmmio_fault_page(p->addr + size))
++			pr_err("kmmio: Unable to set page fault.\n");
++		size += PAGE_SIZE;
++	}
++out:
++	spin_unlock_irqrestore(&kmmio_lock, flags);
++	/*
++	 * XXX: What should I do here?
++	 * Here was a call to global_flush_tlb(), but it does not exist
++	 * anymore. It seems it's not needed after all.
++	 */
++	return ret;
++}
++EXPORT_SYMBOL(register_kmmio_probe);
++
++static void rcu_free_kmmio_fault_pages(struct rcu_head *head)
++{
++	struct kmmio_delayed_release *dr = container_of(
++						head,
++						struct kmmio_delayed_release,
++						rcu);
++	struct kmmio_fault_page *p = dr->release_list;
++	while (p) {
++		struct kmmio_fault_page *next = p->release_next;
++		BUG_ON(p->count);
++		kfree(p);
++		p = next;
++	}
++	kfree(dr);
++}
++
++static void remove_kmmio_fault_pages(struct rcu_head *head)
++{
++	struct kmmio_delayed_release *dr = container_of(
++						head,
++						struct kmmio_delayed_release,
++						rcu);
++	struct kmmio_fault_page *p = dr->release_list;
++	struct kmmio_fault_page **prevp = &dr->release_list;
++	unsigned long flags;
++	spin_lock_irqsave(&kmmio_lock, flags);
++	while (p) {
++		if (!p->count)
++			list_del_rcu(&p->list);
++		else
++			*prevp = p->release_next;
++		prevp = &p->release_next;
++		p = p->release_next;
++	}
++	spin_unlock_irqrestore(&kmmio_lock, flags);
++	/* This is the real RCU destroy call. */
++	call_rcu(&dr->rcu, rcu_free_kmmio_fault_pages);
++}
++
++/*
++ * Remove a kmmio probe. You have to synchronize_rcu() before you can be
++ * sure that the callbacks will not be called anymore. Only after that
++ * you may actually release your struct kmmio_probe.
++ *
++ * Unregistering a kmmio fault page has three steps:
++ * 1. release_kmmio_fault_page()
++ *    Disarm the page, wait a grace period to let all faults finish.
++ * 2. remove_kmmio_fault_pages()
++ *    Remove the pages from kmmio_page_table.
++ * 3. rcu_free_kmmio_fault_pages()
++ *    Actally free the kmmio_fault_page structs as with RCU.
++ */
++void unregister_kmmio_probe(struct kmmio_probe *p)
++{
++	unsigned long flags;
++	unsigned long size = 0;
++	struct kmmio_fault_page *release_list = NULL;
++	struct kmmio_delayed_release *drelease;
++
++	spin_lock_irqsave(&kmmio_lock, flags);
++	while (size < p->len) {
++		release_kmmio_fault_page(p->addr + size, &release_list);
++		size += PAGE_SIZE;
++	}
++	list_del_rcu(&p->list);
++	kmmio_count--;
++	spin_unlock_irqrestore(&kmmio_lock, flags);
++
++	drelease = kmalloc(sizeof(*drelease), GFP_ATOMIC);
++	if (!drelease) {
++		pr_crit("kmmio: leaking kmmio_fault_page objects.\n");
++		return;
++	}
++	drelease->release_list = release_list;
++
++	/*
++	 * This is not really RCU here. We have just disarmed a set of
++	 * pages so that they cannot trigger page faults anymore. However,
++	 * we cannot remove the pages from kmmio_page_table,
++	 * because a probe hit might be in flight on another CPU. The
++	 * pages are collected into a list, and they will be removed from
++	 * kmmio_page_table when it is certain that no probe hit related to
++	 * these pages can be in flight. RCU grace period sounds like a
++	 * good choice.
++	 *
++	 * If we removed the pages too early, kmmio page fault handler might
++	 * not find the respective kmmio_fault_page and determine it's not
++	 * a kmmio fault, when it actually is. This would lead to madness.
++	 */
++	call_rcu(&drelease->rcu, remove_kmmio_fault_pages);
++}
++EXPORT_SYMBOL(unregister_kmmio_probe);
++
++static int kmmio_die_notifier(struct notifier_block *nb, unsigned long val,
++								void *args)
++{
++	struct die_args *arg = args;
++
++	if (val == DIE_DEBUG)
++		if (post_kmmio_handler(arg->err, arg->regs) == 1)
++			return NOTIFY_STOP;
++
++	return NOTIFY_DONE;
++}
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+new file mode 100644
+index 0000000..7386440
+--- /dev/null
++++ b/arch/x86/mm/mmio-mod.c
+@@ -0,0 +1,666 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2005
++ *               Jeff Muizelaar, 2006, 2007
++ *               Pekka Paalanen, 2008 <pq@iki.fi>
++ *
++ * Derived from the read-mod example from relay-examples by Tom Zanussi.
++ */
++#define DEBUG 1
++
++#include <linux/module.h>
++#include <linux/relay.h>
++#include <linux/debugfs.h>
++#include <linux/proc_fs.h>
++#include <asm/io.h>
++#include <linux/version.h>
++#include <linux/kallsyms.h>
++#include <asm/pgtable.h>
++#include <linux/mmiotrace.h>
++#include <asm/e820.h> /* for ISA_START_ADDRESS */
++#include <asm/atomic.h>
++#include <linux/percpu.h>
++
++#include "pf_in.h"
++
++#define NAME "mmiotrace: "
++
++/* This app's relay channel files will appear in /debug/mmio-trace */
++static const char APP_DIR[] = "mmio-trace";
++/* the marker injection file in /debug/APP_DIR */
++static const char MARKER_FILE[] = "mmio-marker";
++
++struct trap_reason {
++	unsigned long addr;
++	unsigned long ip;
++	enum reason_type type;
++	int active_traces;
++};
++
++struct remap_trace {
++	struct list_head list;
++	struct kmmio_probe probe;
++	unsigned long phys;
++	unsigned long id;
++};
++
++static const size_t subbuf_size = 256*1024;
++
++/* Accessed per-cpu. */
++static DEFINE_PER_CPU(struct trap_reason, pf_reason);
++static DEFINE_PER_CPU(struct mm_io_header_rw, cpu_trace);
++
++/* Access to this is not per-cpu. */
++static DEFINE_PER_CPU(atomic_t, dropped);
++
++static struct dentry *dir;
++static struct dentry *enabled_file;
++static struct dentry *marker_file;
++
++static DEFINE_MUTEX(mmiotrace_mutex);
++static DEFINE_SPINLOCK(trace_lock);
++static atomic_t mmiotrace_enabled;
++static LIST_HEAD(trace_list);		/* struct remap_trace */
++static struct rchan *chan;
++
++/*
++ * Locking in this file:
++ * - mmiotrace_mutex enforces enable/disable_mmiotrace() critical sections.
++ * - mmiotrace_enabled may be modified only when holding mmiotrace_mutex
++ *   and trace_lock.
++ * - Routines depending on is_enabled() must take trace_lock.
++ * - trace_list users must hold trace_lock.
++ * - is_enabled() guarantees that chan is valid.
++ * - pre/post callbacks assume the effect of is_enabled() being true.
++ */
++
++/* module parameters */
++static unsigned int	n_subbufs = 32*4;
++static unsigned long	filter_offset;
++static int		nommiotrace;
++static int		ISA_trace;
++static int		trace_pc;
++static int		enable_now;
++
++module_param(n_subbufs, uint, 0);
++module_param(filter_offset, ulong, 0);
++module_param(nommiotrace, bool, 0);
++module_param(ISA_trace, bool, 0);
++module_param(trace_pc, bool, 0);
++module_param(enable_now, bool, 0);
++
++MODULE_PARM_DESC(n_subbufs, "Number of 256kB buffers, default 128.");
++MODULE_PARM_DESC(filter_offset, "Start address of traced mappings.");
++MODULE_PARM_DESC(nommiotrace, "Disable actual MMIO tracing.");
++MODULE_PARM_DESC(ISA_trace, "Do not exclude the low ISA range.");
++MODULE_PARM_DESC(trace_pc, "Record address of faulting instructions.");
++MODULE_PARM_DESC(enable_now, "Start mmiotracing immediately on module load.");
++
++static bool is_enabled(void)
++{
++	return atomic_read(&mmiotrace_enabled);
++}
++
++static void record_timestamp(struct mm_io_header *header)
++{
++	struct timespec now;
++
++	getnstimeofday(&now);
++	header->sec = now.tv_sec;
++	header->nsec = now.tv_nsec;
++}
++
++/*
++ * Write callback for the debugfs entry:
++ * Read a marker and write it to the mmio trace log
++ */
++static ssize_t write_marker(struct file *file, const char __user *buffer,
++						size_t count, loff_t *ppos)
++{
++	char *event = NULL;
++	struct mm_io_header *headp;
++	ssize_t len = (count > 65535) ? 65535 : count;
++
++	event = kzalloc(sizeof(*headp) + len, GFP_KERNEL);
++	if (!event)
++		return -ENOMEM;
++
++	headp = (struct mm_io_header *)event;
++	headp->type = MMIO_MAGIC | (MMIO_MARKER << MMIO_OPCODE_SHIFT);
++	headp->data_len = len;
++	record_timestamp(headp);
++
++	if (copy_from_user(event + sizeof(*headp), buffer, len)) {
++		kfree(event);
++		return -EFAULT;
++	}
++
++	spin_lock_irq(&trace_lock);
++	if (is_enabled())
++		relay_write(chan, event, sizeof(*headp) + len);
++	else
++		len = -EINVAL;
++	spin_unlock_irq(&trace_lock);
++	kfree(event);
++	return len;
++}
++
++static void print_pte(unsigned long address)
++{
++	int level;
++	pte_t *pte = lookup_address(address, &level);
++
++	if (!pte) {
++		pr_err(NAME "Error in %s: no pte for page 0x%08lx\n",
++							__func__, address);
++		return;
++	}
++
++	if (level == PG_LEVEL_2M) {
++		pr_emerg(NAME "4MB pages are not currently supported: "
++							"0x%08lx\n", address);
++		BUG();
++	}
++	pr_info(NAME "pte for 0x%lx: 0x%lx 0x%lx\n", address, pte_val(*pte),
++						pte_val(*pte) & _PAGE_PRESENT);
++}
++
++/*
++ * For some reason the pre/post pairs have been called in an
++ * unmatched order. Report and die.
++ */
++static void die_kmmio_nesting_error(struct pt_regs *regs, unsigned long addr)
++{
++	const struct trap_reason *my_reason = &get_cpu_var(pf_reason);
++	pr_emerg(NAME "unexpected fault for address: 0x%08lx, "
++					"last fault for address: 0x%08lx\n",
++					addr, my_reason->addr);
++	print_pte(addr);
++	print_symbol(KERN_EMERG "faulting IP is at %s\n", regs->ip);
++	print_symbol(KERN_EMERG "last faulting IP was at %s\n", my_reason->ip);
++#ifdef __i386__
++	pr_emerg("eax: %08lx   ebx: %08lx   ecx: %08lx   edx: %08lx\n",
++			regs->ax, regs->bx, regs->cx, regs->dx);
++	pr_emerg("esi: %08lx   edi: %08lx   ebp: %08lx   esp: %08lx\n",
++			regs->si, regs->di, regs->bp, regs->sp);
++#else
++	pr_emerg("rax: %016lx   rcx: %016lx   rdx: %016lx\n",
++					regs->ax, regs->cx, regs->dx);
++	pr_emerg("rsi: %016lx   rdi: %016lx   rbp: %016lx   rsp: %016lx\n",
++				regs->si, regs->di, regs->bp, regs->sp);
++#endif
++	put_cpu_var(pf_reason);
++	BUG();
++}
++
++static void pre(struct kmmio_probe *p, struct pt_regs *regs,
++						unsigned long addr)
++{
++	struct trap_reason *my_reason = &get_cpu_var(pf_reason);
++	struct mm_io_header_rw *my_trace = &get_cpu_var(cpu_trace);
++	const unsigned long instptr = instruction_pointer(regs);
++	const enum reason_type type = get_ins_type(instptr);
++
++	/* it doesn't make sense to have more than one active trace per cpu */
++	if (my_reason->active_traces)
++		die_kmmio_nesting_error(regs, addr);
++	else
++		my_reason->active_traces++;
++
++	my_reason->type = type;
++	my_reason->addr = addr;
++	my_reason->ip = instptr;
++
++	my_trace->header.type = MMIO_MAGIC;
++	my_trace->header.pid = 0;
++	my_trace->header.data_len = sizeof(struct mm_io_rw);
++	my_trace->rw.address = addr;
++	/*
++	 * struct remap_trace *trace = p->user_data;
++	 * phys = addr - trace->probe.addr + trace->phys;
++	 */
++
++	/*
++	 * Only record the program counter when requested.
++	 * It may taint clean-room reverse engineering.
++	 */
++	if (trace_pc)
++		my_trace->rw.pc = instptr;
++	else
++		my_trace->rw.pc = 0;
++
++	record_timestamp(&my_trace->header);
++
++	switch (type) {
++	case REG_READ:
++		my_trace->header.type |=
++			(MMIO_READ << MMIO_OPCODE_SHIFT) |
++			(get_ins_mem_width(instptr) << MMIO_WIDTH_SHIFT);
++		break;
++	case REG_WRITE:
++		my_trace->header.type |=
++			(MMIO_WRITE << MMIO_OPCODE_SHIFT) |
++			(get_ins_mem_width(instptr) << MMIO_WIDTH_SHIFT);
++		my_trace->rw.value = get_ins_reg_val(instptr, regs);
++		break;
++	case IMM_WRITE:
++		my_trace->header.type |=
++			(MMIO_WRITE << MMIO_OPCODE_SHIFT) |
++			(get_ins_mem_width(instptr) << MMIO_WIDTH_SHIFT);
++		my_trace->rw.value = get_ins_imm_val(instptr);
++		break;
++	default:
++		{
++			unsigned char *ip = (unsigned char *)instptr;
++			my_trace->header.type |=
++					(MMIO_UNKNOWN_OP << MMIO_OPCODE_SHIFT);
++			my_trace->rw.value = (*ip) << 16 | *(ip + 1) << 8 |
++								*(ip + 2);
++		}
++	}
++	put_cpu_var(cpu_trace);
++	put_cpu_var(pf_reason);
++}
++
++static void post(struct kmmio_probe *p, unsigned long condition,
++							struct pt_regs *regs)
++{
++	struct trap_reason *my_reason = &get_cpu_var(pf_reason);
++	struct mm_io_header_rw *my_trace = &get_cpu_var(cpu_trace);
++
++	/* this should always return the active_trace count to 0 */
++	my_reason->active_traces--;
++	if (my_reason->active_traces) {
++		pr_emerg(NAME "unexpected post handler");
++		BUG();
++	}
++
++	switch (my_reason->type) {
++	case REG_READ:
++		my_trace->rw.value = get_ins_reg_val(my_reason->ip, regs);
++		break;
++	default:
++		break;
++	}
++	relay_write(chan, my_trace, sizeof(*my_trace));
++	put_cpu_var(cpu_trace);
++	put_cpu_var(pf_reason);
++}
++
++/*
++ * subbuf_start() relay callback.
++ *
++ * Defined so that we know when events are dropped due to the buffer-full
++ * condition.
++ */
++static int subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
++					void *prev_subbuf, size_t prev_padding)
++{
++	unsigned int cpu = buf->cpu;
++	atomic_t *drop = &per_cpu(dropped, cpu);
++	int count;
++	if (relay_buf_full(buf)) {
++		if (atomic_inc_return(drop) == 1)
++			pr_err(NAME "cpu %d buffer full!\n", cpu);
++		return 0;
++	}
++	count = atomic_read(drop);
++	if (count) {
++		pr_err(NAME "cpu %d buffer no longer full, missed %d events.\n",
++								cpu, count);
++		atomic_sub(count, drop);
++	}
++
++	return 1;
++}
++
++static struct file_operations mmio_fops = {
++	.owner = THIS_MODULE,
++};
++
++/* file_create() callback.  Creates relay file in debugfs. */
++static struct dentry *create_buf_file_handler(const char *filename,
++						struct dentry *parent,
++						int mode,
++						struct rchan_buf *buf,
++						int *is_global)
++{
++	struct dentry *buf_file;
++
++	mmio_fops.read = relay_file_operations.read;
++	mmio_fops.open = relay_file_operations.open;
++	mmio_fops.poll = relay_file_operations.poll;
++	mmio_fops.mmap = relay_file_operations.mmap;
++	mmio_fops.release = relay_file_operations.release;
++	mmio_fops.splice_read = relay_file_operations.splice_read;
++
++	buf_file = debugfs_create_file(filename, mode, parent, buf,
++								&mmio_fops);
++
++	return buf_file;
++}
++
++/* file_remove() default callback.  Removes relay file in debugfs. */
++static int remove_buf_file_handler(struct dentry *dentry)
++{
++	debugfs_remove(dentry);
++	return 0;
++}
++
++static struct rchan_callbacks relay_callbacks = {
++	.subbuf_start = subbuf_start_handler,
++	.create_buf_file = create_buf_file_handler,
++	.remove_buf_file = remove_buf_file_handler,
++};
++
++static void ioremap_trace_core(unsigned long offset, unsigned long size,
++							void __iomem *addr)
++{
++	static atomic_t next_id;
++	struct remap_trace *trace = kmalloc(sizeof(*trace), GFP_KERNEL);
++	struct mm_io_header_map event = {
++		.header = {
++			.type = MMIO_MAGIC |
++					(MMIO_PROBE << MMIO_OPCODE_SHIFT),
++			.sec = 0,
++			.nsec = 0,
++			.pid = 0,
++			.data_len = sizeof(struct mm_io_map)
++		},
++		.map = {
++			.phys = offset,
++			.addr = (unsigned long)addr,
++			.len  = size,
++			.pc   = 0
++		}
++	};
++	record_timestamp(&event.header);
++
++	if (!trace) {
++		pr_err(NAME "kmalloc failed in ioremap\n");
++		return;
++	}
++
++	*trace = (struct remap_trace) {
++		.probe = {
++			.addr = (unsigned long)addr,
++			.len = size,
++			.pre_handler = pre,
++			.post_handler = post,
++			.user_data = trace
++		},
++		.phys = offset,
++		.id = atomic_inc_return(&next_id)
++	};
++
++	spin_lock_irq(&trace_lock);
++	if (!is_enabled())
++		goto not_enabled;
++
++	relay_write(chan, &event, sizeof(event));
++	list_add_tail(&trace->list, &trace_list);
++	if (!nommiotrace)
++		register_kmmio_probe(&trace->probe);
++
++not_enabled:
++	spin_unlock_irq(&trace_lock);
++}
++
++void
++mmiotrace_ioremap(unsigned long offset, unsigned long size, void __iomem *addr)
++{
++	if (!is_enabled()) /* recheck and proper locking in *_core() */
++		return;
++
++	pr_debug(NAME "ioremap_*(0x%lx, 0x%lx) = %p\n", offset, size, addr);
++	if ((filter_offset) && (offset != filter_offset))
++		return;
++	ioremap_trace_core(offset, size, addr);
++}
++
++static void iounmap_trace_core(volatile void __iomem *addr)
++{
++	struct mm_io_header_map event = {
++		.header = {
++			.type = MMIO_MAGIC |
++				(MMIO_UNPROBE << MMIO_OPCODE_SHIFT),
++			.sec = 0,
++			.nsec = 0,
++			.pid = 0,
++			.data_len = sizeof(struct mm_io_map)
++		},
++		.map = {
++			.phys = 0,
++			.addr = (unsigned long)addr,
++			.len  = 0,
++			.pc   = 0
++		}
++	};
++	struct remap_trace *trace;
++	struct remap_trace *tmp;
++	struct remap_trace *found_trace = NULL;
++
++	pr_debug(NAME "Unmapping %p.\n", addr);
++	record_timestamp(&event.header);
++
++	spin_lock_irq(&trace_lock);
++	if (!is_enabled())
++		goto not_enabled;
++
++	list_for_each_entry_safe(trace, tmp, &trace_list, list) {
++		if ((unsigned long)addr == trace->probe.addr) {
++			if (!nommiotrace)
++				unregister_kmmio_probe(&trace->probe);
++			list_del(&trace->list);
++			found_trace = trace;
++			break;
++		}
++	}
++	relay_write(chan, &event, sizeof(event));
++
++not_enabled:
++	spin_unlock_irq(&trace_lock);
++	if (found_trace) {
++		synchronize_rcu(); /* unregister_kmmio_probe() requirement */
++		kfree(found_trace);
++	}
++}
++
++void mmiotrace_iounmap(volatile void __iomem *addr)
++{
++	might_sleep();
++	if (is_enabled()) /* recheck and proper locking in *_core() */
++		iounmap_trace_core(addr);
++}
++
++static void clear_trace_list(void)
++{
++	struct remap_trace *trace;
++	struct remap_trace *tmp;
++
++	/*
++	 * No locking required, because the caller ensures we are in a
++	 * critical section via mutex, and is_enabled() is false,
++	 * i.e. nothing can traverse or modify this list.
++	 * Caller also ensures is_enabled() cannot change.
++	 */
++	list_for_each_entry(trace, &trace_list, list) {
++		pr_notice(NAME "purging non-iounmapped "
++					"trace @0x%08lx, size 0x%lx.\n",
++					trace->probe.addr, trace->probe.len);
++		if (!nommiotrace)
++			unregister_kmmio_probe(&trace->probe);
++	}
++	synchronize_rcu(); /* unregister_kmmio_probe() requirement */
++
++	list_for_each_entry_safe(trace, tmp, &trace_list, list) {
++		list_del(&trace->list);
++		kfree(trace);
++	}
++}
++
++static ssize_t read_enabled_file_bool(struct file *file,
++		char __user *user_buf, size_t count, loff_t *ppos)
++{
++	char buf[3];
++
++	if (is_enabled())
++		buf[0] = '1';
++	else
++		buf[0] = '0';
++	buf[1] = '\n';
++	buf[2] = '\0';
++	return simple_read_from_buffer(user_buf, count, ppos, buf, 2);
++}
++
++static void enable_mmiotrace(void);
++static void disable_mmiotrace(void);
++
++static ssize_t write_enabled_file_bool(struct file *file,
++		const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	char buf[32];
++	int buf_size = min(count, (sizeof(buf)-1));
++
++	if (copy_from_user(buf, user_buf, buf_size))
++		return -EFAULT;
++
++	switch (buf[0]) {
++	case 'y':
++	case 'Y':
++	case '1':
++		enable_mmiotrace();
++		break;
++	case 'n':
++	case 'N':
++	case '0':
++		disable_mmiotrace();
++		break;
++	}
++
++	return count;
++}
++
++/* this ripped from kernel/kprobes.c */
++static struct file_operations fops_enabled = {
++	.owner =	THIS_MODULE,
++	.read =		read_enabled_file_bool,
++	.write =	write_enabled_file_bool
++};
++
++static struct file_operations fops_marker = {
++	.owner =	THIS_MODULE,
++	.write =	write_marker
++};
++
++static void enable_mmiotrace(void)
++{
++	mutex_lock(&mmiotrace_mutex);
++	if (is_enabled())
++		goto out;
++
++	chan = relay_open("cpu", dir, subbuf_size, n_subbufs,
++						&relay_callbacks, NULL);
++	if (!chan) {
++		pr_err(NAME "relay app channel creation failed.\n");
++		goto out;
++	}
++
++	reference_kmmio();
++
++	marker_file = debugfs_create_file("marker", 0660, dir, NULL,
++								&fops_marker);
++	if (!marker_file)
++		pr_err(NAME "marker file creation failed.\n");
++
++	if (nommiotrace)
++		pr_info(NAME "MMIO tracing disabled.\n");
++	if (ISA_trace)
++		pr_warning(NAME "Warning! low ISA range will be traced.\n");
++	spin_lock_irq(&trace_lock);
++	atomic_inc(&mmiotrace_enabled);
++	spin_unlock_irq(&trace_lock);
++	pr_info(NAME "enabled.\n");
++out:
++	mutex_unlock(&mmiotrace_mutex);
++}
++
++static void disable_mmiotrace(void)
++{
++	mutex_lock(&mmiotrace_mutex);
++	if (!is_enabled())
++		goto out;
++
++	spin_lock_irq(&trace_lock);
++	atomic_dec(&mmiotrace_enabled);
++	BUG_ON(is_enabled());
++	spin_unlock_irq(&trace_lock);
++
++	clear_trace_list(); /* guarantees: no more kmmio callbacks */
++	unreference_kmmio();
++	if (marker_file) {
++		debugfs_remove(marker_file);
++		marker_file = NULL;
++	}
++	if (chan) {
++		relay_close(chan);
++		chan = NULL;
++	}
++
++	pr_info(NAME "disabled.\n");
++out:
++	mutex_unlock(&mmiotrace_mutex);
++}
++
++static int __init init(void)
++{
++	pr_debug(NAME "load...\n");
++	if (n_subbufs < 2)
++		return -EINVAL;
++
++	dir = debugfs_create_dir(APP_DIR, NULL);
++	if (!dir) {
++		pr_err(NAME "Couldn't create relay app directory.\n");
++		return -ENOMEM;
++	}
++
++	enabled_file = debugfs_create_file("enabled", 0600, dir, NULL,
++								&fops_enabled);
++	if (!enabled_file) {
++		pr_err(NAME "Couldn't create enabled file.\n");
++		debugfs_remove(dir);
++		return -ENOMEM;
++	}
++
++	if (enable_now)
++		enable_mmiotrace();
++
++	return 0;
++}
++
++static void __exit cleanup(void)
++{
++	pr_debug(NAME "unload...\n");
++	if (enabled_file)
++		debugfs_remove(enabled_file);
++	disable_mmiotrace();
++	if (dir)
++		debugfs_remove(dir);
++}
++
++module_init(init);
++module_exit(cleanup);
++MODULE_LICENSE("GPL");
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 14e48b5..7574bee 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -223,6 +223,7 @@ pte_t *lookup_address(unsigned long address, unsigned int *level)
+ 
+ 	return pte_offset_kernel(pmd, address);
+ }
++EXPORT_SYMBOL_GPL(lookup_address);
+ 
+ /*
+  * Set the new pmd in all the pgds we know about:
+diff --git a/arch/x86/mm/pf_in.c b/arch/x86/mm/pf_in.c
+new file mode 100644
+index 0000000..efa1911
+--- /dev/null
++++ b/arch/x86/mm/pf_in.c
+@@ -0,0 +1,489 @@
++/*
++ *  Fault Injection Test harness (FI)
++ *  Copyright (C) Intel Crop.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version 2
++ *  of the License, or (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
++ *  USA.
++ *
++ */
++
++/*  Id: pf_in.c,v 1.1.1.1 2002/11/12 05:56:32 brlock Exp
++ *  Copyright by Intel Crop., 2002
++ *  Louis Zhuang (louis.zhuang@intel.com)
++ *
++ *  Bjorn Steinbrink (B.Steinbrink@gmx.de), 2007
++ */
++
++#include <linux/module.h>
++#include <linux/ptrace.h> /* struct pt_regs */
++#include "pf_in.h"
++
++#ifdef __i386__
++/* IA32 Manual 3, 2-1 */
++static unsigned char prefix_codes[] = {
++	0xF0, 0xF2, 0xF3, 0x2E, 0x36, 0x3E, 0x26, 0x64,
++	0x65, 0x2E, 0x3E, 0x66, 0x67
++};
++/* IA32 Manual 3, 3-432*/
++static unsigned int reg_rop[] = {
++	0x8A, 0x8B, 0xB60F, 0xB70F, 0xBE0F, 0xBF0F
++};
++static unsigned int reg_wop[] = { 0x88, 0x89 };
++static unsigned int imm_wop[] = { 0xC6, 0xC7 };
++/* IA32 Manual 3, 3-432*/
++static unsigned int rw8[] = { 0x88, 0x8A, 0xC6 };
++static unsigned int rw32[] = {
++	0x89, 0x8B, 0xC7, 0xB60F, 0xB70F, 0xBE0F, 0xBF0F
++};
++static unsigned int mw8[] = { 0x88, 0x8A, 0xC6, 0xB60F, 0xBE0F };
++static unsigned int mw16[] = { 0xB70F, 0xBF0F };
++static unsigned int mw32[] = { 0x89, 0x8B, 0xC7 };
++static unsigned int mw64[] = {};
++#else /* not __i386__ */
++static unsigned char prefix_codes[] = {
++	0x66, 0x67, 0x2E, 0x3E, 0x26, 0x64, 0x65, 0x36,
++	0xF0, 0xF3, 0xF2,
++	/* REX Prefixes */
++	0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
++	0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f
++};
++/* AMD64 Manual 3, Appendix A*/
++static unsigned int reg_rop[] = {
++	0x8A, 0x8B, 0xB60F, 0xB70F, 0xBE0F, 0xBF0F
++};
++static unsigned int reg_wop[] = { 0x88, 0x89 };
++static unsigned int imm_wop[] = { 0xC6, 0xC7 };
++static unsigned int rw8[] = { 0xC6, 0x88, 0x8A };
++static unsigned int rw32[] = {
++	0xC7, 0x89, 0x8B, 0xB60F, 0xB70F, 0xBE0F, 0xBF0F
++};
++/* 8 bit only */
++static unsigned int mw8[] = { 0xC6, 0x88, 0x8A, 0xB60F, 0xBE0F };
++/* 16 bit only */
++static unsigned int mw16[] = { 0xB70F, 0xBF0F };
++/* 16 or 32 bit */
++static unsigned int mw32[] = { 0xC7 };
++/* 16, 32 or 64 bit */
++static unsigned int mw64[] = { 0x89, 0x8B };
++#endif /* not __i386__ */
++
++static int skip_prefix(unsigned char *addr, int *shorted, int *enlarged,
++								int *rexr)
++{
++	int i;
++	unsigned char *p = addr;
++	*shorted = 0;
++	*enlarged = 0;
++	*rexr = 0;
++
++restart:
++	for (i = 0; i < ARRAY_SIZE(prefix_codes); i++) {
++		if (*p == prefix_codes[i]) {
++			if (*p == 0x66)
++				*shorted = 1;
++#ifdef __amd64__
++			if ((*p & 0xf8) == 0x48)
++				*enlarged = 1;
++			if ((*p & 0xf4) == 0x44)
++				*rexr = 1;
++#endif
++			p++;
++			goto restart;
++		}
++	}
++
++	return (p - addr);
++}
++
++static int get_opcode(unsigned char *addr, unsigned int *opcode)
++{
++	int len;
++
++	if (*addr == 0x0F) {
++		/* 0x0F is extension instruction */
++		*opcode = *(unsigned short *)addr;
++		len = 2;
++	} else {
++		*opcode = *addr;
++		len = 1;
++	}
++
++	return len;
++}
++
++#define CHECK_OP_TYPE(opcode, array, type) \
++	for (i = 0; i < ARRAY_SIZE(array); i++) { \
++		if (array[i] == opcode) { \
++			rv = type; \
++			goto exit; \
++		} \
++	}
++
++enum reason_type get_ins_type(unsigned long ins_addr)
++{
++	unsigned int opcode;
++	unsigned char *p;
++	int shorted, enlarged, rexr;
++	int i;
++	enum reason_type rv = OTHERS;
++
++	p = (unsigned char *)ins_addr;
++	p += skip_prefix(p, &shorted, &enlarged, &rexr);
++	p += get_opcode(p, &opcode);
++
++	CHECK_OP_TYPE(opcode, reg_rop, REG_READ);
++	CHECK_OP_TYPE(opcode, reg_wop, REG_WRITE);
++	CHECK_OP_TYPE(opcode, imm_wop, IMM_WRITE);
++
++exit:
++	return rv;
++}
++#undef CHECK_OP_TYPE
++
++static unsigned int get_ins_reg_width(unsigned long ins_addr)
++{
++	unsigned int opcode;
++	unsigned char *p;
++	int i, shorted, enlarged, rexr;
++
++	p = (unsigned char *)ins_addr;
++	p += skip_prefix(p, &shorted, &enlarged, &rexr);
++	p += get_opcode(p, &opcode);
++
++	for (i = 0; i < ARRAY_SIZE(rw8); i++)
++		if (rw8[i] == opcode)
++			return 1;
++
++	for (i = 0; i < ARRAY_SIZE(rw32); i++)
++		if (rw32[i] == opcode)
++			return (shorted ? 2 : (enlarged ? 8 : 4));
++
++	printk(KERN_ERR "mmiotrace: Unknown opcode 0x%02x\n", opcode);
++	return 0;
++}
++
++unsigned int get_ins_mem_width(unsigned long ins_addr)
++{
++	unsigned int opcode;
++	unsigned char *p;
++	int i, shorted, enlarged, rexr;
++
++	p = (unsigned char *)ins_addr;
++	p += skip_prefix(p, &shorted, &enlarged, &rexr);
++	p += get_opcode(p, &opcode);
++
++	for (i = 0; i < ARRAY_SIZE(mw8); i++)
++		if (mw8[i] == opcode)
++			return 1;
++
++	for (i = 0; i < ARRAY_SIZE(mw16); i++)
++		if (mw16[i] == opcode)
++			return 2;
++
++	for (i = 0; i < ARRAY_SIZE(mw32); i++)
++		if (mw32[i] == opcode)
++			return shorted ? 2 : 4;
++
++	for (i = 0; i < ARRAY_SIZE(mw64); i++)
++		if (mw64[i] == opcode)
++			return shorted ? 2 : (enlarged ? 8 : 4);
++
++	printk(KERN_ERR "mmiotrace: Unknown opcode 0x%02x\n", opcode);
++	return 0;
++}
++
++/*
++ * Define register ident in mod/rm byte.
++ * Note: these are NOT the same as in ptrace-abi.h.
++ */
++enum {
++	arg_AL = 0,
++	arg_CL = 1,
++	arg_DL = 2,
++	arg_BL = 3,
++	arg_AH = 4,
++	arg_CH = 5,
++	arg_DH = 6,
++	arg_BH = 7,
++
++	arg_AX = 0,
++	arg_CX = 1,
++	arg_DX = 2,
++	arg_BX = 3,
++	arg_SP = 4,
++	arg_BP = 5,
++	arg_SI = 6,
++	arg_DI = 7,
++#ifdef __amd64__
++	arg_R8  = 8,
++	arg_R9  = 9,
++	arg_R10 = 10,
++	arg_R11 = 11,
++	arg_R12 = 12,
++	arg_R13 = 13,
++	arg_R14 = 14,
++	arg_R15 = 15
++#endif
++};
++
++static unsigned char *get_reg_w8(int no, struct pt_regs *regs)
++{
++	unsigned char *rv = NULL;
++
++	switch (no) {
++	case arg_AL:
++		rv = (unsigned char *)&regs->ax;
++		break;
++	case arg_BL:
++		rv = (unsigned char *)&regs->bx;
++		break;
++	case arg_CL:
++		rv = (unsigned char *)&regs->cx;
++		break;
++	case arg_DL:
++		rv = (unsigned char *)&regs->dx;
++		break;
++	case arg_AH:
++		rv = 1 + (unsigned char *)&regs->ax;
++		break;
++	case arg_BH:
++		rv = 1 + (unsigned char *)&regs->bx;
++		break;
++	case arg_CH:
++		rv = 1 + (unsigned char *)&regs->cx;
++		break;
++	case arg_DH:
++		rv = 1 + (unsigned char *)&regs->dx;
++		break;
++#ifdef __amd64__
++	case arg_R8:
++		rv = (unsigned char *)&regs->r8;
++		break;
++	case arg_R9:
++		rv = (unsigned char *)&regs->r9;
++		break;
++	case arg_R10:
++		rv = (unsigned char *)&regs->r10;
++		break;
++	case arg_R11:
++		rv = (unsigned char *)&regs->r11;
++		break;
++	case arg_R12:
++		rv = (unsigned char *)&regs->r12;
++		break;
++	case arg_R13:
++		rv = (unsigned char *)&regs->r13;
++		break;
++	case arg_R14:
++		rv = (unsigned char *)&regs->r14;
++		break;
++	case arg_R15:
++		rv = (unsigned char *)&regs->r15;
++		break;
++#endif
++	default:
++		printk(KERN_ERR "mmiotrace: Error reg no# %d\n", no);
++		break;
++	}
++	return rv;
++}
++
++static unsigned long *get_reg_w32(int no, struct pt_regs *regs)
++{
++	unsigned long *rv = NULL;
++
++	switch (no) {
++	case arg_AX:
++		rv = &regs->ax;
++		break;
++	case arg_BX:
++		rv = &regs->bx;
++		break;
++	case arg_CX:
++		rv = &regs->cx;
++		break;
++	case arg_DX:
++		rv = &regs->dx;
++		break;
++	case arg_SP:
++		rv = &regs->sp;
++		break;
++	case arg_BP:
++		rv = &regs->bp;
++		break;
++	case arg_SI:
++		rv = &regs->si;
++		break;
++	case arg_DI:
++		rv = &regs->di;
++		break;
++#ifdef __amd64__
++	case arg_R8:
++		rv = &regs->r8;
++		break;
++	case arg_R9:
++		rv = &regs->r9;
++		break;
++	case arg_R10:
++		rv = &regs->r10;
++		break;
++	case arg_R11:
++		rv = &regs->r11;
++		break;
++	case arg_R12:
++		rv = &regs->r12;
++		break;
++	case arg_R13:
++		rv = &regs->r13;
++		break;
++	case arg_R14:
++		rv = &regs->r14;
++		break;
++	case arg_R15:
++		rv = &regs->r15;
++		break;
++#endif
++	default:
++		printk(KERN_ERR "mmiotrace: Error reg no# %d\n", no);
++	}
++
++	return rv;
++}
++
++unsigned long get_ins_reg_val(unsigned long ins_addr, struct pt_regs *regs)
++{
++	unsigned int opcode;
++	unsigned char mod_rm;
++	int reg;
++	unsigned char *p;
++	int i, shorted, enlarged, rexr;
++	unsigned long rv;
++
++	p = (unsigned char *)ins_addr;
++	p += skip_prefix(p, &shorted, &enlarged, &rexr);
++	p += get_opcode(p, &opcode);
++	for (i = 0; i < ARRAY_SIZE(reg_rop); i++)
++		if (reg_rop[i] == opcode) {
++			rv = REG_READ;
++			goto do_work;
++		}
++
++	for (i = 0; i < ARRAY_SIZE(reg_wop); i++)
++		if (reg_wop[i] == opcode) {
++			rv = REG_WRITE;
++			goto do_work;
++		}
++
++	printk(KERN_ERR "mmiotrace: Not a register instruction, opcode "
++							"0x%02x\n", opcode);
++	goto err;
++
++do_work:
++	mod_rm = *p;
++	reg = ((mod_rm >> 3) & 0x7) | (rexr << 3);
++	switch (get_ins_reg_width(ins_addr)) {
++	case 1:
++		return *get_reg_w8(reg, regs);
++
++	case 2:
++		return *(unsigned short *)get_reg_w32(reg, regs);
++
++	case 4:
++		return *(unsigned int *)get_reg_w32(reg, regs);
++
++#ifdef __amd64__
++	case 8:
++		return *(unsigned long *)get_reg_w32(reg, regs);
++#endif
++
++	default:
++		printk(KERN_ERR "mmiotrace: Error width# %d\n", reg);
++	}
++
++err:
++	return 0;
++}
++
++unsigned long get_ins_imm_val(unsigned long ins_addr)
++{
++	unsigned int opcode;
++	unsigned char mod_rm;
++	unsigned char mod;
++	unsigned char *p;
++	int i, shorted, enlarged, rexr;
++	unsigned long rv;
++
++	p = (unsigned char *)ins_addr;
++	p += skip_prefix(p, &shorted, &enlarged, &rexr);
++	p += get_opcode(p, &opcode);
++	for (i = 0; i < ARRAY_SIZE(imm_wop); i++)
++		if (imm_wop[i] == opcode) {
++			rv = IMM_WRITE;
++			goto do_work;
++		}
++
++	printk(KERN_ERR "mmiotrace: Not an immediate instruction, opcode "
++							"0x%02x\n", opcode);
++	goto err;
++
++do_work:
++	mod_rm = *p;
++	mod = mod_rm >> 6;
++	p++;
++	switch (mod) {
++	case 0:
++		/* if r/m is 5 we have a 32 disp (IA32 Manual 3, Table 2-2)  */
++		/* AMD64: XXX Check for address size prefix? */
++		if ((mod_rm & 0x7) == 0x5)
++			p += 4;
++		break;
++
++	case 1:
++		p += 1;
++		break;
++
++	case 2:
++		p += 4;
++		break;
++
++	case 3:
++	default:
++		printk(KERN_ERR "mmiotrace: not a memory access instruction "
++						"at 0x%lx, rm_mod=0x%02x\n",
++						ins_addr, mod_rm);
++	}
++
++	switch (get_ins_reg_width(ins_addr)) {
++	case 1:
++		return *(unsigned char *)p;
++
++	case 2:
++		return *(unsigned short *)p;
++
++	case 4:
++		return *(unsigned int *)p;
++
++#ifdef __amd64__
++	case 8:
++		return *(unsigned long *)p;
++#endif
++
++	default:
++		printk(KERN_ERR "mmiotrace: Error: width.\n");
++	}
++
++err:
++	return 0;
++}
+diff --git a/arch/x86/mm/pf_in.h b/arch/x86/mm/pf_in.h
+new file mode 100644
+index 0000000..e05341a
+--- /dev/null
++++ b/arch/x86/mm/pf_in.h
+@@ -0,0 +1,39 @@
++/*
++ *  Fault Injection Test harness (FI)
++ *  Copyright (C) Intel Crop.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version 2
++ *  of the License, or (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
++ *  USA.
++ *
++ */
++
++#ifndef __PF_H_
++#define __PF_H_
++
++enum reason_type {
++	NOT_ME,	/* page fault is not in regions */
++	NOTHING,	/* access others point in regions */
++	REG_READ,	/* read from addr to reg */
++	REG_WRITE,	/* write from reg to addr */
++	IMM_WRITE,	/* write from imm to addr */
++	OTHERS	/* Other instructions can not intercept */
++};
++
++enum reason_type get_ins_type(unsigned long ins_addr);
++unsigned int get_ins_mem_width(unsigned long ins_addr);
++unsigned long get_ins_reg_val(unsigned long ins_addr, struct pt_regs *regs);
++unsigned long get_ins_imm_val(unsigned long ins_addr);
++
++#endif /* __PF_H_ */
+diff --git a/arch/x86/mm/testmmiotrace.c b/arch/x86/mm/testmmiotrace.c
+new file mode 100644
+index 0000000..cfa60b2
+--- /dev/null
++++ b/arch/x86/mm/testmmiotrace.c
+@@ -0,0 +1,71 @@
++/*
++ * Written by Pekka Paalanen, 2008 <pq@iki.fi>
++ */
++#include <linux/module.h>
++#include <asm/io.h>
++
++#define MODULE_NAME "testmmiotrace"
++
++static unsigned long mmio_address;
++module_param(mmio_address, ulong, 0);
++MODULE_PARM_DESC(mmio_address, "Start address of the mapping of 16 kB.");
++
++static void do_write_test(void __iomem *p)
++{
++	unsigned int i;
++	for (i = 0; i < 256; i++)
++		iowrite8(i, p + i);
++	for (i = 1024; i < (5 * 1024); i += 2)
++		iowrite16(i * 12 + 7, p + i);
++	for (i = (5 * 1024); i < (16 * 1024); i += 4)
++		iowrite32(i * 212371 + 13, p + i);
++}
++
++static void do_read_test(void __iomem *p)
++{
++	unsigned int i;
++	for (i = 0; i < 256; i++)
++		ioread8(p + i);
++	for (i = 1024; i < (5 * 1024); i += 2)
++		ioread16(p + i);
++	for (i = (5 * 1024); i < (16 * 1024); i += 4)
++		ioread32(p + i);
++}
++
++static void do_test(void)
++{
++	void __iomem *p = ioremap_nocache(mmio_address, 0x4000);
++	if (!p) {
++		pr_err(MODULE_NAME ": could not ioremap, aborting.\n");
++		return;
++	}
++	do_write_test(p);
++	do_read_test(p);
++	iounmap(p);
++}
++
++static int __init init(void)
++{
++	if (mmio_address == 0) {
++		pr_err(MODULE_NAME ": you have to use the module argument "
++							"mmio_address.\n");
++		pr_err(MODULE_NAME ": DO NOT LOAD THIS MODULE UNLESS"
++				" YOU REALLY KNOW WHAT YOU ARE DOING!\n");
++		return -ENXIO;
++	}
++
++	pr_warning(MODULE_NAME ": WARNING: mapping 16 kB @ 0x%08lx "
++					"in PCI address space, and writing "
++					"rubbish in there.\n", mmio_address);
++	do_test();
++	return 0;
++}
++
++static void __exit cleanup(void)
++{
++	pr_debug(MODULE_NAME ": unloaded.\n");
++}
++
++module_init(init);
++module_exit(cleanup);
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/mmiotrace.h b/include/linux/mmiotrace.h
+new file mode 100644
+index 0000000..cb5efd0
+--- /dev/null
++++ b/include/linux/mmiotrace.h
+@@ -0,0 +1,120 @@
++#ifndef MMIOTRACE_H
++#define MMIOTRACE_H
++
++#include <asm/types.h>
++
++#ifdef __KERNEL__
++
++#include <linux/list.h>
++
++struct kmmio_probe;
++struct pt_regs;
++
++typedef void (*kmmio_pre_handler_t)(struct kmmio_probe *,
++				struct pt_regs *, unsigned long addr);
++typedef void (*kmmio_post_handler_t)(struct kmmio_probe *,
++				unsigned long condition, struct pt_regs *);
++
++struct kmmio_probe {
++	struct list_head list; /* kmmio internal list */
++	unsigned long addr; /* start location of the probe point */
++	unsigned long len; /* length of the probe region */
++	kmmio_pre_handler_t pre_handler; /* Called before addr is executed. */
++	kmmio_post_handler_t post_handler; /* Called after addr is executed */
++	void *user_data;
++};
++
++/* kmmio is active by some kmmio_probes? */
++static inline int is_kmmio_active(void)
++{
++	extern unsigned int kmmio_count;
++	return kmmio_count;
++}
++
++extern void reference_kmmio(void);
++extern void unreference_kmmio(void);
++extern int register_kmmio_probe(struct kmmio_probe *p);
++extern void unregister_kmmio_probe(struct kmmio_probe *p);
++
++/* Called from page fault handler. */
++extern int kmmio_handler(struct pt_regs *regs, unsigned long addr);
++
++/* Called from ioremap.c */
++#ifdef CONFIG_MMIOTRACE
++extern void
++mmiotrace_ioremap(unsigned long offset, unsigned long size, void __iomem *addr);
++extern void mmiotrace_iounmap(volatile void __iomem *addr);
++#else
++static inline void
++mmiotrace_ioremap(unsigned long offset, unsigned long size, void __iomem *addr)
++{
++}
++static inline void mmiotrace_iounmap(volatile void __iomem *addr)
++{
++}
++#endif /* CONFIG_MMIOTRACE_HOOKS */
++
++#endif /* __KERNEL__ */
++
++
++/*
++ * If you change anything here, you must bump MMIO_VERSION.
++ * This is the relay data format for user space.
++ */
++#define MMIO_VERSION 0x04
++
++/* mm_io_header.type */
++#define MMIO_OPCODE_MASK 0xff
++#define MMIO_OPCODE_SHIFT 0
++#define MMIO_WIDTH_MASK 0xff00
++#define MMIO_WIDTH_SHIFT 8
++#define MMIO_MAGIC (0x6f000000 | (MMIO_VERSION<<16))
++#define MMIO_MAGIC_MASK 0xffff0000
++
++enum mm_io_opcode {          /* payload type: */
++	MMIO_READ = 0x1,     /* struct mm_io_rw */
++	MMIO_WRITE = 0x2,    /* struct mm_io_rw */
++	MMIO_PROBE = 0x3,    /* struct mm_io_map */
++	MMIO_UNPROBE = 0x4,  /* struct mm_io_map */
++	MMIO_MARKER = 0x5,   /* raw char data */
++	MMIO_UNKNOWN_OP = 0x6, /* struct mm_io_rw */
++};
++
++struct mm_io_header {
++	__u32 type;     /* see MMIO_* macros above */
++	__u32 sec;      /* timestamp */
++	__u32 nsec;
++	__u32 pid;      /* PID of the process, or 0 for kernel core */
++	__u16 data_len; /* length of the following payload */
++};
++
++struct mm_io_rw {
++	__u64 address; /* virtual address of register */
++	__u64 value;
++	__u64 pc;      /* optional program counter */
++};
++
++struct mm_io_map {
++	__u64 phys;  /* base address in PCI space */
++	__u64 addr;  /* base virtual address */
++	__u64 len;   /* mapping size */
++	__u64 pc;    /* optional program counter */
++};
++
++
++/*
++ * These structures are used to allow a single relay_write()
++ * call to write a full packet.
++ */
++
++struct mm_io_header_rw {
++	struct mm_io_header header;
++	struct mm_io_rw rw;
++} __attribute__((packed));
++
++struct mm_io_header_map {
++	struct mm_io_header header;
++	struct mm_io_map map;
++} __attribute__((packed));
++
++#endif /* MMIOTRACE_H */
