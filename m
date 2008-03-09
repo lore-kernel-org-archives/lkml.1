@@ -1,74 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbYCIKoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbYCIKqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754126AbYCIKoY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 06:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYCIKoM
+	id S1753734AbYCIKqk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 06:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYCIKq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 06:44:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:3992 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbYCIKoL (ORCPT
+	Sun, 9 Mar 2008 06:46:28 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:44525 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbYCIKq0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 06:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N9/8Ona58ipVe9qibdIG6Lw2I4jLal3GWStoTFa0QnwxtNobO/bWqYjeO517fmP1woHv5uc2+0mug+6sJL+bQBSf0xS76RzVWao1c0qIBDZ81lV68Gxc3zCcVKq09w0RjXsW6dNskTCXlbrXozseqiDthe82MlVcBl4yjYMoLOY=
-Message-ID: <a8e1da0803090344l7f468326r8d3844e20ede08a3@mail.gmail.com>
-Date: Sun, 9 Mar 2008 18:44:10 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v2] add time_now_after and other macros which compare with jiffies
-Cc: "Johannes Weiner" <hannes@saeurebad.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080309095802.70d91c7b@core>
+	Sun, 9 Mar 2008 06:46:26 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.4.4
+References: <7vr6f31iwj.fsf@gitster.siamese.dyndns.org>
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 09 Mar 2008 03:46:12 -0700
+Message-ID: <7vr6eknpjf.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803080735.06984.hidave.darkstar@gmail.com>
-	 <877igd6vqn.fsf@saeurebad.de>
-	 <a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
-	 <20080309095802.70d91c7b@core>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/9/08, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > >  > +/* time_now_before_eq(a) return true if now (jiffies) is before or equal to a */
->  > >  > +#define time_now_before_eq(a) time_before_eq(jiffies, a)
->  > >
->  > >  How about even more obvious names like time_is_past(), time_is_future(),
->  > >  ...?
->  >
->  > Thanks for comment.
->  >
->  > Then how do we name the _eq version?  IMHO, the time_now_* is enough.
->
->
-> Why do you even need them. I don't see the point of *any* of these extra
->  macros as they simply obfuscate code and hide what is actually going on.
->  The initial macros were added because of the type safety and correct
->  comparison rules being complex. They have a purpose.
+The latest maintenance release GIT 1.5.4.4 is available at the
+usual places:
 
-Yes, This has a purpose as well. You will find most of the usage of these
-macros are just compare some value with jiffies after doing some grep.
+  http://www.kernel.org/pub/software/scm/git/
 
-For these cases this adding will easy use and understand.
+  git-1.5.4.4.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.4.4.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.4.4.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.4.4-1.$arch.rpm	(RPM)
 
->
->  Even if you want these you can use !time_future() if you don't want the
->  _eq variants. Generally speaking drivers should be using timers not
->  polled loops, and most of our loops comparing with jiffies want removing.
->
+----------------------------------------------------------------
 
-IMO time_after is a confusing name actually, If I don't read the comment I
-will think it as time_future
+GIT v1.5.4.4 Release Notes
+==========================
 
-To some extent I agree with you that the timer will be better.
+Fixes since v1.5.4.3
+--------------------
 
->
->  Alan
->
+ * Building and installing with an overtight umask such as 077 made
+   installed templates unreadable by others, while the rest of the install
+   are done in a way that is friendly to umask 022.
 
-Thanks
+ * "git cvsexportcommit -w $cvsdir" misbehaved when GIT_DIR is set to a
+   relative directory.
+
+ * "git http-push" had an invalid memory access that could lead it to
+   segfault.
+
+ * When "git rebase -i" gave control back to the user for a commit that is
+   marked to be edited, it just said "modify it with commit --amend",
+   without saying what to do to continue after modifying it.  Give an
+   explicit instruction to run "rebase --continue" to be more helpful.
+
+ * "git send-email" in 1.5.4.3 issued a bogus empty In-Reply-To: header.
+
+ * "git bisect" showed mysterious "won't bisect on seeked tree" error message.
+   This was leftover from Cogito days to prevent "bisect" starting from a
+   cg-seeked state.  We still keep the Cogito safety, but running "git bisect
+   start" when another bisect was in effect will clean up and start over.
+
+ * "git push" with an explicit PATH to receive-pack did not quite work if
+   receive-pack was not on usual PATH.  We earlier fixed the same issue
+   with "git fetch" and upload-pack, but somehow forgot to do so in the
+   other direction.
+
+ * git-gui's info dialog was not displayed correctly when the user tries
+   to commit nothing (i.e. without staging anything).
+
+ * "git revert" did not properly fail when attempting to run with a
+   dirty index.
+
+ * "git merge --no-commit --no-ff <other>" incorrectly made commits.
+
+ * "git merge --squash --no-ff <other>", which is a nonsense combination
+   of options, was not rejected.
+
+ * "git ls-remote" and "git remote show" against an empty repository
+   failed, instead of just giving an empty result (regression).
+
+ * "git fast-import" did not handle a renamed path whose name needs to be
+   quoted, due to a bug in unquote_c_style() function.
+
+ * "git cvsexportcommit" was confused when multiple files with the same
+   basename needed to be pushed out in the same commit.
+
+ * "git daemon" did not send early errors to syslog.
+
+ * "git log --merge" did not work well with --left-right option.
+
+ * "git svn" promprted for client cert password every time it accessed the
+   server.
+
+ * The reset command in "git fast-import" data stream was documented to
+   end with an optional LF, but it actually required one.
+
+ * "git svn dcommit/rebase" did not honor --rewrite-root option.
+
+Also included are a handful documentation updates.
+
+----------------------------------------------------------------
+
+Changes since v1.5.4.3 are as follows:
+
+Adeodato Simó (1):
+      Really make the LF after reset in fast-import optional
+
+Björn Steinbrink (1):
+      receive-pack: Initialize PATH to include exec-dir.
+
+Brandon Casey (1):
+      builtin-reflog.c: don't install new reflog on write failure
+
+Bryan Donlan (1):
+      Documentation/git-am.txt: Pass -r in the example invocation of rm -f .dotest
+
+Caio Marcelo de Oliveira Filho (1):
+      filter-branch documentation: non-zero exit status in command abort the filter
+
+Carl Worth (1):
+      Eliminate confusing "won't bisect on seeked tree" failure
+
+Daniel Barkalow (3):
+      Use a single implementation and API for copy_file()
+      Don't use GIT_CONFIG in t5505-remote
+      Correct name of diff_flush() in API documentation
+
+Gerrit Pape (2):
+      templates/Makefile: don't depend on local umask setting
+      git-merge.sh: better handling of combined --squash,--no-ff,--no-commit options
+
+Jay Soffian (2):
+      rev-parse: fix potential bus error with --parseopt option spec handling
+      send-email: fix In-Reply-To regression
+
+Jeff King (1):
+      revert: actually check for a dirty index
+
+Johan Herland (2):
+      Add testcase for 'git cvsexportcommit -w $cvsdir ...' with relative $GIT_DIR
+      Fix 'git cvsexportcommit -w $cvsdir ...' when used with relative $GIT_DIR
+
+Johannes Schindelin (4):
+      http-push: avoid invalid memory accesses
+      http-push: do not get confused by submodules
+      http-push: avoid a needless goto
+      cvsexportcommit: be graceful when "cvs status" reorders the arguments
+
+Johannes Sixt (2):
+      daemon: send more error messages to the syslog
+      daemon: ensure that base-path is an existing directory
+
+John Goerzen (1):
+      Fix dcommit, rebase when rewriteRoot is in use
+
+Jonathan del Strother (1):
+      Prompt to continue when editing during rebase --interactive
+
+Junio C Hamano (6):
+      Fix "git log --merge --left-right"
+      Start preparing for 1.5.4.4
+      tests: introduce test_must_fail
+      Update draft release notes for 1.5.4.4
+      test-lib: fix TERM to dumb for test repeatability
+      GIT 1.5.4.4
+
+Matthieu Moy (1):
+      Fix incorrect wording in git-merge.txt.
+
+Mike Hommey (2):
+      Set proxy override with http_init()
+      Fix random crashes in http_cleanup()
+
+Mike Ralphson (1):
+      Documentation cherry-pick: Fix cut-and-paste error
+
+Miklos Vajna (2):
+      Documentation/git-filter-branch: add a new msg-filter example
+      Documentation/git svn log: add a note about timezones.
+
+Pierre Habouzit (1):
+      unquote_c_style: fix off-by-one.
+
+Ping Yin (1):
+      git-submodule: Fix typo 'url' which should be '$url'
+
+Rémi Vanicat (1):
+      git.el: find the git-status buffer whatever its name is
+
+Santi Béjar (1):
+      ident.c: reword error message when the user name cannot be determined
+
+Sebastian Noack (1):
+      git-svn: Don't prompt for client cert password everytime.
+
+Shawn O. Pearce (6):
+      Ensure 'make dist' compiles git-archive.exe on Cygwin
+      Protect peel_ref fallback case from NULL parse_object result
+      Correct fast-export file mode strings to match fast-import standard
+      git-gui: Paper bag fix info dialog when no files are staged at commit
+      Fix 'git remote show' regression on empty repository in 1.5.4
+      git-gui: Gracefully fall back to po2msg.sh if msgfmt --tcl fails
+
+Steven Drake (1):
+      timezone_names[]: fixed the tz offset for New Zealand.
+
+Uwe Kleine-König (1):
+      config.txt: refer to --upload-pack and --receive-pack instead of --exec
+
+
