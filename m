@@ -1,77 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYCIWnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYCIWr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYCIWnn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 18:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbYCIWnP
+	id S1754773AbYCIWr0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 18:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYCIWrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 18:43:15 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:49490 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbYCIWnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 18:43:11 -0400
-Date: Sun, 9 Mar 2008 23:41:50 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Christian Kujau <lists@nerdbynature.de>
-cc: bruno.roussel@free.fr, LKML <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-Subject: Re: possible recursive locking detected
-In-Reply-To: <alpine.DEB.1.00.0803092215010.5349@sheep.housecafe.de>
-Message-ID: <Pine.LNX.4.64.0803092332160.18589@twin.jikos.cz>
-References: <1205082504.47d41988f0db5@imp.free.fr>
- <alpine.DEB.1.00.0803092215010.5349@sheep.housecafe.de>
+	Sun, 9 Mar 2008 18:47:19 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:46497 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751002AbYCIWrS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 18:47:18 -0400
+Message-ID: <47D468F0.8000506@steeleye.com>
+Date: Sun, 09 Mar 2008 18:47:12 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, nbd-general@lists.sourceforge.net,
+       Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: [PATCH 1/1] NBD: allow nbd to be used locally
+Content-Type: multipart/mixed;
+ boundary="------------010108040009030105060703"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Mar 2008, Christian Kujau wrote:
+This is a multi-part message in MIME format.
+--------------010108040009030105060703
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > =============================================
-> > [ INFO: possible recursive locking detected ]
-> > 2.6.24.2-1mdv #1
-> > ---------------------------------------------
-> Hm, strange: a similiar looking issue has been reported back in 2006, it 
-> even comes with a patch: http://lkml.org/lkml/2006/10/14/38
-> ..but I cannot tell if the patch made it into mainline. I've Cc'ed the i2c
-> folks, maybe they can tell what's going on here.
+This patch allows a Network Block Device to be mounted locally 
+(nbd-client to nbd-server over 127.0.0.1).
 
-I don't recall this, but from looking at the source it seems that only 
-part of my patch made it upstream for some reason ... 
+It creates a kthread to avoid the deadlock described in NBD tools 
+documentation. So, if nbd-client hangs waiting for pages, the kblockd 
+thread can continue its work and free pages.
 
-Bruno, does the patch below remove the warning for you? (we should rather 
-used lockdep_set_class() now, when this is already available ... it wasn't 
-in the time I was doping the original patch back in 2006).
+I have tested the patch to verify that it avoids the hang that occurs 
+when writing to a localhost nbd connection. I have also tested to verify 
+that no performance degradation results from the additional thread and 
+queue.
+
+Patch originally from Laurent Vivier.
+
+Thanks,
+Paul
+
+--------------010108040009030105060703
+Content-Type: text/x-patch;
+ name="nbd_local.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nbd_local.diff"
+
+This patch allows Network Block Device to be mounted locally (nbd-client to nbd-server over 127.0.0.1).
+
+It creates a kthread to avoid the deadlock described in NBD tools documentation.
+So, if nbd-client hangs waiting for pages, the kblockd thread can continue its
+work and free pages.
+
+I have tested the patch to verify that it avoids the hang that always occurs when writing to a localhost nbd connection. I have also tested to verify that no performance degradation results from the additional thread and queue.
+
+Patch originally from Laurent Vivier.
+
+Thanks,
+Paul
 
 
+Signed-Off-By: Paul Clements <paul.clements@steeleye.com>
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 
-Set locking depth properly (level == 0 for DVB frontend, level == 1 for 
-DVB adapter).
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c b/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-index 23428cd..8c5dc35 100644
---- a/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-+++ b/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-@@ -27,6 +27,7 @@ int dvb_usb_i2c_init(struct dvb_usb_device *d)
- #endif
- 	d->i2c_adap.algo      = d->props.i2c_algo;
- 	d->i2c_adap.algo_data = NULL;
-+	d->i2c_adap.level = 1;
- 	d->i2c_adap.dev.parent = &d->udev->dev;
+--- ./drivers/block/nbd.c.deadline	2008-02-09 08:55:27.000000000 -0500
++++ ./drivers/block/nbd.c	2008-02-09 09:08:11.000000000 -0500
+@@ -29,6 +29,7 @@
+ #include <linux/kernel.h>
+ #include <net/sock.h>
+ #include <linux/net.h>
++#include <linux/kthread.h>
  
- 	i2c_set_adapdata(&d->i2c_adap, d);
-diff --git a/drivers/media/dvb/frontends/dibx000_common.c b/drivers/media/dvb/frontends/dibx000_common.c
-index 315e09e..a3ed8cf 100644
---- a/drivers/media/dvb/frontends/dibx000_common.c
-+++ b/drivers/media/dvb/frontends/dibx000_common.c
-@@ -111,6 +111,7 @@ static int i2c_adapter_init(struct i2c_adapter *i2c_adap, struct i2c_algorithm *
- 	i2c_adap->class     = I2C_CLASS_TV_DIGITAL,
- 	i2c_adap->algo      = algo;
- 	i2c_adap->algo_data = NULL;
-+	i2c_adap->level = 0;
- 	i2c_set_adapdata(i2c_adap, mst);
- 	if (i2c_add_adapter(i2c_adap) < 0)
- 		return -ENODEV;
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -434,6 +435,85 @@ static void nbd_clear_que(struct nbd_dev
+ }
+ 
+ 
++static void nbd_handle_req(struct nbd_device *lo, struct request *req)
++{
++	if (!blk_fs_request(req))
++		goto error_out;
++
++	nbd_cmd(req) = NBD_CMD_READ;
++	if (rq_data_dir(req) == WRITE) {
++		nbd_cmd(req) = NBD_CMD_WRITE;
++		if (lo->flags & NBD_READ_ONLY) {
++			printk(KERN_ERR "%s: Write on read-only\n",
++					lo->disk->disk_name);
++			goto error_out;
++		}
++	}
++
++	req->errors = 0;
++
++	mutex_lock(&lo->tx_lock);
++	if (unlikely(!lo->sock)) {
++		mutex_unlock(&lo->tx_lock);
++		printk(KERN_ERR "%s: Attempted send on closed socket\n",
++		       lo->disk->disk_name);
++		req->errors++;
++		nbd_end_request(req);
++		return;
++	}
++
++	lo->active_req = req;
++
++	if (nbd_send_req(lo, req) != 0) {
++		printk(KERN_ERR "%s: Request send failed\n",
++				lo->disk->disk_name);
++		req->errors++;
++		nbd_end_request(req);
++	} else {
++		spin_lock(&lo->queue_lock);
++		list_add(&req->queuelist, &lo->queue_head);
++		spin_unlock(&lo->queue_lock);
++	}
++
++	lo->active_req = NULL;
++	mutex_unlock(&lo->tx_lock);
++	wake_up_all(&lo->active_wq);
++
++	return;
++
++error_out:
++	req->errors++;
++	nbd_end_request(req);
++}
++
++static int nbd_thread(void *data)
++{
++	struct nbd_device *lo = data;
++	struct request *req;
++
++	set_user_nice(current, -20);
++	while (!kthread_should_stop() || !list_empty(&lo->waiting_queue)) {
++		/* wait for something to do */
++		wait_event_interruptible(lo->waiting_wq,
++					 kthread_should_stop() ||
++					 !list_empty(&lo->waiting_queue));
++
++		/* extract request */
++		if (list_empty(&lo->waiting_queue))
++			continue;
++
++		spin_lock_irq(&lo->queue_lock);
++		req = list_entry(lo->waiting_queue.next, struct request,
++				 queuelist);
++		list_del_init(&req->queuelist);
++		spin_unlock_irq(&lo->queue_lock);
++
++		/* handle request */
++		nbd_handle_req(lo, req);
++	}
++	return 0;
++}
++
+ /*
+  * We always wait for result of write, for now. It would be nice to make it optional
+  * in future
+@@ -449,65 +529,23 @@ static void do_nbd_request(struct reques
+ 		struct nbd_device *lo;
+ 
+ 		blkdev_dequeue_request(req);
++
++		spin_unlock_irq(q->queue_lock);
++
+ 		dprintk(DBG_BLKDEV, "%s: request %p: dequeued (flags=%x)\n",
+ 				req->rq_disk->disk_name, req, req->cmd_type);
+ 
+-		if (!blk_fs_request(req))
+-			goto error_out;
+-
+ 		lo = req->rq_disk->private_data;
+ 
+ 		BUG_ON(lo->magic != LO_MAGIC);
+ 
+-		nbd_cmd(req) = NBD_CMD_READ;
+-		if (rq_data_dir(req) == WRITE) {
+-			nbd_cmd(req) = NBD_CMD_WRITE;
+-			if (lo->flags & NBD_READ_ONLY) {
+-				printk(KERN_ERR "%s: Write on read-only\n",
+-						lo->disk->disk_name);
+-				goto error_out;
+-			}
+-		}
+-
+-		req->errors = 0;
+-		spin_unlock_irq(q->queue_lock);
+-
+-		mutex_lock(&lo->tx_lock);
+-		if (unlikely(!lo->sock)) {
+-			mutex_unlock(&lo->tx_lock);
+-			printk(KERN_ERR "%s: Attempted send on closed socket\n",
+-			       lo->disk->disk_name);
+-			req->errors++;
+-			nbd_end_request(req);
+-			spin_lock_irq(q->queue_lock);
+-			continue;
+-		}
++		spin_lock_irq(&lo->queue_lock);
++		list_add_tail(&req->queuelist, &lo->waiting_queue);
++		spin_unlock_irq(&lo->queue_lock);
+ 
+-		lo->active_req = req;
+-
+-		if (nbd_send_req(lo, req) != 0) {
+-			printk(KERN_ERR "%s: Request send failed\n",
+-					lo->disk->disk_name);
+-			req->errors++;
+-			nbd_end_request(req);
+-		} else {
+-			spin_lock(&lo->queue_lock);
+-			list_add(&req->queuelist, &lo->queue_head);
+-			spin_unlock(&lo->queue_lock);
+-		}
+-
+-		lo->active_req = NULL;
+-		mutex_unlock(&lo->tx_lock);
+-		wake_up_all(&lo->active_wq);
++		wake_up(&lo->waiting_wq);
+ 
+ 		spin_lock_irq(q->queue_lock);
+-		continue;
+-
+-error_out:
+-		req->errors++;
+-		spin_unlock(q->queue_lock);
+-		nbd_end_request(req);
+-		spin_lock(q->queue_lock);
+ 	}
+ }
+ 
+@@ -517,6 +555,7 @@ static int nbd_ioctl(struct inode *inode
+ 	struct nbd_device *lo = inode->i_bdev->bd_disk->private_data;
+ 	int error;
+ 	struct request sreq ;
++	struct task_struct *thread;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+@@ -599,7 +638,12 @@ static int nbd_ioctl(struct inode *inode
+ 	case NBD_DO_IT:
+ 		if (!lo->file)
+ 			return -EINVAL;
++		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
++		if (IS_ERR(thread))
++			return PTR_ERR(thread);
++		wake_up_process(thread);
+ 		error = nbd_do_it(lo);
++		kthread_stop(thread);
+ 		if (error)
+ 			return error;
+ 		sock_shutdown(lo, 1);
+@@ -688,10 +732,12 @@ static int __init nbd_init(void)
+ 		nbd_dev[i].file = NULL;
+ 		nbd_dev[i].magic = LO_MAGIC;
+ 		nbd_dev[i].flags = 0;
++		INIT_LIST_HEAD(&nbd_dev[i].waiting_queue);
+ 		spin_lock_init(&nbd_dev[i].queue_lock);
+ 		INIT_LIST_HEAD(&nbd_dev[i].queue_head);
+ 		mutex_init(&nbd_dev[i].tx_lock);
+ 		init_waitqueue_head(&nbd_dev[i].active_wq);
++		init_waitqueue_head(&nbd_dev[i].waiting_wq);
+ 		nbd_dev[i].blksize = 1024;
+ 		nbd_dev[i].bytesize = 0;
+ 		disk->major = NBD_MAJOR;
+--- ./include/linux/nbd.h.max_nbd_killed	2008-02-07 16:46:13.000000000 -0500
++++ ./include/linux/nbd.h	2008-02-09 09:05:18.000000000 -0500
+@@ -56,9 +56,11 @@ struct nbd_device {
+ 	int magic;
+ 
+ 	spinlock_t queue_lock;
+-	struct list_head queue_head;/* Requests are added here...	*/
++	struct list_head queue_head;	/* Requests waiting result */
+ 	struct request *active_req;
+ 	wait_queue_head_t active_wq;
++	struct list_head waiting_queue;	/* Requests to be sent */
++	wait_queue_head_t waiting_wq;
+ 
+ 	struct mutex tx_lock;
+ 	struct gendisk *disk;
+
+--------------010108040009030105060703--
