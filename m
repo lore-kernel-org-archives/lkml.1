@@ -1,117 +1,360 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbYCIBa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYCIBo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbYCIBa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Mar 2008 20:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYCIBaQ
+	id S1753506AbYCIBo6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Mar 2008 20:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYCIBot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Mar 2008 20:30:16 -0500
-Received: from mail.xtech.com.ar ([216.75.63.130]:46437 "EHLO
-	mail.xtech.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbYCIBaO (ORCPT
+	Sat, 8 Mar 2008 20:44:49 -0500
+Received: from mail.queued.net ([207.210.101.209]:2701 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752506AbYCIBos convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Mar 2008 20:30:14 -0500
-Date: Sat, 8 Mar 2008 23:30:09 -0200
-From: Diego Woitasen <diego@woitasen.com.ar>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: BUG: High resolution timer/dynticks bug
-Message-ID: <20080309013009.GE2972@motherbox.xtech.com.ar>
-References: <20080303010753.GB3512@motherbox.xtech.com.ar> <20080304110900.GA23227@elf.ucw.cz> <20080304230032.GA2967@motherbox.xtech.com.ar> <20080305082731.GA24004@atrey.karlin.mff.cuni.cz> <20080306225006.GA2972@motherbox.xtech.com.ar> <alpine.LFD.1.00.0803071113340.3099@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803071113340.3099@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.0.2
+	Sat, 8 Mar 2008 20:44:48 -0500
+Date: Sat, 8 Mar 2008 20:48:26 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: adaplas@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       info-linux@geode.amd.com, Jordan Crouse <jordan.crouse@amd.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/6] gxfb: create DC/VP/FP-specific handlers rather than
+ using readl/writel
+Message-ID: <20080308204826.0d399caf@ephemeral>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 11:33:44AM +0100, Thomas Gleixner wrote:
-> On Thu, 6 Mar 2008, Diego Woitasen wrote:
-> > NMI Watchdog detected LOCKUP on CPU 0
-> > CPU 0 
-> > Modules linked in: netconsole configfs fan ebtable_broute bridge llc ebtable_nat ebtable_filter ebtables dm_snapshot dm_mirror dm_mod powernow_k8 loop arc4 snd_hda_intel ecb crypto_blkcipher cryptomgr snd_pcm_oss snd_pcm snd_mixer_oss b43 mac80211 cfg80211 crc32 snd_seq_dummy snd_seq_oss firmware_class snd_seq_midi_event ieee80211softmac snd_seq ieee80211 ieee80211_crypt snd_timer snd_seq_device i2c_nforce2 sdhci rng_core ohci1394 snd i2c_core battery ac thermal processor forcedeth mmc_core psmouse ssb ieee1394 button soundcore snd_page_alloc ehci_hcd ohci_hcd usbcore
-> > Pid: 0, comm: swapper Not tainted 2.6.25-rc3-porti-00081-g7704a8b #18
-> > RIP: 0010:[<ffffffff80220799>]  [<ffffffff80220799>] hpet_readl+0x9/0x10
-> > RSP: 0018:ffffffff805e3e00  EFLAGS: 00000086
-> > RAX: 00000000706c47ea RBX: 000000000002f3f4 RCX: 0000000000000020
-> > RDX: 00000000ffffffc2 RSI: ffffffff805abcc0 RDI: ffffffffff5fc0f0
-> > RBP: ffffffff805e3e48 R08: ffffffff805abcc0 R09: 0000000000000000
-> > R10: 0000000000000000 R11: ffffffff80221010 R12: ffffffff805abcc0
-> > R13: ffff81001cdf700c R14: 0000000000000004 R15: 0000000000000000
-> > FS:  00007feeb1b826e0(0000) GS:ffffffff805da000(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > CR2: 00007feeb1b83315 CR3: 00000000155ea000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process swapper (pid: 0, threadinfo ffffffff805e2000, task ffffffff805a5320)
-> > Stack:  ffffffff80249c33 ffffffff8021cec0 000000000002f3f4 ffffffff805e3e48
-> >  ffffffff80247b9b ffffffff805e3e58 0000000000000000 00000039937b9f0c
-> >  ffffffff80247bdc 0000000047c75913 0000000022adcfd4 0000000000000000
-> > Call Trace:
-> >  [<ffffffff80249c33>] ? getnstimeofday+0x33/0xa0
-> >  [<ffffffff8021cec0>] ? lapic_next_event+0x0/0x10
-> >  [<ffffffff80247b9b>] ? ktime_get_ts+0x1b/0x50
-> >  [<ffffffff80247bdc>] ? ktime_get+0xc/0x50
-> >  [<ffffffff8024cfa5>] ? tick_broadcast_set_event+0x25/0x50
-> >  [<ffffffff8024d60e>] ? tick_broadcast_oneshot_control+0xfe/0x120
-> >  [<ffffffff8024cc8d>] ? tick_notify+0x2cd/0x3c0
-> >  [<ffffffff802486b1>] ? notifier_call_chain+0x51/0x70
-> >  [<ffffffff8024c698>] ? clockevents_notify+0x18/0xa0
-> >  [<ffffffff880a2e31>] ? :processor:acpi_idle_enter_bm+0x10f/0x31a
-> 
-> All those traces originate from acpi_idle_enter_bm(). This rings a bell:
-> 
-> We had a similar problem when the tick notification was after the
-> point where we disabled bus mastering. This is fixed, but I wonder if
-> there is some relationship.
-> 
-> Can you please provide the output of /proc/acpi/processor/CPU0/power
-> with and without AC power connected ?
+Note: this is a continuation of prior gxfb patches, and also depends upon the
+MSR cleanup patch.  All those patches can be found here:
 
-connected:
+http://git.infradead.org/?p=geode.git;a=summary
 
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 2000000000 usec
-states:
-    C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[00000400] duration[00000000000000000000]
-    C2:                  type[C2] promotion[--] demotion[--] latency[005] usage[00004535] duration[00000000000010271706]
-    C3:                  type[C3] promotion[--] demotion[--] latency[020] usage[00262619] duration[00000000000892921383]
+This one's simply a cleanup patch.
 
-Disconnected:
 
-active state:            C0
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 2000000000 usec
-states:
-    C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[00000392] duration[00000000000000000000]
-    C2:                  type[C2] promotion[--] demotion[--] latency[005] usage[00004378] duration[00000000000009917457]
-    C3:                  type[C3] promotion[--] demotion[--] latency[020] usage[00250002] duration[00000000000849728743]
+>From 734277d3fb680ad9e0db412b9ef2dac481942884 Mon Sep 17 00:00:00 2001
+From: Andres Salomon <dilinger@debian.org>
+Date: Mon, 25 Feb 2008 11:28:59 -0500
+Subject: [PATCH] gxfb: create DC/VP/FP-specific handlers rather than using readl/writel
 
-> 
-> Is the problem reproducible when you add "clocksource=acpi_pm" to the
-> kernel command line ?
+This creates read_dc/write_dc, read_vp/write_vp, and read_fp/write_fp
+for reading and updating those registers.  It creates gxfb.h to house these.
 
-Yes, the system freezes too.
+We also drop a no-op readl() from gx_set_mode.  Other than that, there
+should be no functionality change.
 
-> 
-> Is the problem reproducible when you add "hpet=disable" to the kernel
-> command line ?
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/video/geode/display_gx.c |   44 +++++++++++++++++++------------------
+ drivers/video/geode/gxfb.h       |   26 ++++++++++++++++++++++
+ drivers/video/geode/gxfb_core.c  |    4 +-
+ drivers/video/geode/video_gx.c   |   41 ++++++++++++++++++-----------------
+ 4 files changed, 72 insertions(+), 43 deletions(-)
+ create mode 100644 drivers/video/geode/gxfb.h
 
-No, with hpet=disable works fine.
-
-> 
-> Thanks,
-> 
-> 	tglx
-
+diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
+index 8cd7572..ca8ab30 100644
+--- a/drivers/video/geode/display_gx.c
++++ b/drivers/video/geode/display_gx.c
+@@ -20,6 +20,7 @@
+ 
+ #include "geodefb.h"
+ #include "display_gx.h"
++#include "gxfb.h"
+ 
+ unsigned int gx_frame_buffer_size(void)
+ {
+@@ -50,22 +51,21 @@ static void gx_set_mode(struct fb_info *info)
+ 	int vactive, vblankstart, vsyncstart, vsyncend, vblankend, vtotal;
+ 
+ 	/* Unlock the display controller registers. */
+-	readl(par->dc_regs + DC_UNLOCK);
+-	writel(DC_UNLOCK_CODE, par->dc_regs + DC_UNLOCK);
++	write_dc(DC_UNLOCK, DC_UNLOCK_CODE);
+ 
+-	gcfg = readl(par->dc_regs + DC_GENERAL_CFG);
+-	dcfg = readl(par->dc_regs + DC_DISPLAY_CFG);
++	gcfg = read_dc(DC_GENERAL_CFG);
++	dcfg = read_dc(DC_DISPLAY_CFG);
+ 
+ 	/* Disable the timing generator. */
+ 	dcfg &= ~(DC_DCFG_TGEN);
+-	writel(dcfg, par->dc_regs + DC_DISPLAY_CFG);
++	write_dc(DC_DISPLAY_CFG, dcfg);
+ 
+ 	/* Wait for pending memory requests before disabling the FIFO load. */
+ 	udelay(100);
+ 
+ 	/* Disable FIFO load and compression. */
+ 	gcfg &= ~(DC_GCFG_DFLE | DC_GCFG_CMPE | DC_GCFG_DECE);
+-	writel(gcfg, par->dc_regs + DC_GENERAL_CFG);
++	write_dc(DC_GENERAL_CFG, gcfg);
+ 
+ 	/* Setup DCLK and its divisor. */
+ 	par->vid_ops->set_dclk(info);
+@@ -83,12 +83,12 @@ static void gx_set_mode(struct fb_info *info)
+ 	gcfg |= (6 << DC_GCFG_DFHPEL_POS) | (5 << DC_GCFG_DFHPSL_POS) | DC_GCFG_DFLE;
+ 
+ 	/* Framebuffer start offset. */
+-	writel(0, par->dc_regs + DC_FB_ST_OFFSET);
++	write_dc(DC_FB_ST_OFFSET, 0);
+ 
+ 	/* Line delta and line buffer length. */
+-	writel(info->fix.line_length >> 3, par->dc_regs + DC_GFX_PITCH);
+-	writel(((info->var.xres * info->var.bits_per_pixel/8) >> 3) + 2,
+-	       par->dc_regs + DC_LINE_SIZE);
++	write_dc(DC_GFX_PITCH, info->fix.line_length >> 3);
++	write_dc(DC_LINE_SIZE,
++		((info->var.xres * info->var.bits_per_pixel/8) >> 3) + 2);
+ 
+ 
+ 	/* Enable graphics and video data and unmask address lines. */
+@@ -127,22 +127,24 @@ static void gx_set_mode(struct fb_info *info)
+ 	vblankend = vsyncend + info->var.upper_margin;
+ 	vtotal = vblankend;
+ 
+-	writel((hactive - 1)     | ((htotal - 1) << 16),    par->dc_regs + DC_H_ACTIVE_TIMING);
+-	writel((hblankstart - 1) | ((hblankend - 1) << 16), par->dc_regs + DC_H_BLANK_TIMING);
+-	writel((hsyncstart - 1)  | ((hsyncend - 1) << 16),  par->dc_regs + DC_H_SYNC_TIMING);
++	write_dc(DC_H_ACTIVE_TIMING, (hactive - 1)    | ((htotal - 1) << 16));
++	write_dc(DC_H_BLANK_TIMING, (hblankstart - 1) |
++			((hblankend - 1) << 16));
++	write_dc(DC_H_SYNC_TIMING, (hsyncstart - 1)   | ((hsyncend - 1) << 16));
+ 
+-	writel((vactive - 1)     | ((vtotal - 1) << 16),    par->dc_regs + DC_V_ACTIVE_TIMING);
+-	writel((vblankstart - 1) | ((vblankend - 1) << 16), par->dc_regs + DC_V_BLANK_TIMING);
+-	writel((vsyncstart - 1)  | ((vsyncend - 1) << 16),  par->dc_regs + DC_V_SYNC_TIMING);
++	write_dc(DC_V_ACTIVE_TIMING, (vactive - 1)    | ((vtotal - 1) << 16));
++	write_dc(DC_V_BLANK_TIMING, (vblankstart - 1) |
++			((vblankend - 1) << 16));
++	write_dc(DC_V_SYNC_TIMING, (vsyncstart - 1)   | ((vsyncend - 1) << 16));
+ 
+ 	/* Write final register values. */
+-	writel(dcfg, par->dc_regs + DC_DISPLAY_CFG);
+-	writel(gcfg, par->dc_regs + DC_GENERAL_CFG);
++	write_dc(DC_DISPLAY_CFG, dcfg);
++	write_dc(DC_GENERAL_CFG, gcfg);
+ 
+ 	par->vid_ops->configure_display(info);
+ 
+ 	/* Relock display controller registers */
+-	writel(0, par->dc_regs + DC_UNLOCK);
++	write_dc(DC_UNLOCK, 0);
+ }
+ 
+ static void gx_set_hw_palette_reg(struct fb_info *info, unsigned regno,
+@@ -156,8 +158,8 @@ static void gx_set_hw_palette_reg(struct fb_info *info, unsigned regno,
+ 	val |= (green)      & 0x00ff00;
+ 	val |= (blue  >> 8) & 0x0000ff;
+ 
+-	writel(regno, par->dc_regs + DC_PAL_ADDRESS);
+-	writel(val, par->dc_regs + DC_PAL_DATA);
++	write_dc(DC_PAL_ADDRESS, regno);
++	write_dc(DC_PAL_DATA, val);
+ }
+ 
+ struct geode_dc_ops gx_dc_ops = {
+diff --git a/drivers/video/geode/gxfb.h b/drivers/video/geode/gxfb.h
+new file mode 100644
+index 0000000..9775915
+--- /dev/null
++++ b/drivers/video/geode/gxfb.h
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (C) 2008 Andres Salomon <dilinger@debian.org>
++ *
++ * Geode GX2 register tables
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++#ifndef _GXFB_H_
++#define _GXFB_H_
++
++
++#define read_dc(reg)		readl(par->dc_regs + (reg))
++#define write_dc(reg, val)	writel((val), par->dc_regs + (reg))
++
++#define read_vp(reg)		readl(par->vid_regs + (reg))
++#define write_vp(reg, val)	writel((uint32_t) (val), \
++					par->vid_regs + (reg))
++
++#define read_fp(reg)		readl(par->vid_regs + (reg))
++#define write_fp(reg, val)	writel((uint32_t) (val), \
++					par->vid_regs + (reg))
++
++#endif
+diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
+index 459808f..2e49a5e 100644
+--- a/drivers/video/geode/gxfb_core.c
++++ b/drivers/video/geode/gxfb_core.c
+@@ -35,6 +35,7 @@
+ #include "geodefb.h"
+ #include "display_gx.h"
+ #include "video_gx.h"
++#include "gxfb.h"
+ 
+ static char *mode_option;
+ static int fbsize;
+@@ -243,8 +244,7 @@ static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *de
+ 	/* Set the 16MiB aligned base address of the graphics memory region
+ 	 * in the display controller */
+ 
+-	writel(info->fix.smem_start & 0xFF000000,
+-			par->dc_regs + DC_GLIU0_MEM_OFFSET);
++	write_dc(DC_GLIU0_MEM_OFFSET, info->fix.smem_start & 0xFF000000);
+ 
+ 	dev_info(&dev->dev, "%d KiB of video memory at 0x%lx\n",
+ 		 info->fix.smem_len / 1024, info->fix.smem_start);
+diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
+index cfe2c80..de43e29 100644
+--- a/drivers/video/geode/video_gx.c
++++ b/drivers/video/geode/video_gx.c
+@@ -20,6 +20,7 @@
+ 
+ #include "geodefb.h"
+ #include "video_gx.h"
++#include "gxfb.h"
+ 
+ 
+ /*
+@@ -192,16 +193,16 @@ gx_configure_tft(struct fb_info *info)
+ 
+ 	/* Turn off the panel */
+ 
+-	fp = readl(par->vid_regs + GX_FP_PM);
++	fp = read_fp(GX_FP_PM);
+ 	fp &= ~GX_FP_PM_P;
+-	writel(fp, par->vid_regs + GX_FP_PM);
++	write_fp(GX_FP_PM, fp);
+ 
+ 	/* Set timing 1 */
+ 
+-	fp = readl(par->vid_regs + GX_FP_PT1);
++	fp = read_fp(GX_FP_PT1);
+ 	fp &= GX_FP_PT1_VSIZE_MASK;
+ 	fp |= info->var.yres << GX_FP_PT1_VSIZE_SHIFT;
+-	writel(fp, par->vid_regs + GX_FP_PT1);
++	write_fp(GX_FP_PT1, fp);
+ 
+ 	/* Timing 2 */
+ 	/* Set bits that are always on for TFT */
+@@ -216,22 +217,22 @@ gx_configure_tft(struct fb_info *info)
+ 	if (!(info->var.sync & FB_SYNC_HOR_HIGH_ACT))
+ 		fp |= GX_FP_PT2_HSP;
+ 
+-	writel(fp, par->vid_regs + GX_FP_PT2);
++	write_fp(GX_FP_PT2, fp);
+ 
+ 	/*  Set the dither control */
+-	writel(0x70, par->vid_regs + GX_FP_DFC);
++	write_fp(GX_FP_DFC, 0x70);
+ 
+ 	/* Enable the FP data and power (in case the BIOS didn't) */
+ 
+-	fp = readl(par->vid_regs + GX_DCFG);
++	fp = read_vp(GX_DCFG);
+ 	fp |= GX_DCFG_FP_PWR_EN | GX_DCFG_FP_DATA_EN;
+-	writel(fp, par->vid_regs + GX_DCFG);
++	write_vp(GX_DCFG, fp);
+ 
+ 	/* Unblank the panel */
+ 
+-	fp = readl(par->vid_regs + GX_FP_PM);
++	fp = read_fp(GX_FP_PM);
+ 	fp |= GX_FP_PM_P;
+-	writel(fp, par->vid_regs + GX_FP_PM);
++	write_fp(GX_FP_PM, fp);
+ }
+ 
+ static void gx_configure_display(struct fb_info *info)
+@@ -240,11 +241,11 @@ static void gx_configure_display(struct fb_info *info)
+ 	u32 dcfg, misc;
+ 
+ 	/* Write the display configuration */
+-	dcfg = readl(par->vid_regs + GX_DCFG);
++	dcfg = read_vp(GX_DCFG);
+ 
+ 	/* Disable hsync and vsync */
+ 	dcfg &= ~(GX_DCFG_VSYNC_EN | GX_DCFG_HSYNC_EN);
+-	writel(dcfg, par->vid_regs + GX_DCFG);
++	write_vp(GX_DCFG, dcfg);
+ 
+ 	/* Clear bits from existing mode. */
+ 	dcfg &= ~(GX_DCFG_CRT_SYNC_SKW_MASK
+@@ -257,7 +258,7 @@ static void gx_configure_display(struct fb_info *info)
+ 	/* Enable hsync and vsync. */
+ 	dcfg |= GX_DCFG_HSYNC_EN | GX_DCFG_VSYNC_EN;
+ 
+-	misc = readl(par->vid_regs + GX_MISC);
++	misc = read_vp(GX_MISC);
+ 
+ 	/* Disable gamma correction */
+ 	misc |= GX_MISC_GAM_EN;
+@@ -266,7 +267,7 @@ static void gx_configure_display(struct fb_info *info)
+ 
+ 		/* Power up the CRT DACs */
+ 		misc &= ~(GX_MISC_A_PWRDN | GX_MISC_DAC_PWRDN);
+-		writel(misc, par->vid_regs + GX_MISC);
++		write_vp(GX_MISC, misc);
+ 
+ 		/* Only change the sync polarities if we are running
+ 		 * in CRT mode.  The FP polarities will be handled in
+@@ -278,7 +279,7 @@ static void gx_configure_display(struct fb_info *info)
+ 	} else {
+ 		/* Power down the CRT DACs if in FP mode */
+ 		misc |= (GX_MISC_A_PWRDN | GX_MISC_DAC_PWRDN);
+-		writel(misc, par->vid_regs + GX_MISC);
++		write_vp(GX_MISC, misc);
+ 	}
+ 
+ 	/* Enable the display logic */
+@@ -288,7 +289,7 @@ static void gx_configure_display(struct fb_info *info)
+ 
+ 	/* Enable the external DAC VREF? */
+ 
+-	writel(dcfg, par->vid_regs + GX_DCFG);
++	write_vp(GX_DCFG, dcfg);
+ 
+ 	/* Set up the flat panel (if it is enabled) */
+ 
+@@ -322,7 +323,7 @@ static int gx_blank_display(struct fb_info *info, int blank_mode)
+ 	default:
+ 		return -EINVAL;
+ 	}
+-	dcfg = readl(par->vid_regs + GX_DCFG);
++	dcfg = read_vp(GX_DCFG);
+ 	dcfg &= ~(GX_DCFG_DAC_BL_EN
+ 		  | GX_DCFG_HSYNC_EN | GX_DCFG_VSYNC_EN);
+ 	if (!blank)
+@@ -331,17 +332,17 @@ static int gx_blank_display(struct fb_info *info, int blank_mode)
+ 		dcfg |= GX_DCFG_HSYNC_EN;
+ 	if (vsync)
+ 		dcfg |= GX_DCFG_VSYNC_EN;
+-	writel(dcfg, par->vid_regs + GX_DCFG);
++	write_vp(GX_DCFG, dcfg);
+ 
+ 	/* Power on/off flat panel. */
+ 
+ 	if (par->enable_crt == 0) {
+-		fp_pm = readl(par->vid_regs + GX_FP_PM);
++		fp_pm = read_fp(GX_FP_PM);
+ 		if (blank_mode == FB_BLANK_POWERDOWN)
+ 			fp_pm &= ~GX_FP_PM_P;
+ 		else
+ 			fp_pm |= GX_FP_PM_P;
+-		writel(fp_pm, par->vid_regs + GX_FP_PM);
++		write_fp(GX_FP_PM, fp_pm);
+ 	}
+ 
+ 	return 0;
 -- 
+1.5.3.7
 
---------------
-Diego Woitasen
+
+
