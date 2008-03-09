@@ -1,91 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYCIKnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYCIKn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbYCIKnm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 06:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYCIKnc
+	id S1753942AbYCIKn7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 06:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYCIKnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 06:43:32 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:59891 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbYCIKnb (ORCPT
+	Sun, 9 Mar 2008 06:43:47 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35343 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbYCIKnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 06:43:31 -0400
-Date: Sun, 9 Mar 2008 10:43:23 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Martin Michlmayr <tbm@cyrius.com>
-Subject: [PATCH] Input: fix cobalt_btns loadable keymap support
-Message-ID: <20080309104323.GA24303@linux-mips.org>
+	Sun, 9 Mar 2008 06:43:46 -0400
+Date: Sun, 09 Mar 2008 19:42:56 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: quicklists confuse meminfo
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <clameter@sgi.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+In-Reply-To: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
+Message-Id: <20080309193657.C6D8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Hi
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+in general, I like this patch and I think this is very useful.
+but I don't like #ifdef ;)
+
+> +#ifdef CONFIG_QUICKLIST
+> +		"QuickLists:   %8lu kB\n"
+> +#endif
+> +		,K(i.totalram),
+>  		K(i.freeram),
+>  		K(i.bufferram),
+>  		K(cached),
+> @@ -215,6 +220,9 @@ static int meminfo_read_proc(char *page,
+>  		(unsigned long)VMALLOC_TOTAL >> 10,
+>  		vmi.used >> 10,
+>  		vmi.largest_chunk >> 10
+> +#ifdef CONFIG_QUICKLIST
+> +		,K(quicklist_total_size())
+> +#endif
+
+Do you dislike my following patch?
+
+- kosaki
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
 ---
-This patch was submitted about two weeks ago by Yoichi but seems to have
-been lost.  Without this patch the Cobalt defconfig won't build, so it's
-2.6.25 stuff.
+ fs/proc/proc_misc.c       |    6 ++++--
+ include/linux/quicklist.h |    7 +++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/input/misc/cobalt_btns.c linux/drivers/input/misc/cobalt_btns.c
---- linux-orig/drivers/input/misc/cobalt_btns.c	2008-02-10 20:16:54.621304697 +0900
-+++ linux/drivers/input/misc/cobalt_btns.c	2008-02-10 23:02:30.875539556 +0900
-@@ -1,7 +1,7 @@
- /*
-  *  Cobalt button interface driver.
-  *
-- *  Copyright (C) 2007  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-+ *  Copyright (C) 2007-2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-@@ -15,7 +15,7 @@
-  *
-  *  You should have received a copy of the GNU General Public License
-  *  along with this program; if not, write to the Free Software
-- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-  */
- #include <linux/init.h>
- #include <linux/input-polldev.h>
-@@ -55,7 +55,7 @@ static void handle_buttons(struct input_
- 	status = ~readl(bdev->reg) >> 24;
- 
- 	for (i = 0; i < ARRAY_SIZE(bdev->keymap); i++) {
--		if (status & (1UL << i)) {
-+		if (status & (1U << i)) {
- 			if (++bdev->count[i] == BUTTONS_COUNT_THRESHOLD) {
- 				input_event(input, EV_MSC, MSC_SCAN, i);
- 				input_report_key(input, bdev->keymap[i], 1);
-@@ -97,16 +97,16 @@ static int __devinit cobalt_buttons_prob
- 	input->name = "Cobalt buttons";
- 	input->phys = "cobalt/input0";
- 	input->id.bustype = BUS_HOST;
--	input->cdev.dev = &pdev->dev;
-+	input->dev.parent = &pdev->dev;
- 
--	input->keycode = pdev->keymap;
--	input->keycodemax = ARRAY_SIZE(pdev->keymap);
-+	input->keycode = bdev->keymap;
-+	input->keycodemax = ARRAY_SIZE(bdev->keymap);
- 	input->keycodesize = sizeof(unsigned short);
- 
- 	input_set_capability(input, EV_MSC, MSC_SCAN);
- 	__set_bit(EV_KEY, input->evbit);
--	for (i = 0; i < ARRAY_SIZE(buttons_map); i++)
--		__set_bit(input->keycode[i], input->keybit);
-+	for (i = 0; i < ARRAY_SIZE(cobalt_map); i++)
-+		__set_bit(bdev->keymap[i], input->keybit);
- 	__clear_bit(KEY_RESERVED, input->keybit);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+Index: b/fs/proc/proc_misc.c
+===================================================================
+--- a/fs/proc/proc_misc.c       2008-03-09 16:04:39.000000000 +0900
++++ b/fs/proc/proc_misc.c       2008-03-09 19:47:47.000000000 +0900
+@@ -182,7 +182,8 @@ static int meminfo_read_proc(char *page,
+                "Committed_AS: %8lu kB\n"
+                "VmallocTotal: %8lu kB\n"
+                "VmallocUsed:  %8lu kB\n"
+-               "VmallocChunk: %8lu kB\n",
++               "VmallocChunk: %8lu kB\n"
++               "Quicklists:   %8lu kB\n",
+                K(i.totalram),
+                K(i.freeram),
+                K(i.bufferram),
+@@ -213,7 +214,8 @@ static int meminfo_read_proc(char *page,
+                K(committed),
+                (unsigned long)VMALLOC_TOTAL >> 10,
+                vmi.used >> 10,
+-               vmi.largest_chunk >> 10
++               vmi.largest_chunk >> 10,
++               K(quicklist_total_size())
+                );
+
+                len += hugetlb_report_meminfo(page + len);
+Index: b/include/linux/quicklist.h
+===================================================================
+--- a/include/linux/quicklist.h 2008-03-09 16:02:28.000000000 +0900
++++ b/include/linux/quicklist.h 2008-03-09 19:45:58.000000000 +0900
+@@ -80,6 +80,13 @@ void quicklist_trim(int nr, void (*dtor)
+
+ unsigned long quicklist_total_size(void);
+
++#else
++
++static inline unsigned long quicklist_total_size(void)
++{
++       return 0;
++}
++
+ #endif
+
+ #endif /* LINUX_QUICKLIST_H */
+
+
