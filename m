@@ -1,157 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbYCJMjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbYCJMlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbYCJMjU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 08:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYCJMjH
+	id S1752968AbYCJMlf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 08:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYCJMl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 08:39:07 -0400
-Received: from mail.netone.net.tr ([193.192.98.182]:53792 "EHLO
-	mail.netone.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYCJMjG (ORCPT
+	Mon, 10 Mar 2008 08:41:27 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:35474 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbYCJMl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 08:39:06 -0400
-Message-ID: <47D52B79.7030009@netone.net.tr>
-Date: Mon, 10 Mar 2008 14:37:13 +0200
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Mon, 10 Mar 2008 08:41:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=aa32zpCOYpNw2TOqZw0/gHpI/r14jrqRlMiE+LuVsMiWAQwuwzBc4R2tOTww9Q5tI1/MOAfXnhNcylrd9Rj4ECQYk8aCQWCt0qBOWDdP3k53e6dbKYy5mDQcnQYL65yPZUOyw+yIznbtB7rlP7Zf/5mhe6LRGiw6KFYYbX6NpPw=
+Date: Mon, 10 Mar 2008 21:33:43 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <axboe@kernel.dk>
+Subject: [PATCH] block: fix blk_register_queue() return value
+Message-ID: <20080310123341.GA3351@APFDCB5C>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.25-rc4 (and also in rc3) Compile Error
-References: <47CE6F66.7020004@netone.net.tr> <47D0895C.5070901@goop.org> <47D0F9D7.8010607@netone.net.tr> <47D172A2.5000408@goop.org> <47D4F250.5000307@netone.net.tr>
-In-Reply-To: <47D4F250.5000307@netone.net.tr>
-Content-Type: multipart/mixed;
- boundary="------------060909050201060407030509"
-X-OriginalArrivalTime: 10 Mar 2008 12:32:54.0272 (UTC) FILETIME=[DCEE6000:01C882AA]
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060909050201060407030509
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
-Content-Transfer-Encoding: 7bit
+blk_register_queue() returns -ENXIO when queue->request_fn is NULL.
+But there are some block drivers that call blk_register_queue()
+via add_disk() with queue->request_fn == NULL. (For example, brd, loop)
 
-Tarkan Erimer wrote:
-> Jeremy Fitzhardinge wrote:
->> At what point does it fail?  Is it early in the build, or late?  
->> What's your build command line?
->>
->>    J
-> I use Kubuntu's own kernel build via the command "make-kpkg 
-> --revision=1  kernel_image kernel_headers". It fails at the very early 
-> build stage. When issued this command, just after few lines and then 
-> it fails. Today, I will try the same .config with recently released 
-> rc5 and will let know the result.
->
+Although no one checks return value of blk_register_queue(), this patch
+makes it return 0 instead of -ENXIO when queue->request_fn is NULL,
 
-I tried with .rc5 now and the result is the same. I attached the full 
-error log.
+Also this patch adds warning when blk_register_queue() and
+blk_unregister_queue() are called with queue == NULL rather than
+ignore invalid usage silently.
 
---------------060909050201060407030509
-Content-Type: text/x-log;
- name="error.log"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="error.log"
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Jens Axboe <axboe@kernel.dk>
+---
+ block/blk-sysfs.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-IAovdXNyL3NyYy9saW51eC0yLjYuMjUtcmM1IyBtYWtlLWtwa2cgLS1yZXZpc2lvbj0xICBr
-ZXJuZWxfaW1hZ2Uga2VybmVsX2hlYWRlcnMKZXhlYyBtYWtlIC1mIC91c3Ivc2hhcmUva2Vy
-bmVsLXBhY2thZ2UvcnVsZXNldC9taW5pbWFsLm1rIGRlYmlhbiBERUJJQU5fUkVWSVNJT049
-MQo9PT09PT0gbWFraW5nIHRhcmdldCBtaW5pbWFsX2RlYmlhbiBbbmV3IHByZXJlcXM6IF09
-PT09PT0KVGhpcyBpcyBrZXJuZWwgcGFja2FnZSB2ZXJzaW9uIC4KdGVzdCAtZCBkZWJpYW4g
-fHwgbWtkaXIgZGViaWFuCnRlc3QgISAtZSBzdGFtcC1idWlsZGluZyB8fCBybSAtZiBzdGFt
-cC1idWlsZGluZwp0ZXN0IC1mIGRlYmlhbi9jb250cm9sIHx8IHNlZCAgICAgICAgIC1lICdz
-Lz1WLzIuNi4yNS1yYzUvZycgICAgICAgIFwKICAgICAgICAgICAgICAgIC1lICdzLz1ELzEv
-ZycgICAgICAgICAtZSAncy89QS9pMzg2L2cnICBcCiAgICAgICAgICAgICAgICAtZSAncy89
-U0EvL2cnICAgLWUgJ3MvPUwvIC9nJyBcCiAgICAgICAgICAgICAgICAtZSAncy89SS8vZycg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcCiAgICAgICAgICAgICAgICAt
-ZSAncy89Q1YvMi42L2cnICAgICAgICAgICAgICAgICAgICAgICBcCiAgICAgICAgICAgICAg
-ICAtZSAncy89TS9Vbmtub3duIEtlcm5lbCBQYWNrYWdlIE1haW50YWluZXIgPHVua25vd25A
-dW5jb25maWd1cmVkLmluLmV0Yy5rZXJuZWwtcGtnLmNvbmY+L2cnICAgICAgICAgICAgICAg
-ICAgICAgICAgXAogICAgICAgICAgICAgICAgLWUgJ3MvPVNUL2xpbnV4L2cnICAgICAgLWUg
-J3MvPUIveGVuL2cnICAgIFwKICAgICAgICAgICAgICAgICAgICAgICAgIC91c3Ivc2hhcmUv
-a2VybmVsLXBhY2thZ2UvQ29udHJvbCA+IGRlYmlhbi9jb250cm9sCnRlc3QgLWYgZGViaWFu
-L2NoYW5nZWxvZyB8fCAgc2VkIC1lICdzLz1WLzIuNi4yNS1yYzUvZycgICAgICAgICAgICAg
-XAogICAgICAgICAgICAtZSAncy89RC8xL2cnICAgICAgICAtZSAncy89QS9pMzg2L2cnICAg
-ICAgIFwKICAgICAgICAgICAgLWUgJ3MvPVNUL2xpbnV4L2cnICAgICAtZSAncy89Qi94ZW4v
-ZycgICAgICAgICBcCiAgICAgICAgICAgIC1lICdzLz1NL1Vua25vd24gS2VybmVsIFBhY2th
-Z2UgTWFpbnRhaW5lciA8dW5rbm93bkB1bmNvbmZpZ3VyZWQuaW4uZXRjLmtlcm5lbC1wa2cu
-Y29uZj4vZycgICAgICAgICAgICAgICAgICAgICAgICBcCiAgICAgICAgICAgICAvdXNyL3No
-YXJlL2tlcm5lbC1wYWNrYWdlL2NoYW5nZWxvZyA+IGRlYmlhbi9jaGFuZ2Vsb2cKaW5zdGFs
-bCAtcCAtbSA3NTUgL3Vzci9zaGFyZS9rZXJuZWwtcGFja2FnZS9ydWxlcyBkZWJpYW4vcnVs
-ZXMKZm9yIGZpbGUgaW4gQ2hhbmdlTG9nICBDb250cm9sICBDb250cm9sLmJpbjg2IGNvbmZp
-ZyB0ZW1wbGF0ZXMuaW4gcnVsZXM7IGRvICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBcCiAgICAgICAgICAgIGNwIC1mICAvdXNyL3NoYXJlL2tlcm5lbC1wYWNrYWdl
-LyRmaWxlIC4vZGViaWFuLzsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXAogICAg
-ICAgIGRvbmUKZm9yIGRpciAgaW4gQ29uZmlnIGRvY3MgZXhhbXBsZXMgcnVsZXNldCBzY3Jp
-cHRzIHBrZyBwbzsgIGRvICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBc
-CiAgICAgICAgICBjcCAtYWYgL3Vzci9zaGFyZS9rZXJuZWwtcGFja2FnZS8kZGlyICAuL2Rl
-Ymlhbi87ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXAogICAgICAgIGRvbmUK
-dGVzdCAtZCAuL2RlYmlhbi9zdGFtcHMgfHwgbWtkaXIgZGViaWFuL3N0YW1wcwpleGVjIGRl
-Ymlhbi9ydWxlcyAgREVCSUFOX1JFVklTSU9OPTEgIGtlcm5lbF9pbWFnZSBrZXJuZWxfaGVh
-ZGVycwpbOiAxOiAyOiB1bmV4cGVjdGVkIG9wZXJhdG9yCls6IDE6IDI6IHVuZXhwZWN0ZWQg
-b3BlcmF0b3IKWzogMTogMzogdW5leHBlY3RlZCBvcGVyYXRvcgpbOiAxOiAyOiB1bmV4cGVj
-dGVkIG9wZXJhdG9yCls6IDE6IDI6IHVuZXhwZWN0ZWQgb3BlcmF0b3IKWzogMTogMjogdW5l
-eHBlY3RlZCBvcGVyYXRvcgpbOiAxOiAyOiB1bmV4cGVjdGVkIG9wZXJhdG9yCls6IDE6IDI6
-IHVuZXhwZWN0ZWQgb3BlcmF0b3IKWzogMTogMjogdW5leHBlY3RlZCBvcGVyYXRvcgpbOiAx
-OiAyOiB1bmV4cGVjdGVkIG9wZXJhdG9yCls6IDE6IDI6IHVuZXhwZWN0ZWQgb3BlcmF0b3IK
-Cj09PT09PSBtYWtpbmcgdGFyZ2V0IENPTkZJRy1jb21tb24gW25ldyBwcmVyZXFzOiB0ZXN0
-ZGlyXT09PT09PQoKPT09PT09IG1ha2luZyB0YXJnZXQgZGViaWFuL3N0YW1wLWNvbmYgW25l
-dyBwcmVyZXFzOiBdPT09PT09CiMgd29yayBhcm91bmQgaWRpb2N5IGluIHJlY2VudCBrZXJu
-ZWwgdmVyc2lvbnMKdGVzdCAhIC1lIHNjcmlwdHMvcGFja2FnZS9idWlsZGRlYiB8fCBcCiAg
-ICAgICAgICAgIG12IC1mIHNjcmlwdHMvcGFja2FnZS9idWlsZGRlYiBzY3JpcHRzL3BhY2th
-Z2UvYnVpbGRkZWIua3BrZy1kaXN0CnRlc3QgISAtZSBzY3JpcHRzL3BhY2thZ2UvTWFrZWZp
-bGUgfHwgXAogICAgICAgICAgICAobXYgLWYgc2NyaXB0cy9wYWNrYWdlL01ha2VmaWxlIHNj
-cmlwdHMvcGFja2FnZS9NYWtlZmlsZS5rcGtnLWRpc3QgJiYgXAogICAgICAgICAgICAgICAo
-ZWNobyAiIyBEdW1teSBmaWxlICI7IGVjaG8gImhlbHA6IikgPiAgc2NyaXB0cy9wYWNrYWdl
-L01ha2VmaWxlKQp0ZXN0IC1kIGRlYmlhbiB8fCBta2RpciAuL2RlYmlhbgp0ZXN0ICEgLWUg
-c3RhbXAtYnVpbGRpbmcgfHwgcm0gLWYgc3RhbXAtYnVpbGRpbmcKdGVzdCAhIC1mIC4vZGVi
-aWFuIHx8IHRlc3QgLWYgc3RhbXAtZGViaWFuIHx8IHRlc3QgLWYgZGViaWFuL29mZmljaWFs
-IHx8IFwKICAgICAgICAgICAgICAgKHJtIC1yZiAuL2RlYmlhbiAmJiBta2RpciAuL2RlYmlh
-bikKdGVzdCAtZiBzdGFtcC1kZWJpYW4gIHx8ICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIFwKICAgICAgICAgICggdGVzdCAtZiBkZWJpYW4vb2ZmaWNpYWwg
-JiYgdGVzdCAtZiBkZWJpYW4vY29udHJvbCkgfHwgICAgICAgICAgXAogICAgICAgICAgIHNl
-ZCAtZSAncy89Vi8uLi9nJyAgICAgICAgIC1lICdzLz1ELzEvZycgICAgICAgIFwKICAgICAg
-ICAgICAgICAgLWUgJ3MvPUEvaTM4Ni9nJyAgIC1lICdzLz1TQS8vZycgIFwKICAgICAgICAg
-ICAgICAgIC1lICdzLz1ML2dydWIseGVuLXZtLCAvZycgLWUgJ3MvPUkvL2cnICAgICBcCiAg
-ICAgICAgICAgICAgICAtZSAncy89Q1YvLi9nJyAgICAgICAgICAgICAgICAgICAgICBcCiAg
-ICAgICAgICAgICAgICAtZSAncy89TS9Vbmtub3duIEtlcm5lbCBQYWNrYWdlIE1haW50YWlu
-ZXIgPHVua25vd25AdW5jb25maWd1cmVkLmluLmV0Yy5rZXJuZWwtcGtnLmNvbmY+L2cnICAg
-ICAgICAgICAgICAgICAgICAgICBcCiAgICAgICAgICAgICAgICAtZSAncy89U1QvbGludXgv
-ZycgICAgICAtZSAncy89Qi94ZW4vZycgICBcCiAgICAgICAgICAgICAgICAgICAgICAgICAv
-dXNyL3NoYXJlL2tlcm5lbC1wYWNrYWdlL0NvbnRyb2w+IGRlYmlhbi9jb250cm9sCnRlc3Qg
-LWYgc3RhbXAtZGViaWFuICB8fCAgICB0ZXN0IC1mIGRlYmlhbi9vZmZpY2lhbCB8fCAgICAg
-ICAgICAgICAgICBcCiAgICAgICAgICAgc2VkIC1lICdzLz1WLy4uL2cnIC1lICdzLz1ELzEv
-ZycgICAgICAgICAgICAgICAgICAgXAogICAgICAgICAgICAtZSAncy89QS9pMzg2L2cnIC1l
-ICdzLz1NL1Vua25vd24gS2VybmVsIFBhY2thZ2UgTWFpbnRhaW5lciA8dW5rbm93bkB1bmNv
-bmZpZ3VyZWQuaW4uZXRjLmtlcm5lbC1wa2cuY29uZj4vZycgXAogICAgICAgICAgICAtZSAn
-cy89U1QvbGludXgvZycgICAgIC1lICdzLz1CL3hlbi9nJyAgICAgICAgICAgXAogICAgICAg
-ICAgICAgICAgL3Vzci9zaGFyZS9rZXJuZWwtcGFja2FnZS9jaGFuZ2Vsb2cgPiBkZWJpYW4v
-Y2hhbmdlbG9nCnRlc3QgIC1mIGRlYmlhbi9ydWxlcyB8fCBpbnN0YWxsIC1wIC1tIDc1NSAv
-dXNyL3NoYXJlL2tlcm5lbC1wYWNrYWdlL3J1bGVzIGRlYmlhbi9ydWxlcwp0ZXN0ICAtZiBz
-dGFtcC1kZWJpYW4gfHwgdGVzdCAtZiBkZWJpYW4vb2ZmaWNpYWwgfHwgICAgICAgICAgICAg
-ICAgICAgICBcCiAgICAgICAgICAgZm9yIGZpbGUgaW4gQ2hhbmdlTG9nICBDb250cm9sICBD
-b250cm9sLmJpbjg2IGNvbmZpZyB0ZW1wbGF0ZXMuaW4gcnVsZXM7IGRvICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBcCiAgICAgICAgICAgICAgIGNwIC1mICAvdXNy
-L3NoYXJlL2tlcm5lbC1wYWNrYWdlLyRmaWxlIC4vZGViaWFuLzsgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgXAogICAgICAgICAgIGRvbmUKdGVzdCAgLWYgc3RhbXAtZGViaWFu
-IHx8IHRlc3QgLWYgZGViaWFuL29mZmljaWFsIHx8ICAgICAgICAgICAgICAgICAgICAgXAog
-ICAgICAgICAgIGZvciBkaXIgIGluIENvbmZpZyBkb2NzIGV4YW1wbGVzIHJ1bGVzZXQgc2Ny
-aXB0cyBwa2cgcG87ICBkbyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-XAogICAgICAgICAgICAgY3AgLWFmIC91c3Ivc2hhcmUva2VybmVsLXBhY2thZ2UvJGRpciAg
-Li9kZWJpYW4vOyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwKICAgICAgICAg
-ICBkb25lCmVjaG8gZG9uZSA+ICBzdGFtcC1kZWJpYW4KZWNobyBkb25lID4gIGRlYmlhbi9z
-dGFtcC1jb25mCj09PT09PSBtYWtpbmcgdGFyZ2V0IENPTkZJRy1jb21tb24gW25ldyBwcmVy
-ZXFzOiBzdGFtcC1jb25mXT09PT09PQpUaGlzIGlzIGtlcm5lbCBwYWNrYWdlIHZlcnNpb24g
-MTEuMDAxLgo9PT09PT0gbWFraW5nIHRhcmdldCBzdGFtcC1hcmNoLWNvbmYgW25ldyBwcmVy
-ZXFzOiBDT05GSUctY29tbW9uXT09PT09PQoKPT09PT09IG1ha2luZyB0YXJnZXQgQ09ORklH
-LWFyY2ggW25ldyBwcmVyZXFzOiBzdGFtcC1hcmNoLWNvbmZdPT09PT09Cj09PT09PSBtYWtp
-bmcgdGFyZ2V0IGNvbmYudmFycyBbbmV3IHByZXJlcXM6IE1ha2VmaWxlIC5jb25maWddPT09
-PT09CgpNYWtlZmlsZTo1MTQ6IC91c3Ivc3JjL2xpbnV4LTIuNi4yNS1yYzUvYXJjaC94ZW4v
-TWFrZWZpbGU6IE5vIHN1Y2ggZmlsZSBvciBkaXJlY3RvcnkKbWFrZVsxXTogKioqIE5vIHJ1
-bGUgdG8gbWFrZSB0YXJnZXQgYC91c3Ivc3JjL2xpbnV4LTIuNi4yNS1yYzUvYXJjaC94ZW4v
-TWFrZWZpbGUnLiAgU3RvcC4KbWFrZTogKioqIFtjb25mLnZhcnNdIEVycm9yIDIKcm9vdEB0
-YXJrYW5lOi91c3Ivc3JjL2xpbnV4LTIuNi4yNS1yYzUjICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIA==
---------------060909050201060407030509--
+Index: 2.6-rc/block/blk-sysfs.c
+===================================================================
+--- 2.6-rc.orig/block/blk-sysfs.c
++++ 2.6-rc/block/blk-sysfs.c
+@@ -276,9 +276,12 @@ int blk_register_queue(struct gendisk *d
+ 
+ 	struct request_queue *q = disk->queue;
+ 
+-	if (!q || !q->request_fn)
++	if (WARN_ON(!q))
+ 		return -ENXIO;
+ 
++	if (!q->request_fn)
++		return 0;
++
+ 	ret = kobject_add(&q->kobj, kobject_get(&disk->dev.kobj),
+ 			  "%s", "queue");
+ 	if (ret < 0)
+@@ -300,7 +303,10 @@ void blk_unregister_queue(struct gendisk
+ {
+ 	struct request_queue *q = disk->queue;
+ 
+-	if (q && q->request_fn) {
++	if (WARN_ON(!q))
++		return;
++
++	if (q->request_fn) {
+ 		elv_unregister_queue(q);
+ 
+ 		kobject_uevent(&q->kobj, KOBJ_REMOVE);
