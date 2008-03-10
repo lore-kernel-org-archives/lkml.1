@@ -1,95 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbYCJPNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbYCJPR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbYCJPNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYCJPNM
+	id S1752854AbYCJPR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYCJPRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:13:12 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:50640 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbYCJPNL (ORCPT
+	Mon, 10 Mar 2008 11:17:17 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:53758 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYCJPRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:13:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=r8x3mbG/c9XeCDs1KXTH1kgAkELnpugWYiUORMrOMb4F7/eDjeokrEaBrGGALFo+Tr61FQahHbLUW091+M81XU5uLyAEBSLamjLASlaIW73G4ogMB2Z000Zjp8KkKefPw5wRjzSaQ9/i+8JMiCpf+46yiO/Y7W8gYBlQ2Fr09ag=
-Date: Tue, 11 Mar 2008 00:05:37 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 5/5] tiny-shmem: use call_once()
-Message-ID: <20080310150531.GD6407@APFDCB5C>
-References: <20080310145704.GA6396@APFDCB5C> <20080310150026.GA6407@APFDCB5C> <20080310150148.GB6407@APFDCB5C> <20080310150308.GC6407@APFDCB5C>
+	Mon, 10 Mar 2008 11:17:16 -0400
+Message-ID: <47D55115.3010708@keyaccess.nl>
+Date: Mon, 10 Mar 2008 16:17:41 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-In-Reply-To: <20080310150308.GC6407@APFDCB5C>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Michael Cree <mcree@orcon.net.nz>
+CC: Bob Tracy <rct@frus.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+References: <20080309235800.17D26DBA2@gherkin.frus.com> <47D4E480.3090309@orcon.net.nz>
+In-Reply-To: <47D4E480.3090309@orcon.net.nz>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch defers mounting tmpfs till shmem_file_setup() is
-called first time by using call_once().
+On 10-03-08 08:34, Michael Cree wrote:
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- mm/tiny-shmem.c |   21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+> Bob Tracy wrote:
 
-Index: 2.6-rc/mm/tiny-shmem.c
-===================================================================
---- 2.6-rc.orig/mm/tiny-shmem.c
-+++ 2.6-rc/mm/tiny-shmem.c
-@@ -19,6 +19,7 @@
- #include <linux/module.h>
- #include <linux/swap.h>
- #include <linux/ramfs.h>
-+#include <linux/once.h>
- 
- static struct file_system_type tmpfs_fs_type = {
- 	.name		= "tmpfs",
-@@ -26,19 +27,23 @@ static struct file_system_type tmpfs_fs_
- 	.kill_sb	= kill_litter_super,
- };
- 
--static struct vfsmount *shm_mnt;
--
- static int __init init_tmpfs(void)
- {
- 	BUG_ON(register_filesystem(&tmpfs_fs_type) != 0);
- 
--	shm_mnt = kern_mount(&tmpfs_fs_type);
--	BUG_ON(IS_ERR(shm_mnt));
--
- 	return 0;
- }
- module_init(init_tmpfs)
- 
-+static struct vfsmount *shm_mnt;
-+
-+static int init_shm_mnt(void)
-+{
-+	shm_mnt = kern_mount(&tmpfs_fs_type);
-+
-+	return IS_ERR(shm_mnt) ? PTR_ERR(shm_mnt) : 0;
-+}
-+
- /*
-  * shmem_file_setup - get an unlinked file living in tmpfs
-  *
-@@ -53,9 +58,11 @@ struct file *shmem_file_setup(char *name
- 	struct inode *inode;
- 	struct dentry *dentry, *root;
- 	struct qstr this;
-+	static DEFINE_ONCE(once);
- 
--	if (IS_ERR(shm_mnt))
--		return (void *)shm_mnt;
-+	error = call_once(&once, init_shm_mnt);
-+	if (error)
-+		return ERR_PTR(error);
- 
- 	error = -ENOMEM;
- 	this.name = name;
+>> Supposedly with the ES1888, dma1 is for capture, dma2 is for playback. 
+>> dma2 == 5 is a 16-bit channel, yes?  That could explain much...
+
+It is, but what would it explain? You're only having playback problems, right?
+
+>>
+>> As for the values "chosen" for dma1 and dma2, they are the ones that
+>>  keep showing up in the Alpha sound "howto" postings/documents.
+> 
+> Running 'show config' in SRM on my Alphas (PWS500au and XP1000) reveals
+> the settings (except possibly for mpu_port) for the ESS1888 sound chip.
+> I recall that they are as reported in Alpha sound howtos.
+
+Can it be forced to use dma2=0 (an 8-bit channel, and the usual capture 
+channel on es18xx)? However, that might not be the issue anyway:
+
+> I hadn't been using the ESS1888 for awhile, but have just tried it out
+> since you reported problems.  I am running kernel 2.6.24.3 and Debian
+> testing on the XP1000.  I tried playing a number of wav files with
+> alsa's aplay, sox's play and with mocp.  I found that aplay and mocp
+> worked reliably through the ESS1888.  Sox's play on some files did play
+> back a small extra segment of the file - particularly on short files and
+> usually some section near the end of the file - once it had completed
+> playing the file once; maybe this is what you are also observing. 
+
+This sounds very suspiciously like a difference with playing through the 
+native ALSA interface and the OSS emulaion. Could you and/or Bob confirm 
+that sox is using the OSS emulation and not ALSA natively?
+
+I could very well imagine the ALSA OSS emulation being broken on Alpha. I 
+doubt any of teh developers has an Alpha. And if aplay works correctly this 
+seems very likely.
+
+"sox" _can_ use ALSA natively as well by the way (see manpage for the 
+version you have installed).
+
+> More onerously, my testing eventually ended in a complete system lock up!
+> I ran play (or was it aplay - sorry can't remember now)
+
+Vital if play is using the OSS interface...
+
+> and the system locked up. Got a response with ping across the network but
+> couldn't log in via ssh.  Have been playing mplayer through the ESS1888
+> for the last couple of days (don't like it though - the sound quality of
+> the ESS1888 is not good enough for my ears) and haven't had another one
+> of those lockups since.
+
+Mmm.
+
+Rene.
