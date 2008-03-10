@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbYCJVuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYCJVwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026AbYCJVuK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYCJVt6
+	id S1755185AbYCJVwi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYCJVwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:49:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58829 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbYCJVt4 (ORCPT
+	Mon, 10 Mar 2008 17:52:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57564 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751014AbYCJVw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:49:56 -0400
-Date: Mon, 10 Mar 2008 22:51:45 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stephan Diestelhorst <langer_mann@web.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Message-ID: <20080310215145.GB9246@one.firstfloor.org>
-References: <200803051559.09962.langer_mann@web.de> <200803101605.42251.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org> <200803102226.39044.langer_mann@web.de>
+	Mon, 10 Mar 2008 17:52:29 -0400
+Date: Mon, 10 Mar 2008 14:51:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
+       jordan.crouse@amd.com, rjw@sisk.pl, samuel.thibault@ens-lyon.org
+Subject: Re: [PATCH 6/6] PM/FB/gxfb: add config option that allows disabling
+ of VT switch during suspend
+Message-Id: <20080310145118.adb0cf1e.akpm@linux-foundation.org>
+In-Reply-To: <20080310174424.29621e62@ephemeral>
+References: <20080308204927.73afa56c@ephemeral>
+	<20080310141939.ce1169c0.akpm@linux-foundation.org>
+	<20080310174424.29621e62@ephemeral>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803102226.39044.langer_mann@web.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Please also note that these are not clobbers in the strict inline asm
-> syntax, but rather dummy output values that correspond to actual
+On Mon, 10 Mar 2008 17:44:24 -0400
+Andres Salomon <dilinger@queued.net> wrote:
 
-Outputs/Inputs are as bad as clobbers in triggering gcc reload ICEs.
-
-> input parameters. I'd consider this a serious compiler flaw, if not
-> bug, if these would not work. But let's not get into GCC vs.
-
-It is, and it's (mostly) fixed in newer versions, but we're stuck with 
-supporting the older compiler versions unfortunately.
-
-> > For asms with so many clobbers explicit push/pop is usually safer.
+> On Mon, 10 Mar 2008 14:19:39 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Yes, but it is unneccessary overhead as the compiler can (should!)
-> find more elegant ways to get those registers back if needed.
+> > 
+> > It would be far preferable to do this via a kernel boot parameter rather
+> > than via a kernel rebuild.
+> > 
+> 
+> Well, it shouldn't be supported at _all_ unless the framebuffer driver
+> supports it; you're asking for it to be converted to something like the
+> following?
+> 
+> 
+> 
+> #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> static int no_vt_switch;
+> #endif
+> 
+> int pm_prepare_console(void)
+> {
+> #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> 	if (no_vt_switch)
+> 		return 0;
+> #endif
+> 	...
+> }
+> 
+> #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> module_param(no_vt_switch, int, 0);
+> MODULE_PARM_DESC(no_vt_switch, "...");
+> #endif
+> 
+> 
+> If so, that means extra #ifdef's sprinkled throughout the code.  Note
+> that most framebuffer drivers won't be supporting this, and those that
+> do will almost certainly always want vt switching turned off..
+> 
 
-This code is not performance critical at all. Safer beats faster
-any time in such cases.
-
--Andi
+I don't think you need any ifdefs or config options at all, do you?  Just
+add a new module parameter to this driver and some little interface into
+the PM core which allows the driver to set no_vt_switch?
 
