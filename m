@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbYCJMP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbYCJMXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbYCJMP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 08:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYCJMPu
+	id S1751950AbYCJMXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 08:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYCJMXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 08:15:50 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:54451 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbYCJMPt (ORCPT
+	Mon, 10 Mar 2008 08:23:09 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:17691 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbYCJMXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 08:15:49 -0400
+	Mon, 10 Mar 2008 08:23:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=ik07gqF02wOK1HBzTIUtcLIfMNRLhd1IWjWotmC93PFT8Hp4rfMFUFsGWX6GMvqFZw9hR+BFmAZk2lqgPfmNGap4f19l8U+J6OW9ffHwnL1iNKzLdvxrxdcZYrcbOFZI2rrhadJNOtDep+ot43LCD6O8S2GkuMAGHF/1iCmjNUw=
-Date: Mon, 10 Mar 2008 13:17:00 -0700
-To: linux-sh <linux-sh@vger.kernel.org>,
-       linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: [SITE http://www.kernelarchive.com] - Request for kernels
-Message-Id: <20080310131700.382a6b3e.Kristoffer.Ericson@Gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=s4PzS6SFEnmZP9R+6jBQbYTOsp3m826O2uEEqTUsKLYipFXfqgSpUUteDX+ueqn2NIiDyo7DTMLVQmNuEm1ZFS5F8gnsyalnj57cChFlEq80OSRNXvHRqva2Si6nn9IzMZCNDlySINw3KKZnqgjayec2V8BzImwxpg0IPEUTnnQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Subject: Re: Linux 2.6.25-rc4
+Date: Mon, 10 Mar 2008 13:36:55 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080308210559.0C7A193C070@tippex.mynet.homeunix.org> <20080310085539.6815693C900@tippex.mynet.homeunix.org>
+In-Reply-To: <20080310085539.6815693C900@tippex.mynet.homeunix.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Content-Disposition: inline
+Message-Id: <200803101336.56159.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+On Monday 10 March 2008, Anders Eriksson wrote:
+> 
+> aeriksson@fastmail.fm said:
+> > torvalds@linux-foundation.org said:
+> >> I think we do want the bisect run here.
+> >> My worry is that this is likely very timing-sensitive, so when it starts
+> >> failing it might not be because of the commit that actually introduces the
+> >> bug, but because some other timing changed, but with some luck that won't  
+> >> be the case.
+> 
+> > I'm on it. Slow machine. Household's router, 4000 versions to go... 
+> 
+> The bisect came up with this:
+> 
+> 18a056feccabdfa9764016a615121b194828bc72 is first bad commit
+> commit 18a056feccabdfa9764016a615121b194828bc72
 
-Hope Im not upsetting by posting this http link. My main thought about this site is not to compete with
-kernelnewbies or kerneltrap. instead its to give room to the linux kernel ports available (that rarely get any spotlight).
-Im going to hold record of what kernels work for a specific platform, maintainer, git repositories and so on.
-This is not a one day site, I intend to have this running for a long time since it doesn't cost me anything. It will 
-be free and open to anyone.
+Hmm, this is the first commit _after_ the previous "guilty"
+commit 852738f39258deafb3d89c187cb1a4050820d555 so it just
+can't be the "real bad" one...
 
-So Im asking maintainers to hand me kernels for their obscure machines. Im especially interested in handhelds and
-old-style computers. Examples :
-Amiga, Atari, spitz, collie, sparc, s390, powerpc, development boards... basicly anything non-x86.
-
-In mail, please supply any sources (git repositories, patches and so on).
-
--- 
-Kristoffer Ericson <Kristoffer.Ericson@Gmail.com>
+> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date:   Sat Jan 26 20:13:12 2008 +0100
+> 
+>     ide: don't enable local IRQs for PIO-in in driver_cmd_intr() (take 2)
+> 
+>     Don't enable local IRQs for PIO-in protocol in driver_cmd_intr().
+> 
+>     While at it:
+> 
+>     * Remove redundant rq->cmd_type check.
+> 
+>     * Read status register after enabling local IRQs for no-data protocol.
+> 
+>     v2:
+>     * Re-add DRQ=1 check lost in v1 (noticed by Sergei).
+> 
+>     Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> :040000 040000 5fb514a261b13494c5e9c035f9e7598276ce8839 0fda2eb7d96335061741d7f54ed3e05ca34ac5b8 M      drivers
