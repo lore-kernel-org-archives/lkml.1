@@ -1,221 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYCJNRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYCJNUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbYCJNRm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 09:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYCJNRb
+	id S1753460AbYCJNUl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 09:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYCJNUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 09:17:31 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:43566 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbYCJNR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 09:17:29 -0400
-Date: Mon, 10 Mar 2008 22:17:20 +0900
-To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Cc: tony.luck@intel.com, akpm@linux-foundation.org
-Cc: tomof@acm.org
-Subject: [PATCH -mm] ia64: make IOMMU respect the segment boundary limits
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 10 Mar 2008 09:20:34 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35534 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYCJNUd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 09:20:33 -0400
+Message-ID: <47D5359D.5000909@in.ibm.com>
+Date: Mon, 10 Mar 2008 18:50:29 +0530
+From: Chandru <chandru@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, jdmason@kudzu.us,
+       Muli Ben-Yehuda <muli@il.ibm.com>
+Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
+ in kdump
+References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com> <20071014054110.GB4399@rhun.haifa.ibm.com> <20071015062919.GA4598@in.ibm.com> <476F4064.8010601@in.ibm.com>
+In-Reply-To: <476F4064.8010601@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080310221538U.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is another sequel to my patchset that fixes iommu segment
-boundary problems, that is, IOMMUs allocate memory areas without
-considering a low level driver's segment boundary limits:
+Chandru wrote:
+> Hi Muli,
+>
+> I have tried to work with CCR ,CSR, CSMR, CSAR, CFGRW, GBRERRM  
+> registers but have been unable to make calgary generate an exception 
+> upon error condition.  In alloc_tce_table() , I am setting WRITE_ONLY 
+> access permission bit to tce entries but it isn't helping.  Would you 
+> kindly let me know how we can make calgary to generate an exception in 
+> error conditions ?.
+>
+> Thanks,
+> Chandru
+>
+>
+Hello Andrew,
 
-http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg11919.html
+Could you pls consider the attached patch for inclusion in mainline.
 
-This patchset fixes the IA64 IOMMU code.
+Thanks,
+Chandru
 
-This assumes that ioc->ibase is on iovp_size boundary. If not, please
-let me know. I'll fix the patch.
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH -mm] ia64: make IOMMU respect the segment boundary limits
-
-This makes IA64's IOMMU implementation not allocate a memory area
-spanning LLD's segment boundary.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Chandru S <chandru@in.ibm.com>
 ---
- arch/ia64/Kconfig               |    3 ++
- arch/ia64/hp/common/sba_iommu.c |   56 +++++++++++++++++++++++++++------------
- 2 files changed, 42 insertions(+), 17 deletions(-)
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 8fa3faf..1b73ffe 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -611,6 +611,9 @@ config IRQ_PER_CPU
- 	bool
- 	default y
- 
-+config IOMMU_HELPER
-+	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC)
+--- arch/x86/kernel/pci-calgary_64.c.orig       2008-03-10 
+15:54:08.000000000 +0530
++++ arch/x86/kernel/pci-calgary_64.c    2008-03-10 16:34:20.000000000 +0530
+@@ -36,6 +36,7 @@
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/iommu-helper.h>
++#include <linux/crash_dump.h>
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+ #include <asm/tce.h>
+@@ -166,6 +167,8 @@ static void calgary_dump_error_regs(stru
+ static void calioc2_handle_quirks(struct iommu_table *tbl, struct 
+pci_dev *dev);
+ static void calioc2_tce_cache_blast(struct iommu_table *tbl);
+ static void calioc2_dump_error_regs(struct iommu_table *tbl);
++static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl);
++static void grab_tce_space_from_tar(void);
+
+ static struct cal_chipset_ops calgary_chip_ops = {
+        .handle_quirks = calgary_handle_quirks,
+@@ -828,7 +831,11 @@ static int __init calgary_setup_tar(stru
+
+        tbl = pci_iommu(dev->bus);
+        tbl->it_base = (unsigned long)bus_info[dev->bus->number].tce_space;
+-       tce_free(tbl, 0, tbl->it_size);
 +
- source "arch/ia64/hp/sim/Kconfig"
- 
- source "arch/ia64/Kconfig.debug"
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 523eae6..9409de5 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -35,6 +35,7 @@
- #include <linux/nodemask.h>
- #include <linux/bitops.h>         /* hweight64() */
- #include <linux/crash_dump.h>
-+#include <linux/iommu-helper.h>
- 
- #include <asm/delay.h>		/* ia64_get_itc() */
- #include <asm/io.h>
-@@ -460,6 +461,13 @@ get_iovp_order (unsigned long size)
- 	return order;
++       if (is_kdump_kernel())
++               calgary_init_bitmap_from_tce_table(tbl);
++       else
++               tce_free(tbl, 0, tbl->it_size);
+
+        if (is_calgary(dev->device))
+                tbl->chip_ops = &calgary_chip_ops;
+@@ -1186,6 +1193,9 @@ static int __init calgary_locate_bbars(v
+                }
+        }
+
++       if (is_kdump_kernel())
++               grab_tce_space_from_tar();
++
+        return 0;
+
+ error:
+@@ -1276,6 +1286,24 @@ static inline int __init determine_tce_t
+        return ret;
  }
- 
-+static unsigned long ptr_to_pide(struct ioc *ioc, unsigned long *res_ptr,
-+				 unsigned int bitshiftcnt)
+
++/*
++ * calgary_init_bitmap_from_tce_table():
++ * Funtion for kdump case. In the second/kdump kernel initialize
++ * the bitmap based on the tce table entries obtained from first kernel
++ */
++static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl)
 +{
-+	return (((unsigned long)res_ptr - (unsigned long)ioc->res_map) << 3)
-+		+ bitshiftcnt;
++       u64 *tp;
++       unsigned int index;
++       tp = ((u64 *)tbl->it_base);
++       for (index = 0 ; index < tbl->it_size; index++) {
++               if (*tp != 0x0)
++                       set_bit(index, tbl->it_map);
++
++               tp++;
++       }
 +}
 +
- /**
-  * sba_search_bitmap - find free space in IO PDIR resource bitmap
-  * @ioc: IO MMU structure which owns the pdir we are interested in.
-@@ -471,15 +479,25 @@ get_iovp_order (unsigned long size)
-  * Cool perf optimization: search for log2(size) bits at a time.
-  */
- static SBA_INLINE unsigned long
--sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
-+sba_search_bitmap(struct ioc *ioc, struct device *dev,
-+		  unsigned long bits_wanted, int use_hint)
+ static int __init build_detail_arrays(void)
  {
- 	unsigned long *res_ptr;
- 	unsigned long *res_end = (unsigned long *) &(ioc->res_map[ioc->res_size]);
--	unsigned long flags, pide = ~0UL;
-+	unsigned long flags, pide = ~0UL, tpide;
-+	unsigned long boundary_size;
-+	unsigned long shift;
-+	int ret;
- 
- 	ASSERT(((unsigned long) ioc->res_hint & (sizeof(unsigned long) - 1UL)) == 0);
- 	ASSERT(res_ptr < res_end);
- 
-+	boundary_size = (unsigned long long)dma_get_seg_boundary(dev) + 1;
-+	boundary_size = ALIGN(boundary_size, 1ULL << iovp_shift) >> iovp_shift;
+        unsigned long ptr;
+@@ -1338,12 +1366,52 @@ static int __init calgary_bus_has_device
+        return (val != 0xffffffff);
+ }
+
++/*
++ * grab_tce_space_from_tar():
++ * Function for kdump case. Grab the tce tables from first kernel
++ * by reading the contents of the base adress register of calgary iommu
++ */
++static void grab_tce_space_from_tar()
++{
++       int bus;
++       void __iomem *target;
++       unsigned long tce_space;
 +
-+	BUG_ON(ioc->ibase & ~iovp_mask);
-+	shift = ioc->ibase >> iovp_shift;
++       for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
++               struct calgary_bus_info *info = &bus_info[bus];
++               unsigned short pci_device;
++               u32 val;
 +
- 	spin_lock_irqsave(&ioc->res_lock, flags);
- 
- 	/* Allow caller to force a search through the entire resource space */
-@@ -504,9 +522,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
- 			if (likely(*res_ptr != ~0UL)) {
- 				bitshiftcnt = ffz(*res_ptr);
- 				*res_ptr |= (1UL << bitshiftcnt);
--				pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
--				pide <<= 3;	/* convert to bit address */
--				pide += bitshiftcnt;
-+				pide = ptr_to_pide(ioc, res_ptr, bitshiftcnt);
- 				ioc->res_bitshift = bitshiftcnt + bits_wanted;
- 				goto found_it;
- 			}
-@@ -535,11 +551,13 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
- 			DBG_RES("    %p %lx %lx\n", res_ptr, mask, *res_ptr);
- 			ASSERT(0 != mask);
- 			for (; mask ; mask <<= o, bitshiftcnt += o) {
--				if(0 == ((*res_ptr) & mask)) {
-+				tpide = ptr_to_pide(ioc, res_ptr, bitshiftcnt);
-+				ret = iommu_is_span_boundary(tpide, bits_wanted,
-+							     shift,
-+							     boundary_size);
-+				if ((0 == ((*res_ptr) & mask)) && !ret) {
- 					*res_ptr |= mask;     /* mark resources busy! */
--					pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
--					pide <<= 3;	/* convert to bit address */
--					pide += bitshiftcnt;
-+					pide = tpide;
- 					ioc->res_bitshift = bitshiftcnt + bits_wanted;
- 					goto found_it;
- 				}
-@@ -560,6 +578,11 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
- 		end = res_end - qwords;
- 
- 		for (; res_ptr < end; res_ptr++) {
-+			tpide = ptr_to_pide(ioc, res_ptr, 0);
-+			ret = iommu_is_span_boundary(tpide, bits_wanted,
-+						     shift, boundary_size);
-+			if (ret)
-+				goto next_ptr;
- 			for (i = 0 ; i < qwords ; i++) {
- 				if (res_ptr[i] != 0)
- 					goto next_ptr;
-@@ -572,8 +595,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
- 				res_ptr[i] = ~0UL;
- 			res_ptr[i] |= RESMAP_MASK(bits);
- 
--			pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
--			pide <<= 3;	/* convert to bit address */
-+			pide = tpide;
- 			res_ptr += qwords;
- 			ioc->res_bitshift = bits;
- 			goto found_it;
-@@ -605,7 +627,7 @@ found_it:
-  * resource bit map.
-  */
- static int
--sba_alloc_range(struct ioc *ioc, size_t size)
-+sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
++               val = read_pci_config(bus, 0, 0, 0);
++               pci_device = (val & 0xFFFF0000) >> 16;
++
++               if (!is_cal_pci_dev(pci_device))
++                       continue;
++
++               if (info->translation_disabled)
++                       continue;
++
++               if (calgary_bus_has_devices(bus, pci_device) ||
++                   translate_empty_slots) {
++                       target = calgary_reg(bus_info[bus].bbar,
++                                               tar_offset(bus));
++                       tce_space = be64_to_cpu(readq(target));
++                       tce_space = tce_space & TAR_SW_BITS;
++
++                       BUG_ON(specified_table_size > TCE_TABLE_SIZE_8M);
++
++                       tce_space = tce_space & (~specified_table_size);
++                       info->tce_space = (u64 *)__va(tce_space);
++               }
++       }
++}
++
+ void __init detect_calgary(void)
  {
- 	unsigned int pages_needed = size >> iovp_shift;
- #ifdef PDIR_SEARCH_TIMING
-@@ -622,9 +644,9 @@ sba_alloc_range(struct ioc *ioc, size_t size)
- 	/*
- 	** "seek and ye shall find"...praying never hurts either...
- 	*/
--	pide = sba_search_bitmap(ioc, pages_needed, 1);
-+	pide = sba_search_bitmap(ioc, dev, pages_needed, 1);
- 	if (unlikely(pide >= (ioc->res_size << 3))) {
--		pide = sba_search_bitmap(ioc, pages_needed, 0);
-+		pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
- 		if (unlikely(pide >= (ioc->res_size << 3))) {
- #if DELAYED_RESOURCE_CNT > 0
- 			unsigned long flags;
-@@ -653,7 +675,7 @@ sba_alloc_range(struct ioc *ioc, size_t size)
- 			}
- 			spin_unlock_irqrestore(&ioc->saved_lock, flags);
- 
--			pide = sba_search_bitmap(ioc, pages_needed, 0);
-+			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
- 			if (unlikely(pide >= (ioc->res_size << 3)))
- 				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
- 				      ioc->ioc_hpa);
-@@ -936,7 +958,7 @@ sba_map_single(struct device *dev, void *addr, size_t size, int dir)
- 	spin_unlock_irqrestore(&ioc->res_lock, flags);
+        int bus;
+        void *tbl;
+        int calgary_found = 0;
+-       unsigned long ptr;
++       unsigned long ptr, max_pfn;
+        unsigned int offset, prev_offset;
+        int ret;
+
+@@ -1393,7 +1461,8 @@ void __init detect_calgary(void)
+                return;
+        }
+
+-       specified_table_size = determine_tce_table_size(end_pfn * 
+PAGE_SIZE);
++       max_pfn = is_kdump_kernel() ? saved_max_pfn : end_pfn ;
++       specified_table_size = determine_tce_table_size(max_pfn * 
+PAGE_SIZE);
+
+        for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
+                struct calgary_bus_info *info = &bus_info[bus];
+@@ -1411,10 +1480,16 @@ void __init detect_calgary(void)
+
+                if (calgary_bus_has_devices(bus, pci_device) ||
+                    translate_empty_slots) {
+-                       tbl = alloc_tce_table();
+-                       if (!tbl)
+-                               goto cleanup;
+-                       info->tce_space = tbl;
++                       /*
++                        * If this is a kdump kernel find and use
++                        * the tce tables from first kernel
++                        */
++                       if (!is_kdump_kernel()) {
++                               tbl = alloc_tce_table();
++                               if (!tbl)
++                                       goto cleanup;
++                               info->tce_space = tbl;
++                       }
+                        calgary_found = 1;
+                }
+        }
+--- include/linux/crash_dump.h.orig     2008-03-10 15:54:33.000000000 +0530
++++ include/linux/crash_dump.h  2008-03-10 16:30:12.000000000 +0530
+@@ -21,6 +21,13 @@ extern struct proc_dir_entry *proc_vmcor
  #endif
- 
--	pide = sba_alloc_range(ioc, size);
-+	pide = sba_alloc_range(ioc, dev, size);
- 
- 	iovp = (dma_addr_t) pide << iovp_shift;
- 
-@@ -1373,7 +1395,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
- 		ASSERT(dma_len <= DMA_CHUNK_SIZE);
- 		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
--			| (sba_alloc_range(ioc, dma_len) << iovp_shift)
-+			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
- 			| dma_offset);
- 		n_mappings++;
- 	}
--- 
-1.5.3.7
+
+ #define vmcore_elf_check_arch(x) (elf_check_arch(x) || 
+vmcore_elf_check_arch_cross(x))
++extern unsigned long saved_max_pfn;
++static inline int is_kdump_kernel(void)
++{
++       return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0 ;
++}
++#else /* !CONFIG_CRASH_DUMP */
++static inline is_kdump_kernel(void) { return 0; }
+
+ #endif /* CONFIG_CRASH_DUMP */
+ #endif /* LINUX_CRASHDUMP_H */
+
 
