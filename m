@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYCJVS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYCJVTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbYCJVS2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYCJVSS
+	id S1756795AbYCJVTA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbYCJVSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:18:18 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:58677 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbYCJVSR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:18:17 -0400
-Message-ID: <47D5A585.8050107@tiscali.nl>
-Date: Mon, 10 Mar 2008 22:17:57 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>, akpm@linux-foundation.org
-CC: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       lkml <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
-References: <47D47B11.1000303@tiscali.nl>	 <20080310084633.5246ecfe@paperstreet.colino.net> <1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl> <64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
-In-Reply-To: <64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 17:18:41 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:58879 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756611AbYCJVSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 17:18:40 -0400
+Date: Tue, 11 Mar 2008 00:17:44 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] signals: cleanup the usage of print_fatal_signal()
+Message-ID: <20080310211744.GA1580@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, I think you may want this patch instead of the other
-adt746x-logical-bitwise-confusion-in-set_max_duty_at_crit.patch
+Move the callsite of print_fatal_signal() down, under
+"if (sig_kernel_coredump(signr))", so we don't need to check signr != SIGKILL.
 
-It includes suggested changes by Segher Boessenkool and I think this
-version was tested by Darrick J. Wong
----
-logical-bitwise & confusion
+We are only interested in the sig_kernel_coredump() signals anyway, and due to
+the previous changes we almost never can see other fatal signals here except
+SIGKILL.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
-index 9587869..2a2de73 100644
---- a/drivers/hwmon/adt7473.c
-+++ b/drivers/hwmon/adt7473.c
-@@ -566,11 +566,11 @@ static ssize_t set_max_duty_at_crit(struct device *dev,
- 				    const char *buf,
- 				    size_t count)
- {
--	u8 reg;
-+	u8 reg, temp;
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct adt7473_data *data = i2c_get_clientdata(client);
--	int temp = simple_strtol(buf, NULL, 10);
--	temp = temp && 0xFF;
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 25/kernel/signal.c~PFS_CLEANUP	2008-03-10 00:47:21.000000000 +0300
++++ 25/kernel/signal.c	2008-03-10 23:55:07.000000000 +0300
+@@ -1766,9 +1766,10 @@ relock:
+ 		 * Anything else is fatal, maybe with a core dump.
+ 		 */
+ 		current->flags |= PF_SIGNALED;
+-		if ((signr != SIGKILL) && print_fatal_signals)
+-			print_fatal_signal(regs, signr);
 +
-+	temp = simple_strtol(buf, NULL, 10) & 0xFF;
- 
- 	mutex_lock(&data->lock);
- 	data->max_duty_at_overheat = temp;
-
+ 		if (sig_kernel_coredump(signr)) {
++			if (print_fatal_signals)
++				print_fatal_signal(regs, signr);
+ 			/*
+ 			 * If it was able to dump core, this kills all
+ 			 * other threads in the group and synchronizes with
 
