@@ -1,85 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbYCJPR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751668AbYCJPUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854AbYCJPR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYCJPRR
+	id S1751668AbYCJPUw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbYCJPUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:17:17 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:53758 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbYCJPRQ (ORCPT
+	Mon, 10 Mar 2008 11:20:44 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:57385 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbYCJPUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:17:16 -0400
-Message-ID: <47D55115.3010708@keyaccess.nl>
-Date: Mon, 10 Mar 2008 16:17:41 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 10 Mar 2008 11:20:42 -0400
+Message-ID: <47D551B8.9080807@panasas.com>
+Date: Mon, 10 Mar 2008 17:20:24 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Michael Cree <mcree@orcon.net.nz>
-CC: Bob Tracy <rct@frus.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080309235800.17D26DBA2@gherkin.frus.com> <47D4E480.3090309@orcon.net.nz>
-In-Reply-To: <47D4E480.3090309@orcon.net.nz>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Sven Schnelle <svens@stackframe.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL pointer
+ dereference
+References: <867igc3w8r.fsf@deprecated.bitebene.org>
+In-Reply-To: <867igc3w8r.fsf@deprecated.bitebene.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10-03-08 08:34, Michael Cree wrote:
-
-> Bob Tracy wrote:
-
->> Supposedly with the ES1888, dma1 is for capture, dma2 is for playback. 
->> dma2 == 5 is a 16-bit channel, yes?  That could explain much...
-
-It is, but what would it explain? You're only having playback problems, right?
-
->>
->> As for the values "chosen" for dma1 and dma2, they are the ones that
->>  keep showing up in the Alpha sound "howto" postings/documents.
+On Sun, Mar 09 2008 at 14:41 +0200, Sven Schnelle <svens@stackframe.org> wrote:
+> Hi,
 > 
-> Running 'show config' in SRM on my Alphas (PWS500au and XP1000) reveals
-> the settings (except possibly for mpu_port) for the ESS1888 sound chip.
-> I recall that they are as reported in Alpha sound howtos.
+> i'm facing the following kernel oops with the latest git:
+> 
+> --------------------------------------8<--------------------------------------
+> Stopping MD arrays...failed (no MD subsystem loaded).
+> Mounting root filesystem read-only...done.
+> Will now restart.
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> IP: [<ffffffff8051a97e>] __gdth_interrupt+0x96e/0xb7f
+> PGD 7e51e067 PUD 7e6a1067 PMD 0 
+> Oops: 0002 [1] PREEMPT SMP 
+> CPU 3 
+> Modules linked in: nvidia(P) lm85 hwmon_vid hwmon [last unloaded: nvidia]
+> Pid: 0, comm: swapper Tainted: P         2.6.25-rc4-smp-00134-g84c6f60 #11 
+> RIP: 0010:[<ffffffff8051a97e>]  [<ffffffff8051a97e>] __gdth_interrupt+0x96e/0xb7f
+> RSP: 0018:ffff81007fbefed8  EFLAGS: 00010086
+> RAX: 0000000000000000 RBX: ffff81007e0dda68 RCX: 0000000000000002
+> RDX: 00000000ffffffff RSI: 0000000000000000 RDI: ffffc20000330000
+> RBP: ffff81007fbeff08 R08: 0000000000000000 R09: ffff81007f01de70
+> R10: 0000000000000000 R11: 0000000000000050 R12: ffff810000b10480
+> R13: ffff810000b104ff R14: ffff81007e214200 R15: 0000000000000009
+> FS:  0000000000000000(0000) GS:ffff81007f802c80(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 000000007e643000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 0, threadinfo ffff81007fbe6000, task ffff81007fbe4000)
+> Stack:  0000000000000046 ffff81007e8a93c0 0000000000000000 0000000000000000
+>  0000000000000018 0000000000000003 ffff81007fbeff18 ffffffff8051ab9f
+>  ffff81007fbeff48 ffffffff80258cc2 ffffffff8092e300 ffff81007e8a93c0
+> Call Trace:
+>  <IRQ>  [<ffffffff8051ab9f>] gdth_interrupt+0x10/0x12
+>  [<ffffffff80258cc2>] handle_IRQ_event+0x27/0x57
+>  [<ffffffff8025a055>] handle_fasteoi_irq+0x9c/0xdc
+>  [<ffffffff8020def0>] do_IRQ+0x88/0xfc
+>  [<ffffffff80209ffe>] ? default_idle+0x0/0x5f
+>  [<ffffffff8020b851>] ret_from_intr+0x0/0xa
+>  <EOI>  [<ffffffff8020a037>] ? default_idle+0x39/0x5f
+>  [<ffffffff8020a032>] ? default_idle+0x34/0x5f
+>  [<ffffffff80209ffe>] ? default_idle+0x0/0x5f
+>  [<ffffffff8020a11c>] ? cpu_idle+0xbf/0xf5
+>  [<ffffffff806cd973>] ? start_secondary+0x3e0/0x3ef
+> 
+> 
+> Code: 00 04 eb 15 3c 17 75 11 41 0f b6 c5 48 c1 e0 05 41 80 a4 04 92 02 00 00 fb 41 c7 86 18 01 00 00 00 00 00 00 49 8b 86 c0 00 00 00 <c6> 00 00 e9 92 01 00 00 66 89 43 24 41 8b 84 24 68 02 00 00 89 
+> RIP  [<ffffffff8051a97e>] __gdth_interrupt+0x96e/0xb7f
+>  RSP <ffff81007fbefed8>
+> CR2: 0000000000000000
+> ---[ end trace e81e561a458e8791 ]---
+> Kernel panic - not syncing: Aiee, killing interrupt handler!
+> Rebooting in 5 seconds..
+> --------------------------------------8<--------------------------------------
+> 
+> From 2dc63f9f8e61fd1c89f8b4d9b2d174be1c3bfbe2 Mon Sep 17 00:00:00 2001
+> From: root <root@apollo.bitebene.org>
+> Date: Sun, 9 Mar 2008 13:25:07 +0100
+> Subject: 
+> 
+> This fixes a NULL pointer dereference during execution of Internal commands,
+> where gdth only allocates scp, but not scp->sense_buffer. The rest of
+> the code assumes that sense_buffer is allocated, which leads to a kernel
+> oops e.g. on reboot (during cache flush).
+> 
+> So we have two choices here:
+> 
+> a) Allocate the sense_buffer
+> b) surrounding all accesses to sense_buffer with some if (!internal_command)
+> 
+> I'm using solution a, as this keeps code simpler.
+> 
+> Signed-off-by: Sven Schnelle <svens@stackframe.org>
+> ---
+>  drivers/scsi/gdth.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+> index 27ebd33..0b2080d 100644
+> --- a/drivers/scsi/gdth.c
+> +++ b/drivers/scsi/gdth.c
+> @@ -493,6 +493,12 @@ int __gdth_execute(struct scsi_device *sdev, gdth_cmd_str *gdtcmd, char *cmnd,
+>      if (!scp)
+>          return -ENOMEM;
+>  
+> +    scp->sense_buffer = kzalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
+> +    if (!scp->sense_buffer) {
+> +	kfree(scp);
+> +	return -ENOMEM;
+> +    }
+> +
+>      scp->device = sdev;
+>      memset(&cmndinfo, 0, sizeof(cmndinfo));
+>  
+> @@ -513,6 +519,7 @@ int __gdth_execute(struct scsi_device *sdev, gdth_cmd_str *gdtcmd, char *cmnd,
+>      rval = cmndinfo.status;
+>      if (info)
+>          *info = cmndinfo.info;
+> +    kfree(scp->sense_buffer);
+>      kfree(scp);
+>      return rval;
+>  }
+James and linux-scsi CCed.
 
-Can it be forced to use dma2=0 (an 8-bit channel, and the usual capture 
-channel on es18xx)? However, that might not be the issue anyway:
+James it looks reasonable. It's a fallout from the sense_buffer separation patches.
+Reviewed-by: Boaz Harrosh <bharrosh@panasas.com>
 
-> I hadn't been using the ESS1888 for awhile, but have just tried it out
-> since you reported problems.  I am running kernel 2.6.24.3 and Debian
-> testing on the XP1000.  I tried playing a number of wav files with
-> alsa's aplay, sox's play and with mocp.  I found that aplay and mocp
-> worked reliably through the ESS1888.  Sox's play on some files did play
-> back a small extra segment of the file - particularly on short files and
-> usually some section near the end of the file - once it had completed
-> playing the file once; maybe this is what you are also observing. 
+I will submit solution b) above as part of my sense handling patchset.
 
-This sounds very suspiciously like a difference with playing through the 
-native ALSA interface and the OSS emulaion. Could you and/or Bob confirm 
-that sox is using the OSS emulation and not ALSA natively?
-
-I could very well imagine the ALSA OSS emulation being broken on Alpha. I 
-doubt any of teh developers has an Alpha. And if aplay works correctly this 
-seems very likely.
-
-"sox" _can_ use ALSA natively as well by the way (see manpage for the 
-version you have installed).
-
-> More onerously, my testing eventually ended in a complete system lock up!
-> I ran play (or was it aplay - sorry can't remember now)
-
-Vital if play is using the OSS interface...
-
-> and the system locked up. Got a response with ping across the network but
-> couldn't log in via ssh.  Have been playing mplayer through the ESS1888
-> for the last couple of days (don't like it though - the sound quality of
-> the ESS1888 is not good enough for my ears) and haven't had another one
-> of those lockups since.
-
-Mmm.
-
-Rene.
+Boaz
