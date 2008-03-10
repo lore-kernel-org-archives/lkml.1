@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYCJWYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbYCJW0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbYCJWYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCJWYM
+	id S1756401AbYCJW0L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYCJWZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:24:12 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:10088 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbYCJWYL (ORCPT
+	Mon, 10 Mar 2008 18:25:57 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:45718 "EHLO
+	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751167AbYCJWZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:24:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=vmJzzC1SCFtlAD4t7tMfzleE9gl2QwcqTs9NMiKHF9pdlx+r8r8c7Grmhfx/diK0yyY4lJWA6hgFdqYEYf2iJPaX49zyj0LrwodqlkvpwXwY4HnWyuwZlO7yI7izhlTZO1oFPq67YjaevUD3gdDXttsla67lPcOFXESYcx4r4NY=
-Message-ID: <47D5B504.6020909@gmail.com>
-Date: Mon, 10 Mar 2008 23:24:04 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 10 Mar 2008 18:25:56 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0JXJCVE-03-DB3-01
+Date: Mon, 10 Mar 2008 16:24:07 -0600
+From: Jordan Crouse <jordan.crouse@amd.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       info-linux@geode.amd.com, rjw@sisk.pl, samuel.thibault@ens-lyon.org
+Subject: Re: PM/FB/gxfb: add config option that allows disabling of VT
+	switch during suspend
+Message-ID: <20080310222407.GD589@cosmic.amd.com>
+References: <20080308204927.73afa56c@ephemeral> <20080310141939.ce1169c0.akpm@linux-foundation.org> <20080310174424.29621e62@ephemeral> <20080310145118.adb0cf1e.akpm@linux-foundation.org> <20080310181446.2fb85eea@ephemeral>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty_ioctl: Soft carrier handling
-References: <20080310215613.43c7acb0@core>
-In-Reply-To: <20080310215613.43c7acb0@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080310181446.2fb85eea@ephemeral>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 10 Mar 2008 22:23:09.0404 (UTC) FILETIME=[51FEA9C0:01C882FD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/10/2008 10:56 PM, Alan Cox wrote:
-> First cut at moving the soft carrier handling knowledge entirely into the
-> core code. One or two drivers still needed to snoop these functions to
-> track CLOCAL internally. Instead make TIOCSSOFTCAR generate the same
-> driver calls as other termios ioctls changing the clocal flag. This
-> allows us to remove any driver knowledge and special casing. Also while
-> we are at it we can fix the error handling.
+On 10/03/08 18:14 -0400, Andres Salomon wrote:
+> On Mon, 10 Mar 2008 14:51:18 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+> > On Mon, 10 Mar 2008 17:44:24 -0400
+> > Andres Salomon <dilinger@queued.net> wrote:
+> > 
+> > > On Mon, 10 Mar 2008 14:19:39 -0700
+> > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > 
+> > > > It would be far preferable to do this via a kernel boot parameter rather
+> > > > than via a kernel rebuild.
+> > > > 
+> > > 
+> > > Well, it shouldn't be supported at _all_ unless the framebuffer driver
+> > > supports it; you're asking for it to be converted to something like the
+> > > following?
+> > > 
+> > > 
+> > > 
+> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> > > static int no_vt_switch;
+> > > #endif
+> > > 
+> > > int pm_prepare_console(void)
+> > > {
+> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> > > 	if (no_vt_switch)
+> > > 		return 0;
+> > > #endif
+> > > 	...
+> > > }
+> > > 
+> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> > > module_param(no_vt_switch, int, 0);
+> > > MODULE_PARM_DESC(no_vt_switch, "...");
+> > > #endif
+> > > 
+> > > 
+> > > If so, that means extra #ifdef's sprinkled throughout the code.  Note
+> > > that most framebuffer drivers won't be supporting this, and those that
+> > > do will almost certainly always want vt switching turned off..
+> > > 
+> > 
+> > I don't think you need any ifdefs or config options at all, do you?  Just
+> > add a new module parameter to this driver and some little interface into
+> > the PM core which allows the driver to set no_vt_switch?
+> > 
 > 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc3-mm1/drivers/char/tty_ioctl.c linux-2.6.25-rc3-mm1/drivers/char/tty_ioctl.c
-> --- linux.vanilla-2.6.25-rc3-mm1/drivers/char/tty_ioctl.c	2008-03-10 12:57:53.000000000 +0000
-> +++ linux-2.6.25-rc3-mm1/drivers/char/tty_ioctl.c	2008-03-10 13:27:09.000000000 +0000
-> @@ -753,6 +756,32 @@
-[...]
-> +static int tty_change_softcar(struct tty_struct *tty, int arg)
-> +{
-> +	int ret = 0;
-> +	int bit = arg ? CLOCAL : 0;
-> +	struct ktermios old = *tty->termios;
+> That's a possibility, but doesn't adding hooks into PM core for two
+> drivers (lxfb and gxfb) seems like overkill?  I also don't really see
+> anyone needing to switch back and forth between VT_SWITCH and
+> NO_VT_SWITCH other than to work around possible bugs in the register
+> save/restore code..
 
-Maybe a dumb question, but shouldn't be the snapshot done in the critical 
-section too?
+I like Andrew's idea.  I wager This won't be Geode specific for long.
+Either other drivers will get the hint and add real save/restore code
+or the GPU subystem code being worked on by the X folks will come along
+and make the VT switch obsolete for everybody.  Either way, I see hooks
+in the PM core as generic love that everybody can benefit from.
 
-> +	
-> +	mutex_lock(&tty->termios_mutex);
-> +	tty->termios->c_cflag &= ~CLOCAL;
-> +	tty->termios->c_cflag |= bit;
-> +	if (tty->driver->set_termios)
-> +		tty->driver->set_termios(tty, &old);
-> +	if ((tty->termios->c_cflag & CLOCAL) != bit)
-> +		ret = -EINVAL;	
-> +	mutex_unlock(&tty->termios_mutex);
-> +	return ret;
-> +}
+Jordan
+
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
