@@ -1,104 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbYCJW0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbYCJW0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbYCJW0L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYCJWZ5
+	id S1756330AbYCJW0w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYCJW0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:25:57 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:45718 "EHLO
-	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751167AbYCJWZ4 (ORCPT
+	Mon, 10 Mar 2008 18:26:45 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45649 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbYCJW0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:25:56 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-WSS-ID: 0JXJCVE-03-DB3-01
-Date: Mon, 10 Mar 2008 16:24:07 -0600
-From: Jordan Crouse <jordan.crouse@amd.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       info-linux@geode.amd.com, rjw@sisk.pl, samuel.thibault@ens-lyon.org
-Subject: Re: PM/FB/gxfb: add config option that allows disabling of VT
-	switch during suspend
-Message-ID: <20080310222407.GD589@cosmic.amd.com>
-References: <20080308204927.73afa56c@ephemeral> <20080310141939.ce1169c0.akpm@linux-foundation.org> <20080310174424.29621e62@ephemeral> <20080310145118.adb0cf1e.akpm@linux-foundation.org> <20080310181446.2fb85eea@ephemeral>
-MIME-Version: 1.0
+	Mon, 10 Mar 2008 18:26:44 -0400
+Date: Mon, 10 Mar 2008 23:28:35 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty_ioctl: locking for tty_wait_until_sent
+Message-ID: <20080310222835.GC9246@one.firstfloor.org>
+References: <20080310215325.2b8d33e8@core> <87od9m5iu4.fsf@basil.nowhere.org> <20080310220643.60f36bee@core>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080310181446.2fb85eea@ephemeral>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 10 Mar 2008 22:23:09.0404 (UTC) FILETIME=[51FEA9C0:01C882FD]
+In-Reply-To: <20080310220643.60f36bee@core>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/03/08 18:14 -0400, Andres Salomon wrote:
-> On Mon, 10 Mar 2008 14:51:18 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, Mar 10, 2008 at 10:06:43PM +0000, Alan Cox wrote:
+> On 10 Mar 2008 23:12:51 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> > On Mon, 10 Mar 2008 17:44:24 -0400
-> > Andres Salomon <dilinger@queued.net> wrote:
+> > Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 > > 
-> > > On Mon, 10 Mar 2008 14:19:39 -0700
-> > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > 
-> > > > It would be far preferable to do this via a kernel boot parameter rather
-> > > > than via a kernel rebuild.
-> > > > 
-> > > 
-> > > Well, it shouldn't be supported at _all_ unless the framebuffer driver
-> > > supports it; you're asking for it to be converted to something like the
-> > > following?
-> > > 
-> > > 
-> > > 
-> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
-> > > static int no_vt_switch;
-> > > #endif
-> > > 
-> > > int pm_prepare_console(void)
-> > > {
-> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
-> > > 	if (no_vt_switch)
-> > > 		return 0;
-> > > #endif
-> > > 	...
-> > > }
-> > > 
-> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
-> > > module_param(no_vt_switch, int, 0);
-> > > MODULE_PARM_DESC(no_vt_switch, "...");
-> > > #endif
-> > > 
-> > > 
-> > > If so, that means extra #ifdef's sprinkled throughout the code.  Note
-> > > that most framebuffer drivers won't be supporting this, and those that
-> > > do will almost certainly always want vt switching turned off..
-> > > 
+> > > This function still depends on the big kernel lock in some cases. Push
+> > > locking into the function ready for removal of the BKL from ioctl call
+> > > paths.
 > > 
-> > I don't think you need any ifdefs or config options at all, do you?  Just
-> > add a new module parameter to this driver and some little interface into
-> > the PM core which allows the driver to set no_vt_switch?
-> > 
+> > Didn't you forget the .ioctl -> .unlocked_ioctl change?
 > 
-> That's a possibility, but doesn't adding hooks into PM core for two
-> drivers (lxfb and gxfb) seems like overkill?  I also don't really see
-> anyone needing to switch back and forth between VT_SWITCH and
-> NO_VT_SWITCH other than to work around possible bugs in the register
-> save/restore code..
+> We are not yet ready to unlock the device ioctl paths for tty. We still
 
-I like Andrew's idea.  I wager This won't be Geode specific for long.
-Either other drivers will get the hint and add real save/restore code
-or the GPU subystem code being worked on by the X folks will come along
-and make the VT switch obsolete for everybody.  Either way, I see hooks
-in the PM core as generic love that everybody can benefit from.
+Traditionally the usual is to first convert .ioctl to .unlocked_ioctl
+and just slap lock_kernel around the whole ioctl handler and then 
+later move it down step by step.
 
-Jordan
+I didn't read the code completely but I assume tty_ioctl would be that
+handler. I guess i was wrong?
 
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
+-Andi
