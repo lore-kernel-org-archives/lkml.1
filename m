@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbYCJBpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYCJBqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbYCJBpu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 21:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbYCJBpj
+	id S1754603AbYCJBqz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 21:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYCJBqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 21:45:39 -0400
-Received: from hs-out-0708.google.com ([64.233.178.247]:61372 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbYCJBpj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 21:45:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iRF45ZtNLRSC85AEvmqmbtKohSIDlSTza8N0kyCc+MOTUdAIcwnR6Wb5cwIKE+NGkuZ34AOhl0YRJyt+kbNtvLicetMNvE5yMEoC184ay2Ya7l4Il+tyQu9fjnBsZoafQb6gaexXp2xnob0XnGkoTAFjYynW8Mvyn9R7G6XSnXU=
-Message-ID: <59fd4ce80803091845g2979c23ayfa1e53ce221ef846@mail.gmail.com>
-Date: Mon, 10 Mar 2008 10:45:36 +0900
-From: "Jeongdo Son" <sohn9086@gmail.com>
-To: "Will Newton" <will.newton@gmail.com>
-Subject: Re: [BUG REPORT] smc911x: Auto negotiation NOT supported
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-SH <linux-sh@vger.kernel.org>
-In-Reply-To: <87a5b0800803070354x391ff718u3af9664804526da1@mail.gmail.com>
+	Sun, 9 Mar 2008 21:46:48 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:59326 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752237AbYCJBqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 21:46:47 -0400
+Date: Mon, 10 Mar 2008 02:46:38 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: David Chinner <dgc@sgi.com>
+cc: LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, dm-devel@redhat.com
+Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
+In-Reply-To: <20080309213441.GQ155407@sgi.com>
+Message-ID: <alpine.DEB.1.00.0803100235230.9443@sheep.housecafe.de>
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080307224040.GV155259@sgi.com> <alpine.DEB.1.00.0803080032020.7723@sheep.housecafe.de> <20080309213441.GQ155407@sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <59fd4ce80803062200n203e5cd7o152be120adbdb717@mail.gmail.com>
-	 <87a5b0800803070354x391ff718u3af9664804526da1@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Will
+On Mon, 10 Mar 2008, David Chinner wrote:
+> Oh, dm-crypt. Well, I'd definitely start looking there. XFS has a
+> history of exposing dm-crypt bugs, and these hangs appear to be I/O
+> congestion/scheduling related and not XFS.
 
-Thanks for your reply.
+Yeah, I noticed that too, thanks for verifying this: during the 2nd bisect 
+run, the box locked up hard when I accessed the device-mapper. I'm using a 
+wrapper script to set up my luks/dm-crypt devices and still have to find 
+out which command exactly triggers the lockup. So, maybe the hard lockup 
+and the hangs are not so unrelated after all...oh well.
 
-On Fri, Mar 7, 2008 at 8:54 PM, Will Newton <will.newton@gmail.com> wrote:
->  Are you getting interrupts from the chip? Sounds like it could be you
->  have missed and interrupt somewhere - check where your interrupt
->  polarities and where you are acking/clearing them down.
->
+> Also, we haven't changed
+> anything related to plug/unplug of block devices in XFS recently, so
+> that also points to some other change as well...
 
-I think there's no problem with getting interrupts.
-Because the driver works well while eth0 is configured for DHCP mode.
-Only static IP allocation occurs the problem.
+Thanks for your assistance, David, I really appreciate it. I'll try to 
+find out more about this dm-crypt thingy....
 
-Here is the /proc/interrupts.
-(The interrupt for eth0 is recognized as IRQ 9)
-~ $ cat /proc/interrupts
-           CPU0
-  3:         46  sh7780-irl3210-level     rtc-62423a period
-  6:         67  sh7780-irl3210-level     r8a66597_hcd:usb1
-  9:         96  sh7780-irl3210-level     eth0
- 12:          0  sh7780-irl3210-level     fb0
- 13:          0  sh7780-irl3210-level     fb0
- 28:      11366          sh7780-level     periodic timer
- 38:          0          sh7780-level     DMAC Address Error
- 40:          0          sh7780-level     SCI Receive Error
- 41:         62          sh7780-level     SCI Receive Data Full
- 42:          0          sh7780-level     SCI Break
- 43:       1901          sh7780-level     SCI Transmit Data Empty
- 68:          1          sh7780-level     yenta
-Err:          0
+Christian.
+-- 
+BOFH excuse #396:
 
-Regards,
-Jeongdo Son
+Mail server hit by UniSpammer.
