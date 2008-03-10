@@ -1,323 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbYCJWms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbYCJWnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbYCJWms (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYCJWmD
+	id S1756634AbYCJWnp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCJWne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:42:03 -0400
-Received: from mga09.intel.com ([134.134.136.24]:39216 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYCJWmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:42:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,476,1199692800"; 
-   d="scan'208";a="305117850"
-Message-Id: <20080310222955.703291000@linux-os.sc.intel.com>
-References: <20080310222955.565902000@linux-os.sc.intel.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 10 Mar 2008 15:28:05 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org,
-       hch@infradead.org
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: [patch 2/2] x86, fpu: lazy allocation of FPU area - v5
-Content-Disposition: inline; filename=x86-lazy-fp-allocation.patch
+	Mon, 10 Mar 2008 18:43:34 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:64479 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbYCJWnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 18:43:32 -0400
+Date: Mon, 10 Mar 2008 16:42:32 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 0/3] enhanced ESTALE error handling (v3)
+In-reply-to: <47D598BD.9050604@redhat.com>
+To: Peter Staubach <staubach@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Message-id: <20080310224232.GM5851@webber.adilger.int>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_LxckJSbeSJTyJeBhG1PUsw)"
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <4790C756.2040704@redhat.com> <47A387C9.1000506@redhat.com>
+ <47D598BD.9050604@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only allocate the FPU area when the application actually uses FPU, i.e., in the
-first lazy FPU trap. This could save memory for non-fpu using apps.
 
-for example: on my system after boot, there are around 300 processes, with
-only 17 using FPU.
+--Boundary_(ID_LxckJSbeSJTyJeBhG1PUsw)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
----
-v5: Processor device not available exception automatically disables interrupts.
-Handle interrupts properly while doing blocking calls. And use SIGKILL
-instead of SIGSEGV during OOM failures(consistent with other out of memory
-handling cases we have today. for ex: oom handling in page fault handler).
-v4: Handles the kmem_cache_alloc() failures.
-v3: Fixed the non-atomic calling sequence in atomic context.
-v2: Ported to x86.git#testing with some name changes.
----
+On Mar 10, 2008  16:23 -0400, Peter Staubach wrote:
+> Here is version 3 of a patch set which modifies the system to
+> enhance the ESTALE error handling for system calls which take
+> pathnames as arguments.  This patch set is essentially the
+> same as the v2 patches, but updated to reflect the current
+> state of the code around them.
 
-Index: linux-2.6-x86/arch/x86/kernel/i387.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/i387.c	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/arch/x86/kernel/i387.c	2008-03-10 14:40:53.000000000 -0700
-@@ -8,7 +8,6 @@
- #include <linux/module.h>
- #include <linux/regset.h>
- #include <linux/sched.h>
--#include <linux/bootmem.h>
- 
- #include <asm/sigcontext.h>
- #include <asm/processor.h>
-@@ -63,7 +62,6 @@
- 	else
- 		xstate_size = sizeof(struct i387_fsave_struct);
- #endif
--	init_task.thread.xstate = alloc_bootmem(xstate_size);
- }
- 
- #ifdef CONFIG_X86_64
-@@ -93,12 +91,22 @@
-  * value at reset if we support XMM instructions and then
-  * remeber the current task has used the FPU.
-  */
--void init_fpu(struct task_struct *tsk)
-+int init_fpu(struct task_struct *tsk)
- {
- 	if (tsk_used_math(tsk)) {
- 		if (tsk == current)
- 			unlazy_fpu(tsk);
--		return;
-+		return 0;
-+	}
-+
-+	/*
-+	 * Memory allocation at the first usage of the FPU and other state.
-+	 */
-+	if (!tsk->thread.xstate) {
-+		tsk->thread.xstate = kmem_cache_alloc(task_xstate_cachep,
-+						      GFP_KERNEL);
-+		if (!tsk->thread.xstate)
-+			return -ENOMEM;
- 	}
- 
- 	if (cpu_has_fxsr) {
-@@ -120,6 +128,7 @@
- 	 * Only the device not available exception or ptrace can call init_fpu.
- 	 */
- 	set_stopped_child_used_math(tsk);
-+	return 0;
- }
- 
- int fpregs_active(struct task_struct *target, const struct user_regset *regset)
-@@ -136,10 +145,14 @@
- 		unsigned int pos, unsigned int count,
- 		void *kbuf, void __user *ubuf)
- {
-+	int ret;
-+
- 	if (!cpu_has_fxsr)
- 		return -ENODEV;
- 
--	init_fpu(target);
-+	ret = init_fpu(target);
-+	if (ret)
-+		return ret;
- 
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				   &target->thread.xstate->fxsave, 0, -1);
-@@ -154,7 +167,10 @@
- 	if (!cpu_has_fxsr)
- 		return -ENODEV;
- 
--	init_fpu(target);
-+	ret = init_fpu(target);
-+	if (ret)
-+		return ret;
-+
- 	set_stopped_child_used_math(target);
- 
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-@@ -312,11 +328,14 @@
- 	       void *kbuf, void __user *ubuf)
- {
- 	struct user_i387_ia32_struct env;
-+	int ret;
- 
- 	if (!HAVE_HWFP)
- 		return fpregs_soft_get(target, regset, pos, count, kbuf, ubuf);
- 
--	init_fpu(target);
-+	ret = init_fpu(target);
-+	if (ret)
-+		return ret;
- 
- 	if (!cpu_has_fxsr) {
- 		return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-@@ -344,7 +363,10 @@
- 	if (!HAVE_HWFP)
- 		return fpregs_soft_set(target, regset, pos, count, kbuf, ubuf);
- 
--	init_fpu(target);
-+	ret = init_fpu(target);
-+	if (ret)
-+		return ret;
-+
- 	set_stopped_child_used_math(target);
- 
- 	if (!cpu_has_fxsr) {
-Index: linux-2.6-x86/arch/x86/kernel/process.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/process.c	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/arch/x86/kernel/process.c	2008-03-10 14:26:36.000000000 -0700
-@@ -5,24 +5,34 @@
- #include <linux/slab.h>
- #include <linux/sched.h>
- 
--static struct kmem_cache *task_xstate_cachep;
-+struct kmem_cache *task_xstate_cachep;
- 
- int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
- {
- 	*dst = *src;
--	dst->thread.xstate = kmem_cache_alloc(task_xstate_cachep, GFP_KERNEL);
--	if (!dst->thread.xstate)
--		return -ENOMEM;
--	WARN_ON((unsigned long)dst->thread.xstate & 15);
--	memcpy(dst->thread.xstate, src->thread.xstate, xstate_size);
-+	if (src->thread.xstate) {
-+		dst->thread.xstate = kmem_cache_alloc(task_xstate_cachep,
-+						      GFP_KERNEL);
-+		if (!dst->thread.xstate)
-+			return -ENOMEM;
-+		WARN_ON((unsigned long)dst->thread.xstate & 15);
-+		memcpy(dst->thread.xstate, src->thread.xstate, xstate_size);
-+	}
- 	return 0;
- }
- 
--void free_thread_info(struct thread_info *ti)
-+void free_thread_xstate(struct task_struct *tsk)
- {
--	kmem_cache_free(task_xstate_cachep, ti->task->thread.xstate);
--	ti->task->thread.xstate = NULL;
-+	if (tsk->thread.xstate) {
-+		kmem_cache_free(task_xstate_cachep, tsk->thread.xstate);
-+		tsk->thread.xstate = NULL;
-+	}
-+}
-+
- 
-+void free_thread_info(struct thread_info *ti)
-+{
-+	free_thread_xstate(ti->task);
- 	free_pages((unsigned long)(ti), get_order(THREAD_SIZE));
- }
- 
-Index: linux-2.6-x86/include/asm-x86/processor.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/processor.h	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/include/asm-x86/processor.h	2008-03-10 14:26:36.000000000 -0700
-@@ -367,6 +367,8 @@
- 
- extern void print_cpu_info(struct cpuinfo_x86 *);
- extern unsigned int xstate_size;
-+extern void free_thread_xstate(struct task_struct *);
-+extern struct kmem_cache *task_xstate_cachep;
- extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
- extern unsigned int init_intel_cacheinfo(struct cpuinfo_x86 *c);
- extern unsigned short num_cache_leaves;
-Index: linux-2.6-x86/arch/x86/kernel/process_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/process_32.c	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/arch/x86/kernel/process_32.c	2008-03-10 14:26:36.000000000 -0700
-@@ -524,6 +524,10 @@
- 	regs->cs		= __USER_CS;
- 	regs->ip		= new_ip;
- 	regs->sp		= new_sp;
-+	/*
-+	 * Free the old FP and other extended state
-+	 */
-+	free_thread_xstate(current);
- }
- EXPORT_SYMBOL_GPL(start_thread);
- 
-Index: linux-2.6-x86/arch/x86/kernel/process_64.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/process_64.c	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/arch/x86/kernel/process_64.c	2008-03-10 14:26:36.000000000 -0700
-@@ -552,6 +552,10 @@
- 	regs->ss		= __USER_DS;
- 	regs->flags		= 0x200;
- 	set_fs(USER_DS);
-+	/*
-+	 * Free the old FP and other extended state
-+	 */
-+	free_thread_xstate(current);
- }
- EXPORT_SYMBOL_GPL(start_thread);
- 
-Index: linux-2.6-x86/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/traps_32.c	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/arch/x86/kernel/traps_32.c	2008-03-10 15:16:50.000000000 -0700
-@@ -1168,9 +1168,22 @@
- 	struct thread_info *thread = current_thread_info();
- 	struct task_struct *tsk = thread->task;
- 
-+	if (!tsk_used_math(tsk)) {
-+		local_irq_enable();
-+		/*
-+		 * does a slab alloc which can sleep
-+		 */
-+		if (init_fpu(tsk)) {
-+			/*
-+			 * ran out of memory!
-+			 */
-+			do_group_exit(SIGKILL);
-+			return;
-+		}
-+		local_irq_disable();
-+	}
-+
- 	clts();				/* Allow maths ops (or we recurse) */
--	if (!tsk_used_math(tsk))
--		init_fpu(tsk);
- 	restore_fpu(tsk);
- 	thread->status |= TS_USEDFPU;	/* So we fnsave on switch_to() */
- 	tsk->fpu_counter++;
-Index: linux-2.6-x86/arch/x86/kernel/traps_64.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/traps_64.c	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/arch/x86/kernel/traps_64.c	2008-03-10 15:17:03.000000000 -0700
-@@ -1117,10 +1117,23 @@
- asmlinkage void math_state_restore(void)
- {
- 	struct task_struct *me = current;
--	clts();			/* Allow maths ops (or we recurse) */
- 
--	if (!used_math())
--		init_fpu(me);
-+	if (!used_math()) {
-+		local_irq_enable();
-+		/*
-+		 * does a slab alloc which can sleep
-+		 */
-+		if (init_fpu(me)) {
-+			/*
-+			 * ran out of memory!
-+			 */
-+			do_group_exit(SIGKILL);
-+			return;
-+		}
-+		local_irq_disable();
-+	}
-+
-+	clts();			/* Allow maths ops (or we recurse) */
- 	restore_fpu_checking(&me->thread.xstate->fxsave);
- 	task_thread_info(me)->status |= TS_USEDFPU;
- 	me->fpu_counter++;
-Index: linux-2.6-x86/include/asm-x86/i387.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/i387.h	2008-03-10 14:26:35.000000000 -0700
-+++ linux-2.6-x86/include/asm-x86/i387.h	2008-03-10 14:26:36.000000000 -0700
-@@ -21,7 +21,7 @@
- 
- extern void fpu_init(void);
- extern void mxcsr_feature_mask_init(void);
--extern void init_fpu(struct task_struct *child);
-+extern int init_fpu(struct task_struct *child);
- extern asmlinkage void math_state_restore(void);
- extern void init_thread_xstate(void);
- 
+[snip long discussion of ESTALE causes]
 
--- 
+> This support was tested using the attached programs and
+> running multiple copies on mounted file systems which do not
+> share superblocks.  When two or more copies of this program
+> are running, many ESTALE errors can be seen over the network.
+> Without these patches, the test program errors out almost
+> immediately.  With these patches, the test program runs
+> for as long one desires.
 
+Have you tried "racer.sh"?  That is a very stressful metadata tester
+that does random operations on a handful of file and directory names.
+It can be run on a single client, or on multiple clients and needs no
+coordination between the clients.  I guess it won't tell you if you
+are getting ESTALE back correctly or not, but it can quickly find if
+there are any problems with the retrying code.
+
+I've attached an updated tarball of the original scripts here.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
+
+--Boundary_(ID_LxckJSbeSJTyJeBhG1PUsw)
+Content-type: application/x-gzip; NAME=racer-lustre.tar.gz
+Content-transfer-encoding: BASE64
+Content-disposition: attachment; filename=racer-lustre.tar.gz
+
+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
+
+--Boundary_(ID_LxckJSbeSJTyJeBhG1PUsw)--
