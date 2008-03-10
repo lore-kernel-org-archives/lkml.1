@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYCJWLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbYCJWLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYCJWLc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbYCJWLG
+	id S1757480AbYCJWLo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYCJWLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:11:06 -0400
-Received: from mga02.intel.com ([134.134.136.20]:47887 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756538AbYCJWLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:11:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,476,1199692800"; 
-   d="scan'208";a="261778630"
-Date: Mon, 10 Mar 2008 15:10:14 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
-       dmitry.adamushko@gmail.com, ego@in.ibm.com, yi.y.yang@intel.com,
-       tglx@linutronix.de, akpm@linux-foundation.org, oleg@sign.ru,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] keep rd->online and cpu_online_map in sync
-Message-ID: <20080310221014.GB27329@linux-os.sc.intel.com>
-References: <20080310081425.GA11031@in.ibm.com> <20080310133755.4689.83217.stgit@novell1.haskins.net> <20080310181244.GA27329@linux-os.sc.intel.com> <200803102303.28660.rjw@sisk.pl> <47D5773C.BA47.005A.0@novell.com>
+	Mon, 10 Mar 2008 18:11:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47355 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757347AbYCJWLa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 18:11:30 -0400
+Date: Mon, 10 Mar 2008 21:58:17 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] serial_core: Fix baud handling bug I introduced
+Message-ID: <20080310215817.4f311822@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D5773C.BA47.005A.0@novell.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 04:00:28PM -0600, Gregory Haskins wrote:
-> >>> On Mon, Mar 10, 2008 at  6:03 PM, in message <200803102303.28660.rjw@sisk.pl>,
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote: 
-> > On Monday, 10 of March 2008, Suresh Siddha wrote:
-> >> >  
-> >> > -	case CPU_DOWN_PREPARE:
-> >> > +	case CPU_DYING:
-> >> 
-> >> Don't we need to take care of CPU_DYING_FROZEN aswell?
-> > 
-> > Well, I'd say we do.
-> 
-> Should I add that to the patch as well then?
+Dumb bug, not reading the compiler warnings either
 
-Yes please.
+Signed-off-by: Alan Cox <alan@redhat.com>
+
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc3-mm1/drivers/serial/serial_core.c linux-2.6.25-rc3-mm1/drivers/serial/serial_core.c
+--- linux.vanilla-2.6.25-rc3-mm1/drivers/serial/serial_core.c	2008-03-10 12:57:53.000000000 +0000
++++ linux-2.6.25-rc3-mm1/drivers/serial/serial_core.c	2008-03-10 13:29:43.000000000 +0000
+@@ -337,7 +337,7 @@
+ 		   struct ktermios *old, unsigned int min, unsigned int max)
+ {
+ 	unsigned int try, baud, altbaud = 38400;
+-	int hung_up;
++	int hung_up = 0;
+ 	upf_t flags = port->flags & UPF_SPD_MASK;
+ 
+ 	if (flags == UPF_SPD_HI)
