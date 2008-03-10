@@ -1,159 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYCJQL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYCJQLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbYCJQL5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 12:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCJQLr
+	id S1754799AbYCJQLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 12:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbYCJQLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 12:11:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:11299 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbYCJQLq (ORCPT
+	Mon, 10 Mar 2008 12:11:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58079 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754572AbYCJQLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 12:11:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=u4APkQuQeTR0nMJQiuL05/xBisqKN4wpxjKTwNai5iAc4bpx4X3tNTjFBXc/FZcRa24ZPhpMy7SIte4ef9xQMM/Q4SMxFMc+vPLBAlU9OazNerZYi9RMp9SEv1oVWSnzwyaLBBgDgHqMebsLBeoOrAKgByV4c7vBATCeWZkrM0A=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology, Karnataka
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] Mark kobjects as unitialized
-Date: Mon, 10 Mar 2008 21:35:56 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Mikael Pettersson <mikpe@it.uu.se>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200803062223.18857.balajirrao@gmail.com> <200803091251.15428.balajirrao@gmail.com> <20080310155200.GA20437@suse.de>
-In-Reply-To: <20080310155200.GA20437@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 10 Mar 2008 12:11:06 -0400
+Date: Mon, 10 Mar 2008 09:09:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chandru <chandru@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jdmason@kudzu.us,
+       Muli Ben-Yehuda <muli@il.ibm.com>
+Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
+ in kdump
+Message-Id: <20080310090912.b9f34d27.akpm@linux-foundation.org>
+In-Reply-To: <47D5359D.5000909@in.ibm.com>
+References: <1191962414.24134.68.camel@chandru>
+	<20071009210623.GK4335@rhun.haifa.ibm.com>
+	<20071010053057.GA24434@in.ibm.com>
+	<20071014054110.GB4399@rhun.haifa.ibm.com>
+	<20071015062919.GA4598@in.ibm.com>
+	<476F4064.8010601@in.ibm.com>
+	<47D5359D.5000909@in.ibm.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803102135.57013.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 March 2008 09:22:00 pm Greg KH wrote:
-> On Sun, Mar 09, 2008 at 12:51:15PM +0530, Balaji Rao wrote:
-> > On Sunday 09 March 2008 12:33:07 pm Greg KH wrote:
-> > <snip>
-> > > > > > Hi,
-> > > > > > 
-> > > > > > This patch does not fix it all! The problem is in fact more involved. I also get these BUG reports when I 
-reload 
-> > > > kvm-intel.
-> > > > > > 
-> > > > > > BUG kmalloc-8: Object already free
-> > > > > > [  74.696570] -----------------------------------------------------------------------------
-> > > > > > [   74.696596] 
-> > > > > > [   74.697310] INFO: Allocated in strndup_user+0x30/0x62 age=587 cpu=2 pid=1439
-> > > > > > [   74.697845] INFO: Freed in kobject_set_name_vargs+0x29/0x32 age=559 cpu=3 pid=1439
-> > > > > > [   74.698008] INFO: Slab 0xc16f93a0 used=10 fp=0xf7c9d2d8 flags=0x10000c3
-> > > > > > [   74.698008] INFO: Object 0xf7c9d1f8 @offset=504 fp=0xf7c9d578
-> > > > > > 
-> > > > > > This happens because, sysdev_class_register assigns a name to the
-> > > > > > kobject, and kfrees the old name if any. The poisoned 'name' object
-> > > > > > persists in case of statically allocated kobjects and as its passed to
-> > > > > > kfree again when re registered, we get the above warning.
-> > > > > > 
-> > > > > > So, AFAICS the best way to solve this is by fixing the kobject users
-> > > > > > (kvm, oprofile etc.) to use dynamic kobjects instead of static ones or
-> > > > > > memset the kobject to zero before passing it to sysdev_register.
-> > > > > 
-> > > > > I like the memset idea, how about this patch instead?
-> > > > > 
-> > > > > thanks,
-> > > > > 
-> > > > > greg k-h
-> > > > > 
-> > > > > --- a/drivers/base/sys.c
-> > > > > +++ b/drivers/base/sys.c
-> > > > > @@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_
-> > > > >  	pr_debug("Registering sysdev class '%s'\n",
-> > > > >  		 kobject_name(&cls->kset.kobj));
-> > > > >  	INIT_LIST_HEAD(&cls->drivers);
-> > > > > +	memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
-> > > > >  	cls->kset.kobj.parent = &system_kset->kobj;
-> > > > >  	cls->kset.kobj.ktype = &ktype_sysdev_class;
-> > > > >  	cls->kset.kobj.kset = system_kset;
-> > > > > 
-> > > > 
-> > > > This should work.But I am afraid if we zeroed it, the kfree poison
-> > > > test wouldn't catch even the genuine cases. Isn't it ?  CMIIW.
-> > > 
-> > > What "genuine cases"?  kobjects should always be initialized to zero
-> > > before they are registered.
-> > > 
-> > The cases in which a freed kobject is passed to the register function ? Probably they will be caught when do a memset..
-> > > > A better fix according to me would be to zero the kobject in the
-> > > > places where we know it is being re-registered (kvm, oprofile) etc.
-> > > > This should do for now. But we should fix the sys_device users later,
-> > > > for the next cycle.
-> > > 
-> > > Are you sure you know all of the sysdev_class objects that can be
-> > > re-registered?
-> > > 
-> > Hmm.. Right. No, I only know that KVM and Oprofile use it.
-> > > Can you test this patch out?
-> > > 
-> > Yes the idea works. One more memset is needed in sysdev_register. Here's the final patch.
-> > 
-> > diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-> > index 2f79c55..7c839d9 100644
-> > --- a/drivers/base/sys.c
-> > +++ b/drivers/base/sys.c
-> > @@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_class * cls)
-> >         pr_debug("Registering sysdev class '%s'\n",
-> >                  kobject_name(&cls->kset.kobj));
-> >         INIT_LIST_HEAD(&cls->drivers);
-> > +       memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
-> >         cls->kset.kobj.parent = &system_kset->kobj;
-> >         cls->kset.kobj.ktype = &ktype_sysdev_class;
-> >         cls->kset.kobj.kset = system_kset;
-> > @@ -227,6 +228,7 @@ int sysdev_register(struct sys_device * sysdev)
-> >  
-> >         pr_debug("Registering sys device '%s'\n", kobject_name(&sysdev->kobj));
-> >  
-> > +       memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
-> >         /* Make sure the kset is set */
-> >         sysdev->kobj.kset = &cls->kset;
+On Mon, 10 Mar 2008 18:50:29 +0530 Chandru <chandru@in.ibm.com> wrote:
+
+> Chandru wrote:
+> > Hi Muli,
+> >
+> > I have tried to work with CCR ,CSR, CSMR, CSAR, CFGRW, GBRERRM  
+> > registers but have been unable to make calgary generate an exception 
+> > upon error condition.  In alloc_tce_table() , I am setting WRITE_ONLY 
+> > access permission bit to tce entries but it isn't helping.  Would you 
+> > kindly let me know how we can make calgary to generate an exception in 
+> > error conditions ?.
+> >
+> > Thanks,
+> > Chandru
+> >
+> >
+> Hello Andrew,
 > 
-> Yes, you're right.
+> Could you pls consider the attached patch for inclusion in mainline.
 > 
-> This also means I can drop the kobject_cleanup() patch from you as well,
-> as that should no longer be needed, right?
-Yes, That's no longer needed. 
 
-I am resending the patch, as the previous one had some whitespace issues.
+I can sort-of work out what the patch does from the above quote, but it
+would be nice to have a proper changelog description from yourself rather
+than having me try to write it, please.
 
-Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-Tested-by: Mikael Pettersson <mikpe@it.uu.se>
+> 
+> Signed-off-by: Chandru S <chandru@in.ibm.com>
+> ---
+> 
+> --- arch/x86/kernel/pci-calgary_64.c.orig       2008-03-10 
+> 15:54:08.000000000 +0530
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 2f79c55..7c839d9 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_class * cls)
- 	pr_debug("Registering sysdev class '%s'\n",
- 		 kobject_name(&cls->kset.kobj));
- 	INIT_LIST_HEAD(&cls->drivers);
-+	memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
- 	cls->kset.kobj.parent = &system_kset->kobj;
- 	cls->kset.kobj.ktype = &ktype_sysdev_class;
- 	cls->kset.kobj.kset = system_kset;
-@@ -227,6 +228,7 @@ int sysdev_register(struct sys_device * sysdev)
- 
- 	pr_debug("Registering sys device '%s'\n", kobject_name(&sysdev->kobj));
- 
-+	memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
- 	/* Make sure the kset is set */
- 	sysdev->kobj.kset = &cls->kset;
- 
+The patch was badly wordwrapped.  Please fix your email client for the next
+version.
 
--- 
-regards,
-balaji rao
-3rd year,
-Dept. of Mechanical Engineering,
-National Institute of Technology, Karnataka
