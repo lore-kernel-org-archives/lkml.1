@@ -1,60 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYCJCD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbYCJCFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbYCJCD6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 22:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYCJCDt
+	id S1755114AbYCJCFI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 22:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbYCJCE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 22:03:49 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:49412 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754489AbYCJCDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 22:03:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Fawwqo8UwvnXFc/a/kXFaGPWGVO/uLqMxpUx8OLOsIjeOBir01j1XYMO5pp/nyycJzQsRWN9qNQMvGciy3fDnmwiHLH/CXJoQD+3RK2ZIE/syOi4EYsyAeF2SUdCQGpZAC4tqvU38xlyYjYCLSBf+HCaXlvKdE7nW4Hy8CUSdCo=
-Message-ID: <a8e1da0803091903i3ea7a54bkea797a43eeae462e@mail.gmail.com>
-Date: Mon, 10 Mar 2008 10:03:47 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] add time_now_after and other macros which compare with jiffies
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080309120133.2d1363e4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803080735.06984.hidave.darkstar@gmail.com>
-	 <877igd6vqn.fsf@saeurebad.de>
-	 <a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
-	 <20080309095802.70d91c7b@core>
-	 <a8e1da0803090344l7f468326r8d3844e20ede08a3@mail.gmail.com>
-	 <20080309110808.2249aa3a@core>
-	 <20080309120133.2d1363e4.akpm@linux-foundation.org>
+	Sun, 9 Mar 2008 22:04:56 -0400
+Received: from mga01.intel.com ([192.55.52.88]:64419 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753555AbYCJCEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 22:04:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,471,1199692800"; 
+   d="scan'208";a="531211901"
+Subject: Re: AE_ERROR, ACPI thermal trip point state changed
+From: "Zhang, Rui" <rui.zhang@intel.com>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: linux-acpi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47D24341.5070908@freemail.hu>
+References: <47B328AA.1000800@freemail.hu> <47B3F147.7000704@freemail.hu>
+	 <47CF96E2.9020302@freemail.hu>
+	 <1204757373.10256.179.camel@acpi-hp-zz.sh.intel.com>
+	 <823A93EED437D048963A3697DB0E35DE0129BB78@pdsmsx414.ccr.corp.intel.com>
+	 <47D0E694.5050102@freemail.hu>
+	 <1204874686.10256.185.camel@acpi-hp-zz.sh.intel.com>
+	 <47D24341.5070908@freemail.hu>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 10 Mar 2008 09:52:20 +0800
+Message-Id: <1205113940.10256.191.camel@acpi-hp-zz.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 3:01 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Sun, 9 Mar 2008 11:08:08 +0000 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
->  > > Yes, This has a purpose as well. You will find most of the usage of these
->  > > macros are just compare some value with jiffies after doing some grep.
->  >
->  > That is no reason to add more macros that hide how they do it, or make
->  > jiffies itself invisible to the grep search or variable usage finding
->  > tools (and for tickless that very thing is important)
->
->  We could call them time_is_after_jiffies(), time_is_before_jiffies(), etc.
->
->  Those names are actually better than time_after_now(), etc.
->
->
-Andrew, Hannes, Alan,
-thanks for your comment, I have send the new time_is_* patch as v3.
 
-Hannes, It's more like your is_past/is_future but looks better when
-along with _eq
+On Sat, 2008-03-08 at 15:41 +0800, Németh Márton wrote:
+> Zhang, Rui wrote:
+> > On Fri, 2008-03-07 at 14:54 +0800, Németh Márton wrote:
+> >> Hi,
+> >>
+> >> I downloaded pmtools from
+> >>
+> http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/pmtools-20071116.tar.bz2 and
+> >> compiled: it created exactly the same result what my currently
+> >> installed acpidump Debian
+> >> package version 20071116-1. I think it is useless to send the same
+> log
+> >> again.
+> >>
+> >> After I boot the "Please send acpidump to
+> linux-acpi@vger.kernel.org"
+> >> message is already
+> >> there. So when I first get the prompt I checked for this message in
+> >> dmesg and executed
+> >> the given command. Here is my result:
+> >>
+> >> # cat /proc/acpi/thermal_zone/*/*
+> >> 0 - Active; 1 - Passive
+> >> <polling disabled>
+> >> state:                   ok
+> >> temperature:             42 C
+> >> critical (S5):           155 C
+> >> passive:                 84 C: tc1=2 tc2=5 tsp=0 devices=CPU0
+> >> active[0]:               70 C: devices=
+> >> # ls /proc/acpi/thermal_zone/*/*
+> >> /proc/acpi/thermal_zone/THRM/cooling_mode
+> >> /proc/acpi/thermal_zone/THRM/polling_frequency
+> >> /proc/acpi/thermal_zone/THRM/state
+> >> /proc/acpi/thermal_zone/THRM/temperature
+> >> /proc/acpi/thermal_zone/THRM/trip_points
+> >>
+> >> Maybe this is related to
+> >> http://bugzilla.kernel.org/show_bug.cgi?id=8544 ?
+> >>
+> > Hi, Németh,
+> >
+> > Please ignore the debug patch I sent and try this one.
+> 
+> I created both the dmesg logs:
+> 
+> 1. Clevo-D410J-patch-debug-thermal2.txt: the patch-debug-thermal was
+> only
+> applied, (and added a missing "\n").
+> 
+> 2. Clevo-D410J-thermal-fix.txt: the thermal-fix patch was also
+> applied.
+> In this case the AE_ERROR message is not there any more on Clevo D410J
+> laptop.
+> 
+Thanks for your help in debugging this.
+We will get the "thermal-fix" patch upstream soon.
+
+thanks,
+rui
+
