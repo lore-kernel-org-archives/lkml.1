@@ -1,72 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYCJSgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYCJShR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbYCJSgz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 14:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYCJSgr
+	id S1755709AbYCJShR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 14:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYCJSgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 10 Mar 2008 14:36:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39568 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYCJSgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 10 Mar 2008 14:36:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:49414 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbYCJSgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 14:36:46 -0400
-Message-ID: <47D57F86.2020806@goop.org>
-Date: Mon, 10 Mar 2008 11:35:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Hugh Dickins <hugh@veritas.com>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309111456.GA21690@elte.hu> <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu> <20080309114640.85c9c3eb.akpm@linux-foundation.org> <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com> <87myp68r88.fsf@basil.nowhere.org> <Pine.LNX.4.64.0803101707070.3398@blonde.site> <47D57056.3050204@goop.org> <20080310175305.GC7692@one.firstfloor.org>
-In-Reply-To: <20080310175305.GC7692@one.firstfloor.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [PATCH] sched: fix race in schedule
+From: Peter Zijlstra <peterz@infradead.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, hpj@urpla.net
+In-Reply-To: <47D57770.50909@ct.jp.nec.com>
+References: <47D57770.50909@ct.jp.nec.com>
+Content-Type: text/plain
+Date: Mon, 10 Mar 2008 19:36:37 +0100
+Message-Id: <1205174197.8514.159.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>   1. Xen marks the whole page as being of pgd-type, and so it can't
->>      have non-pgd contents (as the page would be RO, and any contents
->>      would be validated as pgd entries).  However I can fix that by
->>     
->
-> That sounds more like a Xen bug. Why should it validate anything except
-> the first four entries which are used by the hardware? 
->
-> I can imagine that false sharing would be slow because you would
-> have unnecessary traps, but it shouldn't be a correctness issue.
->   
+On Mon, 2008-03-10 at 11:01 -0700, Hiroshi Shimamoto wrote:
+> Hi Ingo,
+> 
+> I found a race condition in scheduler.
+> The first report is the below;
+> http://lkml.org/lkml/2008/2/26/459
+> 
+> It took a bit long time to investigate and I couldn't have much time last week.
+> It is hard to reproduce but -rt is little easier because it has preemptible
+> spin lock and rcu.
+> 
+> Could you please check the scenario and the patch.
+> It will be needed for the stable, too.
+> 
+> ---
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> There is a race condition between schedule() and some dequeue/enqueue
+> functions; rt_mutex_setprio(), __setscheduler() and sched_move_task().
+> 
+> When scheduling to idle, idle_balance() is called to pull tasks from
+> other busy processor. It might drop the rq lock.
+> It means that those 3 functions encounter on_rq=0 and running=1.
+> The current task should be put when running.
+> 
+> Here is a possible scenario;
+>    CPU0                               CPU1
+>     |                              schedule()
+>     |                              ->deactivate_task()
+>     |                              ->idle_balance()
+>     |                              -->load_balance_newidle()
+> rt_mutex_setprio()                     |
+>     |                              --->double_lock_balance()
+>     *get lock                          *rel lock
+>     * on_rq=0, ruuning=1               |
+>     * sched_class is changed           |
+>     *rel lock                          *get lock
+>     :                                  |
+>                                        :
+>                                    ->put_prev_task_rt()
+>                                    ->pick_next_task_fair()
+>                                        => panic
+> 
+> The current process of CPU1(P1) is scheduling. Deactivated P1,
+> and the scheduler looks for another process on other CPU's runqueue
+> because CPU1 will be idle. idle_balance(), load_balance_newidle()
+> and double_lock_balance() are called and double_lock_balance() could
+> drop the rq lock. On the other hand, CPU0 is trying to boost the
+> priority of P1. The result of boosting only P1's prio and sched_class
+> are changed to RT. The sched entities of P1 and P1's group are never
+> put. It makes cfs_rq invalid, because the cfs_rq has curr and no leaf,
+> but pick_next_task_fair() is called, then the kernel panics.
 
-Yeah, the most fundamental problem is that the whole page is RO, so even 
-if Xen trapped and emulated, it still makes a very bad neighbour.  I was 
-also going to say that there's no reason why you couldn't pack multiple 
-pgds into one page, but I think we can only specify the cr3 at page 
-resolution anyway.
+Very nice catch, this had me puzzled for a while. I'm not quite sure I
+fully understand. Could you explain why the below isn't sufficient?
 
->>      maintaining a separate per-cpu pgd page, and just copy the four
->>      entries over when cr3 is reloaded.  This would move the
->>      Xen-specific requirements into the Xen code without affecting the
->>      rest of the kernel.
->>     
->
-> x86-64 used to do that, but it turned out this breaks some shared cache 
-> optimizations on the P4 between SMT threads. So you might actually see 
-> user space performance regressions from it.
->   
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index a0c79e9..ebd9fc5 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4067,10 +4067,11 @@ need_resched_nonpreemptible:
+ 		prev->sched_class->pre_schedule(rq, prev);
+ #endif
+ 
++	prev->sched_class->put_prev_task(rq, prev);
++
+ 	if (unlikely(!rq->nr_running))
+ 		idle_balance(cpu, rq);
+ 
+-	prev->sched_class->put_prev_task(rq, prev);
+ 	next = pick_next_task(rq, prev);
+ 
+ 	sched_info_switch(prev, next);
 
-Hm, given that Xen doesn't make any topology guarantees about vcpus, I 
-don't think it would make much difference.  I think it would only be 
-observable if you actually pinned the vcpus to physical siblings.  
-Besides we could easily maintain sibling info and look to see if we're 
-about to reload cr3 to match the other thread(s), then just use the same 
-pgd copy.
 
-    J
