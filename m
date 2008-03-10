@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbYCJLmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbYCJLuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbYCJLmi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 07:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYCJLm2
+	id S1752388AbYCJLuv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 07:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYCJLul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 07:42:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:64196 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYCJLm1 (ORCPT
+	Mon, 10 Mar 2008 07:50:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60140 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbYCJLul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 07:42:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=pTCdevWk4v9cWSdAAay+DN6/JmYogAYzRoPhRrFrt0T2imcoHqpAl/JxjziKNCbPjd7k3FcCC9RVwg9X6p7npf4cS1OtuCniWTmiLZpC2wqdFGTamR6AFL97Kg3ILfDMFSkCk0fejVqjdtOIQKm7IXLT8/Ihz4Yj9dNKzDgwQ7E=
-Message-ID: <47D51E9A.1070301@gmail.com>
-Date: Mon, 10 Mar 2008 20:42:18 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Roel Kluin <12o3l@tiscali.nl>
-CC: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ATA: logical-bitwise and confusion in ahci_save_initial_config()
-References: <47D44BC0.2090906@tiscali.nl>
-In-Reply-To: <47D44BC0.2090906@tiscali.nl>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 07:50:41 -0400
+Date: Mon, 10 Mar 2008 12:52:29 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.25-rc4
+Message-ID: <20080310115229.GA28780@one.firstfloor.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu> <20080306125929.GD17940@kernel.dk> <20080306130643.GB21359@elte.hu> <20080307085341.GA23814@elte.hu> <20080308233604.GA3866@ucw.cz> <87abl812h0.fsf@basil.nowhere.org> <20080310101044.GB9520@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080310101044.GB9520@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> logical-bitwise & confusion
+On Mon, Mar 10, 2008 at 11:10:53AM +0100, Pavel Machek wrote:
+> On Sun 2008-03-09 13:55:23, Andi Kleen wrote:
+> > Pavel Machek <pavel@ucw.cz> writes:
+> > > 
+> > > How many machines are there in your test farm? Would it be possible to
+> > > make the neccessary scripts available somewhere? I guess I could make
+> > > one or two machines do some automated testing...
+> > 
+> > You can also use autoboot
+> > 
+> > ftp://ftp.firstfloor.org/pub/ak/autoboot/autoboot-1.tgz
+> > 
+> > [hmm I think it's a slightly older version, but should not 
+> > be too difficult to adapt]
+> > 
+> > These are the scripts we use for automatic testing regularly in Nuernberg.
+> > 
+> > It's a little different from Ingo's setup I think though and you
+> > really need to use remote controllable power switches for it to work
+> > well [I personally use some cheap USB controlled ones]
 > 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> I lack the power switches. I wonder how Ingo gets around that?
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+I use gembird USB powerswitches. They are cheap and work
+well under Linux.
 
-Thanks for spotting this.
+> 
+> ...OTOH power switch should be only needed when we hit a kernel bug,
+> that should hopefully be rare...
 
--- 
-tejun
+It happens more often than you think.
+
+-Andi
