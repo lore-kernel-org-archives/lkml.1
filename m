@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYCJErb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYCJFOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYCJErb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 00:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYCJErX
+	id S1753993AbYCJFOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 01:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYCJFOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 00:47:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38631 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbYCJErW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 00:47:22 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: linux1394-devel@lists.sourceforge.net
-Subject: Re: [PATCH] firewire: debug AT, AR, and selfID-complete events
-Date: Mon, 10 Mar 2008 00:47:05 -0400
-User-Agent: KMail/1.9.9
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
-References: <tkrat.f96c4067f6a48f4a@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.f96c4067f6a48f4a@s5r6.in-berlin.de>
+	Mon, 10 Mar 2008 01:14:39 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:44813 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbYCJFOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 01:14:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BGfIcrPjyw4x4ZcQHrFsdFZWEKjPREuuTzRwIpQKxRf+bMst/feJtTN8/loWs9a4/Vq8cfQKRlwiqnfSjZ7i0Q75smFMHwVa5CK3VPvnlVpbGjsF47mTevKciQNViOFbTh1nVIyFK19BLKIrSgUK1/dtrHWKM30dpey80j1Qdzg=
+Message-ID: <f17812d70803092214x2fefe245i741902bc62dee9d2@mail.gmail.com>
+Date: Mon, 10 Mar 2008 13:14:35 +0800
+From: "eric miao" <eric.y.miao@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [patch 2.6.25-rc4] gpio/pca953x bugfix: mark as can_sleep
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rtp Arnaud Patard" <arnaud.patard@rtp-net.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <200803091356.20024.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803100047.05387.jwilson@redhat.com>
+References: <200803091356.20024.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 March 2008 04:49:34 pm Stefan Richter wrote:
-> This adds debug printks for asynchronous transmission and reception and
-> for self ID reception.  The debug code is per default deactivated by #if
-> blocks.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->
-> I am undecided whether this is OK for mainline, and whether the debug
-> options should become a Kconfig option or runtime options.
->
-> It may be temporarily useful to the few driver developers.  Do we want
-> end users to provide us with debug logs of this kind?  Then it should
-> be one or two runtime options.
+OK
 
+On Mon, Mar 10, 2008 at 4:56 AM, David Brownell <david-b@pacbell.net> wrote:
+> The pca953x driver is an I2C driver so gpio_chip->can_sleep should be set.
+>  This lets upper layers know they should use the gpio_*_cansleep() calls
+>  to access values, and may not access them from nonsleeping contexts.
+>
+>  Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+>  Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+>  ---
+>  Merge before 2.6.25-final, please.  This will for example prevent
+>  leds-gpio from issuing blocking I2C calls from timer/irq contexts.
+>
+>   drivers/gpio/pca953x.c |    1 +
+>   1 file changed, 1 insertion(+)
+>
+>  --- g26.orig/drivers/gpio/pca953x.c     2008-03-08 11:17:22.000000000 -0800
+>  +++ g26/drivers/gpio/pca953x.c  2008-03-09 13:51:13.000000000 -0700
+>  @@ -184,6 +184,7 @@ static void pca953x_setup_gpio(struct pc
+>         gc->direction_output = pca953x_gpio_direction_output;
+>         gc->get = pca953x_gpio_get_value;
+>         gc->set = pca953x_gpio_set_value;
+>  +       gc->can_sleep = 1;
+>
+>         gc->base = chip->gpio_start;
+>         gc->ngpio = gpios;
+>
 
-My vote would be to include this sort of thing with a run-time option to 
-enable the extra spew, since its a perfectly accepted standard for other 
-drivers. It ought to be extremely useful in determining whats going wrong 
-with end-user setups, particularly in cases where we can't reproduce the 
-problem (typically for lack of having the specific hardware in-house).
 
 
 -- 
-Jarod Wilson
-jwilson@redhat.com
+Cheers
+- eric
