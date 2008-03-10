@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbYCJLuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbYCJLwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbYCJLuv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 07:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYCJLul
+	id S1752884AbYCJLwS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 07:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYCJLwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 07:50:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60140 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYCJLul (ORCPT
+	Mon, 10 Mar 2008 07:52:11 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60793 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbYCJLwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 07:50:41 -0400
-Date: Mon, 10 Mar 2008 12:52:29 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.25-rc4
-Message-ID: <20080310115229.GA28780@one.firstfloor.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu> <20080306125929.GD17940@kernel.dk> <20080306130643.GB21359@elte.hu> <20080307085341.GA23814@elte.hu> <20080308233604.GA3866@ucw.cz> <87abl812h0.fsf@basil.nowhere.org> <20080310101044.GB9520@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 10 Mar 2008 07:52:10 -0400
+Date: Mon, 10 Mar 2008 12:52:37 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jan-Simon =?iso-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>
+Cc: Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
+       linux-kernel@vger.kernel.org, rick@vanrein.org
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Message-ID: <20080310115237.GA29197@elf.ucw.cz>
+References: <182234194@web.de> <Pine.LNX.4.64.0803081210540.18589@twin.jikos.cz> <200803101112.45105.dl9pf@gmx.de> <200803101224.07628.dl9pf@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080310101044.GB9520@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803101224.07628.dl9pf@gmx.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 11:10:53AM +0100, Pavel Machek wrote:
-> On Sun 2008-03-09 13:55:23, Andi Kleen wrote:
-> > Pavel Machek <pavel@ucw.cz> writes:
-> > > 
-> > > How many machines are there in your test farm? Would it be possible to
-> > > make the neccessary scripts available somewhere? I guess I could make
-> > > one or two machines do some automated testing...
-> > 
-> > You can also use autoboot
-> > 
-> > ftp://ftp.firstfloor.org/pub/ak/autoboot/autoboot-1.tgz
-> > 
-> > [hmm I think it's a slightly older version, but should not 
-> > be too difficult to adapt]
-> > 
-> > These are the scripts we use for automatic testing regularly in Nuernberg.
-> > 
-> > It's a little different from Ingo's setup I think though and you
-> > really need to use remote controllable power switches for it to work
-> > well [I personally use some cheap USB controlled ones]
+On Mon 2008-03-10 12:24:06, Jan-Simon Möller wrote:
+> Am Montag 10 März 2008 11:14:48 schrieben Sie:
+> >
+> > Feel free to improve memmap documentation.
 > 
-> I lack the power switches. I wonder how Ingo gets around that?
-
-I use gembird USB powerswitches. They are cheap and work
-well under Linux.
-
 > 
-> ...OTOH power switch should be only needed when we hit a kernel bug,
-> that should hopefully be rare...
+> BUT ...
+> to do that, I would need to know already a bit of memmap ?!
+> 
+> This is a Chicken-egg-problem ! 
+> 
+> And I won't "waste" my time if i've a solution at hand already ?!
 
-It happens more often than you think.
+...so you waste everyone elses...?
 
--Andi
+> Lets do it like this: Show me what i need to know about the usage of memmap 
+> and i'll write some doc. 
+> 
+> Just shouting "write your own doc" is pointless, as I don't know this part of 
+> the kernel myself (yet).
+
+Read the thread you are replying to. It was already there.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
