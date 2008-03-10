@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYCJWEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYCJWEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbYCJWEQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYCJWEE
+	id S1755872AbYCJWEk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYCJWE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:04:04 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33758 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbYCJWED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:04:03 -0400
-To: akpm@linux-foundation.org
-CC: staubach@redhat.com, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
-       haveblue@us.ibm.com
-In-reply-to: <20080310143832.08ad52a9.akpm@linux-foundation.org> (message from
-	Andrew Morton on Mon, 10 Mar 2008 14:38:32 -0700)
-Subject: Re: [PATCH 1/3] enhanced lookup ESTALE error handling (v3)
-References: <4790C761.1010603@redhat.com>
-	<47A387CF.70201@redhat.com>
-	<47D598C5.7080609@redhat.com> <20080310143832.08ad52a9.akpm@linux-foundation.org>
-Message-Id: <E1JYq5I-0000D9-8a@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 10 Mar 2008 23:03:04 +0100
+	Mon, 10 Mar 2008 18:04:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58085 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754604AbYCJWEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 18:04:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH] keep rd->online and cpu_online_map in sync
+Date: Mon, 10 Mar 2008 23:03:27 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Gregory Haskins <ghaskins@novell.com>, ego@in.ibm.com,
+       akpm@linux-foundation.org, dmitry.adamushko@gmail.com, mingo@elte.hu,
+       oleg@sign.ru, yi.y.yang@intel.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+References: <20080310081425.GA11031@in.ibm.com> <20080310133755.4689.83217.stgit@novell1.haskins.net> <20080310181244.GA27329@linux-os.sc.intel.com>
+In-Reply-To: <20080310181244.GA27329@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803102303.28660.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This is a patch to enhance ESTALE error handling during the
-> > lookup process.  The error, ESTALE, can occur when out of data
-> > dentries, stored in the dcache, is used to translate a pathname
-> > component to a dentry.  When this occurs, the dentry which
-> > contains the pointer to the inode which refers to the non-existent
-> > file is dropped from the dcache and then the lookup process
-> > started again.  Care is taken to ensure that forward process is
-> > always being made.  If forward process is not detected, then the
-> > lookup process is terminated and the error, ENOENT, is returned
-> > to the caller.
+On Monday, 10 of March 2008, Suresh Siddha wrote:
+> On Mon, Mar 10, 2008 at 09:39:34AM -0400, Gregory Haskins wrote:
+> > keep rd->online and cpu_online_map in sync
+> > 
+> > It is possible to allow the root-domain cache of online cpus to
+> > become out of sync with the global cpu_online_map.  This is because we
+> > currently trigger removal of cpus too early in the notifier chain.
+> > Other DOWN_PREPARE handlers may in fact run and reconfigure the
+> > root-domain topology, thereby stomping on our own offline handling.
+> > 
+> > The end result is that rd->online may become out of sync with
+> > cpu_online_map, which results in potential task misrouting.
+> > 
+> > So change the offline handling to be more tightly coupled with the
+> > global offline process by triggering on CPU_DYING intead of
+> > CPU_DOWN_PREPARE.
+> > 
+> > Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> > ---
+> > 
+> >  kernel/sched.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 52b9867..a616fa1 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -5881,7 +5881,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+> >  		spin_unlock_irq(&rq->lock);
+> >  		break;
+> >  
+> > -	case CPU_DOWN_PREPARE:
+> > +	case CPU_DYING:
 > 
-> This collides in non-trivial ways with the always-coming-never-arrives
-> r-o-bind-mounts patches.
-> 
-> I have an old version of those patches in -mm and I believe that Al
-> is/was/has set up some git tree with these patches and perhaps other stuff.
-> 
-> So some coordination is required please.  I'd suggest that if Al indeed
-> does have such a tree, he hand over the URL so I can get it into -mm and
-> that you then redo these patches on top of that.
-> 
-> Please also Cc Al and Christoph on these patches, as they are hitting files
-> which they maintain and develop.
+> Don't we need to take care of CPU_DYING_FROZEN aswell?
 
-Also my objection about breaking backward compatibility for fuse
-filesystems is still seemingly unaddressed.
+Well, I'd say we do.
 
-I know it would be more convenient to push this problem into the fuse
-filesystems, but they are unfortunately on the other side of the
-stable kernel ABI, so this is not an option.
-
-I've already presented a solution (which wasn't greeted with big
-enthusiasm), and I'm open to discussion about other ways to solve
-this.
-
-Miklos
+> >  		/* Update our root-domain */
+> >  		rq = cpu_rq(cpu);
+> >  		spin_lock_irqsave(&rq->lock, flags);
+> > 
