@@ -1,37 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYCJWNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbYCJWPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbYCJWNG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYCJWMz
+	id S1756175AbYCJWPd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYCJWPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:12:55 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:40194 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753220AbYCJWMy (ORCPT
+	Mon, 10 Mar 2008 18:15:25 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:34852 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbYCJWPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:12:54 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty_ioctl: locking for tty_wait_until_sent
-References: <20080310215325.2b8d33e8@core>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 10 Mar 2008 23:12:51 +0100
-In-Reply-To: <20080310215325.2b8d33e8@core>
-Message-ID: <87od9m5iu4.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Mon, 10 Mar 2008 18:15:25 -0400
+Message-ID: <47D5B2E9.2030509@tiscali.nl>
+Date: Mon, 10 Mar 2008 23:15:05 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Mar 2008 22:06:19.0426 (UTC) FILETIME=[F8004020:01C882FA]
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: akpm@linux-foundation.org, "Darrick J. Wong" <djwong@us.ibm.com>,
+       benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       lkml <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>
+Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+References: <47D47B11.1000303@tiscali.nl>	 <20080310084633.5246ecfe@paperstreet.colino.net> <1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl> <64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org> <47D5A585.8050107@tiscali.nl> <1dd996a5ad3a455c91886cacd3243128@kernel.crashing.org>
+In-Reply-To: <1dd996a5ad3a455c91886cacd3243128@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+Segher Boessenkool wrote:
+>> It includes suggested changes by Segher Boessenkool and I think this
+>> version was tested by Darrick J. Wong
+> 
+>> -    u8 reg;
+>> +    u8 reg, temp;
+>>      struct i2c_client *client = to_i2c_client(dev);
+>>      struct adt7473_data *data = i2c_get_clientdata(client);
+>> -    int temp = simple_strtol(buf, NULL, 10);
+>> -    temp = temp && 0xFF;
+>> +
+>> +    temp = simple_strtol(buf, NULL, 10) & 0xFF;
+> 
+> It still does this superfluous "& 0xff", which hides the lack of
+> range checking.
 
-> This function still depends on the big kernel lock in some cases. Push
-> locking into the function ready for removal of the BKL from ioctl call
-> paths.
+Sorry didn't quite grep that
+---
+logical-bitwise & confusion
 
-Didn't you forget the .ioctl -> .unlocked_ioctl change?
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
+index 9587869..98937d3 100644
+--- a/drivers/hwmon/adt7473.c
++++ b/drivers/hwmon/adt7473.c
+@@ -566,11 +566,11 @@ static ssize_t set_max_duty_at_crit(struct device *dev,
+ 				    const char *buf,
+ 				    size_t count)
+ {
+-	u8 reg;
++	u8 reg, temp;
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct adt7473_data *data = i2c_get_clientdata(client);
+-	int temp = simple_strtol(buf, NULL, 10);
+-	temp = temp && 0xFF;
++
++	temp = simple_strtol(buf, NULL, 10);
+ 
+ 	mutex_lock(&data->lock);
+ 	data->max_duty_at_overheat = temp;
 
--Andi
