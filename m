@@ -1,43 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbYCJQLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYCJQL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbYCJQLH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 12:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYCJQKx
+	id S1754947AbYCJQL5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 12:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCJQLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 12:10:53 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:58226 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbYCJQKw (ORCPT
+	Mon, 10 Mar 2008 12:11:47 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:11299 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbYCJQLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 12:10:52 -0400
-Date: Mon, 10 Mar 2008 19:10:49 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       akpm@linux-foundation.org, rth@twiddle.net, tomof@acm.org
-Subject: Re: [PATCH -mm] alpha: use iommu_is_span_boundary helper function
-Message-ID: <20080310161049.GA10759@jurassic.park.msu.ru>
-References: <20080310231010H.tomof@acm.org>
+	Mon, 10 Mar 2008 12:11:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=u4APkQuQeTR0nMJQiuL05/xBisqKN4wpxjKTwNai5iAc4bpx4X3tNTjFBXc/FZcRa24ZPhpMy7SIte4ef9xQMM/Q4SMxFMc+vPLBAlU9OazNerZYi9RMp9SEv1oVWSnzwyaLBBgDgHqMebsLBeoOrAKgByV4c7vBATCeWZkrM0A=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology, Karnataka
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] Mark kobjects as unitialized
+Date: Mon, 10 Mar 2008 21:35:56 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Mikael Pettersson <mikpe@it.uu.se>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <200803062223.18857.balajirrao@gmail.com> <200803091251.15428.balajirrao@gmail.com> <20080310155200.GA20437@suse.de>
+In-Reply-To: <20080310155200.GA20437@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080310231010H.tomof@acm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803102135.57013.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 11:34:53PM +0900, FUJITA Tomonori wrote:
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH -mm] alpha: use iommu_is_span_boundary helper function
+On Monday 10 March 2008 09:22:00 pm Greg KH wrote:
+> On Sun, Mar 09, 2008 at 12:51:15PM +0530, Balaji Rao wrote:
+> > On Sunday 09 March 2008 12:33:07 pm Greg KH wrote:
+> > <snip>
+> > > > > > Hi,
+> > > > > > 
+> > > > > > This patch does not fix it all! The problem is in fact more involved. I also get these BUG reports when I 
+reload 
+> > > > kvm-intel.
+> > > > > > 
+> > > > > > BUG kmalloc-8: Object already free
+> > > > > > [  74.696570] -----------------------------------------------------------------------------
+> > > > > > [   74.696596] 
+> > > > > > [   74.697310] INFO: Allocated in strndup_user+0x30/0x62 age=587 cpu=2 pid=1439
+> > > > > > [   74.697845] INFO: Freed in kobject_set_name_vargs+0x29/0x32 age=559 cpu=3 pid=1439
+> > > > > > [   74.698008] INFO: Slab 0xc16f93a0 used=10 fp=0xf7c9d2d8 flags=0x10000c3
+> > > > > > [   74.698008] INFO: Object 0xf7c9d1f8 @offset=504 fp=0xf7c9d578
+> > > > > > 
+> > > > > > This happens because, sysdev_class_register assigns a name to the
+> > > > > > kobject, and kfrees the old name if any. The poisoned 'name' object
+> > > > > > persists in case of statically allocated kobjects and as its passed to
+> > > > > > kfree again when re registered, we get the above warning.
+> > > > > > 
+> > > > > > So, AFAICS the best way to solve this is by fixing the kobject users
+> > > > > > (kvm, oprofile etc.) to use dynamic kobjects instead of static ones or
+> > > > > > memset the kobject to zero before passing it to sysdev_register.
+> > > > > 
+> > > > > I like the memset idea, how about this patch instead?
+> > > > > 
+> > > > > thanks,
+> > > > > 
+> > > > > greg k-h
+> > > > > 
+> > > > > --- a/drivers/base/sys.c
+> > > > > +++ b/drivers/base/sys.c
+> > > > > @@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_
+> > > > >  	pr_debug("Registering sysdev class '%s'\n",
+> > > > >  		 kobject_name(&cls->kset.kobj));
+> > > > >  	INIT_LIST_HEAD(&cls->drivers);
+> > > > > +	memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
+> > > > >  	cls->kset.kobj.parent = &system_kset->kobj;
+> > > > >  	cls->kset.kobj.ktype = &ktype_sysdev_class;
+> > > > >  	cls->kset.kobj.kset = system_kset;
+> > > > > 
+> > > > 
+> > > > This should work.But I am afraid if we zeroed it, the kfree poison
+> > > > test wouldn't catch even the genuine cases. Isn't it ?  CMIIW.
+> > > 
+> > > What "genuine cases"?  kobjects should always be initialized to zero
+> > > before they are registered.
+> > > 
+> > The cases in which a freed kobject is passed to the register function ? Probably they will be caught when do a memset..
+> > > > A better fix according to me would be to zero the kobject in the
+> > > > places where we know it is being re-registered (kvm, oprofile) etc.
+> > > > This should do for now. But we should fix the sys_device users later,
+> > > > for the next cycle.
+> > > 
+> > > Are you sure you know all of the sysdev_class objects that can be
+> > > re-registered?
+> > > 
+> > Hmm.. Right. No, I only know that KVM and Oprofile use it.
+> > > Can you test this patch out?
+> > > 
+> > Yes the idea works. One more memset is needed in sysdev_register. Here's the final patch.
+> > 
+> > diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+> > index 2f79c55..7c839d9 100644
+> > --- a/drivers/base/sys.c
+> > +++ b/drivers/base/sys.c
+> > @@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_class * cls)
+> >         pr_debug("Registering sysdev class '%s'\n",
+> >                  kobject_name(&cls->kset.kobj));
+> >         INIT_LIST_HEAD(&cls->drivers);
+> > +       memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
+> >         cls->kset.kobj.parent = &system_kset->kobj;
+> >         cls->kset.kobj.ktype = &ktype_sysdev_class;
+> >         cls->kset.kobj.kset = system_kset;
+> > @@ -227,6 +228,7 @@ int sysdev_register(struct sys_device * sysdev)
+> >  
+> >         pr_debug("Registering sys device '%s'\n", kobject_name(&sysdev->kobj));
+> >  
+> > +       memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
+> >         /* Make sure the kset is set */
+> >         sysdev->kobj.kset = &cls->kset;
 > 
-> iommu_is_span_boundary in lib/iommu-helper.c was exported for PARISC
-> IOMMUs (commit 3715863aa142c4f4c5208f5f3e5e9bac06006d2f). Alpha's
-> IOMMU can use it.
+> Yes, you're right.
 > 
-> This removes the check on the boundary size alignment because
-> iommu_is_span_boundary does.
+> This also means I can drop the kobject_cleanup() patch from you as well,
+> as that should no longer be needed, right?
+Yes, That's no longer needed. 
 
-Acked-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+I am resending the patch, as the previous one had some whitespace issues.
 
-Ivan.
+Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+Tested-by: Mikael Pettersson <mikpe@it.uu.se>
+
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index 2f79c55..7c839d9 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -133,6 +133,7 @@ int sysdev_class_register(struct sysdev_class * cls)
+ 	pr_debug("Registering sysdev class '%s'\n",
+ 		 kobject_name(&cls->kset.kobj));
+ 	INIT_LIST_HEAD(&cls->drivers);
++	memset(&cls->kset.kobj, 0x00, sizeof(struct kobject));
+ 	cls->kset.kobj.parent = &system_kset->kobj;
+ 	cls->kset.kobj.ktype = &ktype_sysdev_class;
+ 	cls->kset.kobj.kset = system_kset;
+@@ -227,6 +228,7 @@ int sysdev_register(struct sys_device * sysdev)
+ 
+ 	pr_debug("Registering sys device '%s'\n", kobject_name(&sysdev->kobj));
+ 
++	memset(&sysdev->kobj, 0x00, sizeof(struct kobject));
+ 	/* Make sure the kset is set */
+ 	sysdev->kobj.kset = &cls->kset;
+ 
+
+-- 
+regards,
+balaji rao
+3rd year,
+Dept. of Mechanical Engineering,
+National Institute of Technology, Karnataka
