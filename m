@@ -1,126 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbYCJO0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbYCJOfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752166AbYCJO0l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 10:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYCJO0e
+	id S1751932AbYCJOfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 10:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYCJOfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 10:26:34 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:48298 "EHLO atmel-es2.atmel.fr"
+	Mon, 10 Mar 2008 10:35:08 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:49870 "EHLO mo10.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750868AbYCJO0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 10:26:33 -0400
-Message-ID: <47D5450A.40500@atmel.com>
-Date: Mon, 10 Mar 2008 15:26:18 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: linux-fbdev-devel@lists.sourceforge.net,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Sedji GAOUAOU <sedji.gaouaou@atmel.com>,
-       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: [PATCH] atmel_lcdfb: wiring BGR to RGB color mode
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751123AbYCJOfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 10:35:07 -0400
+Date: Mon, 10 Mar 2008 23:34:53 +0900
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+Cc: akpm@linux-foundation.org, rth@twiddle.net, ink@jurassic.park.msu.ru
+Cc: tomof@acm.org
+Subject: [PATCH -mm] alpha: use iommu_is_span_boundary helper function
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080310231010H.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds different wiring mode for the LCD screen.
+This is against the current git.
 
-The legacy atmel LCDC IP uses a non standard color mode,
-"BGR-555.1" instead "RGB-565". The major part of graphic stacks 
-for embedded systems uses only "RGB-565". It is possible to swap 
-LCD IOs instead of doing this bit swapping by software (See 
-application note AT91SAM9 LCD Controller
-http://www.atmel.com/dyn/resources/prod_documents/doc6300.pdf)
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -mm] alpha: use iommu_is_span_boundary helper function
 
-This wire swapping is done on the at91sam9rl-ek board (board code 
-using this patch will come later).
+iommu_is_span_boundary in lib/iommu-helper.c was exported for PARISC
+IOMMUs (commit 3715863aa142c4f4c5208f5f3e5e9bac06006d2f). Alpha's
+IOMMU can use it.
+
+This removes the check on the boundary size alignment because
+iommu_is_span_boundary does.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/atmel_lcdfb.c |   27 ++++++++++++++++++++++-----
- include/video/atmel_lcdc.h  |   10 ++++++++++
- 2 files changed, 32 insertions(+), 5 deletions(-)
+ arch/alpha/Kconfig            |    3 +++
+ arch/alpha/kernel/pci_iommu.c |   12 ++----------
+ 2 files changed, 5 insertions(+), 10 deletions(-)
 
---- linux-2.6.x-rc.orig/drivers/video/atmel_lcdfb.c
-+++ linux-2.6.x-rc/drivers/video/atmel_lcdfb.c
-@@ -338,19 +338,35 @@ static int atmel_lcdfb_check_var(struct 
- 		break;
- 	case 15:
- 	case 16:
--		var->red.offset = 0;
-+		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
-+			/* RGB:565 mode */
-+			var->red.offset = 11;
-+			var->blue.offset = 0;
-+			var->green.length = 6;
-+		} else {
-+			/* BGR:555 mode */
-+			var->red.offset = 0;
-+			var->blue.offset = 10;
-+			var->green.length = 5;
-+		}
- 		var->green.offset = 5;
--		var->blue.offset = 10;
--		var->red.length = var->green.length = var->blue.length = 5;
-+		var->red.length = var->blue.length = 5;
- 		break;
- 	case 32:
- 		var->transp.offset = 24;
- 		var->transp.length = 8;
- 		/* fall through */
- 	case 24:
--		var->red.offset = 0;
-+		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
-+			/* RGB:888 mode */
-+			var->red.offset = 16;
-+			var->blue.offset = 0;
-+		} else {
-+			/* BGR:888 mode */
-+			var->red.offset = 0;
-+			var->blue.offset = 16;
-+		}
- 		var->green.offset = 8;
--		var->blue.offset = 16;
- 		var->red.length = var->green.length = var->blue.length = 8;
- 		break;
- 	default:
-@@ -697,6 +713,7 @@ static int __init atmel_lcdfb_probe(stru
- 		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
- 		sinfo->guard_time = pdata_sinfo->guard_time;
- 		sinfo->lcdcon_is_backlight = pdata_sinfo->lcdcon_is_backlight;
-+		sinfo->lcd_wiring_mode = pdata_sinfo->lcd_wiring_mode;
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 002703b..729cdbd 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -330,6 +330,9 @@ config PCI_DOMAINS
+ config PCI_SYSCALL
+ 	def_bool PCI
+ 
++config IOMMU_HELPER
++	def_bool PCI
++
+ config ALPHA_CORE_AGP
+ 	bool
+ 	depends on ALPHA_GENERIC || ALPHA_TITAN || ALPHA_MARVEL
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index e07a23f..4e1c086 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -10,6 +10,7 @@
+ #include <linux/scatterlist.h>
+ #include <linux/log2.h>
+ #include <linux/dma-mapping.h>
++#include <linux/iommu-helper.h>
+ 
+ #include <asm/io.h>
+ #include <asm/hwrpb.h>
+@@ -125,14 +126,6 @@ iommu_arena_new(struct pci_controller *hose, dma_addr_t base,
+ 	return iommu_arena_new_node(0, hose, base, window_size, align);
+ }
+ 
+-static inline int is_span_boundary(unsigned int index, unsigned int nr,
+-				   unsigned long shift,
+-				   unsigned long boundary_size)
+-{
+-	shift = (shift + index) & (boundary_size - 1);
+-	return shift + nr > boundary_size;
+-}
+-
+ /* Must be called with the arena lock held */
+ static long
+ iommu_arena_find_pages(struct device *dev, struct pci_iommu_arena *arena,
+@@ -147,7 +140,6 @@ iommu_arena_find_pages(struct device *dev, struct pci_iommu_arena *arena,
+ 	base = arena->dma_base >> PAGE_SHIFT;
+ 	if (dev) {
+ 		boundary_size = dma_get_seg_boundary(dev) + 1;
+-		BUG_ON(!is_power_of_2(boundary_size));
+ 		boundary_size >>= PAGE_SHIFT;
  	} else {
- 		dev_err(dev, "cannot get default configuration\n");
- 		goto free_info;
---- linux-2.6.x-rc.orig/include/video/atmel_lcdc.h
-+++ linux-2.6.x-rc/include/video/atmel_lcdc.h
-@@ -22,6 +22,15 @@
- #ifndef __ATMEL_LCDC_H__
- #define __ATMEL_LCDC_H__
+ 		boundary_size = 1UL << (32 - PAGE_SHIFT);
+@@ -161,7 +153,7 @@ iommu_arena_find_pages(struct device *dev, struct pci_iommu_arena *arena,
  
-+
-+/* Way LCD wires are connected to the chip:
-+ * Some Atmel chips use BGR color mode (instead of standard RGB)
-+ * A swapped wiring onboard can bring to RGB mode.
-+ */
-+#define ATMEL_LCDC_WIRING_BGR	0
-+#define ATMEL_LCDC_WIRING_RGB	1
-+
-+
-  /* LCD Controller info data structure, stored in device platform_data */
- struct atmel_lcdfb_info {
- 	spinlock_t		lock;
-@@ -42,6 +51,7 @@ struct atmel_lcdfb_info {
- 	u8			saved_lcdcon;
- 
- 	u8			default_bpp;
-+	u8			lcd_wiring_mode;
- 	unsigned int		default_lcdcon2;
- 	unsigned int		default_dmacon;
- 	void (*atmel_lcdfb_power_control)(int on);
+ again:
+ 	while (i < n && p+i < nent) {
+-		if (!i && is_span_boundary(p, n, base, boundary_size)) {
++		if (!i && iommu_is_span_boundary(p, n, base, boundary_size)) {
+ 			p = ALIGN(p + 1, mask + 1);
+ 			goto again;
+ 		}
+-- 
+1.5.3.7
 
