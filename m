@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYCJWJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYCJWJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYCJWJR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYCJWIw
+	id S1756140AbYCJWJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbYCJWJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:08:52 -0400
-Received: from openfortress.nl ([213.189.19.244]:44517 "EHLO fame.vanrein.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753273AbYCJWIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:08:51 -0400
-Date: Mon, 10 Mar 2008 22:07:05 +0000
-From: Rick van Rein <rick@vanrein.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Message-ID: <20080310220705.GB27356@phantom.vanrein.org>
-References: <182234194@web.de> <200803101224.07628.dl9pf@gmx.de> <20080310115237.GA29197@elf.ucw.cz> <200803101523.03620.dl9pf@gmx.de> <47D56DD3.8060108@zytor.com>
+	Mon, 10 Mar 2008 18:09:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58121 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756627AbYCJWJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 18:09:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: 2.6.25-rc4-git3: Reported regressions from 2.6.24
+Date: Mon, 10 Mar 2008 23:08:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+References: <200803100132.57160.rjw@sisk.pl> <18389.3748.687327.166061@harpo.it.uu.se>
+In-Reply-To: <18389.3748.687327.166061@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47D56DD3.8060108@zytor.com>
-X-My-Coolest-Hack: http://rick.vanrein.org/linux/badram -> Exploit broken RAM
-User-Agent: Mutt/1.5.11
+Message-Id: <200803102308.34588.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-> >badram=0x18690000,0xffff0000
-> >(which means a whole from 0x18690000 to 0x1869ffff )
+On Monday, 10 of March 2008, Mikael Pettersson wrote:
+> Rafael J. Wysocki writes:
+>  > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10209
+>  > Subject		: 2.6.25 sysdev API problem
+>  > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+>  > Date		: 2008-03-08 16:56
+>  > References	: http://lkml.org/lkml/2008/3/8/59
+>  > Handled-By	: Greg KH <gregkh@suse.de>
 > 
-> memmap=0x18690000$64K
+> Patch here: http://lkml.org/lkml/2008/3/9/10
+> (different thread, alas, hence not linked with the above one)
 > 
-> 	or
-> 
-> memmap=0x18690000$0x10000
+> Confirmed to work. Waiting for Greg's ack/nak.
 
-The true challenge, of course, is to map things like these:
+Thanks, updated.
 
-badram=0x18fedcba36,0xfffecff6a
-
-This is a repetitive pattern, and this is why people enjoy the syntactic
-sugar of BadRAM (which is penciled down from the output of memtest86).
-It appears to be the prevailing wind in this discussion that the patch
-must be rewritting to make series of amandments as a long series of
-memmap would do, and I'll take on that task.
-
-Cheers,
- -Rick
+Rafael
