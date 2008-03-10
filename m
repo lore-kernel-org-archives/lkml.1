@@ -1,104 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbYCJVWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbYCJVXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582AbYCJVWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYCJVWF
+	id S1756063AbYCJVXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYCJVXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:22:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:32139 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754151AbYCJVWD (ORCPT
+	Mon, 10 Mar 2008 17:23:09 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:50153
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751316AbYCJVXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:22:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=pbMo66VHuVPwQoz9QA8F0aYMN0L3uVMzkogpOr1m9sWOXY9DXyNstifxNFg3iTPsC04g2S6NrFe9Nf7bkwx+D5EiKxWVJnBsyH87zcJzbUJND3ncLLkQL8H8Mfbsg8LI8iq6Pk34vvM0eZGIu40rK5Q2yHi5YwZEIXPOBxq+y6s=
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com
-Subject: [PATCH 3/3 v4l-dvb] v4l: reduce stack usage of v4l1_compat_sync
-Date: Mon, 10 Mar 2008 22:21:40 +0100
-Message-Id: <1205184100-28073-1-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: 20080310145707.6815fbf0@gaivota
-References: 20080310145707.6815fbf0@gaivota
+	Mon, 10 Mar 2008 17:23:08 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 1/2] Revert "cpu hotplug: adjust root-domain->online span in
+	response to hotplug
+Cc: linux-kernel@vger.kernel.org, ghaskins@novell.com,
+       Gregory Haskins <ghaskins@novell.com>
+Date: Mon, 10 Mar 2008 16:52:41 -0400
+Message-ID: <20080310205241.9571.38832.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-poll_one allocated on stack struct poll_wqueues which is pretty big
-structure (>500 bytes on x86_64). v4l1_compat_sync invokes poll_one
-in a loop, so allocate struct poll_wqueues in v4l1_compat_sync (with
-kmalloc) and pass it to poll_one.
+event"
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+This reverts commit 393d94d98b19089ec172566e23557997931b137e.
+
+I submitted 393d94d98b1 to -mm and sched-devel, and then quickly realized
+it was flawed.  However, the patch was already "in flight" and made it
+to Linus' tree and is in .25-rc5.  So this patch reverts the
+original/flawed fix, and the patch that follows has the updated version.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/media/video/v4l1-compat.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/media/video/v4l1-compat.c b/drivers/media/video/v4l1-compat.c
-index e42cea9..a0f6c60 100644
---- a/drivers/media/video/v4l1-compat.c
-+++ b/drivers/media/video/v4l1-compat.c
-@@ -199,14 +199,13 @@ pixelformat_to_palette(unsigned int pixelformat)
+ kernel/sched.c |   18 +++++++++++-------
+ 1 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b02e4fc..52b9867 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5813,13 +5813,6 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		/* Must be high prio: stop_machine expects to yield to it. */
+ 		rq = task_rq_lock(p, &flags);
+ 		__setscheduler(rq, p, SCHED_FIFO, MAX_RT_PRIO-1);
+-
+-		/* Update our root-domain */
+-		if (rq->rd) {
+-			BUG_ON(!cpu_isset(cpu, rq->rd->span));
+-			cpu_set(cpu, rq->rd->online);
+-		}
+-
+ 		task_rq_unlock(rq, &flags);
+ 		cpu_rq(cpu)->migration_thread = p;
+ 		break;
+@@ -5828,6 +5821,15 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	case CPU_ONLINE_FROZEN:
+ 		/* Strictly unnecessary, as first user will wake it. */
+ 		wake_up_process(cpu_rq(cpu)->migration_thread);
++
++		/* Update our root-domain */
++		rq = cpu_rq(cpu);
++		spin_lock_irqsave(&rq->lock, flags);
++		if (rq->rd) {
++			BUG_ON(!cpu_isset(cpu, rq->rd->span));
++			cpu_set(cpu, rq->rd->online);
++		}
++		spin_unlock_irqrestore(&rq->lock, flags);
+ 		break;
  
- /* ----------------------------------------------------------------- */
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -6103,6 +6105,8 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 	rq->rd = rd;
  
--static int poll_one(struct file *file)
-+static int poll_one(struct file *file, struct poll_wqueues *pwq)
- {
- 	int retval = 1;
- 	poll_table *table;
--	struct poll_wqueues pwq; /*TODO: allocate dynamically*/
+ 	cpu_set(rq->cpu, rd->span);
++	if (cpu_isset(rq->cpu, cpu_online_map))
++		cpu_set(rq->cpu, rd->online);
  
--	poll_initwait(&pwq);
--	table = &pwq.pt;
-+	poll_initwait(pwq);
-+	table = &pwq->pt;
- 	for (;;) {
- 		int mask;
- 		set_current_state(TASK_INTERRUPTIBLE);
-@@ -221,7 +220,7 @@ static int poll_one(struct file *file)
- 		schedule();
- 	}
- 	set_current_state(TASK_RUNNING);
--	poll_freewait(&pwq);
-+	poll_freewait(pwq);
- 	return retval;
- }
- 
-@@ -1068,6 +1067,7 @@ static noinline int v4l1_compat_sync(
- 	int err;
- 	enum v4l2_buf_type captype = V4L2_BUF_TYPE_VIDEO_CAPTURE;
- 	struct v4l2_buffer buf;
-+	struct poll_wqueues *pwq;
- 
- 	memset(&buf, 0, sizeof(buf));
- 	buf.index = *i;
-@@ -1091,10 +1091,11 @@ static noinline int v4l1_compat_sync(
- 		goto done;
- 	}
- 
-+	pwq = kmalloc(sizeof(*pwq), GFP_KERNEL);
- 	/*  Loop as long as the buffer is queued, but not done  */
- 	while ((buf.flags & (V4L2_BUF_FLAG_QUEUED | V4L2_BUF_FLAG_DONE))
- 						== V4L2_BUF_FLAG_QUEUED) {
--		err = poll_one(file);
-+		err = poll_one(file, pwq);
- 		if (err < 0 ||	/* error or sleep was interrupted  */
- 		    err == 0)	/* timeout? Shouldn't occur.  */
- 			break;
-@@ -1102,6 +1103,7 @@ static noinline int v4l1_compat_sync(
- 		if (err < 0)
- 			dprintk("VIDIOCSYNC / VIDIOC_QUERYBUF: %d\n", err);
- 	}
-+	kfree(pwq);
- 	if (!(buf.flags & V4L2_BUF_FLAG_DONE)) /* not done */
- 		goto done;
- 	do {
--- 
-1.5.3.7
+ 	for (class = sched_class_highest; class; class = class->next) {
+ 		if (class->join_domain)
 
