@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbYCJXnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYCJXqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbYCJXnt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 19:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYCJXnm
+	id S1756395AbYCJXqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 19:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYCJXpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 19:43:42 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36952 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbYCJXnl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 19:43:41 -0400
-Message-ID: <47D5C796.1080302@cn.fujitsu.com>
-Date: Tue, 11 Mar 2008 08:43:18 +0900
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] cgroup: switch to proc_create()
-References: <47D4E3AC.2020600@cn.fujitsu.com> <6599ad830803101401s3b12bc85l53ef67f083ad761c@mail.gmail.com>
-In-Reply-To: <6599ad830803101401s3b12bc85l53ef67f083ad761c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 19:45:53 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:52448 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751304AbYCJXpw (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 19:45:52 -0400
+Date: Tue, 11 Mar 2008 10:45:40 +1100
+From: David Chinner <dgc@sgi.com>
+To: Andreas Kotes <count@flatline.de>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: XFS internal error
+Message-ID: <20080310234539.GC155407@sgi.com>
+References: <470831E6.4030704@fastmail.co.uk> <20071008001452.GX995458@sgi.com> <20080310122216.GG14256@slop.flatline.de> <20080310223018.GA155407@sgi.com> <20080310225927.GP14256@slop.flatline.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080310225927.GP14256@slop.flatline.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Mar 10, 2008 at 12:30 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->> There is a race between create_proc_entry() and the assignment
->>  of file ops. proc_create() is invented to fix it.
->>
->>  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Mon, Mar 10, 2008 at 11:59:27PM +0100, Andreas Kotes wrote:
+> * David Chinner <dgc@sgi.com> [20080310 23:30]:
+> > On Mon, Mar 10, 2008 at 01:22:16PM +0100, Andreas Kotes wrote:
+> > > * David Chinner <dgc@sgi.com> [20080310 13:18]:
+> > > > Yes, but those previous corruptions get left on disk as a landmine
+> > > > for you to trip over some time later, even on a kernel that has the
+> > > > bug fixed.
+> > > > 
+> > > > I suggest that you run xfs_check on the filesystem and if that
+> > > > shows up errors, run xfs_repair onteh filesystem to correct them.
+> > > 
+> > > I seem to be having similiar problems, and xfs_repair is not helping :(
+> > 
+> > xfs_repair is ensuring that the problem is not being caused by on-disk
+> > corruption. In this case, it does not appear to be caused by on-disk
+> > corruption, so xfs_repair won't help.
 > 
-> Acked-by: Paul Menage <menage@google.com>
-> 
-> Doesn't seem to be a serious race since there's nothing in userspace
-> at this point to read the file. But replacing four lines with one is
-> generally a good thing.
-> 
+> ok, too bad - btw, is it a problem that I'm doing the xfs_repair on a
+> mounted filesystem with xfs_repair -f -L after a remount rw?
 
-Yes I know, it's a slight race in case of modular code, but the aim is 
-to replace all the use of create_proc_entry() with proc_create(). :) 
+If it was read only, and you rebooted immediately afterwards, you'd
+probably be ok. Doing this to a mounted, rw filesystem is asking
+for trouble. If the shutdown is occurring after you've run xfs_repair,
+then it is almost certainly the cause....
 
-> Paul
-> 
+I'd suggest getting a knoppix (or similar) rescue disk and repairing
+from that, rebooting and seeing if the problem persists. If it
+does, then we'll have to look further into it.
+
+FWIW, you've got plenty of free inodes so this does not look
+to be the same problem I've just found. 
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
