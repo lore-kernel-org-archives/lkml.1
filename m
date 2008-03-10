@@ -1,101 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbYCJJn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751812AbYCJJsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752357AbYCJJn6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 05:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbYCJJns
+	id S1751812AbYCJJsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 05:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbYCJJsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 05:43:48 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:64575 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750790AbYCJJnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 05:43:47 -0400
-Subject: Re: [PATCH] at73c213: Remove redundant private_free routine
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, hskinnemoen@atmel.com,
-       avictor.za@gmail.com
-In-Reply-To: <20080310.164946.76452619.nemoto@toshiba-tops.co.jp>
-References: <20080310.161354.42213512.nemoto@toshiba-tops.co.jp>
-	 <20080310.164946.76452619.nemoto@toshiba-tops.co.jp>
-Content-Type: text/plain
-Date: Mon, 10 Mar 2008 10:43:36 +0100
-Message-Id: <1205142216.8634.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+	Mon, 10 Mar 2008 05:48:11 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:20579 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbYCJJsK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 05:48:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qzKv+88efNd/HWdN61haHwt72M3cEXNNbEp33fsMKm7+VYeC0EdNeH1WMDrs82KpUv7vgRzGKRh3dmS1nutO/WkfyI4MY2ou8JON295f/n9J+VG05p65rJ0b6rvFtssmMAPPiPuNBadV69JIsbFZILTaWj4EKA3Evlq2ssxkMRE=
+Message-ID: <2d42915c0803100248r4eb1361exe5f248e39e4187c3@mail.gmail.com>
+Date: Mon, 10 Mar 2008 12:48:09 +0300
+From: "Kirill Kuvaldin" <kirill.kuvaldin@gmail.com>
+To: oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: couldn't get kernel profiling data from OProfile
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-10 at 16:49 +0900, Atsushi Nemoto wrote:
-> On Mon, 10 Mar 2008 16:13:54 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> > snd_pcm_lib_preallocate_free_for_all() is called from snd_pcm_free()
-> > just after calling the private_free routine.  So there should be no
-> > need to call it in driver's private_free routine.
-> ...
-> > -	pcm->private_data = chip;
-> > -	pcm->private_free = snd_at73c213_pcm_free;
-> >  	pcm->info_flags = SNDRV_PCM_INFO_BLOCK_TRANSFER;
-> >  	strcpy(pcm->name, "at73c213");
-> >  	chip->pcm = pcm;
-> 
-> Sorry, the patch was wrong.  The private_data field should still be
-> initialized.  Revised.
-> 
+Hi,
 
-I spun this around, and it works fine on my system (AVR32 AT32AP7000 on
-STK1000).
+I'm using oprofile 0.9.3 on Debian Lenny, kernel 2.6.22 SMP x86_64.
 
-> ------------------------------------------------------
-> Subject: [PATCH] at73c213: Remove redundant private_free routine
-> From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> 
-> snd_pcm_lib_preallocate_free_for_all() is called from snd_pcm_free()
-> just after calling the private_free routine.  So there should be no
-> need to call it in driver's private_free routine.
-> 
+The problem I'm dealing with is that opreport couldn't provide
+profiling data for the kernel image.
 
-Thanks for debugging the driver.
+I start the profiler as follows, specifying the vmlinux image:
 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+kkuvaldin@002:oprofile% sudo opcontrol --vmlinux=/boot/vmlinux
+kkuvaldin@002:oprofile% sudo opcontrol --start
+Using default event: CPU_CLK_UNHALTED:100000:0:1:1
+Using 2.6+ OProfile kernel interface.
+Reading module info.
+Using log file /var/lib/oprofile/samples/oprofiled.log
+Daemon started.
+Profiler running.
 
-Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Then I did some workload to make sure oprofile gets enough samples:
 
-> ---
-> diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
-> index 89d6e9c..bf3ea43 100644
-> --- a/sound/spi/at73c213.c
-> +++ b/sound/spi/at73c213.c
-> @@ -314,15 +314,6 @@ static struct snd_pcm_ops at73c213_playback_ops = {
->  	.pointer	= snd_at73c213_pcm_pointer,
->  };
->  
-> -static void snd_at73c213_pcm_free(struct snd_pcm *pcm)
-> -{
-> -	struct snd_at73c213 *chip = snd_pcm_chip(pcm);
-> -	if (chip->pcm) {
-> -		snd_pcm_lib_preallocate_free_for_all(chip->pcm);
-> -		chip->pcm = NULL;
-> -	}
-> -}
-> -
->  static int __devinit snd_at73c213_pcm_new(struct snd_at73c213 *chip, int device)
->  {
->  	struct snd_pcm *pcm;
-> @@ -334,7 +325,6 @@ static int __devinit snd_at73c213_pcm_new(struct snd_at73c213 *chip, int device)
->  		goto out;
->  
->  	pcm->private_data = chip;
-> -	pcm->private_free = snd_at73c213_pcm_free;
->  	pcm->info_flags = SNDRV_PCM_INFO_BLOCK_TRANSFER;
->  	strcpy(pcm->name, "at73c213");
->  	chip->pcm = pcm;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-With kind regards,
-Hans-Christian Egtvedt, Applications Engineer
+kkuvaldin@002:oprofile% dd if=/dev/urandom of=/dev/null
+80870+0 records in
+80869+0 records out
+41404928 bytes (41 MB) copied, 6.04975 seconds, 6.8 MB/s
 
+kkuvaldin@002:oprofile% sudo opcontrol --stop
+Stopping profiling.
+
+However when I tried to get some profiling data for the kernel binary,
+I ended up with the following:
+
+kkuvaldin@002:oprofile% sudo opreport -l /boot/vmlinux
+error: no sample files found: profile specification too strict ?
+zsh: exit 1     sudo opreport -l /boot/vmlinux
+
+
+I double checked that /boot/vmlinux is the exact image that was
+running on the system.
+
+
+Any ideas why oprofile doesn't list samples for the vmlinux image?
+
+
+
+Thanks,
+Kirill
