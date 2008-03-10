@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYCJP1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbYCJPaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbYCJP1v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYCJP1l
+	id S1752706AbYCJPaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYCJPaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:27:41 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:38814 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbYCJP1k (ORCPT
+	Mon, 10 Mar 2008 11:30:14 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1188 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbYCJPaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:27:40 -0400
-Message-ID: <47D5538D.9020204@keyaccess.nl>
-Date: Mon, 10 Mar 2008 16:28:13 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@osdl.org
-Subject: Re: Linux 2.6.25-rc5
-References: <200803101459.m2AExTQl008682@hera.kernel.org> <20080310145812.4af31f4f@core>
-In-Reply-To: <20080310145812.4af31f4f@core>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 10 Mar 2008 11:30:12 -0400
+Subject: Re: [PATCH 1/5] lib: introduce call_once()
+From: Joe Perches <joe@perches.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20080310145704.GA6396@APFDCB5C>
+References: <20080310145704.GA6396@APFDCB5C>
+Content-Type: text/plain
+Date: Mon, 10 Mar 2008 08:29:00 -0700
+Message-Id: <1205162940.656.152.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10-03-08 15:58, Alan Cox wrote:
+On Mon, 2008-03-10 at 23:57 +0900, Akinobu Mita wrote:
+> +++ 2.6-rc/include/linux/once.h
+> +struct once_control {
+> +	struct mutex lock;
+> +	int done;
 
->>  NAME = Funky Weasel is Jiggy wit it
-> 
-> Typo ??
+bool?
 
-Oh you... old person.
+> +};
+> +
+> +#define __ONCE_INITIALIZER(name) {					\
+> +		.lock		= __MUTEX_INITIALIZER(name.lock),	\
+> +		.done		= 0,					\
+> +	}
+> +
+> +#define DEFINE_ONCE(name) struct once_control name = __ONCE_INITIALIZER(name)
 
-http://en.wikipedia.org/wiki/Gettin'_Jiggy_Wit_It
+static?
 
-Rene.
+> +
+> +extern int call_once_slow(struct once_control *once_control,
+> +			  int (*init_rouine)(void));
+
+return bool?
+spelling: s/rouine/routine/g
+
+
