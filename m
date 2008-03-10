@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbYCJMlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYCJMmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbYCJMlf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 08:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYCJMl1
+	id S1753448AbYCJMmG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 08:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYCJMlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 08:41:27 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:35474 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbYCJMl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 08:41:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=aa32zpCOYpNw2TOqZw0/gHpI/r14jrqRlMiE+LuVsMiWAQwuwzBc4R2tOTww9Q5tI1/MOAfXnhNcylrd9Rj4ECQYk8aCQWCt0qBOWDdP3k53e6dbKYy5mDQcnQYL65yPZUOyw+yIznbtB7rlP7Zf/5mhe6LRGiw6KFYYbX6NpPw=
-Date: Mon, 10 Mar 2008 21:33:43 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH] block: fix blk_register_queue() return value
-Message-ID: <20080310123341.GA3351@APFDCB5C>
+	Mon, 10 Mar 2008 08:41:52 -0400
+Received: from mx.sz.bfs.de ([194.94.69.70]:42209 "EHLO mx.sz.bfs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750799AbYCJMlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 08:41:51 -0400
+X-Greylist: delayed 1230 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Mar 2008 08:41:50 EDT
+Message-ID: <47D52785.80907@bfs.de>
+Date: Mon, 10 Mar 2008 13:20:21 +0100
+From: walter harms <WHarms@bfs.de>
+Reply-To: WHarms@bfs.de
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Joe Perches <joe@perches.com>
+Cc: e1000-devel@lists.sourceforge.net, xfs-masters <xfs-masters@oss.sgi.com>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [E1000-devel] [PATCH] drivers/net: convert & to &&
+References: <Pine.LNX.4.58.0803061841000.1669@pc-041.diku.dk>	 <1204826347.5541.20.camel@localhost>  <47D032FA.9000909@intel.com> <1204914033.5541.74.camel@localhost>
+In-Reply-To: <1204914033.5541.74.camel@localhost>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-blk_register_queue() returns -ENXIO when queue->request_fn is NULL.
-But there are some block drivers that call blk_register_queue()
-via add_disk() with queue->request_fn == NULL. (For example, brd, loop)
 
-Although no one checks return value of blk_register_queue(), this patch
-makes it return 0 instead of -ENXIO when queue->request_fn is NULL,
 
-Also this patch adds warning when blk_register_queue() and
-blk_unregister_queue() are called with queue == NULL rather than
-ignore invalid usage silently.
+Joe Perches wrote:
+> On Thu, 2008-03-06 at 10:07 -0800, Kok, Auke wrote:
+>> (which, BTW also could use the uint32_t -> u32 (etc) changes... while you're at it)
+> 
+> I think this does what you want:
+> 
+> for size in "8" "16" "32" "64" ; do \
+> sed -r -i -e 's/\bu_{0,1}int'$size'_t\b/u'$size'/g' \
+> $(grep -rPlw --include=*.[ch] 'u_{0,1}int'$size'_t' drivers/net/e1000 drivers/net/ixgb); done
+> 
+> But why?  boolean_t is used by 3 subsystems with local typedefs.
+> These others are much more frequently used by kernel source.
+> 
+> $ grep -rPlw --include=*.[ch] "u{0,1}_{0,1}int(8|16|32|64)_t" * | wc -l
+> 876
+> 
+> include/linux/types.h has typedefs for these but not boolean_t
+> 
+> include/linux/types.h:typedef           __u8            u_int8_t;
+> include/linux/types.h:typedef           __s8            int8_t;
+> include/linux/types.h:typedef           __u16           u_int16_t;
+> include/linux/types.h:typedef           __s16           int16_t;
+> include/linux/types.h:typedef           __u32           u_int32_t;
+> include/linux/types.h:typedef           __s32           int32_t;
+> include/linux/types.h:typedef           __u8            uint8_t;
+> include/linux/types.h:typedef           __u16           uint16_t;
+> include/linux/types.h:typedef           __u32           uint32_t;
+> include/linux/types.h:typedef           __u64           uint64_t;
+> include/linux/types.h:typedef           __u64           u_int64_t;
+> include/linux/types.h:typedef           __s64           int64_t;
+> 
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Jens Axboe <axboe@kernel.dk>
----
- block/blk-sysfs.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+Why not the other way around ?
+inttypes.h is C99 and defines int16_t (or uint16_t). i do not see any reason
+not to use them or any other type (like __u8) that does actually the same.
 
-Index: 2.6-rc/block/blk-sysfs.c
-===================================================================
---- 2.6-rc.orig/block/blk-sysfs.c
-+++ 2.6-rc/block/blk-sysfs.c
-@@ -276,9 +276,12 @@ int blk_register_queue(struct gendisk *d
- 
- 	struct request_queue *q = disk->queue;
- 
--	if (!q || !q->request_fn)
-+	if (WARN_ON(!q))
- 		return -ENXIO;
- 
-+	if (!q->request_fn)
-+		return 0;
-+
- 	ret = kobject_add(&q->kobj, kobject_get(&disk->dev.kobj),
- 			  "%s", "queue");
- 	if (ret < 0)
-@@ -300,7 +303,10 @@ void blk_unregister_queue(struct gendisk
- {
- 	struct request_queue *q = disk->queue;
- 
--	if (q && q->request_fn) {
-+	if (WARN_ON(!q))
-+		return;
-+
-+	if (q->request_fn) {
- 		elv_unregister_queue(q);
- 
- 		kobject_uevent(&q->kobj, KOBJ_REMOVE);
+In that case we do not need different type names for userspace/kernelspace, or is there an other name
+for int ? in that case we can remove the whole heap of typedef's.
+
+re,
+ wh
+
+
+
