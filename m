@@ -1,229 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYCJNUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYCJNU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbYCJNUl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 09:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYCJNUe
+	id S1754244AbYCJNU5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 09:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYCJNUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 09:20:34 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35534 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYCJNUd (ORCPT
+	Mon, 10 Mar 2008 09:20:47 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:59810 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753939AbYCJNUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 09:20:33 -0400
-Message-ID: <47D5359D.5000909@in.ibm.com>
-Date: Mon, 10 Mar 2008 18:50:29 +0530
-From: Chandru <chandru@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, jdmason@kudzu.us,
-       Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
- in kdump
-References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com> <20071014054110.GB4399@rhun.haifa.ibm.com> <20071015062919.GA4598@in.ibm.com> <476F4064.8010601@in.ibm.com>
-In-Reply-To: <476F4064.8010601@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 09:20:46 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Anders Eriksson <aeriksson@fastmail.fm>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.25-rc4 
+In-reply-to: <200803101336.56159.bzolnier@gmail.com> 
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080308210559.0C7A193C070@tippex.mynet.homeunix.org> <20080310085539.6815693C900@tippex.mynet.homeunix.org> <200803101336.56159.bzolnier@gmail.com>
+Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+   message dated "Mon, 10 Mar 2008 13:36:55 +0100."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 10 Mar 2008 14:19:00 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080310131901.0154B93C900@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JYhvN-0000e2-5W.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JYhvN-0000e2-5W 34f5f335028bf4ac165beb9b4e7571ab
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chandru wrote:
-> Hi Muli,
->
-> I have tried to work with CCR ,CSR, CSMR, CSAR, CFGRW, GBRERRM  
-> registers but have been unable to make calgary generate an exception 
-> upon error condition.  In alloc_tce_table() , I am setting WRITE_ONLY 
-> access permission bit to tce entries but it isn't helping.  Would you 
-> kindly let me know how we can make calgary to generate an exception in 
-> error conditions ?.
->
-> Thanks,
-> Chandru
->
->
-Hello Andrew,
 
-Could you pls consider the attached patch for inclusion in mainline.
+bzolnier@gmail.com said:
+>> The bisect came up with this:
+>> 
+>> 18a056feccabdfa9764016a615121b194828bc72 is first bad commit
+>> commit 18a056feccabdfa9764016a615121b194828bc72
 
-Thanks,
-Chandru
+> Hmm, this is the first commit _after_ the previous "guilty" commit
+> 852738f39258deafb3d89c187cb1a4050820d555 so it just can't be the "real bad"
+> one... 
 
-Signed-off-by: Chandru S <chandru@in.ibm.com>
----
+I share the same worry. Towards the end of the bisect run (something like the
+4-th last reboot), I was asked to try "2.6.24". Now, I _thought_ 2.6.24 was way
+before 852738f39258deafb3d89c187cb1a4050820d555, and hence it should be called
+2.X.Y-foobaz something as the others were. Is this the way it should be, or did
+I fscked up the bisect?
 
---- arch/x86/kernel/pci-calgary_64.c.orig       2008-03-10 
-15:54:08.000000000 +0530
-+++ arch/x86/kernel/pci-calgary_64.c    2008-03-10 16:34:20.000000000 +0530
-@@ -36,6 +36,7 @@
- #include <linux/delay.h>
- #include <linux/scatterlist.h>
- #include <linux/iommu-helper.h>
-+#include <linux/crash_dump.h>
- #include <asm/gart.h>
- #include <asm/calgary.h>
- #include <asm/tce.h>
-@@ -166,6 +167,8 @@ static void calgary_dump_error_regs(stru
- static void calioc2_handle_quirks(struct iommu_table *tbl, struct 
-pci_dev *dev);
- static void calioc2_tce_cache_blast(struct iommu_table *tbl);
- static void calioc2_dump_error_regs(struct iommu_table *tbl);
-+static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl);
-+static void grab_tce_space_from_tar(void);
+This was a bisect run between 852738f39.. and 2.5.25-rc1. I got a string of 
+"bad"s but TWO goods, actually. Those goods sustained a number of reruns of 
+smartd (I can share the BISECT_LOG if wanted).
 
- static struct cal_chipset_ops calgary_chip_ops = {
-        .handle_quirks = calgary_handle_quirks,
-@@ -828,7 +831,11 @@ static int __init calgary_setup_tar(stru
+And how we can end up with good_start+1 as the guilty one, and STILL have two 
+good ones during the bisect run..... That's beyond me. lets just say that my 
+faith in myself and/or bisect starts to decline...
 
-        tbl = pci_iommu(dev->bus);
-        tbl->it_base = (unsigned long)bus_info[dev->bus->number].tce_space;
--       tce_free(tbl, 0, tbl->it_size);
-+
-+       if (is_kdump_kernel())
-+               calgary_init_bitmap_from_tce_table(tbl);
-+       else
-+               tce_free(tbl, 0, tbl->it_size);
+Now I'm considering a 2.6.24 .. 8527 run.
+/A
 
-        if (is_calgary(dev->device))
-                tbl->chip_ops = &calgary_chip_ops;
-@@ -1186,6 +1193,9 @@ static int __init calgary_locate_bbars(v
-                }
-        }
 
-+       if (is_kdump_kernel())
-+               grab_tce_space_from_tar();
-+
-        return 0;
+/A
 
- error:
-@@ -1276,6 +1286,24 @@ static inline int __init determine_tce_t
-        return ret;
- }
-
-+/*
-+ * calgary_init_bitmap_from_tce_table():
-+ * Funtion for kdump case. In the second/kdump kernel initialize
-+ * the bitmap based on the tce table entries obtained from first kernel
-+ */
-+static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl)
-+{
-+       u64 *tp;
-+       unsigned int index;
-+       tp = ((u64 *)tbl->it_base);
-+       for (index = 0 ; index < tbl->it_size; index++) {
-+               if (*tp != 0x0)
-+                       set_bit(index, tbl->it_map);
-+
-+               tp++;
-+       }
-+}
-+
- static int __init build_detail_arrays(void)
- {
-        unsigned long ptr;
-@@ -1338,12 +1366,52 @@ static int __init calgary_bus_has_device
-        return (val != 0xffffffff);
- }
-
-+/*
-+ * grab_tce_space_from_tar():
-+ * Function for kdump case. Grab the tce tables from first kernel
-+ * by reading the contents of the base adress register of calgary iommu
-+ */
-+static void grab_tce_space_from_tar()
-+{
-+       int bus;
-+       void __iomem *target;
-+       unsigned long tce_space;
-+
-+       for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
-+               struct calgary_bus_info *info = &bus_info[bus];
-+               unsigned short pci_device;
-+               u32 val;
-+
-+               val = read_pci_config(bus, 0, 0, 0);
-+               pci_device = (val & 0xFFFF0000) >> 16;
-+
-+               if (!is_cal_pci_dev(pci_device))
-+                       continue;
-+
-+               if (info->translation_disabled)
-+                       continue;
-+
-+               if (calgary_bus_has_devices(bus, pci_device) ||
-+                   translate_empty_slots) {
-+                       target = calgary_reg(bus_info[bus].bbar,
-+                                               tar_offset(bus));
-+                       tce_space = be64_to_cpu(readq(target));
-+                       tce_space = tce_space & TAR_SW_BITS;
-+
-+                       BUG_ON(specified_table_size > TCE_TABLE_SIZE_8M);
-+
-+                       tce_space = tce_space & (~specified_table_size);
-+                       info->tce_space = (u64 *)__va(tce_space);
-+               }
-+       }
-+}
-+
- void __init detect_calgary(void)
- {
-        int bus;
-        void *tbl;
-        int calgary_found = 0;
--       unsigned long ptr;
-+       unsigned long ptr, max_pfn;
-        unsigned int offset, prev_offset;
-        int ret;
-
-@@ -1393,7 +1461,8 @@ void __init detect_calgary(void)
-                return;
-        }
-
--       specified_table_size = determine_tce_table_size(end_pfn * 
-PAGE_SIZE);
-+       max_pfn = is_kdump_kernel() ? saved_max_pfn : end_pfn ;
-+       specified_table_size = determine_tce_table_size(max_pfn * 
-PAGE_SIZE);
-
-        for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
-                struct calgary_bus_info *info = &bus_info[bus];
-@@ -1411,10 +1480,16 @@ void __init detect_calgary(void)
-
-                if (calgary_bus_has_devices(bus, pci_device) ||
-                    translate_empty_slots) {
--                       tbl = alloc_tce_table();
--                       if (!tbl)
--                               goto cleanup;
--                       info->tce_space = tbl;
-+                       /*
-+                        * If this is a kdump kernel find and use
-+                        * the tce tables from first kernel
-+                        */
-+                       if (!is_kdump_kernel()) {
-+                               tbl = alloc_tce_table();
-+                               if (!tbl)
-+                                       goto cleanup;
-+                               info->tce_space = tbl;
-+                       }
-                        calgary_found = 1;
-                }
-        }
---- include/linux/crash_dump.h.orig     2008-03-10 15:54:33.000000000 +0530
-+++ include/linux/crash_dump.h  2008-03-10 16:30:12.000000000 +0530
-@@ -21,6 +21,13 @@ extern struct proc_dir_entry *proc_vmcor
- #endif
-
- #define vmcore_elf_check_arch(x) (elf_check_arch(x) || 
-vmcore_elf_check_arch_cross(x))
-+extern unsigned long saved_max_pfn;
-+static inline int is_kdump_kernel(void)
-+{
-+       return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0 ;
-+}
-+#else /* !CONFIG_CRASH_DUMP */
-+static inline is_kdump_kernel(void) { return 0; }
-
- #endif /* CONFIG_CRASH_DUMP */
- #endif /* LINUX_CRASHDUMP_H */
 
 
