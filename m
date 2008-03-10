@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYCJT3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbYCJTcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYCJT3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 15:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYCJT3L
+	id S1753692AbYCJTcQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 15:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYCJTcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 15:29:11 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:43681 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbYCJT3K (ORCPT
+	Mon, 10 Mar 2008 15:32:03 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:60043 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbYCJTcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 15:29:10 -0400
-Message-ID: <47D58C1F.7020805@keyaccess.nl>
-Date: Mon, 10 Mar 2008 20:29:35 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 10 Mar 2008 15:32:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FLLG+QT3fgVgQZRLL+CIS4xoiTtKj/Zpg9aN1JUJBK6gnRgBFxFjZblS52dUzAY9CWp+mxvtCagf8C9W5xPMqfoWWJ619deEEQI/ZsYT8NjCpwGTCSviVaCzkGFCGrZPXh2aBzivX+hF6CpIg4YUfdwNg8XpOPVGrMz7nnfv/GM=
+Message-ID: <c4e36d110803101231n97aec1haf6c663d9925b60f@mail.gmail.com>
+Date: Mon, 10 Mar 2008 20:31:59 +0100
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: 2.6.25-rc4 todays: BUG: unable to handle kernel NULL pointer dereference at 0000000000000138
+Cc: "Kernel development list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1205173362.8514.155.camel@twins>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Bob Tracy <rct@frus.com>, ALSA devel <alsa-devel@alsa-project.org>,
-       Michael Cree <mcree@orcon.net.nz>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080310162130.AFFD3DBA2@gherkin.frus.com>	<47D56851.2000509@keyaccess.nl> <s5h3aqywlf0.wl%tiwai@suse.de>
-In-Reply-To: <s5h3aqywlf0.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <c4e36d110803100928o34e8cfa6o3087631f88762b7a@mail.gmail.com>
+	 <1205173362.8514.155.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10-03-08 18:14, Takashi Iwai wrote:
+2008/3/10, Peter Zijlstra <peterz@infradead.org>:
+> On Mon, 2008-03-10 at 17:28 +0100, Zdenek Kabelac wrote:
+>
+>  > I've got new oops today inside my qemu:
+>  > (please check my comment about tainted bellow)
+>  >
+>  > [   66.252118] p: module license 'unspecified' taints kernel.
+>  >
+>  > [ 1935.986421] BUG: unable to handle kernel NULL pointer dereference
+>  > at 0000000000000138
+>  >
+>  > [ 1935.986421] IP: [<ffffffff8102e847>] pick_next_task_fair+0x37/0x60
+>
+>
+> Could you try with:
+>
+>  http://lkml.org/lkml/2008/3/10/199
 
->> Takashi? Wasn't there an OSS emulation on Alpha thing a while ago?
-> 
-> No, I don't know of.  OSS emulation code is written fairly independently
-> from architectures.  Maybe just a missing CONFIG_SND_PCM_PLUGINS kconfig?
+yes - already noticed and testing - one thing I could say for sure is
+- it has not fixed my busy loop problem with clearing of vmalloced
+memory inside qemu.
+Let's see if I'll ever get my oops problem...
 
-Could've sworn...
-
-The bug seems not present on x86. I'm testing with a ES1968 and ES1898 (his 
-is a 18888) and playback through ALSA native nor OSS emulation is giving me 
-trouble up to now.
-
-Bob? How short are "short" wav files by the way?
-
-Rene.
-
-
+Zdenek
