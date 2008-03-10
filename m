@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbYCJRse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYCJRvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbYCJRse (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 13:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYCJRs0
+	id S1754645AbYCJRvX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 13:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYCJRvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 13:48:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57416 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751254AbYCJRsZ convert rfc822-to-8bit (ORCPT
+	Mon, 10 Mar 2008 13:51:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56823 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYCJRvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 13:48:25 -0400
-X-Authenticated: #7313500
-X-Provags-ID: V01U2FsdGVkX1846NtD/Vs4CKKXe1iHYmcZm9tHNxzzImn0MjIs3r
-	O/4XnQfWg6L2CW
-From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Date: Mon, 10 Mar 2008 18:48:12 +0100
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jkosina@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
-       linux-kernel@vger.kernel.org, rick@vanrein.org
-References: <182234194@web.de> <200803101523.03620.dl9pf@gmx.de> <47D56DD3.8060108@zytor.com>
-In-Reply-To: <47D56DD3.8060108@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Mon, 10 Mar 2008 13:51:14 -0400
+Date: Mon, 10 Mar 2008 18:53:05 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: quicklists confuse meminfo
+Message-ID: <20080310175305.GC7692@one.firstfloor.org>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309111456.GA21690@elte.hu> <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu> <20080309114640.85c9c3eb.akpm@linux-foundation.org> <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com> <87myp68r88.fsf@basil.nowhere.org> <Pine.LNX.4.64.0803101707070.3398@blonde.site> <47D57056.3050204@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803101848.13085.dl9pf@gmx.de>
-X-Y-GMX-Trusted: 0
+In-Reply-To: <47D57056.3050204@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 10 März 2008 18:20:19 schrieb H. Peter Anvin:
-> Jan-Simon Möller wrote:
-> > badram=0x18690000,0xffff0000
-> > (which means a whole from 0x18690000 to 0x1869ffff )
->
-> memmap=0x18690000$64K
->
-> 	or
->
-> memmap=0x18690000$0x10000
->
-> 	-hpa
+>   1. Xen marks the whole page as being of pgd-type, and so it can't
+>      have non-pgd contents (as the page would be RO, and any contents
+>      would be validated as pgd entries).  However I can fix that by
 
-Thanks a lot ! 
+That sounds more like a Xen bug. Why should it validate anything except
+the first four entries which are used by the hardware? 
 
-I'll reply with a patch for the Documentation and add an example.
+I can imagine that false sharing would be slow because you would
+have unnecessary traps, but it shouldn't be a correctness issue.
 
-Best regards,
-Jan-Simon
+>      maintaining a separate per-cpu pgd page, and just copy the four
+>      entries over when cr3 is reloaded.  This would move the
+>      Xen-specific requirements into the Xen code without affecting the
+>      rest of the kernel.
+
+x86-64 used to do that, but it turned out this breaks some shared cache 
+optimizations on the P4 between SMT threads. So you might actually see 
+user space performance regressions from it.
+
+-Andi
