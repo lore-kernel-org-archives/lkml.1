@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbYCJTcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbYCJTii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbYCJTcQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 15:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYCJTcD
+	id S1754582AbYCJTii (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 15:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYCJTia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 15:32:03 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:60043 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859AbYCJTcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 15:32:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FLLG+QT3fgVgQZRLL+CIS4xoiTtKj/Zpg9aN1JUJBK6gnRgBFxFjZblS52dUzAY9CWp+mxvtCagf8C9W5xPMqfoWWJ619deEEQI/ZsYT8NjCpwGTCSviVaCzkGFCGrZPXh2aBzivX+hF6CpIg4YUfdwNg8XpOPVGrMz7nnfv/GM=
-Message-ID: <c4e36d110803101231n97aec1haf6c663d9925b60f@mail.gmail.com>
-Date: Mon, 10 Mar 2008 20:31:59 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: 2.6.25-rc4 todays: BUG: unable to handle kernel NULL pointer dereference at 0000000000000138
-Cc: "Kernel development list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1205173362.8514.155.camel@twins>
+	Mon, 10 Mar 2008 15:38:30 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:45998 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751618AbYCJTi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 15:38:29 -0400
+Date: Mon, 10 Mar 2008 21:38:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] time(r) fixes for .25
+Message-ID: <20080310193804.GB5727@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.00.0803090857480.3099@apollo.tec.linutronix.de> <20080310164407.GC5040@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <c4e36d110803100928o34e8cfa6o3087631f88762b7a@mail.gmail.com>
-	 <1205173362.8514.155.camel@twins>
+In-Reply-To: <20080310164407.GC5040@ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/3/10, Peter Zijlstra <peterz@infradead.org>:
-> On Mon, 2008-03-10 at 17:28 +0100, Zdenek Kabelac wrote:
->
->  > I've got new oops today inside my qemu:
->  > (please check my comment about tainted bellow)
->  >
->  > [   66.252118] p: module license 'unspecified' taints kernel.
->  >
->  > [ 1935.986421] BUG: unable to handle kernel NULL pointer dereference
->  > at 0000000000000138
->  >
->  > [ 1935.986421] IP: [<ffffffff8102e847>] pick_next_task_fair+0x37/0x60
->
->
-> Could you try with:
->
->  http://lkml.org/lkml/2008/3/10/199
+On Mon, Mar 10, 2008 at 05:44:07PM +0100, Pavel Machek wrote:
+> 
+> > @@ -174,6 +174,10 @@ static inline void timespec_add_ns(struct timespec *a, u64 ns)
+> >  {
+> >  	ns += a->tv_nsec;
+> >  	while(unlikely(ns >= NSEC_PER_SEC)) {
+> > +		/* The following asm() prevents the compiler from
+> > +		 * optimising this loop into a modulo operation.  */
+> > +		asm("" : "+r"(ns));
+> > +
+> 
+> optimizing -> pessimizing or "optimizing" or explain that "optimized"
+> version is slower than real version?
+>...
 
-yes - already noticed and testing - one thing I could say for sure is
-- it has not fixed my busy loop problem with clearing of vmalloced
-memory inside qemu.
-Let's see if I'll ever get my oops problem...
+In this case it's actually gcc's fault to ignore the unlikely(), so the 
+optimization would have made the code slower at least on some 
+architectures.
 
-Zdenek
+But more important, it resulted in build errors on i386 and some other 
+32bit architectures.
+
+The underlying (and unresolved) issue is that gcc expects libgcc to be 
+available while the kernel does not link with libgcc on many platforms.
+
+> 							Pavel
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
