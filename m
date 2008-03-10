@@ -1,117 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYCJPJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYCJPKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbYCJPJo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYCJPJd
+	id S1754489AbYCJPKy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYCJPKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:09:33 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:54225 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbYCJPJc (ORCPT
+	Mon, 10 Mar 2008 11:10:45 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:57404 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbYCJPKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:09:32 -0400
+	Mon, 10 Mar 2008 11:10:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ofWtj/vHo4RrybnbfTQd1pRC62OL/UYQHv6LujZ/jP/x/WCw0Bg0WRj8AhVqUujl8faf652FdqTqZg94AoQItJ4or57oPCNUDkHDVfADZ2PwnF2B9Jv+o5EZJgnkouuX71F2ledAqysienqQ8Aa3M2AanjYYO7UVrDF6EOjQS1s=
-Date: Tue, 11 Mar 2008 00:01:50 +0900
+        b=LEgwH/efAd7u6FhZ2xvKabhHz3bbxOdkIOP/HxDR2kZ0KEgq/wfe8mS9+45KDctYG3ktrDlQSCPpIZpx+ovgaeubayU3bMB0afWJOvgFirAmC0vUziVbOEBEErZs25RElARzmeJJUkQGQ62jYotfiO2LZ3VHsGSayW1iwfrR988=
+Date: Tue, 11 Mar 2008 00:03:10 +0900
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, William Irwin <wli@holomorphy.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: [PATCH 3/5] hugetlbfs: use call_once()
-Message-ID: <20080310150148.GB6407@APFDCB5C>
-References: <20080310145704.GA6396@APFDCB5C> <20080310150026.GA6407@APFDCB5C>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH 4/5] shmem: use call_once()
+Message-ID: <20080310150308.GC6407@APFDCB5C>
+References: <20080310145704.GA6396@APFDCB5C> <20080310150026.GA6407@APFDCB5C> <20080310150148.GB6407@APFDCB5C>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-2022-jp
 Content-Disposition: inline
-In-Reply-To: <20080310150026.GA6407@APFDCB5C>
+In-Reply-To: <20080310150148.GB6407@APFDCB5C>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch defers mounting hugetlbfs till hugetlb_file_setup() is
+This patch defers mounting tmpfs till shmem_file_setup() is
 called first time by using call_once().
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: William Irwin <wli@holomorphy.com>
 ---
- fs/hugetlbfs/inode.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ mm/shmem.c |   32 ++++++++++++++++++--------------
+ 1 file changed, 18 insertions(+), 14 deletions(-)
 
-Index: 2.6-rc/fs/hugetlbfs/inode.c
+Index: 2.6-rc/mm/shmem.c
 ===================================================================
---- 2.6-rc.orig/fs/hugetlbfs/inode.c
-+++ 2.6-rc/fs/hugetlbfs/inode.c
-@@ -31,6 +31,7 @@
- #include <linux/dnotify.h>
- #include <linux/statfs.h>
- #include <linux/security.h>
+--- 2.6-rc.orig/mm/shmem.c
++++ 2.6-rc/mm/shmem.c
+@@ -50,6 +50,7 @@
+ #include <linux/migrate.h>
+ #include <linux/highmem.h>
+ #include <linux/seq_file.h>
 +#include <linux/once.h>
  
  #include <asm/uaccess.h>
+ #include <asm/div64.h>
+@@ -2520,7 +2521,6 @@ static struct file_system_type tmpfs_fs_
+ 	.get_sb		= shmem_get_sb,
+ 	.kill_sb	= kill_litter_super,
+ };
+-static struct vfsmount *shm_mnt;
  
-@@ -903,6 +904,13 @@ static struct file_system_type hugetlbfs
+ static int __init init_tmpfs(void)
+ {
+@@ -2540,27 +2540,29 @@ static int __init init_tmpfs(void)
+ 		goto out2;
+ 	}
  
- static struct vfsmount *hugetlbfs_vfsmount;
+-	shm_mnt = vfs_kern_mount(&tmpfs_fs_type, MS_NOUSER,
+-				tmpfs_fs_type.name, NULL);
+-	if (IS_ERR(shm_mnt)) {
+-		error = PTR_ERR(shm_mnt);
+-		printk(KERN_ERR "Could not kern_mount tmpfs\n");
+-		goto out1;
+-	}
+ 	return 0;
+-
+-out1:
+-	unregister_filesystem(&tmpfs_fs_type);
+ out2:
+ 	destroy_inodecache();
+ out3:
+ 	bdi_destroy(&shmem_backing_dev_info);
+ out4:
+-	shm_mnt = ERR_PTR(error);
+ 	return error;
+ }
+ module_init(init_tmpfs)
  
-+static int init_hugetlbfs_vfsmount(void)
-+{
-+	hugetlbfs_vfsmount = kern_mount(&hugetlbfs_fs_type);
++static struct vfsmount *shm_mnt;
 +
-+	return IS_ERR(hugetlbfs_vfsmount) ? PTR_ERR(hugetlbfs_vfsmount) : 0;
++static int init_shm_mnt(void)
++{
++	shm_mnt = vfs_kern_mount(&tmpfs_fs_type, MS_NOUSER,
++				tmpfs_fs_type.name, NULL);
++	if (IS_ERR(shm_mnt)) {
++		printk(KERN_ERR "Could not kern_mount tmpfs\n");
++		return PTR_ERR(shm_mnt);
++	}
++	return 0;
 +}
 +
- static int can_do_hugetlb_shm(void)
- {
- 	return likely(capable(CAP_IPC_LOCK) ||
-@@ -912,14 +920,16 @@ static int can_do_hugetlb_shm(void)
- 
- struct file *hugetlb_file_setup(const char *name, size_t size)
- {
--	int error = -ENOMEM;
-+	int error;
- 	struct file *file;
+ /*
+  * shmem_file_setup - get an unlinked file living in tmpfs
+  *
+@@ -2575,9 +2577,11 @@ struct file *shmem_file_setup(char *name
  	struct inode *inode;
  	struct dentry *dentry, *root;
- 	struct qstr quick_string;
+ 	struct qstr this;
 +	static DEFINE_ONCE(once);
  
--	if (!hugetlbfs_vfsmount)
--		return ERR_PTR(-ENOENT);
-+	error = call_once(&once, init_hugetlbfs_vfsmount);
+-	if (IS_ERR(shm_mnt))
+-		return (void *)shm_mnt;
++	error = call_once(&once, init_shm_mnt);
 +	if (error)
 +		return ERR_PTR(error);
  
- 	if (!can_do_hugetlb_shm())
- 		return ERR_PTR(-EPERM);
-@@ -970,7 +980,6 @@ out_shm_unlock:
- static int __init init_hugetlbfs_fs(void)
- {
- 	int error;
--	struct vfsmount *vfsmount;
- 
- 	error = bdi_init(&hugetlbfs_backing_dev_info);
- 	if (error)
-@@ -986,18 +995,9 @@ static int __init init_hugetlbfs_fs(void
- 	if (error)
- 		goto out;
- 
--	vfsmount = kern_mount(&hugetlbfs_fs_type);
--
--	if (!IS_ERR(vfsmount)) {
--		hugetlbfs_vfsmount = vfsmount;
--		return 0;
--	}
--
--	error = PTR_ERR(vfsmount);
--
-+	return 0;
-  out:
--	if (error)
--		kmem_cache_destroy(hugetlbfs_inode_cachep);
-+	kmem_cache_destroy(hugetlbfs_inode_cachep);
-  out2:
- 	bdi_destroy(&hugetlbfs_backing_dev_info);
- 	return error;
+ 	if (size < 0 || size > SHMEM_MAX_BYTES)
+ 		return ERR_PTR(-EINVAL);
