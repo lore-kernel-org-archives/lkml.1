@@ -1,41 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYCJR6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYCJR6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYCJR6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 13:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYCJR5y
+	id S1755513AbYCJR6j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 13:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbYCJR6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 13:57:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45293 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbYCJR5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 13:57:53 -0400
-Date: Mon, 10 Mar 2008 13:57:16 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, lwoodman@redhat.com
-Subject: Re: [PATCH] sysrq show-all-cpus
-Message-ID: <20080310135716.0c99a202@bree.surriel.com>
-In-Reply-To: <20080310104154.56fd4825.akpm@linux-foundation.org>
-References: <20080310133242.0ab69084@bree.surriel.com>
-	<20080310104154.56fd4825.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Mar 2008 13:58:25 -0400
+Received: from viefep25-int.chello.at ([62.179.121.45]:29796 "EHLO
+	viefep25-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbYCJR6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 13:58:23 -0400
+X-SourceIP: 78.42.105.25
+Message-ID: <47D576A3.1080503@trash.net>
+Date: Mon, 10 Mar 2008 18:57:55 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       clameter@sgi.com, joe@perches.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] netfilter: replace horrible hack with ksize()
+References: <Pine.LNX.4.64.0803052319210.15759@sbz-30.cs.Helsinki.FI> <47CFF9B7.5060803@trash.net> <Pine.LNX.4.64.0803061612290.4202@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0803061618090.4378@sbz-30.cs.Helsinki.FI> <47D0014D.1060901@trash.net> <Pine.LNX.4.64.0803061640380.4820@sbz-30.cs.Helsinki.FI> <47D004DB.4010105@trash.net> <47D01277.9060807@cs.helsinki.fi>
+In-Reply-To: <47D01277.9060807@cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008 10:41:54 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Pekka Enberg wrote:
+> Hi Patrick,
+> 
+> Patrick McHardy wrote:
+>> > I think you are misunderstanding ksize() (see mm/slub.c::ksize() for 
+>> > example).
+>>
+>> The ksize() description in mm/slab.c matches exactly what netfilter
+>> wants to do:
+> 
+> Agreed.
+> 
+> Patrick McHardy wrote:
+>> The initial allocation size is calculated as max(size, min slab size)
+>> and is stored as ext->alloc_size. When adding the first extension,
+> 
+> Yes, this part is correct, however...
+> 
+>> it allocates ext->alloc_size of memory and stores both the real amount
+>> of space used (ext->len) and the actual size (ext->real_len).
+>> When adding further extensions, it calculates the new total amount of
+>> space needed (newlen). If that is larger than the real amount of
+>> memory allocated (real_len), it reallocates.
+> 
+> ...looking at nf_ct_ext_create() you do:
+> 
+>         *ext = kzalloc(real_len, gfp);
+>                        ^^^^^^^^
+>         if (!*ext)
+>                 return NULL;
+> 
+>         (*ext)->offset[id] = off;
+>         (*ext)->len = len;
+>         (*ext)->real_len = real_len;
+>                            ^^^^^^^^
+> 
+> You are storing the _object size_ (total amount of memory requested) and 
+> not the _buffer size_ (total amount of memory allocated). Keep in mind 
+> that object size < buffer size and that ksize() returns the latter.
 
-> How come the sysrq-handling CPU uses show_regs() and the others use
-> show_stack()?  Do we not set up the get_irq_regs() data for IPIs?
 
-I tried it that way, and the other CPUs never printed anything.
+For all length <= minimum slab size alloc_size (and thus
+real_len) is equal to the buffer size. You are correct
+however that your patch is fine, I somehow misread the
 
-I guess get_irq_regs() data is not present when in an IPI.
++       if (newlen >= ksize(ct->ext)) {
 
--- 
-All rights reversed.
+part and thought you would always compare against the
+minimum slab size.
+
+I've queued your patch and will pass it upstream after
+some testing, thanks.
