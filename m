@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbYCJIYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbYCJIaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752654AbYCJIYE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 04:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYCJIXy
+	id S1752277AbYCJIaF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 04:30:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYCJI3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 04:23:54 -0400
-Received: from phunq.net ([64.81.85.152]:50875 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751316AbYCJIXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 04:23:53 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Grzegorz Kulewski <kangur@polcom.net>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Mon, 10 Mar 2008 00:23:51 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <Pine.LNX.4.63.0803100847000.3335@alpha>
-In-Reply-To: <Pine.LNX.4.63.0803100847000.3335@alpha>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 10 Mar 2008 04:29:54 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:31166 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbYCJI3w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 04:29:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=l9c49SV4+xk3hALqHqTx4oeo2n30sY9V+NxI5r+E0lC71lJQ0ee4tJVzslTBo3/Pf0nHwzL4g10aI+xqraNUD8kxuEVBLkGvmeUwKCWl/E0RuvTnDfYIr/XlzX/GsrG4fbC/iA1ixZVrrU/apRzXUBVpztmYEt2SSxa+ez2YldI=
+Date: Mon, 10 Mar 2008 16:23:51 +0800 (CST)
+Message-Id: <20080310.162351.21322673.xiyou.wangcong@gmail.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, gvaughan@jpl.nasa.gov, akpm@osdl.org,
+       jeremy@goop.org
+Subject: Re: [PATCH] Fix check after use in kernel/exit.c
+From: WANG Cong <xiyou.wangcong@gmail.com>
+In-Reply-To: <20080309114844.GC30331@elte.hu>
+References: <20080308085322.GA29628@elte.hu>
+	<20080308.165821.119846418.xiyou.wangcong@gmail.com>
+	<20080309114844.GC30331@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803100123.51395.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 March 2008 00:51, Grzegorz Kulewski wrote:
-> > If UPS power runs out while ramback still holds unflushed dirty data
-> > then things get ugly.  Hopefully a fsck -f will be able to pull
-> > something useful out of the mess.  (This is where you might want to be
-> > running Ext3.)  The name of the game is to install sufficient UPS power
-> > to get your dirty ramdisk data onto stable storage this time, every
-> > time.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 9 Mar 2008 12:48:44 +0100
+
 > 
-> Are you using barriers or ordered disk writes with physical sync in the 
-> right moments or something like that? I think this is needed to allow any 
-> journaling filesystem to do it's job right.
+> * WANG Cong <xiyou.wangcong@gmail.com> wrote:
+> 
+> > > actually, i unapplied it again because the patch is wrong: 
+> > > mm_release() has side-effects for kernel threads such as the 
+> > > deactivate_mm() [which is important even if the user-mm is NULL]. If 
+> > > the NULL mm dereference can really trigger then it should be avoided 
+> > > within mm_release().
+> > 
+> > Do you mean that the NULL check should be moved into mm_release()?
+> 
+> yes - we need to run deactivate_mm() for kernel threads.
 
-Usual block device semantics are preserved so long as UPS power does
-not run out before emergency writeback completes.  It is not possible
-to order writes to the backing store and still deliver ramdisk level
-write latency to the application.
 
-After the emergency writeback completes, ramback is supposed to
-behave just like a physical disk (with respect to writes - reads will
-still have ramdisk level latency).  No special support is provided
-for barriers.  It is not clear that anything special is needed.
+Thank you for your kind hints.
 
-Daniel
+Here is an updated version. Please check.
+
+---->
+
+From: WANG Cong <xiyou.wangcong@gmail.com>
+Subject: [PATCH] Fix check after use in kernel/exit.c
+
+As suggested by Ingo, the NULL deference check should be moved
+into mm_release().
+
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+---
+ kernel/exit.c |    2 --
+ kernel/fork.c |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 53872bf..b88244a 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -583,8 +583,6 @@ static void exit_mm(struct task_struct * tsk)
+ 	struct mm_struct *mm = tsk->mm;
+ 
+ 	mm_release(tsk, mm);
+-	if (!mm)
+-		return;
+ 	/*
+ 	 * Serialize with any possible pending coredump.
+ 	 * We must hold mmap_sem around checking core_waiters
+diff --git a/kernel/fork.c b/kernel/fork.c
+index dd249c3..7683c5f 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -464,6 +464,8 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
+ {
+ 	struct completion *vfork_done = tsk->vfork_done;
+ 
++	if (!mm)
++		return;
+ 	/* Get rid of any cached register state */
+ 	deactivate_mm(tsk, mm);
+ 
+-- 
+1.5.2.4
+
+
