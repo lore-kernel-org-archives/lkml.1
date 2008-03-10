@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYCJEf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYCJErb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYCJEf6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 00:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYCJEfv
+	id S1753993AbYCJErb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 00:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYCJErX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 00:35:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:43764 "EHLO ozlabs.org"
+	Mon, 10 Mar 2008 00:47:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38631 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbYCJEfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 00:35:50 -0400
+	id S1750819AbYCJErW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 00:47:22 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH] firewire: debug AT, AR, and selfID-complete events
+Date: Mon, 10 Mar 2008 00:47:05 -0400
+User-Agent: KMail/1.9.9
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <tkrat.f96c4067f6a48f4a@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.f96c4067f6a48f4a@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18388.47773.77106.664217@cargo.ozlabs.ibm.com>
-Date: Mon, 10 Mar 2008 15:35:41 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
-       hans.rosenfeld@amd.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-In-Reply-To: <alpine.LFD.1.00.0803091007560.5896@woody.linux-foundation.org>
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org>
-	<20080303074620.GC5934@elte.hu>
-	<20080303091304.GA17911@elte.hu>
-	<47CC2A3D.1000307@linux.intel.com>
-	<20080303174009.GA19131@elte.hu>
-	<47CC451A.2060501@linux.intel.com>
-	<alpine.LFD.1.00.0803031042230.17889@woody.linux-foundation.org>
-	<20080309115603.GA951@elte.hu>
-	<alpine.LFD.1.00.0803091007560.5896@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+Message-Id: <200803100047.05387.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+On Sunday 09 March 2008 04:49:34 pm Stefan Richter wrote:
+> This adds debug printks for asynchronous transmission and reception and
+> for self ID reception.  The debug code is per default deactivated by #if
+> blocks.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>
+> I am undecided whether this is OK for mainline, and whether the debug
+> options should become a Kconfig option or runtime options.
+>
+> It may be temporarily useful to the few driver developers.  Do we want
+> end users to provide us with debug logs of this kind?  Then it should
+> be one or two runtime options.
 
-> But even for PAGE_MASK, we literally have code like this:
-> 
-> 	if ((size_avail & PAGE_MASK) < rg.size) {
-> 
-> where it so _happens_ that "size_avail" is unsigned, but what if it 
-> wasn't? It could turn a unsigned comparison into a signed one, and 
-> introduce any number of security bugs etc.
 
-We have had PAGE_MASK being signed on powerpc for ages, so if you do
-find any such bugs, please let me know. :)  I'm not aware of any at
-present, though.
+My vote would be to include this sort of thing with a run-time option to 
+enable the extra spew, since its a perfectly accepted standard for other 
+drivers. It ought to be extremely useful in determining whats going wrong 
+with end-user setups, particularly in cases where we can't reproduce the 
+problem (typically for lack of having the specific hardware in-house).
 
-The expression you quoted will be ok as long as either size_avail or
-rg.size is unsigned, as far as I can see.
 
-Our PAGE_SIZE is unsigned long.
-
-Paul.
+-- 
+Jarod Wilson
+jwilson@redhat.com
