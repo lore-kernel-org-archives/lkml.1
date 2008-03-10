@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYCJWRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbYCJWR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbYCJWRJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYCJWQz
+	id S1756990AbYCJWR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbYCJWQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:16:55 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:44147 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752453AbYCJWQy (ORCPT
+	Mon, 10 Mar 2008 18:16:58 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:34691 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbYCJWQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:16:54 -0400
-Date: Mon, 10 Mar 2008 22:15:38 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Akinobu Mita <akinobu.mita@gmail.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 4/5] shmem: use call_once()
-In-Reply-To: <20080310150308.GC6407@APFDCB5C>
-Message-ID: <Pine.LNX.4.64.0803102211240.6396@blonde.site>
-References: <20080310145704.GA6396@APFDCB5C> <20080310150026.GA6407@APFDCB5C>
- <20080310150148.GB6407@APFDCB5C> <20080310150308.GC6407@APFDCB5C>
+	Mon, 10 Mar 2008 18:16:56 -0400
+From: Chr <chunkeey@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: endless loop in native_flush_tlb_others in smp_64.c
+Date: Mon, 10 Mar 2008 23:16:54 +0100
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803102316.54457.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX19mgCBaSt8674GjThOpQn7cuuRk5g8DdeJGencE
+	Lq//55n00zricwTYzu7M7hrgrva2qIXTLgA+aEmQvQydzC7xOy
+	zyxQVOuqc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Akinobu Mita wrote:
-> This patch defers mounting tmpfs till shmem_file_setup() is
-> called first time by using call_once().
+Hi,
 
-Please explain why we might need this patch: is something changing
-elsewhere?  Or are you misled by that "module_init(init_tmpfs)"
-into thinking that mm/shmem.c is sometimes built modular?
+ever since I moved to 2.6.25-rcY (Y should be between 2 and 5!). 
+I've seen several, but really hard-to-catch instant freezes on my 
+AMD64 Athlon X2 4200+ system... 
 
-Hugh
+Most of them happend in X.org so at first I thought it had something to do 
+with the NVIDIA module... BUT, one time it froze "a way before" the module 
+could get loaded (and desynced my raid.......). 
+
+---
+SYSRQ-P revealed that the CPU were looping inside:
+
+smp_64.c native_flush_tlb_others:
+assembler code:
+< 1ee:   f3 90                   pause
+< 1f0:   f6 45 00 03             testb  $0x3,0x0(%rbp)
+< 1f4:   75 f8                   jne    1ee <native_flush_tlb_others+0x5f>
+
+also known as: (in C)
+
+while (!cpus_empty(f->flush_cpumask))
+	cpu_relax();
+
+So... has anyone a good idea what's happening here exactly? Or is there 
+already another topic or even a patch available?
+
+Regards,
+	Chr.
