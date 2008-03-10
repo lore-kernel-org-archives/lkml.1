@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYCJVeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYCJViA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYCJVeU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYCJVeL
+	id S1754178AbYCJViA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYCJVht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:34:11 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:29902 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbYCJVeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:34:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EqJPL1FIR4igmd2puvB061t//2WgzSm6ifG8yE2sPncV74SC8s+Fprd8Euuop8JQZPeBiSfMrBTM+p+eZlAxvyL5wqfCVCFzQ1GH+hVCnicP6X+MMmw22hfUqxwRDXwzwfeno+aAV+TOZ+5hKfIRxIBuQb6cuj55FAyuZOdxu0Y=
-Message-ID: <86802c440803101434u1990b7f6t9106170330a85fd7@mail.gmail.com>
-Date: Mon, 10 Mar 2008 14:34:07 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: 2.6.25-rc4: crash on boot when SMP enabled
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080310101654.GD9520@elf.ucw.cz>
+	Mon, 10 Mar 2008 17:37:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57984 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750967AbYCJVhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 17:37:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [Regression] 2.6.25-rc4-git3: Handling of audio CDs broken on pata_ali
+Date: Mon, 10 Mar 2008 22:36:30 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <200803082246.47987.rjw@sisk.pl> <47D4E78A.10507@gmail.com> <47D523A1.7070808@gmail.com>
+In-Reply-To: <47D523A1.7070808@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080306102927.GA4434@elf.ucw.cz> <20080306131547.GE21359@elte.hu>
-	 <20080310101654.GD9520@elf.ucw.cz>
+Message-Id: <200803102236.30790.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 3:16 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->
->  > > Quad-Core AMD Opteron...
->  > > Checking TSC Synchronization [CPU#0 -> CPU#3]: passed
->  > > BUG: unable to handle kernel paging request at 00...005958
->  > > IP: __alloc_pages+0x38
->  > > ...
->  > > Call trace:
->  > > kmem_getpages
->  > > cache_grow
->  > > ____cache_alloc_node
->  > > cpuup_callback
->  > > kmem_cache_alloc_node
->  > > cpuup_callback
->  > > notifier_call_chain
->  > > _cpu_up
->  >
->  > could you try latest x86.git:
->  >
->  >     http://people.redhat.com/mingo/x86.git/README
->  >
->  > does it fix it? Could be one of the numa fixes that are queued up.
->
->  I did an update to 2.6.25-rc4, and problem is now gone. Seems like
->  something really fixed it ;-).
->
+On Monday, 10 of March 2008, Tejun Heo wrote:
+> Tejun Heo wrote:
+> > Tejun Heo wrote:
+> >> Rafael J. Wysocki wrote:
+> >>>>> where ata1 is:
+> >>>>>
+> >>>>> scsi0 : pata_ali
+> >>>>> scsi1 : pata_ali
+> >>>> Oh, is it only with audio CDs? I am unable to use DVD on pata_ali in DMA at
+> >>>> all. Have you tried to disable ATAPI DMA (libata.dma=1)?
+> >>> Data CDs seem to work fine here.
+> >> * Does booting into runlevel 1, putting in an audio cd and running
+> >> cdparanoia give the same result?
+> >>
+> >> * Does setting module parameter libata.force to "1.00:pio4" make any
+> >> difference?
+> > 
+> > Oh, never mind.  I have a hunch.  I'll report back in a while.
+> > 
+> 
+> Does the attached patch fix the problem?
 
-please check if
+Yes, it does.  Please push upstream.
 
-http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=7c9e92b6cdc9937eee53600e5d49a25e421463dd
-
-fixed that.
-
-YH
+Thanks,
+Rafael
