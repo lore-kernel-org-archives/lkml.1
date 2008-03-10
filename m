@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbYCIX7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbYCJAEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779AbYCIX7j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 19:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYCIX7a
+	id S1755265AbYCJAEr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 20:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYCJAEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 19:59:30 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4379 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYCIX73 (ORCPT
+	Sun, 9 Mar 2008 20:04:40 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:47110 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753094AbYCJAEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 19:59:29 -0400
-Subject: [PATCH] include/linux/ext4_fs.h - remove duplicate include
-From: Joe Perches <joe@perches.com>
-To: "Ted Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@clusterfs.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       Eric Sandeen <sandeen@redhat.com>, Mingming Cao <cmm@us.ibm.com>
-Cc: linux-ext4 <linux-ext4@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 09 Mar 2008 16:55:04 -0700
-Message-Id: <1205106904.656.98.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+	Sun, 9 Mar 2008 20:04:39 -0400
+Message-ID: <47D47B11.1000303@tiscali.nl>
+Date: Mon, 10 Mar 2008 01:04:33 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: colin@colino.net
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
+logical-bitwise & confusion
 
- include/linux/ext4_fs.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index 2500325..5c1677a 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -19,7 +19,6 @@
- #include <linux/types.h>
- #include <linux/blkdev.h>
- #include <linux/magic.h>
--
- #include <linux/ext4_fs_i.h>
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
+index 9587869..8ea7da2 100644
+--- a/drivers/hwmon/adt7473.c
++++ b/drivers/hwmon/adt7473.c
+@@ -570,7 +570,7 @@ static ssize_t set_max_duty_at_crit(struct device *dev,
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct adt7473_data *data = i2c_get_clientdata(client);
+ 	int temp = simple_strtol(buf, NULL, 10);
+-	temp = temp && 0xFF;
++	temp &= 0xFF;
  
- /*
-@@ -176,7 +175,6 @@ struct ext4_group_desc
- #define EXT4_BG_INODE_ZEROED	0x0004 /* On-disk itable initialized to zero */
- 
- #ifdef __KERNEL__
--#include <linux/ext4_fs_i.h>
- #include <linux/ext4_fs_sb.h>
- #endif
- /*
-
-
+ 	mutex_lock(&data->lock);
+ 	data->max_duty_at_overheat = temp;
