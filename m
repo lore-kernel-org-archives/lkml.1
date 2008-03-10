@@ -1,108 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYCJOgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbYCJOhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753226AbYCJOgc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 10:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYCJOgX
+	id S1752668AbYCJOhL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 10:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYCJOg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 10:36:23 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:36212 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYCJOgV convert rfc822-to-8bit (ORCPT
+	Mon, 10 Mar 2008 10:36:59 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:32779 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbYCJOg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 10:36:21 -0400
-X-IronPort-AV: E=Sophos;i="4.25,474,1199682000"; 
-   d="scan'208";a="49896017"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Linux-fbdev-devel] [PATCH 1/1 try#2] [VIDEO/FRAMEBUFFER]: add BF52x EZkit Display driver
-Date: Mon, 10 Mar 2008 14:35:45 -0000
-Message-ID: <600D5CB4DFD93545BF61FF01473D11AC12E9A755@limkexm2.ad.analog.com>
-In-Reply-To: <Pine.LNX.4.64.0803061906210.20407@anakin>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Linux-fbdev-devel] [PATCH 1/1 try#2] [VIDEO/FRAMEBUFFER]: add BF52x EZkit Display driver
-Thread-Index: Ach/tQG665rVjgcnRdCNNWWZ8CyA+gDBog7Q
-From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-To: <geert@linux-m68k.org>, <linux-fbdev-devel@lists.sourceforge.net>,
-       "Bryan Wu" <bryan.wu@analog.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, <adaplas@gmail.com>,
-       "Michael Hennerich" <michael.hennerich@analog.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Mar 2008 14:35:49.0012 (UTC) FILETIME=[089E6540:01C882BC]
+	Mon, 10 Mar 2008 10:36:58 -0400
+X-Greylist: delayed 735 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Mar 2008 10:36:57 EDT
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, Dean Anderson <dean@sensoray.com>,
+       linux-usb@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] USB: s2255drv, fix memset(0)
+Date: Mon, 10 Mar 2008 15:36:47 +0100
+Message-Id: <1205159807-11701-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Swap second and third paramter of memset in s2255_board_init, since it's
+apparently wrong. Also do not re-init its entries to 0 again.
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/usb/image/s2255drv.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
->From: geert@linux-m68k.org [mailto:geert@linux-m68k.org]
->Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 try#2] [VIDEO/FRAMEBUFFER]:
-add
->BF52x EZkit Display driver
->
->On Thu, 6 Mar 2008, Bryan Wu wrote:
->> On Wed, Mar 5, 2008 at 11:02 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->> > On Thu, 31 Jan 2008 00:49:43 +0800 Bryan Wu <bryan.wu@analog.com>
->wrote:
->> >  > +     fbinfo =
->> >  > +         framebuffer_alloc(sizeof(struct bfin_t350mcqbfb_info),
->&pdev->dev);
->> >  > +     if (!fbinfo) {
->> >  > +             ret = -ENOMEM;
->> >  > +             goto out2;
->> >  > +     }
->
->    [...]
->
->> >  > +     fbinfo->pseudo_palette = kmalloc(sizeof(u32) * 16,
->GFP_KERNEL);
->> >  > +     if (!fbinfo->pseudo_palette) {
->> >  > +             printk(KERN_ERR DRIVER_NAME
->> >  > +                    "Fail to allocate pseudo_palette\n");
->> >  > +
->> >  > +             ret = -ENOMEM;
->> >  > +             goto out4;
->> >  > +     }
->> >  > +
->> >  > +     memset(fbinfo->pseudo_palette, 0, sizeof(u32) * 16);
->> >
->> >  You just invented kzalloc!
->> >
->>
->> Right
->
->Alternatively, you could embed the pseudo palette inside struct
->bfin_t350mcqbfb_info, so it's allocated by the framebuffer_alloc() call
->above.
-
-This makes the most sense.
-Bryan is going to send an updated patch, including your and Andrew's
-recommendations.
-
-Thanks and best regards,
-Michael
+diff --git a/drivers/usb/image/s2255drv.c b/drivers/usb/image/s2255drv.c
+index e1cf2dc..2d15a36 100644
+--- a/drivers/usb/image/s2255drv.c
++++ b/drivers/usb/image/s2255drv.c
+@@ -2393,9 +2393,7 @@ static int s2255_board_init(struct s2255_dev *dev)
+ 	for (j = 0; j < MAX_PIPE_BUFFERS; j++) {
+ 		struct s2255_pipeinfo *pipe = &dev->pipes[j];
  
+-		memset(pipe, sizeof(struct s2255_pipeinfo), 0);
+-		pipe->state = 0;
+-		pipe->prev_state = 0;
++		memset(pipe, 0, sizeof(*pipe));
+ 		pipe->dev = dev;
+ 		pipe->cur_transfer_size = DEFAULT_PIPE_USBBLOCK;
+ 		pipe->max_transfer_size = MAX_PIPE_USBBLOCK;
+-- 
+1.5.4.1
 
->
->Gr{oetje,eeting}s,
->
->						Geert
->
->--
->Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-
->m68k.org
->
->In personal conversations with technical people, I call myself a
-hacker.
->But
->when I'm talking to journalists I just say "programmer" or something
-like
->that.
->							    -- Linus
-Torvalds
