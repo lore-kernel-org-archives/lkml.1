@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYCJXFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbYCJXHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756480AbYCJXFp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 19:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYCJXFh
+	id S1756069AbYCJXHc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 19:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYCJXHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 19:05:37 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55250 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbYCJXFg (ORCPT
+	Mon, 10 Mar 2008 19:07:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:14862 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbYCJXHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 19:05:36 -0400
-Date: Tue, 11 Mar 2008 00:06:12 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: Andres Salomon <dilinger@queued.net>,
-       Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       info-linux@geode.amd.com, rjw@sisk.pl, samuel.thibault@ens-lyon.org
-Subject: Re: PM/FB/gxfb: add config option that allows disabling of VT
-	switch during suspend
-Message-ID: <20080310230612.GB31750@elf.ucw.cz>
-References: <20080308204927.73afa56c@ephemeral> <20080310141939.ce1169c0.akpm@linux-foundation.org> <20080310174424.29621e62@ephemeral> <20080310145118.adb0cf1e.akpm@linux-foundation.org> <20080310181446.2fb85eea@ephemeral> <20080310222407.GD589@cosmic.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080310222407.GD589@cosmic.amd.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 10 Mar 2008 19:07:23 -0400
+Date: Mon, 10 Mar 2008 16:06:49 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-acpi@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: acer-wmi uses input:i8042_command() => build error
+Message-Id: <20080310160649.5d225ac7.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0803102227540.18589@twin.jikos.cz>
+References: <20080310124754.4ec3f24d.randy.dunlap@oracle.com>
+	<200803101959.06441.carlos@strangeworlds.co.uk>
+	<Pine.LNX.4.64.0803102227540.18589@twin.jikos.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, 10 Mar 2008 22:29:37 +0100 (CET) Jiri Kosina wrote:
 
-> > > > If so, that means extra #ifdef's sprinkled throughout the code.  Note
-> > > > that most framebuffer drivers won't be supporting this, and those that
-> > > > do will almost certainly always want vt switching turned off..
-> > > > 
-> > > 
-> > > I don't think you need any ifdefs or config options at all, do you?  Just
-> > > add a new module parameter to this driver and some little interface into
-> > > the PM core which allows the driver to set no_vt_switch?
-> > > 
-> > 
-> > That's a possibility, but doesn't adding hooks into PM core for two
-> > drivers (lxfb and gxfb) seems like overkill?  I also don't really see
-> > anyone needing to switch back and forth between VT_SWITCH and
-> > NO_VT_SWITCH other than to work around possible bugs in the register
-> > save/restore code..
+> On Mon, 10 Mar 2008, Randy Dunlap wrote:
 > 
-> I like Andrew's idea.  I wager This won't be Geode specific for long.
-> Either other drivers will get the hint and add real save/restore code
-> or the GPU subystem code being worked on by the X folks will come along
-> and make the VT switch obsolete for everybody.  Either way, I see hooks
-> in the PM core as generic love that everybody can benefit from.
+> > drivers/built-in.o: In function `set_u32':
+> > acer-wmi.c:(.text+0xb9bf6): undefined reference to `i8042_command'
+> > make[1]: *** [vmlinux] Error 1
+> > make: *** [sub-make] Error 2
+> 
+> Does the patch below fix your build?
 
-Exactly. We'd like _all_ drivers to behave like this.
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes, thanks.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+
+> From: Jiri Kosina <jkosina@suse.cz>
+> 
+> Acer-wmi dependends on i8042 code.
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> --- 
+>  drivers/misc/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+> index 982e27b..962817e 100644
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -108,6 +108,7 @@ config ACER_WMI
+>  	depends on ACPI
+>  	depends on LEDS_CLASS
+>  	depends on BACKLIGHT_CLASS_DEVICE
+> +	depends on SERIO_I8042
+>  	select ACPI_WMI
+>  	---help---
+>  	  This is a driver for newer Acer (and Wistron) laptops. It adds
+> --
+
+---
+~Randy
