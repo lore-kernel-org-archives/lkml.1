@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYCJV0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYCJV1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbYCJV0w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYCJV0n
+	id S1757164AbYCJV1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYCJV1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:26:43 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:34602 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079AbYCJV0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:26:43 -0400
-From: Stephan Diestelhorst <langer_mann@web.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Mon, 10 Mar 2008 22:26:38 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-References: <200803051559.09962.langer_mann@web.de> <200803101605.42251.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org>
-In-Reply-To: <87iqzu8r2q.fsf@basil.nowhere.org>
+	Mon, 10 Mar 2008 17:27:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:59065 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbYCJV1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 17:27:12 -0400
+Message-ID: <47D5A778.3020500@goop.org>
+Date: Mon, 10 Mar 2008 14:26:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andi Kleen <andi@firstfloor.org>, Hugh Dickins <hugh@veritas.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: quicklists confuse meminfo
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309111456.GA21690@elte.hu> <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu> <20080309114640.85c9c3eb.akpm@linux-foundation.org> <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com> <87myp68r88.fsf@basil.nowhere.org> <Pine.LNX.4.64.0803101707070.3398@blonde.site> <47D57056.3050204@goop.org> <20080310175305.GC7692@one.firstfloor.org> <47D57F86.2020806@goop.org> <47D5A000.6000407@zytor.com>
+In-Reply-To: <47D5A000.6000407@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803102226.39044.langer_mann@web.de>
-X-Provags-ID: V01U2FsdGVkX193Y+3z7CFfarIKWciEOWCONbvsn42L5IBKqlhu
-	fH7Wc4Us9HRRuKmW9T8ENMWagRFFpL5TU2/Iho/RIomTnvnLp+
-	Rj20LUQQA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Stephan Diestelhorst <langer_mann@web.de> writes:
-> > 
-> > New attempt with full clobbers, note that I deliberatly did not change
-> > the order of the output registers. Real output operands still preceede
-> > outputs used for potential clobbering.
-> > 
-> > I'm not too sure about the EBP push/pop frame, but as folks pointed
-> > out already, we should not trust the SMI code too much.
-> 
-> Be careful -- older gcc versions tend to abort for inline asm
-> that clobbers too many registers. Especially when the register
-> is already used (like ebp in a frame pointer enabled kernel) 
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>>
+>> Yeah, the most fundamental problem is that the whole page is RO, so 
+>> even if Xen trapped and emulated, it still makes a very bad 
+>> neighbour.  I was also going to say that there's no reason why you 
+>> couldn't pack multiple pgds into one page, but I think we can only 
+>> specify the cr3 at page resolution anyway.
+>>
+>
+> Wrong.  With PAE you can specify it at any 32-byte boundary. 
 
-AFAIK clobbering ebp is silently ignored on the GCCs I've tried it
-on (regardles of frame-pointer ommission). Hence there is a hard-coded
-push & pop for that register.
+Yes, the x86 lets you, but Xen doesn't - mostly because it reuses the 
+lower 12 bits as upper bits of the pfn so that you can specify a 
+pagetable base at >4G.
 
-Please also note that these are not clobbers in the strict inline asm
-syntax, but rather dummy output values that correspond to actual
-input parameters. I'd consider this a serious compiler flaw, if not
-bug, if these would not work. But let's not get into GCC vs.
-Fancy-inline-asm-hacker flames, like the mplayer folks do ;-)
-
-> Make sure it at least works on the oldest supported gcc version 
-> (gcc 3.2) and with frame pointer on.
-
-As I've said, I do not expect this to be problematic, but will test,
-just to be sure! 
-
-> For asms with so many clobbers explicit push/pop is usually safer.
-
-Yes, but it is unneccessary overhead as the compiler can (should!)
-find more elegant ways to get those registers back if needed.
-
-Regards,
-  Stephan
+    J
