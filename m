@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbYCJCDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYCJCD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197AbYCJCDd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 22:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYCJCDX
+	id S1754869AbYCJCD6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 22:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYCJCDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 22:03:23 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57413 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYCJCDX (ORCPT
+	Sun, 9 Mar 2008 22:03:49 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:49412 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754489AbYCJCDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 22:03:23 -0400
-Date: Mon, 10 Mar 2008 02:03:14 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 5/5] typesafe: TIMER_INITIALIZER and setup_timer
-Message-ID: <20080310020314.GG27894@ZenIV.linux.org.uk>
-References: <200802042311.18762.rusty@rustcorp.com.au> <200803051355.36502.rusty@rustcorp.com.au> <20080306104034.GB27894@ZenIV.linux.org.uk> <200803101207.20151.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 9 Mar 2008 22:03:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Fawwqo8UwvnXFc/a/kXFaGPWGVO/uLqMxpUx8OLOsIjeOBir01j1XYMO5pp/nyycJzQsRWN9qNQMvGciy3fDnmwiHLH/CXJoQD+3RK2ZIE/syOi4EYsyAeF2SUdCQGpZAC4tqvU38xlyYjYCLSBf+HCaXlvKdE7nW4Hy8CUSdCo=
+Message-ID: <a8e1da0803091903i3ea7a54bkea797a43eeae462e@mail.gmail.com>
+Date: Mon, 10 Mar 2008 10:03:47 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] add time_now_after and other macros which compare with jiffies
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Johannes Weiner" <hannes@saeurebad.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080309120133.2d1363e4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200803101207.20151.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.4.2.3i
+References: <200803080735.06984.hidave.darkstar@gmail.com>
+	 <877igd6vqn.fsf@saeurebad.de>
+	 <a8e1da0803081654l50fdda44jbbed1d1ed2caf9ae@mail.gmail.com>
+	 <20080309095802.70d91c7b@core>
+	 <a8e1da0803090344l7f468326r8d3844e20ede08a3@mail.gmail.com>
+	 <20080309110808.2249aa3a@core>
+	 <20080309120133.2d1363e4.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 12:07:19PM +1100, Rusty Russell wrote:
+On Mon, Mar 10, 2008 at 3:01 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Sun, 9 Mar 2008 11:08:08 +0000 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>
+>  > > Yes, This has a purpose as well. You will find most of the usage of these
+>  > > macros are just compare some value with jiffies after doing some grep.
+>  >
+>  > That is no reason to add more macros that hide how they do it, or make
+>  > jiffies itself invisible to the grep search or variable usage finding
+>  > tools (and for tickless that very thing is important)
+>
+>  We could call them time_is_after_jiffies(), time_is_before_jiffies(), etc.
+>
+>  Those names are actually better than time_after_now(), etc.
+>
+>
+Andrew, Hannes, Alan,
+thanks for your comment, I have send the new time_is_* patch as v3.
 
->    Worst, I can't see a way to apply your technique in general, for 
-> non-void-returning functions (eg. interrupt handlers).
-
-Interrupt handlers are easy.  Just switch irqreturn_t from into to
-struct {int x;}, adjust the rest of irqreturn.h accordingly, add
-extern void want_irqreturn_t(irqreturn_t);
-then replace 0 ? (f)(x) : (void)0 with want_irqreturn_t((f)(x)) in the
-expression under sizeof and we are all set (assuming Jeff's elimination
-of irq number in place by then or done in parallel).
+Hannes, It's more like your is_past/is_future but looks better when
+along with _eq
