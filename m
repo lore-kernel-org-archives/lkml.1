@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbYCJSW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYCJS21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753385AbYCJSW5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 14:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCJSWs
+	id S1753762AbYCJS21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 14:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYCJS2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 14:22:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51913 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYCJSWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 14:22:48 -0400
-Subject: Re: 2.6.25-rc4 todays: BUG: unable to handle kernel NULL pointer
-	dereference at 0000000000000138
-From: Peter Zijlstra <peterz@infradead.org>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>
-In-Reply-To: <c4e36d110803100928o34e8cfa6o3087631f88762b7a@mail.gmail.com>
-References: <c4e36d110803100928o34e8cfa6o3087631f88762b7a@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 10 Mar 2008 19:22:42 +0100
-Message-Id: <1205173362.8514.155.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+	Mon, 10 Mar 2008 14:28:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39737 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbYCJS2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 14:28:16 -0400
+Message-ID: <47D57D28.7070100@redhat.com>
+Date: Mon, 10 Mar 2008 14:25:44 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Shaohua Li <shaohua.li@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ia64 <linux-ia64@vger.kernel.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [PATCH -mm] kprobes: kprobe-booster for ia64
+References: <47D166E7.2050803@redhat.com> <1205120600.20271.3.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1205120600.20271.3.camel@sli10-desk.sh.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-10 at 17:28 +0100, Zdenek Kabelac wrote:
+Hello Shaohua,
 
-> I've got new oops today inside my qemu:
-> (please check my comment about tainted bellow)
-> 
-> [   66.252118] p: module license 'unspecified' taints kernel.
-> 
-> [ 1935.986421] BUG: unable to handle kernel NULL pointer dereference
-> at 0000000000000138
-> 
-> [ 1935.986421] IP: [<ffffffff8102e847>] pick_next_task_fair+0x37/0x60
+Thank you for reviewing!
 
-Could you try with:
+Shaohua Li wrote:
+> On Sat, 2008-03-08 at 00:01 +0800, Masami Hiramatsu wrote:
+>> From: Masami Hiramatsu <mhiramat@redhat.com>
+>> +
+>> +/* Prepare long jump bundle and disables other boosters if need */
+>> +static void __kprobes prepare_booster(struct kprobe *p)
+>> +{
+>> +       unsigned long addr = (unsigned long)p->addr & ~0xFULL;
+>> +       unsigned int slot = addr & 0xf;
+> slot = (unsigned long)p->addr & 0xf ?
 
-http://lkml.org/lkml/2008/3/10/199
+You are correct. I'll fix that.
+
+> 
+>> +       struct kprobe *other_kp;
+>> +
+>> +       if (can_boost(&p->ainsn.insn[0].bundle, slot, addr)) {
+>> +               set_brl_inst(&p->ainsn.insn[1].bundle, (bundle_t
+>> *)addr + 1);
+>> +               p->ainsn.inst_flag |= INST_FLAG_BOOSTABLE;
+>> +       }
+>> +
+>> +       /* disables boosters in previous slots */
+>> +       for (; addr < (unsigned long)p->addr; addr++) {
+>> +               other_kp = get_kprobe((void *)addr);
+>> +               if (other_kp)
+>> +                       other_kp->ainsn.inst_flag &=
+>> ~INST_FLAG_BOOSTABLE;
+>> +       }
+>> +}
+>> +
+> There is no lock to protect the flag. If one cpu invokes other_kp and
+> the other cpu is changing the flag, what's the result?
+
+I think that other cpu never change the flag, because the caller of this
+function(__register_kprobe) locks kprobe_mutex in kernel/kprobes.c.
+
+> Thanks,
+> Shaohua
+
+Thanks,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
