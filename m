@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYCJMsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYCJMvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbYCJMsu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 08:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYCJMsl
+	id S1753201AbYCJMvd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 08:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYCJMvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 08:48:41 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:26871 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbYCJMsk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 08:48:40 -0400
-Message-Id: <47D4F455.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Mon, 10 Mar 2008 06:41:57 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Suresh Siddha" <suresh.b.siddha@intel.com>
-Cc: <mingo@elte.hu>, <dmitry.adamushko@gmail.com>, <ego@in.ibm.com>,
-       <yi.y.yang@intel.com>, <tglx@linutronix.de>,
-       <akpm@linux-foundation.org>, <rjw@sisk.pl>, <oleg@sign.ru>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] adjust root-domain->online span in response to
-	hotplug event
-References: <20080308015045.GB15909@linux-os.sc.intel.com>
- <20080308050627.4831.87630.stgit@novell1.haskins.net>
- <20080309023515.GC15909@linux-os.sc.intel.com>
-In-Reply-To: <20080309023515.GC15909@linux-os.sc.intel.com>
+	Mon, 10 Mar 2008 08:51:25 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:50631 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751185AbYCJMvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 08:51:24 -0400
+Date: Mon, 10 Mar 2008 13:49:15 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080310134915.45ae7446@mjolnir.drzeus.cx>
+In-Reply-To: <20080310100008.GA9520@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
+	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
+	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
+	<20080306092730.4412d085@mjolnir.drzeus.cx>
+	<20080309151659.63d54f38@mjolnir.drzeus.cx>
+	<20080310100008.GA9520@elf.ucw.cz>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Sat, Mar 8, 2008 at  9:35 PM, in message
-<20080309023515.GC15909@linux-os.sc.intel.com>, Suresh Siddha
-<suresh.b.siddha@intel.com> wrote: 
-> On Sat, Mar 08, 2008 at 12:10:15AM -0500, Gregory Haskins wrote:
->> Suresh Siddha wrote:
->>  >
->>  > -	cpus_and(*lowest_mask, task_rq(task)->rd->online, task->cpus_allowed);
->>  > +	cpus_and(*lowest_mask, task->cpus_allowed, cpu_online_map);
->> 
->> Hi Suresh,
->>    Unfortunately, this patch will introduce its own set of bugs. 
+On Mon, 10 Mar 2008 11:00:08 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
+
+> On Sun 2008-03-09 15:16:59, Pierre Ossman wrote:
+> > 2. uhci_hcd driver
+> > 
+> > USB is somehow involved in this problem. Unloading the uhci_hcd driver almost entirely kills the noise on a 1000 HZ NO_HZ kernel. On a 100 HZ, no NO_HZ kernel, the effect is very small, but still there.
 > 
-> Is that because of the missing get/put_online_cpus() ?
-
-Actually, I was referring to the problem of potentially including "out of domain" CPUs in the search, but that is a good point too.  Ill have to think about whether a get/put is needed here.
-
-
+> USB keeps processor out of C3 in many cases.
 > 
->> However, your analysis was spot-on.  I think I see the problem now.  It 
->> was introduced when I put a hack in to "fix" s2ram problems in -mm as a 
->> result of the new root-domain logic.  I think the following patch will 
->> fix both issues:
+
+I figured that was the case. But I did not see any difference in powertop.
+
+> > 4. Battery and AC
+> > 
+> > The noise increases with the battery present and also when the AC supply is removed.
+> >
 > 
-> BTW, what is use of per root domains online map, when we have global
-> cpu_online_map() ? Each domains span & cpu_online_map should give
-> domain_online_map anyhow.
+> On battery, some machines swap C3 for "secret" C4, which is slower but
+> saves power.
 
+I guess the only way to find out is to disassemble the DSDT. Exposing myself to such concentrations of ACPI is not an appealing project. :/
 
-Thats exactly right.  rd->online is a cached version of "rd->span & cpu_online_map".  It simply saves us from having to do an extra cpu_and() at run-time (which can be expensive as the NR_CPUS grows large).
+-- 
+     -- Pierre Ossman
 
-> 
-> And is n't it buggy if someone accesses rd->online with out 
-> get/put_online_map()
-
-See above: I'm not sure, but you may be right about that.
-
-Regards,
--Greg
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
