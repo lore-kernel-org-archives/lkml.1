@@ -1,123 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYCJPEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYCJPIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbYCJPEv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYCJPEm
+	id S1752837AbYCJPIV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYCJPIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:04:42 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:54181 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYCJPEl (ORCPT
+	Mon, 10 Mar 2008 11:08:13 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:60483 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYCJPIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:04:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=SCgbFzAmzMejfppuElI7v69g8u3WOYCCOqSpVzo3rGZWjzP2UuWt/r+GAyfYiWhzexz0Cd03k/2pYDR/flfeXyw9Vd23WjtKB6IpBT+R+jcS+tuJi2owBHl7FfgDtC1VUj8LXBfOwjGlnhhb4Ms5YuJy94avGWrYoHgyY1p/OqQ=
-Date: Mon, 10 Mar 2008 23:57:05 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH 1/5] lib: introduce call_once()
-Message-ID: <20080310145704.GA6396@APFDCB5C>
+	Mon, 10 Mar 2008 11:08:12 -0400
+Message-ID: <47D54EF9.1080901@keyaccess.nl>
+Date: Mon, 10 Mar 2008 16:08:41 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Bob Tracy <rct@frus.com>, linux-kernel@vger.kernel.org,
+       linux-alpha@vger.kernel.org, ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+References: <20080308035828.E9403DBA2@gherkin.frus.com> <20080309153425.GA1391@jurassic.park.msu.ru>
+In-Reply-To: <20080309153425.GA1391@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-call_once() is an utility function which has similar functionality of
-pthread_once().
+On 09-03-08 16:34, Ivan Kokshaysky wrote:
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- include/linux/once.h |   42 ++++++++++++++++++++++++++++++++++++++++++
- lib/Makefile         |    2 +-
- lib/once.c           |   18 ++++++++++++++++++
- 3 files changed, 61 insertions(+), 1 deletion(-)
+> On Fri, Mar 07, 2008 at 09:58:28PM -0600, Bob Tracy wrote:
+>> (1) Using the sox-based "play" command to play a short ".wav" file
+>>     results in the file being played approx. 1.5 times, i.e., it plays
+>>     all the way through, then restarts from the beginning and quits
+>>     somewhere in the middle of the second playback.  At least the
+>>     sound doesn't seem distorted...
+>>
+>> (2) Using "mpg123" results in silence at first, then after about 30
+>>     seconds, a tight loop of random repeating sound (doesn't sound like
+>>     part of the mp3 file, but it's probably derived from it :-)) until
+>>     the process is forcibly killed.
+> 
+> Sounds like a DMA screwup. However, I'm pretty sure that it's not a
+> generic ALSA problem with ISA DMA, as my good old GUS MAX still works
+> perfectly on lx164 (machine that is very similar to your miata) as
+> I checked yesterday with patched 2.6.25-rc4. :-)
+> 
+>> I have to hit <ctrl>C twice to interrupt playback.
+>>
+>> /proc/asound/cards looks normal:
+>>
+>>  0 [ES1888         ]: ES1888 - ESS AudioDrive ES1888
+>>                       ESS AudioDrive ES1888 at 0x220, irq 5, dma1 1, dma2 5
+> 
+> I wonder if it still works on x86 - perhaps you ought to ask ALSA folks.
+> I'll search my machine room next week - I recall that there were a dozen
+> of old ISA soundcards, maybe there is some es18xx stuff, but chances
+> are slim...
 
-Index: 2.6-rc/include/linux/once.h
-===================================================================
---- /dev/null
-+++ 2.6-rc/include/linux/once.h
-@@ -0,0 +1,42 @@
-+#ifndef __LINUX_ONCE_H
-+#define __LINUX_ONCE_H
-+
-+#include <linux/kernel.h>
-+#include <linux/mutex.h>
-+
-+struct once_control {
-+	struct mutex lock;
-+	int done;
-+};
-+
-+#define __ONCE_INITIALIZER(name) {					\
-+		.lock		= __MUTEX_INITIALIZER(name.lock),	\
-+		.done		= 0,					\
-+	}
-+
-+#define DEFINE_ONCE(name) struct once_control name = __ONCE_INITIALIZER(name)
-+
-+extern int call_once_slow(struct once_control *once_control,
-+			  int (*init_rouine)(void));
-+
-+/*
-+ * call_once - call the initialization function only once
-+ *
-+ * @once_control: guarantee that the init_routine will be called only once
-+ * @init_routine: initialization function
-+ *
-+ * The first call to call_once(), with a given once_control, shall call the
-+ * init_routine with no arguments and return the value init_routine returned.
-+ * If the init_routine returns zero which indicates the initialization
-+ * succeeded, subsequent calls of call_once() with the same once_control shall
-+ * not call the init_routine and return zero.
-+ */
-+
-+static inline int call_once(struct once_control *once_control,
-+			    int (*init_rouine)(void))
-+{
-+	return likely(once_control->done) ? 0
-+			: call_once_slow(once_control, init_rouine);
-+}
-+
-+#endif /* __LINUX_ONCE_H */
-Index: 2.6-rc/lib/once.c
-===================================================================
---- /dev/null
-+++ 2.6-rc/lib/once.c
-@@ -0,0 +1,18 @@
-+#include <linux/module.h>
-+#include <linux/once.h>
-+
-+int call_once_slow(struct once_control *once_control, int (*init_rouine)(void))
-+{
-+	int err = 0;
-+
-+	mutex_lock(&once_control->lock);
-+	if (!once_control->done) {
-+		err = init_rouine();
-+		if (!err)
-+			once_control->done = 1;
-+	}
-+	mutex_unlock(&once_control->lock);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(call_once_slow);
-Index: 2.6-rc/lib/Makefile
-===================================================================
---- 2.6-rc.orig/lib/Makefile
-+++ 2.6-rc/lib/Makefile
-@@ -14,7 +14,7 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o klist.o
- 
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o
-+	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o once.o
- 
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
+Missed the original mssage, adding alsa-devel. I have a few dozen es18xx's 
+cards but no Alpha's. Am compiling a 2.6.25-rc4 onto an x86 test box now.
+
+Rene.
