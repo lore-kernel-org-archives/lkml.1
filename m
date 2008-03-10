@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYCJBIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYCJBQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbYCJBIT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Mar 2008 21:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYCJBIL
+	id S1753990AbYCJBQX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Mar 2008 21:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbYCJBQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Mar 2008 21:08:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:37643 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYCJBIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Mar 2008 21:08:10 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 5/5] typesafe: TIMER_INITIALIZER and setup_timer
-Date: Mon, 10 Mar 2008 12:07:19 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-References: <200802042311.18762.rusty@rustcorp.com.au> <200803051355.36502.rusty@rustcorp.com.au> <20080306104034.GB27894@ZenIV.linux.org.uk>
-In-Reply-To: <20080306104034.GB27894@ZenIV.linux.org.uk>
+	Sun, 9 Mar 2008 21:16:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:26634 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbYCJBQM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Mar 2008 21:16:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=n/QELEvSG1K1iW1QYDC3vBHwFu0ysh9/xtBWt+0uFG/PI9MkmfaQ3n63LxxEvzwNAQvUlUAoXAoeFVxLM/M/va9OC/LJVjppXaFEwW2Gc0FH04jCYYPMcjRdycQngSQb6TGB5OD4X1C710xuoySmU1zBVYKRaTnj/BfCpCwIIWs=
+Date: Mon, 10 Mar 2008 09:22:02 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, hannes@saeurebad.de,
+       alan@lxorguk.ukuu.org.uk
+Subject: [PATCH v3] Add time_is_after_jiffies and others which compare with
+	jiffies
+Message-ID: <20080310012202.GA2958@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803101207.20151.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 March 2008 21:40:35 Al Viro wrote:
-> extern void decay_to_pointer(void const volatile *);
-> #define check_callback_type(f,x) (sizeof((0 ? decay_to_pointer(x),(f)(x) :
-> (void)0), 0)) #define __setup_timer(timer, func, arg) \
-> do {    \
-> 	struct timer_list *__timer = (timer);   \
-> 	__timer->function = (void (*)(unsigned long))(func); \
-> 	__timer->data = (unsigned long)(arg);   \
-> 	(void)check_callback_type(func, arg); \
-> } while(0)
+Most of time_after like macros usages just compare jiffies and
+another number, so here add some time_is_* macros for convenience.
 
-   Thanks for that snippet; it's much more complete than the last one I found.  
-I especially like the handling of const- and volatile-taking callback fns.  
-My version is uglier, pasted below.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-   There are three problems I see here.  First, the lack of warning for "void 
-intfn(int); DECLARE_TIMER(t, intfn, 0);", but that's relatively minor.  
-Second, the change of all the users is just churn, with cast_if_type() it can 
-be done over the next couple of years, if ever.
+---
+include/linux/jiffies.h |   16 ++++++++++++++++
+1 file changed, 16 insertions(+)
 
-   Worst, I can't see a way to apply your technique in general, for 
-non-void-returning functions (eg. interrupt handlers).
-
-Here's the typesafe_cb () helper function from ccan (there are also 
-typesafe_cb_preargs and postargs for callbacks with extra args):
-
-/* Doesn't handle const volatile, but can be added. */
-#define typesafe_cb(rettype, fn, arg)					\
-	cast_if_type(cast_if_type(cast_if_type((fn),			\
-					       rettype (*)(const typeof(arg)), \
-					       rettype (*)(void *)),	\
-				  rettype (*)(volatile typeof(arg)),	\
-				  rettype (*)(void *)),			\
-		     rettype (*)(typeof(arg)),				\
-		     rettype (*)(void *))
-
-> PS: apologies for missing your previous mail; ETOOBIGMBOX ;-/
-
-That's fine, happens to all of us.  I was a little disappointed to return from 
-holiday to discover that either your work or mine hadn't been merged tho :)
-
-Cheers,
-Rusty.
+diff -upr linux/include/linux/jiffies.h linux.new/include/linux/jiffies.h
+--- linux/include/linux/jiffies.h	2008-03-07 10:40:04.000000000 +0800
++++ linux.new/include/linux/jiffies.h	2008-03-10 09:11:36.000000000 +0800
+@@ -135,6 +135,22 @@ static inline u64 get_jiffies_64(void)
+ #define time_before_eq64(a,b)	time_after_eq64(b,a)
+ 
+ /*
++ * These four macros compare jiffies and 'a' for convenience.
++ */
++
++/* time_is_before_jiffies(a) return true if a is before jiffies */
++#define time_is_before_jiffies(a) time_after(jiffies, a)
++
++/* time_is_after_jiffies(a) return true if a is after jiffies */
++#define time_is_after_jiffies(a) time_before(jiffies, a)
++
++/* time_is_before_eq_jiffies(a) return true if a is before or equal to jiffies*/
++#define time_is_before_eq_jiffies(a) time_after_eq(jiffies, a)
++
++/* time_is_after_eq_jiffies(a) return true if a is after or equal to jiffies*/
++#define time_is_after_eq_jiffies(a) time_before_eq(jiffies, a)
++
++/*
+  * Have the 32 bit jiffies value wrap 5 minutes after boot
+  * so jiffies wrap bugs show up earlier.
+  */
