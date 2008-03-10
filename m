@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbYCJP5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbYCJQEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbYCJP5v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYCJP5n
+	id S1752698AbYCJQEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 12:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYCJQE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:57:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33817 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751158AbYCJP5m (ORCPT
+	Mon, 10 Mar 2008 12:04:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34948 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbYCJQEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:57:42 -0400
-Date: Mon, 10 Mar 2008 08:57:06 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: quicklists confuse meminfo
-In-Reply-To: <20080309192745.GA16929@elte.hu>
-Message-ID: <Pine.LNX.4.64.0803100856540.23575@schroedinger.engr.sgi.com>
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
- <20080309111456.GA21690@elte.hu> <20080309210000.C6DE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20080309120940.GA1695@elte.hu> <20080309123432.GA3267@elte.hu>
- <20080309121103.3f7019d5@laptopd505.fenrus.org> <20080309192514.GA16759@elte.hu>
- <20080309192745.GA16929@elte.hu>
+	Mon, 10 Mar 2008 12:04:25 -0400
+Date: Mon, 10 Mar 2008 09:03:17 -0700
+From: Greg KH <greg@kroah.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: inotify fixes in stable
+Message-ID: <20080310160317.GB20775@kroah.com>
+References: <20080310091155.02b7fe0e@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080310091155.02b7fe0e@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
+On Mon, Mar 10, 2008 at 09:11:55AM +0100, Pierre Ossman wrote:
+> Hi Greg,
+> 
+> I was hoping that the fixes for bug 7785 "BUG: at fs/inotify.c:172
+> set_dentry_child_flags()" could be added to the stable releases. I'm
+> seeing these quite frequently at customer installations.
 
+In the future, stable stuff should be sent to the stable@kernel.org
+email address and not directly to me, thanks.
 
+> The relevant commits are d599e36a9ea85432587f4550acc113cd7549d12a and
+> 0d71bd5993b630a989d15adc2562a9ffe41cd26d. Hopefully these do not
+> depend on other updates. Nick would be the expert on that.
+
+Can you verify that if you apply just those 2 patches to the latest
+2.6.24.3 kernel release, it fixes the issues for you?
+
+thanks,
+
+greg k-h
