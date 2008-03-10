@@ -1,84 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbYCJOXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbYCJO0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751982AbYCJOXY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 10:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYCJOXR
+	id S1752166AbYCJO0l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 10:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYCJO0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 10:23:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41716 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750696AbYCJOXQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 10:23:16 -0400
-X-Authenticated: #7313500
-X-Provags-ID: V01U2FsdGVkX18DS7Ug2a0Da2p7gu7Yy1P4fGLEeGjelP+O5qwjRQ
-	rBO5kZutl+oIy0
-From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Date: Mon, 10 Mar 2008 15:23:02 +0100
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
-       linux-kernel@vger.kernel.org, rick@vanrein.org
-References: <182234194@web.de> <200803101224.07628.dl9pf@gmx.de> <20080310115237.GA29197@elf.ucw.cz>
-In-Reply-To: <20080310115237.GA29197@elf.ucw.cz>
+	Mon, 10 Mar 2008 10:26:34 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:48298 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbYCJO0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 10:26:33 -0400
+Message-ID: <47D5450A.40500@atmel.com>
+Date: Mon, 10 Mar 2008 15:26:18 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803101523.03620.dl9pf@gmx.de>
-X-Y-GMX-Trusted: 0
+To: linux-fbdev-devel@lists.sourceforge.net,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Sedji GAOUAOU <sedji.gaouaou@atmel.com>,
+       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
+       Andrew Victor <linux@maxim.org.za>
+Subject: [PATCH] atmel_lcdfb: wiring BGR to RGB color mode
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 10 März 2008 12:52:37 schrieb Pavel Machek:
-> On Mon 2008-03-10 12:24:06, Jan-Simon Möller wrote:
-> > Am Montag 10 März 2008 11:14:48 schrieben Sie:
-> > > Feel free to improve memmap documentation.
-> >
-> > BUT ...
-> > to do that, I would need to know already a bit of memmap ?!
-> >
-> > This is a Chicken-egg-problem !
-> >
-> > And I won't "waste" my time if i've a solution at hand already ?!
->
-> ...so you waste everyone elses...?
+Adds different wiring mode for the LCD screen.
 
-This is no fair answer, Pavel - I already invested my time to find a solution 
-and only found BadRAM at that time. So my impression is that for memmap 
-there's so little doc that no average user is able to use it. This will also 
-prevent users from making "derived" documentation for other use-cases. And 
-again we're back to the chicken-egg ??
-You can have the "nicest" solution out there - as long as its 
-either "nasty-to-use" or zero-documented, no one will really use it.
+The legacy atmel LCDC IP uses a non standard color mode,
+"BGR-555.1" instead "RGB-565". The major part of graphic stacks 
+for embedded systems uses only "RGB-565". It is possible to swap 
+LCD IOs instead of doing this bit swapping by software (See 
+application note AT91SAM9 LCD Controller
+http://www.atmel.com/dyn/resources/prod_documents/doc6300.pdf)
 
-> > Lets do it like this: Show me what i need to know about the usage of
-> > memmap and i'll write some doc.
-> >
-> > Just shouting "write your own doc" is pointless, as I don't know this
-> > part of the kernel myself (yet).
->
-> Read the thread you are replying to. It was already there.
+This wire swapping is done on the at91sam9rl-ek board (board code 
+using this patch will come later).
+---
+ drivers/video/atmel_lcdfb.c |   27 ++++++++++++++++++++++-----
+ include/video/atmel_lcdc.h  |   10 ++++++++++
+ 2 files changed, 32 insertions(+), 5 deletions(-)
 
-I did that and also read kernel-parameters.txt / memory.txt :
-But there is _NO_ example line, just the synopsis. 
-Do you expect all users to know what's e820 table is ? - this is not 
-realistic. Not everybody is an expert in computer science.
+--- linux-2.6.x-rc.orig/drivers/video/atmel_lcdfb.c
++++ linux-2.6.x-rc/drivers/video/atmel_lcdfb.c
+@@ -338,19 +338,35 @@ static int atmel_lcdfb_check_var(struct 
+ 		break;
+ 	case 15:
+ 	case 16:
+-		var->red.offset = 0;
++		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
++			/* RGB:565 mode */
++			var->red.offset = 11;
++			var->blue.offset = 0;
++			var->green.length = 6;
++		} else {
++			/* BGR:555 mode */
++			var->red.offset = 0;
++			var->blue.offset = 10;
++			var->green.length = 5;
++		}
+ 		var->green.offset = 5;
+-		var->blue.offset = 10;
+-		var->red.length = var->green.length = var->blue.length = 5;
++		var->red.length = var->blue.length = 5;
+ 		break;
+ 	case 32:
+ 		var->transp.offset = 24;
+ 		var->transp.length = 8;
+ 		/* fall through */
+ 	case 24:
+-		var->red.offset = 0;
++		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
++			/* RGB:888 mode */
++			var->red.offset = 16;
++			var->blue.offset = 0;
++		} else {
++			/* BGR:888 mode */
++			var->red.offset = 0;
++			var->blue.offset = 16;
++		}
+ 		var->green.offset = 8;
+-		var->blue.offset = 16;
+ 		var->red.length = var->green.length = var->blue.length = 8;
+ 		break;
+ 	default:
+@@ -697,6 +713,7 @@ static int __init atmel_lcdfb_probe(stru
+ 		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
+ 		sinfo->guard_time = pdata_sinfo->guard_time;
+ 		sinfo->lcdcon_is_backlight = pdata_sinfo->lcdcon_is_backlight;
++		sinfo->lcd_wiring_mode = pdata_sinfo->lcd_wiring_mode;
+ 	} else {
+ 		dev_err(dev, "cannot get default configuration\n");
+ 		goto free_info;
+--- linux-2.6.x-rc.orig/include/video/atmel_lcdc.h
++++ linux-2.6.x-rc/include/video/atmel_lcdc.h
+@@ -22,6 +22,15 @@
+ #ifndef __ATMEL_LCDC_H__
+ #define __ATMEL_LCDC_H__
+ 
++
++/* Way LCD wires are connected to the chip:
++ * Some Atmel chips use BGR color mode (instead of standard RGB)
++ * A swapped wiring onboard can bring to RGB mode.
++ */
++#define ATMEL_LCDC_WIRING_BGR	0
++#define ATMEL_LCDC_WIRING_RGB	1
++
++
+  /* LCD Controller info data structure, stored in device platform_data */
+ struct atmel_lcdfb_info {
+ 	spinlock_t		lock;
+@@ -42,6 +51,7 @@ struct atmel_lcdfb_info {
+ 	u8			saved_lcdcon;
+ 
+ 	u8			default_bpp;
++	u8			lcd_wiring_mode;
+ 	unsigned int		default_lcdcon2;
+ 	unsigned int		default_dmacon;
+ 	void (*atmel_lcdfb_power_control)(int on);
 
-Thats why BadRAM is used out there - memtest prints the values and BadRam can 
-use them.
-
-Lets try to get an example and document it:
-My starting point would be: i wanna exclude this memory-area
-
-badram=0x18690000,0xffff0000
-(which means a whole from 0x18690000 to 0x1869ffff )
-
-what would that be in memmap= -Syntax if i've got 2GB RAM in total ?
-
-Best regards
-Jan-Simon
