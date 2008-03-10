@@ -1,97 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYCJW3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbYCJWa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYCJW3r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 18:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbYCJW3j
+	id S1757457AbYCJWa0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 18:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYCJWaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 18:29:39 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:35903
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751269AbYCJW3j (ORCPT
+	Mon, 10 Mar 2008 18:30:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43048 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753340AbYCJWaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 18:29:39 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v2] keep rd->online and cpu_online_map in sync
-To: suresh.b.siddha@intel.com
-Cc: ego@in.ibm.com, rjw@sisk.pl, akpm@linux-foundation.org,
-       dmitry.adamushko@gmail.com, ego@in.ibm.com, mingo@elte.hu, oleg@sign.ru,
-       yi.y.yang@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       ghaskins@novell.com
-Date: Mon, 10 Mar 2008 17:59:11 -0400
-Message-ID: <20080310215813.10968.960.stgit@novell1.haskins.net>
-In-Reply-To: <20080310221014.GB27329@linux-os.sc.intel.com>
-References: <20080310221014.GB27329@linux-os.sc.intel.com>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 10 Mar 2008 18:30:09 -0400
+Date: Mon, 10 Mar 2008 15:28:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
+       jordan.crouse@amd.com, rjw@sisk.pl, samuel.thibault@ens-lyon.org
+Subject: Re: [PATCH 6/6] PM/FB/gxfb: add config option that allows disabling
+ of VT switch during suspend
+Message-Id: <20080310152828.8f102f52.akpm@linux-foundation.org>
+In-Reply-To: <20080310181446.2fb85eea@ephemeral>
+References: <20080308204927.73afa56c@ephemeral>
+	<20080310141939.ce1169c0.akpm@linux-foundation.org>
+	<20080310174424.29621e62@ephemeral>
+	<20080310145118.adb0cf1e.akpm@linux-foundation.org>
+	<20080310181446.2fb85eea@ephemeral>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Mon, Mar 10, 2008 at  6:10 PM, in message
-<20080310221014.GB27329@linux-os.sc.intel.com>, Suresh Siddha
-<suresh.b.siddha@intel.com> wrote: 
-> On Mon, Mar 10, 2008 at 04:00:28PM -0600, Gregory Haskins wrote:
->> >>> On Mon, Mar 10, 2008 at  6:03 PM, in message 
-> <200803102303.28660.rjw@sisk.pl>,
->> "Rafael J. Wysocki" <rjw@sisk.pl> wrote: 
->> > On Monday, 10 of March 2008, Suresh Siddha wrote:
->> >> >  
->> >> > -	case CPU_DOWN_PREPARE:
->> >> > +	case CPU_DYING:
->> >> 
->> >> Don't we need to take care of CPU_DYING_FROZEN aswell?
->> > 
->> > Well, I'd say we do.
->> 
->> Should I add that to the patch as well then?
+On Mon, 10 Mar 2008 18:14:46 -0400 Andres Salomon <dilinger@queued.net> wrote:
+
+> On Mon, 10 Mar 2008 14:51:18 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Yes please.
+> > On Mon, 10 Mar 2008 17:44:24 -0400
+> > Andres Salomon <dilinger@queued.net> wrote:
+> > 
+> > > On Mon, 10 Mar 2008 14:19:39 -0700
+> > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > 
+> > > > It would be far preferable to do this via a kernel boot parameter rather
+> > > > than via a kernel rebuild.
+> > > > 
+> > > 
+> > > Well, it shouldn't be supported at _all_ unless the framebuffer driver
+> > > supports it; you're asking for it to be converted to something like the
+> > > following?
+> > > 
+> > > 
+> > > 
+> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> > > static int no_vt_switch;
+> > > #endif
+> > > 
+> > > int pm_prepare_console(void)
+> > > {
+> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> > > 	if (no_vt_switch)
+> > > 		return 0;
+> > > #endif
+> > > 	...
+> > > }
+> > > 
+> > > #ifdef CONFIG_FBDEV_SUPPORTS_NOSWITCH
+> > > module_param(no_vt_switch, int, 0);
+> > > MODULE_PARM_DESC(no_vt_switch, "...");
+> > > #endif
+> > > 
+> > > 
+> > > If so, that means extra #ifdef's sprinkled throughout the code.  Note
+> > > that most framebuffer drivers won't be supporting this, and those that
+> > > do will almost certainly always want vt switching turned off..
+> > > 
+> > 
+> > I don't think you need any ifdefs or config options at all, do you?  Just
+> > add a new module parameter to this driver and some little interface into
+> > the PM core which allows the driver to set no_vt_switch?
+> > 
+> 
+> That's a possibility, but doesn't adding hooks into PM core for two
+> drivers (lxfb and gxfb) seems like overkill?
 
-Here is v2 with the suggested improvement
+It's just a few bytes of code?
 
--Greg
+>  I also don't really see
+> anyone needing to switch back and forth between VT_SWITCH and
+> NO_VT_SWITCH other than to work around possible bugs in the register
+> save/restore code..
 
-------------------------
-keep rd->online and cpu_online_map in sync
+Making driver behaviour depend upon compile-time settings is really to be
+avoided.  A distributor has to choose one setting or the other, and a) that
+means that some people will get the wrong setting and b) there's a decent
+chance that the distributor will get it wrong.
 
-It is possible to allow the root-domain cache of online cpus to
-become out of sync with the global cpu_online_map.  This is because we
-currently trigger removal of cpus too early in the notifier chain.
-Other DOWN_PREPARE handlers may in fact run and reconfigure the
-root-domain topology, thereby stomping on our own offline handling.
-
-The end result is that rd->online may become out of sync with
-cpu_online_map, which results in potential task misrouting.
-
-So change the offline handling to be more tightly coupled with the
-global offline process by triggering on CPU_DYING intead of
-CPU_DOWN_PREPARE.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/sched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 52b9867..1cb53fb 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5881,7 +5881,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		spin_unlock_irq(&rq->lock);
- 		break;
- 
--	case CPU_DOWN_PREPARE:
-+	case CPU_DYING:
-+	case CPU_DYING_FROZEN:
- 		/* Update our root-domain */
- 		rq = cpu_rq(cpu);
- 		spin_lock_irqsave(&rq->lock, flags);
 
