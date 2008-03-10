@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYCJTK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYCJTRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbYCJTK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 15:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYCJTKQ
+	id S1754189AbYCJTRd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 15:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYCJTRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 15:10:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41955 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752621AbYCJTKP (ORCPT
+	Mon, 10 Mar 2008 15:17:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60585 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751659AbYCJTRY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 15:10:15 -0400
-Date: Mon, 10 Mar 2008 12:09:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: pj@sgi.com, clameter@sgi.com, Lee.Schermerhorn@hp.com, ak@suse.de,
-       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm 1/2] mempolicy: disallow static or relative flags
- for local preferred mode
-Message-Id: <20080310120902.5f25b9f9.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0803071720460.4611@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 15:17:24 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX18JBtZTHzIJRr8ufjHZSWvq+fVFhkcdK/QTGDh9Pq
+	G8oKuH8gDWbs+x
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Date: Mon, 10 Mar 2008 20:16:53 +0100
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
+       linux-kernel@vger.kernel.org, rick@vanrein.org
+References: <182234194@web.de> <47D56DD3.8060108@zytor.com> <200803101959.47202.dl9pf@gmx.de>
+In-Reply-To: <200803101959.47202.dl9pf@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803102016.54228.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008 17:24:15 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+Am Montag 10 März 2008 19:59:46 schrieb Jan-Simon Möller:
+> +March 2007
 
-> MPOL_F_STATIC_NODES and MPOL_F_RELATIVE_NODES don't mean anything for
-> MPOL_PREFERRED policies that were created with an empty nodemask (for
-> purely local allocations).  They'll never be invalidated because the
-> allowed mems of a task changes or need to be rebound relative to a
-> cpuset's placement.
-> 
-> Also fixes a bug identified by Lee Schermerhorn that disallowed empty
-> nodemasks to be passed to MPOL_PREFERRED to specify local allocations.
-
-I get a significant-looking reject from this.  Can you please redo and
-resend?
-
-
-I put my current rollup (against -rc5) at
-http://userweb.kernel.org/~akpm/dr.gz and the broken-out tree is, as always
-at http://userweb.kernel.org/~akpm/mmotm/
-
-It would be better for you to get set up for using mmotm - it is my usual
-way of publishing the -mm queue between releases.
+hmmm, change that to 2k8 !
