@@ -1,88 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYCJNON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYCJNRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYCJNON (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 09:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYCJNN7
+	id S1753629AbYCJNRm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 09:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYCJNRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 09:13:59 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:52121 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750799AbYCJNN6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 09:13:58 -0400
-Date: Mon, 10 Mar 2008 18:43:55 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: suresh.b.siddha@intel.com, rjw@sisk.pl, akpm@linux-foundation.org,
-       dmitry.adamushko@gmail.com, mingo@elte.hu, oleg@sign.ru,
-       yi.y.yang@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: [PATCH] cpu-hotplug: Register update_sched_domains() notifier with
-	higher prio
-Message-ID: <20080310131355.GF17646@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080308015045.GB15909@linux-os.sc.intel.com> <20080308050627.4831.87630.stgit@novell1.haskins.net> <20080310081425.GA11031@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080310081425.GA11031@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 10 Mar 2008 09:17:31 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:43566 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbYCJNR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 09:17:29 -0400
+Date: Mon, 10 Mar 2008 22:17:20 +0900
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Cc: tony.luck@intel.com, akpm@linux-foundation.org
+Cc: tomof@acm.org
+Subject: [PATCH -mm] ia64: make IOMMU respect the segment boundary limits
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080310221538U.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpu-hotplug: Register update_sched_domains() notifier with higher prio
-From: Gautham R Shenoy <ego@in.ibm.com>
+This patch is another sequel to my patchset that fixes iommu segment
+boundary problems, that is, IOMMUs allocate memory areas without
+considering a low level driver's segment boundary limits:
 
-The current -rt wake_up logic uses the rq->rd->online_map which is
-updated on cpu-hotplug events by update_sched_domains(). Currently
-update_sched_domains() is registered with a priority 0. It is
-preferable that update_sched_domains() be the first notifier called on
-a CPU_DEAD or CPU_ONLINE events inorder to ensure that the
-rq->rd->online_map is in sync with the cpu_online_map.
+http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg11919.html
 
-This way on a CPU_DOWN_PREPARE,
-we would destroy the sched_domains and reattach all the rq's to the
-def_root_domain. This will be followed by a CPU_DOWN_PREPARE in
-migration_call() which will clear the bit of the cpu going offline
-from the corresponding rq.
-This will ensure that no task will be woken up on the cpu which is
-going to be offlined between CPU_DOWN_PREPARE and CPU_DEAD.
+This patchset fixes the IA64 IOMMU code.
 
-Ditto for the CPU_ONLINE path.
+This assumes that ioc->ibase is on iovp_size boundary. If not, please
+let me know. I'll fix the patch.
 
-Tested on a 4-way Intel Xeon Box with cpu-hotplug tests running in parallel
-with kernbench.
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -mm] ia64: make IOMMU respect the segment boundary limits
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+This makes IA64's IOMMU implementation not allocate a memory area
+spanning LLD's segment boundary.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
+ arch/ia64/Kconfig               |    3 ++
+ arch/ia64/hp/common/sba_iommu.c |   56 +++++++++++++++++++++++++++------------
+ 2 files changed, 42 insertions(+), 17 deletions(-)
 
- kernel/sched.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 69ecb1a..374c46f 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7079,8 +7079,16 @@ void __init sched_init_smp(void)
- 	if (cpus_empty(non_isolated_cpus))
- 		cpu_set(smp_processor_id(), non_isolated_cpus);
- 	put_online_cpus();
--	/* XXX: Theoretical race here - CPU may be hotplugged now */
--	hotcpu_notifier(update_sched_domains, 0);
-+	/*
-+	 * XXX: Theoretical race here - CPU may be hotplugged now
-+	 *
-+	 * We register the notifier with priority 11, which means that
-+	 * update_sched_domains() will be called just before migration_call().
-+	 *
-+	 * This is necessary to ensure that the rt wake up logic works fine
-+	 * and the rq->rd->online_map remains in sync with the cpu_online_map.
-+	 */
-+	hotcpu_notifier(update_sched_domains, 11);
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 8fa3faf..1b73ffe 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -611,6 +611,9 @@ config IRQ_PER_CPU
+ 	bool
+ 	default y
  
- 	/* Move init over to a non-isolated CPU */
- 	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
++config IOMMU_HELPER
++	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC)
++
+ source "arch/ia64/hp/sim/Kconfig"
+ 
+ source "arch/ia64/Kconfig.debug"
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 523eae6..9409de5 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -35,6 +35,7 @@
+ #include <linux/nodemask.h>
+ #include <linux/bitops.h>         /* hweight64() */
+ #include <linux/crash_dump.h>
++#include <linux/iommu-helper.h>
+ 
+ #include <asm/delay.h>		/* ia64_get_itc() */
+ #include <asm/io.h>
+@@ -460,6 +461,13 @@ get_iovp_order (unsigned long size)
+ 	return order;
+ }
+ 
++static unsigned long ptr_to_pide(struct ioc *ioc, unsigned long *res_ptr,
++				 unsigned int bitshiftcnt)
++{
++	return (((unsigned long)res_ptr - (unsigned long)ioc->res_map) << 3)
++		+ bitshiftcnt;
++}
++
+ /**
+  * sba_search_bitmap - find free space in IO PDIR resource bitmap
+  * @ioc: IO MMU structure which owns the pdir we are interested in.
+@@ -471,15 +479,25 @@ get_iovp_order (unsigned long size)
+  * Cool perf optimization: search for log2(size) bits at a time.
+  */
+ static SBA_INLINE unsigned long
+-sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
++sba_search_bitmap(struct ioc *ioc, struct device *dev,
++		  unsigned long bits_wanted, int use_hint)
+ {
+ 	unsigned long *res_ptr;
+ 	unsigned long *res_end = (unsigned long *) &(ioc->res_map[ioc->res_size]);
+-	unsigned long flags, pide = ~0UL;
++	unsigned long flags, pide = ~0UL, tpide;
++	unsigned long boundary_size;
++	unsigned long shift;
++	int ret;
+ 
+ 	ASSERT(((unsigned long) ioc->res_hint & (sizeof(unsigned long) - 1UL)) == 0);
+ 	ASSERT(res_ptr < res_end);
+ 
++	boundary_size = (unsigned long long)dma_get_seg_boundary(dev) + 1;
++	boundary_size = ALIGN(boundary_size, 1ULL << iovp_shift) >> iovp_shift;
++
++	BUG_ON(ioc->ibase & ~iovp_mask);
++	shift = ioc->ibase >> iovp_shift;
++
+ 	spin_lock_irqsave(&ioc->res_lock, flags);
+ 
+ 	/* Allow caller to force a search through the entire resource space */
+@@ -504,9 +522,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 			if (likely(*res_ptr != ~0UL)) {
+ 				bitshiftcnt = ffz(*res_ptr);
+ 				*res_ptr |= (1UL << bitshiftcnt);
+-				pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
+-				pide <<= 3;	/* convert to bit address */
+-				pide += bitshiftcnt;
++				pide = ptr_to_pide(ioc, res_ptr, bitshiftcnt);
+ 				ioc->res_bitshift = bitshiftcnt + bits_wanted;
+ 				goto found_it;
+ 			}
+@@ -535,11 +551,13 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 			DBG_RES("    %p %lx %lx\n", res_ptr, mask, *res_ptr);
+ 			ASSERT(0 != mask);
+ 			for (; mask ; mask <<= o, bitshiftcnt += o) {
+-				if(0 == ((*res_ptr) & mask)) {
++				tpide = ptr_to_pide(ioc, res_ptr, bitshiftcnt);
++				ret = iommu_is_span_boundary(tpide, bits_wanted,
++							     shift,
++							     boundary_size);
++				if ((0 == ((*res_ptr) & mask)) && !ret) {
+ 					*res_ptr |= mask;     /* mark resources busy! */
+-					pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
+-					pide <<= 3;	/* convert to bit address */
+-					pide += bitshiftcnt;
++					pide = tpide;
+ 					ioc->res_bitshift = bitshiftcnt + bits_wanted;
+ 					goto found_it;
+ 				}
+@@ -560,6 +578,11 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 		end = res_end - qwords;
+ 
+ 		for (; res_ptr < end; res_ptr++) {
++			tpide = ptr_to_pide(ioc, res_ptr, 0);
++			ret = iommu_is_span_boundary(tpide, bits_wanted,
++						     shift, boundary_size);
++			if (ret)
++				goto next_ptr;
+ 			for (i = 0 ; i < qwords ; i++) {
+ 				if (res_ptr[i] != 0)
+ 					goto next_ptr;
+@@ -572,8 +595,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 				res_ptr[i] = ~0UL;
+ 			res_ptr[i] |= RESMAP_MASK(bits);
+ 
+-			pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
+-			pide <<= 3;	/* convert to bit address */
++			pide = tpide;
+ 			res_ptr += qwords;
+ 			ioc->res_bitshift = bits;
+ 			goto found_it;
+@@ -605,7 +627,7 @@ found_it:
+  * resource bit map.
+  */
+ static int
+-sba_alloc_range(struct ioc *ioc, size_t size)
++sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
+ {
+ 	unsigned int pages_needed = size >> iovp_shift;
+ #ifdef PDIR_SEARCH_TIMING
+@@ -622,9 +644,9 @@ sba_alloc_range(struct ioc *ioc, size_t size)
+ 	/*
+ 	** "seek and ye shall find"...praying never hurts either...
+ 	*/
+-	pide = sba_search_bitmap(ioc, pages_needed, 1);
++	pide = sba_search_bitmap(ioc, dev, pages_needed, 1);
+ 	if (unlikely(pide >= (ioc->res_size << 3))) {
+-		pide = sba_search_bitmap(ioc, pages_needed, 0);
++		pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
+ 		if (unlikely(pide >= (ioc->res_size << 3))) {
+ #if DELAYED_RESOURCE_CNT > 0
+ 			unsigned long flags;
+@@ -653,7 +675,7 @@ sba_alloc_range(struct ioc *ioc, size_t size)
+ 			}
+ 			spin_unlock_irqrestore(&ioc->saved_lock, flags);
+ 
+-			pide = sba_search_bitmap(ioc, pages_needed, 0);
++			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
+ 			if (unlikely(pide >= (ioc->res_size << 3)))
+ 				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
+ 				      ioc->ioc_hpa);
+@@ -936,7 +958,7 @@ sba_map_single(struct device *dev, void *addr, size_t size, int dir)
+ 	spin_unlock_irqrestore(&ioc->res_lock, flags);
+ #endif
+ 
+-	pide = sba_alloc_range(ioc, size);
++	pide = sba_alloc_range(ioc, dev, size);
+ 
+ 	iovp = (dma_addr_t) pide << iovp_shift;
+ 
+@@ -1373,7 +1395,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
+ 		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
+ 		ASSERT(dma_len <= DMA_CHUNK_SIZE);
+ 		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
+-			| (sba_alloc_range(ioc, dma_len) << iovp_shift)
++			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
+ 			| dma_offset);
+ 		n_mappings++;
+ 	}
 -- 
-Thanks and Regards
-gautham
+1.5.3.7
+
