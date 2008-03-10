@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYCJVXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbYCJVYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757017AbYCJVXf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbYCJVXN
+	id S1752976AbYCJVYg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYCJVY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:23:13 -0400
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:50156
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754548AbYCJVXN (ORCPT
+	Mon, 10 Mar 2008 17:24:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43652 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752619AbYCJVY1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:23:13 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/2] keep rd->online and cpu_online_map in sync
-Cc: linux-kernel@vger.kernel.org, ghaskins@novell.com,
-       Gregory Haskins <ghaskins@novell.com>
-Date: Mon, 10 Mar 2008 16:52:46 -0400
-Message-ID: <20080310205246.9571.2649.stgit@novell1.haskins.net>
-In-Reply-To: <20080310205241.9571.38832.stgit@novell1.haskins.net>
-References: <20080310205241.9571.38832.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 10 Mar 2008 17:24:27 -0400
+Date: Mon, 10 Mar 2008 14:24:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
+       jordan.crouse@amd.com
+Subject: Re: [PATCH 1/6] gxfb: create DC/VP/FP-specific handlers rather than
+ using readl/writel
+Message-Id: <20080310142405.e8b92156.akpm@linux-foundation.org>
+In-Reply-To: <20080308204826.0d399caf@ephemeral>
+References: <20080308204826.0d399caf@ephemeral>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is possible to allow the root-domain cache of online cpus to
-become out of sync with the global cpu_online_map.  This is because we
-currently trigger removal of cpus too early in the notifier chain.
-Other DOWN_PREPARE handlers may in fact run and reconfigure the
-root-domain topology, thereby stomping on our own offline handling.
+On Sat, 8 Mar 2008 20:48:26 -0500
+Andres Salomon <dilinger@queued.net> wrote:
 
-The end result is that rd->online may become out of sync with
-cpu_online_map, which results in potential task misrouting.
+> +#define read_dc(reg)		readl(par->dc_regs + (reg))
+> +#define write_dc(reg, val)	writel((val), par->dc_regs + (reg))
+> +
+> +#define read_vp(reg)		readl(par->vid_regs + (reg))
+> +#define write_vp(reg, val)	writel((uint32_t) (val), \
+> +					par->vid_regs + (reg))
+> +
+> +#define read_fp(reg)		readl(par->vid_regs + (reg))
+> +#define write_fp(reg, val)	writel((uint32_t) (val), \
+> +					par->vid_regs + (reg))
+> +
 
-So change the offline handling to be more tightly coupled with the
-global offline process by triggering on CPU_DYING intead of
-CPU_DOWN_PREPARE.
+Not very nice, sorry.  They're macros, and macros rather suck.  And they
+implicitly rely upon the caller having some variable called "par" in scope.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
+It would be much nicer to do
 
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+/*
+ * documentation goes here
+ */
+static inline u32 read_dc(struct geodefb_par *par, int reg)
+{
+	return readl(par->dc_regs, reg);
+}
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 52b9867..a616fa1 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5881,7 +5881,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		spin_unlock_irq(&rq->lock);
- 		break;
- 
--	case CPU_DOWN_PREPARE:
-+	case CPU_DYING:
- 		/* Update our root-domain */
- 		rq = cpu_rq(cpu);
- 		spin_lock_irqsave(&rq->lock, flags);
-
+no?
