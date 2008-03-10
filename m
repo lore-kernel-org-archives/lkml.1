@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYCJU2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYCJUcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbYCJU2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 16:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYCJU17
+	id S1755119AbYCJUcp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 16:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbYCJUch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 16:27:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54371 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbYCJU16 (ORCPT
+	Mon, 10 Mar 2008 16:32:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55209 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYCJUcg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 16:27:58 -0400
-Message-ID: <47D59743.7040709@zytor.com>
-Date: Mon, 10 Mar 2008 21:17:07 +0100
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 10 Mar 2008 16:32:36 -0400
+Date: Mon, 10 Mar 2008 13:31:16 -0700
+From: Greg KH <greg@kroah.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: inotify fixes in stable
+Message-ID: <20080310203116.GC5943@kroah.com>
+References: <20080310091155.02b7fe0e@mjolnir.drzeus.cx> <20080310160317.GB20775@kroah.com> <20080310203658.3bdbc27c@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: P6 NOPs again: MPSC?
-References: <Pine.LNX.4.64.0803041929230.14934@blonde.site> <20080304210111.GB31546@elte.hu> <47CDBE09.3060000@zytor.com> <Pine.LNX.4.64.0803101853090.15511@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0803101853090.15511@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080310203658.3bdbc27c@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> I've now noticed that the machine I call MPENTIUM4 for 32-bit kernels
-> is called MPSC for 64-bit kernels, and in that case it still doesn't
-> get the P6 NOPs which I'm guessing it ought to (yeah, I'm so excited
-> about the speedup I can expect from P6 NOPs, can we perhaps have a
-> little silvery "Using Genuine P6 NOPs" sticker to put on the box? ;)
+On Mon, Mar 10, 2008 at 08:36:58PM +0100, Pierre Ossman wrote:
+> On Mon, 10 Mar 2008 09:03:17 -0700
+> Greg KH <greg@kroah.com> wrote:
 > 
-> I'm suspecting that the patch below is actually wrong, and that it's
-> really the "(X86_64 || !X86_GENERIC) &&" which should be changed;
-> but very unsure of my ground and what's right for CPU_GENERIC -
-> the 32/64 heritage of x86/Kconfig.cpu rather confuses me.
+> > On Mon, Mar 10, 2008 at 09:11:55AM +0100, Pierre Ossman wrote:
+> > > Hi Greg,
+> > > 
+> > > I was hoping that the fixes for bug 7785 "BUG: at fs/inotify.c:172
+> > > set_dentry_child_flags()" could be added to the stable releases. I'm
+> > > seeing these quite frequently at customer installations.
+> > 
+> > In the future, stable stuff should be sent to the stable@kernel.org
+> > email address and not directly to me, thanks.
+> > 
 > 
-> Over to you to do the right thing, I'm hoping, please, Peter!
+> Sorry. :/
 > 
+> > > The relevant commits are d599e36a9ea85432587f4550acc113cd7549d12a and
+> > > 0d71bd5993b630a989d15adc2562a9ffe41cd26d. Hopefully these do not
+> > > depend on other updates. Nick would be the expert on that.
+> > 
+> > Can you verify that if you apply just those 2 patches to the latest
+> > 2.6.24.3 kernel release, it fixes the issues for you?
+> > 
+> 
+> The system is an OpenSuse 10.3 system, so 2.6.22.y would be the
+> interesting one. I'll see if I can get a custom kernel in there (I've
+> been unable to reproduce the problem outside a production
+> environment).
 
-X86_64 && !X86_GENERIC comes from not wanting to be a compatibility 
-issue when compiling for generic CPUs.  There are some 32-bit otherwise 
-i686-compatible chips (from VIA and Transmeta) which don't have these NOPs.
+2.6.22.y is no longer being released by me, so it isn't interesting to
+me at all :)
 
-	-hpa
+What about 2.6.24?  Is this still an issue there?
 
+thanks,
+
+greg k-h
