@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYCJKNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbYCJKcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbYCJKNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 06:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYCJKNB
+	id S1752528AbYCJKcJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 06:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYCJKb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 06:13:01 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48590 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750967AbYCJKNA convert rfc822-to-8bit (ORCPT
+	Mon, 10 Mar 2008 06:31:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:56650 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYCJKb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 06:13:00 -0400
-X-Authenticated: #7313500
-X-Provags-ID: V01U2FsdGVkX1++hz4iEdW+m8rLNPap45687OaI7E1q2kQlv48Ypj
-	S47zHQp4ZG4mRR
-From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Date: Mon, 10 Mar 2008 11:12:44 +0100
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       devzero@web.de, pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       rick@vanrein.org
-References: <182234194@web.de> <47D26A00.7050308@zytor.com> <Pine.LNX.4.64.0803081210540.18589@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0803081210540.18589@twin.jikos.cz>
+	Mon, 10 Mar 2008 06:31:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=XsyH2JdslT0Wp4iBAo43NeSuhtaFwhbk/rUc+TzpET82UX/JOjAaLG1IgMOteo6vz2CFFSvy0Yww7cgnpI1XIIERQkVkmmHhKuZgMQm6Yc0EOV7wKt13VCKY6AR0EY769jeK+qL5B18pKKBKX0VkiBtyJSV4Wxh/UvVG6Ctqvpc=
+Message-ID: <da8150af0803100331l23aa0ac3lcd7f184156a20a56@mail.gmail.com>
+Date: Mon, 10 Mar 2008 11:31:56 +0100
+From: "Pierre Falda" <darkstuff@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: dev_queue_xmit question
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803101112.45105.dl9pf@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 08 März 2008 12:13:01 schrieb Jiri Kosina:
-> On Sat, 8 Mar 2008, H. Peter Anvin wrote:
-> > > as i said it in another reply to this thread, it would be perfectly
-> > > acceptable for upstream to merge an easier to use boot option - be
-> > > that badmem=addr$size or excludemem=addr$size. Please send a patch :-)
-> >
-> > It already called:
-> > 	memmap=addr$size
-> > ... and has been implemented for years.  Does the badram patch do
-> > anything different?  (And yes, I agree the $/@/# is ugly.)
->
-> I admit that I haven't examined badram too closely, but I think that what
-> it has in addition to what you can get by simple 'memmap=..' is that it
-> allows you to use bitmasks to mask particular address patterns.
+Hi,
 
-I had once a bad ram-module and even after heavy search didn't came across 
-memmap or its usage. Together with memtest86 badram= is pretty usable.
-So for usability's sake i strongly vote for badram=  - good name, quite good 
-to use. If you wanna tune on the internal implementation - thats fine ;) .
+I apologize whether this question has been asked already, however I
+performed a check on the archives and didn't find anything suitable to
+my case.
 
-Best regards
-Jan-Simon
+I would like some enlightenment about dev_queue_xmit use:
+
+The man page explains that the buffer is being 'consumed', however I
+can increase the reference count value in order to attempt a resend.
+
+Does this mean that I should proceed this way (see code below) in case
+I am willing to send the same skb more than once (ie, multiple times)?
+
+
+
+***********************************************************************
+...
+...
+
+while(i want to send this skb)
+{
+
+       skb_get(skb)
+
+       skb->dev = output_device;
+
+       skb->packet_type = PACKET_OUTGOING;
+
+        xmit_rvalue = dev_queue_xmit(skb)
+
+        if(xmit_rvalue) /* != 0 not successful send */
+
+                goto error;
+
+}
+
+       return (0);
+
+error:
+
+     dev_kfree_skb(skb);
+
+     return (-1);
+
+***********************************************************************
+
+So, is it okay or this piece of code and technique should be used only
+in case of skb transmission error?
+
+In short, what I would like to obtain is avoiding a (p)skb_copy
+overhead before the dev_queue_xmit call.
+
+Thank you in advance :)
+
+Pierre
