@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbYCJXhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYCJXil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbYCJXhN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 19:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYCJXg6
+	id S1757303AbYCJXil (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 19:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYCJXid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 19:36:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33889 "EHLO
+	Mon, 10 Mar 2008 19:38:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35751 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752637AbYCJXg5 (ORCPT
+	by vger.kernel.org with ESMTP id S1752164AbYCJXic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 19:36:57 -0400
-Date: Mon, 10 Mar 2008 16:36:13 -0700
+	Mon, 10 Mar 2008 19:38:32 -0400
+Date: Mon, 10 Mar 2008 16:37:44 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: suresh.b.siddha@intel.com, ego@in.ibm.com, rjw@sisk.pl,
-       dmitry.adamushko@gmail.com, mingo@elte.hu, oleg@sign.ru,
-       yi.y.yang@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH v2] keep rd->online and cpu_online_map in sync
-Message-Id: <20080310163613.65a7313c.akpm@linux-foundation.org>
-In-Reply-To: <20080310215813.10968.960.stgit@novell1.haskins.net>
-References: <20080310221014.GB27329@linux-os.sc.intel.com>
-	<20080310215813.10968.960.stgit@novell1.haskins.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andres Salomon <dilinger@queued.net>, adaplas@gmail.com,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       info-linux@geode.amd.com, jordan.crouse@amd.com,
+       samuel.thibault@ens-lyon.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 6/6] PM/FB/gxfb: add config option that allows disabling
+ of VT switch during suspend
+Message-Id: <20080310163744.5f6a04b8.akpm@linux-foundation.org>
+In-Reply-To: <200803102328.19985.rjw@sisk.pl>
+References: <20080308204927.73afa56c@ephemeral>
+	<20080310145118.adb0cf1e.akpm@linux-foundation.org>
+	<20080310181446.2fb85eea@ephemeral>
+	<200803102328.19985.rjw@sisk.pl>
 X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,98 +33,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008 17:59:11 -0400 Gregory Haskins <ghaskins@novell.com> wrote:
+On Mon, 10 Mar 2008 23:28:18 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> >>> On Mon, Mar 10, 2008 at  6:10 PM, in message
-> <20080310221014.GB27329@linux-os.sc.intel.com>, Suresh Siddha
-> <suresh.b.siddha@intel.com> wrote: 
-> > On Mon, Mar 10, 2008 at 04:00:28PM -0600, Gregory Haskins wrote:
-> >> >>> On Mon, Mar 10, 2008 at  6:03 PM, in message 
-> > <200803102303.28660.rjw@sisk.pl>,
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> wrote: 
-> >> > On Monday, 10 of March 2008, Suresh Siddha wrote:
-> >> >> >  
-> >> >> > -	case CPU_DOWN_PREPARE:
-> >> >> > +	case CPU_DYING:
-> >> >> 
-> >> >> Don't we need to take care of CPU_DYING_FROZEN aswell?
-> >> > 
-> >> > Well, I'd say we do.
-> >> 
-> >> Should I add that to the patch as well then?
+> > > > If so, that means extra #ifdef's sprinkled throughout the code.  Note
+> > > > that most framebuffer drivers won't be supporting this, and those that
+> > > > do will almost certainly always want vt switching turned off..
+> > > > 
+> > > 
+> > > I don't think you need any ifdefs or config options at all, do you?  Just
+> > > add a new module parameter to this driver and some little interface into
+> > > the PM core which allows the driver to set no_vt_switch?
+> > > 
 > > 
-> > Yes please.
+> > That's a possibility, but doesn't adding hooks into PM core for two
+> > drivers (lxfb and gxfb) seems like overkill?  I also don't really see
+> > anyone needing to switch back and forth between VT_SWITCH and
+> > NO_VT_SWITCH other than to work around possible bugs in the register
+> > save/restore code..
 > 
-> Here is v2 with the suggested improvement
-> 
-> -Greg
-> 
-> ------------------------
-> keep rd->online and cpu_online_map in sync
-> 
-> It is possible to allow the root-domain cache of online cpus to
-> become out of sync with the global cpu_online_map.  This is because we
-> currently trigger removal of cpus too early in the notifier chain.
-> Other DOWN_PREPARE handlers may in fact run and reconfigure the
-> root-domain topology, thereby stomping on our own offline handling.
-> 
-> The end result is that rd->online may become out of sync with
-> cpu_online_map, which results in potential task misrouting.
-> 
-> So change the offline handling to be more tightly coupled with the
-> global offline process by triggering on CPU_DYING intead of
-> CPU_DOWN_PREPARE.
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> Cc: Gautham R Shenoy <ego@in.ibm.com>
-> Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/sched.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 52b9867..1cb53fb 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -5881,7 +5881,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
->  		spin_unlock_irq(&rq->lock);
->  		break;
->  
-> -	case CPU_DOWN_PREPARE:
-> +	case CPU_DYING:
-> +	case CPU_DYING_FROZEN:
->  		/* Update our root-domain */
->  		rq = cpu_rq(cpu);
->  		spin_lock_irqsave(&rq->lock, flags);
+> FWIW, I prefer the original .config option idea.
 
-Does this make
-cpu-hotplug-register-update_sched_domains-notifier-with-higher-prio.patch
-(below) obsolete, or do we want both?  
-
---- a/kernel/sched.c~cpu-hotplug-register-update_sched_domains-notifier-with-higher-prio
-+++ a/kernel/sched.c
-@@ -7096,8 +7096,16 @@ void __init sched_init_smp(void)
- 	if (cpus_empty(non_isolated_cpus))
- 		cpu_set(smp_processor_id(), non_isolated_cpus);
- 	put_online_cpus();
--	/* XXX: Theoretical race here - CPU may be hotplugged now */
--	hotcpu_notifier(update_sched_domains, 0);
-+	/*
-+	 * XXX: Theoretical race here - CPU may be hotplugged now
-+	 *
-+	 * We register the notifier with priority 11, which means that
-+	 * update_sched_domains() will be called just before migration_call().
-+	 *
-+	 * This is necessary to ensure that the rt wake up logic works fine
-+	 * and the rq->rd->online_map remains in sync with the cpu_online_map.
-+	 */
-+	hotcpu_notifier(update_sched_domains, 11);
- 
- 	/* Move init over to a non-isolated CPU */
- 	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
-_
-
+Please explain your reasoning?
