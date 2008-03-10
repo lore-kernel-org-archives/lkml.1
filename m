@@ -1,73 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbYCJUV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYCJUYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbYCJUV6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 16:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYCJUVu
+	id S1756301AbYCJUYb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 16:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYCJUYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 16:21:50 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:44825 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbYCJUVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 16:21:49 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, axboe@kernel.dk,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] Block: floppy, fix rmmod lockup
-Date: Mon, 10 Mar 2008 21:20:55 +0100
-Message-Id: <1205180455-3330-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.4.1
+	Mon, 10 Mar 2008 16:24:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41840 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbYCJUYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 16:24:12 -0400
+Message-ID: <47D598C5.7080609@redhat.com>
+Date: Mon, 10 Mar 2008 16:23:33 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH 1/3] enhanced lookup ESTALE error handling (v3)
+References: <4790C761.1010603@redhat.com> <47A387CF.70201@redhat.com>
+In-Reply-To: <47A387CF.70201@redhat.com>
+Content-Type: multipart/mixed;
+ boundary="------------010507020900030509040003"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-floppy rmmod locks up when no such hardware was initialized, since there is
-nobody to wake the remove code up. Remove the completion, because release
-is called during platform_unregister anyway.
+This is a multi-part message in MIME format.
+--------------010507020900030509040003
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/block/floppy.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+Hi.
 
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 32c79a5..7652e87 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -217,7 +217,6 @@ static int use_virtual_dma;
-  */
- 
- static DEFINE_SPINLOCK(floppy_lock);
--static struct completion device_release;
- 
- static unsigned short virtual_dma_port = 0x3f0;
- irqreturn_t floppy_interrupt(int irq, void *dev_id);
-@@ -4144,7 +4143,6 @@ DEVICE_ATTR(cmos,S_IRUGO,floppy_cmos_show,NULL);
- 
- static void floppy_device_release(struct device *dev)
+This is a patch to enhance ESTALE error handling during the
+lookup process.  The error, ESTALE, can occur when out of data
+dentries, stored in the dcache, is used to translate a pathname
+component to a dentry.  When this occurs, the dentry which
+contains the pointer to the inode which refers to the non-existent
+file is dropped from the dcache and then the lookup process
+started again.  Care is taken to ensure that forward process is
+always being made.  If forward process is not detected, then the
+lookup process is terminated and the error, ENOENT, is returned
+to the caller.
+
+    Thanx...
+
+        ps
+
+Signed-off-by: Peter Staubach <staubach@redhat.com>
+
+--------------010507020900030509040003
+Content-Type: text/plain;
+ name="estale.lookup.3"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="estale.lookup.3"
+
+--- linux-2.6.24.i686/fs/namei.c.org
++++ linux-2.6.24.i686/fs/namei.c
+@@ -750,7 +750,7 @@ static __always_inline void follow_dotdo
  {
--	complete(&device_release);
- }
+ 	struct fs_struct *fs = current->fs;
  
- static struct platform_device floppy_device[N_DRIVE];
-@@ -4539,7 +4537,6 @@ void cleanup_module(void)
+-	while(1) {
++	while (1) {
+ 		struct vfsmount *parent;
+ 		struct dentry *old = nd->path.dentry;
+ 
+@@ -849,7 +849,7 @@ static int __link_path_walk(const char *
+ 		lookup_flags = LOOKUP_FOLLOW | (nd->flags & LOOKUP_CONTINUE);
+ 
+ 	/* At this point we know we have a real path component. */
+-	for(;;) {
++	for (;;) {
+ 		unsigned long hash;
+ 		struct qstr this;
+ 		unsigned int c;
+@@ -1003,7 +1003,7 @@ return_reval:
+ 		 */
+ 		if (nd->path.dentry && nd->path.dentry->d_sb &&
+ 		    (nd->path.dentry->d_sb->s_type->fs_flags & FS_REVAL_DOT)) {
+-			err = -ESTALE;
++			err = -ENOENT;
+ 			/* Note: we do not d_invalidate() */
+ 			if (!nd->path.dentry->d_op->d_revalidate(
+ 					nd->path.dentry, nd))
+@@ -1015,6 +1015,8 @@ out_dput:
+ 		path_put_conditional(&next, nd);
+ 		break;
+ 	}
++	if (err == -ESTALE)
++		d_drop(nd->path.dentry);
+ 	path_put(&nd->path);
+ return_err:
+ 	return err;
+@@ -1031,13 +1033,24 @@ static int link_path_walk(const char *na
  {
- 	int drive;
+ 	struct nameidata save = *nd;
+ 	int result;
++	struct dentry *svd;
  
--	init_completion(&device_release);
- 	blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);
- 	unregister_blkdev(FLOPPY_MAJOR, "fd");
+ 	/* make sure the stuff we saved doesn't go away */
+ 	dget(save.path.dentry);
+ 	mntget(save.path.mnt);
  
-@@ -4564,8 +4561,6 @@ void cleanup_module(void)
++	svd = nd->path.dentry;
+ 	result = __link_path_walk(name, nd);
+-	if (result == -ESTALE) {
++	while (result == -ESTALE) {
++		/*
++		 * If no progress was made looking up the pathname,
++		 * then stop and return ENOENT instead of ESTALE.
++		 */
++		if (nd->path.dentry == svd) {
++			result = -ENOENT;
++			break;
++		}
++		svd = nd->path.dentry;
+ 		*nd = save;
+ 		dget(nd->path.dentry);
+ 		mntget(nd->path.mnt);
+@@ -1714,7 +1727,10 @@ int open_namei(int dfd, const char *path
+ 	int acc_mode, error;
+ 	struct path path;
+ 	struct dentry *dir;
+-	int count = 0;
++	int count;
++
++top:
++	count = 0;
  
- 	/* eject disk, if any */
- 	fd_eject(0);
--
--	wait_for_completion(&device_release);
- }
+ 	acc_mode = ACC_MODE(flag);
  
- module_param(floppy, charp, 0);
--- 
-1.5.4.1
+@@ -1741,7 +1757,8 @@ int open_namei(int dfd, const char *path
+ 	/*
+ 	 * Create - we need to know the parent.
+ 	 */
+-	error = path_lookup_create(dfd,pathname,LOOKUP_PARENT,nd,flag,mode);
++	error = path_lookup_create(dfd, pathname, LOOKUP_PARENT, nd,
++				flag, mode);
+ 	if (error)
+ 		return error;
+ 
+@@ -1814,10 +1831,17 @@ ok:
+ 	return 0;
+ 
+ exit_dput:
++	if (error == -ESTALE)
++		d_drop(path.dentry);
+ 	path_put_conditional(&path, nd);
+ exit:
+ 	if (!IS_ERR(nd->intent.open.file))
+ 		release_open_intent(nd);
++	if (error == -ESTALE) {
++		d_drop(nd->path.dentry);
++		path_put(&nd->path);
++		goto top;
++	}
+ 	path_put(&nd->path);
+ 	return error;
+ 
+@@ -1827,7 +1851,7 @@ do_link:
+ 		goto exit_dput;
+ 	/*
+ 	 * This is subtle. Instead of calling do_follow_link() we do the
+-	 * thing by hands. The reason is that this way we have zero link_count
++	 * thing by hand. The reason is that this way we have zero link_count
+ 	 * and path_walk() (called from ->follow_link) honoring LOOKUP_PARENT.
+ 	 * After that we have the parent and last component, i.e.
+ 	 * we are in the same situation as after the first path_walk().
+@@ -1846,6 +1870,8 @@ do_link:
+ 		 * with "intent.open".
+ 		 */
+ 		release_open_intent(nd);
++		if (error == ESTALE)
++			goto top;
+ 		return error;
+ 	}
+ 	nd->flags &= ~LOOKUP_PARENT;
+@@ -1859,7 +1885,7 @@ do_link:
+ 		goto exit;
+ 	}
+ 	error = -ELOOP;
+-	if (count++==32) {
++	if (count++ == 32) {
+ 		__putname(nd->last.name);
+ 		goto exit;
+ 	}
 
+--------------010507020900030509040003--
