@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYCJROh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYCJRO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbYCJROh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 13:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYCJRO1
+	id S1754789AbYCJRO4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 13:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYCJROd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 13:14:27 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37967 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751085AbYCJRO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 13:14:26 -0400
-Date: Mon, 10 Mar 2008 10:13:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] [8/13] Enable the mask allocator for x86
-In-Reply-To: <20080308115408.GC27074@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0803101011530.24069@schroedinger.engr.sgi.com>
-References: <200803071007.493903088@firstfloor.org>
- <20080307090718.A609E1B419C@basil.firstfloor.org>
- <Pine.LNX.4.64.0803071832500.12220@schroedinger.engr.sgi.com>
- <20080308115408.GC27074@one.firstfloor.org>
+	Mon, 10 Mar 2008 13:14:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58313 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbYCJROc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 13:14:32 -0400
+Date: Mon, 10 Mar 2008 18:14:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: prevent unconditional writes to DebugCtl MSR
+Message-ID: <20080310171409.GA24133@elte.hu>
+References: <47D54185.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D54185.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0046]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Mar 2008, Andi Kleen wrote:
 
-> What sparsemem reference do you mean?
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-Its just the use of MAX_DMA_ADDRESS in mm/sparse-vmemmap.c
+> Otherwise, enabling (or better, subsequent disabling) of single 
+> stepping would cause a kernel oops on CPUs not having this MSR.
+> 
+> The patch could have been added a conditional to the MSR write in 
+> user_disable_single_step(), but centralizing the updates seems safer 
+> and (looking forward) better manageable.
 
-> But the ZONE_DMA32 actually makes sense, but changing the semantics
-> under such a large driver base isn't a good idea. 
+thanks Jan, applied.
 
-The driver base can only be the x86_64 only device drivers since the zone 
-is not used by any other architectures. That is fairly small AFAICT.
-
-> It depends on the requirements of the bootmem user.  Some do need
-> memory <4GB, some do not. The mask allocator itself is a client in fact
-> and it requires low memory of course.
-
-The point is that it would be good to relocate as much memory allocated at 
-boot as possible beyond 4GB.
-
+	Ingo
