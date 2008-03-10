@@ -1,157 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYCJVNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYCJVOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbYCJVNU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYCJVNH
+	id S1756128AbYCJVOx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYCJVOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:13:07 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:35863 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751918AbYCJVNE (ORCPT
+	Mon, 10 Mar 2008 17:14:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59861 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYCJVOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:13:04 -0400
-Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL
-	pointer dereference
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47D551B8.9080807@panasas.com>
-References: <867igc3w8r.fsf@deprecated.bitebene.org>
-	 <47D551B8.9080807@panasas.com>
-Content-Type: text/plain
-Date: Mon, 10 Mar 2008 16:12:57 -0500
-Message-Id: <1205183577.2941.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 17:14:45 -0400
+Date: Mon, 10 Mar 2008 14:13:46 -0700
+From: Greg KH <greg@kroah.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: inotify fixes in stable
+Message-ID: <20080310211346.GA6622@kroah.com>
+References: <20080310091155.02b7fe0e@mjolnir.drzeus.cx> <20080310160317.GB20775@kroah.com> <20080310203658.3bdbc27c@mjolnir.drzeus.cx> <20080310203116.GC5943@kroah.com> <20080310215755.7e920738@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080310215755.7e920738@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-10 at 17:20 +0200, Boaz Harrosh wrote:
-> On Sun, Mar 09 2008 at 14:41 +0200, Sven Schnelle <svens@stackframe.org> wrote:
-> > Hi,
-> > 
-> > i'm facing the following kernel oops with the latest git:
-> > 
-> > --------------------------------------8<--------------------------------------
-> > Stopping MD arrays...failed (no MD subsystem loaded).
-> > Mounting root filesystem read-only...done.
-> > Will now restart.
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-> > IP: [<ffffffff8051a97e>] __gdth_interrupt+0x96e/0xb7f
-> > PGD 7e51e067 PUD 7e6a1067 PMD 0 
-> > Oops: 0002 [1] PREEMPT SMP 
-> > CPU 3 
-> > Modules linked in: nvidia(P) lm85 hwmon_vid hwmon [last unloaded: nvidia]
-> > Pid: 0, comm: swapper Tainted: P         2.6.25-rc4-smp-00134-g84c6f60 #11 
-> > RIP: 0010:[<ffffffff8051a97e>]  [<ffffffff8051a97e>] __gdth_interrupt+0x96e/0xb7f
-> > RSP: 0018:ffff81007fbefed8  EFLAGS: 00010086
-> > RAX: 0000000000000000 RBX: ffff81007e0dda68 RCX: 0000000000000002
-> > RDX: 00000000ffffffff RSI: 0000000000000000 RDI: ffffc20000330000
-> > RBP: ffff81007fbeff08 R08: 0000000000000000 R09: ffff81007f01de70
-> > R10: 0000000000000000 R11: 0000000000000050 R12: ffff810000b10480
-> > R13: ffff810000b104ff R14: ffff81007e214200 R15: 0000000000000009
-> > FS:  0000000000000000(0000) GS:ffff81007f802c80(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > CR2: 0000000000000000 CR3: 000000007e643000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process swapper (pid: 0, threadinfo ffff81007fbe6000, task ffff81007fbe4000)
-> > Stack:  0000000000000046 ffff81007e8a93c0 0000000000000000 0000000000000000
-> >  0000000000000018 0000000000000003 ffff81007fbeff18 ffffffff8051ab9f
-> >  ffff81007fbeff48 ffffffff80258cc2 ffffffff8092e300 ffff81007e8a93c0
-> > Call Trace:
-> >  <IRQ>  [<ffffffff8051ab9f>] gdth_interrupt+0x10/0x12
-> >  [<ffffffff80258cc2>] handle_IRQ_event+0x27/0x57
-> >  [<ffffffff8025a055>] handle_fasteoi_irq+0x9c/0xdc
-> >  [<ffffffff8020def0>] do_IRQ+0x88/0xfc
-> >  [<ffffffff80209ffe>] ? default_idle+0x0/0x5f
-> >  [<ffffffff8020b851>] ret_from_intr+0x0/0xa
-> >  <EOI>  [<ffffffff8020a037>] ? default_idle+0x39/0x5f
-> >  [<ffffffff8020a032>] ? default_idle+0x34/0x5f
-> >  [<ffffffff80209ffe>] ? default_idle+0x0/0x5f
-> >  [<ffffffff8020a11c>] ? cpu_idle+0xbf/0xf5
-> >  [<ffffffff806cd973>] ? start_secondary+0x3e0/0x3ef
-> > 
-> > 
-> > Code: 00 04 eb 15 3c 17 75 11 41 0f b6 c5 48 c1 e0 05 41 80 a4 04 92 02 00 00 fb 41 c7 86 18 01 00 00 00 00 00 00 49 8b 86 c0 00 00 00 <c6> 00 00 e9 92 01 00 00 66 89 43 24 41 8b 84 24 68 02 00 00 89 
-> > RIP  [<ffffffff8051a97e>] __gdth_interrupt+0x96e/0xb7f
-> >  RSP <ffff81007fbefed8>
-> > CR2: 0000000000000000
-> > ---[ end trace e81e561a458e8791 ]---
-> > Kernel panic - not syncing: Aiee, killing interrupt handler!
-> > Rebooting in 5 seconds..
-> > --------------------------------------8<--------------------------------------
-> > 
-> > From 2dc63f9f8e61fd1c89f8b4d9b2d174be1c3bfbe2 Mon Sep 17 00:00:00 2001
-> > From: root <root@apollo.bitebene.org>
-> > Date: Sun, 9 Mar 2008 13:25:07 +0100
-> > Subject: 
-> > 
-> > This fixes a NULL pointer dereference during execution of Internal commands,
-> > where gdth only allocates scp, but not scp->sense_buffer. The rest of
-> > the code assumes that sense_buffer is allocated, which leads to a kernel
-> > oops e.g. on reboot (during cache flush).
-> > 
-> > So we have two choices here:
-> > 
-> > a) Allocate the sense_buffer
-> > b) surrounding all accesses to sense_buffer with some if (!internal_command)
-> > 
-> > I'm using solution a, as this keeps code simpler.
-> > 
-> > Signed-off-by: Sven Schnelle <svens@stackframe.org>
-> > ---
-> >  drivers/scsi/gdth.c |    7 +++++++
-> >  1 files changed, 7 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-> > index 27ebd33..0b2080d 100644
-> > --- a/drivers/scsi/gdth.c
-> > +++ b/drivers/scsi/gdth.c
-> > @@ -493,6 +493,12 @@ int __gdth_execute(struct scsi_device *sdev, gdth_cmd_str *gdtcmd, char *cmnd,
-> >      if (!scp)
-> >          return -ENOMEM;
-> >  
-> > +    scp->sense_buffer = kzalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
-> > +    if (!scp->sense_buffer) {
-> > +	kfree(scp);
-> > +	return -ENOMEM;
-> > +    }
-> > +
-> >      scp->device = sdev;
-> >      memset(&cmndinfo, 0, sizeof(cmndinfo));
-> >  
-> > @@ -513,6 +519,7 @@ int __gdth_execute(struct scsi_device *sdev, gdth_cmd_str *gdtcmd, char *cmnd,
-> >      rval = cmndinfo.status;
-> >      if (info)
-> >          *info = cmndinfo.info;
-> > +    kfree(scp->sense_buffer);
-> >      kfree(scp);
-> >      return rval;
-> >  }
-> James and linux-scsi CCed.
-
-Looks fine .. could someone send the patch in an applyable form (i.e.
-not quoted).
-
-> James it looks reasonable. It's a fallout from the sense_buffer separation patches.
-> Reviewed-by: Boaz Harrosh <bharrosh@panasas.com>
+On Mon, Mar 10, 2008 at 09:57:55PM +0100, Pierre Ossman wrote:
+> On Mon, 10 Mar 2008 13:31:16 -0700
+> Greg KH <greg@kroah.com> wrote:
 > 
-> I will submit solution b) above as part of my sense handling patchset.
+> > On Mon, Mar 10, 2008 at 08:36:58PM +0100, Pierre Ossman wrote:
+> > > 
+> > > The system is an OpenSuse 10.3 system, so 2.6.22.y would be the
+> > > interesting one. I'll see if I can get a custom kernel in there (I've
+> > > been unable to reproduce the problem outside a production
+> > > environment).
+> > 
+> > 2.6.22.y is no longer being released by me, so it isn't interesting to
+> > me at all :)
+> > 
+> 
+> Oh? You made a release just 13 days ago, so I figured you were still
+> giving it some love.
 
-Um, that looks like it will be a bit nasty, so the simpler fix is
-probably the better one (even if the sense buffer simply gets ignored).
+In that release, I said it was going to be my last.
 
-The best long term fix for GDTH is probably to make it behave more like
-a standard raid driver, so it includes a translation layer from scsi
-commands to gdth commands and then the __gdth_execute() can be
-reformulated as gdth command injection and we don't have to muck about
-with upper layer objects like SCSI commands.
+> > What about 2.6.24?  Is this still an issue there?
+> 
+> Judging from the kernel bugzilla, it would seem so.
+> 
+> But in my specific case, the guy on site was going to try an updated
+> kernel from Suse's build system. I'll probably now the results
+> tomorrow or the day after that.
 
-James
+Please let us know.
 
+thanks,
 
+greg k-h
