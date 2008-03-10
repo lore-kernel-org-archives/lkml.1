@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYCJNU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbYCJN3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbYCJNU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 09:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYCJNUr
+	id S1752968AbYCJN3j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 09:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYCJN33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 09:20:47 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:59810 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753939AbYCJNUq (ORCPT
+	Mon, 10 Mar 2008 09:29:29 -0400
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:1936 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750968AbYCJN33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 09:20:46 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Anders Eriksson <aeriksson@fastmail.fm>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.25-rc4 
-In-reply-to: <200803101336.56159.bzolnier@gmail.com> 
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080308210559.0C7A193C070@tippex.mynet.homeunix.org> <20080310085539.6815693C900@tippex.mynet.homeunix.org> <200803101336.56159.bzolnier@gmail.com>
-Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-   message dated "Mon, 10 Mar 2008 13:36:55 +0100."
+	Mon, 10 Mar 2008 09:29:29 -0400
+Date: Mon, 10 Mar 2008 14:29:21 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Christian Kujau <lists@nerdbynature.de>, bruno.roussel@free.fr,
+       LKML <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
+Subject: Re: possible recursive locking detected
+Message-ID: <20080310142921.2696e8b9@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0803092332160.18589@twin.jikos.cz>
+References: <1205082504.47d41988f0db5@imp.free.fr>
+	<alpine.DEB.1.00.0803092215010.5349@sheep.housecafe.de>
+	<Pine.LNX.4.64.0803092332160.18589@twin.jikos.cz>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 10 Mar 2008 14:19:00 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080310131901.0154B93C900@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JYhvN-0000e2-5W.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JYhvN-0000e2-5W 34f5f335028bf4ac165beb9b4e7571ab
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 9 Mar 2008 23:41:50 +0100 (CET), Jiri Kosina wrote:
+> On Sun, 9 Mar 2008, Christian Kujau wrote:
+> 
+> > > =============================================
+> > > [ INFO: possible recursive locking detected ]
+> > > 2.6.24.2-1mdv #1
+> > > ---------------------------------------------
+> > Hm, strange: a similiar looking issue has been reported back in 2006, it 
+> > even comes with a patch: http://lkml.org/lkml/2006/10/14/38
+> > ..but I cannot tell if the patch made it into mainline. I've Cc'ed the i2c
+> > folks, maybe they can tell what's going on here.
+> 
+> I don't recall this, but from looking at the source it seems that only 
+> part of my patch made it upstream for some reason ...
 
-bzolnier@gmail.com said:
->> The bisect came up with this:
->> 
->> 18a056feccabdfa9764016a615121b194828bc72 is first bad commit
->> commit 18a056feccabdfa9764016a615121b194828bc72
+I applied the i2c-core part:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6ea23039cb1cc7c379eb5fba0ed2c53291e9bea7
 
-> Hmm, this is the first commit _after_ the previous "guilty" commit
-> 852738f39258deafb3d89c187cb1a4050820d555 so it just can't be the "real bad"
-> one... 
+But I have no idea what happened to the DVB device-driver specific part.
 
-I share the same worry. Towards the end of the bisect run (something like the
-4-th last reboot), I was asked to try "2.6.24". Now, I _thought_ 2.6.24 was way
-before 852738f39258deafb3d89c187cb1a4050820d555, and hence it should be called
-2.X.Y-foobaz something as the others were. Is this the way it should be, or did
-I fscked up the bisect?
+> 
+> Bruno, does the patch below remove the warning for you? (we should rather 
+> used lockdep_set_class() now, when this is already available ... it wasn't 
+> in the time I was doping the original patch back in 2006).
+> 
+> 
+> 
+> Set locking depth properly (level == 0 for DVB frontend, level == 1 for 
+> DVB adapter).
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> diff --git a/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c b/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
+> index 23428cd..8c5dc35 100644
+> --- a/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
+> +++ b/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
+> @@ -27,6 +27,7 @@ int dvb_usb_i2c_init(struct dvb_usb_device *d)
+>  #endif
+>  	d->i2c_adap.algo      = d->props.i2c_algo;
+>  	d->i2c_adap.algo_data = NULL;
+> +	d->i2c_adap.level = 1;
+>  	d->i2c_adap.dev.parent = &d->udev->dev;
+>  
+>  	i2c_set_adapdata(&d->i2c_adap, d);
+> diff --git a/drivers/media/dvb/frontends/dibx000_common.c b/drivers/media/dvb/frontends/dibx000_common.c
+> index 315e09e..a3ed8cf 100644
+> --- a/drivers/media/dvb/frontends/dibx000_common.c
+> +++ b/drivers/media/dvb/frontends/dibx000_common.c
+> @@ -111,6 +111,7 @@ static int i2c_adapter_init(struct i2c_adapter *i2c_adap, struct i2c_algorithm *
+>  	i2c_adap->class     = I2C_CLASS_TV_DIGITAL,
+>  	i2c_adap->algo      = algo;
+>  	i2c_adap->algo_data = NULL;
+> +	i2c_adap->level = 0;
+>  	i2c_set_adapdata(i2c_adap, mst);
+>  	if (i2c_add_adapter(i2c_adap) < 0)
+>  		return -ENODEV;
 
-This was a bisect run between 852738f39.. and 2.5.25-rc1. I got a string of 
-"bad"s but TWO goods, actually. Those goods sustained a number of reruns of 
-smartd (I can share the BISECT_LOG if wanted).
+Also note:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=cea443a81c9c6257bf2d00f1392f7d1d4ce03b75
 
-And how we can end up with good_start+1 as the guilty one, and STILL have two 
-good ones during the bisect run..... That's beyond me. lets just say that my 
-faith in myself and/or bisect starts to decline...
+This patch that was applied recently to i2c-core might cause lockdep
+issues. For some reason there's no "nested" variant of mutex_trylock?
 
-Now I'm considering a 2.6.24 .. 8527 run.
-/A
-
-
-/A
-
-
-
+-- 
+Jean Delvare
