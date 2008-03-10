@@ -1,73 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYCJPDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYCJPEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbYCJPDF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYCJPCv
+	id S1753403AbYCJPEv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYCJPEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:02:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56271 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751420AbYCJPCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:02:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jonathan McDowell <noodles@earth.li>
-Subject: Re: 2.6.25 regression/oops on boot (ACPI related?)
-Date: Mon, 10 Mar 2008 16:01:33 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, ming.m.lin@intel.com,
-       Len Brown <lenb@kernel.org>
-References: <20080228200855.GJ9009@earth.li> <20080301152706.GO9009@earth.li> <20080310143709.GM9009@earth.li>
-In-Reply-To: <20080310143709.GM9009@earth.li>
+	Mon, 10 Mar 2008 11:04:42 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:54181 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbYCJPEl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 11:04:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=SCgbFzAmzMejfppuElI7v69g8u3WOYCCOqSpVzo3rGZWjzP2UuWt/r+GAyfYiWhzexz0Cd03k/2pYDR/flfeXyw9Vd23WjtKB6IpBT+R+jcS+tuJi2owBHl7FfgDtC1VUj8LXBfOwjGlnhhb4Ms5YuJy94avGWrYoHgyY1p/OqQ=
+Date: Mon, 10 Mar 2008 23:57:05 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: [PATCH 1/5] lib: introduce call_once()
+Message-ID: <20080310145704.GA6396@APFDCB5C>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
 Content-Disposition: inline
-Message-Id: <200803101601.34169.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 10 of March 2008, Jonathan McDowell wrote:
-> On Sat, Mar 01, 2008 at 03:27:06PM +0000, Jonathan McDowell wrote:
-> > On Fri, Feb 29, 2008 at 07:38:54AM +0800, Zhang, Rui wrote:
-> > > On Fri, 2008-02-29 at 15:54 +0800, Jonathan McDowell wrote:
-> > > > On Fri, Feb 29, 2008 at 01:20:27AM +0800, Zhang, Rui wrote:
-> > > > > Please attach the acpidump output using the latest pmtools at :
-> > > > > http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
-> > > > > Please attach the result of "cat /proc/acpi/thermal_zone/*/*" as
-> > > > well.
-> > > > 
-> > > > I've attached the output of acpidump. The cat results in this output:
-> > > > 
-> > > > [noodles@meepok /proc/acpi/thermal_zone/THRM]$ cat *
-> > > > 0 - Active; 1 - Passive
-> > > > <polling disabled>
-> > > > state:                   ok
-> > > > temperature:             40 C
-> > > > Segmentation fault
-> > > > 
-> > > > It also causes a general protection fault, which I've attached as
-> > > > well.
-> > > > 
-> > > > This is a stock Debian kernel:
-> > > > 
-> > > > Linux meepok 2.6.24-1-amd64 #1 SMP Mon Feb 11 13:47:43 UTC 2008 x86_64
-> > > > GNU/Linux
-> > > > 
-> > > > I have a patch from Ming Lin to try out but it'll have to wait until
-> > > > tomorrow before I can do so.
-> > > > 
-> > > We've root caused the problem and Lin Ming's patch should work for you.
-> > > Please give it a try. :)
-> > 
-> > I've now done so; it fixes my problem and 2.6.25-rc3 boots fine with it
-> > applied. Thanks.
-> 
-> Is there a reason this still hasn't made it into 2.6.25-rc5?
+call_once() is an utility function which has similar functionality of
+pthread_once().
 
-Well, I guess Len was unaware of it (CCed now).
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+---
+ include/linux/once.h |   42 ++++++++++++++++++++++++++++++++++++++++++
+ lib/Makefile         |    2 +-
+ lib/once.c           |   18 ++++++++++++++++++
+ 3 files changed, 61 insertions(+), 1 deletion(-)
 
-Thanks,
-Rafael
+Index: 2.6-rc/include/linux/once.h
+===================================================================
+--- /dev/null
++++ 2.6-rc/include/linux/once.h
+@@ -0,0 +1,42 @@
++#ifndef __LINUX_ONCE_H
++#define __LINUX_ONCE_H
++
++#include <linux/kernel.h>
++#include <linux/mutex.h>
++
++struct once_control {
++	struct mutex lock;
++	int done;
++};
++
++#define __ONCE_INITIALIZER(name) {					\
++		.lock		= __MUTEX_INITIALIZER(name.lock),	\
++		.done		= 0,					\
++	}
++
++#define DEFINE_ONCE(name) struct once_control name = __ONCE_INITIALIZER(name)
++
++extern int call_once_slow(struct once_control *once_control,
++			  int (*init_rouine)(void));
++
++/*
++ * call_once - call the initialization function only once
++ *
++ * @once_control: guarantee that the init_routine will be called only once
++ * @init_routine: initialization function
++ *
++ * The first call to call_once(), with a given once_control, shall call the
++ * init_routine with no arguments and return the value init_routine returned.
++ * If the init_routine returns zero which indicates the initialization
++ * succeeded, subsequent calls of call_once() with the same once_control shall
++ * not call the init_routine and return zero.
++ */
++
++static inline int call_once(struct once_control *once_control,
++			    int (*init_rouine)(void))
++{
++	return likely(once_control->done) ? 0
++			: call_once_slow(once_control, init_rouine);
++}
++
++#endif /* __LINUX_ONCE_H */
+Index: 2.6-rc/lib/once.c
+===================================================================
+--- /dev/null
++++ 2.6-rc/lib/once.c
+@@ -0,0 +1,18 @@
++#include <linux/module.h>
++#include <linux/once.h>
++
++int call_once_slow(struct once_control *once_control, int (*init_rouine)(void))
++{
++	int err = 0;
++
++	mutex_lock(&once_control->lock);
++	if (!once_control->done) {
++		err = init_rouine();
++		if (!err)
++			once_control->done = 1;
++	}
++	mutex_unlock(&once_control->lock);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(call_once_slow);
+Index: 2.6-rc/lib/Makefile
+===================================================================
+--- 2.6-rc.orig/lib/Makefile
++++ 2.6-rc/lib/Makefile
+@@ -14,7 +14,7 @@ lib-$(CONFIG_SMP) += cpumask.o
+ lib-y	+= kobject.o kref.o klist.o
+ 
+ obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+-	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o
++	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o once.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
