@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbYCJXP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYCJXPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757080AbYCJXP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 19:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbYCJXOv
+	id S1757978AbYCJXPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 19:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYCJXP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 19:14:51 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:33326 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757766AbYCJXOt (ORCPT
+	Mon, 10 Mar 2008 19:15:28 -0400
+Received: from phoenix.slamd64.com ([217.10.145.2]:32990 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757586AbYCJXPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 19:14:49 -0400
-From: Stephan Diestelhorst <langer_mann@web.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Tue, 11 Mar 2008 00:14:39 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-References: <200803051559.09962.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org> <200803102226.39044.langer_mann@web.de>
-In-Reply-To: <200803102226.39044.langer_mann@web.de>
+	Mon, 10 Mar 2008 19:15:25 -0400
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: acer-wmi uses input:i8042_command() => build error
+Date: Mon, 10 Mar 2008 23:14:26 +0000
+User-Agent: KMail/1.9.7
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-acpi@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+References: <20080310124754.4ec3f24d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0803102227540.18589@twin.jikos.cz> <20080310160649.5d225ac7.randy.dunlap@oracle.com>
+In-Reply-To: <20080310160649.5d225ac7.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803110014.40246.langer_mann@web.de>
-X-Provags-ID: V01U2FsdGVkX18BclyNJYWPcO+wGsAb8yCVmcCl1Qy7ytdQC0kh
-	yX3sH4gpoXv9QuGBA74qvpkpuIcVq9/9Ne3K96j5cvbYUP/4o5
-	2xgtHd/xg=
+Message-Id: <200803102314.26951.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 10 Mar 2008 23:14:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephan Diestelhorst wrote:
-> Andi Kleen wrote:
-> > Stephan Diestelhorst <langer_mann@web.de> writes:
-> > > 
-> > > New attempt with full clobbers, note that I deliberatly did not change
-> > > the order of the output registers. Real output operands still preceede
-> > > outputs used for potential clobbering.
-> > > 
-> > > I'm not too sure about the EBP push/pop frame, but as folks pointed
-> > > out already, we should not trust the SMI code too much.
-> > 
-> > Be careful -- older gcc versions tend to abort for inline asm
-> > that clobbers too many registers. Especially when the register
-> > is already used (like ebp in a frame pointer enabled kernel) 
-> 
-> > Make sure it at least works on the oldest supported gcc version 
-> > (gcc 3.2) and with frame pointer on.
-> 
-> As I've said, I do not expect this to be problematic, but will test,
-> just to be sure! 
+On Monday 10 March 2008 23:06:49 Randy Dunlap wrote:
+> Yes, thanks.
+> Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-I've tried it on the following GCCs: 3.3, 3.4, 4.0, 4.1, all with and
-without frame-pointer ommission.
-Result: As expected. Worked w/o problems, warnings anything.
+Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
-Apologies for not testing gcc-3.2, but compiling it from source did
-not work with libtool complaining about tags in libmath. I'd be
-grateful if someone with working gcc-3.2 could try this out.
+(I'll add this to my queue, although given my last set of patches hasn't been 
+applied to the ACPI tree yet, and Len seems to have gone AWOL for the last 
+two weeks since then, I have no idea on the chances of this getting in, 
+unless someone else wants to pick it up?)
 
-Cheers,
-  Stephan
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
