@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYCJSNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYCJSP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbYCJSNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 14:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYCJSN1
+	id S1755576AbYCJSP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 14:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYCJSPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 14:13:27 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:37471 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbYCJSN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 14:13:26 -0400
-Date: Mon, 10 Mar 2008 11:13:19 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, benh@kernel.crashing.org,
-       linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>,
-       Colin Leroy <colin@colino.net>
-Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
-Message-ID: <20080310181319.GA7500@tree.beaverton.ibm.com>
-References: <47D47B11.1000303@tiscali.nl> <20080310084633.5246ecfe@paperstreet.colino.net> <1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl> <64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org> <47D5068F.8050709@tiscali.nl>
-MIME-Version: 1.0
+	Mon, 10 Mar 2008 14:15:19 -0400
+Received: from mga11.intel.com ([192.55.52.93]:45604 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158AbYCJSPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 14:15:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,475,1199692800"; 
+   d="scan'208";a="305069707"
+Date: Mon, 10 Mar 2008 11:12:45 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: ego@in.ibm.com, suresh.b.siddha@intel.com, rjw@sisk.pl,
+       akpm@linux-foundation.org, dmitry.adamushko@gmail.com, mingo@elte.hu,
+       oleg@sign.ru, yi.y.yang@intel.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH] keep rd->online and cpu_online_map in sync
+Message-ID: <20080310181244.GA27329@linux-os.sc.intel.com>
+References: <20080310081425.GA11031@in.ibm.com> <20080310133755.4689.83217.stgit@novell1.haskins.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47D5068F.8050709@tiscali.nl>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080310133755.4689.83217.stgit@novell1.haskins.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 10:59:43AM +0100, Roel Kluin wrote:
-
-> > The & 0xff here is bogus anyway; temp is only ever used as an u8,
-> > so just declare it as that, or do proper overflow/underflow checking
-> > on it.  The patch will need testing on hardware too, since it changes
-> > behaviour (it should be a bugfix, but who knows).
+On Mon, Mar 10, 2008 at 09:39:34AM -0400, Gregory Haskins wrote:
+> keep rd->online and cpu_online_map in sync
 > 
-> Maybe someone can test this?
+> It is possible to allow the root-domain cache of online cpus to
+> become out of sync with the global cpu_online_map.  This is because we
+> currently trigger removal of cpus too early in the notifier chain.
+> Other DOWN_PREPARE handlers may in fact run and reconfigure the
+> root-domain topology, thereby stomping on our own offline handling.
+> 
+> The end result is that rd->online may become out of sync with
+> cpu_online_map, which results in potential task misrouting.
+> 
+> So change the offline handling to be more tightly coupled with the
+> global offline process by triggering on CPU_DYING intead of
+> CPU_DOWN_PREPARE.
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+> 
+>  kernel/sched.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 52b9867..a616fa1 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -5881,7 +5881,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+>  		spin_unlock_irq(&rq->lock);
+>  		break;
+>  
+> -	case CPU_DOWN_PREPARE:
+> +	case CPU_DYING:
 
-I did.  No regressions observed and it fixes that bug as well.  Sorry I
-didn't catch it earlier... :/
+Don't we need to take care of CPU_DYING_FROZEN aswell?
 
-Acked-by: Darrick J. Wong <djwong@us.ibm.com>
-
---D
+>  		/* Update our root-domain */
+>  		rq = cpu_rq(cpu);
+>  		spin_lock_irqsave(&rq->lock, flags);
+> 
