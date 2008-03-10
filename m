@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYCJVt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbYCJVuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbYCJVt2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 17:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYCJVtT
+	id S1753026AbYCJVuK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 17:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYCJVt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 17:49:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60296 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751040AbYCJVtS (ORCPT
+	Mon, 10 Mar 2008 17:49:58 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58829 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYCJVt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 17:49:18 -0400
-Date: Mon, 10 Mar 2008 14:48:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
-       jordan.crouse@amd.com
-Subject: Re: [PATCH 1/6] gxfb: create DC/VP/FP-specific handlers rather than
- using readl/writel
-Message-Id: <20080310144842.593d1b80.akpm@linux-foundation.org>
-In-Reply-To: <20080310173544.171183fc@ephemeral>
-References: <20080308204826.0d399caf@ephemeral>
-	<20080310142405.e8b92156.akpm@linux-foundation.org>
-	<20080310173544.171183fc@ephemeral>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 10 Mar 2008 17:49:56 -0400
+Date: Mon, 10 Mar 2008 22:51:45 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephan Diestelhorst <langer_mann@web.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
+Message-ID: <20080310215145.GB9246@one.firstfloor.org>
+References: <200803051559.09962.langer_mann@web.de> <200803101605.42251.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org> <200803102226.39044.langer_mann@web.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803102226.39044.langer_mann@web.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008 17:35:44 -0400
-Andres Salomon <dilinger@queued.net> wrote:
+> Please also note that these are not clobbers in the strict inline asm
+> syntax, but rather dummy output values that correspond to actual
 
-> On Mon, 10 Mar 2008 14:24:05 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Sat, 8 Mar 2008 20:48:26 -0500
-> > Andres Salomon <dilinger@queued.net> wrote:
-> > 
-> > > +#define read_dc(reg)		readl(par->dc_regs + (reg))
-> > > +#define write_dc(reg, val)	writel((val), par->dc_regs + (reg))
-> > > +
-> > > +#define read_vp(reg)		readl(par->vid_regs + (reg))
-> > > +#define write_vp(reg, val)	writel((uint32_t) (val), \
-> > > +					par->vid_regs + (reg))
-> > > +
-> > > +#define read_fp(reg)		readl(par->vid_regs + (reg))
-> > > +#define write_fp(reg, val)	writel((uint32_t) (val), \
-> > > +					par->vid_regs + (reg))
-> > > +
-> > 
-> > Not very nice, sorry.  They're macros, and macros rather suck.  And they
-> > implicitly rely upon the caller having some variable called "par" in scope.
-> > 
-> > It would be much nicer to do
-> > 
-> > /*
-> >  * documentation goes here
-> >  */
-> > static inline u32 read_dc(struct geodefb_par *par, int reg)
-> > {
-> > 	return readl(par->dc_regs, reg);
-> > }
-> > 
-> > no?
-> 
-> I can change it if you'd like (although.. sigh.)
-> 
-> However, it's a lot of extra passing around of the 'par' without any
-> good reason.  Normal I prefer inline functions to macros as well, but
-> I don't see the point here.
->  
+Outputs/Inputs are as bad as clobbers in triggering gcc reload ICEs.
 
-It'll generate the same (or similar) code in both versions.
+> input parameters. I'd consider this a serious compiler flaw, if not
+> bug, if these would not work. But let's not get into GCC vs.
 
-Code is written once and is read thousands of times, so we should optimise
-for readers, not writers.  And I do think that being conventional here
-helps readability, even if it does add a bit more source code.
+It is, and it's (mostly) fixed in newer versions, but we're stuck with 
+supporting the older compiler versions unfortunately.
+
+> > For asms with so many clobbers explicit push/pop is usually safer.
+> 
+> Yes, but it is unneccessary overhead as the compiler can (should!)
+> find more elegant ways to get those registers back if needed.
+
+This code is not performance critical at all. Safer beats faster
+any time in such cases.
+
+-Andi
 
