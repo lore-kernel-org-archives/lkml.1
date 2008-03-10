@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbYCJSs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYCJSvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbYCJSs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 14:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYCJSsu
+	id S1754202AbYCJSvI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 14:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYCJSux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 14:48:50 -0400
-Received: from saeurebad.de ([85.214.36.134]:33855 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbYCJSst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 14:48:49 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Remove redundant display of free swap space in show_mem()
-References: <87abl68rdd.fsf@saeurebad.de>
-	<Pine.LNX.4.64.0803101720580.3398@blonde.site>
-Date: Mon, 10 Mar 2008 19:47:02 +0100
-In-Reply-To: <Pine.LNX.4.64.0803101720580.3398@blonde.site> (Hugh Dickins's
-	message of "Mon, 10 Mar 2008 17:28:37 +0000 (GMT)")
-Message-ID: <87wsoa76xl.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 10 Mar 2008 14:50:53 -0400
+Received: from rv-cl-88-200-217-78.pool.tolcom.ru ([88.200.217.78]:55512 "EHLO
+	const.mimas.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751492AbYCJSuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 14:50:52 -0400
+X-Greylist: delayed 703 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Mar 2008 14:50:51 EDT
+Message-ID: <47D5804A.2020000@const.mimas.ru>
+Date: Mon, 10 Mar 2008 22:39:06 +0400
+From: Constantin Baranov <const@const.mimas.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.12) Gecko/20080212 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: linux-usb@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.25-rc4] usb: add support for Motorola ROKR Z6 cellphone
+ in mass storage mode
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Constantin Baranov <const@tltsu.ru>
 
-Hugh Dickins <hugh@veritas.com> writes:
+Motorola ROKR Z6 cellphone has bugs in its USB, so it is impossible to use
+it as mass storage. Patch describes new "unusual" USB device for it with
+FIX_INQUIRY and FIX_CAPACITY flags and new BULK_IGNORE_TAG flag.
+Last flag relaxes check for equality of bcs->Tag and us->tag in
+usb_stor_Bulk_transport routine.
 
-> On Mon, 10 Mar 2008, Johannes Weiner wrote:
->> From: Johannes Weiner <hannes@saeurebad.de>
->> 
->> show_free_areas() already displays free swap space, no need to do it a
->> second time in show_mem() which calls the former anyway.
->> 
->> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
->
-> I heartily approve of this; and yes, it's the per-arch one which should
-> go (since its "alignment" looks nasty).  But there's a lot more arches
-> than just x86 which should be fixed (and so rather more work, preparing
-> those patches for the various maintainers) - is that something you'd
-> have time to do?  (Don't worry, "No" is a perfectly fair answer, and
-> it's no way essential that all change at once.)
+Signed-off-by: Constantin Baranov <const@tltsu.ru>
+---
+ drivers/usb/storage/transport.c    |    3 ++-
+ drivers/usb/storage/unusual_devs.h |   10 ++++++++++
+ include/linux/usb_usual.h          |    4 +++-
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
-Yes, I will whip something up.  Thanks for the feedback.
+diff -upr linux-2.6.25-rc4/drivers/usb/storage/transport.c
+linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/transport.c
+--- linux-2.6.25-rc4/drivers/usb/storage/transport.c	2008-03-10
+22:09:11.000000000 +0400
++++ linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/transport.c
+2008-03-10 22:11:24.000000000 +0400
+@@ -1009,7 +1009,8 @@ int usb_stor_Bulk_transport(struct scsi_
+ 	US_DEBUGP("Bulk Status S 0x%x T 0x%x R %u Stat 0x%x\n",
+ 			le32_to_cpu(bcs->Signature), bcs->Tag,
+ 			residue, bcs->Status);
+-	if (bcs->Tag != us->tag || bcs->Status > US_BULK_STAT_PHASE) {
++	if (!(bcs->Tag == us->tag || (us->flags & US_FL_BULK_IGNORE_TAG)) ||
++		bcs->Status > US_BULK_STAT_PHASE) {
+ 		US_DEBUGP("Bulk logical error\n");
+ 		return USB_STOR_TRANSPORT_ERROR;
+ 	}
+diff -upr linux-2.6.25-rc4/drivers/usb/storage/unusual_devs.h
+linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/unusual_devs.h
+--- linux-2.6.25-rc4/drivers/usb/storage/unusual_devs.h	2008-03-10
+22:09:11.000000000 +0400
++++ linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/unusual_devs.h
+2008-03-10 22:10:40.000000000 +0400
+@@ -1589,6 +1589,16 @@ UNUSUAL_DEV(  0x22b8, 0x4810, 0x0001, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY),
 
-	Hannes
++/*
++ * Patch by Constantin Baranov <const@tltsu.ru>
++ * Report by Andreas Koenecke
++ */
++UNUSUAL_DEV(  0x22b8, 0x6426, 0x0101, 0x0101,
++		"Motorola",
++		"MSnc.",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_INQUIRY | US_FL_FIX_CAPACITY | US_FL_BULK_IGNORE_TAG),
++
+ /* Reported by Radovan Garabik <garabik@kassiopeia.juls.savba.sk> */
+ UNUSUAL_DEV(  0x2735, 0x100b, 0x0000, 0x9999,
+ 		"MPIO",
+diff -upr linux-2.6.25-rc4/include/linux/usb_usual.h
+linux-2.6.25-rc4-motorokr_z6/include/linux/usb_usual.h
+--- linux-2.6.25-rc4/include/linux/usb_usual.h	2008-03-10
+22:09:12.000000000 +0400
++++ linux-2.6.25-rc4-motorokr_z6/include/linux/usb_usual.h	2008-03-10
+22:10:40.000000000 +0400
+@@ -50,7 +50,9 @@
+ 	US_FLAG(CAPACITY_HEURISTICS,	0x00001000)		\
+ 		/* sometimes sizes is too big */		\
+ 	US_FLAG(MAX_SECTORS_MIN,0x00002000)			\
+-		/* Sets max_sectors to arch min */
++		/* Sets max_sectors to arch min */		\
++	US_FLAG(BULK_IGNORE_TAG,0x00004000)			\
++		/* Ignore tag mismatch in bulk operations */
+
+
+ #define US_FLAG(name, value)	US_FL_##name = value ,
+
