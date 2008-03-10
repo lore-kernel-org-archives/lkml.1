@@ -1,124 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYCJPel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYCJPe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYCJPel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 11:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbYCJPed
+	id S1754649AbYCJPe4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 11:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYCJPeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 11:34:33 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:37558 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbYCJPec (ORCPT
+	Mon, 10 Mar 2008 11:34:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:60285 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754103AbYCJPem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 11:34:32 -0400
+	Mon, 10 Mar 2008 11:34:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=iwdHUm6IS1WHY8leYau3+IGOxuy8Uy5ox3SB1a98NtR0D+BXFdxpTQXr6eOSJa5t+Ll0WSWx5aFoYIV3JCNHQG2XjwwZYkZprEPMJmfpT9G/Ljx7+k1sl6oFAn1TlC/ZRdTiw3x/Z3LsmzsqIiwndmpU7HdoiKdhlSPGKeZEtfo=
-Message-ID: <47D554B4.6090407@gmail.com>
-Date: Mon, 10 Mar 2008 16:33:08 +0100
+        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=EyxqUgvjCoTqrwNQ/9TRys0Gzo1mwMvYyF6dMUbSbGCfs8+cbjbaaWV1KhmI9czQqUdQicfwW/RwZOptn6hnrDqT0qOGt/Kslcgm8JILJnir038lPJTTFyV+029FaoJqPP4p/BQ+IyvVxKbEmJjQrcsVZ5Sz/BbeWaiHAGNaRww=
+Message-ID: <47D554BB.6000801@gmail.com>
+Date: Mon, 10 Mar 2008 16:33:15 +0100
 User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: Sripathi Kodi <sripathik@in.ibm.com>
-CC: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, vinay@linux.vnet.ibm.com,
-       drepper@redhat.com
-Subject: Re: [PATCH] RUSAGE_THREAD
-References: <200802051125.50423.sripathik@in.ibm.com> <47BF09DD.7090301@gmail.com> <200802271711.55530.sripathik@in.ibm.com>
-In-Reply-To: <200802271711.55530.sripathik@in.ibm.com>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.79 is released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gidday
 
+I've released man-pages-2.79.
 
-Sripathi Kodi wrote:
-> On Friday 22 February 2008 23:13, Michael Kerrisk wrote:
->> Sripathi Kodi wrote:
->>> Hi Andrew,
->>>
->>> This adds the RUSAGE_THREAD option for the getrusage system call.
->>> This is essentially Roland's patch from
->>> http://lkml.org/lkml/2008/1/18/589, but the line about RUSAGE_LWP
->>> line has been removed, as suggested by Ulrich and Christoph.
->>>
->>> Thanks,
->>> Sripathi.
->>>
->>> This adds the RUSAGE_THREAD option for the getrusage system call.
->> Sripathi,
->>
->> Could you write some small piece of text for the getrusage.2 man page
->> that describes the intended behavior of RUSAGE_THREAD?
-> 
-> Michael,
-> 
-> Please take a look at the following patch to getrusage.2. This is the first
-> time I have edited a manpage, so I hope I have done it correctly!
-> 
-> Also, the RUSAGE_THREAD patch is currently in -mm, but not in mainline
-> yet. Hoping that it will make it, I have put a line in the patch that it is 
-> supported from 2.6.25 onwards.
+This release is now available for download at:
 
-Sripathi,
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-Thanks for the patch -- looks reasonable to me.
-
-I see that RUSAGE_THREAD didin't make the cut for 2.6.25.  If you remember,
-could you ping me when it does hit mainline.
+A full list of the changes in this release can be seen at
+http://www.kernel.org/doc/man-pages/changelog.html
+A summary of the changes in this release that may be of interest to readers
+of this list is provided below.
 
 Cheers,
 
 Michael
 
 
-> PS: I fixed spelling error in Ulrich's mail id in the CC list.
-> 
-> Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
-> 
-> --- getrusage.2.org	2008-02-27 17:00:57.000000000 +0530
-> +++ getrusage.2	2008-02-27 17:01:28.000000000 +0530
-> @@ -44,12 +44,22 @@ getrusage \- get resource usage
->  .PP
->  .BR getrusage ()
->  returns current resource usages, for a \fIwho\fP
-> -of either 
-> +of 
-> +.B RUSAGE_THREAD, 
->  .B RUSAGE_SELF
->  or 
->  .BR RUSAGE_CHILDREN .
-> -The former asks for resources used by the current process,
-> -the latter for resources used by those of its children
-> +.PP
-> +.B RUSAGE_THREAD 
-> +asks for resources used by the calling thread.
-> +.PP
-> +.B RUSAGE_SELF 
-> +asks for resources used by the current process, 
-> +which is the sum of resources used by all threads
-> +in the process.
-> +.PP
-> +.B RUSAGE_CHILDREN 
-> +asks for resources used by those of its children
->  that have terminated and have been waited for.
->  .PP 
->  .in +0.5i
-> @@ -130,6 +140,9 @@ Since Linux 2.6, 
->  and
->  .I ru_nivcsw
->  are also maintained.
-> +.PP
-> +.B RUSAGE_THREAD
-> +is supported only in Linux kernel versions 2.6.25 and above.
->  .SH "SEE ALSO"
->  .BR getrlimit (2),
->  .BR times (2),
-> 
+==================== Changes in man-pages-2.79 ====================
+
+New pages
+---------
+
+timerfd_create.2
+    mtk, with input and review from Davide Libenzi
+        Documents the timerfd_create(), timerfd_settime(), and
+        timerfd_gettime() system calls, which are new in 2.6.25.
+
+
+Changes to individual pages
+---------------------------
+
+syslog.2
+    Jeremy Kerr
+        Add info on command type 10.
+        Add details on types 6, 7, 8, and 9.
+        Minor grammar fix.
+    mtk
+        Update LOG_BUF_LEN details.
+        Update RETURN VALUE section.
+        Notes capability requirements under EPERM error.
+        Minor fix to description of type==3 and type==4.
+        Other minor edits.
+
+proc.5
+    Fernando Luis Vázquez Cao
+        Update /proc/[number]/cmdline description.
+        It used to be true that the command line arguments were
+        not accessible when the process had been swapped out.
+        In ancient kernels (circa 2.0.*) the problem was that the
+        kernel relied on get_phys_addr to access the user space buffer,
+        which stopped working as soon as the process was swapped out.
+        Recent kernels use get_user_pages for the same purpose and thus
+        they should not have that limitation.
+
+epoll.7
+    Davide Libenzi / mtk
+        Clarify the somewhat unintuitive behavior that occurs if a file
+        descriptor in an epoll set is closed while other file descriptors
+        referring to the same underlying open file description remain
+        open.
+        See also http://thread.gmane.org/gmane.linux.kernel/596462/.
+    mtk
+        Clarify error that occurs if we add an epoll fd to its own set.
+    mtk
+        A few minor rewordings.
+    mtk, after a note by Chris Heath
+        Rework Q1/A1, describing what happens when adding the same
+        file descriptor twice to an epoll set, and when adding duplicate
+        file descriptors to the same epoll set.
+    Heikki Orsila / mtk / Davide Libenzi
+        Clarify Q9/A9 to discuss packet/token-oriented files.
+    mtk, after comments by Devide Libenzi and Chris Heath
+        Added Q0/A0, making explicit that the key for items in an epoll
+        set is [file descriptor, open file description].
+    mtk, after a note by Ron Burk
+        Change A3, to note that when events are available,
+        the epoll file descriptor will indicate as being readable.
+    mtk
+        Add some further explanation to Q5/A5 about why an epoll file
+        descriptor cannot be passed across a Unix domain socket.
 
 -- 
 Michael Kerrisk
