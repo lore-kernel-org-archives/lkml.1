@@ -1,132 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbYCJOVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbYCJOXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751777AbYCJOVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 10:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYCJOVV
+	id S1751982AbYCJOXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 10:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYCJOXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 10:21:21 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:39030 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYCJOVV (ORCPT
+	Mon, 10 Mar 2008 10:23:17 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41716 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750696AbYCJOXQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 10:21:21 -0400
-Date: Mon, 10 Mar 2008 19:51:17 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: suresh.b.siddha@intel.com, rjw@sisk.pl, akpm@linux-foundation.org,
-       dmitry.adamushko@gmail.com, mingo@elte.hu, oleg@sign.ru,
-       yi.y.yang@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH] keep rd->online and cpu_online_map in sync
-Message-ID: <20080310142117.GG17646@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080310081425.GA11031@in.ibm.com> <20080310133755.4689.83217.stgit@novell1.haskins.net>
+	Mon, 10 Mar 2008 10:23:16 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX18DS7Ug2a0Da2p7gu7Yy1P4fGLEeGjelP+O5qwjRQ
+	rBO5kZutl+oIy0
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Date: Mon, 10 Mar 2008 15:23:02 +0100
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
+       linux-kernel@vger.kernel.org, rick@vanrein.org
+References: <182234194@web.de> <200803101224.07628.dl9pf@gmx.de> <20080310115237.GA29197@elf.ucw.cz>
+In-Reply-To: <20080310115237.GA29197@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080310133755.4689.83217.stgit@novell1.haskins.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200803101523.03620.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 09:39:34AM -0400, Gregory Haskins wrote:
-> >>> On Mon, Mar 10, 2008 at  4:14 AM, in message
-> <20080310081425.GA11031@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com> wrote:
-> 
-> > On Sat, Mar 08, 2008 at 12:10:15AM -0500, Gregory Haskins wrote:
-> 
-> [ snip ]
-> 
-> >> @@ -5813,6 +5813,13 @@ migration_call(struct notifier_block *nfb, unsigned 
-> > long action, void *hcpu)
-> >>  		/* Must be high prio: stop_machine expects to yield to it. */
-> >>  		rq = task_rq_lock(p, &flags);
-> >>  		__setscheduler(rq, p, SCHED_FIFO, MAX_RT_PRIO-1);
-> >> +
-> >> +		/* Update our root-domain */
-> >> +		if (rq->rd) {
-> >> +			BUG_ON(!cpu_isset(cpu, rq->rd->span));
-> >> +			cpu_set(cpu, rq->rd->online);
-> >> +		}
-> > 
-> > Hi Greg,
-> > 
-> > Suppose someone issues a wakeup at some point between CPU_UP_PREPARE
-> > and CPU_ONLINE, then isn't there a possibility that the task could
-> > be woken up on the cpu which has not yet come online ?
-> > Because at this point in find_lowest_cpus()
-> > 
-> > cpus_and(*lowest_mask, task_rq(task)->rd->online, task->cpus_allowed);
-> > 
-> > the cpu which has not yet come online is set in both rd->online map
-> > and the task->cpus_allowed.
-> 
-> Hi Gautham,
->    This is a good point.  I think I got it backwards (or rather, I had the ordering more correct before the patch):  I really want to keep the set() on ONLINE as I had it originally.  Its the clear() that is misplaced, as DOWN_PREPARE is too early in the chain.  I probably should have used DYING to defer the clear out to the point right before the cpu_online_map is updated.  Thanks to Dmitry for highlighting the smpboot path which helped me to find the proper notifier symbol. 
+Am Montag 10 März 2008 12:52:37 schrieb Pavel Machek:
+> On Mon 2008-03-10 12:24:06, Jan-Simon Möller wrote:
+> > Am Montag 10 März 2008 11:14:48 schrieben Sie:
+> > > Feel free to improve memmap documentation.
+> >
+> > BUT ...
+> > to do that, I would need to know already a bit of memmap ?!
+> >
+> > This is a Chicken-egg-problem !
+> >
+> > And I won't "waste" my time if i've a solution at hand already ?!
+>
+> ...so you waste everyone elses...?
 
-I think CPU_DYING is a more apt point to clear the bit.
-Vatsa had infact suggested that we do it in cpu_disable(), but since we
-have an event, we might as well make use of it.
-> 
-> > 
-> > I wonder if assigning a priority to the update_sched_domains() notifier
-> > so that it's called immediately after migration_call() would solve the
-> > problem.
-> 
-> Possibly (and I just saw your patch).  But note that migration_call was previously declared as "should run first" so I am not sure if moving update_sched_domain() above it will not have a ripple effect in some other area.  If that is "ok", then I agree your solution solves the ordering problem, albeit in a bit heavy handed manner.  Otherwise s/CPU_DOWN_PREPARE/CPU_DYING in migrate call will fix the issue as well, I believe.  This will push the update of rd->online to be much more tightly coupled with updates to cpu_online_map.
+This is no fair answer, Pavel - I already invested my time to find a solution 
+and only found BadRAM at that time. So my impression is that for memmap 
+there's so little doc that no average user is able to use it. This will also 
+prevent users from making "derived" documentation for other use-cases. And 
+again we're back to the chicken-egg ??
+You can have the "nicest" solution out there - as long as its 
+either "nasty-to-use" or zero-documented, no one will really use it.
 
-The reason why migration_call() was declared as "should run first" was
-to ensure that all the migration happens before the other subsystems run
-their CPU_DEAD events. This is important, else when the subsystems issue
-a kthread_stop(subsystem_thread) in their CPU_DEAD case, the
-subsystem_thread might still be affined to the offlined cpu, thus
-resulting in a deadlock.
+> > Lets do it like this: Show me what i need to know about the usage of
+> > memmap and i'll write some doc.
+> >
+> > Just shouting "write your own doc" is pointless, as I don't know this
+> > part of the kernel myself (yet).
+>
+> Read the thread you are replying to. It was already there.
 
-That requirement is taken care of in the patch I had sent since
-migration_call() will be called immediately after update_sched_domains().
+I did that and also read kernel-parameters.txt / memory.txt :
+But there is _NO_ example line, just the synopsis. 
+Do you expect all users to know what's e820 table is ? - this is not 
+realistic. Not everybody is an expert in computer science.
 
-> 
-> Ingo/Andrew: Please drop the earlier fix I submitted.  I don't think it is correct on several fronts.  Please try the one below.  As before, I have tested that I can offline/online CPUs, but I dont have s2ram capability here.
-> 
-> Regards,
-> -Greg
-> 
-> ---------------------------------------------
-> keep rd->online and cpu_online_map in sync
-> 
-> It is possible to allow the root-domain cache of online cpus to
-> become out of sync with the global cpu_online_map.  This is because we
-> currently trigger removal of cpus too early in the notifier chain.
-> Other DOWN_PREPARE handlers may in fact run and reconfigure the
-> root-domain topology, thereby stomping on our own offline handling.
-> 
-> The end result is that rd->online may become out of sync with
-> cpu_online_map, which results in potential task misrouting.
-> 
-> So change the offline handling to be more tightly coupled with the
-> global offline process by triggering on CPU_DYING intead of
-> CPU_DOWN_PREPARE.
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
-> 
->  kernel/sched.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 52b9867..a616fa1 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -5881,7 +5881,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
->  		spin_unlock_irq(&rq->lock);
->  		break;
-> 
-> -	case CPU_DOWN_PREPARE:
-> +	case CPU_DYING:
->  		/* Update our root-domain */
->  		rq = cpu_rq(cpu);
->  		spin_lock_irqsave(&rq->lock, flags);
+Thats why BadRAM is used out there - memtest prints the values and BadRam can 
+use them.
 
--- 
-Thanks and Regards
-gautham
+Lets try to get an example and document it:
+My starting point would be: i wanna exclude this memory-area
+
+badram=0x18690000,0xffff0000
+(which means a whole from 0x18690000 to 0x1869ffff )
+
+what would that be in memmap= -Syntax if i've got 2GB RAM in total ?
+
+Best regards
+Jan-Simon
