@@ -1,61 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbYCJSxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYCJTA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbYCJSxr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 14:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYCJSxk
+	id S1753941AbYCJTA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 15:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYCJTAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 14:53:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:64341 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbYCJSxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 14:53:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fGi5yfEO4g10M8OVvvrRJ8gtrcghdRtbVUdT7sM7Zz2bjEHAZUz2rge8run41B7EFL/yIln4Khddg8CDN6siq49nF9lnQCUBvy6Gk5Sc+N1hVV4p/vWkpN+HOfnw6LoWIfTWXjy/vYmunQV8f2UN4tDs20xeTDbY1r+I8zH7huQ=
-Message-ID: <87a5b0800803101153n614b044btfe02be2c77d11b84@mail.gmail.com>
-Date: Mon, 10 Mar 2008 18:53:38 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: copy_page_range() with VM_LOCKED
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0803101728470.3398@blonde.site>
+	Mon, 10 Mar 2008 15:00:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53813 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751825AbYCJTAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 15:00:16 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX18aTmcHteQaTrYcFbxYQ+AC9eJq34WU5iXf8+qbHH
+	rGEhNMBs0+Obh7
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Date: Mon, 10 Mar 2008 19:59:46 +0100
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
+       linux-kernel@vger.kernel.org, rick@vanrein.org
+References: <182234194@web.de> <200803101523.03620.dl9pf@gmx.de> <47D56DD3.8060108@zytor.com>
+In-Reply-To: <47D56DD3.8060108@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <87a5b0800803100926t1e4a1bb3t905d02d4c311d5e@mail.gmail.com>
-	 <Pine.LNX.4.64.0803101728470.3398@blonde.site>
+Message-Id: <200803101959.47202.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 5:40 PM, Hugh Dickins <hugh@veritas.com> wrote:
 
->  > mmap with MAP_LOCKED only promises the page will not be paged out, not
->  > that the page will never fault but I would like to get that behaviour.
->  >
->  > Would it be possible to add VM_LOCKED to the above conditional so
->  > copy_page_range would always copy VM_LOCKED vma page tables or would
->  > that be considered insane and broken?
->
->  It would be possible, but I don't think it would be justified - for
->  everybody who wants your behaviour, there'll be others who want the
->  current behaviour (and that condition reflects those cases on which
->  correctness demands we do the copy).
->
->  If you really want that, I think you'll have to patch your own kernel.
->
->  But much much better, mlock that area in your child after the fork,
->  since it isn't actually locked at present: that mlock will bring in
->  the pages - not quite as efficiently as copy_page_range would have done,
->  but as or more efficiently than the original mlock in the parent.
+What about ...
 
-The reason I want to do this is to work around a silicon bug so I'd
-rather keep the whole workaround in the kernel rather than hacking the
-C library etc. I wasn't aware that the VM_LOCKED flag would be lost in
-the child, it looks like I'll have to come up with a more creative
-solution...
+diff --git a/Documentation/kernel-parameters.txt 
+b/Documentation/kernel-parameters.txt
+index 533e67f..19343e1 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1131,6 +1131,10 @@ and is between 256 and 4096 characters. It is defined 
+in the file
+        memmap=nn[KMG]$ss[KMG]
+                        [KNL,ACPI] Mark specific memory as reserved.
+                        Region of memory to be used, from ss to ss+nn.
++                       Example: Exclude memory from 0x18690000-0x1869ffff
++                                memmap=0x18690000$64K
++                                or
++                                memmap=0x18690000$10000
 
-Thanks for taking the time to explain how this stuff fits together,
+        meye.*=         [HW] Set MotionEye Camera parameters
+                        See Documentation/video4linux/meye.txt.
+
+Signed-off-by: Jan-Simon Moeller <dl9pf@gmx.de>
+
+
+
+
+... and/or ...
+
+
+diff --git a/Documentation/bad-memory.txt b/Documentation/bad-memory.txt
+new file mode 100644
+index 0000000..53e817d
+--- /dev/null
++++ b/Documentation/bad-memory.txt
+@@ -0,0 +1,55 @@
++March 2007
++Jan-Simon Moeller, dl9pf@gmx.de
++
++
++How to deal with bad memory e.g. reported by memtest86+ ?
++#########################################################
++
++There are three possibilities I know of:
++
++1) Buy new memory (best!)
++
++2) Try to exchange the memory if you have spare-parts
++
++3) Use BadRAM or memmap
++
++This Howto is about number 3) .
++
++
++BadRAM
++######
++BadRAM is actively developed and available as kernel-patch
++here:  http://rick.vanrein.org/linux/badram/
++
++It takes the patterns of memtest86+ as arguments to exclude the defective
++areas of the memory.
++
++Example: memtest86+ reported here errors at address 0x18691458, 0x18698424 
+and
++         some others. All had 0x1869xxxx in common, so I chose a pattern of
++         0x18690000,0xffff0000.
++         This means exclusion of the area from 0x18690000 to 0x1869ffff
++         (which is a block of 64k).
++         My kernel-cmdline was:  badram=0x18690000,0xffff0000
++
++There are efforts to bring BadRAM into mainline in some way, possibly using
++memmap internally (maybe for 2.6.26 ?).
++Thread on lkml: http://lkml.org/lkml/2008/3/2/42
++
++For more details see the BadRAM documentation.
++
++
++memmap
++######
++memmap is already in the kernel and usable as kernel-parameter at boot-time.
++Its syntax is different and you may need to calculate the values by yourself!
++
++Syntax to exclude a memory area (see kernel-parameters for details):
++memmap=<address>$<size>
++
++With the numbers of the example above:
++memmap=0x18690000$64K
++ or
++memmap=0x18690000$0x10000
++
++TODO: Multiple areas to exclude using memmap ?
++
+
+Signed-off-by: Jan-Simon Moeller <dl9pf@gmx.de>
+
+Best regards,
+Jan-Simon
