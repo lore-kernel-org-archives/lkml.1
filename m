@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbYCJUR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYCJUSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbYCJUR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 16:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYCJUOt
+	id S1756555AbYCJUSy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 16:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYCJUSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 16:14:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58206 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756045AbYCJUOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 16:14:48 -0400
-Date: Mon, 10 Mar 2008 13:14:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
-       jordan.crouse@amd.com
-Subject: Re: [PATCH 3/6] gxfb: move MSR bit fields into gxfb.h
-Message-Id: <20080310131432.e4567537.akpm@linux-foundation.org>
-In-Reply-To: <20080308204840.47a27236@ephemeral>
-References: <20080308204840.47a27236@ephemeral>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Mar 2008 16:18:45 -0400
+Received: from saeurebad.de ([85.214.36.134]:48316 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752063AbYCJUSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 16:18:44 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jesper Juhl <trivial@kernel.org>, Russell King <rmk@arm.linux.org.uk>,
+       Lennert Buytenhek <kernel@wantstofly.org>
+Subject: Re: [PATCH] arm: Remove redundant display of free swap space in show_mem()
+References: <12051798631122-git-send-email-hannes@saeurebad.de>
+Date: Mon, 10 Mar 2008 21:16:55 +0100
+In-Reply-To: <12051798631122-git-send-email-hannes@saeurebad.de> (Johannes
+	Weiner's message of "Mon, 10 Mar 2008 21:10:48 +0100")
+Message-ID: <87lk4q72rs.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Mar 2008 20:48:40 -0500
-Andres Salomon <dilinger@queued.net> wrote:
+Hi,
 
-> >From bee7242cf04c4a060b311b11985efb495f308355 Mon Sep 17 00:00:00 2001
-> From: Andres Salomon <dilinger@debian.org>
-> Date: Mon, 25 Feb 2008 15:29:36 -0500
-> Subject: [PATCH] gxfb: move MSR bit fields into gxfb.h
-> 
-> This continues the gxfb header cleanups.  MSRs are defined in geode.h;
-> the specific bits we care about are defined in gxfb.h.
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/video/geode/display_gx.h |    3 ---
->  drivers/video/geode/gxfb.h       |   16 ++++++++++++++++
->  drivers/video/geode/gxfb_core.c  |    2 +-
->  drivers/video/geode/video_gx.c   |    4 ++--
->  drivers/video/geode/video_gx.h   |   14 --------------
->  5 files changed, 19 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
-> index 56e9d2e..ad556d3 100644
-> --- a/drivers/video/geode/display_gx.h
-> +++ b/drivers/video/geode/display_gx.h
-> @@ -16,7 +16,4 @@ int gx_line_delta(int xres, int bpp);
->  
->  extern struct geode_dc_ops gx_dc_ops;
->  
-> -/* MSR that tells us if a TFT or CRT is attached */
-> -#define GLD_MSR_CONFIG_DM_FP 0x40
-> -
->  #endif /* !__DISPLAY_GX1_H__ */
+apologies to the arm people who got the full thing now.  I obviously
+failed the git-send-email test.
 
-Something has gone wrong here.  The code in current mainline is
+-- original introduction
 
+show_mem() has no need to print the amount of free swap space manually
+in show_mem(), show_free_areas() does this already.
 
+I have only x86 boxen to test on but the patches are trivial.
 
-extern struct geode_dc_ops gx_dc_ops;
+ arch/alpha/mm/init.c     |    1 -
+ arch/alpha/mm/numa.c     |    1 -
+ arch/arm/mm/init.c       |    2 --
+ arch/cris/mm/init.c      |    1 -
+ arch/ia64/mm/contig.c    |    2 --
+ arch/ia64/mm/discontig.c |    2 --
+ arch/m32r/mm/init.c      |    2 --
+ arch/m68k/mm/init.c      |    1 -
+ arch/mips/mm/pgtable.c   |    1 -
+ arch/parisc/mm/init.c    |    2 --
+ arch/powerpc/mm/mem.c    |    1 -
+ arch/ppc/mm/init.c       |    1 -
+ arch/s390/mm/init.c      |    1 -
+ arch/sh/mm/init.c        |    1 -
+ arch/sparc/mm/init.c     |    2 --
+ arch/sparc64/mm/init.c   |    2 --
+ arch/um/kernel/mem.c     |    2 --
+ arch/x86/mm/init_64.c    |    3 ---
+ arch/x86/mm/pgtable_32.c |    1 -
+ arch/xtensa/mm/init.c    |    1 -
+ 20 files changed, 0 insertions(+), 30 deletions(-)
 
-/* MSR that tells us if a TFT or CRT is attached */
-#define GLD_MSR_CONFIG   0xC0002001
-#define GLD_MSR_CONFIG_DM_FP 0x40
-
-/* Display controller registers */
-
-
-whereas you're patching something else.
-
-
-In [1/6] you refer to "the MSR cleanup patch".  I don't know what that is.
-
-
-Please clean up the changelogs - remove those email headers from the
-email-forwarding operation and remove the additional little commentary on
-top: if there's actually anything in there which is needed then it should
-be integrated into the changelog proper, thanks.
-
+	Hannes
