@@ -1,82 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYCJNGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbYCJNKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbYCJNGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 09:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbYCJNGD
+	id S1753548AbYCJNKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 09:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYCJNKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 09:06:03 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:3203 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbYCJNGB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 09:06:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=fF7h1mLOHTUkotU419laX+sxhBiVWjYSbVQETgfpf581O09S/VbasfDRlabt2lK4J/cJvAg/rNu1WYQwEGJ8trOzD/fY+Q6n9Xk6bGlrtHk1bSuEsiSFSy5YPfcgduezGz2uTC66Uao6MmKsQcpeC4102b9OsgRxGx/0bMLC4qU=
-Message-ID: <47D53231.30107@gmail.com>
-Date: Mon, 10 Mar 2008 22:05:53 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
-Subject: Re: Unknown SATA PIIX PCI device ID 0x29b6
-References: <Pine.LNX.4.64.0802282306190.10087@axis700.grange> <20080228225603.2764bfd1@core> <Pine.LNX.4.64.0802290010320.10498@axis700.grange> <47CFADDF.20200@gmail.com> <Pine.LNX.4.64.0803061248070.5670@axis700.grange> <47D0C9E6.8090301@gmail.com> <Pine.LNX.4.64.0803082345000.6749@axis700.grange> <47D3723B.3040700@gmail.com> <Pine.LNX.4.64.0803092221560.7385@axis700.grange> <47D485EC.1060103@gmail.com> <Pine.LNX.4.64.0803100821440.3948@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0803100821440.3948@axis700.grange>
-X-Enigmail-Version: 0.95.5
-Content-Type: multipart/mixed;
- boundary="------------050508050404020705010406"
+	Mon, 10 Mar 2008 09:10:41 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:31039
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750931AbYCJNKl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 09:10:41 -0400
+Message-Id: <47D54185.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
+Date: Mon, 10 Mar 2008 13:11:17 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <markus.t.metzger@intel.com>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: prevent unconditional writes to DebugCtl MSR
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050508050404020705010406
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Otherwise, enabling (or better, subsequent disabling) of single
+stepping would cause a kernel oops on CPUs not having this MSR.
 
-Guennadi Liakhovetski wrote:
-> On Mon, 10 Mar 2008, Tejun Heo wrote:
-> 
->>> Yctually it was 2.6.24 before, rebuilt 2.6.25-rc4, booted as above, it did 
->>> say:
->>>
->>> ata4: FORCE: PHY spd limit set to 1.5Gbps
->>>
->>> but hot-plugging the drive still took 50 seconds to recover.
->> How about cold plugging?
-> 
-> Same.
+The patch could have been added a conditional to the MSR write in
+user_disable_single_step(), but centralizing the updates seems safer
+and (looking forward) better manageable.
 
-Does the attached patch help?
-
--- 
-tejun
-
---------------050508050404020705010406
-Content-Type: text/plain;
- name="debug"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="debug"
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Markus Metzger <markus.t.metzger@intel.com>
 
 ---
- drivers/ata/ahci.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/x86/kernel/kprobes.c    |    4 ++--
+ arch/x86/kernel/process_32.c |    4 ++--
+ arch/x86/kernel/process_64.c |    4 ++--
+ arch/x86/kernel/step.c       |    2 +-
+ include/asm-x86/processor.h  |    9 +++++++++
+ 5 files changed, 16 insertions(+), 7 deletions(-)
 
-Index: tree2/drivers/ata/ahci.c
-===================================================================
---- tree2.orig/drivers/ata/ahci.c
-+++ tree2/drivers/ata/ahci.c
-@@ -397,6 +397,7 @@ static const struct ata_port_operations 
- static const struct ata_port_info ahci_port_info[] = {
- 	/* board_ahci */
- 	{
-+		AHCI_HFLAGS	(AHCI_HFLAG_NO_PMP),
- 		.flags		= AHCI_FLAG_COMMON,
- 		.link_flags	= AHCI_LFLAG_COMMON,
- 		.pio_mask	= 0x1f, /* pio0-4 */
+--- linux-2.6.25-rc5/arch/x86/kernel/kprobes.c	2008-03-10 13:24:10.000000000 +0100
++++ 2.6.25-rc5-x86-debugctlmsr/arch/x86/kernel/kprobes.c	2008-03-06 11:02:51.000000000 +0100
+@@ -410,13 +410,13 @@ static void __kprobes set_current_kprobe
+ static void __kprobes clear_btf(void)
+ {
+ 	if (test_thread_flag(TIF_DEBUGCTLMSR))
+-		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0);
++		update_debugctlmsr(0);
+ }
+ 
+ static void __kprobes restore_btf(void)
+ {
+ 	if (test_thread_flag(TIF_DEBUGCTLMSR))
+-		wrmsrl(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr);
++		update_debugctlmsr(current->thread.debugctlmsr);
+ }
+ 
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+--- linux-2.6.25-rc5/arch/x86/kernel/process_32.c	2008-03-10 13:24:10.000000000 +0100
++++ 2.6.25-rc5-x86-debugctlmsr/arch/x86/kernel/process_32.c	2008-03-06 11:02:51.000000000 +0100
+@@ -575,12 +575,12 @@ __switch_to_xtra(struct task_struct *pre
+ 		/* we clear debugctl to make sure DS
+ 		 * is not in use when we change it */
+ 		debugctl = 0;
+-		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0);
++		update_debugctlmsr(0);
+ 		wrmsr(MSR_IA32_DS_AREA, next->ds_area_msr, 0);
+ 	}
+ 
+ 	if (next->debugctlmsr != debugctl)
+-		wrmsr(MSR_IA32_DEBUGCTLMSR, next->debugctlmsr, 0);
++		update_debugctlmsr(next->debugctlmsr);
+ 
+ 	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
+ 		set_debugreg(next->debugreg0, 0);
+--- linux-2.6.25-rc5/arch/x86/kernel/process_64.c	2008-03-10 13:24:10.000000000 +0100
++++ 2.6.25-rc5-x86-debugctlmsr/arch/x86/kernel/process_64.c	2008-03-06 11:02:51.000000000 +0100
+@@ -573,12 +573,12 @@ static inline void __switch_to_xtra(stru
+ 		/* we clear debugctl to make sure DS
+ 		 * is not in use when we change it */
+ 		debugctl = 0;
+-		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0);
++		update_debugctlmsr(0);
+ 		wrmsrl(MSR_IA32_DS_AREA, next->ds_area_msr);
+ 	}
+ 
+ 	if (next->debugctlmsr != debugctl)
+-		wrmsrl(MSR_IA32_DEBUGCTLMSR, next->debugctlmsr);
++		update_debugctlmsr(next->debugctlmsr);
+ 
+ 	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
+ 		loaddebug(next, 0);
+--- linux-2.6.25-rc5/arch/x86/kernel/step.c	2008-03-10 13:24:10.000000000 +0100
++++ 2.6.25-rc5-x86-debugctlmsr/arch/x86/kernel/step.c	2008-03-06 11:02:51.000000000 +0100
+@@ -145,7 +145,7 @@ static void write_debugctlmsr(struct tas
+ 	if (child != current)
+ 		return;
+ 
+-	wrmsrl(MSR_IA32_DEBUGCTLMSR, val);
++	update_debugctlmsr(val);
+ }
+ 
+ /*
+--- linux-2.6.25-rc5/include/asm-x86/processor.h	2008-03-10 13:24:33.000000000 +0100
++++ 2.6.25-rc5-x86-debugctlmsr/include/asm-x86/processor.h	2008-03-06 11:02:51.000000000 +0100
+@@ -662,6 +662,15 @@ extern void switch_to_new_gdt(void);
+ extern void cpu_init(void);
+ extern void init_gdt(int cpu);
+ 
++static inline void update_debugctlmsr(unsigned long debugctlmsr)
++{
++#ifndef CONFIG_X86_DEBUGCTLMSR
++	if (boot_cpu_data.x86 < 6)
++		return;
++#endif
++	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
++}
++
+ /* from system description table in BIOS.  Mostly for MCA use, but
+  * others may find it useful. */
+ extern unsigned int machine_id;
 
---------------050508050404020705010406--
+
+
