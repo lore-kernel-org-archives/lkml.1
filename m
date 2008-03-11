@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbYCKIwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbYCKIxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953AbYCKIwf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 04:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYCKIw0
+	id S1754043AbYCKIxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 04:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYCKIxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 04:52:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48705 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbYCKIwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 04:52:25 -0400
-Date: Tue, 11 Mar 2008 09:52:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Revert "cpu hotplug: adjust root-domain->online
-	span in response to hotplug
-Message-ID: <20080311085201.GD25110@elte.hu>
-References: <20080310205241.9571.38832.stgit@novell1.haskins.net>
+	Tue, 11 Mar 2008 04:53:38 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:49613 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040AbYCKIxi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 04:53:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080310205241.9571.38832.stgit@novell1.haskins.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 11/17] Add memory mapping driver to RapidIO.
+Date: Tue, 11 Mar 2008 16:53:09 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AECE5158@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20080305135148.21d6c25a.sfr@canb.auug.org.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 11/17] Add memory mapping driver to RapidIO.
+Thread-Index: Ach+a+STw/XzO6ZeRQim2p8xFWP/HAE6Uwzg
+References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com><1204648202-5495-2-git-send-email-wei.zhang@freescale.com><1204648202-5495-3-git-send-email-wei.zhang@freescale.com><1204648202-5495-4-git-send-email-wei.zhang@freescale.com><1204648202-5495-5-git-send-email-wei.zhang@freescale.com><1204648202-5495-6-git-send-email-wei.zhang@freescale.com><1204648202-5495-7-git-send-email-wei.zhang@freescale.com><1204648202-5495-8-git-send-email-wei.zhang@freescale.com><1204648202-5495-9-git-send-email-wei.zhang@freescale.com><1204648202-5495-10-git-send-email-wei.zhang@freescale.com><1204648202-5495-11-git-send-email-wei.zhang@freescale.com><20080304213735.c77d6203.sfr@canb.auug.org.au><ABF87B0B6A38C0458E319AC973ED68AECE4522@zch01exm26.fsl.freescale.net> <20080305135148.21d6c25a.sfr@canb.auug.org.au>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Stephen,
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+I've updated those patches with fixing up.
 
-> This reverts commit 393d94d98b19089ec172566e23557997931b137e.
+Thanks! 
+Wei.
+
+> -----Original Message-----
+> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
+> Sent: Wednesday, March 05, 2008 10:52 AM
+> To: Zhang Wei
+> Cc: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 11/17] Add memory mapping driver to RapidIO.
 > 
-> I submitted 393d94d98b1 to -mm and sched-devel, and then quickly 
-> realized it was flawed.  However, the patch was already "in flight" 
-> and made it to Linus' tree and is in .25-rc5.  So this patch reverts 
-> the original/flawed fix, and the patch that follows has the updated 
-> version.
-
-yeah, but the patch fixed Andrew's regression and passed my testing so i 
-wanted to have _something_ in -rc5, even if we found the right fix.
-
-i've applied your revert and the real fix now.
-
-	Ingo
+> Hi Weu,
+> 
+> On Wed, 5 Mar 2008 09:59:38 +0800 "Zhang Wei" 
+> <Wei.Zhang@freescale.com> wrote:
+> >
+> > Thanks! I'm considering to commit a updated patch or new 
+> code cleaning
+> > patch.
+> > How about your idea?
+> 
+> Preferably, fix up the patches.  If that is a pain, then a 
+> followup patch
+> that cleans up is ok as these do not affect the correctness 
+> of the code.
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+> 
