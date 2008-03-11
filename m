@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbYCKLuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYCKLwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbYCKLuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 07:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYCKLud
+	id S1756733AbYCKLwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 07:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYCKLwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 07:50:33 -0400
-Received: from phunq.net ([64.81.85.152]:55142 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750959AbYCKLuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 07:50:32 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Lars Marowsky-Bree <lmb@suse.de>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Tue, 11 Mar 2008 03:50:18 -0800
-User-Agent: KMail/1.9.5
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grzegorz Kulewski <kangur@polcom.net>,
-       linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803110414.40954.phillips@phunq.net> <20080311112329.GR1581@marowsky-bree.de>
-In-Reply-To: <20080311112329.GR1581@marowsky-bree.de>
+	Tue, 11 Mar 2008 07:52:14 -0400
+Received: from lucidpixels.com ([75.144.35.66]:43516 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbYCKLwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 07:52:14 -0400
+Date: Tue, 11 Mar 2008 07:52:13 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
+Subject: Re: 2.6.24.3: WARNING: native_smp_call_function_mask() at boot
+ time
+In-Reply-To: <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
+Message-ID: <alpine.DEB.1.00.0803110751470.10032@p34.internal.lan>
+References: <alpine.DEB.1.00.0803100426320.18620@p34.internal.lan> <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803110450.19390.phillips@phunq.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 March 2008 04:23, Lars Marowsky-Bree wrote:
-> If I always assume a reliable shutdown - UPS protected, no crashes, etc
-> - you're right, but at least my real world has other failure scenarios
-> as well. In fact, the most common reason for unorderly shutdowns are
-> kernel crashes, not power failures in my experience.
 
-What are you doing to your kernel?
 
-My desktop at home, which runs my MTA, web site etc, and is subject to
-regular oom abuse by firefox:
+On Tue, 11 Mar 2008, Thomas Gleixner wrote:
 
-$ uptime
-04:36:49 up 204 days,  9:38,  8 users,  load average: 0.82, 0.43, 0.20
+> On Mon, 10 Mar 2008, Justin Piszcz wrote:
+>> Running kernel 2.6.24.3 on Debian Testing here..
+>>
+>> [   19.141846] WARNING: at arch/x86/kernel/smp_32.c:561
+>> native_smp_call_function_mask()
+>> [   19.141896] Pid: 1, comm: swapper Not tainted 2.6.24.3 #1
+>> [   19.141937]  [<c010e50b>] native_smp_call_function_mask+0x14b/0x150
+>> [   19.142009]  [<c01036c3>] common_interrupt+0x23/0x28
+>> [   19.142076]  [<c010f470>] enable_NMI_through_LVT0+0x0/0x30
+>> [   19.142144]  [<c010f470>] enable_NMI_through_LVT0+0x0/0x30
+>> [   19.142212]  [<c010e8fc>] smp_call_function+0x1c/0x30
+>> [   19.142279]  [<c012196c>] on_each_cpu+0x2c/0x60
+>> [   19.142346]  [<c0110840>] setup_nmi+0x30/0x50
+>
+> Can you please try the backported patch below.
+>
+> Thanks,
+> 	tglx
+>
 
-This machine has been up ever since I got a UPS for it, and then it
-only ever went down due to a blackout or my wife blowing a fuse with
-the vacuum cleaner.  Honestly, I have never seen a machine running
-Linux 2.6 crash due to a software flaw, except when I caused it
-myself.  I suspect the Linux kernel has a better MTBF than a hard
-disk.
+Patching now and will have the result shortly.
 
-> So "perfectly reliable if UPS power does not fail" seems a bit over the
-> top.
+# patch -p1 < ../patch
+patching file arch/x86/kernel/apic_32.c
+patching file arch/x86/kernel/apic_64.c
+patching file arch/x86/kernel/io_apic_32.c
+patching file arch/x86/kernel/io_apic_64.c
+patching file arch/x86/kernel/smpboot_32.c
+patching file arch/x86/kernel/smpboot_64.c
+patching file include/asm-x86/apic_32.h
+patching file include/asm-x86/io_apic_64.h
+#
 
-It works for EMC :-)
-
-> I was trying to prod you into writing the ordered flushing. Maybe
-> claiming it is too hard will do the trick? ;-)
-> 
-> Seriously, I guess it depends on the workload you want to host.
-
-I agree this would be a nice option to have.
-
-> > If you think this is like replication then you have the wrong idea
-> > about what is going on.  This is a cache consistency algorithm, not
-> > a replication algorithm.
-> 
-> I see the differences, but I also see the similarities. What you're
-> doing can also be thought of as replicating from an instant IO store
-> (local memory) to a high latency, low bandwidth copy (the disk)
-> asynchronously.
-> 
-> Both obviously need to preserve consistency, the question is whether to
-> achieve transactional (ordered) consistency or not.
-
-In fact, replicating was one of the strategies I considered for this.
-But since it is a lot more work and will not perform as well as a
-simple sweep, I opted for the simple thing.  Which turned out to
-be pretty complex anyway.  You have to close all the same nasty
-races but with a considerably more complex base algorithm.  I think
-that better wait for version 2.0.
-
-By the way, I could use a hand debugging this thing.
-
-Regards,
-
-Daniel
