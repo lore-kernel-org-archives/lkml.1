@@ -1,82 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYCKIMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYCKIM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbYCKIMH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 04:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYCKILy
+	id S1753853AbYCKIM1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 04:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYCKIMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 04:11:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:35946 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYCKILw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 04:11:52 -0400
-Date: Tue, 11 Mar 2008 09:11:32 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, devzero@web.de,
-       mingo@elte.hu
-Subject: Re: Kernel Linux 2.6.23.16 hangs when run updatedb
-In-Reply-To: <47D54A8B.2020303@mandic.com.br>
-Message-ID: <alpine.LFD.1.00.0803110803280.3781@apollo.tec.linutronix.de>
-References: <47D54A8B.2020303@mandic.com.br>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 11 Mar 2008 04:12:03 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:6214
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752008AbYCKIL6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 04:11:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArsBAIfb1Ud8qMER/2dsb2JhbAAIqyaCBw
+X-IronPort-AV: E=Sophos;i="4.25,479,1199631600"; 
+   d="scan'208";a="287932174"
+Subject: [PATCH: RESEND] UIO:  UIO interface to the SMX Cryptengine
+From: Ben Nizette <bn@niasdigital.com>
+To: gregkh@suse.de
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, hjk@linutronix.de,
+       Ben Nizette <bn@niasdigital.com>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Tue, 11 Mar 2008 19:17:24 +1100
+Message-Id: <1205223444.3893.4.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008, Renato S. Yamane wrote:
-> > > How can I fix this? Is safe run reiserfsck?
-> > 
-> > 
-> > I think he's wrong.
-> > 
-> > Looking at the call trace, the BUG happens during an interrupt.  It
-> > could be a coincidence that the interrupt happened during this
-> > particular system call.
-> > 
-> > It looks like a timer callback has been corrupted / set to an invalid
-> > value.  The BUG is due to accessing the invalid address 61060fe0
-> > within enqueue_hrtimer, and the EIP (instruction pointer) is also
-> > equal to 61060fe0.  This would be consistent with the source code of
-> > enqueue_hrtimer.  It's not an obvious reiserfs issue.
+[Resend, apologies, linewrap death >( ] 
 
-It's pretty inconsistent with the source code of enqueue_hrtimer().
+Implement a UIO interface for the SMX Cryptengine.
 
-The only possibility to have a callback from enqueue_hrtimer() is in
-hrtimer_enqueue_reprogram() in the HRTIMER_CB_IRQSAFE_NO_RESTART
-case. Such timers can not be requeued in interrupt context, hence the
-name HRTIMER_CB_IRQSAFE_NO_RESTART :)
+The Cryptengine found on the Nias Digital SMX board is best suited
+for a UIO interface.  It is not wired in to the cryptographic API
+as the engine handles it's own keys, algorithms, everything.  All
+that we know about is that if there's room in the buffer, you can
+write data to it and when there's data ready, you read it out again.
 
-Also in hrtimer_interrupt context, hrtimer_enqueue() is called with
-reprogram = 0, which ensures that we do not call
-hrtimer_enqueue_reprogram().
+There isn't necessarily even any direct correlation between data
+going in and data coming out again, the engine may consume or
+generate data all on its own.
 
-> > I don't know how to find out where this corruption is happening, but
-> > it's worth asking the hrtimers people.
+This driver is for proprietary hardware but we're always told to
+submit the drivers anyway.  So here you are.  :-)
+
+Signed-Off-By: Ben Nizette <bn@niasdigital.com>
+---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2cdb591..480fd44 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3554,6 +3554,11 @@ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
  
-Let's gather some more information. 
++SMX UIO Interface
++P:	Ben Nizette
++M:	bn@niasdigital.com
++S:	Maintained
++
+ SOFTMAC LAYER (IEEE 802.11)
+ P:	Daniel Drake
+ M:	dsd@gentoo.org
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index b778ed7..e1ab43b 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -26,4 +26,12 @@ config UIO_CIF
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called uio_cif.
+ 
++config UIO_SMX
++	tristate "SMX cryptengine UIO interface"
++	depends on UIO
++	default n
++	help
++	  Userspace IO interface to the Cryptography engine found on the
++	  Nias Digital SMX boards.  If you compile this as a module, it
++	  will be called uio_smx.
+ endmenu
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 7fecfb4..18c4566 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -1,2 +1,3 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
++obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+diff --git a/drivers/uio/uio_smx.c b/drivers/uio/uio_smx.c
+new file mode 100644
+index 0000000..c2e65bf
+--- /dev/null
++++ b/drivers/uio/uio_smx.c
+@@ -0,0 +1,114 @@
++/*
++ * UIO SMX Cryptengine driver.
++ *
++ * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++
++#include <asm/io.h>
++
++#define SMX_CSR  0x00000000
++#define SMX_EnD  0x00000001
++#define SMX_RUN  0x00000002
++#define SMX_DRDY 0x00000004
++#define SMX_ERR  0x00000008
++
++static irqreturn_t smx_handler(int irq, struct uio_info *dev_info)
++{
++	void __iomem *csr = dev_info->mem[0].internal_addr + SMX_CSR;
++
++	u32 status = ioread32(csr);
++
++	/* Disable interrupt */
++	iowrite32(status & ~SMX_DRDY, csr);
++	return IRQ_HANDLED;
++}
++
++static int __devinit smx_ce_probe(struct platform_device *dev)
++{
++	struct uio_info *info;
++	struct resource *regs;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!regs)
++		goto out_free;
++
++	info->mem[0].addr = regs->start;
++	if (!info->mem[0].addr)
++		goto out_free;
++	info->mem[0].internal_addr = ioremap(regs->start, regs->end - regs->start);
++	if (!info->mem[0].internal_addr)
++		goto out_free;
++
++	info->mem[0].size = regs->end - regs->start;
++	info->mem[0].memtype = UIO_MEM_PHYS;
++
++	info->name = "smx-ce";
++	info->version = "0.03";
++	info->irq = platform_get_irq(dev, 0);
++	info->irq_flags = 0;
++	info->handler = smx_handler;
++
++	platform_set_drvdata(dev, info);
++
++	if (uio_register_device(&dev->dev, info))
++		goto out_unmap;
++
++	return 0;
++out_unmap:
++	iounmap(info->mem[0].internal_addr);
++out_free:
++	kfree(info);
++
++	return -ENODEV;
++}
++
++static int __devexit smx_ce_remove(struct platform_device *dev)
++{
++	struct uio_info *info = platform_get_drvdata(dev);
++
++	uio_unregister_device(info);
++	platform_set_drvdata(dev, NULL);
++	iounmap(info->mem[0].internal_addr);
++
++	kfree (info);
++
++	return 0;
++}
++
++static struct platform_driver smx_ce_driver = {
++	.probe		= smx_ce_probe,
++	.remove		= __devexit_p(smx_ce_remove),
++	.driver		= {
++		.name	= "smx-ce",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init smx_ce_init_module(void)
++{
++	return platform_driver_register(&smx_ce_driver);
++}
++module_init(smx_ce_init_module);
++
++static void __exit smx_ce_exit_module(void)
++{
++	platform_driver_unregister(&smx_ce_driver);
++}
++module_exit(smx_ce_exit_module);
++
++MODULE_LICENSE("GPL V2");
++MODULE_AUTHOR("Ben Nizette <bn@niasdigital.com>");
 
-Renato, some questions:
-
-1) is this fully reproducible with updatedb ?
-
-2) are you sure that this is the first stacktrace you captured, there
-might be some BUG before that which scrolled out of sight. Any chance
-to use a serial console ?
-
-3) Can you please recompile the kernel with CONFIF_DEBUG_INFO set
-and then run the following addresses from the backtrace through
-addr2line with the new vmlinux:
-
-# addr2line -e vmlinux 0xc013dad9 0xc0107c3b
-
-Please provide the output.
-
-4) Looking at your .config it seems you have some more patches applied
-aside of the .16 stable. Can you please upload a full patch queue
-somewhere ?
-
-Thanks,
-
-	tglx
