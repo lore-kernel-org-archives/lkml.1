@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYCKCcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbYCKCh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbYCKCcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 22:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYCKCcH
+	id S1756238AbYCKCh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 22:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYCKChS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 22:32:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:58164 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754150AbYCKCcF (ORCPT
+	Mon, 10 Mar 2008 22:37:18 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:1374 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750699AbYCKChP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 22:32:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=sDR3Qo8vXlY4RourHqJE3Bessg5jtWY0u7YWykmDyUxbxmGZ04qUhqTSAG2vlErEWxVcppcFX/U/eKB9awstUWFTcAfQI6e3hfidMIgGCOsSxIbmSmrGxHyUKRySVGuF+m5BTiKUVMvMqJn5Wv2AihaLO7wsW7vlFWKVTegHIzU=
-Message-ID: <47D5EF16.8080509@gmail.com>
-Date: Tue, 11 Mar 2008 11:31:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 10 Mar 2008 22:37:15 -0400
+Date: Mon, 10 Mar 2008 22:37:14 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.25-rc3 sometimes reboot with usb init(probe?) slowly
+In-Reply-To: <20080311021314.GA3350@darkstar.te-china.tietoenator.com>
+Message-ID: <Pine.LNX.4.44L0.0803102235110.30713-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [Regression] 2.6.25-rc4-git3: Handling of audio CDs broken on
- pata_ali
-References: <200803082246.47987.rjw@sisk.pl> <47D4E78A.10507@gmail.com> <47D523A1.7070808@gmail.com> <200803102236.30790.rjw@sisk.pl>
-In-Reply-To: <200803102236.30790.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 10 of March 2008, Tejun Heo wrote:
->> Tejun Heo wrote:
->>> Tejun Heo wrote:
->>>> Rafael J. Wysocki wrote:
->>>>>>> where ata1 is:
->>>>>>>
->>>>>>> scsi0 : pata_ali
->>>>>>> scsi1 : pata_ali
->>>>>> Oh, is it only with audio CDs? I am unable to use DVD on pata_ali in DMA at
->>>>>> all. Have you tried to disable ATAPI DMA (libata.dma=1)?
->>>>> Data CDs seem to work fine here.
->>>> * Does booting into runlevel 1, putting in an audio cd and running
->>>> cdparanoia give the same result?
->>>>
->>>> * Does setting module parameter libata.force to "1.00:pio4" make any
->>>> difference?
->>> Oh, never mind.  I have a hunch.  I'll report back in a while.
->>>
->> Does the attached patch fix the problem?
+On Tue, 11 Mar 2008, Dave Young wrote:
+
+> Hi,
+> Sometimes (not every time) rebooting will be slow while initilize usb
+> device
 > 
-> Yes, it does.  Please push upstream.
+> This is not limited to 2.6.25-rc3.
+> 
+> Please see the timing issue in following dmesg output:
+> 
+> ---
+...
+> [    9.167129] usbcore: registered new interface driver hiddev
+> [    9.182630] input: Dell Dell USB Keyboard as /devices/pci0000:00/0000:00:1d.1/usb3/3-2/3-2:1.0/input/input0
+> [   64.677054] usb 1-1: USB disconnect, address 2
+> [   64.677054] usb 1-1.3: USB disconnect, address 5
+> [   64.678008] input: USB HID v1.10 Keyboard [Dell Dell USB Keyboard] on usb-0000:00:1d.1-2
+> [   64.693697] input: USB Optical Mouse as /devices/pci0000:00/0000:00:1d.2/usb4/4-1/4-1:1.0/input/input1
+> [   64.713662] input: USB HID v1.11 Mouse [USB Optical Mouse] on usb-0000:00:1d.2-1
+> [   64.713676] usbcore: registered new interface driver usbhid
+> [   64.713676] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
 
-Thanks for testing.  Will do.
+More information is needed.  You should turn on CONFIG_USB_DEBUG.
 
+Alan Stern
 
--- 
-tejun
