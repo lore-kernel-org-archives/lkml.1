@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYCKU2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYCKU2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbYCKU2d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 16:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYCKU20
+	id S1754202AbYCKU2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 16:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYCKU20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 11 Mar 2008 16:28:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41529 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbYCKU2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from anyanka.rfc1149.net ([81.56.47.149]:56682 "EHLO
+	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752430AbYCKU2Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Mar 2008 16:28:25 -0400
+Date: Tue, 11 Mar 2008 21:28:21 +0100
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>, junker@anduras.de,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: w83697hf_wdt.c stops watchdog on load
+References: <47D564CA.1040507@draigBrady.com> <2008-03-10-18-48-16+trackit+sam@rfc1149.net> <47D5C1DC.6080808@draigBrady.com> <20080311202214.GA7505@infomag.infomag.iguana.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] signals: document CLD_CONTINUED notification mechanics
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 11 March 2008 21:36:06 +0300 <20080311183606.GE586@tv-sign.ru>
-References: <20080309215338.GA2296@tv-sign.ru>
-	<20080311021741.A863826F991@magilla.localdomain>
-	<20080311183606.GE586@tv-sign.ru>
-X-Shopping-List: (1) Ferocious faceers
-   (2) Tempestuous photogenic mounds
-   (3) Ruminating contraception geese
-   (4) Repentant face witches
-Message-Id: <20080311202817.3919F26F991@magilla.localdomain>
-Date: Tue, 11 Mar 2008 13:28:17 -0700 (PDT)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080311202214.GA7505@infomag.infomag.iguana.be>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Samuel Tardieu <sam@rfc1149.net>
+Organization: RFC 1149 (see http://www.rfc1149.net/)
+X-WWW: http://www.rfc1149.net/sam
+X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
+X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
+Message-Id: <2008-03-11-21-28-21+trackit+sam@rfc1149.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, I know. But the latter needs an extra line! [...]
+On 11/03, Wim Van Sebroeck wrote:
 
-It doesn't matter what your taste is, or mine.  That's why we have
-conventions.  We just follow them and don't spend time grousing about
-trivia.  The worst thing for a reader is to have the flow broken up by
-inconsistent style.  New code follows the conventions.  Old code
-(eventually) gets fixed up to follow the conventions.  End of story
-(and a deathly dull one it is at that).
+| > > Isn't it a two-edged sword?
+| > 
+| > True, but one should be able to set things up so that there is no race.
+| > I.E. if you add the autodisable, it should only be done as an option.
+| > Best have it =no by default, but as least one could turn this off.
+| 
+| In my opinion it should be the other way around: the default behaviour is to
+| stop the watchdog and to let userspace (the watchdog-daemon) control the
+| watchdog. So if we add a module parameter to take over the watchdog's
+| bios-setting, then the default behaviour should be to stop the watchdog and
+| add an option that takes the value from the bios.
 
+Hi Wim.
 
-Thanks,
-Roland
+That was my intent: disable the watchdog by default, and add an option
+not to disable it (let it untouched, so getting the BIOS setting) at
+module initialization, as Pádraig request is totally reasonable.
+
+  Sam
+
