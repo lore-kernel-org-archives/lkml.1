@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYCKSrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYCKSsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbYCKSrl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYCKSrc
+	id S1755154AbYCKSsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbYCKSsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:47:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49013 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYCKSrb (ORCPT
+	Tue, 11 Mar 2008 14:48:03 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:60261 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751617AbYCKSsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:47:31 -0400
-Date: Tue, 11 Mar 2008 19:49:26 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [0/13] General DMA zone rework
-Message-ID: <20080311184926.GI27593@one.firstfloor.org>
-References: <200803071007.493903088@firstfloor.org> <20080307175148.3a49d8d3@mandriva.com.br> <20080308004654.GQ7365@one.firstfloor.org> <20080310150316.752e4489@mandriva.com.br> <20080310180843.GC28780@one.firstfloor.org> <20080311142624.1dbd3af5@mandriva.com.br> <20080311173540.GG27593@one.firstfloor.org> <20080311150048.4376c73a@mandriva.com.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311150048.4376c73a@mandriva.com.br>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 11 Mar 2008 14:48:00 -0400
+Message-ID: <47D6D3CC.5070705@linux.vnet.ibm.com>
+Date: Wed, 12 Mar 2008 00:17:40 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs
+ (v2)
+References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain> <Pine.LNX.4.64.0803111230410.15328@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0803111230410.15328@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> | Oops. Thanks. I'll double check that. mask allocator indeed doesn't
-> | handle __GFP_COMP and nobody should be passing that into dma_alloc_coherent
-> | anyways. But the bug you got was for the small size wasn't it?
+Hugh Dickins wrote:
+> On Tue, 11 Mar 2008, Balbir Singh wrote:
+>> Move the memory controller data structure page_cgroup to its own slab cache.
+>> It saves space on the system, allocations are not necessarily pushed to order
+>> of 2 and should provide performance benefits. Users who disable the memory
+>> controller can also double check that the memory controller is not allocating
+>> page_cgroup's.
+>>
+>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 > 
->  No, it triggers the BUG_ON() which checks the gfp, not the one
-> which checks MASK_MIN_SIZE.
-
-I see. I misdiagnosed your original problem then. But fixing the 
-size < 16 bytes case was a good idea anyways, someone else would
-have triggered that.
-
+> I certainly approve of giving page_cgroups their own kmem_cache
+> (and agree with Kame that it was overkill for the zones).
 > 
->  On the other hand I'm not sure whether it does the right thing
-> (ie, pass size in bytes instead of order) it does:
 
+Thanks, yes, I agreed with Kame as well.
+
+> But I don't agree with the SLAB_HWCACHE_ALIGN you've slipped into
+> this version.  That'll be wasting a lot of (all? more than?) the
+> space you're trying to save with a kmem_cache, won't it?  Let me
+> talk about that separately, in reply to the mail where you report
+> the numbers.
 > 
-> """
-> pg = get_order(size);
-> [...]
-> res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
 
-With the mask allocator it can be changed to pass size directly
-and save some memory. Before that it didn't make any difference.
+I slipped in the SLAB_HWCACHE_ALIGN to reduce page cgroup cache contention. Yes
+you are right, we do lose out on space due to the extra alignment. My test
+results (lmbench) on kmalloc, slub and slab are not very conclusive about
+performance. SLUB had the best results w.r.t protection faults and context switches.
 
-Can you perhaps send me a complete patch fixing that for sound and the 
-__GFP_COMP with description and Signed-off-by etc.? I can add it to my 
-patchkit then and you would be correctly attributed. Otherwise I can do it 
-myself too if you prefer. I'll also do a grep over the tree for other
-such bogus __GFP_COMP users. That was an issue I hadn't considered before.
+> Are you proposing this page_cgroup_cache mod for 2.6.25 or for 2.6.26?
 
-> if (res != NULL)
-> 	inc_snd_pages(pg);
-> """
+I am OK with any version as long as we can get good feedback. I suspect the
+feature will be useful for 2.6.25.
+
+> I ask because I want to build upon it to fix up some GFP_ flag issues:
+> I think we end up claiming the page_cgroups are __GFP_MOVABLE when they
+> should be called __GFP_RECLAIMABLE; but I don't know how seriously we
+> take MOVABLE/RECLAIMABLE discrepancies at present.
 > 
->  Maybe it could be changed to:
 
-Agreed.
+That's a very good question. I am not sure about the correct answer to that
+myself at the moment.
 
--Andi
+> There's a patch I'd also like to build upon from Christoph in -mm
+> (remove-set_migrateflags.patch), which sheds light on a similar issue
+> with radix_tree_nodes).  It's importance is again dependent on how
+> seriously we're taking MOVABLE/RECLAIMABLE discrepancies.
+> 
 
+I'll look at Christoph's patch and see what it addresses to understand the
+MOVABLE/RECLAIMABLE discrepancy better.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
