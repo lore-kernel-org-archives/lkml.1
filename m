@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYCKKDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYCKKEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYCKKDN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYCKKDD
+	id S1755192AbYCKKEe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYCKKE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:03:03 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:51702 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYCKKDB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:03:01 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [PATCH] kvm: provide kvm.h for all architecture: fixes headers_install
-Date: Tue, 11 Mar 2008 11:02:51 +0100
-User-Agent: KMail/1.9.7
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Avi Kivity <avi@qumranet.com>, Sam Ravnborg <sam@ravnborg.org>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>, David Howells <dhowells@redhat.com>,
-       linux-arch@vger.kernel.org, mm-commits@vger.kernel.org
-References: <200803071326.06682.borntraeger@de.ibm.com> <200803110810.49759.borntraeger@de.ibm.com> <je7ig9hag4.fsf@sykes.suse.de>
-In-Reply-To: <je7ig9hag4.fsf@sykes.suse.de>
+	Tue, 11 Mar 2008 06:04:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47824 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751242AbYCKKE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 06:04:26 -0400
+Date: Tue, 11 Mar 2008 11:03:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] kgdb: Add kgdb internal test suite
+Message-ID: <20080311100359.GV25110@elte.hu>
+References: <1204929257-9967-1-git-send-email-jason.wessel@windriver.com> <1204929257-9967-2-git-send-email-jason.wessel@windriver.com> <1204929257-9967-3-git-send-email-jason.wessel@windriver.com> <20080310074047.GA16906@elte.hu> <47D53E09.9030107@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803111102.51653.borntraeger@de.ibm.com>
+In-Reply-To: <47D53E09.9030107@windriver.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0013]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 11. März 2008 schrieb Andreas Schwab:
-> Christian Borntraeger <borntraeger@de.ibm.com> writes:
+
+* Jason Wessel <jason.wessel@windriver.com> wrote:
+
+> > please also add a Kconfig way to activate them and let them be 
+> > executed automatically upon bootup. If any test fails it should 
+> > generate a WARN_ON() type of message (for automated testers to 
+> > find).
 > 
-> >  include/asm-alpha/kvm.h        |    6 ++++++
-> 
-> Can't you put it in asm-generic?
+> Easy enough.  I folded the attached patch into the original kgdbts 
+> patch in the for_ingo branch.
 
-I dont think so. The generic part is in include/linux/kvm.h. asm/kvm.h is 
-populated by each architecture which gets kvm support with arch specfic 
-definitions. x86 has support and s390, powerpc and ia64 are currently know 
-to work on ports. 
+great, thanks!
 
-
-Christian
+	Ingo
