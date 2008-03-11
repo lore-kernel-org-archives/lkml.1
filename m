@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYCKORa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbYCKOTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYCKORa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 10:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbYCKORV
+	id S1756342AbYCKOTi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 10:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYCKOTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 10:17:21 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:63722 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751819AbYCKORU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 10:17:20 -0400
-Message-ID: <47D6946C.2050407@trash.net>
-Date: Tue, 11 Mar 2008 15:17:16 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Tue, 11 Mar 2008 10:19:30 -0400
+Received: from lixom.net ([66.141.50.11]:48338 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbYCKOTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 10:19:30 -0400
+Date: Tue, 11 Mar 2008 09:25:45 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dan.j.williams@intel.com, shannon.nelson@intel.com,
+       linux-kernel@vger.kernel.org, pasemi-linux@ozlabs.org,
+       linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
+	engine
+Message-ID: <20080311142545.GA18843@lixom.net>
+References: <20080306233900.GA3969@lixom.net> <20080311000619.ba39311f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ram Pai <linuxram@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       davem@davemloft.net
-Subject: Re: [RFC PATCH] ipv4: compilation error fix with CONFIG_PROC_FS	disabled
-References: <1205172664.15345.96.camel@ram.us.ibm.com>
-In-Reply-To: <1205172664.15345.96.camel@ram.us.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------030503000406090802030803"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311000619.ba39311f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030503000406090802030803
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Mar 11, 2008 at 12:06:19AM -0700, Andrew Morton wrote:
+> On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
+> 
+> > pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
+> >     
+> > First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
+> > platform-specific functions to allocate channels, etc.
+> 
+> Applied this on Paul's latest and powerpc allmodconfig goes boom.
 
-Ram Pai wrote:
-> Fixes compilation errors while compiling the kernel with CONFIG_PROC_FS
-> disabled.
+It's dependent on my latest pull request of pasemi.git for-2.6.26 that
+Paul hasn't pulled/pushed yet.
+
+> drivers/dma/pasemi_dma.c: In function `pasemi_dma_alloc_chan_resources':
+> drivers/dma/pasemi_dma.c:152: error: `PAS_DMA_TXCHAN_CFG_TY_COPY' undeclared (first use in this function)
+> drivers/dma/pasemi_dma.c:152: error: (Each undeclared identifier is reported only once
+> drivers/dma/pasemi_dma.c:152: error: for each function it appears in.)
+> drivers/dma/pasemi_dma.c:154: error: `PAS_DMA_TXCHAN_CFG_LPDQ' undeclared (first use in this function)
+> drivers/dma/pasemi_dma.c:155: error: `PAS_DMA_TXCHAN_CFG_LPSQ' undeclared (first use in this function)
+> drivers/dma/pasemi_dma.c: In function `pasemi_dma_probe':
+> drivers/dma/pasemi_dma.c:394: error: structure has no member named `device_dependency_added'
+
+.. and that one is caused by recent changes in async_tx.git. I was
+waiting on other review comments from the DMA maintainers before
+resubmitting; timer has expired though and I'll do it anyway today.
+
+> Also this driver from git-md-accel is pretty sick:
+> 
+> 
+> drivers/dma/fsldma.c:439: warning: comparison of distinct pointer types lacks a cast
+> drivers/dma/fsldma.c: In function `fsl_chan_xfer_ld_queue':
+> drivers/dma/fsldma.c:584: warning: long long unsigned int format, dma_addr_t arg (arg 4)
+> drivers/dma/fsldma.c: In function `fsl_dma_chan_do_interrupt':
+> drivers/dma/fsldma.c:661: warning: unsigned int format, different type arg (arg 5)
+> drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 4)
+> drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 5)
+> drivers/dma/fsldma.c:694: warning: unsigned int format, different type arg (arg 4)
+> drivers/dma/fsldma.c: In function `fsl_dma_self_test':
+> drivers/dma/fsldma.c:833: warning: int format, different type arg (arg 5)
+> drivers/dma/fsldma.c: In function `of_fsl_dma_probe':
+> drivers/dma/fsldma.c:1003: warning: unsigned int format, different type arg (arg 5)
+> drivers/dma/fsldma.c: At top level:
+> drivers/dma/fsldma.c:723: warning: 'fsl_dma_callback_test' defined but not used
+
+Yeah, Zhang Wei posted a patch for that on lkml yesterday.
 
 
-Please always include the compiler message when fixing compilation
-warnings or errors.
-
-This one is already fixed differently in current -git:
-
-
-
---------------030503000406090802030803
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-commit cc8274f50f2ad9a97a837451f63a0a3e65f7f490
-Author: Li Zefan <lizf@cn.fujitsu.com>
-Date:   Tue Feb 5 02:54:16 2008 -0800
-
-    [IPV4]: Fix compile error building without CONFIG_FS_PROC
-    
-    compile error building without CONFIG_FS_PROC:
-    
-    net/ipv4/fib_frontend.c: In function 'fib_net_init':
-    net/ipv4/fib_frontend.c:1032: error: implicit declaration of function 'fib_proc_
-    init'
-    net/ipv4/fib_frontend.c: In function 'fib_net_exit':
-    net/ipv4/fib_frontend.c:1047: error: implicit declaration of function 'fib_proc_
-    exit'
-    
-    Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/net/ip_fib.h b/include/net/ip_fib.h
-index 90d1175..8b12667 100644
---- a/include/net/ip_fib.h
-+++ b/include/net/ip_fib.h
-@@ -266,6 +266,14 @@ static inline void fib_res_put(struct fib_result *res)
- #ifdef CONFIG_PROC_FS
- extern int __net_init  fib_proc_init(struct net *net);
- extern void __net_exit fib_proc_exit(struct net *net);
-+#else
-+static inline int fib_proc_init(struct net *net)
-+{
-+	return 0;
-+}
-+static inline void fib_proc_exit(struct net *net)
-+{
-+}
- #endif
- 
- #endif  /* _NET_FIB_H */
-
---------------030503000406090802030803--
+-Olof
