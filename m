@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbYCKXK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbYCKXMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbYCKXK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYCKXKq
+	id S1751961AbYCKXMZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbYCKXMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:10:46 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:2967 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbYCKXKp (ORCPT
+	Tue, 11 Mar 2008 19:12:18 -0400
+Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:53731
+	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750765AbYCKXMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:10:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fbJh5FOvNukmA7q07ImyeBDgOcTnroJekm5QwugVw66j/198O03c6s8Add9jwbvWkz22t7zbO6MWNYtdUrTM98jktyXPqbMjwGcYCXLUr3bTwOPYpg3n6U2imnOFqlYRJuXTX3BTRj1XFBrJKS0Vsr1eNRRmzdoJf2RTPMqR2PA=
-Message-ID: <7c86c4470803111610s4a017835s8998d72e44acad3f@mail.gmail.com>
-Date: Tue, 11 Mar 2008 16:10:41 -0700
-From: "stephane eranian" <eranian@googlemail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [PATCH 3/3] perfmon x86 infra(take 2): add AMD Northbridge PCI Id
-Cc: linux-kernel@vger.kernel.org, "Robert Richter" <robert.richter@amd.com>
-In-Reply-To: <20080311171216.GB26410@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Mar 2008 19:12:17 -0400
+X-Authority-Analysis: v=1.0 c=1 a=w_3Tt_6PZGEA:10 a=VwQbUJbxAAAA:8
+ a=DdFyJILD2Mcnk9e7cMYA:9 a=az6IGoXJtmdHbICsJ78A:7
+ a=EWmNNMogD7N3s8HUsiflBXNTiEIA:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
+Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
+From: Nicholas Miell <nmiell@comcast.net>
+To: Cyrus Massoumi <cyrusm@gmx.net>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, "Molnar, Ingo" <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47D6FAD0.1020608@gmx.net>
+References: <200803111749.29143.nickpiggin@yahoo.com.au>
+	 <1205269674.12854.16.camel@entropy>  <47D6FAD0.1020608@gmx.net>
+Content-Type: text/plain
+Date: Tue, 11 Mar 2008 16:12:12 -0700
+Message-Id: <1205277132.12854.19.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8.0.njm.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7c86c4470803071305x6b575dxa9f7b0588abfd4b@mail.gmail.com>
-	 <7c86c4470803110950p54349250pbe29d4122912a2f6@mail.gmail.com>
-	 <20080311171216.GB26410@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
 
+On Tue, 2008-03-11 at 22:34 +0100, Cyrus Massoumi wrote:
+> Nicholas Miell wrote:
+>
+> > (Also, ignoring MySQL because it's a terrible piece of software at least
+> > when regarding it's scalability is a bad idea. It's the M in LAMP, it
+> > has a huge user base, and FreeBSD manages to outperform Linux with the
+> > same unscalable piece of software.)
+> 
+> Did you actually see this? 
+> http://www.kernel.org/pub/linux/kernel/people/npiggin/sysbench/
+> 
+> FreeBSD does not outperform Linux, it's actually a bit faster according 
+> to Nick's tests.
 
-On Tue, Mar 11, 2008 at 10:12 AM, Greg KH <gregkh@suse.de> wrote:
-> On Tue, Mar 11, 2008 at 09:50:36AM -0700, stephane eranian wrote:
->  > Greg,
->  >
->  > Ingo suggested I send ou the following patch which adds a PCI ID
->  > for AMD Barcelona Northbridge. This is used by the perfmon initialization
->  > code on this platform.
->  >
->  > Please apply to your tree.
->
->  We are trying to not add pci ids that are only used in one place within
->  the kernel.  Why can't the perfomon init code just add this value to
->  their code?
->
-I thought you would want a central place where all PCI ids are defined.
-But if you prefer not, then so be it. I'll put it into the perfmon code.
+I am aware of those results, but in the mail I was responding to, Nick
+Piggin said the following:
 
->  Or make this part of the perfmon patch itself, if you really must have
->  it.  No need to add it to the kernel if there are no in-tree users,
->  right?
->
-I am starting to push perfmon patches upstream. So you should expect
-patches which  *currently* have no in-tree users. You have to start from
-somewhere, right?
+> The problem with MySQL contention means that if the scheduler
+> unluckily chooses to deschedule a lock holder, then you can get
+> idle time building up on other cores and you can get context switch
+> cascades as things all pile up onto this heavily contended lock. As
+> such, it means MySQL is not an ideal candidate for looking at
+> performance behaviour. I discounted the relatively worse scaling of
+> MySQL with 2.6.25-rc (than 2.6.22) as such an effect.
+
+which I interpreted to mean that MySQL performs worse on 2.6.23+ than on
+2.6.22 but for some reason this doesn't matter.
+
+-- 
+Nicholas Miell <nmiell@comcast.net>
+
