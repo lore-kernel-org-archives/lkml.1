@@ -1,183 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYCLADf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbYCLAEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbYCLADf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 20:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYCLACn
+	id S1753503AbYCLAEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 20:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYCLAEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 20:02:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37145 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbYCLACm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 20:02:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: [PATCH 3/3] PM: make wakeup flags available whenever CONFIG_PM is set
-Date: Wed, 12 Mar 2008 01:01:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>,
+	Tue, 11 Mar 2008 20:04:14 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:36856 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbYCLAEN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 20:04:13 -0400
+Date: Tue, 11 Mar 2008 13:05:44 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Pavel Emelyanov <xemul@openvz.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200803120055.25885.rjw@sisk.pl>
-In-Reply-To: <200803120055.25885.rjw@sisk.pl>
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs
+ (v2)
+In-Reply-To: <47D66865.1080508@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0803111256110.18261@blonde.site>
+References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain>
+ <47D63E9D.70500@openvz.org> <47D63FB1.7040502@linux.vnet.ibm.com>
+ <47D6443D.9000904@openvz.org> <47D66865.1080508@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803120101.48805.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
+On Tue, 11 Mar 2008, Balbir Singh wrote:
+> 
+> On my 64 bit powerpc system (structure size could be different on other systems)
+> 
+> 1. sizeof page_cgroup is 40 bytes
+>    which means kmalloc will allocate 64 bytes
+> 2. With 4K pagesize SLAB with HWCACHE_ALIGN, 59 objects are packed per slab
+> 3. With SLUB the value is 102 per slab
 
-The various wakeup flags and their accessor macros in struct
-dev_pm_info should be available whenever CONFIG_PM is enabled, not
-just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
-be configurable for runtime power management.  This patch (as1056)
-fixes the oversight.
+I expect you got those numbers with 2.6.25-rc4?  Towards the end of -rc5
+there's a patch from Nick to make SLUB's treatment of HWCACHE_ALIGN the
+same as SLAB's, so I expect you'd be back to a similar poor density with
+SLUB too.  (But I'm replying without actually testing it out myself.)
 
-[rjw: rebased the patch on top of the previous two.]
+I think you'd need a strong reason to choose HWCACHE_ALIGN for these.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-CC: David Brownell <david-b@pacbell.net>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c  |    2 -
- drivers/base/power/sysfs.c |    2 +
- include/linux/pm.h         |   64 +++++++++++++++++++++++++--------------------
- 3 files changed, 38 insertions(+), 30 deletions(-)
+Consider: the (normal configuration) x86_64 struct page size was 56
+bytes for a long time (and still is without MEM_RES_CTLR), but we've
+never inserted padding to make that a round 64 bytes (and they would
+benefit additionally from some simpler arithmetic, not the case with
+page_cgroups).  Though it's good to avoid unnecessary sharing and
+multiple cacheline accesses, it's not so good as to justify almost
+doubling the size of a very very common structure.  I think.
 
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -183,9 +183,9 @@ typedef struct pm_message {
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned		can_wakeup:1;
-+	unsigned		should_wakeup:1;
- 	bool			sleeping:1;	/* Owned by the PM core */
- #ifdef	CONFIG_PM_SLEEP
--	unsigned		should_wakeup:1;
- 	struct list_head	entry;
- #endif
- };
-@@ -198,11 +198,6 @@ extern void device_resume(void);
- extern int device_suspend(pm_message_t state);
- extern int device_prepare_suspend(pm_message_t state);
- 
--#define device_set_wakeup_enable(dev,val) \
--	((dev)->power.should_wakeup = !!(val))
--#define device_may_wakeup(dev) \
--	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
--
- extern void __suspend_report_result(const char *function, void *fn, int ret);
- 
- #define suspend_report_result(fn, ret)					\
-@@ -210,6 +205,35 @@ extern void __suspend_report_result(cons
- 		__suspend_report_result(__FUNCTION__, fn, ret);		\
- 	} while (0)
- 
-+#else /* !CONFIG_PM_SLEEP */
-+
-+static inline int device_suspend(pm_message_t state)
-+{
-+	return 0;
-+}
-+
-+#define suspend_report_result(fn, ret) 		do {} while (0)
-+
-+#endif /* !CONFIG_PM_SLEEP */
-+
-+#ifdef CONFIG_PM
-+
-+/* changes to device_may_wakeup take effect on the next pm state change.
-+ * by default, devices should wakeup if they can.
-+ */
-+#define device_can_wakeup(dev) \
-+	((dev)->power.can_wakeup)
-+#define device_init_wakeup(dev,val) \
-+	do { \
-+		device_can_wakeup(dev) = !!(val); \
-+		device_set_wakeup_enable(dev,val); \
-+	} while(0)
-+
-+#define device_set_wakeup_enable(dev,val) \
-+	((dev)->power.should_wakeup = !!(val))
-+#define device_may_wakeup(dev) \
-+	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
-+
- /*
-  * Platform hook to activate device wakeup capability, if that's not already
-  * handled by enable_irq_wake() etc.
-@@ -224,35 +248,19 @@ static inline int call_platform_enable_w
- 	return 0;
- }
- 
--#else /* !CONFIG_PM_SLEEP */
--
--static inline int device_suspend(pm_message_t state)
--{
--	return 0;
--}
--
--#define device_set_wakeup_enable(dev,val)	do{}while(0)
--#define device_may_wakeup(dev)			(0)
-+#else /* !CONFIG_PM */
- 
--#define suspend_report_result(fn, ret) do { } while (0)
-+#define device_can_wakeup(dev)			0
-+#define device_init_wakeup(dev,val)		do {} while (0)
-+#define device_set_wakeup_enable(dev,val)	do {} while (0)
-+#define device_may_wakeup(dev)			0
- 
- static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
- {
- 	return 0;
- }
- 
--#endif /* !CONFIG_PM_SLEEP */
--
--/* changes to device_may_wakeup take effect on the next pm state change.
-- * by default, devices should wakeup if they can.
-- */
--#define device_can_wakeup(dev) \
--	((dev)->power.can_wakeup)
--#define device_init_wakeup(dev,val) \
--	do { \
--		device_can_wakeup(dev) = !!(val); \
--		device_set_wakeup_enable(dev,val); \
--	} while(0)
-+#endif /* !CONFIG_PM */
- 
- /*
-  * Global Power Management flags
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
- /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
- static bool all_sleeping;
- 
--int (*platform_enable_wakeup)(struct device *dev, int is_on);
--
- /**
-  *	device_pm_add - add a device to the list of active devices
-  *	@dev:	Device to be added to the list
-Index: linux-2.6/drivers/base/power/sysfs.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/sysfs.c
-+++ linux-2.6/drivers/base/power/sysfs.c
-@@ -6,6 +6,8 @@
- #include <linux/string.h>
- #include "power.h"
- 
-+int (*platform_enable_wakeup)(struct device *dev, int is_on);
-+
- 
- /*
-  *	wakeup - Report/change current wakeup option for device
+Hugh
