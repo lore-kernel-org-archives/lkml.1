@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbYCKOTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYCKOba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbYCKOTi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 10:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYCKOTa
+	id S1755487AbYCKOba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 10:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYCKObU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 10:19:30 -0400
-Received: from lixom.net ([66.141.50.11]:48338 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYCKOTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 10:19:30 -0400
-Date: Tue, 11 Mar 2008 09:25:45 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dan.j.williams@intel.com, shannon.nelson@intel.com,
-       linux-kernel@vger.kernel.org, pasemi-linux@ozlabs.org,
-       linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
-	engine
-Message-ID: <20080311142545.GA18843@lixom.net>
-References: <20080306233900.GA3969@lixom.net> <20080311000619.ba39311f.akpm@linux-foundation.org>
+	Tue, 11 Mar 2008 10:31:20 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:57518 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751384AbYCKObT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 10:31:19 -0400
+Message-ID: <47D697B5.80400@o2.pl>
+Date: Tue, 11 Mar 2008 15:31:17 +0100
+From: Artur Skawina <art_k@o2.pl>
+User-Agent: Thunderbird 3.0a1pre (X11/2008030620)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311000619.ba39311f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Daniel Phillips <phillips@phunq.net>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+References: <200803092346.17556.phillips@phunq.net> <20080310092213.7ba878b3@core> <200803102050.40567.phillips@phunq.net> <47D689DF.10408@o2.pl>
+In-Reply-To: <47D689DF.10408@o2.pl>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 12:06:19AM -0700, Andrew Morton wrote:
-> On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
-> 
-> > pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
-> >     
-> > First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
-> > platform-specific functions to allocate channels, etc.
-> 
-> Applied this on Paul's latest and powerpc allmodconfig goes boom.
+Artur Skawina wrote:
+> Now, if you add snapshots to the backing store it suddenly becomes much
+> more interesting -- you no longer need to put so much trust in all the
+> hw. Should the device fail for whatever reason then you just rollback to
+> the last good snapshot upon restart. No corrupted fs, no fsck; you lose
+> some newly written data (that you couldn't recover w/o a snapshot anyway),
+> but can trust the rest of it (assuming you trust the fs and storage hw,
+> but that's no different then w/o ramback).
 
-It's dependent on my latest pull request of pasemi.git for-2.6.26 that
-Paul hasn't pulled/pushed yet.
+or you could keep two devices as backing store, use one and switch to the
+other when the fs is consistent. This could as simple as noticing zero
+dirty data in the ramdisk or, if something is constantly writing to it,
+reacting periodically to some barrier (needs cow/doublebuffering in order
+to not throttle the writer, but you already do this). Means ramdisk can
+be as large as 1/2 the stable storage and a bit more i/o (resyncing after
+switch to the other device), but gives you two copies of the data; one
+stable and one that can be used to recover newer data should you need to.
 
-> drivers/dma/pasemi_dma.c: In function `pasemi_dma_alloc_chan_resources':
-> drivers/dma/pasemi_dma.c:152: error: `PAS_DMA_TXCHAN_CFG_TY_COPY' undeclared (first use in this function)
-> drivers/dma/pasemi_dma.c:152: error: (Each undeclared identifier is reported only once
-> drivers/dma/pasemi_dma.c:152: error: for each function it appears in.)
-> drivers/dma/pasemi_dma.c:154: error: `PAS_DMA_TXCHAN_CFG_LPDQ' undeclared (first use in this function)
-> drivers/dma/pasemi_dma.c:155: error: `PAS_DMA_TXCHAN_CFG_LPSQ' undeclared (first use in this function)
-> drivers/dma/pasemi_dma.c: In function `pasemi_dma_probe':
-> drivers/dma/pasemi_dma.c:394: error: structure has no member named `device_dependency_added'
-
-.. and that one is caused by recent changes in async_tx.git. I was
-waiting on other review comments from the DMA maintainers before
-resubmitting; timer has expired though and I'll do it anyway today.
-
-> Also this driver from git-md-accel is pretty sick:
-> 
-> 
-> drivers/dma/fsldma.c:439: warning: comparison of distinct pointer types lacks a cast
-> drivers/dma/fsldma.c: In function `fsl_chan_xfer_ld_queue':
-> drivers/dma/fsldma.c:584: warning: long long unsigned int format, dma_addr_t arg (arg 4)
-> drivers/dma/fsldma.c: In function `fsl_dma_chan_do_interrupt':
-> drivers/dma/fsldma.c:661: warning: unsigned int format, different type arg (arg 5)
-> drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 4)
-> drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 5)
-> drivers/dma/fsldma.c:694: warning: unsigned int format, different type arg (arg 4)
-> drivers/dma/fsldma.c: In function `fsl_dma_self_test':
-> drivers/dma/fsldma.c:833: warning: int format, different type arg (arg 5)
-> drivers/dma/fsldma.c: In function `of_fsl_dma_probe':
-> drivers/dma/fsldma.c:1003: warning: unsigned int format, different type arg (arg 5)
-> drivers/dma/fsldma.c: At top level:
-> drivers/dma/fsldma.c:723: warning: 'fsl_dma_callback_test' defined but not used
-
-Yeah, Zhang Wei posted a patch for that on lkml yesterday.
-
-
--Olof
+artur
