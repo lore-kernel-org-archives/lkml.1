@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYCKQ5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYCKQ76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbYCKQ5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 12:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYCKQ5M
+	id S1753438AbYCKQ76 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 12:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYCKQ7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 12:57:12 -0400
-Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:56929 "HELO
-	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751480AbYCKQ5K (ORCPT
+	Tue, 11 Mar 2008 12:59:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:52579 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbYCKQ7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 12:57:10 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Date: Tue, 11 Mar 2008 09:56:37 -0700
-User-Agent: KMail/1.9.9
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-       Gary Hade <garyhade@us.ibm.com>, warthog19@eaglescrag.net,
-       kristen.c.accardi@intel.com, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20080229002341.GA21420@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311132800.GC21482@parisc-linux.org>
-In-Reply-To: <20080311132800.GC21482@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 11 Mar 2008 12:59:47 -0400
+Date: Tue, 11 Mar 2008 09:56:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       jgarzik <jgarzik@pobox.com>
+Subject: [PATCH -mm] ne2: needs more 8390 support functions
+Message-Id: <20080311095643.01cd3708.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803110956.37619.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, March 11, 2008 6:28 am Matthew Wilcox wrote:
-> On Tue, Mar 11, 2008 at 10:10:40PM +0900, Kenji Kaneshige wrote:
-> > 1) I checked ACPI spec again and again, but I could not find any
-> >    reason to add Fujitsu servers to quirks list. So I'd like you to
-> >    add HP servers to the quirks list. I'll send the following patches
-> >    followed by this e-mail.
->
-> Alex pointed out that IBM interprets the spec the same way that HP does.
-> Are there any other machines that follow the spec the same way that
-> Fujitsu does?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-So Kenji is arguing that _STA should be called before _SUN (iow that the _SUN 
-value is bogus unless _STA indicates that the slot is powered)?  That seems 
-harder for the user; often times you want to find a slot even if it's powered 
-down & empty (say to add a new card)...  It looks like the current code won't 
-provide a slot name on Fujitsu machines in this case, or am I missing 
-something?
+ne2 (MCA) needs both 8390.o and 8390p.o functions:
 
-Thanks,
-Jesse
+drivers/built-in.o: In function `ne_close':
+ne2.c:(.text+0x30544): undefined reference to `eip_close'
+drivers/built-in.o: In function `ne_open':
+ne2.c:(.text+0x30554): undefined reference to `eip_open'
+drivers/built-in.o: In function `ne2_probe':
+(.init.text+0x1bce): undefined reference to `__alloc_eip_netdev'
+drivers/built-in.o: In function `ne2_probe':
+(.init.text+0x1dd9): undefined reference to `eip_interrupt'
+make[1]: *** [.tmp_vmlinux1] Error 1
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/net/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.25-rc5-mm1.orig/drivers/net/Makefile
++++ linux-2.6.25-rc5-mm1/drivers/net/Makefile
+@@ -108,7 +108,7 @@ obj-$(CONFIG_68360_ENET) += 68360enet.o
+ obj-$(CONFIG_WD80x3) += wd.o 8390.o
+ obj-$(CONFIG_EL2) += 3c503.o 8390p.o
+ obj-$(CONFIG_NE2000) += ne.o 8390p.o
+-obj-$(CONFIG_NE2_MCA) += ne2.o 8390.o
++obj-$(CONFIG_NE2_MCA) += ne2.o 8390.o 8390p.o
+ obj-$(CONFIG_HPLAN) += hp.o 8390p.o
+ obj-$(CONFIG_HPLAN_PLUS) += hp-plus.o 8390p.o
+ obj-$(CONFIG_ULTRA) += smc-ultra.o 8390.o
