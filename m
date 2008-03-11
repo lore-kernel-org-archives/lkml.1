@@ -1,80 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYCKRd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYCKRe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYCKRd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYCKRds
+	id S1754532AbYCKRe4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYCKRer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:33:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52574 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752501AbYCKRds (ORCPT
+	Tue, 11 Mar 2008 13:34:47 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:51401 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752497AbYCKReq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:33:48 -0400
-Date: Tue, 11 Mar 2008 18:35:40 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [0/13] General DMA zone rework
-Message-ID: <20080311173540.GG27593@one.firstfloor.org>
-References: <200803071007.493903088@firstfloor.org> <20080307175148.3a49d8d3@mandriva.com.br> <20080308004654.GQ7365@one.firstfloor.org> <20080310150316.752e4489@mandriva.com.br> <20080310180843.GC28780@one.firstfloor.org> <20080311142624.1dbd3af5@mandriva.com.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311142624.1dbd3af5@mandriva.com.br>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 11 Mar 2008 13:34:46 -0400
+Message-ID: <47D6C2AC.8010907@suse.de>
+Date: Tue, 11 Mar 2008 20:34:36 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: mpparse_{32,64}.c merge questions
+References: <47CDB9D7.9030107@suse.de> <47CDBFD9.1050703@suse.de> <20080304213552.GD8944@elte.hu> <200803111328.43314.lenb@kernel.org>
+In-Reply-To: <200803111328.43314.lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 02:26:24PM -0300, Luiz Fernando N. Capitulino wrote:
-> ===================================================================
-> --- linux-2.6.24.orig/sound/core/memalloc.c
-> +++ linux-2.6.24/sound/core/memalloc.c
-> @@ -218,7 +218,6 @@ static void *snd_malloc_dev_pages(struct
->  	snd_assert(dma != NULL, return NULL);
->  	pg = get_order(size);
->  	gfp_flags = GFP_KERNEL
-> -		| __GFP_COMP	/* compound page lets parts be mapped */
-
-Oops. Thanks. I'll double check that. mask allocator indeed doesn't
-handle __GFP_COMP and nobody should be passing that into dma_alloc_coherent
-anyways. But the bug you got was for the small size wasn't it?
-
->  		| __GFP_NORETRY /* don't trigger OOM-killer */
->  		| __GFP_NOWARN; /* no stack trace print - this call is non-critical */
->  	res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
-> """
+Len Brown wrote:
+> I agree with Ingo on the "keep it simple" merge steps..
 > 
->  Also, I think you forgot to protect the __free_pages_mask()
-> call with "#ifdef CONFIG_MASK_ALLOC" in patch mask-compat.
-
-PageMaskAlloc() returns constant 0 in this case so the compiler should e
-liminate it.
-
+> I can't resist mentioning, however, what I'd like to see long term.
 > 
->  Question: let's say that the devices I have consumes only
-> 5MB of the whole reserved pool (16MB), of course that it's
+> I'd like to see mpparse.o depend on CONFIG_MPS=y
+> I'd like to be able to build CONFIG_ACPI=y and CONFIG_MPS=n
+That was original goal set by Andy Kleen.
 
-It's likely less than 16MB because there are already some users in there
-like the kernel text. The default sizing without swiotlb just grabs anything 
-left over up to the 16Mb boundary.
-
-> ok to reduce the pool to 5MB, right?
-
-Yes, but not leaving any free over is a little risky, someone might need
-more later. But e.g. going down to 8-9MB would be likely possible.
-
-The long term plan (but that is some time off and a little vague still) 
-would be to let the various subsystem size the mask zone dynamically for 
-their need.
-
-Then especially on 64bit swiotlb machines who allocate 64MB by default
-for swiotlb that would save significant memory.
-
-> 
->  I have more machines to test this stuff...
-
-Thanks. Keep me posted.
-
--Andi
+Thanks,
+Alex.
