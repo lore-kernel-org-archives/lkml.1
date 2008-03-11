@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYCKLqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbYCKLuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295AbYCKLqs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 07:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYCKLql
+	id S1756403AbYCKLuk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 07:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYCKLud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 07:46:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42040 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbYCKLqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 07:46:40 -0400
-Date: Tue, 11 Mar 2008 12:48:32 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for pageattr-test.c
-Message-ID: <20080311114832.GE18917@one.firstfloor.org>
-References: <20080311013014.GA28682@basil.nowhere.org> <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de> <20080311104531.GB18917@one.firstfloor.org> <alpine.LFD.1.00.0803111233440.3781@apollo.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Mar 2008 07:50:33 -0400
+Received: from phunq.net ([64.81.85.152]:55142 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750959AbYCKLuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 07:50:32 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Lars Marowsky-Bree <lmb@suse.de>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Tue, 11 Mar 2008 03:50:18 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grzegorz Kulewski <kangur@polcom.net>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803110414.40954.phillips@phunq.net> <20080311112329.GR1581@marowsky-bree.de>
+In-Reply-To: <20080311112329.GR1581@marowsky-bree.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803111233440.3781@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200803110450.19390.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 12:41:13PM +0100, Thomas Gleixner wrote:
-> 
-> 
-> On Tue, 11 Mar 2008, Andi Kleen wrote:
-> 
-> > On Tue, Mar 11, 2008 at 09:25:21AM +0100, Thomas Gleixner wrote:
-> > > On Tue, 11 Mar 2008, Andi Kleen wrote:
-> > > > Use an own random generator for pageattr-test.c
-> > > > 
-> > > > [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
-> > > > candidate because it fixes a subtle bug]
-> > > 
-> > > Care to point out which "subtle bug" is fixed ? 
-> > > 
-> > > You replace a random generator by another to get repeateable
-> > > sequences. The non repeatability of the cpa test patterns is hardly a
-> > > "subtle bug".
-> > 
-> > The subtle bug(s) are first that it is not repeatable (it really should),
-> 
-> As I said before. It's hardly a bug. In fact it is questionable
-> whether fully reproducible test patterns are desired.
+On Tuesday 11 March 2008 04:23, Lars Marowsky-Bree wrote:
+> If I always assume a reliable shutdown - UPS protected, no crashes, etc
+> - you're right, but at least my real world has other failure scenarios
+> as well. In fact, the most common reason for unorderly shutdowns are
+> kernel crashes, not power failures in my experience.
 
-Ok then you won't be able to repeat the test ever.
+What are you doing to your kernel?
 
-I consider this bad practice in test code because it makes it impossible
-to stabilize bugs and when I wrote it I tried to avoid by using the 
-srandom32(). But I originally fell into the trap of assuming it had the 
-same semantics of stdlib srandom() which it didn't. This patch was
-my attempt to fix that mistake.
+My desktop at home, which runs my MTA, web site etc, and is subject to
+regular oom abuse by firefox:
 
+$ uptime
+04:36:49 up 204 days,  9:38,  8 users,  load average: 0.82, 0.43, 0.20
+
+This machine has been up ever since I got a UPS for it, and then it
+only ever went down due to a blackout or my wife blowing a fuse with
+the vacuum cleaner.  Honestly, I have never seen a machine running
+Linux 2.6 crash due to a software flaw, except when I caused it
+myself.  I suspect the Linux kernel has a better MTBF than a hard
+disk.
+
+> So "perfectly reliable if UPS power does not fail" seems a bit over the
+> top.
+
+It works for EMC :-)
+
+> I was trying to prod you into writing the ordered flushing. Maybe
+> claiming it is too hard will do the trick? ;-)
 > 
-> > then that it only initializes the CPU where the code first runs
-> > (since srandom32 is per CPU) and later might change CPUs and then that it 
-> > adds totally unnecessary state bits to CPU #0 (or whatever runs first).
+> Seriously, I guess it depends on the workload you want to host.
+
+I agree this would be a nice option to have.
+
+> > If you think this is like replication then you have the wrong idea
+> > about what is going on.  This is a cache consistency algorithm, not
+> > a replication algorithm.
 > 
-> Can you please elaborate why changing the seed of the random generator
-> is a bug ? Networking reseeds the random generator itself, so what ?
+> I see the differences, but I also see the similarities. What you're
+> doing can also be thought of as replicating from an instant IO store
+> (local memory) to a high latency, low bandwidth copy (the disk)
+> asynchronously.
+> 
+> Both obviously need to preserve consistency, the question is whether to
+> achieve transactional (ordered) consistency or not.
 
-It adds a non random seed which does not add any randomness only to CPU #0.
-Strictly it doesn't hurt very much, but it's also not useful for anything.
+In fact, replicating was one of the strategies I considered for this.
+But since it is a lot more work and will not perform as well as a
+simple sweep, I opted for the simple thing.  Which turned out to
+be pretty complex anyway.  You have to close all the same nasty
+races but with a considerably more complex base algorithm.  I think
+that better wait for version 2.0.
 
--Andi
+By the way, I could use a hand debugging this thing.
 
+Regards,
+
+Daniel
