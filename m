@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbYCKR0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbYCKR0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbYCKR0i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYCKR03
+	id S1752688AbYCKR0u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYCKR0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:26:29 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:47162 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbYCKR02 (ORCPT
+	Tue, 11 Mar 2008 13:26:33 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:64713 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbYCKR0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:26:28 -0400
-Date: Tue, 11 Mar 2008 14:26:24 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] [0/13] General DMA zone rework
-Message-ID: <20080311142624.1dbd3af5@mandriva.com.br>
-In-Reply-To: <20080310180843.GC28780@one.firstfloor.org>
-References: <200803071007.493903088@firstfloor.org>
-	<20080307175148.3a49d8d3@mandriva.com.br>
-	<20080308004654.GQ7365@one.firstfloor.org>
-	<20080310150316.752e4489@mandriva.com.br>
-	<20080310180843.GC28780@one.firstfloor.org>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 13:26:32 -0400
+Message-ID: <47D6C0A8.6010504@nortel.com>
+Date: Tue, 11 Mar 2008 11:26:00 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Daniel Phillips <phillips@phunq.net>
+CC: Lars Marowsky-Bree <lmb@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+References: <200803092346.17556.phillips@phunq.net> <200803110414.40954.phillips@phunq.net> <20080311112329.GR1581@marowsky-bree.de> <200803110450.19390.phillips@phunq.net>
+In-Reply-To: <200803110450.19390.phillips@phunq.net>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Mar 2008 17:26:03.0984 (UTC) FILETIME=[FBA12D00:01C8839C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 10 Mar 2008 19:08:43 +0100
-Andi Kleen <andi@firstfloor.org> escreveu:
+Daniel Phillips wrote:
+> On Tuesday 11 March 2008 04:23, Lars Marowsky-Bree wrote:
+> 
+>>If I always assume a reliable shutdown - UPS protected, no crashes, etc
+>>- you're right, but at least my real world has other failure scenarios
+>>as well. In fact, the most common reason for unorderly shutdowns are
+>>kernel crashes, not power failures in my experience.
+> 
+> 
+> What are you doing to your kernel?
 
-| > you have or only the subset you posted?
-| 
-| Best you test all together. The subsets are independent
-| (as in kernel should work with any subset of them), but 
-| they all clean up DMA memory related issues.
+<snip>
 
- Ok, now it works with the test case fixed:
+> Honestly, I have never seen a machine running
+> Linux 2.6 crash due to a software flaw, except when I caused it
+> myself.  I suspect the Linux kernel has a better MTBF than a hard
+> disk.
 
-"""
-testing mask alloc upto 24 bits
-verify & free
-mask fffff
-mask 1fffff
-mask 3fffff
-mask 7fffff
-mask ffffff
-done
-"""
+I have experienced many 2.6 crashes due to software flaws.  Hung 
+processes leading to watchdog timeouts, bad kernel pointers, kernel 
+deadlock, etc.
 
- Do you remember the BUG_ON() I was getting because of the
-sound card driver [1] ?
+When designing for reliable embedded systems it's not enough to handwave 
+away the possibility of software flaws.
 
- It seems to me that the problem is that it's setting
-__GFP_COMP. The following patch fixes it for me:
+Chris
 
-"""
-Index: linux-2.6.24/sound/core/memalloc.c
-===================================================================
---- linux-2.6.24.orig/sound/core/memalloc.c
-+++ linux-2.6.24/sound/core/memalloc.c
-@@ -218,7 +218,6 @@ static void *snd_malloc_dev_pages(struct
- 	snd_assert(dma != NULL, return NULL);
- 	pg = get_order(size);
- 	gfp_flags = GFP_KERNEL
--		| __GFP_COMP	/* compound page lets parts be mapped */
- 		| __GFP_NORETRY /* don't trigger OOM-killer */
- 		| __GFP_NOWARN; /* no stack trace print - this call is non-critical */
- 	res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
-"""
-
- Also, I think you forgot to protect the __free_pages_mask()
-call with "#ifdef CONFIG_MASK_ALLOC" in patch mask-compat.
-
- Question: let's say that the devices I have consumes only
-5MB of the whole reserved pool (16MB), of course that it's
-ok to reduce the pool to 5MB, right?
-
- I have more machines to test this stuff...
-
-[1] http://users.mandriva.com.br/~lcapitulino/tmp/minicom.cap
-
--- 
-Luiz Fernando N. Capitulino
