@@ -1,48 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYCKSU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbYCKSYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbYCKSU5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYCKSUs
+	id S1754471AbYCKSYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYCKSYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:20:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42966 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752009AbYCKSUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:20:47 -0400
-Date: Tue, 11 Mar 2008 11:19:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, apw@shadowen.org
-Subject: Re: [Build Failure] 2.6.25-rc5-mm1 Build fails with allmodconfig
- probe_4drives undefined
-Message-Id: <20080311111958.c0d3188d.akpm@linux-foundation.org>
-In-Reply-To: <47D68126.40109@linux.vnet.ibm.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D68126.40109@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 14:24:47 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57543 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286AbYCKSYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:24:45 -0400
+Message-Id: <200803111822.m2BIMkbi011457@sous-sol.org>
+Subject: patch x86-adjust-enable_nmi_through_lvt0.patch queued to 2.6.24-stable tree
+To: tglx@linutronix.de, chrisw@sous-sol.org, jbeulich@novell.com,
+       jpiszcz@lucidpixels.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       stable@kernel.org
+Cc: stable@kernel.org, stable-commits@vger.kernel.org
+From: chrisw@sous-sol.org
+Date: Tue, 11 Mar 2008 11:22:45 -0700
+In-Reply-To: <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 18:25:02 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
->   MODPOST 2279 modules
-> ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
+This is a note to let you know that we have just queued up the patch titled
 
-Caused by ide-mm-ide-add-ide-4drives-host-driver-take-3.patch.  Applying
-that patch alone to current mainline causes the above error after i386
-`make allmodconfig'.
+     Subject: x86: adjust enable_NMI_through_LVT0()
 
-Just exporting the symbol doesn't fix it, so something funny is going on.
+to the 2.6.24-stable tree.  Its filename is
 
-probe_4drives should not be initialised to zero.
+     x86-adjust-enable_nmi_through_lvt0.patch
 
-probe_4drives should not be declared extern in drivers/ide/ide.c - please
-declare it in a header which is included by the definition site and by all
-users.
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From stable-bounces@linux.kernel.org  Tue Mar 11 11:09:24 2008
+Date: Tue, 11 Mar 2008 11:30:25 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Message-ID: <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
+Subject: x86: adjust enable_NMI_through_LVT0()
+
+commit e94271017f0933b29362a3c9dea5a6b9d04d98e1
+From: Jan Beulich <jbeulich@novell.com>
+Date: Wed Jan 30 13:31:24 2008 +0100
+
+Its previous use in a call to on_each_cpu() was pointless, as at the
+time that code gets executed only one CPU is online. Further, the
+function can be __cpuinit, and for this to work without
+CONFIG_HOTPLUG_CPU setup_nmi() must also get an attribute (this one
+can even be __init; on 64-bits check_timer() also was lacking that
+attribute).
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+[ tglx@linutronix.de: backport to 2.6.24.3]
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ arch/x86/kernel/apic_32.c    |    2 +-
+ arch/x86/kernel/apic_64.c    |    2 +-
+ arch/x86/kernel/io_apic_32.c |    4 ++--
+ arch/x86/kernel/io_apic_64.c |    6 +++---
+ arch/x86/kernel/smpboot_32.c |    2 +-
+ arch/x86/kernel/smpboot_64.c |    2 +-
+ include/asm-x86/apic_32.h    |    2 +-
+ include/asm-x86/io_apic_64.h |    2 +-
+ 8 files changed, 11 insertions(+), 11 deletions(-)
+
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -154,7 +154,7 @@ unsigned long safe_apic_wait_icr_idle(vo
+ /**
+  * enable_NMI_through_LVT0 - enable NMI through local vector table 0
+  */
+-void enable_NMI_through_LVT0 (void * dummy)
++void __cpuinit enable_NMI_through_LVT0(void)
+ {
+ 	unsigned int v = APIC_DM_NMI;
+ 
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -151,7 +151,7 @@ unsigned int safe_apic_wait_icr_idle(voi
+ 	return send_status;
+ }
+ 
+-void enable_NMI_through_LVT0 (void * dummy)
++void enable_NMI_through_LVT0(void)
+ {
+ 	unsigned int v;
+ 
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -2080,7 +2080,7 @@ static struct irq_chip lapic_chip __read
+ 	.eoi		= ack_apic,
+ };
+ 
+-static void setup_nmi (void)
++static void __init setup_nmi(void)
+ {
+ 	/*
+  	 * Dirty trick to enable the NMI watchdog ...
+@@ -2093,7 +2093,7 @@ static void setup_nmi (void)
+ 	 */ 
+ 	apic_printk(APIC_VERBOSE, KERN_INFO "activating NMI Watchdog ...");
+ 
+-	on_each_cpu(enable_NMI_through_LVT0, NULL, 1, 1);
++	enable_NMI_through_LVT0();
+ 
+ 	apic_printk(APIC_VERBOSE, " done.\n");
+ }
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -1565,7 +1565,7 @@ static struct hw_interrupt_type lapic_ir
+ 	.end = end_lapic_irq,
+ };
+ 
+-static void setup_nmi (void)
++static void __init setup_nmi(void)
+ {
+ 	/*
+  	 * Dirty trick to enable the NMI watchdog ...
+@@ -1578,7 +1578,7 @@ static void setup_nmi (void)
+ 	 */ 
+ 	printk(KERN_INFO "activating NMI Watchdog ...");
+ 
+-	enable_NMI_through_LVT0(NULL);
++	enable_NMI_through_LVT0();
+ 
+ 	printk(" done.\n");
+ }
+@@ -1654,7 +1654,7 @@ static inline void unlock_ExtINT_logic(v
+  *
+  * FIXME: really need to revamp this for modern platforms only.
+  */
+-static inline void check_timer(void)
++static inline void __init check_timer(void)
+ {
+ 	struct irq_cfg *cfg = irq_cfg + 0;
+ 	int apic1, pin1, apic2, pin2;
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -405,7 +405,7 @@ static void __cpuinit start_secondary(vo
+ 	setup_secondary_clock();
+ 	if (nmi_watchdog == NMI_IO_APIC) {
+ 		disable_8259A_irq(0);
+-		enable_NMI_through_LVT0(NULL);
++		enable_NMI_through_LVT0();
+ 		enable_8259A_irq(0);
+ 	}
+ 	/*
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -338,7 +338,7 @@ void __cpuinit start_secondary(void)
+ 
+ 	if (nmi_watchdog == NMI_IO_APIC) {
+ 		disable_8259A_irq(0);
+-		enable_NMI_through_LVT0(NULL);
++		enable_NMI_through_LVT0();
+ 		enable_8259A_irq(0);
+ 	}
+ 
+--- a/include/asm-x86/apic_32.h
++++ b/include/asm-x86/apic_32.h
+@@ -109,7 +109,7 @@ extern void setup_boot_APIC_clock (void)
+ extern void setup_secondary_APIC_clock (void);
+ extern int APIC_init_uniprocessor (void);
+ 
+-extern void enable_NMI_through_LVT0 (void * dummy);
++extern void enable_NMI_through_LVT0(void);
+ 
+ #define ARCH_APICTIMER_STOPS_ON_C3	1
+ 
+--- a/include/asm-x86/io_apic_64.h
++++ b/include/asm-x86/io_apic_64.h
+@@ -129,7 +129,7 @@ extern int io_apic_set_pci_routing (int 
+ 
+ extern int sis_apic_bug; /* dummy */ 
+ 
+-void enable_NMI_through_LVT0 (void * dummy);
++void enable_NMI_through_LVT0(void);
+ 
+ extern spinlock_t i8259A_lock;
+ 
+
+
+Patches currently in stable-queue which might be from tglx@linutronix.de are
+
+queue-2.6.24/x86-adjust-enable_nmi_through_lvt0.patch
