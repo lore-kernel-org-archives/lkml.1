@@ -1,90 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYCKCkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbYCKCmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYCKCkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 22:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbYCKCkc
+	id S1757702AbYCKCmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 22:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYCKCly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 22:40:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34740 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754241AbYCKCkb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 22:40:31 -0400
-Date: Mon, 10 Mar 2008 19:39:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for
- pageattr-test.c
-Message-Id: <20080310193955.9f30bf20.akpm@linux-foundation.org>
-In-Reply-To: <20080311013014.GA28682@basil.nowhere.org>
-References: <20080311013014.GA28682@basil.nowhere.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Mar 2008 22:41:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33420 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754222AbYCKCly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 22:41:54 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mt-exec && signals
+In-Reply-To: Oleg Nesterov's message of  Saturday, 8 March 2008 21:05:39 +0300 <20080308180539.GA28398@tv-sign.ru>
+References: <20080307095813.GA8894@tv-sign.ru>
+	<20080307193159.1AFF127010F@magilla.localdomain>
+	<20080307201346.GA107@tv-sign.ru>
+	<20080307211955.A876226F990@magilla.localdomain>
+	<20080307213217.GA2584@tv-sign.ru>
+	<20080307215134.6E6BC26F990@magilla.localdomain>
+	<20080308180539.GA28398@tv-sign.ru>
+X-Zippy-Says: Bagels...
+Message-Id: <20080311024149.DED3826F991@magilla.localdomain>
+Date: Mon, 10 Mar 2008 19:41:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 02:30:14 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+Sorry, I'm pretty well full up on time I can allocate to figuring out this
+cleanup stuff, for the next week or two anyway.  I'm very glad you're doing
+it, but I don't think we can resolve the exec area all in one push now.
+I don't have anything to contradict your plan about cleaning up exec.
+But I'm just not able to devote enough time right now to giving it the full
+consideration it requires.
 
-> Use an own random generator for pageattr-test.c
-> 
-> [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
-> candidate because it fixes a subtle bug]
 
-An Ingo/Thomas thing.
-
-> pageattr-test attempts to be repeatable and uses srandom32 to get a 
-> repeatable random number sequence.
-> 
-> Using srandom32() wasn't a good idea for various reasons:
-> - it is per cpu and if the cpu changes on a preemptible kernel it gets lost
-> - networking and random32 puts in some own state
-> - srandom32() does not actually reset the state, but just adds bits to 
-> it
-> 
-> Instead use a very simple private standard rnd that gives repeatable
-> results. I took the reference rand() from ISO-C.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86/mm/pageattr-test.c |   11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
-> 
-> Index: linux/arch/x86/mm/pageattr-test.c
-> ===================================================================
-> --- linux.orig/arch/x86/mm/pageattr-test.c
-> +++ linux/arch/x86/mm/pageattr-test.c
-> @@ -101,6 +101,14 @@ static int print_split(struct split_stat
->  static unsigned long addr[NTEST];
->  static unsigned int len[NTEST];
->  
-> +static int next = 100;
-> +
-> +static unsigned my_rand(void)
-> +{
-> +	next = next * 1103515245 + 12345;
-> +	return next;
-> +}
-
-`next' should be local to my_rand().
-
->  /* Change the global bit on random pages in the direct mapping */
->  static int pageattr_test(void)
->  {
-> @@ -123,10 +131,9 @@ static int pageattr_test(void)
->  	memset(bm, 0, (max_pfn_mapped + 7) / 8);
->  
->  	failed += print_split(&sa);
-> -	srandom32(100);
->  
->  	for (i = 0; i < NTEST; i++) {
-> -		unsigned long pfn = random32() % max_pfn_mapped;
-> +		unsigned long pfn = my_rand() % max_pfn_mapped;
->  
->  		addr[i] = (unsigned long)__va(pfn << PAGE_SHIFT);
->  		len[i] = random32() % 100;
+Thanks,
+Roland
