@@ -1,244 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbYCKSc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYCKScn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752965AbYCKSc2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbYCKSbp
+	id S1756552AbYCKScn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbYCKSby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:31:45 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:60201 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbYCKSbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:31:42 -0400
-From: "J. Bruce Fields" <bfields@citi.umich.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tom Tucker <tom@opengridcomputing.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [PATCH 1/2] SVCRDMA: Add xprt refs to fix close/unmount crash
-Date: Tue, 11 Mar 2008 14:31:39 -0400
-Message-Id: <1205260300-19127-2-git-send-email-bfields@citi.umich.edu>
-X-Mailer: git-send-email 1.5.4.4
-In-Reply-To: <1205260300-19127-1-git-send-email-bfields@citi.umich.edu>
-References: <1205260300-19127-1-git-send-email-bfields@citi.umich.edu>
+	Tue, 11 Mar 2008 14:31:54 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:58876 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754873AbYCKSbw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:31:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mJdSbEZ3sFveVR0S4dfrqJ7dpVUT1YNgrRxdMIVUiu2kSkvllCmaz7/z74I4ap/W/5tcQQF1+ymljfsX+8ZSiFqYwJgED3pkzHWTicKkDota0I0QW03mWfOu/UYDN/TdrcnHFVNGTFQkW55Zw6sfUwZmq2XGPV22vicOBkmZB5o=
+Subject: [RFC][PATCH] n_tty : Loss of sync following a buffer overflow
+From: gmail <rupesh.sugathan@gmail.com>
+Reply-To: rupesh.sugathan@gmail.com
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 11 Mar 2008 11:06:01 -0700
+Message-Id: <1205258761.28851.14.camel@estonia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tom Tucker <tom@opengridcomputing.com>
+From: Rupesh Sugathan <Rupesh.Sugathan@gmail.com>
 
-RDMA connection shutdown on an SMP machine can cause a kernel crash due
-to the transport close path racing with the I/O tasklet.
+There seems to be a synchronization issue with the n_tty.c driver when
+working in canonical mode.
+The n_tty rightly discards data received following a buffer overflow and
+hence the tty->read_cnt is not updated. However, the newline characters
+received following a buffer overflow seems to increment the tty-
+>canon_data index. This may result in a loss of sync between the tty-
+>canon_data & tty->read_cnt while processing read in the read_chan().
+This loss of sync might be irrecoverable even when the data is later
+received at a slower rate.
 
-Additional transport references were added as follows:
-- A reference when on the DTO Q to avoid having the transport
-  deleted while queued for I/O.
-- A reference while there is a QP able to generate events.
-- A reference until the DISCONNECTED event is received on the CM ID
+----
+I am not very sure if there is any deliberate rationale to process the
+newlines even when the buffer has overflown. Please comment and review
+the patch
 
-Signed-off-by: Tom Tucker <tom@opengridcomputing.com>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
----
- net/sunrpc/xprtrdma/svc_rdma_transport.c |   96 ++++++++++++++++++------------
- 1 files changed, 58 insertions(+), 38 deletions(-)
+diff -pu a/drivers/char/n_tty.c b/drivers/char/n_tty.c
 
-diff --git a/net/sunrpc/xprtrdma/svc_rdma_transport.c b/net/sunrpc/xprtrdma/svc_rdma_transport.c
-index f09444c..16fd3f6 100644
---- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
-+++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
-@@ -54,7 +54,6 @@ static struct svc_xprt *svc_rdma_create(struct svc_serv *serv,
- 					int flags);
- static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt);
- static void svc_rdma_release_rqst(struct svc_rqst *);
--static void rdma_destroy_xprt(struct svcxprt_rdma *xprt);
- static void dto_tasklet_func(unsigned long data);
- static void svc_rdma_detach(struct svc_xprt *xprt);
- static void svc_rdma_free(struct svc_xprt *xprt);
-@@ -247,6 +246,7 @@ static void dto_tasklet_func(unsigned long data)
- 			sq_cq_reap(xprt);
+--- a/drivers/char/n_tty.c	2008-03-10 17:11:54.000000000 -0700
++++ b/drivers/char/n_tty.c	2008-03-10 16:49:23.000000000 -0700
+@@ -838,15 +838,17 @@ send_signal:
+ 				put_tty_queue(c, tty);
+ 
+ 		handle_newline:
+-			spin_lock_irqsave(&tty->read_lock, flags);
+-			set_bit(tty->read_head, tty->read_flags);
+-			put_tty_queue_nolock(c, tty);
+-			tty->canon_head = tty->read_head;
+-			tty->canon_data++;
+-			spin_unlock_irqrestore(&tty->read_lock, flags);
+-			kill_fasync(&tty->fasync, SIGIO, POLL_IN);
+-			if (waitqueue_active(&tty->read_wait))
+-				wake_up_interruptible(&tty->read_wait);
++			if (tty->read_cnt < N_TTY_BUF_SIZE) {
++				spin_lock_irqsave(&tty->read_lock, flags);
++				set_bit(tty->read_head, tty->read_flags);
++				put_tty_queue_nolock(c, tty);
++				tty->canon_head = tty->read_head;
++				tty->canon_data++;
++				spin_unlock_irqrestore(&tty->read_lock, flags);
++				kill_fasync(&tty->fasync, SIGIO, POLL_IN);
++				if (waitqueue_active(&tty->read_wait))
++					wake_up_interruptible(&tty->read_wait);
++			}
+ 			return;
  		}
- 
-+		svc_xprt_put(&xprt->sc_xprt);
- 		spin_lock_irqsave(&dto_lock, flags);
  	}
- 	spin_unlock_irqrestore(&dto_lock, flags);
-@@ -275,8 +275,10 @@ static void rq_comp_handler(struct ib_cq *cq, void *cq_context)
- 	 * add it
- 	 */
- 	spin_lock_irqsave(&dto_lock, flags);
--	if (list_empty(&xprt->sc_dto_q))
-+	if (list_empty(&xprt->sc_dto_q)) {
-+		svc_xprt_get(&xprt->sc_xprt);
- 		list_add_tail(&xprt->sc_dto_q, &dto_xprt_q);
-+	}
- 	spin_unlock_irqrestore(&dto_lock, flags);
- 
- 	/* Tasklet does all the work to avoid irqsave locks. */
-@@ -386,8 +388,10 @@ static void sq_comp_handler(struct ib_cq *cq, void *cq_context)
- 	 * add it
- 	 */
- 	spin_lock_irqsave(&dto_lock, flags);
--	if (list_empty(&xprt->sc_dto_q))
-+	if (list_empty(&xprt->sc_dto_q)) {
-+		svc_xprt_get(&xprt->sc_xprt);
- 		list_add_tail(&xprt->sc_dto_q, &dto_xprt_q);
-+	}
- 	spin_unlock_irqrestore(&dto_lock, flags);
- 
- 	/* Tasklet does all the work to avoid irqsave locks. */
-@@ -611,6 +615,7 @@ static int rdma_cma_handler(struct rdma_cm_id *cma_id,
- 	switch (event->event) {
- 	case RDMA_CM_EVENT_ESTABLISHED:
- 		/* Accept complete */
-+		svc_xprt_get(xprt);
- 		dprintk("svcrdma: Connection completed on DTO xprt=%p, "
- 			"cm_id=%p\n", xprt, cma_id);
- 		clear_bit(RDMAXPRT_CONN_PENDING, &rdma->sc_flags);
-@@ -661,15 +666,15 @@ static struct svc_xprt *svc_rdma_create(struct svc_serv *serv,
- 
- 	listen_id = rdma_create_id(rdma_listen_handler, cma_xprt, RDMA_PS_TCP);
- 	if (IS_ERR(listen_id)) {
--		rdma_destroy_xprt(cma_xprt);
-+		svc_xprt_put(&cma_xprt->sc_xprt);
- 		dprintk("svcrdma: rdma_create_id failed = %ld\n",
- 			PTR_ERR(listen_id));
- 		return (void *)listen_id;
- 	}
- 	ret = rdma_bind_addr(listen_id, sa);
- 	if (ret) {
--		rdma_destroy_xprt(cma_xprt);
- 		rdma_destroy_id(listen_id);
-+		svc_xprt_put(&cma_xprt->sc_xprt);
- 		dprintk("svcrdma: rdma_bind_addr failed = %d\n", ret);
- 		return ERR_PTR(ret);
- 	}
-@@ -678,8 +683,9 @@ static struct svc_xprt *svc_rdma_create(struct svc_serv *serv,
- 	ret = rdma_listen(listen_id, RPCRDMA_LISTEN_BACKLOG);
- 	if (ret) {
- 		rdma_destroy_id(listen_id);
--		rdma_destroy_xprt(cma_xprt);
-+		svc_xprt_put(&cma_xprt->sc_xprt);
- 		dprintk("svcrdma: rdma_listen failed = %d\n", ret);
-+		return ERR_PTR(ret);
- 	}
- 
- 	/*
-@@ -820,6 +826,7 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
- 		newxprt->sc_sq_depth = qp_attr.cap.max_send_wr;
- 		newxprt->sc_max_requests = qp_attr.cap.max_recv_wr;
- 	}
-+	svc_xprt_get(&newxprt->sc_xprt);
- 	newxprt->sc_qp = newxprt->sc_cm_id->qp;
- 
- 	/* Register all of physical memory */
-@@ -891,8 +898,15 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
- 
-  errout:
- 	dprintk("svcrdma: failure accepting new connection rc=%d.\n", ret);
-+	/* Take a reference in case the DTO handler runs */
-+	svc_xprt_get(&newxprt->sc_xprt);
-+	if (newxprt->sc_qp && !IS_ERR(newxprt->sc_qp)) {
-+		ib_destroy_qp(newxprt->sc_qp);
-+		svc_xprt_put(&newxprt->sc_xprt);
-+	}
- 	rdma_destroy_id(newxprt->sc_cm_id);
--	rdma_destroy_xprt(newxprt);
-+	/* This call to put will destroy the transport */
-+	svc_xprt_put(&newxprt->sc_xprt);
- 	return NULL;
- }
- 
-@@ -919,54 +933,60 @@ static void svc_rdma_release_rqst(struct svc_rqst *rqstp)
- 	rqstp->rq_xprt_ctxt = NULL;
- }
- 
--/* Disable data ready events for this connection */
-+/*
-+ * When connected, an svc_xprt has at least three references:
-+ *
-+ * - A reference held by the QP. We still hold that here because this
-+ *   code deletes the QP and puts the reference.
-+ *
-+ * - A reference held by the cm_id between the ESTABLISHED and
-+ *   DISCONNECTED events. If the remote peer disconnected first, this
-+ *   reference could be gone.
-+ *
-+ * - A reference held by the svc_recv code that called this function
-+ *   as part of close processing.
-+ *
-+ * At a minimum two references should still be held.
-+ */
- static void svc_rdma_detach(struct svc_xprt *xprt)
- {
- 	struct svcxprt_rdma *rdma =
- 		container_of(xprt, struct svcxprt_rdma, sc_xprt);
--	unsigned long flags;
--
- 	dprintk("svc: svc_rdma_detach(%p)\n", xprt);
--	/*
--	 * Shutdown the connection. This will ensure we don't get any
--	 * more events from the provider.
--	 */
-+
-+	/* Disconnect and flush posted WQE */
- 	rdma_disconnect(rdma->sc_cm_id);
--	rdma_destroy_id(rdma->sc_cm_id);
- 
--	/* We may already be on the DTO list */
--	spin_lock_irqsave(&dto_lock, flags);
--	if (!list_empty(&rdma->sc_dto_q))
--		list_del_init(&rdma->sc_dto_q);
--	spin_unlock_irqrestore(&dto_lock, flags);
-+	/* Destroy the QP if present (not a listener) */
-+	if (rdma->sc_qp && !IS_ERR(rdma->sc_qp)) {
-+		ib_destroy_qp(rdma->sc_qp);
-+		svc_xprt_put(xprt);
-+	}
-+
-+	/* Destroy the CM ID */
-+	rdma_destroy_id(rdma->sc_cm_id);
- }
- 
- static void svc_rdma_free(struct svc_xprt *xprt)
- {
- 	struct svcxprt_rdma *rdma = (struct svcxprt_rdma *)xprt;
- 	dprintk("svcrdma: svc_rdma_free(%p)\n", rdma);
--	rdma_destroy_xprt(rdma);
--	kfree(rdma);
--}
--
--static void rdma_destroy_xprt(struct svcxprt_rdma *xprt)
--{
--	if (xprt->sc_qp && !IS_ERR(xprt->sc_qp))
--		ib_destroy_qp(xprt->sc_qp);
--
--	if (xprt->sc_sq_cq && !IS_ERR(xprt->sc_sq_cq))
--		ib_destroy_cq(xprt->sc_sq_cq);
-+	/* We should only be called from kref_put */
-+	BUG_ON(atomic_read(&xprt->xpt_ref.refcount) != 0);
-+	if (rdma->sc_sq_cq && !IS_ERR(rdma->sc_sq_cq))
-+		ib_destroy_cq(rdma->sc_sq_cq);
- 
--	if (xprt->sc_rq_cq && !IS_ERR(xprt->sc_rq_cq))
--		ib_destroy_cq(xprt->sc_rq_cq);
-+	if (rdma->sc_rq_cq && !IS_ERR(rdma->sc_rq_cq))
-+		ib_destroy_cq(rdma->sc_rq_cq);
- 
--	if (xprt->sc_phys_mr && !IS_ERR(xprt->sc_phys_mr))
--		ib_dereg_mr(xprt->sc_phys_mr);
-+	if (rdma->sc_phys_mr && !IS_ERR(rdma->sc_phys_mr))
-+		ib_dereg_mr(rdma->sc_phys_mr);
- 
--	if (xprt->sc_pd && !IS_ERR(xprt->sc_pd))
--		ib_dealloc_pd(xprt->sc_pd);
-+	if (rdma->sc_pd && !IS_ERR(rdma->sc_pd))
-+		ib_dealloc_pd(rdma->sc_pd);
- 
--	destroy_context_cache(xprt->sc_ctxt_head);
-+	destroy_context_cache(rdma->sc_ctxt_head);
-+	kfree(rdma);
- }
- 
- static int svc_rdma_has_wspace(struct svc_xprt *xprt)
--- 
-1.5.4.rc2.60.gb2e62
+
+Signed-off-by: Rupesh Sugathan <Rupesh.Sugathan@gmail.com>
+
+
 
