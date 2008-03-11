@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYCKMD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYCKMFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbYCKMD4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYCKMDq
+	id S1756595AbYCKMFQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYCKMFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 08:03:46 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:43163 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756086AbYCKMDa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:03:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QotRyYCN5Xcm971SBVy4b1GRJT8p3yHQ0mgIkOK3nyQf5Ku8indShqO0inf2oO4t1C64YothZJYoXKfaesjZoApPW8ChjlrjvQTXBIr3Ns/aPsiYnMnmEOvEXXKBbUO3W4fa6EOatu9Z6esM+N81GSjcfh7Em5SLow68EzZ8jbc=
-Message-ID: <c4e36d110803110503v3f25d852nf52ebdc709d73706@mail.gmail.com>
-Date: Tue, 11 Mar 2008 13:03:29 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH REPOST] Run IST traps from user mode preemptive on process stack
-Cc: "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz
-In-Reply-To: <20080311012432.GA28576@basil.nowhere.org>
+	Tue, 11 Mar 2008 08:05:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:55519 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751464AbYCKMFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 08:05:03 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: virtualization@lists.linux-foundation.org
+Subject: [PATCH 1/4] virtio: Use spin_lock_irqsave/restore for virtio-pci
+Date: Tue, 11 Mar 2008 23:03:22 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Anthony Liguori <aliguori@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080311012432.GA28576@basil.nowhere.org>
+Message-Id: <200803112303.22984.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/3/11, Andi Kleen <andi@firstfloor.org>:
-> Run IST traps from user mode preemptive on process stack
->
->  [Repost. Please ack or nack. -Andi]
->
->  x86-64 has a few exceptions which run on special architecture
->  supported IST exception stacks: these are nmi, double fault, stack fault,
->   int 3, debug.
->
->  Previously they would check for a scheduling event on returning
->  if the original CPU state was user mode and then switch to a
->  process stack to schedule.
->
->  But the actual trap handler would still run on the IST stack
->  with preemption disabled.
->
+From: Anthony Liguori <aliguori@us.ibm.com>
 
-Hi Andi
+virtio-pci acquires its spin lock in an interrupt context so it's necessary
+to use spin_lock_irqsave/restore variants.  This patch fixes guest SMP when
+using virtio devices in KVM.
 
-In my post where I've been showing BUG trace:
+Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/virtio/virtio_pci.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-http://lkml.org/lkml/2008/3/10/157
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index 26f787d..59a8f73 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -177,6 +177,7 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
+ 	struct virtio_pci_device *vp_dev = opaque;
+ 	struct virtio_pci_vq_info *info;
+ 	irqreturn_t ret = IRQ_NONE;
++	unsigned long flags;
+ 	u8 isr;
+ 
+ 	/* reading the ISR has the effect of also clearing it so it's very
+@@ -197,12 +198,12 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
+ 			drv->config_changed(&vp_dev->vdev);
+ 	}
+ 
+-	spin_lock(&vp_dev->lock);
++	spin_lock_irqsave(&vp_dev->lock, flags);
+ 	list_for_each_entry(info, &vp_dev->virtqueues, node) {
+ 		if (vring_interrupt(irq, info->vq) == IRQ_HANDLED)
+ 			ret = IRQ_HANDLED;
+ 	}
+-	spin_unlock(&vp_dev->lock);
++	spin_unlock_irqrestore(&vp_dev->lock, flags);
+ 
+ 	return ret;
+ }
+@@ -214,6 +215,7 @@ static struct virtqueue *vp_find_vq(struct virtio_device *vdev, unsigned index,
+ 	struct virtio_pci_device *vp_dev = to_vp_device(vdev);
+ 	struct virtio_pci_vq_info *info;
+ 	struct virtqueue *vq;
++	unsigned long flags;
+ 	u16 num;
+ 	int err;
+ 
+@@ -255,9 +257,9 @@ static struct virtqueue *vp_find_vq(struct virtio_device *vdev, unsigned index,
+ 	vq->priv = info;
+ 	info->vq = vq;
+ 
+-	spin_lock(&vp_dev->lock);
++	spin_lock_irqsave(&vp_dev->lock, flags);
+ 	list_add(&info->node, &vp_dev->virtqueues);
+-	spin_unlock(&vp_dev->lock);
++	spin_unlock_irqrestore(&vp_dev->lock, flags);
+ 
+ 	return vq;
+ 
+@@ -274,10 +276,11 @@ static void vp_del_vq(struct virtqueue *vq)
+ {
+ 	struct virtio_pci_device *vp_dev = to_vp_device(vq->vdev);
+ 	struct virtio_pci_vq_info *info = vq->priv;
++	unsigned long flags;
+ 
+-	spin_lock(&vp_dev->lock);
++	spin_lock_irqsave(&vp_dev->lock, flags);
+ 	list_del(&info->node);
+-	spin_unlock(&vp_dev->lock);
++	spin_unlock_irqrestore(&vp_dev->lock, flags);
+ 
+ 	vring_del_virtqueue(vq);
+ 
 
-I've mentioned my problem with busy looping in Qemu.
-
-I'm not sure whether this is good or bad sign - but with this patch
-you have posted,
-I do not have to wait in qemu for minutes to get the 'busy-loop' - I
-get the exact same loop almost instantly when I start  disk read of LV
-partition and running my simple module insertion testcase.
-
->  This patch changes these traps instead to always switch
->  to the process stack when the trap originated from user mode.
->  For kernel traps it keeps running non preemptive on the IST stack
->   because that is much safer (e.g. to still get nmi watchdog events
->  out even when the process stack is corrupted)
->
-
-So what should I check to get fixed my problem in qemu ?
-
-Zdenek
