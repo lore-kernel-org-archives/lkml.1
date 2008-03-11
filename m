@@ -1,178 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751355AbYCKW4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbYCKXD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751355AbYCKW4c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 18:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYCKW4Z
+	id S1751666AbYCKXD0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYCKXDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 18:56:25 -0400
-Received: from mail.queued.net ([207.210.101.209]:1170 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbYCKW4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 18:56:24 -0400
-Date: Tue, 11 Mar 2008 19:00:11 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
-       jordan.crouse@amd.com, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 6/6] PM/gxfb: add hook to PM console layer that allows
- disabling of suspend VT switch
-Message-ID: <20080311190011.44e24d2e@ephemeral>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 19:03:15 -0400
+Received: from phunq.net ([64.81.85.152]:39308 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750885AbYCKXDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:03:14 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Lars Marowsky-Bree <lmb@suse.de>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Tue, 11 Mar 2008 15:02:53 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grzegorz Kulewski <kangur@polcom.net>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de>
+In-Reply-To: <20080311215601.GM23784@marowsky-bree.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803111602.53835.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 11 March 2008 14:56, Lars Marowsky-Bree wrote:
+> And yes, I'm not saying I don't see your point for specialised
+> deployments (filesystems which are easy to rebuild from scratch), but
+> transactional integrity is a requirement I'd rank really high on the
+> desirable list of features if I was you.
 
-Prior to suspend, we allocate and switch to a new VT; after suspend, we
-switch back to the original VT.  This can be slow, and is completely
-unnecessary if the framebuffer we're using can restore video properly.
+It is ranked high, nonetheless I perceive this spate of sky-is-falling
+comments as low level FUD.  Which of the following do you think is the
+least reliable component in your transactional system:
 
-This adds a hook that allows drivers to select whether or not to do this
-vt switch, and changes the gxfb driver to call this hook.  It also
-adds a module param to gxfb to allow controlling of the vt switch
-(defaulting to no switch).
+  1) Linux
+  2) The computer
+  3) The hard disk
+  4) The battery
+  5) The fan
 
-(Note: I'm not convinced that console_sem is the best way to protect this,
-but we should probably have some form of locking..)
+Correct answer: the fan.  The rest are roughly a tie (though of course
+you will find variations) and depend on how much money you spend on
+each of them.  I know I do not have to explain this to you, but the way
+you calculate reliability for a complete system is to multiply the
+reliability of each component.  The number of nines that drop out of
+this calculation is your reliability.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- Documentation/fb/gxfb.txt       |    3 ++-
- drivers/video/geode/gxfb_core.c |    7 +++++++
- include/linux/suspend.h         |    2 ++
- kernel/power/console.c          |   27 ++++++++++++++++++++++++++-
- 4 files changed, 37 insertions(+), 2 deletions(-)
+At the moment, the version of Linux I run is looking like a 1.0, so is
+the UPS.  Already got me through about 4 blackouts and half a dozen
+vacuum cleaner events.  Though obviously neither is 1.0, both are darn
+close.  The hard disk on the other hand... I have a box full of broken
+ones here, how about you?
 
-diff --git a/Documentation/fb/gxfb.txt b/Documentation/fb/gxfb.txt
-index 2d3dbaf..6749759 100644
---- a/Documentation/fb/gxfb.txt
-+++ b/Documentation/fb/gxfb.txt
-@@ -45,7 +45,8 @@ Accepted options:
- mode_option	- specify the video mode.  Of the form
- 		  <x>x<y>[-<bpp>][@<refresh>]
- vram		- size of video ram (normally auto-detected)
--
-+vt_switch	- enable vt switching during suspend/resume.  The vt
-+		  switch is slow, but harmless.
- 
- --
- Andres Salomon <dilinger@debian.org>
-diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index 0cebc49..988c8e4 100644
---- a/drivers/video/geode/gxfb_core.c
-+++ b/drivers/video/geode/gxfb_core.c
-@@ -29,6 +29,7 @@
- #include <linux/delay.h>
- #include <linux/fb.h>
- #include <linux/console.h>
-+#include <linux/suspend.h>
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <asm/geode.h>
-@@ -37,6 +38,7 @@
- 
- static char *mode_option;
- static int vram;
-+static int vt_switch;
- 
- /* Modes relevant to the GX (taken from modedb.c) */
- static const struct fb_videomode gx_modedb[] __initdata = {
-@@ -388,6 +390,8 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
- 	gxfb_check_var(&info->var, info);
- 	gxfb_set_par(info);
- 
-+	pm_set_vt_switch(vt_switch);
-+
- 	if (register_framebuffer(info) < 0) {
- 		ret = -EINVAL;
- 		goto err;
-@@ -508,5 +512,8 @@ MODULE_PARM_DESC(mode_option, "video mode (<x>x<y>[-<bpp>][@<refr>])");
- module_param(vram, int, 0);
- MODULE_PARM_DESC(vram, "video memory size");
- 
-+module_param(vt_switch, int, 0);
-+MODULE_PARM_DESC(vt_switch, "enable VT switch during suspend/resume");
-+
- MODULE_DESCRIPTION("Framebuffer driver for the AMD Geode GX");
- MODULE_LICENSE("GPL");
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 1d7d4c5..bef66a7 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -12,9 +12,11 @@
- #include <asm/errno.h>
- 
- #if defined(CONFIG_PM_SLEEP) && defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE)
-+extern void pm_set_vt_switch(int);
- extern int pm_prepare_console(void);
- extern void pm_restore_console(void);
- #else
-+static inline void pm_set_vt_switch(int) {}
- static inline int pm_prepare_console(void) { return 0; }
- static inline void pm_restore_console(void) {}
- #endif
-diff --git a/kernel/power/console.c b/kernel/power/console.c
-index 89bcf49..b8628be 100644
---- a/kernel/power/console.c
-+++ b/kernel/power/console.c
-@@ -7,17 +7,39 @@
- #include <linux/vt_kern.h>
- #include <linux/kbd_kern.h>
- #include <linux/console.h>
-+#include <linux/module.h>
- #include "power.h"
- 
- #if defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE)
- #define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
- 
- static int orig_fgconsole, orig_kmsg;
-+static int disable_vt_switch;
-+
-+/*
-+ * Normally during a suspend, we allocate a new console and switch to it.
-+ * When we resume, we switch back to the original console.  This switch
-+ * can be slow, so on systems where the framebuffer can handle restoration
-+ * of video registers anyways, there's little point in doing the console
-+ * switch.  This function allows you to disable it by passing it '0'.
-+ */
-+void pm_set_vt_switch(int do_switch)
-+{
-+	acquire_console_sem();
-+	disable_vt_switch = !do_switch;
-+	release_console_sem();
-+}
-+EXPORT_SYMBOL(pm_set_vt_switch);
- 
- int pm_prepare_console(void)
- {
- 	acquire_console_sem();
- 
-+	if (disable_vt_switch) {
-+		release_console_sem();
-+		return 0;
-+	}
-+
- 	orig_fgconsole = fg_console;
- 
- 	if (vc_allocate(SUSPEND_CONSOLE)) {
-@@ -50,9 +72,12 @@ int pm_prepare_console(void)
- void pm_restore_console(void)
- {
- 	acquire_console_sem();
-+	if (disable_vt_switch) {
-+		release_console_sem();
-+		return;
-+	}
- 	set_console(orig_fgconsole);
- 	release_console_sem();
- 	kmsg_redirect = orig_kmsg;
--	return;
- }
- #endif
--- 
-1.5.3.7
+I have never had a PC go bad on me, ever.   Had a couple of fans die,
+but these days I only buy PCs that run fine without a fan.
 
+So your proposition is, I can add nines to this system by introducing
+atomic update of the backing store.  Fine, I agree with you.  However
+if I already sit at six or seven nines then should I be putting my
+effort there, or where?
+
+Also no need to explain: when you introduce two way redundancy, you
+square the reliability.  So have two independent power supplies on two
+independent UPSes.  Sleep easy, plus you gain the ability to do
+scheduled battery maintenance, so reliability increases by more than
+the square.
+
+No matter how much you fiddle with atomic update of backing store, one
+disgruntled sysop going postal can still destroy your data with the
+help of a sledgehammer.  You need to get this reliability thing in
+perspective.
+
+So how about you draft a Suse engineer to get working on the atomic
+backing store update, ETA six months?  In the mean time, we can
+configure a transactional system using this driver (once stabilized)
+to as many nines as you want.  Offsite replication using
+ddsnap+zumastor?  You got it.  5 second latency between replication
+cycles?  No problem.  Incidentally, Ramback totally solves the ddsnap
+copy-before-write seek bottleneck, turning replication into a really
+elegant fallback solution.
+
+By the way, if you want to fly to the moon you will need a rocket.
+Streams of liquid hydrogen coursing through gigantic pipes sitting
+right next to violently burning roman candles are less reliable than
+bicycle pedals, but only one of these arrangements will get you to the
+moon on time.  In other words, if you need the speed this is the only
+game in town, so you better just take care to buy reliable rocket
+parts.
+
+> > > So "perfectly reliable if UPS power does not fail" seems a bit over the
+> > > top.
+> > It works for EMC :-)
+> 
+> Where they control the hardware and run a rather specialized OS as well,
+> not a general purpose system like Linux on "commodity" hardware ;-)
+
+Heh.  Maybe you better ask Ric about that commodity hardware thing.  I
+am sure you are aware that servers with dual power supplies are now
+commodity items.
+
+> I'm afraid with those properties it doesn't really meet my needs :-(
+
+See you around then, and thanks for all the effort.  Not.
+
+> And, wouldn't a simpler way to achieve something similar not be to use
+> the plain Linux fs caching/buffers, just disabling forced write out
+> maybe via a mount option? This strikes me as similar to the effect I get
+> from remounting NFS (a)sync. Make the fs ignore fsync et al.
+
+Maybe move it up into the VM/VFS after it is completely worked out at
+the block layer.  If it can't work as a block device it can't work
+period.
+
+Bear in mind that our VM is currently stuck together with bailing
+wire and chewing gum, reliable only because of the man-machine-Morton
+effect and Linus's annual Christmas race chase.  Careful in there.
+
+> It would have the advantage of using all memory available for caching
+> and not otherwise requested, too.
+
+Good point, a ram disk does not work like that.  Oh wait, it does.
+
+Bis spaeter,
+
+Daniel
