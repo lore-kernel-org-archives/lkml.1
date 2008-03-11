@@ -1,100 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYCKEj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYCKEl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbYCKEj7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 00:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYCKEjv
+	id S1756645AbYCKEl5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 00:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYCKElt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 00:39:51 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:39199 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750847AbYCKEju (ORCPT
+	Tue, 11 Mar 2008 00:41:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51723 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752164AbYCKElt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 00:39:50 -0400
-Date: Tue, 11 Mar 2008 10:09:48 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>, rjw@sisk.pl,
-       dmitry.adamushko@gmail.com, mingo@elte.hu, oleg@sign.ru,
-       yi.y.yang@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH v2] keep rd->online and cpu_online_map in sync
-Message-ID: <20080311043948.GA9254@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080310221014.GB27329@linux-os.sc.intel.com> <20080310215813.10968.960.stgit@novell1.haskins.net> <20080310163613.65a7313c.akpm@linux-foundation.org> <20080311013456.GD15909@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311013456.GD15909@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 11 Mar 2008 00:41:49 -0400
+Date: Mon, 10 Mar 2008 21:41:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs
+Message-Id: <20080310214100.d7fe7904.akpm@linux-foundation.org>
+In-Reply-To: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
+References: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 06:34:56PM -0700, Suresh Siddha wrote:
-> On Mon, Mar 10, 2008 at 04:36:13PM -0700, Andrew Morton wrote:
-> > > --- a/kernel/sched.c
-> > > +++ b/kernel/sched.c
-> > > @@ -5881,7 +5881,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
-> > >  		spin_unlock_irq(&rq->lock);
-> > >  		break;
-> > >  
-> > > -	case CPU_DOWN_PREPARE:
-> > > +	case CPU_DYING:
-> > > +	case CPU_DYING_FROZEN:
-> > >  		/* Update our root-domain */
-> > >  		rq = cpu_rq(cpu);
-> > >  		spin_lock_irqsave(&rq->lock, flags);
-> > 
-> > Does this make
-> > cpu-hotplug-register-update_sched_domains-notifier-with-higher-prio.patch
-> > (below) obsolete,
-> 
-> Yes. I would like to Ack for the
-> keep-rd-online-and-cpu_online_map-in-sync.patch, as it is more cleaner.
-> 
-> 
-> > or do we want both?  
-> 
-> No. I don't think so. Gautham, do you agree?
+On Tue, 11 Mar 2008 10:01:49 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Yup I agree! Greg's patch is better since i clears the
-bit *just* before we take the cpu down. That way we won't mess with the 
-ordering. 
-
-But I would still prefer that we update the sched_domains early on 
-after cpu-hotplug rather than doing it after the subsystems have run 
-their notifiers.
-
-Will send a seperate patch for that one.
 > 
-> thanks,
-> suresh
 > 
-> > 
-> > --- a/kernel/sched.c~cpu-hotplug-register-update_sched_domains-notifier-with-higher-prio
-> > +++ a/kernel/sched.c
-> > @@ -7096,8 +7096,16 @@ void __init sched_init_smp(void)
-> >  	if (cpus_empty(non_isolated_cpus))
-> >  		cpu_set(smp_processor_id(), non_isolated_cpus);
-> >  	put_online_cpus();
-> > -	/* XXX: Theoretical race here - CPU may be hotplugged now */
-> > -	hotcpu_notifier(update_sched_domains, 0);
-> > +	/*
-> > +	 * XXX: Theoretical race here - CPU may be hotplugged now
-> > +	 *
-> > +	 * We register the notifier with priority 11, which means that
-> > +	 * update_sched_domains() will be called just before migration_call().
-> > +	 *
-> > +	 * This is necessary to ensure that the rt wake up logic works fine
-> > +	 * and the rq->rd->online_map remains in sync with the cpu_online_map.
-> > +	 */
-> > +	hotcpu_notifier(update_sched_domains, 11);
-> >  
-> >  	/* Move init over to a non-isolated CPU */
-> >  	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
-> > _
-> > 
+> Move the memory controller data structures page_cgroup and
+> mem_cgroup_per_zone to their own slab caches. It saves space on the system,
+> allocations are not necessarily pushed to order of 2 and should provide
+> performance benefits.
 
--- 
-Thanks and Regards
-gautham
+eh?  Those structures are tiny.  Which slab allocator has gone and used an
+order-2 allocation and for which structure did it (stupidly) do this?
+
+
