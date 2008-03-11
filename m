@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYCKKLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYCKKNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbYCKKLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYCKKLq
+	id S1755864AbYCKKNY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYCKKNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:11:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54617 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754378AbYCKKLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:11:45 -0400
-Date: Tue, 11 Mar 2008 11:11:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v5
-Message-ID: <20080311101126.GY25110@elte.hu>
-References: <20080310222955.565902000@linux-os.sc.intel.com> <20080311050644.GB4589@martell.zuzino.mipt.ru> <20080311083517.GC25110@elte.hu> <b6fcc0a0803110309m1108382dm7b4aa714576ba813@mail.gmail.com>
+	Tue, 11 Mar 2008 06:13:16 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33975 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbYCKKNP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 06:13:15 -0400
+Message-ID: <47D65A27.80605@cn.fujitsu.com>
+Date: Tue, 11 Mar 2008 19:08:39 +0900
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6fcc0a0803110309m1108382dm7b4aa714576ba813@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: [PATCH 1/3] res_counter: introduce res_counter_write_u64()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This function can be used to assign the value of a resource counter member.
 
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/res_counter.h |    9 ++++++---
+ kernel/res_counter.c        |    9 +++++++++
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
-> On 3/11/08, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> >
-> > > > -	extern void __bad_fxsave_alignment(void);
-> > > > -
-> > > > -	if (offsetof(struct task_struct, thread.i387.fxsave) & 15)
-> > > > -	__bad_fxsave_alignment();
-> > >
-> > > I think removal of such checks needs giving necessary alignment to
-> > > cache. Previously it worked because of __aligned((16)) and
-> > > L1_CACHE_SHIFT combo.
-> >
-> > it's still checked, just elsewhere:
-> >
-> > > + WARN_ON((unsigned long)dst->thread.xstate & 15);
-> >
-> > i'd not expect us to ever align worse than 16 bytes in the future
-> 
-> But sysfs tells me alignment of "xstate" is 8 now. Object size is 512 
-> which is masking it.
+diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+index 8cb1ecd..8c23f7f 100644
+--- a/include/linux/res_counter.h
++++ b/include/linux/res_counter.h
+@@ -41,9 +41,10 @@ struct res_counter {
+ 
+ /**
+  * Helpers to interact with userspace
+- * res_counter_read_u64() - returns the value of the specified member.
+- * res_counter_read/_write - put/get the specified fields from the
+- * res_counter struct to/from the user
++ * res_counter_read_64/_write_u64 - returns/assigns the value of the
++ *	specified member
++ * res_counter_read/_write - puts/gets the specified fields from the
++ *	res_counter struct to/from the user
+  *
+  * @counter:     the counter in question
+  * @member:  the field to work with (see RES_xxx below)
+@@ -53,6 +54,8 @@ struct res_counter {
+  */
+ 
+ u64 res_counter_read_u64(struct res_counter *counter, int member);
++void res_counter_write_u64(struct res_counter *counter, int member,
++			   unsigned long long val);
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 		const char __user *buf, size_t nbytes, loff_t *pos,
+diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+index 791ff2b..a16b727 100644
+--- a/kernel/res_counter.c
++++ b/kernel/res_counter.c
+@@ -97,6 +97,15 @@ u64 res_counter_read_u64(struct res_counter *counter, int member)
+ 	return *res_counter_member(counter, member);
+ }
+ 
++void res_counter_write_u64(struct res_counter *counter, int member,
++			   unsigned long long val)
++{
++	unsigned long long *tmp;
++
++	tmp = res_counter_member(counter, member);
++	*tmp = val;
++}
++
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+ 		const char __user *userbuf, size_t nbytes, loff_t *pos,
+ 		int (*write_strategy)(char *st_buf, unsigned long long *val))
+-- 
+1.5.4.rc3
 
-ok - you are right, that needs to be solved then. (object size could 
-change anytime someone adds a few fields for debugging or whatever)
-
-	Ingo
