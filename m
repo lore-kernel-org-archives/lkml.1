@@ -1,214 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYCKJkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYCKJlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbYCKJkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 05:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCKJjz
+	id S1754628AbYCKJlv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 05:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCKJln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 05:39:55 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50242 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYCKJjy (ORCPT
+	Tue, 11 Mar 2008 05:41:43 -0400
+Received: from n6.bullet.mud.yahoo.com ([216.252.100.57]:23998 "HELO
+	n6.bullet.mud.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751143AbYCKJln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 05:39:54 -0400
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-To: linux-kernel@vger.kernel.org
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH][v3] Modify loop device to be able to manage partitions of the disk image
-Date: Tue, 11 Mar 2008 10:38:47 +0100
-Message-Id: <1205228327221-git-send-email-Laurent.Vivier@bull.net>
-X-Mailer: git-send-email 1.5.2.4
+	Tue, 11 Mar 2008 05:41:43 -0400
+X-Yahoo-Newman-Id: 281921.61210.bm@omp417.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=AJjzTEOUMjPFW3OqZCEYD6TX84RF7QhKCPzr1SH5YCHKZpw/nz2PlZ6tODCEYja83KqDJiv9JRSFuiRKU0TI2C/GVmjsy+6UY5w5dQQbBS9XRhIj9umhu0eSGTSV/L3kj/ok5LxhGInYffUN5wStBF8P5G33cXiVwVH4FtLYoRA=  ;
+X-YMail-OSG: BXkiECIVM1kbvF9T6rHLeAEajcftFBmPAcO3N2AX.qAs213Yt7GM8jJKSmHn8JgE6hBGiR.Mfg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [RFC PATCH] Implement slub fastpath with sequence number
+Date: Tue, 11 Mar 2008 20:41:09 +1100
+User-Agent: KMail/1.9.5
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+References: <20080311093144.GB30220@Krystal>
+In-Reply-To: <20080311093144.GB30220@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803112041.09217.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v3 is an updated version of v2, replacing a "%d" by a "%lu".
+On Tuesday 11 March 2008 20:31, Mathieu Desnoyers wrote:
+> Here is a new version that works. tested on x86. tweaked the bitmasks
+> into unions to remove operations from the critical path, but I tried to
+> keep that clean. It applies on vm.git HEAD.
+>
+> It allows the cmpxchg_local to detect object re-use by keeping a counter in
+> the freeoffset MSBs.
+>
+> Whenever an object is freed in the cpu slab cache, the counter is
+> incremented. Whenever the alloc/free slow paths are modifying the offset or
+> freebase, the sequence counter is also incremented. It is used to make sure
+> we know if freebase has been modified in an interrupt nested over the fast
+> path.
 
-This patch allows to use loop device with partitionned disk image.
+Wow. I applaud the effort to micro optimise things ;)
 
-Original behavior of loop is not modified.
-
-A new parameter is introduced to define how many partition we want to be
-able to manage per loop device. This parameter is "loop_max_part".
-
-For instance, to manage 63 partitions / loop device, we will do:
-# modprobe loop loop_max_part=63
-# ls -l /dev/loop?
-brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
-brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
-brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
-brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
-brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
-brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
-brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
-brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
-
-And to attach a raw partitionned disk image, the original losetup is used:
-
-# losetup -f etch.img
-EXT3 FS on loop0p1, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-loop: module loaded
- loop0: p1 p2 < p5 >
-# ls -l /dev/loop?*
-brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
-brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
-brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
-brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
-brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
-brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
-brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
-brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
-brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
-brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
-brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
-# mount /dev/loop0p1 /mnt
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on loop0p1, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-# ls /mnt
-bench  cdrom  home        lib         mnt   root     srv  usr
-bin    dev    initrd      lost+found  opt   sbin     sys  var
-boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
-# umount /mnt
-# losetup -d /dev/loop0
-
-Of course, the same behavior can be done using kpartx on a loop device,
-but modifying loop avoids to stack several layers of block device (loop +
-device mapper), this is a very light modification (40% of modifications
-are to manage the new parameter).
-
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
----
- Documentation/kernel-parameters.txt |    4 +++
- drivers/block/loop.c                |   39 ++++++++++++++++++++++++++++++----
- 2 files changed, 38 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9a5b665..7f2fd52 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			be mounted
- 			Format: <1-256>
- 
-+	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
-+			Should be greater than 0, the maximum value depends
-+			on max_loop.
-+
- 	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
- 			should make use of.  maxcpus=n : n >= 0 limits the
- 			kernel to using 'n' processors.  n=0 is a special case,
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index 91ebb00..16b2aa6 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -82,6 +82,9 @@
- static LIST_HEAD(loop_devices);
- static DEFINE_MUTEX(loop_devices_mutex);
- 
-+static int loop_max_part;
-+static int part_shift;
-+
- /*
-  * Transfer functions
-  */
-@@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
- 		goto out_putf;
- 
- 	fput(old_file);
-+	if (loop_max_part > 0)
-+		ioctl_by_bdev(bdev, BLKRRPART, 0);
- 	return 0;
- 
-  out_putf:
-@@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
- 	}
- 	lo->lo_state = Lo_bound;
- 	wake_up_process(lo->lo_thread);
-+	if (loop_max_part > 0)
-+		ioctl_by_bdev(bdev, BLKRRPART, 0);
- 	return 0;
- 
- out_clr:
-@@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
- static int max_loop;
- module_param(max_loop, int, 0);
- MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
-+module_param(loop_max_part, int, 0);
-+MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
- 
-@@ -1412,7 +1421,7 @@ static struct loop_device *loop_alloc(int i)
- 	if (!lo->lo_queue)
- 		goto out_free_dev;
- 
--	disk = lo->lo_disk = alloc_disk(1);
-+	disk = lo->lo_disk = alloc_disk(1 << part_shift);
- 	if (!disk)
- 		goto out_free_queue;
- 
-@@ -1422,7 +1431,7 @@ static struct loop_device *loop_alloc(int i)
- 	init_waitqueue_head(&lo->lo_event);
- 	spin_lock_init(&lo->lo_lock);
- 	disk->major		= LOOP_MAJOR;
--	disk->first_minor	= i;
-+	disk->first_minor	= i << part_shift;
- 	disk->fops		= &lo_fops;
- 	disk->private_data	= lo;
- 	disk->queue		= lo->lo_queue;
-@@ -1502,7 +1511,12 @@ static int __init loop_init(void)
- 	 *     themselves and have kernel automatically instantiate actual
- 	 *     device on-demand.
- 	 */
--	if (max_loop > 1UL << MINORBITS)
-+
-+	part_shift = 0;
-+	if (loop_max_part > 0)
-+		part_shift = fls(loop_max_part);
-+
-+	if (max_loop > 1UL << (MINORBITS - part_shift))
- 		return -EINVAL;
- 
- 	if (max_loop) {
-@@ -1510,7 +1524,7 @@ static int __init loop_init(void)
- 		range = max_loop;
- 	} else {
- 		nr = 8;
--		range = 1UL << MINORBITS;
-+		range = 1UL << (MINORBITS - part_shift);
- 	}
- 
- 	if (register_blkdev(LOOP_MAJOR, "loop"))
-@@ -1549,7 +1563,7 @@ static void __exit loop_exit(void)
- 	unsigned long range;
- 	struct loop_device *lo, *next;
- 
--	range = max_loop ? max_loop :  1UL << MINORBITS;
-+	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
- 
- 	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
- 		loop_del_one(lo);
-@@ -1569,4 +1583,19 @@ static int __init max_loop_setup(char *str)
- }
- 
- __setup("max_loop=", max_loop_setup);
-+
-+static int __init max_part_setup(char *str)
-+{
-+	loop_max_part = simple_strtol(str, NULL, 0);
-+	if (loop_max_part > (1UL << (MINORBITS - 1))) {
-+		/* we must keep at least one bit for loop device number */
-+		printk(KERN_ERR
-+			"loop: loop_max_part cannot be greater than %lu\n",
-+			1UL << (MINORBITS - 1));
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+__setup("loop_max_part=", max_part_setup);
- #endif
--- 
-1.5.2.4
+But I hope this doesn't get merged until macro-regressions in SLUB
+are verified to be fixed. It's pretty clear that SLUB's problem is
+not fastpath performance, so I think this would be premature
+optimisation.
 
