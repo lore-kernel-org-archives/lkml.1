@@ -1,112 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbYCKPsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYCKPs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbYCKPsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 11:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYCKPsG
+	id S1757987AbYCKPs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 11:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbYCKPss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 11:48:06 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:33030 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbYCKPsF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 11:48:05 -0400
-Message-ID: <47D6A99F.4040408@panasas.com>
-Date: Tue, 11 Mar 2008 17:47:43 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 11 Mar 2008 11:48:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55609 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754081AbYCKPss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 11:48:48 -0400
+Date: Tue, 11 Mar 2008 16:48:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] scheduler fixes
+Message-ID: <20080311154837.GA27219@elte.hu>
 MIME-Version: 1.0
-To: Sven Schnelle <svens@bitebene.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL pointer
- dereference
-References: <867igc3w8r.fsf@deprecated.bitebene.org>	<47D551B8.9080807@panasas.com>	<1205183577.2941.38.camel@localhost.localdomain> <86zlt68d0z.fsf@deprecated.bitebene.org>
-In-Reply-To: <86zlt68d0z.fsf@deprecated.bitebene.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10 2008 at 23:50 +0200, Sven Schnelle <svens@bitebene.org> wrote:
-> James Bottomley <James.Bottomley@HansenPartnership.com> writes:
-> 
->> On Mon, 2008-03-10 at 17:20 +0200, Boaz Harrosh wrote:
->>> James and linux-scsi CCed.
->> Looks fine .. could someone send the patch in an applyable form (i.e.
->> not quoted).
-> 
-> Sure:
-> 
-> Fix NULL pointer dereference during execution of Internal commands,
-> where gdth only allocates scp, but not scp->sense_buffer. The rest of
-> the code assumes that sense_buffer is allocated, which leads to a kernel
-> oops e.g. on reboot (during cache flush).
-> 
-> Signed-off-by: Sven Schnelle <svens@stackframe.org>
-> ---
-<snip>
 
-Hi Sven.
+Linus, please pull the latest scheduler fixes git tree from:
 
-Do you have gdth HW for testing patches?
-I'm anticipating more scsi-ml changes in that regard in near future and would like
-a more permanent solution for gdth. Could you please try below patch in place of
-your patch and see if it works.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git for-linus
 
-Thanks in advance
+Thanks,
 
-James Hi
-do you think we should keep Sven's patch for the rc-fixes and my solution
-for the next kernel? For the reason that my patch might be theoretically dangerous 
-in regard to locking, queue-life-time, and such side effects?
+	Ingo
 
-Boaz
---- 
->From 1795a2063eabf326c4fba49af4db6572bdd642b6 Mon Sep 17 00:00:00 2001
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Tue, 11 Mar 2008 17:42:06 +0200
-Subject: [PATCH] gdth: Use scsi_get_command for gdth internal commands
+------------------>
+Gregory Haskins (2):
+      Revert "cpu hotplug: adjust root-domain->online span in response to hotplug event"
+      keep rd->online and cpu_online_map in sync
 
-As found by: Sven Schnelle <svens@bitebene.org>
-NULL pointer dereference bug during execution of Internal commands,
-where gdth only allocates scp, but not scp->sense_buffer. The rest of
-the code assumes that sense_buffer is allocated, which leads to a kernel
-oops e.g. on reboot (during cache flush).
+ kernel/sched.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-Fix this by leting scsi-ml allocate the command for us, in anticipation
-of future changes to commands allocation.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/scsi/gdth.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index 4560e39..643e7d6 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -448,7 +448,7 @@ int __gdth_execute(struct scsi_device *sdev, gdth_cmd_str *gdtcmd, char *cmnd,
-     DECLARE_COMPLETION_ONSTACK(wait);
-     int rval;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b02e4fc..1cb53fb 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5813,13 +5813,6 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		/* Must be high prio: stop_machine expects to yield to it. */
+ 		rq = task_rq_lock(p, &flags);
+ 		__setscheduler(rq, p, SCHED_FIFO, MAX_RT_PRIO-1);
+-
+-		/* Update our root-domain */
+-		if (rq->rd) {
+-			BUG_ON(!cpu_isset(cpu, rq->rd->span));
+-			cpu_set(cpu, rq->rd->online);
+-		}
+-
+ 		task_rq_unlock(rq, &flags);
+ 		cpu_rq(cpu)->migration_thread = p;
+ 		break;
+@@ -5828,6 +5821,15 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	case CPU_ONLINE_FROZEN:
+ 		/* Strictly unnecessary, as first user will wake it. */
+ 		wake_up_process(cpu_rq(cpu)->migration_thread);
++
++		/* Update our root-domain */
++		rq = cpu_rq(cpu);
++		spin_lock_irqsave(&rq->lock, flags);
++		if (rq->rd) {
++			BUG_ON(!cpu_isset(cpu, rq->rd->span));
++			cpu_set(cpu, rq->rd->online);
++		}
++		spin_unlock_irqrestore(&rq->lock, flags);
+ 		break;
  
--    scp = kzalloc(sizeof(*scp), GFP_KERNEL);
-+    scp = scsi_get_command(sdev, GFP_KERNEL);
-     if (!scp)
-         return -ENOMEM;
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -5879,7 +5881,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		spin_unlock_irq(&rq->lock);
+ 		break;
  
-@@ -472,7 +472,7 @@ int __gdth_execute(struct scsi_device *sdev, gdth_cmd_str *gdtcmd, char *cmnd,
-     rval = cmndinfo.status;
-     if (info)
-         *info = cmndinfo.info;
--    kfree(scp);
-+    scsi_put_command(scp);
-     return rval;
- }
+-	case CPU_DOWN_PREPARE:
++	case CPU_DYING:
++	case CPU_DYING_FROZEN:
+ 		/* Update our root-domain */
+ 		rq = cpu_rq(cpu);
+ 		spin_lock_irqsave(&rq->lock, flags);
+@@ -6103,6 +6106,8 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 	rq->rd = rd;
  
--- 
-1.5.3.3
-
-
-
+ 	cpu_set(rq->cpu, rd->span);
++	if (cpu_isset(rq->cpu, cpu_online_map))
++		cpu_set(rq->cpu, rd->online);
+ 
+ 	for (class = sched_class_highest; class; class = class->next) {
+ 		if (class->join_domain)
