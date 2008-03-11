@@ -1,46 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYCKTen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYCKTgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYCKTen (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 15:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYCKTee
+	id S1755390AbYCKTgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 15:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYCKTgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 15:34:34 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45687 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752918AbYCKTee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 15:34:34 -0400
-Date: Tue, 11 Mar 2008 20:34:50 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<alejandro.riveira@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Secctions missmatches on latest git
-Message-ID: <20080311193450.GA10688@uranus.ravnborg.org>
-References: <1205251628.11568.4.camel@Varda>
+	Tue, 11 Mar 2008 15:36:35 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:51234 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbYCKTge (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 15:36:34 -0400
+Date: Tue, 11 Mar 2008 16:36:30 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [0/13] General DMA zone rework
+Message-ID: <20080311163630.776484a1@mandriva.com.br>
+In-Reply-To: <20080311184926.GI27593@one.firstfloor.org>
+References: <200803071007.493903088@firstfloor.org>
+	<20080307175148.3a49d8d3@mandriva.com.br>
+	<20080308004654.GQ7365@one.firstfloor.org>
+	<20080310150316.752e4489@mandriva.com.br>
+	<20080310180843.GC28780@one.firstfloor.org>
+	<20080311142624.1dbd3af5@mandriva.com.br>
+	<20080311173540.GG27593@one.firstfloor.org>
+	<20080311150048.4376c73a@mandriva.com.br>
+	<20080311184926.GI27593@one.firstfloor.org>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i586-mandriva-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1205251628.11568.4.camel@Varda>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 05:07:08PM +0100, Alejandro Riveira Fernández wrote:
-> Hi;
->  I do not know if this reports are useful but FWIW...
->  I have compiled the kernel with this command line:
-> 
->  make CONFIG_DEBUG_SECTION_MISMATCH=y  CC=gcc-4.2 -sj5 2> ../warnings.txt
-> 
-> and get this results:
-...
-There are ~10 patches pending to solve various section mismatch
-warnings and most if not all the below are fixed. They are staged
-in -mm, the acpi and pci trees for now.
+Em Tue, 11 Mar 2008 19:49:26 +0100
+Andi Kleen <andi@firstfloor.org> escreveu:
 
-Will hit mainline in next merge window.
-But thanks for the report anyway!
+| > | Oops. Thanks. I'll double check that. mask allocator indeed doesn't
+| > | handle __GFP_COMP and nobody should be passing that into dma_alloc_coherent
+| > | anyways. But the bug you got was for the small size wasn't it?
+| > 
+| >  No, it triggers the BUG_ON() which checks the gfp, not the one
+| > which checks MASK_MIN_SIZE.
+| 
+| I see. I misdiagnosed your original problem then. But fixing the 
+| size < 16 bytes case was a good idea anyways, someone else would
+| have triggered that.
 
-	Sam
+ I see.
+
+| Can you perhaps send me a complete patch fixing that for sound and the 
+| __GFP_COMP with description and Signed-off-by etc.? I can add it to my 
+| patchkit then and you would be correctly attributed. Otherwise I can do it 
+| myself too if you prefer. I'll also do a grep over the tree for other
+| such bogus __GFP_COMP users. That was an issue I hadn't considered before.
+
+ Here are you (passed minimal tests).
+
+------
+ALSA: Convert snd_malloc_dev_pages() to the mask allocator
+
+The mask allocator do not handle the __GFP_COMP flag and
+will BUG_ON() if that flag is passed to it.
+
+Also, we should pass the allocation size in bytes to
+dma_alloc_coherent().
+
+Signed-off-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
+
+Index: linux-2.6.24/sound/core/memalloc.c
+===================================================================
+--- linux-2.6.24.orig/sound/core/memalloc.c
++++ linux-2.6.24/sound/core/memalloc.c
+@@ -210,20 +210,17 @@ void snd_free_pages(void *ptr, size_t si
+ /* allocate the coherent DMA pages */
+ static void *snd_malloc_dev_pages(struct device *dev, size_t size, dma_addr_t *dma)
+ {
+-	int pg;
+ 	void *res;
+ 	gfp_t gfp_flags;
+ 
+ 	snd_assert(size > 0, return NULL);
+ 	snd_assert(dma != NULL, return NULL);
+-	pg = get_order(size);
+ 	gfp_flags = GFP_KERNEL
+-		| __GFP_COMP	/* compound page lets parts be mapped */
+ 		| __GFP_NORETRY /* don't trigger OOM-killer */
+ 		| __GFP_NOWARN; /* no stack trace print - this call is non-critical */
+-	res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
++	res = dma_alloc_coherent(dev, size, dma, gfp_flags);
+ 	if (res != NULL)
+-		inc_snd_pages(pg);
++		inc_snd_pages(get_order(size));
+ 
+ 	return res;
+ }
+
+
+
+-- 
+Luiz Fernando N. Capitulino
