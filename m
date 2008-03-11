@@ -1,178 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYCKBYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbYCKBa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbYCKBYt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 21:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYCKBYh
+	id S1755897AbYCKBa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 21:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYCKBaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 21:24:37 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:31715 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757916AbYCKBYf (ORCPT
+	Mon, 10 Mar 2008 21:30:18 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:50433 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbYCKBaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 21:24:35 -0400
-Date: Tue, 11 Mar 2008 02:24:32 +0100
+	Mon, 10 Mar 2008 21:30:16 -0400
+Date: Tue, 11 Mar 2008 02:30:14 +0100
 From: Andi Kleen <andi@firstfloor.org>
 To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz, zdenek.kabelac@gmail.com
-Subject: [PATCH REPOST] Run IST traps from user mode preemptive on process stack
-Message-ID: <20080311012432.GA28576@basil.nowhere.org>
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH REPOST for 2.6.25] Use an own random generator for pageattr-test.c
+Message-ID: <20080311013014.GA28682@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Mar 2008 01:18:01.0315 (UTC) FILETIME=[BFA93B30:01C88315]
+X-OriginalArrivalTime: 11 Mar 2008 01:23:43.0063 (UTC) FILETIME=[8B5BD670:01C88316]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Run IST traps from user mode preemptive on process stack
+Use an own random generator for pageattr-test.c
 
-[Repost. Please ack or nack. -Andi]
+[Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
+candidate because it fixes a subtle bug]
 
-x86-64 has a few exceptions which run on special architecture 
-supported IST exception stacks: these are nmi, double fault, stack fault,
- int 3, debug.
+pageattr-test attempts to be repeatable and uses srandom32 to get a 
+repeatable random number sequence.
 
-Previously they would check for a scheduling event on returning
-if the original CPU state was user mode and then switch to a 
-process stack to schedule.
+Using srandom32() wasn't a good idea for various reasons:
+- it is per cpu and if the cpu changes on a preemptible kernel it gets lost
+- networking and random32 puts in some own state
+- srandom32() does not actually reset the state, but just adds bits to 
+it
 
-But the actual trap handler would still run on the IST stack
-with preemption disabled.
-
-This patch changes these traps instead to always switch 
-to the process stack when the trap originated from user mode.
-For kernel traps it keeps running non preemptive on the IST stack
- because that is much safer (e.g. to still get nmi watchdog events
-out even when the process stack is corrupted) 
-
-Then the actual trap handlers can run with preemption enabled
-or schedule as needed (e.g. to take locks) 
-
-This fixes a regression I added earlier with print_vma_addr()
-executing down() in these trap handlers from user space.
-
-Strictly the change would have been only needed for debug 
-and int3, but since they share this code as macros it was 
-cleanest to just change all.
-
-Cc: jkosina@suse.cz
-Cc: zdenek.kabelac@gmail.com
+Instead use a very simple private standard rnd that gives repeatable
+results. I took the reference rand() from ISO-C.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/kernel/entry_64.S |   17 ++++++++++-------
- arch/x86/kernel/traps_64.c |   17 ++++++++++-------
- 2 files changed, 20 insertions(+), 14 deletions(-)
+ arch/x86/mm/pageattr-test.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-Index: linux/arch/x86/kernel/entry_64.S
+Index: linux/arch/x86/mm/pageattr-test.c
 ===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S
-+++ linux/arch/x86/kernel/entry_64.S
-@@ -770,12 +770,18 @@ END(spurious_interrupt)
- 	.if \ist
- 	movq	%gs:pda_data_offset, %rbp
- 	.endif
--	movq %rsp,%rdi
- 	movq ORIG_RAX(%rsp),%rsi
- 	movq $-1,ORIG_RAX(%rsp)
- 	.if \ist
- 	subq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
- 	.endif
-+	testl $3,CS(%rsp)
-+	jz 2f					/* in kernel? stay on exception stack for now */
-+	movq %rsp,%rdi
-+	call sync_regs				/* Move all state over to process stack */
-+	movq %rax,%rsp				/* switch stack to process stack */
-+2:
-+	movq %rsp,%rdi
- 	call \sym
- 	.if \ist
- 	addq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
-@@ -801,16 +807,16 @@ END(spurious_interrupt)
- 	.macro paranoidexit trace=1
- 	/* ebx:	no swapgs flag */
- paranoid_exit\trace:
--	testl %ebx,%ebx				/* swapgs needed? */
--	jnz paranoid_restore\trace
- 	testl $3,CS(%rsp)
- 	jnz   paranoid_userspace\trace
- paranoid_swapgs\trace:
-+	testl %ebx,%ebx 			/* swapgs needed? */
-+	jnz 1f
- 	.if \trace
- 	TRACE_IRQS_IRETQ 0
- 	.endif
- 	SWAPGS_UNSAFE_STACK
--paranoid_restore\trace:
-+1:
- 	RESTORE_ALL 8
- 	jmp irq_return
- paranoid_userspace\trace:
-@@ -818,9 +824,6 @@ paranoid_userspace\trace:
- 	movl threadinfo_flags(%rcx),%ebx
- 	andl $_TIF_WORK_MASK,%ebx
- 	jz paranoid_swapgs\trace
--	movq %rsp,%rdi			/* &pt_regs */
--	call sync_regs
--	movq %rax,%rsp			/* switch stack for scheduling */
- 	testl $_TIF_NEED_RESCHED,%ebx
- 	jnz paranoid_schedule\trace
- 	movl %ebx,%edx			/* arg3: thread flags */
-Index: linux/arch/x86/kernel/traps_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/traps_64.c
-+++ linux/arch/x86/kernel/traps_64.c
-@@ -84,7 +84,8 @@ static inline void conditional_sti(struc
+--- linux.orig/arch/x86/mm/pageattr-test.c
++++ linux/arch/x86/mm/pageattr-test.c
+@@ -101,6 +101,14 @@ static int print_split(struct split_stat
+ static unsigned long addr[NTEST];
+ static unsigned int len[NTEST];
  
- static inline void preempt_conditional_sti(struct pt_regs *regs)
++static int next = 100;
++
++static unsigned my_rand(void)
++{
++	next = next * 1103515245 + 12345;
++	return next;
++}
++
+ /* Change the global bit on random pages in the direct mapping */
+ static int pageattr_test(void)
  {
--	inc_preempt_count();
-+	if (!user_mode(regs))
-+		inc_preempt_count();
- 	if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_enable();
- }
-@@ -95,7 +96,8 @@ static inline void preempt_conditional_c
- 		local_irq_disable();
- 	/* Make sure to not schedule here because we could be running
- 	   on an exception stack. */
--	dec_preempt_count();
-+	if (!user_mode(regs))
-+		dec_preempt_count();
- }
+@@ -123,10 +131,9 @@ static int pageattr_test(void)
+ 	memset(bm, 0, (max_pfn_mapped + 7) / 8);
  
- int kstack_depth_to_print = 12;
-@@ -855,7 +857,7 @@ asmlinkage __kprobes void default_do_nmi
- 		io_check_error(reason, regs);
- }
+ 	failed += print_split(&sa);
+-	srandom32(100);
  
--/* runs on IST stack. */
-+/* May run on IST stack. */
- asmlinkage void __kprobes do_int3(struct pt_regs * regs, long error_code)
- {
- 	trace_hardirqs_fixup();
-@@ -868,9 +870,10 @@ asmlinkage void __kprobes do_int3(struct
- 	preempt_conditional_cli(regs);
- }
+ 	for (i = 0; i < NTEST; i++) {
+-		unsigned long pfn = random32() % max_pfn_mapped;
++		unsigned long pfn = my_rand() % max_pfn_mapped;
  
--/* Help handler running on IST stack to switch back to user stack
--   for scheduling or signal handling. The actual stack switch is done in
--   entry.S */
-+/*
-+ * Help handler running on IST stack to switch back to user stack.
-+ * The actual stack switch is done in entry.S
-+ */
- asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *eregs)
- {
- 	struct pt_regs *regs = eregs;
-@@ -889,7 +892,7 @@ asmlinkage __kprobes struct pt_regs *syn
- 	return regs;
- }
- 
--/* runs on IST stack. */
-+/* May run on IST stack. */
- asmlinkage void __kprobes do_debug(struct pt_regs * regs,
- 				   unsigned long error_code)
- {
+ 		addr[i] = (unsigned long)__va(pfn << PAGE_SHIFT);
+ 		len[i] = random32() % 100;
