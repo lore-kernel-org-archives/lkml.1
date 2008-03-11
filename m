@@ -1,112 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750970AbYCKXjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbYCKXnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750970AbYCKXjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYCKXjJ
+	id S1752567AbYCKXnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYCKXnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:39:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:18469 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbYCKXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:39:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,482,1199692800"; 
-   d="scan'208";a="217499167"
-Date: Tue, 11 Mar 2008 16:34:11 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-       warthog19@eaglescrag.net, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080311163411.7ddd9267@appleyard>
-In-Reply-To: <47D684D0.6060200@jp.fujitsu.com>
-References: <20080229002341.GA21420@ldl.fc.hp.com>
-	<20080301144307.GD24386@parisc-linux.org>
-	<20080304054927.GA15566@suse.de>
-	<200803041018.29035.jbarnes@virtuousgeek.org>
-	<20080304193036.GB5534@suse.de>
-	<20080304230937.GD3694@ldl.fc.hp.com>
-	<47CDF339.3060304@jp.fujitsu.com>
-	<20080305202052.GN3694@ldl.fc.hp.com>
-	<47D684D0.6060200@jp.fujitsu.com>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 19:43:17 -0400
+Received: from n1a.bullet.mail.tp2.yahoo.com ([203.188.202.90]:27660 "HELO
+	n1a.bullet.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750932AbYCKXnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:43:16 -0400
+X-Yahoo-Newman-Id: 787761.60739.bm@omp402.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IR8URbMPqwtn3v+mtho++Rmz2I/TXZe4sMPqIUPmbtPGPoJQ0E2LLwKzlYJ/wiQVH23IxviEEkdEL64slo7ZoD0ncTZiprYNHxMyFQkB5OwkleVSiDO4VoLWDS3JNaeeGAwy/VagdeLYIVFYmkwJxY5mpGCmOuxjy36BkWoIAl0=  ;
+X-YMail-OSG: 3HD0FJYVM1nfgukJSjnymFQDgm32wNNoDQXyt993Yzsh7n2pqe8bpXQeN7PmL9Bt_.9cVJo8Qw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Nicholas Miell <nmiell@comcast.net>
+Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
+Date: Wed, 12 Mar 2008 10:42:43 +1100
+User-Agent: KMail/1.9.5
+Cc: Cyrus Massoumi <cyrusm@gmx.net>, "Molnar, Ingo" <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200803111749.29143.nickpiggin@yahoo.com.au> <47D6FAD0.1020608@gmx.net> <1205277132.12854.19.camel@entropy>
+In-Reply-To: <1205277132.12854.19.camel@entropy>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803121042.43895.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 22:10:40 +0900
-Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+On Wednesday 12 March 2008 10:12, Nicholas Miell wrote:
+> On Tue, 2008-03-11 at 22:34 +0100, Cyrus Massoumi wrote:
 
-> Hi Alex-san,
+> Piggin said the following:
+> > The problem with MySQL contention means that if the scheduler
+> > unluckily chooses to deschedule a lock holder, then you can get
+> > idle time building up on other cores and you can get context switch
+> > cascades as things all pile up onto this heavily contended lock. As
+> > such, it means MySQL is not an ideal candidate for looking at
+> > performance behaviour. I discounted the relatively worse scaling of
+> > MySQL with 2.6.25-rc (than 2.6.22) as such an effect.
 >
-> I tried your patches, and I have two comments. I want 1) to be fixed
-> before merge to Greg's tree (or linux-next?), at least.
+> which I interpreted to mean that MySQL performs worse on 2.6.23+ than on
+> 2.6.22 but for some reason this doesn't matter.
 
-yes, we will not merge these patches without your ack.
-
-> 
->  1) I checked ACPI spec again and again, but I could not find any
->     reason to add Fujitsu servers to quirks list. So I'd like you to
->     add HP servers to the quirks list. I'll send the following patches
->     followed by this e-mail.
-
-I have followed up with a question on this on another thread, so I'll
-skip to #2...
-<snip>
-
-> 
->  2) The ACPI PCI slot detection driver would change the slot names of
->     some hotplug drivers (at least I checked shpchp and pciehp). And
->     the name of slots are depending on the order of driver loading.
->     For example, on my system which has several SHPCHP slots and
->     PCIEHP slots, the name of PCIEHP slots are changed as
->     follows. Please note that PCIEHP based slots are 0034_0027 and
->     0032_0026, and others are SHPCHP based slots.
-> 
->     - Without ACPI PCI slot detection driver
->       # ls /sys/bus/pci/slots/
->       0009_0016  0014_0018  0019_0020  0021_0022  0034_0027
->       0011_0017  0016_0019  0021_0021  0032_0026
-> 
->     - With ACPI PCI slot detection driver
->       # ls /sys/bus/pci/slots/
->       0009_0016  0014_0018  0019_0020  0021_0022  27
->       0011_0017  0016_0019  0021_0021  26
-> 
->     I had thought it is not a big problem before because people who
->     don't like new names would not load the PCI slot driver. But since
->     it is loaded automatically at boot time, I'm wondering that it
->     would be a problem. For example, some platform, not fujitsu,
->     depends on the old slot name to work, IIRC (Maybe Kristen knows
->     the background about it). And I don't think the fact that slot
->     names are changed depending on the order of driver loading is
->     acceptable by system management people/software, though I don't
->     have such software.
-> 
->     Though I don't have any specific idea about this, folliwings might
->     be candidates.
-> 
->     - Override slot names with hotplug driver's slot names
-
-I think this should be done - if the pci slot driver detects that a
-hotplug driver is controlling a slot, it should allow that driver to
-set the name of the slot.
-
->     - Unify slot names among all hotplug drivers
-
-I'm not sure if we can do this, since slot name might depend on what
-spec people are implementing.
-
->     - Stop automatic loading of ACPI PCI slot driver
-
-I think we should definitely implement this one ^^^.
+I didn't try 2.6.23, which I think has bigger problems due to new
+CFS code. 2.6.25-rc fixes that, but yes in general I think the MySQL
+performance profile is worse on later kernels: while it has a
+very slightly higher peak performance, it drops off in performance
+more quickly after that peak. I initially wasn't too worried about
+it, but seeing as postgresql has a similar problem, I've made the
+scheduler developers aware of it.
 
