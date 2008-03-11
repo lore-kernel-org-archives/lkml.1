@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbYCKXsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbYCKXuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbYCKXsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYCKXrx
+	id S1752313AbYCKXuJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYCKXt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:47:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45601 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751123AbYCKXrx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:47:53 -0400
-Date: Tue, 11 Mar 2008 16:47:21 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Nicholas Miell <nmiell@comcast.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
-Message-ID: <20080311164721.1d0a5654@extreme>
-In-Reply-To: <1205277132.12854.19.camel@entropy>
-References: <200803111749.29143.nickpiggin@yahoo.com.au>
-	<1205269674.12854.16.camel@entropy>
-	<47D6FAD0.1020608@gmx.net>
-	<1205277132.12854.19.camel@entropy>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 19:49:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37092 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbYCKXt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:49:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 00:49:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Vivek Goyal <vgoyal@redhat.com>, "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080311211004.GA30164@redhat.com> <20080311232415.GA26320@elf.ucw.cz>
+In-Reply-To: <20080311232415.GA26320@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803120049.06491.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 16:12:12 -0700
-Nicholas Miell <nmiell@comcast.net> wrote:
+On Wednesday, 12 of March 2008, Pavel Machek wrote:
+> Hi!
 
-> 
-> On Tue, 2008-03-11 at 22:34 +0100, Cyrus Massoumi wrote:
-> > Nicholas Miell wrote:
-> >
-> > > (Also, ignoring MySQL because it's a terrible piece of software at least
-> > > when regarding it's scalability is a bad idea. It's the M in LAMP, it
-> > > has a huge user base, and FreeBSD manages to outperform Linux with the
-> > > same unscalable piece of software.)
-> > 
-> > Did you actually see this? 
-> > http://www.kernel.org/pub/linux/kernel/people/npiggin/sysbench/
-> > 
-> > FreeBSD does not outperform Linux, it's actually a bit faster according 
-> > to Nick's tests.
-> 
-> I am aware of those results, but in the mail I was responding to, Nick
-> Piggin said the following:
-> 
-> > The problem with MySQL contention means that if the scheduler
-> > unluckily chooses to deschedule a lock holder, then you can get
-> > idle time building up on other cores and you can get context switch
-> > cascades as things all pile up onto this heavily contended lock. As
-> > such, it means MySQL is not an ideal candidate for looking at
-> > performance behaviour. I discounted the relatively worse scaling of
-> > MySQL with 2.6.25-rc (than 2.6.22) as such an effect.
-> 
-> which I interpreted to mean that MySQL performs worse on 2.6.23+ than on
-> 2.6.22 but for some reason this doesn't matter.
-> 
+Hi,
 
-How many of these problems are due to poorly implemented userlevel
-spinlocks?  Do the database spinlocks map to futexes?
+> > > This is a minimal patch with only the essential features. All
+> > > additional features are split out and can be discussed later. I think
+> > > it may be easier to get consensus on this minimal patch.
+> > > 
+> > 
+> > Hi Huang,
+> > 
+> > This patchset is slowly getting better. True that first we need to come
+> > up with minimal infrastructure patch and then think of building more
+> > functionality on top of it.
+> > 
+> ...
+> > > The features of this patch can be used for as follow:
+> > > 
+> > > - A simple hibernation implementation without ACPI support. You can
+> > >   kexec a hibernating kernel, save the memory image of original system
+> > >   and shutdown the system. When resuming, you restore the memory image
+> > >   of original system via ordinary kexec load then jump back.
+> > > 
+> > 
+> > The main usage of this functionality is for hibernation. I am not sure
+> > what has been the conclusion of previous discussions.
+> > 
+> > Rafael/Pavel, does the approach of doing hibernation using a separate
+> > kernel holds promise?
+> 
+> Its certainly "more traditional" method of doing hibernation than
+> tricks swsusp currently plays.
+
+What exactly are you referring to?
+
+> Yes, I'd like these patches to go in, being able to switch kernels seems like
+> useful tool. 
+
+No objection from me.
+ 
+> Now, I guess they are some difficulties, like ACPI integration, and
+> some basic drawbacks, like few seconds needed to boot second kernel
+> during suspend.
+> 
+> ...OTOH this is probably only chance to eliminate freezer from
+> swsusp...
+
+Some facts:
+
+* In order to be able to do suspend (STR) without the freezer, we need to make
+  device drivers block access to devices from applications during suspend.
+* There's no reason to think that we can't use this same mechanism for
+  hibernation (the only difficulty seems to be the handling of devices used for
+  saving the image).
+* We need the drivers to quiesce devices to be able to do the kexec jump in the
+  first place (and to avoid races, we'll need them to block applications'
+  access to devices just like for STR, which is the sufficient condition for
+  removing the freezer).
+
+So, I don't really think that the "freezer removal" argument is valid here.
+
+Moreover, if this had been the _only_ argument for the $subject functionality,
+I'd have been against it.
+
+Thanks,
+Rafael
