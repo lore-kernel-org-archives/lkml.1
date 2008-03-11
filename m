@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYCKLNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYCKLO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbYCKLNJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 07:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYCKLM6
+	id S1756004AbYCKLO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 07:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYCKLOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 07:12:58 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56838 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752654AbYCKLM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 07:12:58 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX185I646d6w5R1MYbgOP4Xf+nEo4EBQS7klS6hlZet
-	+7ntC24nckPOeE
-Date: Tue, 11 Mar 2008 12:13:05 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Tejun Heo <htejun@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
-Subject: Re: Unknown SATA PIIX PCI device ID 0x29b6
-In-Reply-To: <47D66071.7010906@gmail.com>
-Message-ID: <Pine.LNX.4.64.0803111210010.5775@axis700.grange>
-References: <Pine.LNX.4.64.0802282306190.10087@axis700.grange>
- <20080228225603.2764bfd1@core> <Pine.LNX.4.64.0802290010320.10498@axis700.grange>
- <47CFADDF.20200@gmail.com> <Pine.LNX.4.64.0803061248070.5670@axis700.grange>
- <47D0C9E6.8090301@gmail.com> <Pine.LNX.4.64.0803082345000.6749@axis700.grange>
- <47D3723B.3040700@gmail.com> <Pine.LNX.4.64.0803092221560.7385@axis700.grange>
- <47D485EC.1060103@gmail.com> <Pine.LNX.4.64.0803100821440.3948@axis700.grange>
- <47D53231.30107@gmail.com> <Pine.LNX.4.64.0803111058090.5503@axis700.grange>
- <47D66071.7010906@gmail.com>
+	Tue, 11 Mar 2008 07:14:52 -0400
+Received: from phunq.net ([64.81.85.152]:33393 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750959AbYCKLOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 07:14:51 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Lars Marowsky-Bree <lmb@suse.de>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Tue, 11 Mar 2008 03:14:40 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grzegorz Kulewski <kangur@polcom.net>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <20080310093737.3c1e938a@core> <20080310210352.GJ1581@marowsky-bree.de>
+In-Reply-To: <20080310210352.GJ1581@marowsky-bree.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803110414.40954.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Tejun Heo wrote:
+Hi Lars,
 
-> Hello,
+On Monday 10 March 2008 14:03, Lars Marowsky-Bree wrote:
+> On 2008-03-10T09:37:37, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Why - your chunks simply become a linked list in write barrier order.
+> > Solve your bitmap sweep cost as well. As you are already making a copy
+> > before going to backing store you don't have the internal consistency
+> > problems of further writes during the I/O.
 > 
-> Guennadi Liakhovetski wrote:
-> > Well, I am not sure, whether it helps, tried booting with both 1.5Gbps and 
-> > this patch, it recovers now within 30 sec in both cold- and hot-plug 
-> > cases. To really state, that it has improved from about 55 sec down to 30 
-> > sec one would need more testing. Is this the kind of improvement you 
-> > expected?
-> 
-> Not really.  :-P
-> 
-> > Can it be, that with this hardware it just cannot get better? 
-> > Remember, the disk is an external eSATA enclosure with a (relatively new) 
-> > PATA disk inside.
-> 
-> Can you try out a shorter cable?  I had a lot of troubles with eSATA +
-> long cable + PMP combinations.  Using shorter cable usually solves the
-> problem for me.
+> You get duplicated blocks though. But yes, I agree - write-backs to the
+> disk must be ordered, other it's going to be too unreliable in practice.
 
-Well, this cable is only about 50cm long, or even shorter, and using a 
-shorter one would be difficult there, even if I manage to get hold of one. 
-But, in principle, if this is not a generic ahci problem that needs to be 
-solved, I personally can somehow live with it. Having to wait 1 minute is 
-not very nice, but so far not critical.
+I disagree with your claim of "too unreliable".  If the UPS power does
+not fail before flushing completes, it is perfectly reliable.  Perhaps
+you need a belt to go with your suspenders?
 
-Thanks for your help
-Guennadi
----
-Guennadi Liakhovetski
+As I wrote earlier, you cannot have optimal writeback speed and ordering
+at the same time.  I can see eventually implementing some kind of ordered
+writeback mode where completion is signalled to the application before
+writeback completes.  You then get to choose between fastest flush and
+most paranoid ordering.  I guess everybody will choose fastest flush,
+but I will be happy to accept your patch to see which they actually
+choose.
+
+> > Yes you may need to throttle in the specific case of having too many
+> > copies of pages sitting in the queue - but surely that would be the set of
+> > pages that are written but not yet committed from a previous store
+> > barrier ?
+> 
+> You could switch from a journal like the above to a bitmap when this
+> overrun occurs. (Typical problem in replication.) SteelEye holds a
+> patent on that though, as far as I know.
+
+If you think this is like replication then you have the wrong idea
+about what is going on.  This is a cache consistency algorithm, not
+a replication algorithm.
+
+Regards,
+
+Daniel
