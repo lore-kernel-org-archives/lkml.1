@@ -1,387 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbYCKOgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYCKOqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbYCKOgE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 10:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYCKOfx
+	id S1755369AbYCKOqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 10:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYCKOp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 10:35:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:51326 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbYCKOfv (ORCPT
+	Tue, 11 Mar 2008 10:45:58 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:25926 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752706AbYCKOp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 10:35:51 -0400
-Date: Tue, 11 Mar 2008 15:35:50 +0100
-From: Jan Kara <jack@suse.cz>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com
-Subject: Re: [RFC, PATCH 4/6] jbd: refactor nested journal log recovery loop into separate functions
-Message-ID: <20080311143550.GB6544@atrey.karlin.mff.cuni.cz>
-References: <a047dfbd7855d5f484ae8a3434f6a073302505be.1204685366.git.duaneg@dghda.com> <8644b32ddec999bbc1da0ac55ad7b66d0b8176de.1204685366.git.duaneg@dghda.com>
+	Tue, 11 Mar 2008 10:45:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GTZvS77IJhHmuNo6m9LoGjENP2S/fxNGUdusnKkEqA4WCse9NlVTkDTGvPoaZ2ejixXS57+yB+UnUF78s3E7lKiW7aecfGbz5nkcEDHFxeMisoZUUtr5A43Eh18O2ci4goZ1c8G4shO8+535t580ZLvUdGYaYNfoppP8pCHKKns=
+Message-ID: <84144f020803110745jcc73368l84e2268b68133520@mail.gmail.com>
+Date: Tue, 11 Mar 2008 16:45:48 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC PATCH] Implement slub fastpath with sequence number
+Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200803112041.09217.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8644b32ddec999bbc1da0ac55ad7b66d0b8176de.1204685366.git.duaneg@dghda.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080311093144.GB30220@Krystal>
+	 <200803112041.09217.nickpiggin@yahoo.com.au>
+X-Google-Sender-Auth: 53474a6e126980b7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The do_one_pass function iterates through the jbd log operating on blocks
-> depending on the pass. During the replay pass descriptor blocks are processed
-> by an inner loop which replays them. The nesting makes the code difficult to
-> follow or to modify. Splitting the inner loop and replay code into separate
-> functions simplifies matters.
-> 
-> The refactored code no longer unnecessarily reads revoked data blocks, so
-> potential read errors from such blocks will cause differing behaviour. Aside
-> from that there should be no functional effect.
-  Hmm, if I read your patch correctly, previously we aborted journal
-replay when we found a block with unknown block magic but now we
-continue replaying. Why have you done such change? And similarly when
-some error happened when parsing revoke records block...
+Hi Nick,
 
-									Honza
+On Tue, Mar 11, 2008 at 11:41 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+>  Wow. I applaud the effort to micro optimise things ;)
+>
+>  But I hope this doesn't get merged until macro-regressions in SLUB
+>  are verified to be fixed. It's pretty clear that SLUB's problem is
+>  not fastpath performance, so I think this would be premature
+>  optimisation.
 
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> ---
-> 
-> Note the TODO before the block read in the outer loop below. We could possibly
-> attempt to continue after a failed read as we do when replaying descriptor
-> blocks. However if it was a descriptor block we'd likely bomb out on the next
-> iteration anyway, so I'm not sure it would be worth it. Thoughts?
-> 
->  fs/jbd/recovery.c |  243 ++++++++++++++++++++++++++++-------------------------
->  1 files changed, 127 insertions(+), 116 deletions(-)
-> 
-> diff --git a/fs/jbd/recovery.c b/fs/jbd/recovery.c
-> index 2b8edf4..e2ac78f 100644
-> --- a/fs/jbd/recovery.c
-> +++ b/fs/jbd/recovery.c
-> @@ -307,6 +307,101 @@ int journal_skip_recovery(journal_t *journal)
->  	return err;
->  }
->  
-> +static int replay_data_block(
-> +	journal_t *journal, struct buffer_head *obh, char *data,
-> +	int flags, unsigned long blocknr)
-> +{
-> +	struct buffer_head *nbh;
-> +
-> +	/* Find a buffer for the new data being restored */
-> +	nbh = __getblk(journal->j_fs_dev, blocknr, journal->j_blocksize);
-> +	if (nbh == NULL)
-> +		return -ENOMEM;
-> +
-> +	lock_buffer(nbh);
-> +	memcpy(nbh->b_data, obh->b_data, journal->j_blocksize);
-> +	if (flags & JFS_FLAG_ESCAPE)
-> +		*((__be32 *)data) = cpu_to_be32(JFS_MAGIC_NUMBER);
-> +
-> +	BUFFER_TRACE(nbh, "marking dirty");
-> +	set_buffer_uptodate(nbh);
-> +	mark_buffer_dirty(nbh);
-> +	BUFFER_TRACE(nbh, "marking uptodate");
-> +	/* ll_rw_block(WRITE, 1, &nbh); */
-> +	unlock_buffer(nbh);
-> +	brelse(nbh);
-> +
-> +	return 0;
-> +}
-> +
-> +/* Replay a descriptor block: write all of the data blocks. */
-> +static int replay_descriptor_block(
-> +	journal_t *journal, char *data,
-> +	unsigned int next_commit_ID,
-> +	unsigned long *next_log_block,
-> +	struct recovery_info *info)
-> +{
-> +	int err;
-> +	int success = 0;
-> +	char *tagp;
-> +	unsigned long io_block;
-> +	struct buffer_head *obh;
-> +	unsigned long next = *next_log_block;
-> +
-> +	tagp = &data[sizeof(journal_header_t)];
-> +	while ((tagp - data + sizeof(journal_block_tag_t)) <=
-> +	       journal->j_blocksize) {
-> +		unsigned long blocknr;
-> +		journal_block_tag_t *tag = (journal_block_tag_t *) tagp;
-> +		int flags = be32_to_cpu(tag->t_flags);
-> +
-> +		io_block = next++;
-> +		wrap(journal, next);
-> +		blocknr = be32_to_cpu(tag->t_blocknr);
-> +
-> +		/* If the block has been revoked, then we're all done here. */
-> +		if (journal_test_revoke(journal, blocknr, next_commit_ID)) {
-> +			++info->nr_revoke_hits;
-> +			goto skip_write;
-> +		}
-> +
-> +		err = jread(&obh, journal, io_block);
-> +		if (err) {
-> +
-> +			/* Recover what we can, but
-> +			 * report failure at the end. */
-> +			success = err;
-> +			printk(KERN_ERR "JBD: IO error %d recovering "
-> +			       "block %ld in log\n", err, io_block);
-> +			continue;
-> +		}
-> +		J_ASSERT(obh != NULL);
-> +
-> +		err = replay_data_block(journal, obh, data, flags, blocknr);
-> +		if (err) {
-> +			brelse(obh);
-> +			printk(KERN_ERR "JBD: Out of memory during recovery\n");
-> +			success = err;
-> +			goto failed;
-> +		}
-> +
-> +		++info->nr_replays;
-> +		brelse(obh);
-> +
-> +skip_write:
-> +		tagp += sizeof(journal_block_tag_t);
-> +		if (!(flags & JFS_FLAG_SAME_UUID))
-> +			tagp += 16;
-> +
-> +		if (flags & JFS_FLAG_LAST_TAG)
-> +			break;
-> +	}
-> +
-> +	*next_log_block = next;
-> +failed:
-> +	return success;
-> +}
-> +
->  static int do_one_pass(journal_t *journal,
->  			struct recovery_info *info, enum passtype pass)
->  {
-> @@ -316,8 +411,6 @@ static int do_one_pass(journal_t *journal,
->  	journal_superblock_t *	sb;
->  	journal_header_t *	tmp;
->  	struct buffer_head *	bh;
-> -	unsigned int		sequence;
-> -	int			blocktype;
->  
->  	/* Precompute the maximum metadata descriptors in a descriptor block */
->  	int			MAX_BLOCKS_PER_DESC;
-> @@ -348,11 +441,8 @@ static int do_one_pass(journal_t *journal,
->  	 */
->  
->  	while (1) {
-> -		int			flags;
-> -		char *			tagp;
-> -		journal_block_tag_t *	tag;
-> -		struct buffer_head *	obh;
-> -		struct buffer_head *	nbh;
-> +		int blocktype;
-> +		unsigned int sequence;
->  
->  		cond_resched();
->  
-> @@ -371,10 +461,13 @@ static int do_one_pass(journal_t *journal,
->  		 * either the next descriptor block or the final commit
->  		 * record. */
->  
-> +		/* TODO: Should we continue on error? */
->  		jbd_debug(3, "JBD: checking block %ld\n", next_log_block);
->  		err = jread(&bh, journal, next_log_block);
-> -		if (err)
-> +		if (err) {
-> +			success = err;
->  			goto failed;
-> +		}
->  
->  		next_log_block++;
->  		wrap(journal, next_log_block);
-> @@ -406,137 +499,57 @@ static int do_one_pass(journal_t *journal,
->  		 * all of the sequence number checks.  What are we going
->  		 * to do with it?  That depends on the pass... */
->  
-> -		switch(blocktype) {
-> +		switch (blocktype) {
->  		case JFS_DESCRIPTOR_BLOCK:
->  			/* If it is a valid descriptor block, replay it
->  			 * in pass REPLAY; otherwise, just skip over the
->  			 * blocks it describes. */
-> -			if (pass != PASS_REPLAY) {
-> +			if (pass == PASS_REPLAY) {
-> +				err = replay_descriptor_block(
-> +					journal,
-> +					bh->b_data,
-> +					next_commit_ID,
-> +					&next_log_block,
-> +					info);
-> +			} else {
->  				next_log_block +=
->  					count_tags(bh, journal->j_blocksize);
->  				wrap(journal, next_log_block);
-> -				brelse(bh);
-> -				continue;
->  			}
-> -
-> -			/* A descriptor block: we can now write all of
-> -			 * the data blocks.  Yay, useful work is finally
-> -			 * getting done here! */
-> -
-> -			tagp = &bh->b_data[sizeof(journal_header_t)];
-> -			while ((tagp - bh->b_data +sizeof(journal_block_tag_t))
-> -			       <= journal->j_blocksize) {
-> -				unsigned long io_block;
-> -
-> -				tag = (journal_block_tag_t *) tagp;
-> -				flags = be32_to_cpu(tag->t_flags);
-> -
-> -				io_block = next_log_block++;
-> -				wrap(journal, next_log_block);
-> -				err = jread(&obh, journal, io_block);
-> -				if (err) {
-> -					/* Recover what we can, but
-> -					 * report failure at the end. */
-> -					success = err;
-> -					printk (KERN_ERR
-> -						"JBD: IO error %d recovering "
-> -						"block %ld in log\n",
-> -						err, io_block);
-> -				} else {
-> -					unsigned long blocknr;
-> -
-> -					J_ASSERT(obh != NULL);
-> -					blocknr = be32_to_cpu(tag->t_blocknr);
-> -
-> -					/* If the block has been
-> -					 * revoked, then we're all done
-> -					 * here. */
-> -					if (journal_test_revoke
-> -					    (journal, blocknr,
-> -					     next_commit_ID)) {
-> -						brelse(obh);
-> -						++info->nr_revoke_hits;
-> -						goto skip_write;
-> -					}
-> -
-> -					/* Find a buffer for the new
-> -					 * data being restored */
-> -					nbh = __getblk(journal->j_fs_dev,
-> -							blocknr,
-> -							journal->j_blocksize);
-> -					if (nbh == NULL) {
-> -						printk(KERN_ERR
-> -						       "JBD: Out of memory "
-> -						       "during recovery.\n");
-> -						err = -ENOMEM;
-> -						brelse(bh);
-> -						brelse(obh);
-> -						goto failed;
-> -					}
-> -
-> -					lock_buffer(nbh);
-> -					memcpy(nbh->b_data, obh->b_data,
-> -							journal->j_blocksize);
-> -					if (flags & JFS_FLAG_ESCAPE) {
-> -						*((__be32 *)bh->b_data) =
-> -						cpu_to_be32(JFS_MAGIC_NUMBER);
-> -					}
-> -
-> -					BUFFER_TRACE(nbh, "marking dirty");
-> -					set_buffer_uptodate(nbh);
-> -					mark_buffer_dirty(nbh);
-> -					BUFFER_TRACE(nbh, "marking uptodate");
-> -					++info->nr_replays;
-> -					/* ll_rw_block(WRITE, 1, &nbh); */
-> -					unlock_buffer(nbh);
-> -					brelse(obh);
-> -					brelse(nbh);
-> -				}
-> -
-> -			skip_write:
-> -				tagp += sizeof(journal_block_tag_t);
-> -				if (!(flags & JFS_FLAG_SAME_UUID))
-> -					tagp += 16;
-> -
-> -				if (flags & JFS_FLAG_LAST_TAG)
-> -					break;
-> -			}
-> -
-> -			brelse(bh);
-> -			continue;
-> +			break;
->  
->  		case JFS_COMMIT_BLOCK:
->  			/* Found an expected commit block: not much to
->  			 * do other than move on to the next sequence
->  			 * number. */
-> -			brelse(bh);
->  			next_commit_ID++;
-> -			continue;
-> +			break;
->  
->  		case JFS_REVOKE_BLOCK:
->  			/* If we aren't in the REVOKE pass, then we can
->  			 * just skip over this block. */
-> -			if (pass != PASS_REVOKE) {
-> -				brelse(bh);
-> -				continue;
-> +			if (pass == PASS_REVOKE) {
-> +				err = scan_revoke_records(
-> +					journal, bh, next_commit_ID, info);
->  			}
-> -
-> -			err = scan_revoke_records(journal, bh,
-> -						  next_commit_ID, info);
-> -			brelse(bh);
-> -			if (err)
-> -				goto failed;
-> -			continue;
-> +			break;
->  
->  		default:
->  			jbd_debug(3, "Unrecognised magic %d, end of scan.\n",
->  				  blocktype);
-> -			brelse(bh);
-> -			goto done;
-> +			break;
->  		}
-> +
-> +		brelse(bh);
-> +
-> +		/* Immediately fail on OOM; on other errors try to recover
-> +		 * as much as we can, but report the failure at the end. */
-> +		if (err)
-> +			success = err;
-> +		if (err == -ENOMEM)
-> +			goto failed;
->  	}
->  
-> - done:
->  	/*
->  	 * We broke out of the log scan loop: either we came to the
->  	 * known end of the log or we found an unexpected block in the
-> @@ -558,10 +571,8 @@ static int do_one_pass(journal_t *journal,
->  		}
->  	}
->  
-> -	return success;
-> -
->   failed:
-> -	return err;
-> +	return success;
->  }
->  
->  
-> -- 
-> 1.5.3.7
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+What regressions are you referring to? The SLAB_HWCACHE_ALIGN
+regression patch you sent is being merged. What else?
+
+And FWIW, I don't like the patch because it makes the code very hairy.
+But I don't see why we shouldn't merge SLUB fast-path optimizations if
+they're clean and you have the numbers to show it's a gain even if
+there are other remaining regressions.
