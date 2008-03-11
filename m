@@ -1,88 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYCKKNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbYCKKNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbYCKKNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYCKKNQ
+	id S1756619AbYCKKNs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYCKKNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:13:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33975 "EHLO
+	Tue, 11 Mar 2008 06:13:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34013 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbYCKKNP (ORCPT
+	with ESMTP id S1750924AbYCKKNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:13:15 -0400
-Message-ID: <47D65A27.80605@cn.fujitsu.com>
-Date: Tue, 11 Mar 2008 19:08:39 +0900
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+	Tue, 11 Mar 2008 06:13:38 -0400
+Date: Tue, 11 Mar 2008 19:16:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
        Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 1/3] res_counter: introduce res_counter_write_u64()
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH 3/3] memcgoup: allow memory.failcnt to be reset
+Message-Id: <20080311191649.32a2cbae.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47D65A3E.100@cn.fujitsu.com>
+References: <47D65A3E.100@cn.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This function can be used to assign the value of a resource counter member.
+On Tue, 11 Mar 2008 19:09:02 +0900
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/res_counter.h |    9 ++++++---
- kernel/res_counter.c        |    9 +++++++++
- 2 files changed, 15 insertions(+), 3 deletions(-)
+> Allow memory.failcnt to be reset to 0:
+> 
+>         echo 0 > memory.failcnt
+> 
+> And '0' is the only valid value.
+> 
+Can't this be generic resource counter function ?
 
-diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-index 8cb1ecd..8c23f7f 100644
---- a/include/linux/res_counter.h
-+++ b/include/linux/res_counter.h
-@@ -41,9 +41,10 @@ struct res_counter {
- 
- /**
-  * Helpers to interact with userspace
-- * res_counter_read_u64() - returns the value of the specified member.
-- * res_counter_read/_write - put/get the specified fields from the
-- * res_counter struct to/from the user
-+ * res_counter_read_64/_write_u64 - returns/assigns the value of the
-+ *	specified member
-+ * res_counter_read/_write - puts/gets the specified fields from the
-+ *	res_counter struct to/from the user
-  *
-  * @counter:     the counter in question
-  * @member:  the field to work with (see RES_xxx below)
-@@ -53,6 +54,8 @@ struct res_counter {
-  */
- 
- u64 res_counter_read_u64(struct res_counter *counter, int member);
-+void res_counter_write_u64(struct res_counter *counter, int member,
-+			   unsigned long long val);
- 
- ssize_t res_counter_read(struct res_counter *counter, int member,
- 		const char __user *buf, size_t nbytes, loff_t *pos,
-diff --git a/kernel/res_counter.c b/kernel/res_counter.c
-index 791ff2b..a16b727 100644
---- a/kernel/res_counter.c
-+++ b/kernel/res_counter.c
-@@ -97,6 +97,15 @@ u64 res_counter_read_u64(struct res_counter *counter, int member)
- 	return *res_counter_member(counter, member);
- }
- 
-+void res_counter_write_u64(struct res_counter *counter, int member,
-+			   unsigned long long val)
-+{
-+	unsigned long long *tmp;
-+
-+	tmp = res_counter_member(counter, member);
-+	*tmp = val;
-+}
-+
- ssize_t res_counter_write(struct res_counter *counter, int member,
- 		const char __user *userbuf, size_t nbytes, loff_t *pos,
- 		int (*write_strategy)(char *st_buf, unsigned long long *val))
--- 
-1.5.4.rc3
+Thanks,
+-Kame
+
+
+> This is useful when testing or observing the memory resource
+> controller. Without this function, one will have to remember
+> the previous failcnt to decide whether memory reclaim has
+> happened *again*.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  Documentation/controllers/memory.txt |    4 +++-
+>  mm/memcontrol.c                      |   15 +++++++++++++++
+>  2 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/controllers/memory.txt b/Documentation/controllers/memory.txt
+> index 866b9cd..28f80e3 100644
+> --- a/Documentation/controllers/memory.txt
+> +++ b/Documentation/controllers/memory.txt
+> @@ -194,7 +194,9 @@ this file after a write to guarantee the value committed by the kernel.
+>  4096
+>  
+>  The memory.failcnt field gives the number of times that the cgroup limit was
+> -exceeded.
+> +exceeded. It can be reset.
+> +
+> +# echo 0 > memory.failcnt
+>  
+>  The memory.stat file gives accounting information. Now, the number of
+>  caches, RSS and Active pages/Inactive pages are shown.
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 6145031..fd26dc2 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -883,6 +883,20 @@ static int mem_force_empty_write(struct cgroup *cont, struct cftype *cft,
+>  	return ret;
+>  }
+>  
+> +static int mem_failcnt_write(struct cgroup *cont, struct cftype *cft,
+> +			     u64 val)
+> +{
+> +	struct res_counter *counter;
+> +
+> +	if (val != 0)
+> +		return -EINVAL;
+> +
+> +	counter = &mem_cgroup_from_cont(cont)->res;
+> +	res_counter_write_u64(counter, cft->private, 0);
+> +
+> +	return 0;
+> +}
+> +
+>  static const struct mem_cgroup_stat_desc {
+>  	const char *msg;
+>  	u64 unit;
+> @@ -934,6 +948,7 @@ static struct cftype mem_cgroup_files[] = {
+>  	{
+>  		.name = "failcnt",
+>  		.private = RES_FAILCNT,
+> +		.write_u64 = mem_failcnt_write,
+>  		.read_u64 = mem_cgroup_read,
+>  	},
+>  	{
+> -- 
+> 1.5.4.rc3
+> 
 
