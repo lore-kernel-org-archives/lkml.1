@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYCKQTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbYCKQha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbYCKQTe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 12:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYCKQTY
+	id S1752347AbYCKQha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 12:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYCKQhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 12:19:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39411 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752221AbYCKQTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 12:19:24 -0400
-Date: Tue, 11 Mar 2008 17:19:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25-rc5] x86: correct/clarify comment in nops.h
-Message-ID: <20080311161901.GA32355@elte.hu>
-References: <18390.43171.335608.379379@harpo.it.uu.se>
+	Tue, 11 Mar 2008 12:37:18 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:2346 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751521AbYCKQhQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 12:37:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qhlfRci6HnE6yTZltxCJTygprgdC4wvaSeFSbhKflBpBJ6Qv+MvxOr1XYrOlLaijL0QdITy1m/WneYLFv0D9QGRWaC9NgebGT+e5OG9VQvrJIxnMekn8/QdNjI7/hPcJ1/c/EC8WcCNCHZjZCQEMZ4CK+/4XcudMcIB7ll2OtpA=
+Message-ID: <7c86c4470803110937u7e4625d8ubc6250b7ba730f2b@mail.gmail.com>
+Date: Tue, 11 Mar 2008 09:37:16 -0700
+From: "stephane eranian" <eranian@googlemail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 0/3] perfmon x86 infrastructure definitions (take 2)
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       ak@suse.de, tglx@linutronix.de
+In-Reply-To: <20080310075251.GA17657@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <18390.43171.335608.379379@harpo.it.uu.se>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0147]
+References: <7c86c4470803071305t5d4e581fs66e9fe8288d0392@mail.gmail.com>
+	 <20080310075251.GA17657@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo,
 
-* Mikael Pettersson <mikpe@it.uu.se> wrote:
+Thanks. Will send the PCI id patch to Greg KH.
 
-> <asm-x86/nops.h> describes certain multibyte instructions as "generic" 
-> nops when in fact they aren't nops at all in 64-bit mode (missing 
-> REX.W causing truncation of a register).
-> 
-> Update the comment to state that K8 or P6 style nops should be used in 
-> 64-bit mode. This matches what the alternatives code does.
 
->  /* generic versions from gas
->     1: nop
-> +   the following instructions are NOT nops in 64-bit mode,
-> +   for 64-bit mode use K8 or P6 nops instead
->     2: movl %esi,%esi
->     3: leal 0x00(%esi),%esi
->     4: leal 0x00(,%esi,1),%esi
-
-thanks Mikael, applied.
-
-	Ingo
+On Mon, Mar 10, 2008 at 12:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * stephane eranian <eranian@googlemail.com> wrote:
+>
+>  > Hello,
+>  >
+>  > Take 2: correct titles and no attachment.
+>
+>  note, all the patches were whitespace damaged (all tabs were spaces). I
+>  fixed this up by hand but please check Documentation/email-clients.txt.
+>
+>
+>  > Here is a small set of patches for x86. They are used by perfmon but
+>  > they can be applied independently.
+>  >
+>  > patch 1: adds cpu_has_arch_perfmon to cpufeature macros to test for
+>  > architectural perfmon  on Intel processors
+>  > patch 2: adds AMD Northbridge config MSR definition
+>  > patch 3: adds AMD Northbridge PCI Id
+>
+>  i've added all three to x86.git for convenience, but the PCI ID will
+>  need to go via Greg KH's PCI tree i suspect.
+>
+>         Ingo
+>
