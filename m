@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbYCKAk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYCKAlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663AbYCKAk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 20:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYCKAkQ
+	id S1754813AbYCKAlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 20:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYCKAlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:40:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50347 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751410AbYCKAkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:40:14 -0400
-Message-ID: <47D5D4E7.1060900@garzik.org>
-Date: Mon, 10 Mar 2008 20:40:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 10 Mar 2008 20:41:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56270 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751463AbYCKAlM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:41:12 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX19JVRtmvcNJjRv21ib5+IEzEQCegUE19CuybI9Ys5
+	+kO5OxpsQdjcMz
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Date: Tue, 11 Mar 2008 01:41:08 +0100
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, devzero@web.de,
+       linux-kernel@vger.kernel.org, rick@vanrein.org
+References: <182234194@web.de> <200803101523.03620.dl9pf@gmx.de> <47D56DD3.8060108@zytor.com>
+In-Reply-To: <47D56DD3.8060108@zytor.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
-References: <200803110014.52985.rjw@sisk.pl>
-In-Reply-To: <200803110014.52985.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803110141.08863.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9992
-> Subject		: 2.6.24-git: kmap_atomic() WARN_ON()
-> Submitter	: Thomas Gleixner <tglx@linutronix.de>
-> Date		: 2008-02-07 00:58
-> References	: http://lkml.org/lkml/2008/2/6/451
-> 		  http://lkml.org/lkml/2007/1/14/38
+Am Montag 10 März 2008 18:20:19 schrieb H. Peter Anvin:
+> Jan-Simon Möller wrote:
+> > badram=0x18690000,0xffff0000
+> > (which means a whole from 0x18690000 to 0x1869ffff )
+>
+> memmap=0x18690000$64K
+>
+> 	or
+>
+> memmap=0x18690000$0x10000
+>
+> 	-hpa
 
-Solved by b445c56815d84b9fce40707f99811bdc354458e0
+
+Hmmm reading the kernel-parameters again and again ...
+
+<QUOTE>
+        memmap=nn[KMG]$ss[KMG]
+                        [KNL,ACPI] Mark specific memory as reserved.
+                        Region of memory to be used, from ss to ss+nn.
+</QUOTE>
 
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10123
-> Subject		: No power-off / reboot with 2.6.25-rcX (up to -rc3) kernels
-> Submitter	: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Date		:  Tue May 22 22:47:54 2007 -0400
-> References	: http://lkml.org/lkml/2008/3/10/340
-> Handled-By	: Gautham R Shenoy <ego@in.ibm.com>
-> Patch		: http://lkml.org/lkml/2008/3/10/91
+nn would be 0x18690000   or ~409MB
+ss would be 0x10000      or 64k
 
-FWIW, I have this same problem.
+quite big hole ???
 
+I'm not in front of the faulty box, but something is wrong there ...
+
+Best regards,
+Jan-Simon
