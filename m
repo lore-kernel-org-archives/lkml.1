@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYCKQ76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYCKRF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbYCKQ76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 12:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYCKQ7s
+	id S1753345AbYCKRF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYCKRFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 12:59:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:52579 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbYCKQ7r (ORCPT
+	Tue, 11 Mar 2008 13:05:17 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:64836 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbYCKRFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 12:59:47 -0400
-Date: Tue, 11 Mar 2008 09:56:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       jgarzik <jgarzik@pobox.com>
-Subject: [PATCH -mm] ne2: needs more 8390 support functions
-Message-Id: <20080311095643.01cd3708.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 13:05:16 -0400
+X-IronPort-AV: E=McAfee;i="5100,188,5249"; a="1219982"
+Message-ID: <47D6BBC8.7090608@qualcomm.com>
+Date: Tue, 11 Mar 2008 10:05:12 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
+References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com> <1205215046-27085-2-git-send-email-maxk@qualcomm.com> <20080311063514.GA29824@infradead.org>
+In-Reply-To: <20080311063514.GA29824@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-ne2 (MCA) needs both 8390.o and 8390p.o functions:
 
-drivers/built-in.o: In function `ne_close':
-ne2.c:(.text+0x30544): undefined reference to `eip_close'
-drivers/built-in.o: In function `ne_open':
-ne2.c:(.text+0x30554): undefined reference to `eip_open'
-drivers/built-in.o: In function `ne2_probe':
-(.init.text+0x1bce): undefined reference to `__alloc_eip_netdev'
-drivers/built-in.o: In function `ne2_probe':
-(.init.text+0x1dd9): undefined reference to `eip_interrupt'
-make[1]: *** [.tmp_vmlinux1] Error 1
+Christoph Hellwig wrote:
+> On Mon, Mar 10, 2008 at 10:57:25PM -0700, maxk@qualcomm.com wrote:
+>> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>
+>> Hi Paul,
+>>
+>> How about something like this; along with the in-kernel version
+>> of /cgroup/boot this could also provide the desired semantics.
+>>
+>> Another benefit of this approach would be that it no longer requires
+>> PF_THREAD_BIND, as we'd only stick unbounded kthreads into that cgroup.
+> 
+> Looks like my comments to the last posting of this are still not
+> addressed.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Christoph,
 
---- linux-2.6.25-rc5-mm1.orig/drivers/net/Makefile
-+++ linux-2.6.25-rc5-mm1/drivers/net/Makefile
-@@ -108,7 +108,7 @@ obj-$(CONFIG_68360_ENET) += 68360enet.o
- obj-$(CONFIG_WD80x3) += wd.o 8390.o
- obj-$(CONFIG_EL2) += 3c503.o 8390p.o
- obj-$(CONFIG_NE2000) += ne.o 8390p.o
--obj-$(CONFIG_NE2_MCA) += ne2.o 8390.o
-+obj-$(CONFIG_NE2_MCA) += ne2.o 8390.o 8390p.o
- obj-$(CONFIG_HPLAN) += hp.o 8390p.o
- obj-$(CONFIG_HPLAN_PLUS) += hp-plus.o 8390p.o
- obj-$(CONFIG_ULTRA) += smc-ultra.o 8390.o
+Sorry I missed your comment. Actually I just looked at the archive of the
+original thread and I do not see any comments from you. Were they maybe sent
+in private to Peter Z ? Can you please resend them ?
+
+Also btw can you comment on the 2/2 patch of this series instead. 1/2 is just
+a resend of the original Peter's patch. 2/2 is more complete and tested version.
+
+Thanx
+Max
