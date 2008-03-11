@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYCKDJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYCKDTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYCKDJK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 23:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYCKDI4
+	id S1755247AbYCKDTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 23:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYCKDSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 23:08:56 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49516 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbYCKDIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 23:08:55 -0400
-Date: Tue, 11 Mar 2008 14:08:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 11
-Message-Id: <20080311140802.381588c8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__11_Mar_2008_14_08_02_+1100_RVSNlF/V6IvndZhN"
+	Mon, 10 Mar 2008 23:18:55 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49256 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbYCKDSr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 23:18:47 -0400
+Date: Tue, 11 Mar 2008 12:17:27 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [PATCH v3] Add time_is_after_jiffies and others which compare with jiffies
+Cc: kosaki.motohiro@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, hannes@saeurebad.de,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20080310012202.GA2958@darkstar.te-china.tietoenator.com>
+References: <20080310012202.GA2958@darkstar.te-china.tietoenator.com>
+Message-Id: <20080311121553.6214.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__11_Mar_2008_14_08_02_+1100_RVSNlF/V6IvndZhN
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi
 
-Hi all,
+Why don't you make jiffies_64 stuff?
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-allmodconfig for both powerpc and x86_64.
 
-There were a few merge conflicts (trivial) and one build break (the ext4
-build failure is still there).  I have notified the appropriate people.
+> Most of time_after like macros usages just compare jiffies and
+> another number, so here add some time_is_* macros for convenience.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> 
+> ---
+> include/linux/jiffies.h |   16 ++++++++++++++++
+> 1 file changed, 16 insertions(+)
+> 
+> diff -upr linux/include/linux/jiffies.h linux.new/include/linux/jiffies.h
+> --- linux/include/linux/jiffies.h	2008-03-07 10:40:04.000000000 +0800
+> +++ linux.new/include/linux/jiffies.h	2008-03-10 09:11:36.000000000 +0800
+> @@ -135,6 +135,22 @@ static inline u64 get_jiffies_64(void)
+>  #define time_before_eq64(a,b)	time_after_eq64(b,a)
+>  
+>  /*
+> + * These four macros compare jiffies and 'a' for convenience.
+> + */
+> +
+> +/* time_is_before_jiffies(a) return true if a is before jiffies */
+> +#define time_is_before_jiffies(a) time_after(jiffies, a)
+> +
+> +/* time_is_after_jiffies(a) return true if a is after jiffies */
+> +#define time_is_after_jiffies(a) time_before(jiffies, a)
+> +
+> +/* time_is_before_eq_jiffies(a) return true if a is before or equal to jiffies*/
+> +#define time_is_before_eq_jiffies(a) time_after_eq(jiffies, a)
+> +
+> +/* time_is_after_eq_jiffies(a) return true if a is after or equal to jiffies*/
+> +#define time_is_after_eq_jiffies(a) time_before_eq(jiffies, a)
+> +
+> +/*
+>   * Have the 32 bit jiffies value wrap 5 minutes after boot
+>   * so jiffies wrap bugs show up earlier.
+>   */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-We are up to 45 trees, more are welcome (even if they are currently
-empty).  The influx of new trees has been underwhelming.  Thanks to those
-who have contributed, and to those who haven't, please do.
 
-In particular, I have very few of the architecture trees ....
-
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/kisskb/branch/9/.  If maintainers want to
-give advice about cross compilers/configs that work, we are always open
-to add more builds.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Tue__11_Mar_2008_14_08_02_+1100_RVSNlF/V6IvndZhN
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH1feWTgG2atn1QN8RArwkAJ9dY08h4w2NwkVcj1txibH6wBm8xwCeNAB7
-ITJwnA0fr8qgA6d/B8nAOA4=
-=dMwx
------END PGP SIGNATURE-----
-
---Signature=_Tue__11_Mar_2008_14_08_02_+1100_RVSNlF/V6IvndZhN--
