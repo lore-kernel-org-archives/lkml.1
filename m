@@ -1,166 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbYCKXgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYCKXiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751285AbYCKXgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYCKXgH
+	id S1752560AbYCKXiq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYCKXii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:36:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37028 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbYCKXgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:36:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH] Hibernation: Fix mark_nosave_pages()
-Date: Wed, 12 Mar 2008 00:34:57 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Tue, 11 Mar 2008 19:38:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:13398 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbYCKXih (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:38:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WgANcHUPYsGwQ1A8/+x5ynwBkeWF70cQRLB5KFlM0Ng/izb2GZZGS1ZdtpeJdK6Rc9jBmULjclfMt3UZK4u88pQUc/0s0tQrTGljMgOjj0mcl2qQwk0EJ4PgIUy4FBw1+gvZiEg9Iab0J5vp8t4p03HDYNJ1PcX5WkuO646xiqc=
+Message-ID: <b647ffbd0803111638sdc92903r7faad3d4b2b6b842@mail.gmail.com>
+Date: Wed, 12 Mar 2008 00:38:36 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATCH] sched: fix race in schedule
+Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       hpj@urpla.net, stable <stable@kernel.org>
+In-Reply-To: <47D6BD0C.6070401@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803120034.58615.rjw@sisk.pl>
+References: <47D57770.50909@ct.jp.nec.com> <1205174197.8514.159.camel@twins>
+	 <47D593A5.5060906@ct.jp.nec.com> <1205181256.6241.320.camel@lappy>
+	 <47D5EA9C.1040404@ct.jp.nec.com> <1205224835.8514.183.camel@twins>
+	 <47D6BD0C.6070401@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
+On 11/03/2008, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> Peter Zijlstra wrote:
+>  > On Mon, 2008-03-10 at 19:12 -0700, Hiroshi Shimamoto wrote:
+>  >> Peter Zijlstra wrote:
+>  >>> On Mon, 2008-03-10 at 13:01 -0700, Hiroshi Shimamoto wrote:
+>  >>>
+>  >>>> thanks, your patch looks nice to me.
+>  >>>> I had focused setprio, on_rq=0 and running=1 situation, it makes me to
+>  >>>> fix these functions.
+>  >>>> But one point, I've just noticed. I'm not sure on same situation against
+>  >>>> sched_rt. I think the pre_schedule() of rt has chance to drop rq lock.
+>  >>>> Is it OK?
+>  >>> Ah, you are quite right, that'll teach me to rush out a patch just
+>  >>> because dinner is ready :-).
+>  >>>
+>  >>> How about we submit the following patch for mainline and CC -stable to
+>  >>> fix .23 and .24:
+>  >>>
+>  >> Unfortunately, I encountered similar panic with this patch on -rt.
+>  >> I'll look into this, again. I might have missed something...
+>  >>
+>  >> Unable to handle kernel NULL pointer dereference at 0000000000000128 RIP:
+>  >>  [<ffffffff802297f5>] pick_next_task_fair+0x2d/0x42
+>  >
+>  > :-(
+>  >
+>  > OK, so that means I'm not getting it.
+>  >
+>  > So what does your patch do that mine doesn't?
+>  >
+>  > It removes the dependency of running (=task_current()) from on_rq
+>  > (p->se.on_rq).
+>  >
+>  > So how can a current task not be on the runqueue?
+>  >
+>  > Only sched.c:dequeue_task() and sched_fair.c:account_entity_dequeue()
+>  > set on_rq to 0, the only one changing rq->curr is schedule().
+>  >
+>  > So the only scheme I can come up with is that we did dequeue p (on_rq ==
+>  > 0), but we didn't yet schedule so rq->curr == p.
+>  >
+>  > Is this how you ended up with your previuos analysis that it must be due
+>  > to a hole introduced by double_lock_balance()?
+>  >
+>  > Because now we can seemingly call deactivate_task() and put_prev_task()
+>  > in non-atomic fashion, but by placing the put_prev_task() before the
+>  > load balance calls we should avoid doing that.
+>  >
+>  > So what else is going on... /me puzzled
+>
+>
+> thanks for taking time.
+>  I've tested it with debug tracer, it took several hours to half day to
+>  reproduce it on my box. And I got the possible scenario.
+>
+>  Before begin, I can tell that se->on_rq is changed at enqueue_task() or
+>  dequeue_task() in sched.c.
+>
+>  Here is the flow to panic which I got;
+>
+>    CPU0                               CPU1
+>     |                              schedule()
+>     |                              ->deactivate_task()
+>
+>     |                              -->dequeue_task()
+>     |                                  * on_rq=0
+>     |                              ->put_prev_task_fair()
+>
+>     |                              ->idle_balance()
+>     |                              -->load_balance_newidle()
+>
+> (a wakeup function)                    |
+>
+>     |                              --->double_lock_balance()
+>     *get lock                          *rel lock
+>
+>     * wake up target is CPU1's curr    |
+>  ->enqueue_task()                       |
+>     * on_rq=1                          |
+>  ->rt_mutex_setprio()                   |
+>     * on_rq=1, ruuning=1               |
+>  -->dequeue_task()!!                    |
+>  -->put_prev_task_fair()!!              |
 
-The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=9966 .
+humm... this one should have caused the problem.
 
-Although the problem has been there for quite some time (since before 2.6.22,
-apparently), it would be good to have in 2.6.25, because it may fix booting
-problems on the affected systems.
+->put_prev_task() has been previously done in schedule() so we get 2
+consequent ->put_prev_task() without set_curr_task/pick_next_task()
+being called in between
+[ as a result, __enqueue_entitty() is called twice for CPU1's curr and
+that definitely corrupts an rb-tree ]
 
-Please note that it doesn't modify the code behavior on the systems which are
-not affected by bug #9966 .
+your initial patch doesn't have this problem. humm... logically-wise,
+it looks like a change of the 'current' which can be expressed by a
+pair :
 
-Thanks,
-Rafael
+(1) put_prev_task() + (2) pick_next_task() or set_curr_task()
+(both end up calling set_next_entity())
+
+has to be 'atomic' wrt the rq->lock.
+
+For schedule() that also involves a change of rq->curr.
+
+Your initial patch seems to qualify for this rule... but I'm still
+thinking whether the current scheme is a bit 'hairy' :-/
 
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Hiroshi Shimamoto
+>
 
-There is a problem in the hibernation code that triggers on some NUMA
-systems on which pfn_valid() returns 'true' for some PFNs that don't
-belong to any zone.  Namely, there is a BUG_ON() in
-memory_bm_find_bit() that triggers for PFNs not belonging to any
-zone and passing the pfn_valid() test.  On the affected systems it
-triggers when we mark PFNs reported by the platform as not saveable,
-because the PFNs in question belong to a region mapped directly using
-iorepam() (i.e. the ACPI data area) and they pass the pfn_valid()
-test.
-
-Modify memory_bm_find_bit() so that it returns an error if given PFN
-doesn't belong to any zone instead of crashing the kernel and ignore
-the result returned by it in mark_nosave_pages(), while marking the
-"nosave" memory regions.
-
-This doesn't affect the hibernation functionality, as we won't touch
-the PFNs in question anyway.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |   41 ++++++++++++++++++++++++++++++++++-------
- 1 file changed, 34 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -447,7 +447,7 @@ static void memory_bm_free(struct memory
-  *	of @bm->cur_zone_bm are updated.
-  */
- 
--static void memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
-+static int memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
- 				void **addr, unsigned int *bit_nr)
- {
- 	struct zone_bitmap *zone_bm;
-@@ -461,7 +461,8 @@ static void memory_bm_find_bit(struct me
- 		while (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
- 			zone_bm = zone_bm->next;
- 
--			BUG_ON(!zone_bm);
-+			if (!zone_bm)
-+				return -EFAULT;
- 		}
- 		bm->cur.zone_bm = zone_bm;
- 	}
-@@ -479,23 +480,40 @@ static void memory_bm_find_bit(struct me
- 	pfn -= bb->start_pfn;
- 	*bit_nr = pfn % BM_BITS_PER_CHUNK;
- 	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
-+	return 0;
- }
- 
- static void memory_bm_set_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
- 	unsigned int bit;
-+	int error;
- 
--	memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	BUG_ON(error);
- 	set_bit(bit, addr);
- }
- 
-+static int mem_bm_set_bit_check(struct memory_bitmap *bm, unsigned long pfn)
-+{
-+	void *addr;
-+	unsigned int bit;
-+	int error;
-+
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	if (!error)
-+		set_bit(bit, addr);
-+	return error;
-+}
-+
- static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
- 	unsigned int bit;
-+	int error;
- 
--	memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	BUG_ON(error);
- 	clear_bit(bit, addr);
- }
- 
-@@ -503,8 +521,10 @@ static int memory_bm_test_bit(struct mem
- {
- 	void *addr;
- 	unsigned int bit;
-+	int error;
- 
--	memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
-+	BUG_ON(error);
- 	return test_bit(bit, addr);
- }
- 
-@@ -709,8 +729,15 @@ static void mark_nosave_pages(struct mem
- 				region->end_pfn << PAGE_SHIFT);
- 
- 		for (pfn = region->start_pfn; pfn < region->end_pfn; pfn++)
--			if (pfn_valid(pfn))
--				memory_bm_set_bit(bm, pfn);
-+			if (pfn_valid(pfn)) {
-+				/*
-+				 * It is safe to ignore the result of
-+				 * mem_bm_set_bit_check() here, since we won't
-+				 * touch the PFNs for which the error is
-+				 * returned anyway.
-+				 */
-+				mem_bm_set_bit_check(bm, pfn);
-+			}
- 	}
- }
- 
+-- 
+Best regards,
+Dmitry Adamushko
