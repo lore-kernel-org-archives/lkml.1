@@ -1,53 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYCKJjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYCKJkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbYCKJjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 05:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCKJjX
+	id S1755161AbYCKJkH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 05:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYCKJjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 05:39:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43604 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbYCKJjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 05:39:23 -0400
-Date: Tue, 11 Mar 2008 10:39:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephan Diestelhorst <langer_mann@web.de>
-Cc: Andi Kleen <andi@firstfloor.org>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Message-ID: <20080311093903.GS25110@elte.hu>
-References: <200803051559.09962.langer_mann@web.de> <200803101605.42251.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org> <200803102226.39044.langer_mann@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803102226.39044.langer_mann@web.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 11 Mar 2008 05:39:55 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50242 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbYCKJjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 05:39:54 -0400
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: linux-kernel@vger.kernel.org
+Cc: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: [PATCH][v3] Modify loop device to be able to manage partitions of the disk image
+Date: Tue, 11 Mar 2008 10:38:47 +0100
+Message-Id: <1205228327221-git-send-email-Laurent.Vivier@bull.net>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+v3 is an updated version of v2, replacing a "%d" by a "%lu".
 
-* Stephan Diestelhorst <langer_mann@web.de> wrote:
+This patch allows to use loop device with partitionned disk image.
 
-> Please also note that these are not clobbers in the strict inline asm 
-> syntax, but rather dummy output values that correspond to actual input 
-> parameters. I'd consider this a serious compiler flaw, if not bug, if 
-> these would not work. But let's not get into GCC vs. 
-> Fancy-inline-asm-hacker flames, like the mplayer folks do ;-)
+Original behavior of loop is not modified.
 
-yep, that's my experience as well - output constraints are pretty robust 
-in general, but if one tries the same effect via the clobber list it's 
-easy to run into gcc internal errors. I've applied your patch to 
-x86.git. Do you think it's 2.6.25 material? I'm inclined to have it in 
-the 2.6.26 bucket. We could do your first, minimal fix in 2.6.25 and do 
-this second, full fix in 2.6.26.
+A new parameter is introduced to define how many partition we want to be
+able to manage per loop device. This parameter is "loop_max_part".
 
-	Ingo
+For instance, to manage 63 partitions / loop device, we will do:
+# modprobe loop loop_max_part=63
+# ls -l /dev/loop?
+brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+
+And to attach a raw partitionned disk image, the original losetup is used:
+
+# losetup -f etch.img
+EXT3 FS on loop0p1, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+loop: module loaded
+ loop0: p1 p2 < p5 >
+# ls -l /dev/loop?*
+brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+# mount /dev/loop0p1 /mnt
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on loop0p1, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+# ls /mnt
+bench  cdrom  home        lib         mnt   root     srv  usr
+bin    dev    initrd      lost+found  opt   sbin     sys  var
+boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+# umount /mnt
+# losetup -d /dev/loop0
+
+Of course, the same behavior can be done using kpartx on a loop device,
+but modifying loop avoids to stack several layers of block device (loop +
+device mapper), this is a very light modification (40% of modifications
+are to manage the new parameter).
+
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+---
+ Documentation/kernel-parameters.txt |    4 +++
+ drivers/block/loop.c                |   39 ++++++++++++++++++++++++++++++----
+ 2 files changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a5b665..7f2fd52 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			be mounted
+ 			Format: <1-256>
+ 
++	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
++			Should be greater than 0, the maximum value depends
++			on max_loop.
++
+ 	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
+ 			should make use of.  maxcpus=n : n >= 0 limits the
+ 			kernel to using 'n' processors.  n=0 is a special case,
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 91ebb00..16b2aa6 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -82,6 +82,9 @@
+ static LIST_HEAD(loop_devices);
+ static DEFINE_MUTEX(loop_devices_mutex);
+ 
++static int loop_max_part;
++static int part_shift;
++
+ /*
+  * Transfer functions
+  */
+@@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
+ 		goto out_putf;
+ 
+ 	fput(old_file);
++	if (loop_max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ 
+  out_putf:
+@@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+ 	}
+ 	lo->lo_state = Lo_bound;
+ 	wake_up_process(lo->lo_thread);
++	if (loop_max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ 
+ out_clr:
+@@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
+ static int max_loop;
+ module_param(max_loop, int, 0);
+ MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
++module_param(loop_max_part, int, 0);
++MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+ 
+@@ -1412,7 +1421,7 @@ static struct loop_device *loop_alloc(int i)
+ 	if (!lo->lo_queue)
+ 		goto out_free_dev;
+ 
+-	disk = lo->lo_disk = alloc_disk(1);
++	disk = lo->lo_disk = alloc_disk(1 << part_shift);
+ 	if (!disk)
+ 		goto out_free_queue;
+ 
+@@ -1422,7 +1431,7 @@ static struct loop_device *loop_alloc(int i)
+ 	init_waitqueue_head(&lo->lo_event);
+ 	spin_lock_init(&lo->lo_lock);
+ 	disk->major		= LOOP_MAJOR;
+-	disk->first_minor	= i;
++	disk->first_minor	= i << part_shift;
+ 	disk->fops		= &lo_fops;
+ 	disk->private_data	= lo;
+ 	disk->queue		= lo->lo_queue;
+@@ -1502,7 +1511,12 @@ static int __init loop_init(void)
+ 	 *     themselves and have kernel automatically instantiate actual
+ 	 *     device on-demand.
+ 	 */
+-	if (max_loop > 1UL << MINORBITS)
++
++	part_shift = 0;
++	if (loop_max_part > 0)
++		part_shift = fls(loop_max_part);
++
++	if (max_loop > 1UL << (MINORBITS - part_shift))
+ 		return -EINVAL;
+ 
+ 	if (max_loop) {
+@@ -1510,7 +1524,7 @@ static int __init loop_init(void)
+ 		range = max_loop;
+ 	} else {
+ 		nr = 8;
+-		range = 1UL << MINORBITS;
++		range = 1UL << (MINORBITS - part_shift);
+ 	}
+ 
+ 	if (register_blkdev(LOOP_MAJOR, "loop"))
+@@ -1549,7 +1563,7 @@ static void __exit loop_exit(void)
+ 	unsigned long range;
+ 	struct loop_device *lo, *next;
+ 
+-	range = max_loop ? max_loop :  1UL << MINORBITS;
++	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
+ 
+ 	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+ 		loop_del_one(lo);
+@@ -1569,4 +1583,19 @@ static int __init max_loop_setup(char *str)
+ }
+ 
+ __setup("max_loop=", max_loop_setup);
++
++static int __init max_part_setup(char *str)
++{
++	loop_max_part = simple_strtol(str, NULL, 0);
++	if (loop_max_part > (1UL << (MINORBITS - 1))) {
++		/* we must keep at least one bit for loop device number */
++		printk(KERN_ERR
++			"loop: loop_max_part cannot be greater than %lu\n",
++			1UL << (MINORBITS - 1));
++		return 0;
++	}
++	return 1;
++}
++
++__setup("loop_max_part=", max_part_setup);
+ #endif
+-- 
+1.5.2.4
+
