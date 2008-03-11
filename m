@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbYCKOHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbYCKOJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbYCKOHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 10:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYCKOHY
+	id S1754580AbYCKOJd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 10:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYCKOJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 10:07:24 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:39587 "EHLO gherkin.frus.com"
+	Tue, 11 Mar 2008 10:09:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41157 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751392AbYCKOHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 10:07:23 -0400
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-In-Reply-To: <47D5B741.6010702@keyaccess.nl> "from Rene Herman at Mar 10, 2008
- 11:33:37 pm"
-To: Rene Herman <rene.herman@keyaccess.nl>
-Date: Tue, 11 Mar 2008 09:07:18 -0500 (CDT)
-CC: Bob Tracy <rct@frus.com>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>,
-       Michael Cree <mcree@orcon.net.nz>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751740AbYCKOJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 10:09:25 -0400
+Date: Tue, 11 Mar 2008 10:07:50 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, lwoodman@redhat.com
+Subject: Re: [PATCH] sysrq show-all-cpus
+Message-ID: <20080311100750.01464a5c@bree.surriel.com>
+In-Reply-To: <1205219904.27299.100.camel@perihelion>
+References: <20080310133242.0ab69084@bree.surriel.com>
+	<20080310104628.b70af419.randy.dunlap@oracle.com>
+	<20080310140315.1a451092@bree.surriel.com>
+	<1205219904.27299.100.camel@perihelion>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080311140718.8B3ABDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> No problems here, using either the ALSA or OSS interfaces. Have been 
-> busy switching cards -- I have no hardware that can use anything other than 
-> DMA 0, 1 or 3. First test is to see if it's ALSA or just the OSS emulation 
-> though...
+On Tue, 11 Mar 2008 03:18:24 -0400
+Jon Masters <jonathan@jonmasters.org> wrote:
 
-Both native ALSA and emulated OSS playback are broken based on last
-night's testing.  Just to rule out sound hardware issues, this morning
-I built a 2.6.25-rc4 kernel with OSS (sb driver), and that seems to be
-working fine.
+> On Mon, 2008-03-10 at 14:03 -0400, Rik van Riel wrote:
+> > SysRQ-P is not always useful on SMP systems, since it usually ends up showing the
+> > backtrace of a CPU that is doing just fine, instead of the backtrace of the CPU
+> > that is having problems.
+> > 
+> > This patch adds SysRQ show-all-cpus(L), which shows the backtrace of every active
+> > CPU in the system.  It skips idle CPUs because some SMP systems are just too large
+> > and we already know what the backtrace of the idle task looks like.
+> >  
+> > Signed-off-by: Rik van Riel <riel@redhat.com>
+> 
+> Why not have it just print the local CPU on non-SMP anyway?
+
+Sysrq p already does exactly that.
 
 -- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+All rights reversed.
