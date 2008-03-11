@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbYCKVJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYCKVJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbYCKVJH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 17:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYCKVIz
+	id S1757770AbYCKVJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 17:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYCKVJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 17:08:55 -0400
-Received: from www.tglx.de ([62.245.132.106]:49887 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752305AbYCKVIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 17:08:54 -0400
-Date: Tue, 11 Mar 2008 22:08:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for
- pageattr-test.c
-In-Reply-To: <20080311114832.GE18917@one.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0803112128190.3781@apollo.tec.linutronix.de>
-References: <20080311013014.GA28682@basil.nowhere.org> <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de> <20080311104531.GB18917@one.firstfloor.org> <alpine.LFD.1.00.0803111233440.3781@apollo.tec.linutronix.de>
- <20080311114832.GE18917@one.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 11 Mar 2008 17:09:49 -0400
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:32030 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752682AbYCKVJt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 17:09:49 -0400
+X-Belgacom-Dynamic: yes
+Date: Tue, 11 Mar 2008 22:09:47 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Samuel Tardieu <sam@rfc1149.net>
+Cc: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>, junker@anduras.de,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: w83697hf_wdt.c stops watchdog on load
+Message-ID: <20080311210947.GF7505@infomag.infomag.iguana.be>
+References: <47D564CA.1040507@draigBrady.com> <2008-03-10-18-48-16+trackit+sam@rfc1149.net> <47D5C1DC.6080808@draigBrady.com> <20080311202214.GA7505@infomag.infomag.iguana.be> <2008-03-11-21-28-21+trackit+sam@rfc1149.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2008-03-11-21-28-21+trackit+sam@rfc1149.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Andi Kleen wrote:
-> > > > > Use an own random generator for pageattr-test.c
-> > > > > 
-> > > > > [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
-> > > > > candidate because it fixes a subtle bug]
-> > > > 
-> > > > Care to point out which "subtle bug" is fixed ? 
-> > > > 
-> > > > You replace a random generator by another to get repeateable
-> > > > sequences. The non repeatability of the cpa test patterns is hardly a
-> > > > "subtle bug".
-> > > 
-> > > The subtle bug(s) are first that it is not repeatable (it really should),
-> > 
-> > As I said before. It's hardly a bug. In fact it is questionable
-> > whether fully reproducible test patterns are desired.
-> 
-> Ok then you won't be able to repeat the test ever.
-> 
-> I consider this bad practice in test code because it makes it impossible
-> to stabilize bugs
+Hi Sam,
 
-Test code with constant test patterns tend to miss the corner case
-bugs, while random pattern test cases hit them assumed that there is a
-broad enough tester base. 
+> That was my intent: disable the watchdog by default, and add an option
+> not to disable it (let it untouched, so getting the BIOS setting) at
+> module initialization, as Pádraig request is totally reasonable.
 
-It's a question of how you write such test code to achieve
-reproducability. It's not rocket science to track the variables of a
-test run and print them along with the printk, when a wrong state is
-detected. That way you can inject them for reproduction.
+Ok, then we are on the same line. It indeed makes sense to do this
+with watchdog devices that are capable of being controlled by the
+bios and where the timeout/keepalive time can be set big enough.
 
-> and when I wrote it I tried to avoid by using the 
-> srandom32(). But I originally fell into the trap of assuming it had the 
-> same semantics of stdlib srandom() which it didn't. This patch was
-> my attempt to fix that mistake.
+What should also be looked at is when you take over the watchdog
+settings from the bios, do you then take the same timeout/keepalive
+value? In the pcwd-drivers I took the dip-switch value of the card
+when the value was 0. You could do something similar here.
 
-Well, I agree that you did not intend to code it that way, but calling
-it a subtle bug, which needs to be fixed for .25, is just misleading.
+Greetings,
+Wim.
 
-> > > then that it only initializes the CPU where the code first runs
-> > > (since srandom32 is per CPU) and later might change CPUs and then that it 
-> > > adds totally unnecessary state bits to CPU #0 (or whatever runs first).
-> > 
-> > Can you please elaborate why changing the seed of the random generator
-> > is a bug ? Networking reseeds the random generator itself, so what ?
-> 
-> It adds a non random seed which does not add any randomness only to CPU #0.
-> Strictly it doesn't hurt very much, but it's also not useful for anything.
-
-Exactly. Again it's not a subtle bug. It's useless code which does no
-harm at all. We can safely dispose that in .26.
-
-Thanks,
-
-	tglx
