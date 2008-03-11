@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbYCKRYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYCKRZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbYCKRYF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYCKRXx
+	id S1753961AbYCKRZq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYCKRZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:23:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49742 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752233AbYCKRXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:23:53 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Date: Tue, 11 Mar 2008 13:23:11 -0400
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       devzero@web.de, linux-kernel@vger.kernel.org, rick@vanrein.org
-References: <182234194@web.de> <47D56DD3.8060108@zytor.com> <200803101959.47202.dl9pf@gmx.de>
-In-Reply-To: <200803101959.47202.dl9pf@gmx.de>
+	Tue, 11 Mar 2008 13:25:38 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:64987 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbYCKRZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 13:25:37 -0400
+X-IronPort-AV: E=McAfee;i="5100,188,5249"; a="1220793"
+Message-ID: <47D6C08E.9040701@qualcomm.com>
+Date: Tue, 11 Mar 2008 10:25:34 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com
+Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
+References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com>	<1205215046-27085-2-git-send-email-maxk@qualcomm.com> <20080311015711.9c4615a6.pj@sgi.com>
+In-Reply-To: <20080311015711.9c4615a6.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803111323.11524.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> +How to deal with bad memory e.g. reported by memtest86+ ?
-> +#########################################################
-> +
-> +There are three possibilities I know of:
 
-I find that sometimes memory problems go away when
-I simply remove and then re-insert the same DIMMs.
-Maybe that is the thing to try first.
+Paul Jackson wrote:
+> Max K wrote:
+>> this could also provide the desired semantics.
+> 
+> Could you spell out what you mean by "the desired semantics" ?
+> 
+> I don't see any Documentation or much comments, which would
+> help understand this.  It helps to describe both what has
+> changed, and, from the top, the why, what and how of what
+> you're doing, in part as Documentation or code comments,
+> for the benefit of future readers.
+> 
+> Did you see my discussion of this with Peter on March 6 and 7
+> in the lkml "[RFC/PATCH] cpuset: cpuset irq affinities" thread?
+> This latest patch of yours seems, offhand, to predate that discussion.
+Paul, can you please comment on 2/2 patch instead. 1/2 is just a resend of the
+Peter's original patch that I was building on top. So yes it predates that
+discussion. I used it as the baseline.
 
--Len
+> I don't see any explanation of what locking is needed when.
+There are more comments in 2/2. There is one spot in there where I'm not sure
+about the locking (look for FIXME comment). Everything else seems to be
+protected correctly by callback_lock. I may have missed things of course.
 
-> +1) Buy new memory (best!)
-> +
-> +2) Try to exchange the memory if you have spare-parts
-> +
-> +3) Use BadRAM or memmap
-> +
-> +This Howto is about number 3) .
+> What semantics to you impose on irqs in overlapping cpusets,
+> which would seem to lead to conflicting directives as to
+> whether one set or another of irqs was to be applied to the
+> CPUs in the overlap?
+Please take a look at
+	[PATCH 2/2] cpusets: Improved irq affinity handling
+I'm treating irqs just like tasks (at least I think I'm :).
+
+Max
+
+
+
