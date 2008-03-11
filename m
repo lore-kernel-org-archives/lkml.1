@@ -1,59 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYCKA4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYCKA71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbYCKA4N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 20:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYCKAzb
+	id S1755607AbYCKA71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 20:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYCKA7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:55:31 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60147 "EHLO mx1.suse.de"
+	Mon, 10 Mar 2008 20:59:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40883 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755262AbYCKAza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:55:30 -0400
+	id S1750923AbYCKA7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:59:16 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       stable <stable@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 4/4] drivers: fix dma_get_required_mask
-Date: Mon, 10 Mar 2008 17:55:14 -0700
-Message-Id: <1205196914-17965-4-git-send-email-gregkh@suse.de>
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/6] USB: EHCI: carry out port handover during each root-hub resume
+Date: Mon, 10 Mar 2008 17:59:07 -0700
+Message-Id: <1205197152-18146-1-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <20080311004219.GA17890@suse.de>
-References: <20080311004219.GA17890@suse.de>
+In-Reply-To: <20080311004239.GD17890@suse.de>
+References: <20080311004239.GD17890@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-There's a bug in the current implementation of dma_get_required_mask()
-where it ands the returned mask with the current device mask.  This
-rather defeats the purpose if you're using the call to determine what
-your mask should be (since you will at that time have the default
-DMA_32BIT_MASK).  This bug results in any driver that uses this function
-*always* getting a 32 bit mask, which is wrong.
+This patch (as1044) causes EHCI port handover for non-high-speed
+devices to occur during every root-hub resume, not just in cases where
+the controller lost power or was reset.  This is necessary because:
 
-Fix by removing the and with dev->dma_mask.
+	When some machines go into suspend, they remove power from
+	on-board USB devices while retaining suspend current for USB
+	controllers.
 
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: stable <stable@kernel.org>
+	The user might well unplug a USB device while the system is
+	suspended and then plug it back in before resuming.
+
+A corresponding change is made to the core resume routine; now
+high-speed root hubs will always be resumed when the system wakes up,
+even if they were suspended before the system went to sleep.  If this
+weren't done then EHCI port handover wouldn't work, since it is called
+when the EHCI root hub is resumed.
+
+Finally, a comment is added to the hub driver explaining the khubd has
+to be freezable; if it weren't frozen then it could interfere with
+port handover.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/usb/core/driver.c   |    9 +++++++--
+ drivers/usb/core/hub.c      |    6 ++++++
+ drivers/usb/host/ehci-hub.c |    4 +---
+ drivers/usb/host/ehci-pci.c |    1 -
+ 4 files changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index efaf282..911ec60 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -648,7 +648,7 @@ u64 dma_get_required_mask(struct device *dev)
- 		high_totalram += high_totalram - 1;
- 		mask = (((u64)high_totalram) << 32) + 0xffffffff;
+diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
+index 801b6f1..ebccdef 100644
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -1523,9 +1523,14 @@ static int usb_suspend(struct device *dev, pm_message_t message)
+ 	udev = to_usb_device(dev);
+ 
+ 	/* If udev is already suspended, we can skip this suspend and
+-	 * we should also skip the upcoming system resume. */
++	 * we should also skip the upcoming system resume.  High-speed
++	 * root hubs are an exception; they need to resume whenever the
++	 * system wakes up in order for USB-PERSIST port handover to work
++	 * properly.
++	 */
+ 	if (udev->state == USB_STATE_SUSPENDED) {
+-		udev->skip_sys_resume = 1;
++		if (udev->parent || udev->speed != USB_SPEED_HIGH)
++			udev->skip_sys_resume = 1;
+ 		return 0;
  	}
--	return mask & *dev->dma_mask;
-+	return mask;
+ 
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 68fc521..acd4658 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -2891,7 +2891,13 @@ loop:
+ 
+ static int hub_thread(void *__unused)
+ {
++	/* khubd needs to be freezable to avoid intefering with USB-PERSIST
++	 * port handover.  Otherwise it might see that a full-speed device
++	 * was gone before the EHCI controller had handed its port over to
++	 * the companion full-speed controller.
++	 */
+ 	set_freezable();
++
+ 	do {
+ 		hub_events();
+ 		wait_event_freezable(khubd_wait,
+diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
+index 40e8240..3a2eb01 100644
+--- a/drivers/usb/host/ehci-hub.c
++++ b/drivers/usb/host/ehci-hub.c
+@@ -280,9 +280,7 @@ static int ehci_bus_resume (struct usb_hcd *hcd)
+ 	ehci_writel(ehci, INTR_MASK, &ehci->regs->intr_enable);
+ 
+ 	spin_unlock_irq (&ehci->lock);
+-
+-	if (!power_okay)
+-		ehci_handover_companion_ports(ehci);
++	ehci_handover_companion_ports(ehci);
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(dma_get_required_mask);
- #endif
+ 
+diff --git a/drivers/usb/host/ehci-pci.c b/drivers/usb/host/ehci-pci.c
+index 3ba0166..c12ada6 100644
+--- a/drivers/usb/host/ehci-pci.c
++++ b/drivers/usb/host/ehci-pci.c
+@@ -315,7 +315,6 @@ static int ehci_pci_resume(struct usb_hcd *hcd)
+ 
+ 	/* here we "know" root ports should always stay powered */
+ 	ehci_port_power(ehci, 1);
+-	ehci_handover_companion_ports(ehci);
+ 
+ 	hcd->state = HC_STATE_SUSPENDED;
+ 	return 0;
 -- 
 1.5.4.3
 
