@@ -1,159 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbYCKTOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbYCKTRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbYCKTOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 15:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYCKTOK
+	id S1755281AbYCKTRr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 15:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYCKTRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 15:14:10 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:36953 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752579AbYCKTOI (ORCPT
+	Tue, 11 Mar 2008 15:17:39 -0400
+Received: from excu-mxob-1.symantec.com ([198.6.49.12]:45663 "EHLO
+	excu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbYCKTRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 15:14:08 -0400
-Date: Tue, 11 Mar 2008 13:14:06 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-       warthog19@eaglescrag.net, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080311191406.GB29344@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-	warthog19@eaglescrag.net, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-acpi@vger.kernel.org
-References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de> <20080304230937.GD3694@ldl.fc.hp.com> <47CDF339.3060304@jp.fujitsu.com> <20080305202052.GN3694@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311110403.7db9527c@appleyard>
+	Tue, 11 Mar 2008 15:17:38 -0400
+X-Greylist: delayed 4031 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Mar 2008 15:17:38 EDT
+Date: Tue, 11 Mar 2008 12:55:33 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs
+ (v2)
+In-Reply-To: <20080311061836.6664.5072.sendpatchset@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0803111230410.15328@blonde.site>
+References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311110403.7db9527c@appleyard>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kenji, Kristen,
-
-* Kristen Carlson Accardi <kristen.c.accardi@intel.com>:
-> On Tue, 11 Mar 2008 22:10:40 +0900
-> Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+On Tue, 11 Mar 2008, Balbir Singh wrote:
 > 
-> > Hi Alex-san,
-> > 
-> > Alex Chiang wrote:
-> > >>> It wasn't the IBM machine that was breaking; it was Fujitsu. They
-> > >>> were returning an error code (the numerical value 1023) when I
-> > >>> called the _SUN method on a slot object that existed in the ACPI
-> > >>> namespace but was not present (as reported by the _STA method).
-> > >>> By the time I got that error report, I'd already dropped the
-> > >>> duplicate name detection code, and was letting the kobject
-> > >>> infrastructure warn about duplicate names because for my test
-> > >>> cases, refcounting was a better solution.
-> > >>> [Kenji-san from Fujitsu seemed to be ok with the progress I'd
-> > >>> made at the time, he can speak up if he's changed his mind ;)]
-> > >> Unfortunatelly, I have not tried the new version of slot detection
-> > >> driver because of the lack of test environment. Maybe we need more
-> > >> several days to wait for test environment. 
-> > >> BTW, does the new one fixes the issue I reported before? I could
-> > >> not find it in the changelog. IIRC, this issue was difficult to
-> > >> solve because the root cause of this issue is from the difference
-> > >> of interpretation of ACPI spec between HP and Fujitsu (I still
-> > >> don't think it's a good idea to evaluate _SUN for the device
-> > >> object whose _STA is 0).
-> > > 
-> > > It looks like we disagree on how to interpret the spec (IBM
-> > > machines interpret the spec the same way HP machines do).
-> > > 
+> Move the memory controller data structure page_cgroup to its own slab cache.
+> It saves space on the system, allocations are not necessarily pushed to order
+> of 2 and should provide performance benefits. Users who disable the memory
+> controller can also double check that the memory controller is not allocating
+> page_cgroup's.
 > 
-> OK, let me see if I can understand what the issue is here.  Please
-> correct me if I'm wrong.  The debate is about whether or not it is
-> legitimate to call _SUN if _STA indicates that the device is not
-> present and functional.  
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-Yes, I agree that is what we are discussing here.
+I certainly approve of giving page_cgroups their own kmem_cache
+(and agree with Kame that it was overkill for the zones).
 
-> I've checked ACPI 3.0b, and from what I've read, you may not
-> evaluate _SUN until _INI is called.  And _INI should not be
-> called unless _STA indicates that a device is present and
-> functional.
+But I don't agree with the SLAB_HWCACHE_ALIGN you've slipped into
+this version.  That'll be wasting a lot of (all? more than?) the
+space you're trying to save with a kmem_cache, won't it?  Let me
+talk about that separately, in reply to the mail where you report
+the numbers.
 
-This is also true, but I would like to point out that the *scope*
-of these control methods is confusing the issue slightly.
+Are you proposing this page_cgroup_cache mod for 2.6.25 or for 2.6.26?
+I ask because I want to build upon it to fix up some GFP_ flag issues:
+I think we end up claiming the page_cgroups are __GFP_MOVABLE when they
+should be called __GFP_RECLAIMABLE; but I don't know how seriously we
+take MOVABLE/RECLAIMABLE discrepancies at present.
 
-On my machine, I have a namespace that looks like this:
+There's a patch I'd also like to build upon from Christoph in -mm
+(remove-set_migrateflags.patch), which sheds light on a similar issue
+with radix_tree_nodes).  It's importance is again dependent on how
+seriously we're taking MOVABLE/RECLAIMABLE discrepancies.
 
-|   |   |-- L001 [6]
-|   |   |   |-- _UID (0x100) [1]
-|   |   |   |-- LMUT [9]
-|   |   |   |-- _STA (0xf) [8]
-|   |   |   |-- _BBN (0x1) [8]
-|   |   |   |-- _HID (HWP0002) [8]
-|   |   |   |-- _CID (PNP0A03) [8]
-|   |   |   |-- _PRT [8]
-|   |   |   |-- _CRS [8]
-|   |   |   |-- RDFM [8]
-|   |   |   |-- WRFM [8]
-|   |   |   |-- _DSM [8]
-|   |   |   |-- _OSC [8]
-|   |   |   |-- _INI [8]
-|   |   |   |-- S1F0 [6]
-|   |   |   |   |-- SLOT (0x0) [1]
-|   |   |   |   |-- FUNC (0x0) [1]
-|   |   |   |   |-- _UID (0x100) [8]
-|   |   |   |   |-- _ADR (0x10000) [8]
-|   |   |   |   |-- _STA (0x0) [8]
-|   |   |   |   |-- _SUN (0x9) [8]
-|   |   |   |   |-- _EJ0 [8]
-|   |   |   |   |-- _PS0 [8]
-|   |   |   |   |-- _PS3 [8]
-|   |   |   |   |-- ATNS [8]
-|   |   |   |   |-- ASTA [8]
-|   |   |   |   |-- PWRS [8]
-|   |   |   |   `-- PSTA [8]
-|   |   |   |-- S1F1 [6]
+Hugh
 
-My L001 object is the PCI bridge. Note that it has _STA and _INI.
-My S1F0 object is the PCI slot. Note that it has a _STA and a
-_SUN, but it does *not* have an _INI.
-
-So on my machine, if L001._STA indicates "present", then we
-should evaluate L001._INI and examine the children for _INI
-methods. (according to acpi 3.0b spec).
-
-If the children have _INI, then we need to check child._STA
-before evaluating the child._INI.
-
-On my machine, it is legal to evaluate S1F0._SUN independent of
-S1F0._STA because L001._INI has already been evaluated.
-
-It would be helpful to know what Fujitsu's namespace looks like.
-If Fujitsu slot objects contain _STA and _INI, then I agree with
-Kenji-san -- I definitely need to check _STA before evaluating
-_SUN.
-
-But in any case, I think both HP and Fujitsu firmware are doing
-legal things -- neither firmware is breaking the spec.
-
-I should not have called Fujitsu's machine a quirk, so I
-apologize for that. I can change the comments to remove that
-language.
-
-I do think that what we should do is see which list is easier to
-maintain, based on "what interpretation is being implemented on
-most platforms".
-
-If one list is shorter than the other, then that should be the
-list to put in the kernel, and the default behavior should be
-"majority rule".
-
-Thanks.
-
-/ac
-
+> ---
+> 
+>  mm/memcontrol.c |   12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff -puN mm/memcontrol.c~memory-controller-move-to-own-slab mm/memcontrol.c
+> --- linux-2.6.25-rc4/mm/memcontrol.c~memory-controller-move-to-own-slab	2008-03-10 23:22:34.000000000 +0530
+> +++ linux-2.6.25-rc4-balbir/mm/memcontrol.c	2008-03-11 10:29:00.000000000 +0530
+> @@ -26,6 +26,7 @@
+>  #include <linux/backing-dev.h>
+>  #include <linux/bit_spinlock.h>
+>  #include <linux/rcupdate.h>
+> +#include <linux/slab.h>
+>  #include <linux/swap.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/fs.h>
+> @@ -35,6 +36,7 @@
+>  
+>  struct cgroup_subsys mem_cgroup_subsys;
+>  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
+> +static struct kmem_cache *page_cgroup_cache;
+>  
+>  /*
+>   * Statistics for memory cgroup.
+> @@ -560,7 +562,7 @@ retry:
+>  	}
+>  	unlock_page_cgroup(page);
+>  
+> -	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
+> +	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
+>  	if (pc == NULL)
+>  		goto err;
+>  
+> @@ -622,7 +624,7 @@ retry:
+>  		 */
+>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  		css_put(&mem->css);
+> -		kfree(pc);
+> +		kmem_cache_free(page_cgroup_cache, pc);
+>  		goto retry;
+>  	}
+>  	page_assign_page_cgroup(page, pc);
+> @@ -637,7 +639,7 @@ done:
+>  	return 0;
+>  out:
+>  	css_put(&mem->css);
+> -	kfree(pc);
+> +	kmem_cache_free(page_cgroup_cache, pc);
+>  err:
+>  	return -ENOMEM;
+>  }
+> @@ -695,7 +697,7 @@ void mem_cgroup_uncharge_page(struct pag
+>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  		css_put(&mem->css);
+>  
+> -		kfree(pc);
+> +		kmem_cache_free(page_cgroup_cache, pc);
+>  		return;
+>  	}
+>  
+> @@ -1020,6 +1022,8 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	if (unlikely((cont->parent) == NULL)) {
+>  		mem = &init_mem_cgroup;
+>  		init_mm.mem_cgroup = mem;
+> +		page_cgroup_cache = KMEM_CACHE(page_cgroup,
+> +					SLAB_HWCACHE_ALIGN | SLAB_PANIC);
+>  	} else
+>  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+>  
