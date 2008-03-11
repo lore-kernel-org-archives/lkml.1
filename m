@@ -1,63 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYCKX3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbYCKXae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbYCKX3Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYCKX3Q
+	id S1752506AbYCKXae (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYCKXa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:29:16 -0400
-Received: from mx2.suse.de ([195.135.220.15]:41898 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965AbYCKX3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:29:15 -0400
-Date: Tue, 11 Mar 2008 16:26:53 -0700
-From: Greg KH <gregkh@suse.de>
-To: stephane eranian <eranian@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Robert Richter <robert.richter@amd.com>
-Subject: Re: [PATCH 3/3] perfmon x86 infra(take 2): add AMD Northbridge PCI
-	Id
-Message-ID: <20080311232653.GA28114@suse.de>
-References: <7c86c4470803071305x6b575dxa9f7b0588abfd4b@mail.gmail.com> <7c86c4470803110950p54349250pbe29d4122912a2f6@mail.gmail.com> <20080311171216.GB26410@suse.de> <7c86c4470803111610s4a017835s8998d72e44acad3f@mail.gmail.com>
+	Tue, 11 Mar 2008 19:30:27 -0400
+Received: from phunq.net ([64.81.85.152]:34580 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751046AbYCKXa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:30:26 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Lars Marowsky-Bree <lmb@suse.de>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Tue, 11 Mar 2008 15:30:11 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grzegorz Kulewski <kangur@polcom.net>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de>
+In-Reply-To: <20080311215601.GM23784@marowsky-bree.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7c86c4470803111610s4a017835s8998d72e44acad3f@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200803111630.12093.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 04:10:41PM -0700, stephane eranian wrote:
-> Greg,
-> 
-> 
-> On Tue, Mar 11, 2008 at 10:12 AM, Greg KH <gregkh@suse.de> wrote:
-> > On Tue, Mar 11, 2008 at 09:50:36AM -0700, stephane eranian wrote:
-> >  > Greg,
-> >  >
-> >  > Ingo suggested I send ou the following patch which adds a PCI ID
-> >  > for AMD Barcelona Northbridge. This is used by the perfmon initialization
-> >  > code on this platform.
-> >  >
-> >  > Please apply to your tree.
-> >
-> >  We are trying to not add pci ids that are only used in one place within
-> >  the kernel.  Why can't the perfomon init code just add this value to
-> >  their code?
-> >
-> I thought you would want a central place where all PCI ids are defined.
-> But if you prefer not, then so be it. I'll put it into the perfmon code.
-> 
-> >  Or make this part of the perfmon patch itself, if you really must have
-> >  it.  No need to add it to the kernel if there are no in-tree users,
-> >  right?
-> >
-> I am starting to push perfmon patches upstream. So you should expect
-> patches which  *currently* have no in-tree users. You have to start from
-> somewhere, right?
+By the way are you aware that all you have to do is:
 
-Submit them at the same time, is that a problem?  We don't want to be
-accepting changes for an out-of-tree user that doesn't make it in :)
+   echo 1 >/proc/driver/ramback/<name>
 
-thanks,
+and ramback already runs in the mode you speak of?
 
-greg k-h
+Daniel
