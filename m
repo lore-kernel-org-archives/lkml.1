@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbYCKMR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYCKMWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757085AbYCKMR3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYCKMRV
+	id S1756043AbYCKMWs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbYCKMWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 08:17:21 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:40331 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbYCKMRU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:17:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ByaJRLKszC0S83GJyuT5NPJppqI6nbAClbeTFZTt6qlkIDcIVdyOaumvdpNUmx6WcgSmWbJgJ+yadJbWNiN5GlvusgfHZxD9xiLRrsPiQEeUze+3PH2bF+mCiV7QOOyejfvMdN7ED1JX0Gh0geYIzySjz3o0rjloiI0APrdxEyw=
-Message-ID: <961aa3350803110517o6abc7fc4rf4a0f241f5351b9c@mail.gmail.com>
-Date: Tue, 11 Mar 2008 21:17:05 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH 1/5] lib: introduce call_once()
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1205162940.656.152.camel@localhost>
+	Tue, 11 Mar 2008 08:22:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35038 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbYCKMWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 08:22:40 -0400
+Date: Tue, 11 Mar 2008 13:22:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Revert "cpu hotplug: adjust
+	root-domain->onlinespan in response to hotplug
+Message-ID: <20080311122222.GA7959@elte.hu>
+References: <20080310205241.9571.38832.stgit@novell1.haskins.net> <20080311085201.GD25110@elte.hu> <47D63CB3.BA47.005A.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080310145704.GA6396@APFDCB5C>
-	 <1205162940.656.152.camel@localhost>
+In-Reply-To: <47D63CB3.BA47.005A.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3343]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/3/11, Joe Perches <joe@perches.com>:
-> On Mon, 2008-03-10 at 23:57 +0900, Akinobu Mita wrote:
->  > +++ 2.6-rc/include/linux/once.h
->
-> > +struct once_control {
->  > +     struct mutex lock;
->  > +     int done;
->
->
-> bool?
 
-Yes, this definetly should be bool.
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
->  > +};
->  > +
->  > +#define __ONCE_INITIALIZER(name) {                                   \
->  > +             .lock           = __MUTEX_INITIALIZER(name.lock),       \
->  > +             .done           = 0,                                    \
->  > +     }
->  > +
->  > +#define DEFINE_ONCE(name) struct once_control name = __ONCE_INITIALIZER(name)
->
->
-> static?
+> Also, for the second patch, make sure you pick up "v2" which has both 
+> DYING/DYING_FROZEN.  The hotplug gurus indicated that I need both to 
+> work properly.
 
-no, static keyword should not be implicitly added in this macro.
-DEFINE_ONCE is intended to be anologous to DEFINE_LOCK, DEFINE_WAIT,
-and all other similar interfaces in kernel.
+yes, it is v2 that i have.
 
->  > +
->  > +extern int call_once_slow(struct once_control *once_control,
->  > +                       int (*init_rouine)(void));
->
->
-> return bool?
-
-call_once() returns error-code when init_routine fails.
-
->  spelling: s/rouine/routine/g
-
-Oops, thanks.
+	Ingo
