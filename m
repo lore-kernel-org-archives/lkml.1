@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYCKVJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbYCKVKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757770AbYCKVJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 17:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYCKVJt
+	id S1757927AbYCKVKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 17:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYCKVKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 17:09:49 -0400
-Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:32030 "EHLO
-	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752682AbYCKVJt (ORCPT
+	Tue, 11 Mar 2008 17:10:20 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45048 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753218AbYCKVKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 17:09:49 -0400
-X-Belgacom-Dynamic: yes
-Date: Tue, 11 Mar 2008 22:09:47 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Samuel Tardieu <sam@rfc1149.net>
-Cc: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>, junker@anduras.de,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: w83697hf_wdt.c stops watchdog on load
-Message-ID: <20080311210947.GF7505@infomag.infomag.iguana.be>
-References: <47D564CA.1040507@draigBrady.com> <2008-03-10-18-48-16+trackit+sam@rfc1149.net> <47D5C1DC.6080808@draigBrady.com> <20080311202214.GA7505@infomag.infomag.iguana.be> <2008-03-11-21-28-21+trackit+sam@rfc1149.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2008-03-11-21-28-21+trackit+sam@rfc1149.net>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 11 Mar 2008 17:10:18 -0400
+Date: Tue, 11 Mar 2008 21:08:41 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH rc5-mm1] shmem mpol: fix build warning
+Message-ID: <Pine.LNX.4.64.0803112106290.17067@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Fix #ifndef CONFIG_NUMA build warning on shmem_parse_mpol
+arising from mempolicy-support-optional-mode-flags.patch
 
-> That was my intent: disable the watchdog by default, and add an option
-> not to disable it (let it untouched, so getting the BIOS setting) at
-> module initialization, as Pádraig request is totally reasonable.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-Ok, then we are on the same line. It indeed makes sense to do this
-with watchdog devices that are capable of being controlled by the
-bios and where the timeout/keepalive time can be set big enough.
+ mm/shmem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-What should also be looked at is when you take over the watchdog
-settings from the bios, do you then take the same timeout/keepalive
-value? In the pcwd-drivers I took the dip-switch value of the card
-when the value was 0. You could do something similar here.
-
-Greetings,
-Wim.
-
+--- 2.6.25-rc5-mm1/mm/shmem.c	2008-03-11 14:19:36.000000000 +0000
++++ linux/mm/shmem.c	2008-03-11 16:45:37.000000000 +0000
+@@ -1215,7 +1215,7 @@ static struct page *shmem_alloc_page(gfp
+ #else /* !CONFIG_NUMA */
+ #ifdef CONFIG_TMPFS
+ static inline int shmem_parse_mpol(char *value, unsigned short *policy,
+-				unsigned short flags, nodemask_t *policy_nodes)
++			unsigned short *mode_flags, nodemask_t *policy_nodes)
+ {
+ 	return 1;
+ }
