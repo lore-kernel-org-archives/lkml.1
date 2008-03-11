@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbYCKVNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYCKVNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758725AbYCKVNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 17:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYCKVML
+	id S1758555AbYCKVNU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 17:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbYCKVMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 17:12:11 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:35320 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758030AbYCKVME (ORCPT
+	Tue, 11 Mar 2008 17:12:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:36164 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757977AbYCKVL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 17:12:04 -0400
+	Tue, 11 Mar 2008 17:11:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BOPLajHORjePV6Q5/GPzrFxUCQcRNpbtTvJLOLBd2lU7A3Sn6pAJGz7W4zZgoVVZ94PGOjFaK76lZDHKK4MdYX2d9j2za0Z7tW0r1Im0QU0NMNaPUnhAzYXxBims/+emnbKMDoiy9ySSjmRHVBSFQr4icHOBgZNnk4mkUSp+KIM=
-Subject: [PATCH 4/6] ide: use clamp_val macro instead of FIT macro
+        b=COrc18vmqwLXWVvsrTVAbubc7ABDhBw04ND91+O9xTyaMpB4YIm0qExKaPmncedA7gv3kVai2QPPalypBV2TULBJXodQY0djVxlGFeFccdbt7L6tcicyFE3H3i8AZfkhDbwKZtFq9Im5h/4rXlaO2buaF+p+15Wm0qBveTw/Rpg=
+Subject: [PATCH 2/6] video: use clamp() macro from kernel.h to replace
+	local defintions
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 11 Mar 2008 14:12:00 -0700
-Message-Id: <1205269920.22317.36.camel@brick>
+Date: Tue, 11 Mar 2008 14:11:55 -0700
+Message-Id: <1205269915.22317.34.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,94 +30,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the kernel-provided clamp_val macro rather than an ide-specific
-FIT macro.  FIT() was always called with constant range arguments
-which makes this safe.
+Clamps a value to be within a given range with strict typechecking.
 
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/ide/ide-timing.h    |    1 -
- drivers/ide/pci/amd74xx.c   |   14 +++++++-------
- drivers/ide/pci/via82cxxx.c |   14 +++++++-------
- 3 files changed, 14 insertions(+), 15 deletions(-)
+ drivers/media/video/bt8xx/bttvp.h    |    2 --
+ drivers/media/video/usbvideo/vicam.c |    6 ------
+ 2 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/ide/ide-timing.h b/drivers/ide/ide-timing.h
-index 3b12ffe..2e91c58 100644
---- a/drivers/ide/ide-timing.h
-+++ b/drivers/ide/ide-timing.h
-@@ -95,7 +95,6 @@ static struct ide_timing ide_timing[] = {
- #define IDE_TIMING_UDMA		0x80
- #define IDE_TIMING_ALL		0xff
+diff --git a/drivers/media/video/bt8xx/bttvp.h b/drivers/media/video/bt8xx/bttvp.h
+index 1305d31..b38e3a0 100644
+--- a/drivers/media/video/bt8xx/bttvp.h
++++ b/drivers/media/video/bt8xx/bttvp.h
+@@ -82,8 +82,6 @@
+ /* Limits scaled width, which must be a multiple of 4. */
+ #define MAX_HACTIVE (0x3FF & -4)
  
--#define FIT(v,vmin,vmax)	max_t(short,min_t(short,v,vmax),vmin)
- #define ENOUGH(v,unit)		(((v)-1)/(unit)+1)
- #define EZ(v,unit)		((v)?ENOUGH(v,unit):0)
+-#define clamp(x, low, high) min (max (low, x), high)
+-
+ #define BTTV_NORMS    (\
+ 		V4L2_STD_PAL    | V4L2_STD_PAL_N | \
+ 		V4L2_STD_PAL_Nc | V4L2_STD_SECAM | \
+diff --git a/drivers/media/video/usbvideo/vicam.c b/drivers/media/video/usbvideo/vicam.c
+index da1ba02..938a60d 100644
+--- a/drivers/media/video/usbvideo/vicam.c
++++ b/drivers/media/video/usbvideo/vicam.c
+@@ -70,12 +70,6 @@
  
-diff --git a/drivers/ide/pci/amd74xx.c b/drivers/ide/pci/amd74xx.c
-index 2ef890c..b5f9194 100644
---- a/drivers/ide/pci/amd74xx.c
-+++ b/drivers/ide/pci/amd74xx.c
-@@ -53,20 +53,20 @@ static void amd_set_speed(struct pci_dev *dev, u8 dn, u8 udma_mask,
- 	u8 t = 0, offset = amd_offset(dev);
+ #define VICAM_HEADER_SIZE       64
  
- 	pci_read_config_byte(dev, AMD_ADDRESS_SETUP + offset, &t);
--	t = (t & ~(3 << ((3 - dn) << 1))) | ((FIT(timing->setup, 1, 4) - 1) << ((3 - dn) << 1));
-+	t = (t & ~(3 << ((3 - dn) << 1))) | ((clamp_val(timing->setup, 1, 4) - 1) << ((3 - dn) << 1));
- 	pci_write_config_byte(dev, AMD_ADDRESS_SETUP + offset, t);
- 
- 	pci_write_config_byte(dev, AMD_8BIT_TIMING + offset + (1 - (dn >> 1)),
--		((FIT(timing->act8b, 1, 16) - 1) << 4) | (FIT(timing->rec8b, 1, 16) - 1));
-+		((clamp_val(timing->act8b, 1, 16) - 1) << 4) | (clamp_val(timing->rec8b, 1, 16) - 1));
- 
- 	pci_write_config_byte(dev, AMD_DRIVE_TIMING + offset + (3 - dn),
--		((FIT(timing->active, 1, 16) - 1) << 4) | (FIT(timing->recover, 1, 16) - 1));
-+		((clamp_val(timing->active, 1, 16) - 1) << 4) | (clamp_val(timing->recover, 1, 16) - 1));
- 
- 	switch (udma_mask) {
--	case ATA_UDMA2: t = timing->udma ? (0xc0 | (FIT(timing->udma, 2, 5) - 2)) : 0x03; break;
--	case ATA_UDMA4: t = timing->udma ? (0xc0 | amd_cyc2udma[FIT(timing->udma, 2, 10)]) : 0x03; break;
--	case ATA_UDMA5: t = timing->udma ? (0xc0 | amd_cyc2udma[FIT(timing->udma, 1, 10)]) : 0x03; break;
--	case ATA_UDMA6: t = timing->udma ? (0xc0 | amd_cyc2udma[FIT(timing->udma, 1, 15)]) : 0x03; break;
-+	case ATA_UDMA2: t = timing->udma ? (0xc0 | (clamp_val(timing->udma, 2, 5) - 2)) : 0x03; break;
-+	case ATA_UDMA4: t = timing->udma ? (0xc0 | amd_cyc2udma[clamp_val(timing->udma, 2, 10)]) : 0x03; break;
-+	case ATA_UDMA5: t = timing->udma ? (0xc0 | amd_cyc2udma[clamp_val(timing->udma, 1, 10)]) : 0x03; break;
-+	case ATA_UDMA6: t = timing->udma ? (0xc0 | amd_cyc2udma[clamp_val(timing->udma, 1, 15)]) : 0x03; break;
- 	default: return;
- 	}
- 
-diff --git a/drivers/ide/pci/via82cxxx.c b/drivers/ide/pci/via82cxxx.c
-index 9004e75..8665048 100644
---- a/drivers/ide/pci/via82cxxx.c
-+++ b/drivers/ide/pci/via82cxxx.c
-@@ -120,21 +120,21 @@ static void via_set_speed(ide_hwif_t *hwif, u8 dn, struct ide_timing *timing)
- 
- 	if (~vdev->via_config->flags & VIA_BAD_AST) {
- 		pci_read_config_byte(dev, VIA_ADDRESS_SETUP, &t);
--		t = (t & ~(3 << ((3 - dn) << 1))) | ((FIT(timing->setup, 1, 4) - 1) << ((3 - dn) << 1));
-+		t = (t & ~(3 << ((3 - dn) << 1))) | ((clamp_val(timing->setup, 1, 4) - 1) << ((3 - dn) << 1));
- 		pci_write_config_byte(dev, VIA_ADDRESS_SETUP, t);
- 	}
- 
- 	pci_write_config_byte(dev, VIA_8BIT_TIMING + (1 - (dn >> 1)),
--		((FIT(timing->act8b, 1, 16) - 1) << 4) | (FIT(timing->rec8b, 1, 16) - 1));
-+		((clamp_val(timing->act8b, 1, 16) - 1) << 4) | (clamp_val(timing->rec8b, 1, 16) - 1));
- 
- 	pci_write_config_byte(dev, VIA_DRIVE_TIMING + (3 - dn),
--		((FIT(timing->active, 1, 16) - 1) << 4) | (FIT(timing->recover, 1, 16) - 1));
-+		((clamp_val(timing->active, 1, 16) - 1) << 4) | (clamp_val(timing->recover, 1, 16) - 1));
- 
- 	switch (vdev->via_config->udma_mask) {
--	case ATA_UDMA2: t = timing->udma ? (0xe0 | (FIT(timing->udma, 2, 5) - 2)) : 0x03; break;
--	case ATA_UDMA4: t = timing->udma ? (0xe8 | (FIT(timing->udma, 2, 9) - 2)) : 0x0f; break;
--	case ATA_UDMA5: t = timing->udma ? (0xe0 | (FIT(timing->udma, 2, 9) - 2)) : 0x07; break;
--	case ATA_UDMA6: t = timing->udma ? (0xe0 | (FIT(timing->udma, 2, 9) - 2)) : 0x07; break;
-+	case ATA_UDMA2: t = timing->udma ? (0xe0 | (clamp_val(timing->udma, 2, 5) - 2)) : 0x03; break;
-+	case ATA_UDMA4: t = timing->udma ? (0xe8 | (clamp_val(timing->udma, 2, 9) - 2)) : 0x0f; break;
-+	case ATA_UDMA5: t = timing->udma ? (0xe0 | (clamp_val(timing->udma, 2, 9) - 2)) : 0x07; break;
-+	case ATA_UDMA6: t = timing->udma ? (0xe0 | (clamp_val(timing->udma, 2, 9) - 2)) : 0x07; break;
- 	default: return;
- 	}
- 
+-#define clamp( x, l, h )        max_t( __typeof__( x ),         \
+-				       ( l ),                   \
+-				       min_t( __typeof__( x ),  \
+-					      ( h ),            \
+-					      ( x ) ) )
+-
+ /* Not sure what all the bytes in these char
+  * arrays do, but they're necessary to make
+  * the camera work.
 -- 
 1.5.4.4.592.g32d4c
 
