@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbYCKVeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbYCKVfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbYCKVeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 17:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbYCKVeM
+	id S1757732AbYCKVfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 17:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYCKVfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 17:34:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49520 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752469AbYCKVeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 17:34:11 -0400
-X-Authenticated: #12956409
-X-Provags-ID: V01U2FsdGVkX19BsqBZpPlBSnf2w64aKyPn7rdDjzCAOve+YM7hE/
-	ASvyNBUBeciUe/
-Message-ID: <47D6FAD0.1020608@gmx.net>
-Date: Tue, 11 Mar 2008 22:34:08 +0100
-From: Cyrus Massoumi <cyrusm@gmx.net>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Tue, 11 Mar 2008 17:35:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53813 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752087AbYCKVfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 17:35:10 -0400
 MIME-Version: 1.0
-To: Nicholas Miell <nmiell@comcast.net>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, "Molnar, Ingo" <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
-References: <200803111749.29143.nickpiggin@yahoo.com.au> <1205269674.12854.16.camel@entropy>
-In-Reply-To: <1205269674.12854.16.camel@entropy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+From: Roland McGrath <roland@redhat.com>
+To: Frank Mayhar <fmayhar@google.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: posix-cpu-timers revamp
+In-Reply-To: Frank Mayhar's message of  Tuesday, 11 March 2008 14:05:07 -0700 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	<20080206165045.89b809cc.akpm@linux-foundation.org>
+	<1202345893.8525.33.camel@peace.smo.corp.google.com>
+	<alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
+	<20080207162203.3e3cf5ab@Varda>
+	<alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+	<alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
+	<20080207165455.04ec490b@Varda>
+	<alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	<alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+	<1204314904.4850.23.camel@peace.smo.corp.google.com>
+	<20080304070016.903E127010A@magilla.localdomain>
+	<1204660376.9768.1.camel@bobble.smo.corp.google.com>
+	<20080305040826.D0E6127010A@magilla.localdomain>
+	<1204830243.20004.31.camel@bobble.smo.corp.google.com>
+	<20080311075020.A93DB26F991@magilla.localdomain>
+	<1205269507.23124.57.camel@bobble.smo.corp.google.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080311213507.5BCDF26F991@magilla.localdomain>
+Date: Tue, 11 Mar 2008 14:35:07 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicholas Miell wrote:
-> On Tue, 2008-03-11 at 17:49 +1100, Nick Piggin wrote:
+> > Not quite.  check_process_timers only needs to be run once per thread
+> > group (per interesting tick).
 > 
->> So PostgreSQL performance profile is actually much more interesting.
->> To my dismay, I found that Linux 2.6.25-rc5 performs really badly
->> after saturating the runqueues and subsequently increasing threads.
->> 2.6.22 drops a little bit, but basically settles near the peak
->> performance. With 2.6.25-rc5, throughput seems to be falling off
->> linearly with the number of threads.
->>
+> Where "interesting tick" means "tick in which a process timer has
+> expired," correct?
+
+Or might have expired, in the current implementation style.  Correct.
+
+> > The process CPU timers track the process CPU clocks.  [...]
 > 
-> The FreeBSD folks have a whole host of benchmark results (MySQL,
-> PostgreSQL, BIND, NSD, ebizzy, SPECjbb, etc.) located at
-> http://people.freebsd.org/~kris/scaling/ that demonstrate that the
-> 2.6.23+ scheduler is worse than the 2.6.22 scheduler and both are worse
-> than FreeBSD 7.
-> 
-> The interesting thing is that they've been running these tests
-> constantly for years now to demonstrate that their new scheduler hasn't
-> regressed compared to their old scheduler and as a benchmark against the
-> competition (i.e. Linux).
-> 
-> Does anybody even do this at all for Linux?
-> 
-> (Also, ignoring MySQL because it's a terrible piece of software at least
-> when regarding it's scalability is a bad idea. It's the M in LAMP, it
-> has a huge user base, and FreeBSD manages to outperform Linux with the
-> same unscalable piece of software.)
+> And my changes introduce these clocks as separate fields in the signal
+> struct, updated at the tick.
 
-Did you actually see this? 
-http://www.kernel.org/pub/linux/kernel/people/npiggin/sysbench/
+Correct.
 
-FreeBSD does not outperform Linux, it's actually a bit faster according 
-to Nick's tests.
+> Okay, I hadn't been clear on the distinction between process-wide and
+> thread-only timers.  So, really, run_posix_cpu_timers() needs to check
+> both sets, the versions in the signal struct for the process-wide timers
+> and the versions in the task struct for the thread-only timers.
 
-I cannot comment on BIND and NSD, but SPECjbb looks pretty close and the 
-bad ebizzy performance seems to be an issue with glibc's memory allocator.
+Correct.
+
+> I'm going to table this for now.  [...]
+
+Agreed.
+
+> So, check_process_timers() checks for and handles any expired timers for
+> the currently-running process, whereas check_thread_timers() checks for
+> and handles any expired timers for the currently-running thread.  Is
+> that correct?
+
+Correct.
+
+> And, since these timers are only counting CPU time, if a thread is never
+> running at the tick (since that's how we account time in the first
+> place) any timers it might have will never expire.  
+
+Correct.
+
+> At each tick a process-wide timer may have expired.  Also, at each tick
+> a thread-only timer may have expired.  Or, of course, both.  So we need
+> to detect both events and fire the appropriate timer in the appropriate
+> context.
+
+Correct.
+
+> [...]  I'm pretty confident that it was
+> cache conflict among the sixteen cores that did the damage.
+
+I'm not surprised by this result.  (I do want to see much more detailed
+performance analysis before we decide on a final change.)
+
+> I'm currently working on an implementation that uses the alloc_percpu()
+> mechanism and a separate structure.  I'm encapsulating access to the
+> fields in shared_xxx_sum() inline functions, which could have different
+> implementations for UP, dual-CPU and generic SMP kernels.  
+
+That is exactly what I had in mind.  (I hadn't noticed alloc_percpu, and it
+has one more level of indirection than I'd planned.  But that wastes less
+space when num_possible_cpus() is far greater than num_online_cpus(), and I
+imagine it's vastly superior for NUMA.)
+
+Don't forget do_[gs]etitimer and k_getrusage can use this too.
+(Though maybe no reason to bother in k_getrusage since it has
+to loop to sum the non-time counters anyway.)
+
+> I personally think that the most promising approach is the one outlined
+> above (without considering the context-switch scheme for the moment).
+
+I tend to agree.  It's the only plan I've thought through in detail.
+But my remarks stand, about thorough analysis of performance impacts
+of options we can think of.
 
 
-greetings
-Cyrus
-
+Thanks,
+Roland
