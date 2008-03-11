@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbYCKMMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbYCKMP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756599AbYCKMMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbYCKMMq
+	id S1757149AbYCKMP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbYCKMPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 08:12:46 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:57321 "EHLO mail.zelnet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbYCKMMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:12:46 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Mar 2008 08:12:45 EDT
-Message-ID: <47D66576.6030108@gmail.com>
-Date: Tue, 11 Mar 2008 13:56:54 +0300
-From: Edward Shishkin <edward.shishkin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       reiserfs-devel@vger.kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [Build Faliure] 2.6.25-rc5-mm1 build fails
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <20080311101630.GA23757@linux.vnet.ibm.com>
-In-Reply-To: <20080311101630.GA23757@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 08:15:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43446 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbYCKMPV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 08:15:21 -0400
+Date: Tue, 11 Mar 2008 13:17:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: pageexec@freemail.hu, Ingo Molnar <mingo@elte.hu>,
+       Srinivasa DS <srinivasa@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
+       srikar@linux.vnet.ibm.com, SystemTAP <systemtap@sources.redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86 - Enhance DEBUG_RODATA support - alternatives
+Message-ID: <20080311121714.GG18917@one.firstfloor.org>
+References: <20080306140105.GC28438@elte.hu> <47D014E1.30964.22A9390F@pageexec.freemail.hu> <20080306172509.GA14284@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080306172509.GA14284@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wow, kgdb is enabled again..
+> First, that calling this text_poke implementation to modify text in a
+> module won't fail. Is virt_to_page(addr) ok if addr is in a vmalloc'ed
+> area ?
 
-Thanks!
-Edward
+virt_to_page only works on direct mapping addresses, not vmalloc.
+> 
+> Second, that calling virt_to_page(addr + PAGE_SIZE) won't have
+> undesirable side-effects if addr happens to be in the last page of an
+> allocated range. It should be ok for the core kernel text, because it is
+> followed by the kernel rodata, but I am not certain for modules.
 
-Kamalesh Babulal wrote:
+On non vmemmap/none flatmem kernels it could fail yes. But vmalloc/module_alloc
+is not guaranteed to be continuous so you cannot do that anyways.
 
->Hi Andrew,
->
->The 2.6.25-rc5-mm1 kernel build fails with allyesconfig
->
->  LD      .tmp_vmlinux1
->fs/built-in.o: In function `reiser4_debugtrap':
->/root/kernels/linux-2.6.25-rc5/fs/reiser4/debug.c:295: undefined reference to `breakpoint'
->make: *** [.tmp_vmlinux1] Error 1
->
->This build failure has been introduced by reiser4.patch, i think the
->breakpoint() have been used instead of kgdb_breakpoint().
->
->
->--- linux-2.6.25-rc5/fs/reiser4/debug.c	2008-03-11 22:12:45.000000000 +0530
->+++ linux-2.6.25-rc5/fs/reiser4/~debug.c	2008-03-11 23:14:54.000000000 +0530
->@@ -291,8 +291,8 @@ void reiser4_debugtrap(void)
-> {
-> 	/* do nothing. Put break point here. */
-> #if defined(CONFIG_KGDB) && !defined(CONFIG_REISER4_FS_MODULE)
->-	extern void breakpoint(void);
->-	breakpoint();
->+	extern void kgdb_breakpoint(void);
->+	kgdb_breakpoint();
-> #endif
-> }
-> #endif
->  
->
-
+-Andi
