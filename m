@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757823AbYCKPGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYCKPGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757823AbYCKPGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 11:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYCKPGK
+	id S1757977AbYCKPGc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 11:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757794AbYCKPGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 11:06:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:58085 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753505AbYCKPGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 11:06:09 -0400
-Date: Tue, 11 Mar 2008 16:03:41 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, devzero@web.de,
-       mingo@elte.hu
-Subject: Re: Kernel Linux 2.6.23.16 hangs when run updatedb
-In-Reply-To: <47D6984B.5040108@mandic.com.br>
-Message-ID: <alpine.LFD.1.00.0803111558190.3781@apollo.tec.linutronix.de>
-References: <47D54A8B.2020303@mandic.com.br> <alpine.LFD.1.00.0803110803280.3781@apollo.tec.linutronix.de> <47D6984B.5040108@mandic.com.br>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 11 Mar 2008 11:06:19 -0400
+Received: from n23b.bullet.mail.sp1.yahoo.com ([69.147.64.243]:45140 "HELO
+	n23b.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757750AbYCKPGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 11:06:17 -0400
+X-Yahoo-Newman-Property: ymail-5
+X-Yahoo-Newman-Id: 336165.8707.bm@omp401.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=aw0S/ZiEpfZlIDylDJpH6NmDSR8wov+9f+Qq9dQjpHIh8qqNUa07mRO/0H1J8NRkC4DTRv2GYf7GJ9CcliU3dFMS10XiS9JSv8UCryDYm4f5AaxOcPFh4beE8a3V4VaPj8hP5t0JZtFi+6a7ArrYx+VGTusXGkFjwrkd2J0MVqE=;
+X-YMail-OSG: 0oW_3bYVM1ky25.Qu7sUkCpTQcmwEup_ZK0FZadLl2Cp1nEK3t8UMjPd75PClHM5djk8759QvdYY.fZnRWOsv3QOX0QonWqA3P5jO5FPE6jPs02nAXM-
+Date: Tue, 11 Mar 2008 08:06:16 -0700 (PDT)
+From: Thierry Godefroy <reserv0@yahoo.com>
+Subject: [FIXED][BUG] 2.6.24.x can't boot (sysfs: could not mount)
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <15891.73472.qm@web45112.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Renato S. Yamane wrote:
-> > Renato, some questions:
-> > 1) is this fully reproducible with updatedb ?
+OK... Sorry about the "noise". I traced the problem down to fs/super.c and a
+the supermount patch I was using. Fixed now. Sorry again for the false alert...
+
+
+--- Thierry Godefroy <reserv0@yahoo.com> wrote:
+
+> Greetings,
 > 
-> Yes, this crash is fully reproducible.
-> All time wich I turn-on my laptopt I need kill find daemon in my Debian Etch.
-> If I don't do that, my laptop hangs.
-
-Good. Not for you, but for isolating the bug. :)
-
-> > 2) are you sure that this is the first stacktrace you captured, there
-> > might be some BUG before that which scrolled out of sight. Any chance
-> > to use a serial console?
+> I tried to upgrade the Linux kernel to 2.6.24.3 on my laptop computer (Clevo
+> D470K), which is currently running happily under 2.6.23.17, but the new
+> kernel
+> panics at the very start of the boot up sequence (can't even produce a dmesg
+> to
+> post here), with the following error:
 > 
-> I can't use scroll, because none key/mouse work after crash.
-> And, sorry I can't use a serial console. Any other idea?
-
-netconsole might work. Documentation/networking/netconsole.txt
- 
-> > 3) Can you please recompile the kernel with CONFIF_DEBUG_INFO set
-> > and then run the following addresses from the backtrace through
-> > addr2line with the new vmlinux:
-> > # addr2line -e vmlinux 0xc013dad9 0xc0107c3b
+> sysfs: could not mount !
+> mnt_init: sysfs_init_error: -22
 > 
-> Yes, I try compile 2.6.24.3 without any patch.
-
-Ok. If the problem persists, you might try 2.6.25-rc5 as well. I have
-timer debugging infrastructure for the latter, which I want to avoid
-to backport to .23/24 :)
-
-Does it happen with straight 2.6.23.16 as well ?
- 
-> > 4) Looking at your .config it seems you have some more patches applied
-> > aside of the .16 stable. Can you please upload a full patch queue
-> > somewhere ?
+> This computer ran the whole series of 2.6 kernels so far, and I'm using the
+> same configuration with 2.6.24.3 as with 2.6.23.17.
 > 
-> I attached all patchs used in my 2.6.23.16.
+> It's a "vanilla" kernel with the exception of two patches: supermount (which
+> is
+> not even yet active when the panic occurs), and a patch to drivers/acpi/ec.c
+> (ACPI_EC_DELAY set back to 50ms) because a change in 2.6.20 broke ACPI on
+> this
+> computer (slowing everything down to a crawl when ACPI_EC_DELAY is left to
+> 500ms).
+> 
+> I also tried with v2.6.24 sources, with the same result.
+> 
+> Any idea ?
 
-Hmm, I can't see an obvious candidate.
 
-Thanks,
+      ____________________________________________________________________________________
+Looking for last minute shopping deals?  
+Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
 
-	tglx
