@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbYCKBf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYCKCH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757576AbYCKBf6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 21:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYCKBfu
+	id S1755669AbYCKCH2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 22:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYCKCHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 21:35:50 -0400
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:56119 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751740AbYCKBft (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 21:35:49 -0400
-Message-ID: <47D5E1ED.3020804@tiscali.nl>
-Date: Tue, 11 Mar 2008 02:35:41 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 10 Mar 2008 22:07:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33788 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754151AbYCKCHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 22:07:16 -0400
 MIME-Version: 1.0
-To: jens.axboe@oracle.com
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] block/blk-merge.c: inverted likeliness in ll_back_merge_fn()
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6] signals: fold complete_signal() into send_signal/do_send_sigqueue
+In-Reply-To: Oleg Nesterov's message of  Saturday, 8 March 2008 18:10:24 +0300 <20080308151024.GA25188@tv-sign.ru>
+References: <20080308151024.GA25188@tv-sign.ru>
+X-Shopping-List: (1) Incredulous raucous rectums
+   (2) Pharmaceutical argumentation protrusions
+   (3) Nervous confusion swindlers
+   (4) Energetic assumptions
+   (5) Calamitous magnanimous pretenders
+Message-Id: <20080311020640.DC6F326F991@magilla.localdomain>
+Date: Mon, 10 Mar 2008 19:06:40 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In my likely profile it appears this one is inverted.
----
-Invert likeliness
+This and 1-3/6 look OK to me.  But, since this one appears to be changing
+the sense of the return value from send_signal, I think you should at least
+take the opportunity to add a comment to send_signal saying clearly what
+its return conventions are.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl> 
----
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 0f58616..b17777a 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -305,7 +305,7 @@ int ll_back_merge_fn(struct request_queue *q, struct request *req,
- 	}
- 	if (unlikely(!bio_flagged(req->biotail, BIO_SEG_VALID)))
- 		blk_recount_segments(q, req->biotail);
--	if (unlikely(!bio_flagged(bio, BIO_SEG_VALID)))
-+	if (likely(!bio_flagged(bio, BIO_SEG_VALID)))
- 		blk_recount_segments(q, bio);
- 	len = req->biotail->bi_hw_back_size + bio->bi_hw_front_size;
- 	if (BIOVEC_VIRT_MERGEABLE(__BVEC_END(req->biotail), __BVEC_START(bio))
+
+Thanks,
+Roland
