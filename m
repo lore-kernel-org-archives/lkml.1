@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbYCKAHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbYCKAgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755138AbYCKAHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 20:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYCKAHV
+	id S1753469AbYCKAgk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 20:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYCKAg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:07:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59953 "EHLO mx1.redhat.com"
+	Mon, 10 Mar 2008 20:36:29 -0400
+Received: from mga11.intel.com ([192.55.52.93]:26188 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbYCKAHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:07:20 -0400
-Message-ID: <47D5CD18.4080400@redhat.com>
-Date: Mon, 10 Mar 2008 20:06:48 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1750974AbYCKAg2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:36:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,477,1199692800"; 
+   d="scan'208";a="531750508"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, ia64 <linux-ia64@vger.kernel.org>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: [PATCH -mm] kprobes: fix prepare_booster to get correct slot
-References: <47D166E7.2050803@redhat.com> <1205120600.20271.3.camel@sli10-desk.sh.intel.com> <47D57D28.7070100@redhat.com>
-In-Reply-To: <47D57D28.7070100@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Recent driver in linux kernel 2.6.25-rc2
+Date: Mon, 10 Mar 2008 17:35:32 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892003DB2DC5@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <20080219224418.GA20926@ics.muni.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Recent driver in linux kernel 2.6.25-rc2
+thread-index: AchzSSMlFIJkrq8eTPCKKLA+3FMGhwPxiT9w
+References: <20080219153910.GA4303@ics.muni.cz> <D936D925018D154694D8A362EEB0892003AF3199@orsmsx416.amr.corp.intel.com> <20080219224418.GA20926@ics.muni.cz>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Lukas Hejtmanek" <xhejtman@ics.muni.cz>
+Cc: <ipw3945-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
+       <linux-wireless@vger.kernel.org>
+X-OriginalArrivalTime: 11 Mar 2008 00:35:31.0340 (UTC) FILETIME=[CFC1ECC0:01C8830F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix to get correct slot number from probing address
-in prepare_booster.
+On Tuesday, February 19, 2008 2:44 PM, Lukas Hejtmanek  wrote:
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
-Andrew, this is a bugfix of
-kprobes-kprobe-booster-for-ia64.patch
+> On Tue, Feb 19, 2008 at 02:28:58PM -0800, Chatre, Reinette wrote:
+>>> as of pre 2.6.25 kernels, kismet monitoring tool does not work with
+>>> the message: # kismet Launching kismet_server:
+>>> //usr/bin/kismet_server 
+>>> Suid priv-dropping disabled.  This may not be secure.
+>>> No specific sources given to be enabled, all will be enabled.
+>>> Non-RFMon VAPs will be destroyed on multi-vap interfaces (ie,
+>>> madwifi-ng) Enabling channel hopping.
+>>> Enabling channel splitting.
+>>> Source 0 (iwl4965): Enabling monitor mode for iwl4965 source
+>>> interface wlan0 channel 6... FATAL: Failed to set channel 6
+>>> 5:Input/output error 
+>> 
+>> Please load the driver with debugging enabled (debug=0x43fff) and
+>> send us the log capturing during this kismet startup.
+> 
+> the log is attached.
 
- arch/ia64/kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+sorry for the delay - please do submit a bug at bughost.org to enable us
+to track this problem.
 
-Index: 2.6.25-rc3-mm1/arch/ia64/kernel/kprobes.c
-===================================================================
---- 2.6.25-rc3-mm1.orig/arch/ia64/kernel/kprobes.c
-+++ 2.6.25-rc3-mm1/arch/ia64/kernel/kprobes.c
-@@ -565,7 +565,7 @@ static int __kprobes can_boost(bundle_t
- static void __kprobes prepare_booster(struct kprobe *p)
- {
- 	unsigned long addr = (unsigned long)p->addr & ~0xFULL;
--	unsigned int slot = addr & 0xf;
-+	unsigned int slot = (unsigned long)p->addr & 0xf;
- 	struct kprobe *other_kp;
+The error you get is strange - the reason why the channel could not be
+set was because the device is not considered to be ready. Yet, from your
+debug log all the required steps appear to have completed successfully.
+Could you please add a print to the function
+iwl4965-base.c:iwl4965_is_ready to see what the value of priv->status
+is?
 
- 	if (can_boost(&p->ainsn.insn[0].bundle, slot, addr)) {
+Thanks
+
+Reinette
