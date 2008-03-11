@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYCKKUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbYCKKUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbYCKKUK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbYCKKT6
+	id S1756941AbYCKKUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbYCKKUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:19:58 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42960 "EHLO
+	Tue, 11 Mar 2008 06:20:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42968 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbYCKKT6 (ORCPT
+	with ESMTP id S1754851AbYCKKUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:19:58 -0400
-Message-ID: <47D65A36.4020008@cn.fujitsu.com>
-Date: Tue, 11 Mar 2008 19:08:54 +0900
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
+	Tue, 11 Mar 2008 06:20:03 -0400
+Date: Tue, 11 Mar 2008 19:21:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
        Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 2/3] memcg: put a restriction on writing memory.force_empty
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH 1/3] res_counter: introduce res_counter_write_u64()
+Message-Id: <20080311192117.f7e23636.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47D65A27.80605@cn.fujitsu.com>
+References: <47D65A27.80605@cn.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can write whatever to memory.force_empty:
+On Tue, 11 Mar 2008 19:08:39 +0900
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-        echo 999 > memory.force_empty
-        echo wow > memory.force_empty
+> This function can be used to assign the value of a resource counter member.
+> 
+Why don't you make this function to do the same work as res_counter_write() ?
 
-This is odd, so let's make '1' to be the only valid value.
+Thanks,
+-Kame
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- mm/memcontrol.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index eb681a6..6145031 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -868,15 +868,18 @@ static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
- 				mem_cgroup_write_strategy);
- }
- 
--static ssize_t mem_force_empty_write(struct cgroup *cont,
--				struct cftype *cft, struct file *file,
--				const char __user *userbuf,
--				size_t nbytes, loff_t *ppos)
-+static int mem_force_empty_write(struct cgroup *cont, struct cftype *cft,
-+				 u64 val)
- {
--	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	int ret = mem_cgroup_force_empty(mem);
--	if (!ret)
--		ret = nbytes;
-+	struct mem_cgroup *mem;
-+	int ret;
-+
-+	if (val != 1)
-+		return -EINVAL;
-+
-+	mem = mem_cgroup_from_cont(cont);
-+	ret = mem_cgroup_force_empty(mem);
-+
- 	return ret;
- }
- 
-@@ -935,7 +938,7 @@ static struct cftype mem_cgroup_files[] = {
- 	},
- 	{
- 		.name = "force_empty",
--		.write = mem_force_empty_write,
-+		.write_u64 = mem_force_empty_write,
- 	},
- 	{
- 		.name = "stat",
--- 
-1.5.4.rc3
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/linux/res_counter.h |    9 ++++++---
+>  kernel/res_counter.c        |    9 +++++++++
+>  2 files changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+> index 8cb1ecd..8c23f7f 100644
+> --- a/include/linux/res_counter.h
+> +++ b/include/linux/res_counter.h
+> @@ -41,9 +41,10 @@ struct res_counter {
+>  
+>  /**
+>   * Helpers to interact with userspace
+> - * res_counter_read_u64() - returns the value of the specified member.
+> - * res_counter_read/_write - put/get the specified fields from the
+> - * res_counter struct to/from the user
+> + * res_counter_read_64/_write_u64 - returns/assigns the value of the
+> + *	specified member
+> + * res_counter_read/_write - puts/gets the specified fields from the
+> + *	res_counter struct to/from the user
+>   *
+>   * @counter:     the counter in question
+>   * @member:  the field to work with (see RES_xxx below)
+> @@ -53,6 +54,8 @@ struct res_counter {
+>   */
+>  
+>  u64 res_counter_read_u64(struct res_counter *counter, int member);
+> +void res_counter_write_u64(struct res_counter *counter, int member,
+> +			   unsigned long long val);
+>  
+>  ssize_t res_counter_read(struct res_counter *counter, int member,
+>  		const char __user *buf, size_t nbytes, loff_t *pos,
+> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+> index 791ff2b..a16b727 100644
+> --- a/kernel/res_counter.c
+> +++ b/kernel/res_counter.c
+> @@ -97,6 +97,15 @@ u64 res_counter_read_u64(struct res_counter *counter, int member)
+>  	return *res_counter_member(counter, member);
+>  }
+>  
+> +void res_counter_write_u64(struct res_counter *counter, int member,
+> +			   unsigned long long val)
+> +{
+> +	unsigned long long *tmp;
+> +
+> +	tmp = res_counter_member(counter, member);
+> +	*tmp = val;
+> +}
+> +
+>  ssize_t res_counter_write(struct res_counter *counter, int member,
+>  		const char __user *userbuf, size_t nbytes, loff_t *pos,
+>  		int (*write_strategy)(char *st_buf, unsigned long long *val))
+> -- 
+> 1.5.4.rc3
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
