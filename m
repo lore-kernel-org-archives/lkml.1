@@ -1,103 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYCKPs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757775AbYCKPw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbYCKPs5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 11:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbYCKPss
+	id S1757775AbYCKPw6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 11:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYCKPwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 11:48:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55609 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754081AbYCKPss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 11:48:48 -0400
-Date: Tue, 11 Mar 2008 16:48:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] scheduler fixes
-Message-ID: <20080311154837.GA27219@elte.hu>
-MIME-Version: 1.0
+	Tue, 11 Mar 2008 11:52:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49897 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753152AbYCKPwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 11:52:50 -0400
+Date: Tue, 11 Mar 2008 16:54:45 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [6/13] Core maskable allocator
+Message-ID: <20080311155445.GB27593@one.firstfloor.org>
+References: <20080307090716.9D3E91B419C@basil.firstfloor.org> <26256.1205249693@vena.lwn.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <26256.1205249693@vena.lwn.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 11, 2008 at 09:34:53AM -0600, Jonathan Corbet wrote:
+> Hi, Andi,
+> 
+> As I dig through this patch, I find it mostly makes sense; seems like it
+> could be a good idea. 
 
-Linus, please pull the latest scheduler fixes git tree from:
+Thanks.
+> 
+> > +struct page *
+> > +alloc_pages_mask(gfp_t gfp, unsigned size, u64 mask)
+> > +{
+> > +	unsigned long max_pfn = mask >> PAGE_SHIFT;
+> 
+> The "mask" parameter isn't really a mask - it's an upper bound on the
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git for-linus
+Actually it's both.
 
-Thanks,
+> address of the allocated memory.  Might it be better to call it
+> "max_addr" or "limit" or "ceiling" or some such so callers understand
 
-	Ingo
+mask is the standard term used by the PCI-DMA API for the same
+thing and since one of the main purposes of the mask allocator is to 
+implement underlying support for that interface it seemed fitting to use 
+the same convention.
 
------------------->
-Gregory Haskins (2):
-      Revert "cpu hotplug: adjust root-domain->online span in response to hotplug event"
-      keep rd->online and cpu_online_map in sync
-
- kernel/sched.c |   21 +++++++++++++--------
- 1 files changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b02e4fc..1cb53fb 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5813,13 +5813,6 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		/* Must be high prio: stop_machine expects to yield to it. */
- 		rq = task_rq_lock(p, &flags);
- 		__setscheduler(rq, p, SCHED_FIFO, MAX_RT_PRIO-1);
--
--		/* Update our root-domain */
--		if (rq->rd) {
--			BUG_ON(!cpu_isset(cpu, rq->rd->span));
--			cpu_set(cpu, rq->rd->online);
--		}
--
- 		task_rq_unlock(rq, &flags);
- 		cpu_rq(cpu)->migration_thread = p;
- 		break;
-@@ -5828,6 +5821,15 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 	case CPU_ONLINE_FROZEN:
- 		/* Strictly unnecessary, as first user will wake it. */
- 		wake_up_process(cpu_rq(cpu)->migration_thread);
-+
-+		/* Update our root-domain */
-+		rq = cpu_rq(cpu);
-+		spin_lock_irqsave(&rq->lock, flags);
-+		if (rq->rd) {
-+			BUG_ON(!cpu_isset(cpu, rq->rd->span));
-+			cpu_set(cpu, rq->rd->online);
-+		}
-+		spin_unlock_irqrestore(&rq->lock, flags);
- 		break;
- 
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -5879,7 +5881,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		spin_unlock_irq(&rq->lock);
- 		break;
- 
--	case CPU_DOWN_PREPARE:
-+	case CPU_DYING:
-+	case CPU_DYING_FROZEN:
- 		/* Update our root-domain */
- 		rq = cpu_rq(cpu);
- 		spin_lock_irqsave(&rq->lock, flags);
-@@ -6103,6 +6106,8 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
- 	rq->rd = rd;
- 
- 	cpu_set(rq->cpu, rd->span);
-+	if (cpu_isset(rq->cpu, cpu_online_map))
-+		cpu_set(rq->cpu, rd->online);
- 
- 	for (class = sched_class_highest; class; class = class->next) {
- 		if (class->join_domain)
+-Andi
