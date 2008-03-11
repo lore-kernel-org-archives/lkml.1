@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbYCKMmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbYCKMt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbYCKMmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbYCKMmJ
+	id S1756361AbYCKMt5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYCKMtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 08:42:09 -0400
-Received: from n8a.bullet.mail.mud.yahoo.com ([209.191.87.104]:24497 "HELO
-	n8a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751379AbYCKMmI (ORCPT
+	Tue, 11 Mar 2008 08:49:47 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:48194 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbYCKMtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:42:08 -0400
-X-Yahoo-Newman-Id: 841854.73183.bm@omp404.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=cWEkqn+7ZfwGLC4Av501lPjmHAoEtUMeJYR9fITZg2D7SnTEkonmfjgxIJeCt06GWFr4ZI+f8i9TIW5E8AowqSNrGKT1znPuMCsH450nRjl6WbFpx8V6uKeJTySin5aqu5M5bBVr77c4qCkVuY9U/wt8/E+0JfM1qT8Qg3OcAa4=  ;
-X-YMail-OSG: Xndpf.MVM1kQ4Rdy3A9GUh6GMfjNQfL.12pOd57coSpkcSZ0gSEe8_TC1sEOt_doNBMpoLQzrw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 1/5] lib: introduce call_once()
-Date: Tue, 11 Mar 2008 23:41:37 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20080310145704.GA6396@APFDCB5C>
-In-Reply-To: <20080310145704.GA6396@APFDCB5C>
+	Tue, 11 Mar 2008 08:49:46 -0400
+Date: Tue, 11 Mar 2008 18:19:35 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: libc-alpha@sourceware.org, Jan Blunck <jblunck@suse.de>,
+       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Christoph Hellwig <hch@lst.de>, Ulrich Drepper <drepper@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [RFC] Union mount readdir support in glibc
+Message-ID: <20080311124935.GA9121@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20080311055527.GA7256@in.ibm.com> <20080311080929.B076D26F991@magilla.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803112341.38005.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080311080929.B076D26F991@magilla.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 March 2008 01:57, Akinobu Mita wrote:
+On Tue, Mar 11, 2008 at 01:09:29AM -0700, Roland McGrath wrote:
+> It seems very unlikely you'd come up with a version of this plan that we'd
+> find acceptable in glibc.  readdir does buffering, sometimes entry format
+> conversion, and it can skip dummy entries.  That's it.  It's not going to
+> become a big hairy thing with all kinds of new state.  Sorry.
 
-> +static inline int call_once(struct once_control *once_control,
-> +			    int (*init_rouine)(void))
-> +{
-> +	return likely(once_control->done) ? 0
-> +			: call_once_slow(once_control, init_rouine);
-> +}
-> +
-> +#endif /* __LINUX_ONCE_H */
-> Index: 2.6-rc/lib/once.c
-> ===================================================================
-> --- /dev/null
-> +++ 2.6-rc/lib/once.c
-> @@ -0,0 +1,18 @@
-> +#include <linux/module.h>
-> +#include <linux/once.h>
-> +
-> +int call_once_slow(struct once_control *once_control, int
-> (*init_rouine)(void)) +{
-> +	int err = 0;
-> +
-> +	mutex_lock(&once_control->lock);
-> +	if (!once_control->done) {
-> +		err = init_rouine();
-> +		if (!err)
-> +			once_control->done = 1;
-> +	}
-> +	mutex_unlock(&once_control->lock);
-> +
-> +	return err;
-> +}
-> +EXPORT_SYMBOL_GPL(call_once_slow);
+In the approach we are suggesting, at the minimum, glibc readdir would
+have to maintain a unified cache of dirents with the knowlege of
+whiteouts (DT_WHT). Would that be too much ?
 
-The store "once_control->done = 1" can become visible before
-init_routine has finished. The code after calling call_once may
-also speculatively load some memory before the load of
-once_control->done completes, so you can likewise have a data
-race that way too.
+> 
+> This really is the kernel filesystem's problem.  It just doesn't make sense
+> to expect userland to implement half of your directory semantics for you.
+> What are you going to do when you want to export a union directory to NFS?
+> readdir is a filesystem operation.  You're implementing a filesystem.
 
-To fix this, you need smp_wmb after init_rouine(), and probably
-smp_mb() in the fastpath after the check but before returning.
+Not really. In Union Mount, most of the unification support is done at
+VFS layer with some support from filesystems (for things like
+whiteouts). It is Unionfs which implements a new filesystem to achieve
+unification. Unification is not purely a kernel filesystem's problem, it
+involves both VFS and FS.
 
-Basically any time you have this situation where you're touching
-a shared variable without using locks, then you're vastly
-increasing the complexity of the code, and so you must have a
-good reason for it.
+> 
+> Exposing DT_WHT entries may be useful as a user feature.  (BSD had unions
+> with whiteouts years ago, and their ls et al have options to let you see
+> and operate on whiteouts explicitly so users can make sense of strange
+> situations with unions.)  But even for that, we'd have to consider the
+> compatibility issues.
 
-So acquiring the mutex unconditionally would be the best way to
-go, unless you're calling this a lot in fastpaths (in which case
-I would say you should probably rework your code)
+AFAIK, even BSD implements duplicate elimination and whiteout
+suppression in the userland.
 
-Thanks,
-Nick
+Thanks for your comments.
 
+Regards,
+Bharata.
