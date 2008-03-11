@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYCKQTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYCKQTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752629AbYCKQTN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 12:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYCKQS6
+	id S1753624AbYCKQTe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 12:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYCKQTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 12:18:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37484 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751138AbYCKQS6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 12:18:58 -0400
-Date: Tue, 11 Mar 2008 09:18:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PATCH] USB suspend persistance for 2.6.25-rc5 git
-In-Reply-To: <20080311102746.GA31701@atrey.karlin.mff.cuni.cz>
-Message-ID: <alpine.LFD.1.00.0803110916560.5896@woody.linux-foundation.org>
-References: <20080311004239.GD17890@suse.de> <20080311102746.GA31701@atrey.karlin.mff.cuni.cz>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 11 Mar 2008 12:19:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39411 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752221AbYCKQTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 12:19:24 -0400
+Date: Tue, 11 Mar 2008 17:19:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.25-rc5] x86: correct/clarify comment in nops.h
+Message-ID: <20080311161901.GA32355@elte.hu>
+References: <18390.43171.335608.379379@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18390.43171.335608.379379@harpo.it.uu.se>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0147]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-On Tue, 11 Mar 2008, Pavel Machek wrote:
+> <asm-x86/nops.h> describes certain multibyte instructions as "generic" 
+> nops when in fact they aren't nops at all in 64-bit mode (missing 
+> REX.W causing truncation of a register).
 > 
-> I'd really prefer this to go to 2.6.26-rc1. This screams like "needs a
-> lot of testing" patch.
+> Update the comment to state that K8 or P6 style nops should be used in 
+> 64-bit mode. This matches what the alternatives code does.
 
-I think it's pretty sane and safe, but I declined to pull it anyway. I 
-want to set a good example, rather than pull because I think something is 
-a good feature.
+>  /* generic versions from gas
+>     1: nop
+> +   the following instructions are NOT nops in 64-bit mode,
+> +   for 64-bit mode use K8 or P6 nops instead
+>     2: movl %esi,%esi
+>     3: leal 0x00(%esi),%esi
+>     4: leal 0x00(,%esi,1),%esi
 
-		Linus
+thanks Mikael, applied.
+
+	Ingo
