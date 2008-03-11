@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYCKRF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbYCKRIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYCKRF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYCKRFR
+	id S1753567AbYCKRIY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYCKRIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:05:17 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:64836 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbYCKRFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:05:16 -0400
-X-IronPort-AV: E=McAfee;i="5100,188,5249"; a="1219982"
-Message-ID: <47D6BBC8.7090608@qualcomm.com>
-Date: Tue, 11 Mar 2008 10:05:12 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
-References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com> <1205215046-27085-2-git-send-email-maxk@qualcomm.com> <20080311063514.GA29824@infradead.org>
-In-Reply-To: <20080311063514.GA29824@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Mar 2008 13:08:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:34738 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751828AbYCKRIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 13:08:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,481,1199692800"; 
+   d="scan'208";a="217354694"
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip
+	DMAengine
+From: Dan Williams <dan.j.williams@intel.com>
+To: Olof Johansson <olof@lixom.net>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
+       pasemi-linux@ozlabs.org, linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
+In-Reply-To: <20080306233900.GA3969@lixom.net>
+References: <20080306233900.GA3969@lixom.net>
+Content-Type: text/plain
+Date: Tue, 11 Mar 2008 10:04:11 -0700
+Message-Id: <1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Christoph Hellwig wrote:
-> On Mon, Mar 10, 2008 at 10:57:25PM -0700, maxk@qualcomm.com wrote:
->> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>
->> Hi Paul,
->>
->> How about something like this; along with the in-kernel version
->> of /cgroup/boot this could also provide the desired semantics.
->>
->> Another benefit of this approach would be that it no longer requires
->> PF_THREAD_BIND, as we'd only stick unbounded kthreads into that cgroup.
+On Thu, 2008-03-06 at 16:39 -0700, Olof Johansson wrote:
+> pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
+>    
+> First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
+> platform-specific functions to allocate channels, etc.
 > 
-> Looks like my comments to the last posting of this are still not
-> addressed.
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> 
+> ---
+> 
+> This has some dependencies on other patches currently queued up in the
+> powerpc git trees for 2.6.26. I'd appreciate reviews and acked-bys, but
+> it might be easiest to just merge it up the powerpc path due to the
+> dependencies.
+> 
+Apologies for not getting to this sooner.
 
-Hi Christoph,
+I notice that the driver does not handle callbacks in its descriptor
+cleanup path.  This could be ok if your intent is only to support the
+net_dma style polled operations, but this will not work for the
+raid-offload async_tx case.  I think the solution is for async_tx to
+ignore channels without the DMA_INTERRUPT capability.
 
-Sorry I missed your comment. Actually I just looked at the archive of the
-original thread and I do not see any comments from you. Were they maybe sent
-in private to Peter Z ? Can you please resend them ?
+> +static void pasemi_dma_clean(struct pasemi_dma_chan *chan)
+> +{
+> +       int old, new, i;
+> +       unsigned long flags;
+> +       struct pasemi_dma_desc *desc;
+> +       spin_lock_irqsave(&chan->desc_lock, flags);
 
-Also btw can you comment on the 2/2 patch of this series instead. 1/2 is just
-a resend of the original Peter's patch. 2/2 is more complete and tested version.
+Is spin_lock_bh() insufficient here?
 
-Thanx
-Max
+...that's all that jumps out at the moment.
+
+Regards,
+Dan
+
