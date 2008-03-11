@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYCKLwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbYCKMDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYCKLwW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 07:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYCKLwO
+	id S1755590AbYCKMDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYCKMDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 07:52:14 -0400
-Received: from lucidpixels.com ([75.144.35.66]:43516 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbYCKLwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 07:52:14 -0400
-Date: Tue, 11 Mar 2008 07:52:13 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
-Subject: Re: 2.6.24.3: WARNING: native_smp_call_function_mask() at boot
- time
-In-Reply-To: <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
-Message-ID: <alpine.DEB.1.00.0803110751470.10032@p34.internal.lan>
-References: <alpine.DEB.1.00.0803100426320.18620@p34.internal.lan> <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 11 Mar 2008 08:03:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:21276 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbYCKMDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 08:03:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AB9gUU+V08N5gtsgM86M9TBLDKa+RTIRwuRdG1fIMwD2XoDQPH4fSMzVZcBVyf9weEH1D5rIqWBBJg6g4QHQpIhtR8fe2oFRgYImp2kwbDW/CcisoJN+2Gp7f1LrKeu5N84Ss7SzO75ubP6XztQlyj612+lT2HNIY8wHQjMQPLg=
+Message-ID: <4d8e3fd30803110503n28692bcbt3f0ef3b94f4a3805@mail.gmail.com>
+Date: Tue, 11 Mar 2008 12:33:11 +0030
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: hpa <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
+       tglx <tglx@linutronix.de>
+Subject: Re: [PATCH 0/2] x86: coding style fixes to arch/x86/kernel/setup_32.c
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080307192459.52c0a330@paolo-desktop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080307192459.52c0a330@paolo-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 11 Mar 2008, Thomas Gleixner wrote:
-
-> On Mon, 10 Mar 2008, Justin Piszcz wrote:
->> Running kernel 2.6.24.3 on Debian Testing here..
->>
->> [   19.141846] WARNING: at arch/x86/kernel/smp_32.c:561
->> native_smp_call_function_mask()
->> [   19.141896] Pid: 1, comm: swapper Not tainted 2.6.24.3 #1
->> [   19.141937]  [<c010e50b>] native_smp_call_function_mask+0x14b/0x150
->> [   19.142009]  [<c01036c3>] common_interrupt+0x23/0x28
->> [   19.142076]  [<c010f470>] enable_NMI_through_LVT0+0x0/0x30
->> [   19.142144]  [<c010f470>] enable_NMI_through_LVT0+0x0/0x30
->> [   19.142212]  [<c010e8fc>] smp_call_function+0x1c/0x30
->> [   19.142279]  [<c012196c>] on_each_cpu+0x2c/0x60
->> [   19.142346]  [<c0110840>] setup_nmi+0x30/0x50
+On 3/7/08, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+> Compile tested, patch #2 depends on #1
 >
-> Can you please try the backported patch below.
+> Paolo Ciarrocchi (2):
+> x86: coding style fixes to arch/x86/kernel/setup_32.c
+> x86: coding style fixes to arch/x86/kernel/setup_32.c
 >
-> Thanks,
-> 	tglx
->
+> arch/x86/kernel/setup_32.c | 9 ++++-----
+> 1 files changed, 4 insertions(+), 5 deletions(-)
 
-Patching now and will have the result shortly.
+hi Ingo, all,
+i think i didn't get any feedback, do you want me to submit again?
 
-# patch -p1 < ../patch
-patching file arch/x86/kernel/apic_32.c
-patching file arch/x86/kernel/apic_64.c
-patching file arch/x86/kernel/io_apic_32.c
-patching file arch/x86/kernel/io_apic_64.c
-patching file arch/x86/kernel/smpboot_32.c
-patching file arch/x86/kernel/smpboot_64.c
-patching file include/asm-x86/apic_32.h
-patching file include/asm-x86/io_apic_64.h
-#
-
+ciao,
+--
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
