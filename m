@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbYCKN6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbYCKOAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755587AbYCKN6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 09:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYCKN6c
+	id S1756991AbYCKOAW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 10:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYCKOAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 09:58:32 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:56863 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752065AbYCKN6c (ORCPT
+	Tue, 11 Mar 2008 10:00:07 -0400
+Received: from mga11.intel.com ([192.55.52.93]:22423 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752065AbYCKOAG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 09:58:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sFJLFhnSybyLkSVt2Z/ATWk6eebRVL0rc0vbzCMpcCVP6fp9m2YQFbhWti78sq4f9dGkw6vCcpatVdrkyz08E65eyf6cH0b75laRuZwbEAywHW9EzJnTlpMswxvt1mtHblmBryrE9ptCpFoinhCm4o9gcnZrq8+uAwZNAw4ZltE=
-Message-ID: <c4e36d110803110658k276c5c63x2d3703b4741a4d05@mail.gmail.com>
-Date: Tue, 11 Mar 2008 14:58:30 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH REPOST] Run IST traps from user mode preemptive on process stack
-Cc: "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz
-In-Reply-To: <20080311132616.GH18917@one.firstfloor.org>
+	Tue, 11 Mar 2008 10:00:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,480,1199692800"; 
+   d="scan'208";a="305304179"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080311012432.GA28576@basil.nowhere.org>
-	 <c4e36d110803110503v3f25d852nf52ebdc709d73706@mail.gmail.com>
-	 <20080311132616.GH18917@one.firstfloor.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: endless loop in native_flush_tlb_others in smp_64.c
+Date: Tue, 11 Mar 2008 07:01:56 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEAF9755@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <200803111130.55355.chunkeey@web.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: endless loop in native_flush_tlb_others in smp_64.c
+Thread-Index: AciDY9WyaHKE8dJ1Rp66iQjB//+kdwAHF4Qg
+References: <200803102316.54457.chunkeey@web.de> <df9815e70803110255s1c8323a8xf05b132ecc406bd0@mail.gmail.com> <200803111130.55355.chunkeey@web.de>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: <chunkeey@web.de>, "Jike Song" <albcamus@gmail.com>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Brown, Len" <len.brown@intel.com>
+X-OriginalArrivalTime: 11 Mar 2008 14:00:05.0368 (UTC) FILETIME=[35520780:01C88380]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/3/11, Andi Kleen <andi@firstfloor.org>:
-> > I'm not sure whether this is good or bad sign - but with this patch
->  > you have posted,
->  > I do not have to wait in qemu for minutes to get the 'busy-loop' - I
->  > get the exact same loop almost instantly when I start  disk read of LV
->  > partition and running my simple module insertion testcase.
->
->
-> Hmm, my fix was intended to fix a gdb problem. Or rather the gdb
->  problem was already fixed by disabling some functionality and with
->  this patch the functionality would be reenabled again.
->
->  If it fixed a qemu problem too that's great but was unintended
->  on my part. In fact it is a little worrying because there should
->  be no user visible change. Can you double check by unapply/test/reapply/test
->  the patch really makes a difference?
+ 
 
-I've not said it has 'fixed' my problem - I said it has exposed the
-problem much faster.
-But now when I've made a double test - I think I was wrong - I've been
-probably judging too fast and its also probably depending on the
-sunlight position, but now I can see that even with recent git kernel
-without your patch I get the busy loop pretty quick :(.
-
->  > >  This patch changes these traps instead to always switch
->  > >  to the process stack when the trap originated from user mode.
->  > >  For kernel traps it keeps running non preemptive on the IST stack
->  > >   because that is much safer (e.g. to still get nmi watchdog events
->  > >  out even when the process stack is corrupted)
->  > >
->  >
->  > So what should I check to get fixed my problem in qemu ?
+>-----Original Message-----
+>From: chunkeey@web.de [mailto:chunkeey@web.de] 
+>Sent: Tuesday, March 11, 2008 3:31 AM
+>To: Jike Song
+>Cc: Linux Kernel; Pallipadi, Venkatesh; Ingo Molnar; Thomas 
+>Gleixner; Brown, Len
+>Subject: Re: endless loop in native_flush_tlb_others in smp_64.c
 >
+>On Tuesday 11 March 2008 10:55:40 Jike Song wrote:
+>> On Tue, Mar 11, 2008 at 6:16 AM, Chr <chunkeey@web.de> wrote:
+>> > Hi,
+>> >  ever since I moved to 2.6.25-rcY (Y should be between 2 and 5!).
+>> >  I've seen several, but really hard-to-catch instant freezes on my
+>> >  AMD64 Athlon X2 4200+ system...
+>>
+>> Here I guess 2.6.24 is fine for you?
+>Yes, 2.6.24(.3) is fine!
 >
-> I don't know. Someone has to debug it.
+>> >  Most of them happend in X.org so at first I thought it 
+>had something to
+>> > do with the NVIDIA module... BUT, one time it froze "a way 
+>before" the
+>> > module could get loaded...
+>> >
+>> >  ---
+>> >  SYSRQ-P revealed that the CPU were looping inside:
+>> >
+>> >  smp_64.c native_flush_tlb_others:
+>> >  assembler code:
+>> >  < 1ee:   f3 90                   pause
+>> >  < 1f0:   f6 45 00 03             testb  $0x3,0x0(%rbp)
+>> >  < 1f4:   75 f8                   jne    1ee
+>> > <native_flush_tlb_others+0x5f>
+>> >
+>> >  also known as: (in C)
+>> >
+>> >  while (!cpus_empty(f->flush_cpumask))
+>> >         cpu_relax();
+>> >
+>> >  So... has anyone a good idea what's happening here 
+>exactly? Or is there
+>> >  already another topic or even a patch available?
+>>
+>> Would you please attach your config file?  Do you have 
+>CONFIG_CPU_IDLE set?
+>(Attached). Yes, CONFIG_CPU_IDLE is enabled! I guess I should 
+>now disable it, 
+>try again and report back, right?! ;-) 
 
-But who :) ?
+I don't think it is related to CPU_IDLE. SYSRQ-T that Thomas asked
+should give more clues.
 
-Zdenek
+Thanks,
+Venki
