@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbYCKAng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYCKAnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752441AbYCKAng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 20:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbYCKAnD
+	id S1756630AbYCKAnv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 20:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbYCKAnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:43:03 -0400
-Received: from mx1.suse.de ([195.135.220.2]:58625 "EHLO mx1.suse.de"
+	Mon, 10 Mar 2008 20:43:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39431 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754924AbYCKAnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:43:00 -0400
-Date: Mon, 10 Mar 2008 17:42:32 -0700
+	id S1755219AbYCKAnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:43:06 -0400
+Date: Mon, 10 Mar 2008 17:42:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB fixes for 2.6.25-rc5 git
-Message-ID: <20080311004232.GC17890@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [GIT PATCH] USB suspend persistance for 2.6.25-rc5 git
+Message-ID: <20080311004239.GD17890@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,23 +24,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB fixes against your 2.6.25-rc5 git tree.
+A few -rc releases ago you asked about USB storage devices being
+persistant across suspend/resume cycles.
 
-It includes:
-	- more device id updates
-	- documentation updates
-	- headerfile fixes
-	- ehci driver fixes for "broken" hardware
-	- minor bugfixes
+Well, Alan Stern has put together a nice small set of patches that do
+just this.  Here they are against your 2.6.26-rc5-git tree.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+Now I know they are a new "feature" and it's way late in the release
+cycle, but you were asking for this a while ago.  I've been beating on
+it with my laptops and had no problems at all.
 
-A lot of these patches have been in the -mm tree for a while, as well as
--next.
+They have been in the past few -mm releases with no reported problems,
+as well as the -next tree.
 
-The full patches will be sent to the linux-usb mailing list (note the
-address change), if anyone wants to see them.
+If you want to take them, or just play with them, please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-persist-2.6.git/
+
+The full patches will be sent to the linux-usb and linux-kernel mailing
+lists for everyone to see them.
 
 thanks,
 
@@ -47,50 +49,25 @@ greg k-h
 
 ------------
 
-
- Documentation/usb/usb-help.txt  |    8 ++---
- drivers/usb/gadget/Kconfig      |    2 +-
- drivers/usb/host/ehci-hcd.c     |   62 ++++++++++++++++++++++++--------
- drivers/usb/serial/cypress_m8.c |    2 +
- drivers/usb/serial/cypress_m8.h |    4 ++
- drivers/usb/serial/ftdi_sio.c   |    1 +
- drivers/usb/serial/ftdi_sio.h   |    3 ++
- drivers/usb/serial/generic.c    |   10 +++--
- drivers/usb/serial/option.c     |   75 ++++++++++++++++++++++++++++++++-------
- drivers/usb/storage/sddr55.c    |    4 +-
- include/linux/usb/Kbuild        |    2 +-
- include/linux/usb/gadget.h      |    4 --
- sound/usb/usbaudio.c            |    2 +
- 13 files changed, 133 insertions(+), 46 deletions(-)
+ Documentation/usb/persist.txt |   43 ++++---
+ drivers/usb/core/Kconfig      |   25 ----
+ drivers/usb/core/driver.c     |    9 +-
+ drivers/usb/core/hub.c        |  266 +++++++++++++++++++++++++++--------------
+ drivers/usb/core/message.c    |    2 +-
+ drivers/usb/core/quirks.c     |   14 ++
+ drivers/usb/core/sysfs.c      |   22 ++--
+ drivers/usb/host/ehci-hub.c   |   15 +--
+ drivers/usb/host/ehci-pci.c   |    1 -
+ include/linux/usb.h           |    2 +-
+ 10 files changed, 234 insertions(+), 165 deletions(-)
 
 ---------------
 
-Andrew Morton (1):
-      USB: drivers/usb/storage/sddr55.c: fix uninitialized var warnings
-
-David Brownell (1):
-      USB: fix ehci unlink regressions
-
-Dirk DeSchepper (1):
-      USB: option: add novatel device ids
-
-Dmitry Shapin (1):
-      USB: cypress_m8: add UPS Powercom (0d9f:0002)
-
-Jim Meyering (1):
-      USB: usbaudio: handle kcalloc failure
-
-Li Yang (1):
-      USB: fsl_usb2_udc: fix broken Kconfig
-
-Mirko Bordignon (1):
-      USB: new ftdi_sio device id
-
-Pete Zaitcev (1):
-      USB: fix usb-serial generic recursive lock
-
-Robert P. J. Day (3):
-      USB: g_printer.h does not need to be "unifdef"ed.
-      USB: Remove __KERNEL__ check from non-exported gadget.h.
-      USB:Update mailing list information in documentation
+Alan Stern (6):
+      USB: EHCI: carry out port handover during each root-hub resume
+      USB: reorganize code in hub.c
+      USB: make USB-PERSIST work after every system sleep
+      USB: remove CONFIG_USB_PERSIST setting
+      USB: check serial-number string after device reset
+      USB: enable USB-PERSIST by default
 
