@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYCKRz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYCKSBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbYCKRz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYCKRzM
+	id S1754061AbYCKSBD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:01:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYCKSAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:55:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36435 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbYCKRzK (ORCPT
+	Tue, 11 Mar 2008 14:00:54 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:52652 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbYCKSAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:55:10 -0400
-Date: Tue, 11 Mar 2008 10:36:46 -0700
-From: Greg KH <greg@kroah.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com, serue@us.ibm.com,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080311173646.GA26931@kroah.com>
-References: <47CED717.60406@openvz.org> <47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D657A3.5080801@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 11 Mar 2008 14:00:53 -0400
+Date: Tue, 11 Mar 2008 15:00:48 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [0/13] General DMA zone rework
+Message-ID: <20080311150048.4376c73a@mandriva.com.br>
+In-Reply-To: <20080311173540.GG27593@one.firstfloor.org>
+References: <200803071007.493903088@firstfloor.org>
+	<20080307175148.3a49d8d3@mandriva.com.br>
+	<20080308004654.GQ7365@one.firstfloor.org>
+	<20080310150316.752e4489@mandriva.com.br>
+	<20080310180843.GC28780@one.firstfloor.org>
+	<20080311142624.1dbd3af5@mandriva.com.br>
+	<20080311173540.GG27593@one.firstfloor.org>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
-> 
-> Besides, I've measured some things - the lat_syscall test for open from 
-> lmbench test suite and the nptl perf test. Here are the results:
-> 
->         sec     nosec
-> open    3.0980s  3.0709s
-> nptl    2.7746s  2.7710s
-> 
-> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
-> much, but it is noticeable. Besides, this is only two tests, digging deeper
-> may reveal more.
+Em Tue, 11 Mar 2008 18:35:40 +0100
+Andi Kleen <andi@firstfloor.org> escreveu:
 
-I think that is in the noise of sampling if you run that test many more
-times.
+| On Tue, Mar 11, 2008 at 02:26:24PM -0300, Luiz Fernando N. Capitulino wrote:
+| > ===================================================================
+| > --- linux-2.6.24.orig/sound/core/memalloc.c
+| > +++ linux-2.6.24/sound/core/memalloc.c
+| > @@ -218,7 +218,6 @@ static void *snd_malloc_dev_pages(struct
+| >  	snd_assert(dma != NULL, return NULL);
+| >  	pg = get_order(size);
+| >  	gfp_flags = GFP_KERNEL
+| > -		| __GFP_COMP	/* compound page lets parts be mapped */
+| 
+| Oops. Thanks. I'll double check that. mask allocator indeed doesn't
+| handle __GFP_COMP and nobody should be passing that into dma_alloc_coherent
+| anyways. But the bug you got was for the small size wasn't it?
 
-> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
-> to the vmlinux...
-> 
-> I think, I finally agree with you and Al Viro, that the kobj mapper is 
-> not the right place to put the filtering, but taking the above numbers 
-> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
-> versions of security_inode_permission/security_file_permission/etc?
+ No, it triggers the BUG_ON() which checks the gfp, not the one
+which checks MASK_MIN_SIZE.
 
-Ask the security module interface maintainers about this, not me :)
+ On the other hand I'm not sure whether it does the right thing
+(ie, pass size in bytes instead of order) it does:
 
-good luck,
+"""
+pg = get_order(size);
+[...]
+res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
+if (res != NULL)
+	inc_snd_pages(pg);
+"""
 
-greg k-h
+ Maybe it could be changed to:
+
+"""
+res = dma_alloc_coherent(dev, size, dma, gfp_flags);
+if (res != NULL)
+	inc_snd_pages(get_order(size));
+"""
+
+ But sound works (simple tests).
+
+| > ok to reduce the pool to 5MB, right?
+| 
+| Yes, but not leaving any free over is a little risky, someone might need
+| more later. But e.g. going down to 8-9MB would be likely possible.
+
+ Ok.
+
+| The long term plan (but that is some time off and a little vague still) 
+| would be to let the various subsystem size the mask zone dynamically for 
+| their need.
+
+ That sounds cool.
+
+-- 
+Luiz Fernando N. Capitulino
