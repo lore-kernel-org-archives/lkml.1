@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYCKKns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYCKKqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbYCKKns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYCKKni
+	id S1754882AbYCKKqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbYCKKqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:43:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58412 "EHLO
+	Tue, 11 Mar 2008 06:46:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58423 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbYCKKni (ORCPT
+	with ESMTP id S1750786AbYCKKq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:43:38 -0400
-Date: Tue, 11 Mar 2008 11:45:31 +0100
+	Tue, 11 Mar 2008 06:46:29 -0400
+Date: Tue, 11 Mar 2008 11:48:22 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for pageattr-test.c
-Message-ID: <20080311104531.GB18917@one.firstfloor.org>
-References: <20080311013014.GA28682@basil.nowhere.org> <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080311104822.GC18917@one.firstfloor.org>
+References: <20080303231033.GB15255@one.firstfloor.org> <20080304040048.GA31562@codemonkey.org.uk> <20080304071423.0e6b71c1@mjolnir.drzeus.cx> <20080304181924.70aaf8c1@mjolnir.drzeus.cx> <924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com> <20080305070201.0d16cd40@mjolnir.drzeus.cx> <20080305094023.6486ebdf@mjolnir.drzeus.cx> <20080306092730.4412d085@mjolnir.drzeus.cx> <20080309151659.63d54f38@mjolnir.drzeus.cx> <20080311085145.5fcf3186@mjolnir.drzeus.cx>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de>
+In-Reply-To: <20080311085145.5fcf3186@mjolnir.drzeus.cx>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 09:25:21AM +0100, Thomas Gleixner wrote:
-> On Tue, 11 Mar 2008, Andi Kleen wrote:
-> > Use an own random generator for pageattr-test.c
-> > 
-> > [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
-> > candidate because it fixes a subtle bug]
-> 
-> Care to point out which "subtle bug" is fixed ? 
-> 
-> You replace a random generator by another to get repeateable
-> sequences. The non repeatability of the cpa test patterns is hardly a
-> "subtle bug".
+> I have now found a very hacky workaround that is slightly better than
+> disabling C3 altogether; making C3 exclusive to one core at a time. It
+> seems to kill the noise and the system now spends 50% in C3, instead of
+> 0%.
 
-The subtle bug(s) are first that it is not repeatable (it really should),
-then that it only initializes the CPU where the code first runs
-(since srandom32 is per CPU) and later might change CPUs and then that it 
-adds totally unnecessary state bits to CPU #0 (or whatever runs first).
+I suspect it won't do much of C3 if only one core is idle this way.
+Most likely you just disabled C3 this way in a way invisible to software.
 
--Andii
+-Andi
 
