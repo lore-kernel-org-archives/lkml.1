@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYCKDoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYCKDtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbYCKDoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 23:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYCKDoM
+	id S1756315AbYCKDtM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 23:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbYCKDs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 23:44:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38933 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753993AbYCKDoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 23:44:11 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 10 Mar 2008 23:48:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60970 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751369AbYCKDs5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 23:48:57 -0400
+Date: Mon, 10 Mar 2008 20:48:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] lib: introduce call_once()
+Message-Id: <20080310204853.3108d21c.akpm@linux-foundation.org>
+In-Reply-To: <20080310145704.GA6396@APFDCB5C>
+References: <20080310145704.GA6396@APFDCB5C>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Jan Beulich" <jbeulich@novell.com>
-X-Fcc: ~/Mail/linus
-Cc: "Ingo Molnar" <mingo@elte.hu>, <markus.t.metzger@intel.com>,
-       <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [PATCH] x86: fix typo(?) in step.c
-In-Reply-To: Jan Beulich's message of  Monday, 10 March 2008 11:53:19 +0000 <47D52F3F.76E4.0078.0@novell.com>
-References: <47CE69B0.76E4.0078.0@novell.com>
-	<20080305134150.GA16477@elte.hu>
-	<20080306075223.BA28B2700FD@magilla.localdomain>
-	<20080306112819.GC17906@elte.hu>
-	<20080306120309.E4BE52700FD@magilla.localdomain>
-	<20080306131119.GC21359@elte.hu>
-	<47D52F3F.76E4.0078.0@novell.com>
-X-Zippy-Says: Oh my GOD -- the SUN just fell into YANKEE STADIUM!!
-Message-Id: <20080311034408.4F1A226F991@magilla.localdomain>
-Date: Mon, 10 Mar 2008 20:44:08 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So, is this going to be fully reverted, or is it worth pointing out/fixing
-> other issues? The thing I'm recognizing right now is that
-> eee3af4a2c83a97fff107ddc445d9df6fded9ce4 made the writes to
-> DebugCtlMSR unconditional, which means any attempt to do
-> debugging on i[345]86 will ultimately cause the kernel to oops. All of
-> that stuff should really depend on CONFIG_X86_DEBUGCTLMSR...
+On Mon, 10 Mar 2008 23:57:05 +0900 Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-I think it would be wise to excise all the BTS-related additions until
-after 2.6.25.  But I am too swamped already and not planning to do
-anything about this myself.  But, that said, FWIW it does not look to
-me like debugctlmsr will ever be written on hardware that doesn't
-support it.  The stores are all only enabled if TIF_DEBUGCTLMSR gets
-set and thread.debugctlmsr is nonzero.  That can't be set by ptrace
-unless arch_has_block_step() returns true.
+> call_once() is an utility function which has similar functionality of
+> pthread_once().
+> 
+> +/*
+> + * call_once - call the initialization function only once
+> + *
+> + * @once_control: guarantee that the init_routine will be called only once
+> + * @init_routine: initialization function
+> + *
+> + * The first call to call_once(), with a given once_control, shall call the
+> + * init_routine with no arguments and return the value init_routine returned.
+> + * If the init_routine returns zero which indicates the initialization
+> + * succeeded, subsequent calls of call_once() with the same once_control shall
+> + * not call the init_routine and return zero.
+> + */
+> +
+> +static inline int call_once(struct once_control *once_control,
+> +			    int (*init_rouine)(void))
+> +{
+> +	return likely(once_control->done) ? 0
+> +			: call_once_slow(once_control, init_rouine);
+> +}
+
+I don't believe that this shold be described in terms of an "init_routine". 
+This mechanism can be used for things other than initialisation routines.
+
+It is spelled "routine", not "rouine".
 
 
-Thanks,
-Roland
+Would it not be simpler and more general to do:
+
+#define ONCE()						\
+	({						\
+		static long flag;			\
+							\
+		return !test_and_set_bit(0, flag);	\
+	})
+
+and then callers can do
+
+	if (ONCE())
+		do_something();
+
+?
