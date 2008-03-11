@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbYCKRr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYCKRsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbYCKRr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYCKRrT
+	id S1754748AbYCKRsY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYCKRsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:47:19 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35385 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752664AbYCKRrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:47:18 -0400
-Date: Tue, 11 Mar 2008 20:51:22 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/6] signals: send_signal: factor out SIGNAL_GROUP_EXIT checks
-Message-ID: <20080311175122.GA586@tv-sign.ru>
-References: <20080309185926.GA5649@tv-sign.ru> <20080311021633.BF1B326F991@magilla.localdomain>
-Mime-Version: 1.0
+	Tue, 11 Mar 2008 13:48:15 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:44845 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbYCKRsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 13:48:14 -0400
+Date: Tue, 11 Mar 2008 11:48:12 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Alex Chiang <achiang@hp.com>, lenb@kernel.org, linux-ia64@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] Create 'slot' sysfs attribute in/sys/devices/system/cpu/cpuN/topology/
+Message-ID: <20080311174812.GD21482@parisc-linux.org>
+References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080311021633.BF1B326F991@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/10, Roland McGrath wrote:
->
-> I don't really like dropping the signal on the floor.
+On Tue, Mar 11, 2008 at 10:31:43AM -0700, Luck, Tony wrote:
+> Perhaps this next rant is beyond the scope of Linux architecture
+> and more on overall systems useabilty.  It is just asking for
+> trouble to print a message on the console telling the user to go
+> pull out the board in "slot 2".  Do the slot numbers count from
+> "0" or from "1"?  Are they numbered left-to-right or right-to-left?
+> What if the rack is non-standard so the system was rotated 90
+> degrees?  Now are they numbered top-to-bottom or bottom-to-top.
 
-To clarify: my opinion is quite opposite, but it is only based on the
-"personal feeling", I don't have any "strong" arguments. If you still
-think we shouldn't do this, please nack this change.
+Some systems (particularly those designed for hotplug) have the numbers
+silk-screened onto the case.  It's like PCI slots ... my beige-box
+homebrew PCs don't have slot numbers written on them, but the machines I
+have from HP are very clearly labelled with slot numbers beside each PCI
+slot.
 
-> If the posting says
-> it succeeded (vs -ESRCH) then I'd like to see it appear later in the
-> pending set of the zombie thread, when we look at /proc/pid/status at exit
-> tracing or whatnot (and in core dumps).  Seeing those pending signal bits
-> is sometimes a useful clue about how something died in a strange scenario.
+Admittedly, the flashing red LED is a better UI, but it's not
+necessarily as confusing as you're painting it.
 
-As for core dumps. Suppose that the task has already started do_coredump()
-and another signal comes. Why should fill_prstatus() report this new signal?
-This doesn't look exactly right for me. The coredump should try to reflect
-the state of the task which it had when it was killed.
-
-Actually, the same for zombies. If the task sits in Z state, one can look
-at /proc/pid/status to see what signals it had when exited. To me, it looks
-just better if it is visible that a zombie doesn "accept" the new signals,
-because it is dead. (offtopic: currently the single-threaded exit doesn't
-set SIGNAL_GROUP_EXIT. This doesn't matter now, but I think it would be
-nice to be more consistent here).
-
-Now, suppose that due to some kernel bug the running thread/process doesn't
-want to die despite of SIGNAL_GROUP_EXIT. In that case another kill() may help
-because of additional wakeup, but this will hide the problem which won't be
-reported.
-
-But again, I see your point, thanks.
-
-Oleg.
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
