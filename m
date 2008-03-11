@@ -1,151 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYCKXiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750970AbYCKXjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbYCKXiq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYCKXii
+	id S1750970AbYCKXjU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYCKXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:38:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:13398 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYCKXih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:38:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WgANcHUPYsGwQ1A8/+x5ynwBkeWF70cQRLB5KFlM0Ng/izb2GZZGS1ZdtpeJdK6Rc9jBmULjclfMt3UZK4u88pQUc/0s0tQrTGljMgOjj0mcl2qQwk0EJ4PgIUy4FBw1+gvZiEg9Iab0J5vp8t4p03HDYNJ1PcX5WkuO646xiqc=
-Message-ID: <b647ffbd0803111638sdc92903r7faad3d4b2b6b842@mail.gmail.com>
-Date: Wed, 12 Mar 2008 00:38:36 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
-Subject: Re: [PATCH] sched: fix race in schedule
-Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       hpj@urpla.net, stable <stable@kernel.org>
-In-Reply-To: <47D6BD0C.6070401@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Mar 2008 19:39:09 -0400
+Received: from mga03.intel.com ([143.182.124.21]:18469 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751291AbYCKXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:39:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,482,1199692800"; 
+   d="scan'208";a="217499167"
+Date: Tue, 11 Mar 2008 16:34:11 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+       warthog19@eaglescrag.net, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080311163411.7ddd9267@appleyard>
+In-Reply-To: <47D684D0.6060200@jp.fujitsu.com>
+References: <20080229002341.GA21420@ldl.fc.hp.com>
+	<20080301144307.GD24386@parisc-linux.org>
+	<20080304054927.GA15566@suse.de>
+	<200803041018.29035.jbarnes@virtuousgeek.org>
+	<20080304193036.GB5534@suse.de>
+	<20080304230937.GD3694@ldl.fc.hp.com>
+	<47CDF339.3060304@jp.fujitsu.com>
+	<20080305202052.GN3694@ldl.fc.hp.com>
+	<47D684D0.6060200@jp.fujitsu.com>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47D57770.50909@ct.jp.nec.com> <1205174197.8514.159.camel@twins>
-	 <47D593A5.5060906@ct.jp.nec.com> <1205181256.6241.320.camel@lappy>
-	 <47D5EA9C.1040404@ct.jp.nec.com> <1205224835.8514.183.camel@twins>
-	 <47D6BD0C.6070401@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/03/2008, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> Peter Zijlstra wrote:
->  > On Mon, 2008-03-10 at 19:12 -0700, Hiroshi Shimamoto wrote:
->  >> Peter Zijlstra wrote:
->  >>> On Mon, 2008-03-10 at 13:01 -0700, Hiroshi Shimamoto wrote:
->  >>>
->  >>>> thanks, your patch looks nice to me.
->  >>>> I had focused setprio, on_rq=0 and running=1 situation, it makes me to
->  >>>> fix these functions.
->  >>>> But one point, I've just noticed. I'm not sure on same situation against
->  >>>> sched_rt. I think the pre_schedule() of rt has chance to drop rq lock.
->  >>>> Is it OK?
->  >>> Ah, you are quite right, that'll teach me to rush out a patch just
->  >>> because dinner is ready :-).
->  >>>
->  >>> How about we submit the following patch for mainline and CC -stable to
->  >>> fix .23 and .24:
->  >>>
->  >> Unfortunately, I encountered similar panic with this patch on -rt.
->  >> I'll look into this, again. I might have missed something...
->  >>
->  >> Unable to handle kernel NULL pointer dereference at 0000000000000128 RIP:
->  >>  [<ffffffff802297f5>] pick_next_task_fair+0x2d/0x42
->  >
->  > :-(
->  >
->  > OK, so that means I'm not getting it.
->  >
->  > So what does your patch do that mine doesn't?
->  >
->  > It removes the dependency of running (=task_current()) from on_rq
->  > (p->se.on_rq).
->  >
->  > So how can a current task not be on the runqueue?
->  >
->  > Only sched.c:dequeue_task() and sched_fair.c:account_entity_dequeue()
->  > set on_rq to 0, the only one changing rq->curr is schedule().
->  >
->  > So the only scheme I can come up with is that we did dequeue p (on_rq ==
->  > 0), but we didn't yet schedule so rq->curr == p.
->  >
->  > Is this how you ended up with your previuos analysis that it must be due
->  > to a hole introduced by double_lock_balance()?
->  >
->  > Because now we can seemingly call deactivate_task() and put_prev_task()
->  > in non-atomic fashion, but by placing the put_prev_task() before the
->  > load balance calls we should avoid doing that.
->  >
->  > So what else is going on... /me puzzled
->
->
-> thanks for taking time.
->  I've tested it with debug tracer, it took several hours to half day to
->  reproduce it on my box. And I got the possible scenario.
->
->  Before begin, I can tell that se->on_rq is changed at enqueue_task() or
->  dequeue_task() in sched.c.
->
->  Here is the flow to panic which I got;
->
->    CPU0                               CPU1
->     |                              schedule()
->     |                              ->deactivate_task()
->
->     |                              -->dequeue_task()
->     |                                  * on_rq=0
->     |                              ->put_prev_task_fair()
->
->     |                              ->idle_balance()
->     |                              -->load_balance_newidle()
->
-> (a wakeup function)                    |
->
->     |                              --->double_lock_balance()
->     *get lock                          *rel lock
->
->     * wake up target is CPU1's curr    |
->  ->enqueue_task()                       |
->     * on_rq=1                          |
->  ->rt_mutex_setprio()                   |
->     * on_rq=1, ruuning=1               |
->  -->dequeue_task()!!                    |
->  -->put_prev_task_fair()!!              |
+On Tue, 11 Mar 2008 22:10:40 +0900
+Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
 
-humm... this one should have caused the problem.
-
-->put_prev_task() has been previously done in schedule() so we get 2
-consequent ->put_prev_task() without set_curr_task/pick_next_task()
-being called in between
-[ as a result, __enqueue_entitty() is called twice for CPU1's curr and
-that definitely corrupts an rb-tree ]
-
-your initial patch doesn't have this problem. humm... logically-wise,
-it looks like a change of the 'current' which can be expressed by a
-pair :
-
-(1) put_prev_task() + (2) pick_next_task() or set_curr_task()
-(both end up calling set_next_entity())
-
-has to be 'atomic' wrt the rq->lock.
-
-For schedule() that also involves a change of rq->curr.
-
-Your initial patch seems to qualify for this rule... but I'm still
-thinking whether the current scheme is a bit 'hairy' :-/
-
-
+> Hi Alex-san,
 >
-> Hiroshi Shimamoto
->
+> I tried your patches, and I have two comments. I want 1) to be fixed
+> before merge to Greg's tree (or linux-next?), at least.
 
--- 
-Best regards,
-Dmitry Adamushko
+yes, we will not merge these patches without your ack.
+
+> 
+>  1) I checked ACPI spec again and again, but I could not find any
+>     reason to add Fujitsu servers to quirks list. So I'd like you to
+>     add HP servers to the quirks list. I'll send the following patches
+>     followed by this e-mail.
+
+I have followed up with a question on this on another thread, so I'll
+skip to #2...
+<snip>
+
+> 
+>  2) The ACPI PCI slot detection driver would change the slot names of
+>     some hotplug drivers (at least I checked shpchp and pciehp). And
+>     the name of slots are depending on the order of driver loading.
+>     For example, on my system which has several SHPCHP slots and
+>     PCIEHP slots, the name of PCIEHP slots are changed as
+>     follows. Please note that PCIEHP based slots are 0034_0027 and
+>     0032_0026, and others are SHPCHP based slots.
+> 
+>     - Without ACPI PCI slot detection driver
+>       # ls /sys/bus/pci/slots/
+>       0009_0016  0014_0018  0019_0020  0021_0022  0034_0027
+>       0011_0017  0016_0019  0021_0021  0032_0026
+> 
+>     - With ACPI PCI slot detection driver
+>       # ls /sys/bus/pci/slots/
+>       0009_0016  0014_0018  0019_0020  0021_0022  27
+>       0011_0017  0016_0019  0021_0021  26
+> 
+>     I had thought it is not a big problem before because people who
+>     don't like new names would not load the PCI slot driver. But since
+>     it is loaded automatically at boot time, I'm wondering that it
+>     would be a problem. For example, some platform, not fujitsu,
+>     depends on the old slot name to work, IIRC (Maybe Kristen knows
+>     the background about it). And I don't think the fact that slot
+>     names are changed depending on the order of driver loading is
+>     acceptable by system management people/software, though I don't
+>     have such software.
+> 
+>     Though I don't have any specific idea about this, folliwings might
+>     be candidates.
+> 
+>     - Override slot names with hotplug driver's slot names
+
+I think this should be done - if the pci slot driver detects that a
+hotplug driver is controlling a slot, it should allow that driver to
+set the name of the slot.
+
+>     - Unify slot names among all hotplug drivers
+
+I'm not sure if we can do this, since slot name might depend on what
+spec people are implementing.
+
+>     - Stop automatic loading of ACPI PCI slot driver
+
+I think we should definitely implement this one ^^^.
+
