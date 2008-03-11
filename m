@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYCKCPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbYCKCQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbYCKCPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 22:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYCKCPe
+	id S1757431AbYCKCQY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 22:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYCKCQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 22:15:34 -0400
-Received: from tydraniu.sfires.net ([217.79.144.110]:24844 "EHLO
-	tydraniu.sfires.net" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751107AbYCKCPd (ORCPT
+	Mon, 10 Mar 2008 22:16:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48686 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751450AbYCKCQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 22:15:33 -0400
-X-Greylist: delayed 1362 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Mar 2008 22:15:33 EDT
-Date: Tue, 11 Mar 2008 02:52:47 +0100 (CET)
-From: Jan Slupski <jslupski@juljas.net>
-To: linux-kernel@vger.kernel.org
-cc: flamingice@sourmilk.net, mcgrof@gmail.com
-Subject: [patch] Support for 124a:4025 - another version of IOGear GWU513
- 802.11g
-Message-ID: <Pine.BSO.4.62.0803110242160.28679@tydraniu.sfires.net>
+	Mon, 10 Mar 2008 22:16:15 -0400
+Date: Mon, 10 Mar 2008 19:15:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
+In-Reply-To: <47D5D4E7.1060900@garzik.org>
+Message-ID: <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
+References: <200803110014.52985.rjw@sisk.pl> <47D5D4E7.1060900@garzik.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-131149958-1205200367=:28679"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---0-131149958-1205200367=:28679
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
 
-Hi kernel,
+On Mon, 10 Mar 2008, Jeff Garzik wrote:
+>
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10123
+> > Subject		: No power-off / reboot with 2.6.25-rcX (up to -rc3)
+> > kernels
+> > Submitter	: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> > Date		:  Tue May 22 22:47:54 2007 -0400
+> > References	: http://lkml.org/lkml/2008/3/10/340
+> > Handled-By	: Gautham R Shenoy <ego@in.ibm.com>
+> > Patch		: http://lkml.org/lkml/2008/3/10/91
+> 
+> FWIW, I have this same problem.
 
-Attached patch (just device id addition) adds support to p54usb driver
-for apparently another version of IOGear GWU513 802.11g USB network card
-that uses GW3887IK chipset and is recognized as "124a:4025 AirVast" by
-lsusb.
+There's a newer patch in
 
-Patched 2.6.24.3 Fedora 8 kernel works for me with this card with use of
-isl3887usb_bare softmac firmware (second generation - 2.5.8.0, from
-http://jbnote.free.fr/prism54usb/PrismFirmwares.html).
+	http://lkml.org/lkml/2008/3/10/343
 
-Jan Slupski
+which I think should replace the 2008/3/10/91 one, but which needs 
+testing.
 
-PS.
-Please CC me personally as I'm not on the list. Thanks.
+Jeff, does that one ("keep rd->online and cpu_online_map in sync") fix the 
+problem for you?
 
-    _  _  _  _  _____________________________________________
-    | |_| |\ |  S L U P S K I             jslupski@juljas.net
-  |_| | | | \|                             http://juljas.net/
---0-131149958-1205200367=:28679
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=linux-2.6-p54usb-gwu513.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.BSO.4.62.0803110252470.28679@tydraniu.sfires.net>
-Content-Description: 
-Content-Disposition: attachment; filename=linux-2.6-p54usb-gwu513.patch
+(Andrew - I saw you say that the older patch fixed things for you, does 
+the newer one - on its own - also do so?)
 
-ZGlmZiAtcnUgYS9kcml2ZXJzL25ldC93aXJlbGVzcy9wNTR1c2IuYyBiL2Ry
-aXZlcnMvbmV0L3dpcmVsZXNzL3A1NHVzYi5jDQotLS0gYS9kcml2ZXJzL25l
-dC93aXJlbGVzcy9wNTR1c2IuYwkyMDA4LTAzLTExIDAwOjA4OjUwLjAwMDAw
-MDAwMCArMDEwMA0KKysrIGIvZHJpdmVycy9uZXQvd2lyZWxlc3MvcDU0dXNi
-LmMJMjAwOC0wMy0xMSAwMDowODo0Mi4wMDAwMDAwMDAgKzAxMDANCkBAIC02
-Myw2ICs2Myw3IEBADQogCXtVU0JfREVWSUNFKDB4MGNkZSwgMHgwMDA4KX0s
-CS8qIFNhZ2VtIFhHNzAzQSAqLw0KIAl7VVNCX0RFVklDRSgweDBkOGUsIDB4
-Mzc2Mil9LAkvKiBETGluayBEV0wtRzEyMCBDb2hpYmEgKi8NCiAJe1VTQl9E
-RVZJQ0UoMHgwOWFhLCAweDEwMDApfSwJLyogU3Bpbm5ha2VyIFByb3RvIGJv
-YXJkICovDQorCXtVU0JfREVWSUNFKDB4MTI0YSwgMHg0MDI1KX0sCS8qIElP
-R2VhciBHV1U1MTMgKEdXMzg4N0lLIGNoaXApICovDQogCXtVU0JfREVWSUNF
-KDB4MTNiMSwgMHgwMDBhKX0sCS8qIExpbmtzeXMgV1VTQjU0RyB2ZXIgMiAq
-Lw0KIAl7VVNCX0RFVklDRSgweDEzQjEsIDB4MDAwQyl9LAkvKiBMaW5rc3lz
-IFdVU0I1NEFHICovDQogCXtVU0JfREVWSUNFKDB4MTQzNSwgMHgwNDI3KX0s
-CS8qIEludmVudGVsIFVSMDU0RyAqLw0K
-
---0-131149958-1205200367=:28679--
+		Linus
