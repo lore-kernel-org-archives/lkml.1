@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYCKGeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbYCKGfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbYCKGeG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 02:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYCKGd4
+	id S1757274AbYCKGfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 02:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYCKGfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 02:33:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41168 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153AbYCKGdz (ORCPT
+	Tue, 11 Mar 2008 02:35:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57045 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYCKGfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 02:33:55 -0400
-Date: Mon, 10 Mar 2008 23:27:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080311062751.GB15737@kroah.com>
-References: <200803092346.17556.phillips@phunq.net> <20080311050638.GA12498@kroah.com> <200803102222.15230.phillips@phunq.net>
+	Tue, 11 Mar 2008 02:35:22 -0400
+Date: Tue, 11 Mar 2008 02:35:14 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: maxk@qualcomm.com
+Cc: mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
+Message-ID: <20080311063514.GA29824@infradead.org>
+References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com> <1205215046-27085-2-git-send-email-maxk@qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803102222.15230.phillips@phunq.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1205215046-27085-2-git-send-email-maxk@qualcomm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 09:22:14PM -0800, Daniel Phillips wrote:
-> On Monday 10 March 2008 22:06, Greg KH wrote:
-> > On Sun, Mar 09, 2008 at 10:46:16PM -0800, Daniel Phillips wrote:
-> > > Set ramback to flush mode:
-> > > 
-> > >   echo 1 >/proc/driver/ramback/<devname>
-> > 
-> > /proc is so 1990's.  As your code has nothing to do with processes,
-> > please don't add new files in /proc/.  sysfs is there for you to do
-> > stuff like this.
+On Mon, Mar 10, 2008 at 10:57:25PM -0700, maxk@qualcomm.com wrote:
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
-> Demonstrate some advantage and I will think about it.
+> Hi Paul,
+> 
+> How about something like this; along with the in-kernel version
+> of /cgroup/boot this could also provide the desired semantics.
+> 
+> Another benefit of this approach would be that it no longer requires
+> PF_THREAD_BIND, as we'd only stick unbounded kthreads into that cgroup.
 
-Again, as your code has nothing to do with "processes", please do not
-add new files to /proc.
+Looks like my comments to the last posting of this are still not
+addressed.
 
-As you are a filesystem, why not /sys/fs/ ?
-
-It ends up with smaller code than procfs stuff as well, a good and nice
-advantage.
-
-thanks,
-
-greg k-h
