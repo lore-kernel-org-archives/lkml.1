@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbYCKMP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbYCKMR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbYCKMP3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbYCKMPW
+	id S1757085AbYCKMR3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYCKMRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 08:15:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43446 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753024AbYCKMPV (ORCPT
+	Tue, 11 Mar 2008 08:17:21 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:40331 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbYCKMRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:15:21 -0400
-Date: Tue, 11 Mar 2008 13:17:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: pageexec@freemail.hu, Ingo Molnar <mingo@elte.hu>,
-       Srinivasa DS <srinivasa@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       srikar@linux.vnet.ibm.com, SystemTAP <systemtap@sources.redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86 - Enhance DEBUG_RODATA support - alternatives
-Message-ID: <20080311121714.GG18917@one.firstfloor.org>
-References: <20080306140105.GC28438@elte.hu> <47D014E1.30964.22A9390F@pageexec.freemail.hu> <20080306172509.GA14284@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Mar 2008 08:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ByaJRLKszC0S83GJyuT5NPJppqI6nbAClbeTFZTt6qlkIDcIVdyOaumvdpNUmx6WcgSmWbJgJ+yadJbWNiN5GlvusgfHZxD9xiLRrsPiQEeUze+3PH2bF+mCiV7QOOyejfvMdN7ED1JX0Gh0geYIzySjz3o0rjloiI0APrdxEyw=
+Message-ID: <961aa3350803110517o6abc7fc4rf4a0f241f5351b9c@mail.gmail.com>
+Date: Tue, 11 Mar 2008 21:17:05 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH 1/5] lib: introduce call_once()
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <1205162940.656.152.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080306172509.GA14284@Krystal>
-User-Agent: Mutt/1.4.2.1i
+References: <20080310145704.GA6396@APFDCB5C>
+	 <1205162940.656.152.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First, that calling this text_poke implementation to modify text in a
-> module won't fail. Is virt_to_page(addr) ok if addr is in a vmalloc'ed
-> area ?
+2008/3/11, Joe Perches <joe@perches.com>:
+> On Mon, 2008-03-10 at 23:57 +0900, Akinobu Mita wrote:
+>  > +++ 2.6-rc/include/linux/once.h
+>
+> > +struct once_control {
+>  > +     struct mutex lock;
+>  > +     int done;
+>
+>
+> bool?
 
-virt_to_page only works on direct mapping addresses, not vmalloc.
-> 
-> Second, that calling virt_to_page(addr + PAGE_SIZE) won't have
-> undesirable side-effects if addr happens to be in the last page of an
-> allocated range. It should be ok for the core kernel text, because it is
-> followed by the kernel rodata, but I am not certain for modules.
+Yes, this definetly should be bool.
 
-On non vmemmap/none flatmem kernels it could fail yes. But vmalloc/module_alloc
-is not guaranteed to be continuous so you cannot do that anyways.
+>  > +};
+>  > +
+>  > +#define __ONCE_INITIALIZER(name) {                                   \
+>  > +             .lock           = __MUTEX_INITIALIZER(name.lock),       \
+>  > +             .done           = 0,                                    \
+>  > +     }
+>  > +
+>  > +#define DEFINE_ONCE(name) struct once_control name = __ONCE_INITIALIZER(name)
+>
+>
+> static?
 
--Andi
+no, static keyword should not be implicitly added in this macro.
+DEFINE_ONCE is intended to be anologous to DEFINE_LOCK, DEFINE_WAIT,
+and all other similar interfaces in kernel.
+
+>  > +
+>  > +extern int call_once_slow(struct once_control *once_control,
+>  > +                       int (*init_rouine)(void));
+>
+>
+> return bool?
+
+call_once() returns error-code when init_routine fails.
+
+>  spelling: s/rouine/routine/g
+
+Oops, thanks.
