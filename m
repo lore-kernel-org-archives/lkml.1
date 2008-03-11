@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYCKRyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYCKRz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYCKRyn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYCKRyg
+	id S1755273AbYCKRz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYCKRzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:54:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44477 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752311AbYCKRyf (ORCPT
+	Tue, 11 Mar 2008 13:55:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36435 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbYCKRzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:54:35 -0400
-Date: Tue, 11 Mar 2008 10:53:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olof Johansson <olof@lixom.net>
-Cc: dan.j.williams@intel.com, shannon.nelson@intel.com,
-       linux-kernel@vger.kernel.org, pasemi-linux@ozlabs.org,
-       linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
- engine
-Message-Id: <20080311105355.64a9c380.akpm@linux-foundation.org>
-In-Reply-To: <20080311142545.GA18843@lixom.net>
-References: <20080306233900.GA3969@lixom.net>
-	<20080311000619.ba39311f.akpm@linux-foundation.org>
-	<20080311142545.GA18843@lixom.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 13:55:10 -0400
+Date: Tue, 11 Mar 2008 10:36:46 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       menage@google.com, sukadev@us.ibm.com, serue@us.ibm.com,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-ID: <20080311173646.GA26931@kroah.com>
+References: <47CED717.60406@openvz.org> <47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D657A3.5080801@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 09:25:45 -0500
-Olof Johansson <olof@lixom.net> wrote:
-
-> On Tue, Mar 11, 2008 at 12:06:19AM -0700, Andrew Morton wrote:
-> > On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
-> > 
-> > > pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
-> > >     
-> > > First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
-> > > platform-specific functions to allocate channels, etc.
-> > 
-> > Applied this on Paul's latest and powerpc allmodconfig goes boom.
+On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
 > 
-> It's dependent on my latest pull request of pasemi.git for-2.6.26 that
-> Paul hasn't pulled/pushed yet.
-
-Maybe we should get that tree into -mm and/or linux-next.
-
-People do test -mm on powerpc.
-
-> > drivers/dma/pasemi_dma.c: In function `pasemi_dma_alloc_chan_resources':
-> > drivers/dma/pasemi_dma.c:152: error: `PAS_DMA_TXCHAN_CFG_TY_COPY' undeclared (first use in this function)
-> > drivers/dma/pasemi_dma.c:152: error: (Each undeclared identifier is reported only once
-> > drivers/dma/pasemi_dma.c:152: error: for each function it appears in.)
-> > drivers/dma/pasemi_dma.c:154: error: `PAS_DMA_TXCHAN_CFG_LPDQ' undeclared (first use in this function)
-> > drivers/dma/pasemi_dma.c:155: error: `PAS_DMA_TXCHAN_CFG_LPSQ' undeclared (first use in this function)
-> > drivers/dma/pasemi_dma.c: In function `pasemi_dma_probe':
-> > drivers/dma/pasemi_dma.c:394: error: structure has no member named `device_dependency_added'
+> Besides, I've measured some things - the lat_syscall test for open from 
+> lmbench test suite and the nptl perf test. Here are the results:
 > 
-> .. and that one is caused by recent changes in async_tx.git. I was
-> waiting on other review comments from the DMA maintainers before
-> resubmitting; timer has expired though and I'll do it anyway today.
-
-What is async_tx.git?
-
-> > Also this driver from git-md-accel is pretty sick:
-> > 
-> > 
-> > drivers/dma/fsldma.c:439: warning: comparison of distinct pointer types lacks a cast
-> > drivers/dma/fsldma.c: In function `fsl_chan_xfer_ld_queue':
-> > drivers/dma/fsldma.c:584: warning: long long unsigned int format, dma_addr_t arg (arg 4)
-> > drivers/dma/fsldma.c: In function `fsl_dma_chan_do_interrupt':
-> > drivers/dma/fsldma.c:661: warning: unsigned int format, different type arg (arg 5)
-> > drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 4)
-> > drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 5)
-> > drivers/dma/fsldma.c:694: warning: unsigned int format, different type arg (arg 4)
-> > drivers/dma/fsldma.c: In function `fsl_dma_self_test':
-> > drivers/dma/fsldma.c:833: warning: int format, different type arg (arg 5)
-> > drivers/dma/fsldma.c: In function `of_fsl_dma_probe':
-> > drivers/dma/fsldma.c:1003: warning: unsigned int format, different type arg (arg 5)
-> > drivers/dma/fsldma.c: At top level:
-> > drivers/dma/fsldma.c:723: warning: 'fsl_dma_callback_test' defined but not used
+>         sec     nosec
+> open    3.0980s  3.0709s
+> nptl    2.7746s  2.7710s
 > 
-> Yeah, Zhang Wei posted a patch for that on lkml yesterday.
+> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
+> much, but it is noticeable. Besides, this is only two tests, digging deeper
+> may reveal more.
 
-OK.
+I think that is in the noise of sampling if you run that test many more
+times.
+
+> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
+> to the vmlinux...
+> 
+> I think, I finally agree with you and Al Viro, that the kobj mapper is 
+> not the right place to put the filtering, but taking the above numbers 
+> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
+> versions of security_inode_permission/security_file_permission/etc?
+
+Ask the security module interface maintainers about this, not me :)
+
+good luck,
+
+greg k-h
