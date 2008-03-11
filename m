@@ -1,88 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYCKRf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbYCKRl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbYCKRf6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYCKRft
+	id S1754124AbYCKRl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYCKRlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:35:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36488 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752311AbYCKRfs (ORCPT
+	Tue, 11 Mar 2008 13:41:21 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:24415 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752670AbYCKRlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:35:48 -0400
-Date: Tue, 11 Mar 2008 10:35:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Akinobu Mita" <akinobu.mita@gmail.com>
-Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] lib: introduce call_once()
-Message-Id: <20080311103517.5b6dc23f.akpm@linux-foundation.org>
-In-Reply-To: <961aa3350803110527g4d6654ew34847807e46da315@mail.gmail.com>
-References: <20080310145704.GA6396@APFDCB5C>
-	<20080310204853.3108d21c.akpm@linux-foundation.org>
-	<200803111510.52761.nickpiggin@yahoo.com.au>
-	<20080310212108.5882011e.akpm@linux-foundation.org>
-	<961aa3350803110527g4d6654ew34847807e46da315@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 11 Mar 2008 13:41:20 -0400
+Date: Tue, 11 Mar 2008 20:41:18 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] gpiolib: implement gpiochip_reserve
+Message-ID: <20080311174118.GB12397@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 21:27:30 +0900
-"Akinobu Mita" <akinobu.mita@gmail.com> wrote:
+Function gpiochip_reserve() reserves range of gpios to use with
+platform code only, that is, this function used to mark specified
+range of gpios unavailable for the dynamic gpio base allocator.
 
-> 2008/3/11, Andrew Morton <akpm@linux-foundation.org>:
-> > On Tue, 11 Mar 2008 15:10:52 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >
-> >  > > #define ONCE()                                              \
-> >  > >     ({                                              \
-> >  > >             static long flag;                       \
-> >  > >                                                     \
-> >  > >             return !test_and_set_bit(0, flag);      \
-> >  > >     })
-> >  > >
-> >  > > and then callers can do
-> >  > >
-> >  > >     if (ONCE())
-> >  > >             do_something();
-> >  > >
-> >  > > ?
-> 
-> This cannot be used directly in the conversions of patch 2 - 5.
-> Because the callers of call_once() in patch 2 - 5 need to wait for the
-> complition of "init_routine". Some blocking mechanism is needed.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/gpio/gpiolib.c     |   51 +++++++++++++++++++++++++++++++++++++++++--
+ include/asm-generic/gpio.h |    1 +
+ 2 files changed, 49 insertions(+), 3 deletions(-)
 
-Of course it can be used in those places.  Here's the idr.c conversion:
-
---- a/lib/idr.c~a
-+++ a/lib/idr.c
-@@ -585,14 +585,6 @@ static void idr_cache_ctor(struct kmem_c
- 	memset(idr_layer, 0, sizeof(struct idr_layer));
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 81d81c9..2149e0c 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -43,6 +43,7 @@ struct gpio_desc {
+ /* flag symbols are bit numbers */
+ #define FLAG_REQUESTED	0
+ #define FLAG_IS_OUT	1
++#define FLAG_RESERVED	2
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 	const char		*label;
+@@ -80,6 +81,48 @@ static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
+ 	return gpio_desc[gpio].chip;
  }
  
--static  int init_id_cache(void)
--{
--	if (!idr_layer_cache)
--		idr_layer_cache = kmem_cache_create("idr_layer_cache",
--			sizeof(struct idr_layer), 0, 0, idr_cache_ctor);
--	return 0;
--}
--
- /**
-  * idr_init - initialize idr handle
-  * @idp:	idr handle
-@@ -602,7 +594,9 @@ static  int init_id_cache(void)
-  */
- void idr_init(struct idr *idp)
++/**
++ * gpiochip_reserve() - reserve range of gpios to use with platform code only
++ * @start: starting gpio number
++ * @ngpio: number of gpios to reserve
++ * Context: potentially before irqs or kmalloc will work
++ *
++ * Returns a negative errno if any gpio within the range already reserved
++ * or registered. Otherwise it returns zero as a success code.
++ * Use this function to mark specified range of gpios unavailable for the
++ * dynamic gpio base allocator.
++ */
++int __must_check gpiochip_reserve(int start, int ngpio)
++{
++	int ret = 0;
++	unsigned long flags;
++	int i;
++
++	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio))
++		return -EINVAL;
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	for (i = start; i < start + ngpio; i++) {
++		struct gpio_desc *desc = &gpio_desc[i];
++
++		if (desc->chip || test_bit(FLAG_RESERVED, &desc->flags)) {
++			ret = -EBUSY;
++			goto err;
++		}
++
++		set_bit(FLAG_RESERVED, &desc->flags);
++	}
++
++	pr_debug("%s: reserved gpios from %d to %d\n",
++		 __func__, start, start + ngpio - 1);
++err:
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(gpiochip_reserve);
++
+ static int gpiochip_find_base(int ngpio)
  {
--	init_id_cache();
-+	if (ONCE())
-+		idr_layer_cache = kmem_cache_create("idr_layer_cache",
-+			sizeof(struct idr_layer), 0, 0, idr_cache_ctor);
- 	memset(idp, 0, sizeof(struct idr));
- 	spin_lock_init(&idp->lock);
- }
-
+ 	int i;
+@@ -87,9 +130,10 @@ static int gpiochip_find_base(int ngpio)
+ 	int base = -ENOSPC;
+ 
+ 	for (i = ARCH_NR_GPIOS - 1; i >= 0 ; i--) {
+-		struct gpio_chip *chip = gpio_desc[i].chip;
++		struct gpio_desc *desc = &gpio_desc[i];
++		struct gpio_chip *chip = desc->chip;
+ 
+-		if (!chip) {
++		if (!chip && !test_bit(FLAG_RESERVED, &desc->flags)) {
+ 			spare++;
+ 			if (spare == ngpio) {
+ 				base = i;
+@@ -97,7 +141,8 @@ static int gpiochip_find_base(int ngpio)
+ 			}
+ 		} else {
+ 			spare = 0;
+-			i -= chip->ngpio - 1;
++			if (chip)
++				i -= chip->ngpio - 1;
+ 		}
+ 	}
+ 
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 464c5b3..20f5d67 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -74,6 +74,7 @@ struct gpio_chip {
+ 
+ extern const char *gpiochip_is_requested(struct gpio_chip *chip,
+ 			unsigned offset);
++extern int __must_check gpiochip_reserve(int start, int ngpio);
+ 
+ /* add/remove chips */
+ extern int gpiochip_add(struct gpio_chip *chip);
+-- 
+1.5.2.2
 
