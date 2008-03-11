@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbYCKIKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYCKIMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752717AbYCKIKF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 04:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYCKIJq
+	id S1753043AbYCKIMH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 04:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYCKILy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 04:09:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32776 "EHLO mx1.redhat.com"
+	Tue, 11 Mar 2008 04:11:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:35946 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751384AbYCKIJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 04:09:44 -0400
+	id S1751118AbYCKILw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 04:11:52 -0400
+Date: Tue, 11 Mar 2008 09:11:32 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+cc: linux-kernel@vger.kernel.org, alan-jenkins@tuffmail.co.uk, devzero@web.de,
+       mingo@elte.hu
+Subject: Re: Kernel Linux 2.6.23.16 hangs when run updatedb
+In-Reply-To: <47D54A8B.2020303@mandic.com.br>
+Message-ID: <alpine.LFD.1.00.0803110803280.3781@apollo.tec.linutronix.de>
+References: <47D54A8B.2020303@mandic.com.br>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: bharata@linux.vnet.ibm.com
-X-Fcc: ~/Mail/linus
-Cc: libc-alpha@sourceware.org, Jan Blunck <jblunck@suse.de>,
-       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       Christoph Hellwig <hch@lst.de>, Ulrich Drepper <drepper@redhat.com>,
-       Mingming Cao <cmm@us.ibm.com>, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [RFC] Union mount readdir support in glibc
-In-Reply-To: Bharata B Rao's message of  Tuesday, 11 March 2008 11:25:27 +0530 <20080311055527.GA7256@in.ibm.com>
-References: <20080311055527.GA7256@in.ibm.com>
-X-Zippy-Says: How many retired bricklayers from FLORIDA are out purchasing PENCIL
-    SHARPENERS right NOW??
-Message-Id: <20080311080929.B076D26F991@magilla.localdomain>
-Date: Tue, 11 Mar 2008 01:09:29 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems very unlikely you'd come up with a version of this plan that we'd
-find acceptable in glibc.  readdir does buffering, sometimes entry format
-conversion, and it can skip dummy entries.  That's it.  It's not going to
-become a big hairy thing with all kinds of new state.  Sorry.
+On Mon, 10 Mar 2008, Renato S. Yamane wrote:
+> > > How can I fix this? Is safe run reiserfsck?
+> > 
+> > 
+> > I think he's wrong.
+> > 
+> > Looking at the call trace, the BUG happens during an interrupt.  It
+> > could be a coincidence that the interrupt happened during this
+> > particular system call.
+> > 
+> > It looks like a timer callback has been corrupted / set to an invalid
+> > value.  The BUG is due to accessing the invalid address 61060fe0
+> > within enqueue_hrtimer, and the EIP (instruction pointer) is also
+> > equal to 61060fe0.  This would be consistent with the source code of
+> > enqueue_hrtimer.  It's not an obvious reiserfs issue.
 
-This really is the kernel filesystem's problem.  It just doesn't make sense
-to expect userland to implement half of your directory semantics for you.
-What are you going to do when you want to export a union directory to NFS?
-readdir is a filesystem operation.  You're implementing a filesystem.
+It's pretty inconsistent with the source code of enqueue_hrtimer().
 
-Exposing DT_WHT entries may be useful as a user feature.  (BSD had unions
-with whiteouts years ago, and their ls et al have options to let you see
-and operate on whiteouts explicitly so users can make sense of strange
-situations with unions.)  But even for that, we'd have to consider the
-compatibility issues.
+The only possibility to have a callback from enqueue_hrtimer() is in
+hrtimer_enqueue_reprogram() in the HRTIMER_CB_IRQSAFE_NO_RESTART
+case. Such timers can not be requeued in interrupt context, hence the
+name HRTIMER_CB_IRQSAFE_NO_RESTART :)
 
+Also in hrtimer_interrupt context, hrtimer_enqueue() is called with
+reprogram = 0, which ensures that we do not call
+hrtimer_enqueue_reprogram().
+
+> > I don't know how to find out where this corruption is happening, but
+> > it's worth asking the hrtimers people.
+ 
+Let's gather some more information. 
+
+Renato, some questions:
+
+1) is this fully reproducible with updatedb ?
+
+2) are you sure that this is the first stacktrace you captured, there
+might be some BUG before that which scrolled out of sight. Any chance
+to use a serial console ?
+
+3) Can you please recompile the kernel with CONFIF_DEBUG_INFO set
+and then run the following addresses from the backtrace through
+addr2line with the new vmlinux:
+
+# addr2line -e vmlinux 0xc013dad9 0xc0107c3b
+
+Please provide the output.
+
+4) Looking at your .config it seems you have some more patches applied
+aside of the .16 stable. Can you please upload a full patch queue
+somewhere ?
 
 Thanks,
-Roland
+
+	tglx
