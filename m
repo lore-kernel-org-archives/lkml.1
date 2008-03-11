@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYCKWLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYCKWLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbYCKWLB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 18:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbYCKWKY
+	id S1755528AbYCKWLl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 18:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYCKWLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 18:10:24 -0400
-Received: from mail.queued.net ([207.210.101.209]:4553 "EHLO mail.queued.net"
+	Tue, 11 Mar 2008 18:11:32 -0400
+Received: from mail.queued.net ([207.210.101.209]:4557 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753904AbYCKWKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 18:10:23 -0400
-Date: Tue, 11 Mar 2008 18:14:12 -0400
+	id S1752517AbYCKWLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 18:11:31 -0400
+Date: Tue, 11 Mar 2008 18:15:16 -0400
 From: Andres Salomon <dilinger@queued.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
        linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
        jordan.crouse@amd.com
-Subject: [PATCH 3/6] gxfb: move MSR bit fields into gxfb.h
-Message-ID: <20080311181412.1553a67a@ephemeral>
+Subject: [PATCH 4/6] gxfb: stop sharing code with gx1fb
+Message-ID: <20080311181516.13d56250@ephemeral>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,106 +26,401 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This continues the gxfb header cleanups.  MSRs are defined in geode.h;
-the specific bits we care about are defined in gxfb.h.
+We want to stop sharing stuff with gx1fb; it makes little sense.  There
+were fields in geodefb_par that weren't being used, there was little point
+to the DC/VP ops callbacks, etc.  This implements the following:
+
+  - Create gxfb_par (based on geodefb_par), place it in gxfb.h
+  - Drop display_gx.h and video_gx.h.  The last few patches moved most
+    stuff into gxfb.h anyways, so there was very little left.
+  - Drop the geode_{dc,vid}_ops stuff.  Un-static functions, add
+    declarations to gxfb.h.
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/geode/display_gx.h |    3 ---
- drivers/video/geode/gxfb.h       |   16 ++++++++++++++++
- drivers/video/geode/gxfb_core.c  |    2 +-
- drivers/video/geode/video_gx.c   |    4 ++--
- drivers/video/geode/video_gx.h   |   14 --------------
- 5 files changed, 19 insertions(+), 20 deletions(-)
+ drivers/video/geode/display_gx.c |   21 +++++++--------------
+ drivers/video/geode/display_gx.h |   19 -------------------
+ drivers/video/geode/gxfb.h       |   31 ++++++++++++++++++++++++-------
+ drivers/video/geode/gxfb_core.c  |   32 ++++++++++----------------------
+ drivers/video/geode/video_gx.c   |   20 ++++++--------------
+ drivers/video/geode/video_gx.h   |   16 ----------------
+ 6 files changed, 47 insertions(+), 92 deletions(-)
+ delete mode 100644 drivers/video/geode/display_gx.h
+ delete mode 100644 drivers/video/geode/video_gx.h
 
-diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
-index 56e9d2e..ad556d3 100644
---- a/drivers/video/geode/display_gx.h
-+++ b/drivers/video/geode/display_gx.h
-@@ -16,7 +16,4 @@ int gx_line_delta(int xres, int bpp);
+diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
+index acf20bf..3743c87 100644
+--- a/drivers/video/geode/display_gx.c
++++ b/drivers/video/geode/display_gx.c
+@@ -18,8 +18,6 @@
+ #include <asm/div64.h>
+ #include <asm/delay.h>
  
- extern struct geode_dc_ops gx_dc_ops;
+-#include "geodefb.h"
+-#include "display_gx.h"
+ #include "gxfb.h"
  
--/* MSR that tells us if a TFT or CRT is attached */
--#define GLD_MSR_CONFIG_DM_FP 0x40
--
- #endif /* !__DISPLAY_GX1_H__ */
-diff --git a/drivers/video/geode/gxfb.h b/drivers/video/geode/gxfb.h
-index d408ad3..c21f9dc 100644
---- a/drivers/video/geode/gxfb.h
-+++ b/drivers/video/geode/gxfb.h
-@@ -252,4 +252,20 @@ static inline void write_fp(struct geodefb_par *par, int reg, uint32_t val)
- 	writel(val, par->vid_regs + 8*reg + VP_FP_START);
+ unsigned int gx_frame_buffer_size(void)
+@@ -43,9 +41,9 @@ int gx_line_delta(int xres, int bpp)
+ 	return (xres * (bpp >> 3) + 7) & ~0x7;
  }
  
+-static void gx_set_mode(struct fb_info *info)
++void gx_set_mode(struct fb_info *info)
+ {
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 	u32 gcfg, dcfg;
+ 	int hactive, hblankstart, hsyncstart, hsyncend, hblankend, htotal;
+ 	int vactive, vblankstart, vsyncstart, vsyncend, vblankend, vtotal;
+@@ -69,7 +67,7 @@ static void gx_set_mode(struct fb_info *info)
+ 	write_dc(par, DC_GENERAL_CFG, gcfg);
+ 
+ 	/* Setup DCLK and its divisor. */
+-	par->vid_ops->set_dclk(info);
++	gx_set_dclk_frequency(info);
+ 
+ 	/*
+ 	 * Setup new mode.
+@@ -147,16 +145,16 @@ static void gx_set_mode(struct fb_info *info)
+ 	write_dc(par, DC_DISPLAY_CFG, dcfg);
+ 	write_dc(par, DC_GENERAL_CFG, gcfg);
+ 
+-	par->vid_ops->configure_display(info);
++	gx_configure_display(info);
+ 
+ 	/* Relock display controller registers */
+ 	write_dc(par, DC_UNLOCK, DC_UNLOCK_LOCK);
+ }
+ 
+-static void gx_set_hw_palette_reg(struct fb_info *info, unsigned regno,
+-				   unsigned red, unsigned green, unsigned blue)
++void gx_set_hw_palette_reg(struct fb_info *info, unsigned regno,
++		unsigned red, unsigned green, unsigned blue)
+ {
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 	int val;
+ 
+ 	/* Hardware palette is in RGB 8-8-8 format. */
+@@ -167,8 +165,3 @@ static void gx_set_hw_palette_reg(struct fb_info *info, unsigned regno,
+ 	write_dc(par, DC_PAL_ADDRESS, regno);
+ 	write_dc(par, DC_PAL_DATA, val);
+ }
+-
+-struct geode_dc_ops gx_dc_ops = {
+-	.set_mode	 = gx_set_mode,
+-	.set_palette_reg = gx_set_hw_palette_reg,
+-};
+diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
+deleted file mode 100644
+index ad556d3..0000000
+--- a/drivers/video/geode/display_gx.h
++++ /dev/null
+@@ -1,19 +0,0 @@
+-/*
+- * Geode GX display controller
+- *
+- * Copyright (C) 2006 Arcom Control Systems Ltd.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- */
+-#ifndef __DISPLAY_GX_H__
+-#define __DISPLAY_GX_H__
+-
+-unsigned int gx_frame_buffer_size(void);
+-int gx_line_delta(int xres, int bpp);
+-
+-extern struct geode_dc_ops gx_dc_ops;
+-
+-#endif /* !__DISPLAY_GX1_H__ */
+diff --git a/drivers/video/geode/gxfb.h b/drivers/video/geode/gxfb.h
+index c21f9dc..b8db7f8 100644
+--- a/drivers/video/geode/gxfb.h
++++ b/drivers/video/geode/gxfb.h
+@@ -1,7 +1,7 @@
+ /*
+  * Copyright (C) 2008 Andres Salomon <dilinger@debian.org>
+  *
+- * Geode GX2 register tables
++ * Geode GX2 header information
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -13,6 +13,23 @@
+ 
+ #include <linux/io.h>
+ 
++struct gxfb_par {
++	int enable_crt;
++	void __iomem *dc_regs;
++	void __iomem *vid_regs;
++};
 +
-+/* MSRs are defined in asm/geode.h; their bitfields are here */
++unsigned int gx_frame_buffer_size(void);
++int gx_line_delta(int xres, int bpp);
++void gx_set_mode(struct fb_info *info);
++void gx_set_hw_palette_reg(struct fb_info *info, unsigned regno,
++		unsigned red, unsigned green, unsigned blue);
 +
-+#define MSR_GLCP_SYS_RSTPLL_DOTPOSTDIV3	(1 << 3)
-+#define MSR_GLCP_SYS_RSTPLL_DOTPREMULT2	(1 << 2)
-+#define MSR_GLCP_SYS_RSTPLL_DOTPREDIV2	(1 << 1)
++void gx_set_dclk_frequency(struct fb_info *info);
++void gx_configure_display(struct fb_info *info);
++int gx_blank_display(struct fb_info *info, int blank_mode);
 +
-+#define MSR_GLCP_DOTPLL_LOCK		(1 << 25)	/* r/o */
-+#define MSR_GLCP_DOTPLL_BYPASS		(1 << 15)
-+#define MSR_GLCP_DOTPLL_DOTRESET	(1 << 0)
 +
-+#define MSR_GX_MSR_PADSEL_MASK		0x3FFFFFFF	/* undocumented? */
-+#define MSR_GX_MSR_PADSEL_TFT		0x1FFFFFFF	/* undocumented? */
-+
-+#define MSR_GX_GLD_MSR_CONFIG_FP	(1 << 3)
-+
- #endif
+ /* Display Controller registers (table 6-38 from the data book) */
+ enum dc_registers {
+ 	DC_UNLOCK = 0,
+@@ -221,33 +238,33 @@ enum fp_registers {
+ 
+ /* register access functions */
+ 
+-static inline uint32_t read_dc(struct geodefb_par *par, int reg)
++static inline uint32_t read_dc(struct gxfb_par *par, int reg)
+ {
+ 	return readl(par->dc_regs + 4*reg);
+ }
+ 
+-static inline void write_dc(struct geodefb_par *par, int reg, uint32_t val)
++static inline void write_dc(struct gxfb_par *par, int reg, uint32_t val)
+ {
+ 	writel(val, par->dc_regs + 4*reg);
+ }
+ 
+ 
+-static inline uint32_t read_vp(struct geodefb_par *par, int reg)
++static inline uint32_t read_vp(struct gxfb_par *par, int reg)
+ {
+ 	return readl(par->vid_regs + 8*reg);
+ }
+ 
+-static inline void write_vp(struct geodefb_par *par, int reg, uint32_t val)
++static inline void write_vp(struct gxfb_par *par, int reg, uint32_t val)
+ {
+ 	writel(val, par->vid_regs + 8*reg);
+ }
+ 
+-static inline uint32_t read_fp(struct geodefb_par *par, int reg)
++static inline uint32_t read_fp(struct gxfb_par *par, int reg)
+ {
+ 	return readl(par->vid_regs + 8*reg + VP_FP_START);
+ }
+ 
+-static inline void write_fp(struct geodefb_par *par, int reg, uint32_t val)
++static inline void write_fp(struct gxfb_par *par, int reg, uint32_t val)
+ {
+ 	writel(val, par->vid_regs + 8*reg + VP_FP_START);
+ }
 diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index fd58dcc..0913251 100644
+index 0913251..fc56b8f 100644
 --- a/drivers/video/geode/gxfb_core.c
 +++ b/drivers/video/geode/gxfb_core.c
-@@ -328,7 +328,7 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
+@@ -32,9 +32,6 @@
+ #include <linux/pci.h>
+ #include <asm/geode.h>
  
- 	rdmsrl(MSR_GX_GLD_MSR_CONFIG, val);
+-#include "geodefb.h"
+-#include "display_gx.h"
+-#include "video_gx.h"
+ #include "gxfb.h"
  
--	if ((val & GLD_MSR_CONFIG_DM_FP) == GLD_MSR_CONFIG_DM_FP)
-+	if ((val & MSR_GX_GLD_MSR_CONFIG_FP) == MSR_GX_GLD_MSR_CONFIG_FP)
- 		par->enable_crt = 0;
- 	else
- 		par->enable_crt = 1;
+ static char *mode_option;
+@@ -142,8 +139,6 @@ static int gxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 
+ static int gxfb_set_par(struct fb_info *info)
+ {
+-	struct geodefb_par *par = info->par;
+-
+ 	if (info->var.bits_per_pixel > 8) {
+ 		info->fix.visual = FB_VISUAL_TRUECOLOR;
+ 		fb_dealloc_cmap(&info->cmap);
+@@ -154,7 +149,7 @@ static int gxfb_set_par(struct fb_info *info)
+ 
+ 	info->fix.line_length = gx_line_delta(info->var.xres, info->var.bits_per_pixel);
+ 
+-	par->dc_ops->set_mode(info);
++	gx_set_mode(info);
+ 
+ 	return 0;
+ }
+@@ -170,8 +165,6 @@ static int gxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			   unsigned blue, unsigned transp,
+ 			   struct fb_info *info)
+ {
+-	struct geodefb_par *par = info->par;
+-
+ 	if (info->var.grayscale) {
+ 		/* grayscale = 0.30*R + 0.59*G + 0.11*B */
+ 		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
+@@ -194,7 +187,7 @@ static int gxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 		if (regno >= 256)
+ 			return -EINVAL;
+ 
+-		par->dc_ops->set_palette_reg(info, regno, red, green, blue);
++		gx_set_hw_palette_reg(info, regno, red, green, blue);
+ 	}
+ 
+ 	return 0;
+@@ -202,14 +195,12 @@ static int gxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static int gxfb_blank(int blank_mode, struct fb_info *info)
+ {
+-	struct geodefb_par *par = info->par;
+-
+-	return par->vid_ops->blank_display(info, blank_mode);
++	return gx_blank_display(info, blank_mode);
+ }
+ 
+ static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *dev)
+ {
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 	int ret;
+ 
+ 	ret = pci_enable_device(dev);
+@@ -266,11 +257,12 @@ static struct fb_ops gxfb_ops = {
+ 
+ static struct fb_info * __init gxfb_init_fbinfo(struct device *dev)
+ {
+-	struct geodefb_par *par;
++	struct gxfb_par *par;
+ 	struct fb_info *info;
+ 
+ 	/* Alloc enough space for the pseudo palette. */
+-	info = framebuffer_alloc(sizeof(struct geodefb_par) + sizeof(u32) * 16, dev);
++	info = framebuffer_alloc(sizeof(struct gxfb_par) + sizeof(u32) * 16,
++			dev);
+ 	if (!info)
+ 		return NULL;
+ 
+@@ -296,7 +288,7 @@ static struct fb_info * __init gxfb_init_fbinfo(struct device *dev)
+ 	info->flags		= FBINFO_DEFAULT;
+ 	info->node		= -1;
+ 
+-	info->pseudo_palette	= (void *)par + sizeof(struct geodefb_par);
++	info->pseudo_palette	= (void *)par + sizeof(struct gxfb_par);
+ 
+ 	info->var.grayscale	= 0;
+ 
+@@ -305,7 +297,7 @@ static struct fb_info * __init gxfb_init_fbinfo(struct device *dev)
+ 
+ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ {
+-	struct geodefb_par *par;
++	struct gxfb_par *par;
+ 	struct fb_info *info;
+ 	int ret;
+ 	unsigned long val;
+@@ -315,10 +307,6 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 		return -ENOMEM;
+ 	par = info->par;
+ 
+-	/* GX display controller and GX video device. */
+-	par->dc_ops  = &gx_dc_ops;
+-	par->vid_ops = &gx_vid_ops;
+-
+ 	if ((ret = gxfb_map_video_memory(info, pdev)) < 0) {
+ 		dev_err(&pdev->dev, "failed to map frame buffer or controller registers\n");
+ 		goto err;
+@@ -378,7 +366,7 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ static void gxfb_remove(struct pci_dev *pdev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 
+ 	unregister_framebuffer(info);
+ 
 diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
-index 1b98b7b..1e26bc4 100644
+index 1e26bc4..0072d9e 100644
 --- a/drivers/video/geode/video_gx.c
 +++ b/drivers/video/geode/video_gx.c
-@@ -187,8 +187,8 @@ gx_configure_tft(struct fb_info *info)
- 	/* Set up the DF pad select MSR */
+@@ -18,8 +18,6 @@
+ #include <asm/msr.h>
+ #include <asm/geode.h>
  
- 	rdmsrl(MSR_GX_MSR_PADSEL, val);
--	val &= ~GX_VP_PAD_SELECT_MASK;
--	val |= GX_VP_PAD_SELECT_TFT;
-+	val &= ~MSR_GX_MSR_PADSEL_MASK;
-+	val |= MSR_GX_MSR_PADSEL_TFT;
- 	wrmsrl(MSR_GX_MSR_PADSEL, val);
+-#include "geodefb.h"
+-#include "video_gx.h"
+ #include "gxfb.h"
  
- 	/* Turn off the panel */
+ 
+@@ -119,7 +117,7 @@ static const struct gx_pll_entry gx_pll_table_14MHz[] = {
+ 	{  4357, 0, 0x0000057D },	/* 229.5000 */
+ };
+ 
+-static void gx_set_dclk_frequency(struct fb_info *info)
++void gx_set_dclk_frequency(struct fb_info *info)
+ {
+ 	const struct gx_pll_entry *pll_table;
+ 	int pll_table_len;
+@@ -180,7 +178,7 @@ static void gx_set_dclk_frequency(struct fb_info *info)
+ static void
+ gx_configure_tft(struct fb_info *info)
+ {
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 	unsigned long val;
+ 	unsigned long fp;
+ 
+@@ -235,9 +233,9 @@ gx_configure_tft(struct fb_info *info)
+ 	write_fp(par, FP_PM, fp);
+ }
+ 
+-static void gx_configure_display(struct fb_info *info)
++void gx_configure_display(struct fb_info *info)
+ {
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 	u32 dcfg, misc;
+ 
+ 	/* Write the display configuration */
+@@ -297,9 +295,9 @@ static void gx_configure_display(struct fb_info *info)
+ 		gx_configure_tft(info);
+ }
+ 
+-static int gx_blank_display(struct fb_info *info, int blank_mode)
++int gx_blank_display(struct fb_info *info, int blank_mode)
+ {
+-	struct geodefb_par *par = info->par;
++	struct gxfb_par *par = info->par;
+ 	u32 dcfg, fp_pm;
+ 	int blank, hsync, vsync;
+ 
+@@ -347,9 +345,3 @@ static int gx_blank_display(struct fb_info *info, int blank_mode)
+ 
+ 	return 0;
+ }
+-
+-struct geode_vid_ops gx_vid_ops = {
+-	.set_dclk	   = gx_set_dclk_frequency,
+-	.configure_display = gx_configure_display,
+-	.blank_display	   = gx_blank_display,
+-};
 diff --git a/drivers/video/geode/video_gx.h b/drivers/video/geode/video_gx.h
-index 5457bd0..79f6e81 100644
+deleted file mode 100644
+index 79f6e81..0000000
 --- a/drivers/video/geode/video_gx.h
-+++ b/drivers/video/geode/video_gx.h
-@@ -13,18 +13,4 @@
- 
- extern struct geode_vid_ops gx_vid_ops;
- 
--/* GX Flatpanel control MSR */
--#define GX_VP_PAD_SELECT_MASK          0x3FFFFFFF
--#define GX_VP_PAD_SELECT_TFT           0x1FFFFFFF
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/*
+- * Geode GX video device
+- *
+- * Copyright (C) 2006 Arcom Control Systems Ltd.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- */
+-#ifndef __VIDEO_GX_H__
+-#define __VIDEO_GX_H__
 -
--/* Geode GX clock control MSRs */
+-extern struct geode_vid_ops gx_vid_ops;
 -
--#  define MSR_GLCP_SYS_RSTPLL_DOTPREDIV2	(0x0000000000000002ull)
--#  define MSR_GLCP_SYS_RSTPLL_DOTPREMULT2	(0x0000000000000004ull)
--#  define MSR_GLCP_SYS_RSTPLL_DOTPOSTDIV3	(0x0000000000000008ull)
--
--#  define MSR_GLCP_DOTPLL_DOTRESET		(0x0000000000000001ull)
--#  define MSR_GLCP_DOTPLL_BYPASS		(0x0000000000008000ull)
--#  define MSR_GLCP_DOTPLL_LOCK			(0x0000000002000000ull)
--
- #endif /* !__VIDEO_GX_H__ */
+-#endif /* !__VIDEO_GX_H__ */
 -- 
 1.5.3.7
 
