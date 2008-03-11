@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbYCKX0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYCKX3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752216AbYCKX0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYCKX0c
+	id S1752127AbYCKX3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYCKX3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:26:32 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:27440 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041AbYCKX0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:26:31 -0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@osdl.org, wli@holomorphy.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Terminate hugetlbfs mount argument list
-X-Message-Flag: Warning: May contain useful information
-References: <20080311224204.GA16719@basil.nowhere.org>
-	<adabq5klvw1.fsf@cisco.com> <20080311225623.GE428@one.firstfloor.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 11 Mar 2008 16:26:00 -0700
-In-Reply-To: <20080311225623.GE428@one.firstfloor.org> (Andi Kleen's message of "Tue, 11 Mar 2008 23:56:23 +0100")
-Message-ID: <ada7ig8lu5z.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Tue, 11 Mar 2008 19:29:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:41898 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750965AbYCKX3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:29:15 -0400
+Date: Tue, 11 Mar 2008 16:26:53 -0700
+From: Greg KH <gregkh@suse.de>
+To: stephane eranian <eranian@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Robert Richter <robert.richter@amd.com>
+Subject: Re: [PATCH 3/3] perfmon x86 infra(take 2): add AMD Northbridge PCI
+	Id
+Message-ID: <20080311232653.GA28114@suse.de>
+References: <7c86c4470803071305x6b575dxa9f7b0588abfd4b@mail.gmail.com> <7c86c4470803110950p54349250pbe29d4122912a2f6@mail.gmail.com> <20080311171216.GB26410@suse.de> <7c86c4470803111610s4a017835s8998d72e44acad3f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Mar 2008 23:26:00.0426 (UTC) FILETIME=[441CB4A0:01C883CF]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <7c86c4470803111610s4a017835s8998d72e44acad3f@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Hmm indeed I did. To my defense it's a weird unusual coding pattern
- > that tricked me.  What good is it to give terminator elements own enum values?
+On Tue, Mar 11, 2008 at 04:10:41PM -0700, stephane eranian wrote:
+> Greg,
+> 
+> 
+> On Tue, Mar 11, 2008 at 10:12 AM, Greg KH <gregkh@suse.de> wrote:
+> > On Tue, Mar 11, 2008 at 09:50:36AM -0700, stephane eranian wrote:
+> >  > Greg,
+> >  >
+> >  > Ingo suggested I send ou the following patch which adds a PCI ID
+> >  > for AMD Barcelona Northbridge. This is used by the perfmon initialization
+> >  > code on this platform.
+> >  >
+> >  > Please apply to your tree.
+> >
+> >  We are trying to not add pci ids that are only used in one place within
+> >  the kernel.  Why can't the perfomon init code just add this value to
+> >  their code?
+> >
+> I thought you would want a central place where all PCI ids are defined.
+> But if you prefer not, then so be it. I'll put it into the perfmon code.
+> 
+> >  Or make this part of the perfmon patch itself, if you really must have
+> >  it.  No need to add it to the kernel if there are no in-tree users,
+> >  right?
+> >
+> I am starting to push perfmon patches upstream. So you should expect
+> patches which  *currently* have no in-tree users. You have to start from
+> somewhere, right?
 
-It's a little odd.  But I guess it does let you do
+Submit them at the same time, is that a problem?  We don't want to be
+accepting changes for an out-of-tree user that doesn't make it in :)
 
-	token = match_token(...table...);
-	switch (token) {
-	case ERR_VALUE:...
+thanks,
 
-and get ERR_VALUE back for anything that doesn't match one of the real
-token patterns.
-
- - R.
+greg k-h
