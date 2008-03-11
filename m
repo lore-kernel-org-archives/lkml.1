@@ -1,120 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbYCKVfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbYCKVk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757732AbYCKVfY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 17:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYCKVfM
+	id S1756323AbYCKVk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 17:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYCKVkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 17:35:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53813 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYCKVfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 17:35:10 -0400
+	Tue, 11 Mar 2008 17:40:17 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:24971 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751819AbYCKVkP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 17:40:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mkOlDZBwVlaeyc+Lk/iU3WBAtmr/faai2+9uUOfgpZxMxplEb1l2uz3N6kl0i0NeaWb8gPlbSjQUcxyNvQjz0wd+aJRfTLow5TURde5GWq2N5U+T5xZxLyqz6LrUOIADug9dDCUXl+pR2lQtB47ARreiVcOeocTGJiemGSN2i3o=  ;
+X-YMail-OSG: ibzbF5oVM1nQN5bnyiJAlh.TthWU20PS7RE3PheTiHR6F356D.7e1aaoEvH7KFaHdR_9NwTL.g--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
+Date: Tue, 11 Mar 2008 13:36:28 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <200803101739.08628.david-b@pacbell.net> <1205230841.13653.204.camel@localhost.localdomain>
+In-Reply-To: <1205230841.13653.204.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Frank Mayhar <fmayhar@google.com>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: posix-cpu-timers revamp
-In-Reply-To: Frank Mayhar's message of  Tuesday, 11 March 2008 14:05:07 -0700 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
-References: <bug-9906-10286@http.bugzilla.kernel.org/>
-	<20080206165045.89b809cc.akpm@linux-foundation.org>
-	<1202345893.8525.33.camel@peace.smo.corp.google.com>
-	<alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
-	<20080207162203.3e3cf5ab@Varda>
-	<alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-	<alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-	<20080207165455.04ec490b@Varda>
-	<alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
-	<alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
-	<1204314904.4850.23.camel@peace.smo.corp.google.com>
-	<20080304070016.903E127010A@magilla.localdomain>
-	<1204660376.9768.1.camel@bobble.smo.corp.google.com>
-	<20080305040826.D0E6127010A@magilla.localdomain>
-	<1204830243.20004.31.camel@bobble.smo.corp.google.com>
-	<20080311075020.A93DB26F991@magilla.localdomain>
-	<1205269507.23124.57.camel@bobble.smo.corp.google.com>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080311213507.5BCDF26F991@magilla.localdomain>
-Date: Tue, 11 Mar 2008 14:35:07 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200803111436.29073.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Not quite.  check_process_timers only needs to be run once per thread
-> > group (per interesting tick).
+On Tuesday 11 March 2008, Liam Girdwood wrote:
+> On Mon, 2008-03-10 at 16:39 -0800, David Brownell wrote:
+> > On Sunday 09 March 2008, Liam Girdwood wrote:
+> > > 
+> > > > > +struct regulator *__must_check regulator_get(struct device *dev,
+> > > > > +                                            const char *id);
+> > > > 
+> > > > The semantics of "id" and "dev" are unspecified in this patch,
+> > > > so this isn't a good definition of the consumer interface!
+> > > 
+> > > 'id' is really the regulator name and will be renamed in the next patch.
+> > 
+> > Still not helping.  How would a driver know what names to use?
 > 
-> Where "interesting tick" means "tick in which a process timer has
-> expired," correct?
+> Platform data i.e. "WM8350-DCDC1". The links I gave in a previous mail
+> have examples for this wrt LED. Backlight drivers.
 
-Or might have expired, in the current implementation style.  Correct.
+I looked at some of that code a while back and didn't find them
+all that informative.  Probably because implementations can be
+interpreted in many ways, and I'm trying to understand which
+concepts you intend to promote here...
 
-> > The process CPU timers track the process CPU clocks.  [...]
+
+> > Are those names globally scoped, or local to the device?
+> > 
 > 
-> And my changes introduce these clocks as separate fields in the signal
-> struct, updated at the tick.
+> They are global.
 
-Correct.
+So it's somewhat unlike the clock API then ... enough that I'd
+reconsider *why* it's different.  The clock API allows both
+global names and locally scoped ones.
 
-> Okay, I hadn't been clear on the distinction between process-wide and
-> thread-only timers.  So, really, run_posix_cpu_timers() needs to check
-> both sets, the versions in the signal struct for the process-wide timers
-> and the versions in the task struct for the thread-only timers.
+Surely it would be better to just let device drivers call
+something like
 
-Correct.
+	client = regulator_lookup(dev, "Vcc");
 
-> I'm going to table this for now.  [...]
+and have the board setup code bind the right regulator to
+that name for a given device?  It could work same way that
+platform devices use logically numbered (or sometimes, named)
+resources for register memory and IRQs, and the way the clock
+framework uses logical names for device clocks.
 
-Agreed.
-
-> So, check_process_timers() checks for and handles any expired timers for
-> the currently-running process, whereas check_thread_timers() checks for
-> and handles any expired timers for the currently-running thread.  Is
-> that correct?
-
-Correct.
-
-> And, since these timers are only counting CPU time, if a thread is never
-> running at the tick (since that's how we account time in the first
-> place) any timers it might have will never expire.  
-
-Correct.
-
-> At each tick a process-wide timer may have expired.  Also, at each tick
-> a thread-only timer may have expired.  Or, of course, both.  So we need
-> to detect both events and fire the appropriate timer in the appropriate
-> context.
-
-Correct.
-
-> [...]  I'm pretty confident that it was
-> cache conflict among the sixteen cores that did the damage.
-
-I'm not surprised by this result.  (I do want to see much more detailed
-performance analysis before we decide on a final change.)
-
-> I'm currently working on an implementation that uses the alloc_percpu()
-> mechanism and a separate structure.  I'm encapsulating access to the
-> fields in shared_xxx_sum() inline functions, which could have different
-> implementations for UP, dual-CPU and generic SMP kernels.  
-
-That is exactly what I had in mind.  (I hadn't noticed alloc_percpu, and it
-has one more level of indirection than I'd planned.  But that wastes less
-space when num_possible_cpus() is far greater than num_online_cpus(), and I
-imagine it's vastly superior for NUMA.)
-
-Don't forget do_[gs]etitimer and k_getrusage can use this too.
-(Though maybe no reason to bother in k_getrusage since it has
-to loop to sum the non-time counters anyway.)
-
-> I personally think that the most promising approach is the one outlined
-> above (without considering the context-switch scheme for the moment).
-
-I tend to agree.  It's the only plan I've thought through in detail.
-But my remarks stand, about thorough analysis of performance impacts
-of options we can think of.
+Example:  all USART controllers may use the same logical
+clock name "usart", instead of global names like "usart0_clk",
+"usart1_clk", "mck", etc (as appropriate).  In the same way,
+"Vcc" could be a local name for various devices ... where
+the global name might be board-specific like "WM8350-DCDC1".
 
 
-Thanks,
-Roland
+I suspect I'm walking towards a notion of a "power domain"
+here, which would of course be fed by a regulator but would
+be explicitly shared by multiple devices.  That's a notion
+which has come up before in power management discussions, as
+needing some explicit support by the Linux PM framwork.  It
+applies both inside modern PM-aware SOCs, and at the board
+level.  (It feels to me like you've focussed so far on the
+latter.)
+
+How would you see your notion of a "regulator" (client?)
+relating to a "power domain"?  My first thought is that
+there's a one-to-one correspondence but they may not be
+quite the same thing.  Example, one might want to ask the
+domain what devices it supports ... so that you could ask
+them all to power off.
+
+- Dave
