@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYCKS6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYCKS7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbYCKS6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYCKS62
+	id S1755871AbYCKS7T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYCKS7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:58:28 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50348 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752579AbYCKS61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:58:27 -0400
-Date: Tue, 11 Mar 2008 13:58:21 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: hch@infradead.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
-Message-Id: <20080311135821.99a419e2.pj@sgi.com>
-In-Reply-To: <47D6BBC8.7090608@qualcomm.com>
-References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com>
-	<1205215046-27085-2-git-send-email-maxk@qualcomm.com>
-	<20080311063514.GA29824@infradead.org>
-	<47D6BBC8.7090608@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 11 Mar 2008 14:59:08 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2893 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbYCKS7H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:59:07 -0400
+Subject: Re: [PATCH 1/5] lib: introduce call_once()
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080311103517.5b6dc23f.akpm@linux-foundation.org>
+References: <20080310145704.GA6396@APFDCB5C>
+	 <20080310204853.3108d21c.akpm@linux-foundation.org>
+	 <200803111510.52761.nickpiggin@yahoo.com.au>
+	 <20080310212108.5882011e.akpm@linux-foundation.org>
+	 <961aa3350803110527g4d6654ew34847807e46da315@mail.gmail.com>
+	 <20080311103517.5b6dc23f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 11 Mar 2008 11:56:55 -0700
+Message-Id: <1205261815.3165.21.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max wrote:
-> Sorry I missed your comment. Actually I just looked at the archive of the
-> original thread and I do not see any comments from you. Were they maybe sent
-> in private to Peter Z ? Can you please resend them ?
+On Tue, 2008-03-11 at 10:35 -0700, Andrew Morton wrote:
+> #define ONCE()                                              \
+>     ({                                              \
+>             static long flag;                       \
+>                                                     \
+>             return !test_and_set_bit(0, flag);      \
+>     })
 
-I suspect Christoph is referring to a comment he made on lkml, at:
+test_and_set_bit takes an address
 
-  http://lkml.org/lkml/2008/3/2/3
+Perhaps:
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+#define DO_ONCE(x) \
+	({ static long flag; if (test_and_set_bit(0, &flag)) x; 1; })
+
+DO_ONCE(foo);
+
