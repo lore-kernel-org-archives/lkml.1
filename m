@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbYCKIQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYCKIQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbYCKIQL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 04:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYCKIP4
+	id S1755288AbYCKIQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 04:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbYCKIQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 04:15:56 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:59361 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbYCKIPz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 04:15:55 -0400
-Message-ID: <47D63FB1.7040502@linux.vnet.ibm.com>
-Date: Tue, 11 Mar 2008 13:45:45 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 11 Mar 2008 04:16:11 -0400
+Received: from sacred.ru ([62.205.161.221]:52759 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754810AbYCKIQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 04:16:08 -0400
+Message-ID: <47D63E9D.70500@openvz.org>
+Date: Tue, 11 Mar 2008 11:11:09 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
 CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
        Sudhir Kumar <skumar@linux.vnet.ibm.com>,
        YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
@@ -27,33 +24,98 @@ CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [PATCH] Move memory controller allocations to their own slabs
  (v2)
-References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain> <47D63E9D.70500@openvz.org>
-In-Reply-To: <47D63E9D.70500@openvz.org>
+References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080311061836.6664.5072.sendpatchset@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 11 Mar 2008 11:11:10 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
-> Balbir Singh wrote:
->> Move the memory controller data structure page_cgroup to its own slab cache.
->> It saves space on the system, allocations are not necessarily pushed to order
->> of 2 and should provide performance benefits. Users who disable the memory
->> controller can also double check that the memory controller is not allocating
->> page_cgroup's.
-> 
-> Can you, please, check how many objects-per-page we have with and 
-> without this patch for SLAB and SLUB?
-> 
-> Thanks.
+Balbir Singh wrote:
+> Move the memory controller data structure page_cgroup to its own slab cache.
+> It saves space on the system, allocations are not necessarily pushed to order
+> of 2 and should provide performance benefits. Users who disable the memory
+> controller can also double check that the memory controller is not allocating
+> page_cgroup's.
 
-I can for objects-per-page with this patch for SLUB and SLAB. I am not sure
-about what to check for without this patch. The machine is temporarily busy,
-I'll check it once I get it back.
+Can you, please, check how many objects-per-page we have with and 
+without this patch for SLAB and SLUB?
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Thanks.
+
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/memcontrol.c |   12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff -puN mm/memcontrol.c~memory-controller-move-to-own-slab mm/memcontrol.c
+> --- linux-2.6.25-rc4/mm/memcontrol.c~memory-controller-move-to-own-slab	2008-03-10 23:22:34.000000000 +0530
+> +++ linux-2.6.25-rc4-balbir/mm/memcontrol.c	2008-03-11 10:29:00.000000000 +0530
+> @@ -26,6 +26,7 @@
+>  #include <linux/backing-dev.h>
+>  #include <linux/bit_spinlock.h>
+>  #include <linux/rcupdate.h>
+> +#include <linux/slab.h>
+>  #include <linux/swap.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/fs.h>
+> @@ -35,6 +36,7 @@
+>  
+>  struct cgroup_subsys mem_cgroup_subsys;
+>  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
+> +static struct kmem_cache *page_cgroup_cache;
+>  
+>  /*
+>   * Statistics for memory cgroup.
+> @@ -560,7 +562,7 @@ retry:
+>  	}
+>  	unlock_page_cgroup(page);
+>  
+> -	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
+> +	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
+>  	if (pc == NULL)
+>  		goto err;
+>  
+> @@ -622,7 +624,7 @@ retry:
+>  		 */
+>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  		css_put(&mem->css);
+> -		kfree(pc);
+> +		kmem_cache_free(page_cgroup_cache, pc);
+>  		goto retry;
+>  	}
+>  	page_assign_page_cgroup(page, pc);
+> @@ -637,7 +639,7 @@ done:
+>  	return 0;
+>  out:
+>  	css_put(&mem->css);
+> -	kfree(pc);
+> +	kmem_cache_free(page_cgroup_cache, pc);
+>  err:
+>  	return -ENOMEM;
+>  }
+> @@ -695,7 +697,7 @@ void mem_cgroup_uncharge_page(struct pag
+>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  		css_put(&mem->css);
+>  
+> -		kfree(pc);
+> +		kmem_cache_free(page_cgroup_cache, pc);
+>  		return;
+>  	}
+>  
+> @@ -1020,6 +1022,8 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	if (unlikely((cont->parent) == NULL)) {
+>  		mem = &init_mem_cgroup;
+>  		init_mm.mem_cgroup = mem;
+> +		page_cgroup_cache = KMEM_CACHE(page_cgroup,
+> +					SLAB_HWCACHE_ALIGN | SLAB_PANIC);
+>  	} else
+>  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+>  
+> diff -puN include/linux/memcontrol.h~memory-controller-move-to-own-slab include/linux/memcontrol.h
+> _
+> 
+
