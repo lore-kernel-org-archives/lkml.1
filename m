@@ -1,97 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYCKMip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbYCKMmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYCKMip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYCKMig
+	id S1757153AbYCKMmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbYCKMmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 08:38:36 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:44722 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbYCKMif (ORCPT
+	Tue, 11 Mar 2008 08:42:09 -0400
+Received: from n8a.bullet.mail.mud.yahoo.com ([209.191.87.104]:24497 "HELO
+	n8a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751379AbYCKMmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:38:35 -0400
-Message-ID: <47D67D3A.5030208@panasas.com>
-Date: Tue, 11 Mar 2008 14:38:18 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 11 Mar 2008 08:42:08 -0400
+X-Yahoo-Newman-Id: 841854.73183.bm@omp404.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=cWEkqn+7ZfwGLC4Av501lPjmHAoEtUMeJYR9fITZg2D7SnTEkonmfjgxIJeCt06GWFr4ZI+f8i9TIW5E8AowqSNrGKT1znPuMCsH450nRjl6WbFpx8V6uKeJTySin5aqu5M5bBVr77c4qCkVuY9U/wt8/E+0JfM1qT8Qg3OcAa4=  ;
+X-YMail-OSG: Xndpf.MVM1kQ4Rdy3A9GUh6GMfjNQfL.12pOd57coSpkcSZ0gSEe8_TC1sEOt_doNBMpoLQzrw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [PATCH 1/5] lib: introduce call_once()
+Date: Tue, 11 Mar 2008 23:41:37 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <20080310145704.GA6396@APFDCB5C>
+In-Reply-To: <20080310145704.GA6396@APFDCB5C>
 MIME-Version: 1.0
-To: Daniel Phillips <phillips@phunq.net>
-CC: "Ph. Marek" <philipp.marek@bmlv.gv.at>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Stacking bio support
-References: <200803110352.41479.phillips@phunq.net> <200803111233.21386.philipp.marek@bmlv.gv.at> <200803110507.10858.phillips@phunq.net>
-In-Reply-To: <200803110507.10858.phillips@phunq.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200803112341.38005.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11 2008 at 14:07 +0200, Daniel Phillips <phillips@phunq.net> wrote:
-> On Tuesday 11 March 2008 04:33, Ph. Marek wrote:
->> Win32 has IRP stacks, which do mostly the same AFAIU.
->> 	http://msdn2.microsoft.com/en-us/library/ms796144.aspx
-> 
-> That seems to be filling a similar need all right, though it looks
-> like a fancier (read: clunkier) solution.
-> 
->> How do you handle the reallocation?
->> - If you don't do it (but rely on the fact that the initial allocation is
->>   enough), you might end up with NO_MORE_IRP_STACK_LOCATIONS
->>     http://msdn2.microsoft.com/en-us/library/ms793675.aspx
->> - If you do reallocate, the allocations have to register themselves in
->>   the emergency pool (see the current thread about swapping over NFS)
-> 
-> Yes, I reallocate.  I do not currently register these with the
-> emergency pool, good spotting.  I intend to do all such reallocations
-> with GFP_MEMALLOC (out of tree deadlock-prevention allocation flag) and
-> rely on (out of tree) bio throttling to prevent the memalloc reserve
-> from being exhausted.  Hopefully these things will be in-tree in due
-> course.
-> 
+On Tuesday 11 March 2008 01:57, Akinobu Mita wrote:
 
-I guess that is not worse then current implementation. So many slab
-allocations saved, lets you have a few of your own.
->From passed experience, though, relocation is changed to a link-list
-(chaining) of sorts the first time relocation starts to hit consistently.
-for 1-in-100 case it can stay, any higher then that better allocate more
-space and chain it to the old. It also fits better with the pools paradigm.
-I would leave the reallocation for a while but make sure it is all hidden
-behind the right API to be easily enhanced later on.
- 
-> Incidentally, the bio stack should make the bio throttling somewhat
-> more elegant, a nice circular effect.
-> 
->> I don't say that it's impossible ... just that some "interesting" things will 
->> await you. 
-> 
-> Tell me about it :-)
-> 
->> That's different from the Win32 way AFAIK - there it's defined that every 
->> layer *has* to use its own stack location. (But it's been some time since I 
->> needed that, so I might be wrong.)
-> 
-> I think you are right.  In fact, I thought about this for a couple of
-> years, always getting hung up at exactly that point.  When I stopped
-> trying to see the stack as a fixed size object with preassigned frames,
-> the rest fell into place.  One obvious problem with the pre-assigned
-> approach: you don't always know the path ahead of time that a bio
-> will take to a physical device.
->  
->> But I sure hope you succeed!
-> 
-> Thankyou for your useful comments.  I do need to present a solution
-> complete with deadlock prevention.  I guess the bio code will end up
-> simpler there too, because with the memalloc anti-deadlock approach,
-> the array of bio mempools can go away.
-> 
-> Regards,
-> 
-> Daniel
+> +static inline int call_once(struct once_control *once_control,
+> +			    int (*init_rouine)(void))
+> +{
+> +	return likely(once_control->done) ? 0
+> +			: call_once_slow(once_control, init_rouine);
+> +}
+> +
+> +#endif /* __LINUX_ONCE_H */
+> Index: 2.6-rc/lib/once.c
+> ===================================================================
+> --- /dev/null
+> +++ 2.6-rc/lib/once.c
+> @@ -0,0 +1,18 @@
+> +#include <linux/module.h>
+> +#include <linux/once.h>
+> +
+> +int call_once_slow(struct once_control *once_control, int
+> (*init_rouine)(void)) +{
+> +	int err = 0;
+> +
+> +	mutex_lock(&once_control->lock);
+> +	if (!once_control->done) {
+> +		err = init_rouine();
+> +		if (!err)
+> +			once_control->done = 1;
+> +	}
+> +	mutex_unlock(&once_control->lock);
+> +
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(call_once_slow);
 
-Me too, I'll be watching out on your progress, It looks like the building
-blocks of some very advanced possibilities. ("Pure Data")
+The store "once_control->done = 1" can become visible before
+init_routine has finished. The code after calling call_once may
+also speculatively load some memory before the load of
+once_control->done completes, so you can likewise have a data
+race that way too.
 
-Do you have a public git tree that we can inspect from time to time.
+To fix this, you need smp_wmb after init_rouine(), and probably
+smp_mb() in the fastpath after the check but before returning.
 
-Cheers 
-Boaz
+Basically any time you have this situation where you're touching
+a shared variable without using locks, then you're vastly
+increasing the complexity of the code, and so you must have a
+good reason for it.
+
+So acquiring the mutex unconditionally would be the best way to
+go, unless you're calling this a lot in fastpaths (in which case
+I would say you should probably rework your code)
+
+Thanks,
+Nick
+
