@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYCKEl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbYCKEmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbYCKEl5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 00:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYCKElt
+	id S1757345AbYCKEmW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 00:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYCKEmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 00:41:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51723 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752164AbYCKElt (ORCPT
+	Tue, 11 Mar 2008 00:42:05 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44707 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbYCKEmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 00:41:49 -0400
-Date: Mon, 10 Mar 2008 21:41:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Tue, 11 Mar 2008 00:42:04 -0400
+Date: Tue, 11 Mar 2008 13:45:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
        Sudhir Kumar <skumar@linux.vnet.ibm.com>,
        YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
        linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+       David Rientjes <rientjes@google.com>
 Subject: Re: [PATCH] Move memory controller allocations to their own slabs
-Message-Id: <20080310214100.d7fe7904.akpm@linux-foundation.org>
+Message-Id: <20080311134556.297e8c10.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
 References: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,16 +32,131 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 10:01:49 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Tue, 11 Mar 2008 10:01:49 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> 
 > 
 > Move the memory controller data structures page_cgroup and
 > mem_cgroup_per_zone to their own slab caches. It saves space on the system,
 > allocations are not necessarily pushed to order of 2 and should provide
-> performance benefits.
+> performance benefits. Users who disable the memory controller can also double
+> check that the memory controller is not allocating page_cgroup's.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+I think using its own kmem_cache for mem_cgroup_per_zone is a bit overkill.
 
-eh?  Those structures are tiny.  Which slab allocator has gone and used an
-order-2 allocation and for which structure did it (stupidly) do this?
+Thanks,
+-Kame
 
+
+
+> 
+>  linux/memcontrol.h |    0 
+>  mm/memcontrol.c    |   21 ++++++++++++++-------
+>  2 files changed, 14 insertions(+), 7 deletions(-)
+> 
+> diff -puN mm/memcontrol.c~memory-controller-move-to-own-slab mm/memcontrol.c
+> --- linux-2.6.25-rc4/mm/memcontrol.c~memory-controller-move-to-own-slab	2008-03-10 23:22:34.000000000 +0530
+> +++ linux-2.6.25-rc4-balbir/mm/memcontrol.c	2008-03-10 23:34:42.000000000 +0530
+> @@ -26,6 +26,7 @@
+>  #include <linux/backing-dev.h>
+>  #include <linux/bit_spinlock.h>
+>  #include <linux/rcupdate.h>
+> +#include <linux/slab.h>
+>  #include <linux/swap.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/fs.h>
+> @@ -35,6 +36,8 @@
+>  
+>  struct cgroup_subsys mem_cgroup_subsys;
+>  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
+> +static struct kmem_cache *page_cgroup_cache;
+> +static struct kmem_cache *mem_cgroup_per_zone_cache;
+>  
+>  /*
+>   * Statistics for memory cgroup.
+> @@ -560,7 +563,7 @@ retry:
+>  	}
+>  	unlock_page_cgroup(page);
+>  
+> -	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
+> +	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
+>  	if (pc == NULL)
+>  		goto err;
+>  
+> @@ -622,7 +625,7 @@ retry:
+>  		 */
+>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  		css_put(&mem->css);
+> -		kfree(pc);
+> +		kmem_cache_free(page_cgroup_cache, pc);
+>  		goto retry;
+>  	}
+>  	page_assign_page_cgroup(page, pc);
+> @@ -637,7 +640,7 @@ done:
+>  	return 0;
+>  out:
+>  	css_put(&mem->css);
+> -	kfree(pc);
+> +	kmem_cache_free(page_cgroup_cache, pc);
+>  err:
+>  	return -ENOMEM;
+>  }
+> @@ -695,7 +698,7 @@ void mem_cgroup_uncharge_page(struct pag
+>  		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  		css_put(&mem->css);
+>  
+> -		kfree(pc);
+> +		kmem_cache_free(page_cgroup_cache, pc);
+>  		return;
+>  	}
+>  
+> @@ -988,9 +991,10 @@ static int alloc_mem_cgroup_per_zone_inf
+>  	 *       function.
+>  	 */
+>  	if (node_state(node, N_HIGH_MEMORY))
+> -		pn = kmalloc_node(sizeof(*pn), GFP_KERNEL, node);
+> +		pn = kmem_cache_alloc_node(mem_cgroup_per_zone_cache,
+> +						GFP_KERNEL, node);
+>  	else
+> -		pn = kmalloc(sizeof(*pn), GFP_KERNEL);
+> +		pn = kmem_cache_alloc(mem_cgroup_per_zone_cache, GFP_KERNEL);
+>  	if (!pn)
+>  		return 1;
+>  
+> @@ -1008,7 +1012,7 @@ static int alloc_mem_cgroup_per_zone_inf
+>  
+>  static void free_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+>  {
+> -	kfree(mem->info.nodeinfo[node]);
+> +	kmem_cache_free(mem_cgroup_per_zone_cache, mem->info.nodeinfo[node]);
+>  }
+>  
+>  static struct cgroup_subsys_state *
+> @@ -1020,6 +1024,9 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	if (unlikely((cont->parent) == NULL)) {
+>  		mem = &init_mem_cgroup;
+>  		init_mm.mem_cgroup = mem;
+> +		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
+> +		mem_cgroup_per_zone_cache = KMEM_CACHE(mem_cgroup_per_zone,
+> +							SLAB_PANIC);
+>  	} else
+>  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+>  
+> diff -puN include/linux/memcontrol.h~memory-controller-move-to-own-slab include/linux/memcontrol.h
+> _
+> 
+> -- 
+> 	Warm Regards,
+> 	Balbir Singh
+> 	Linux Technology Center
+> 	IBM, ISTL
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
