@@ -1,193 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbYCKSYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYCKS1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbYCKSYy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYCKSYr
+	id S1754233AbYCKS1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYCKS1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:24:47 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57543 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbYCKSYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:24:45 -0400
-Message-Id: <200803111822.m2BIMkbi011457@sous-sol.org>
-Subject: patch x86-adjust-enable_nmi_through_lvt0.patch queued to 2.6.24-stable tree
-To: tglx@linutronix.de, chrisw@sous-sol.org, jbeulich@novell.com,
-       jpiszcz@lucidpixels.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       stable@kernel.org
-Cc: stable@kernel.org, stable-commits@vger.kernel.org
-From: chrisw@sous-sol.org
-Date: Tue, 11 Mar 2008 11:22:45 -0700
-In-Reply-To: <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
+	Tue, 11 Mar 2008 14:27:08 -0400
+Received: from const.mimas.ru ([88.200.217.78]:40225 "EHLO const.mimas.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751319AbYCKS1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:27:07 -0400
+Message-ID: <47D6CEF7.10608@const.mimas.ru>
+Date: Tue, 11 Mar 2008 22:27:03 +0400
+From: Constantin Baranov <const@const.mimas.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.12) Gecko/20080212 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.25-rc4] usb: add support for Motorola ROKR Z6 cellphone
+ in mass storage mode
+References: <47D5804A.2020000@const.mimas.ru> <20080310190158.GI2820@one-eyed-alien.net> <47D59173.9000902@const.mimas.ru> <20080311063019.GA1756@one-eyed-alien.net> <47D62E8B.1060504@const.mimas.ru> <20080311150040.GB1756@one-eyed-alien.net>
+In-Reply-To: <20080311150040.GB1756@one-eyed-alien.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Constantin Baranov <const@tltsu.ru>
 
-This is a note to let you know that we have just queued up the patch titled
+Motorola ROKR Z6 cellphone has bugs in its USB, so it is impossible to use
+it as mass storage. Patch describes new "unusual" USB device for it with
+FIX_INQUIRY and FIX_CAPACITY flags and new BULK_IGNORE_TAG flag.
+Last flag relaxes check for equality of bcs->Tag and us->tag in
+usb_stor_Bulk_transport routine.
 
-     Subject: x86: adjust enable_NMI_through_LVT0()
-
-to the 2.6.24-stable tree.  Its filename is
-
-     x86-adjust-enable_nmi_through_lvt0.patch
-
-A git repo of this tree can be found at 
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-
->From stable-bounces@linux.kernel.org  Tue Mar 11 11:09:24 2008
-Date: Tue, 11 Mar 2008 11:30:25 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Message-ID: <alpine.LFD.1.00.0803111104550.3781@apollo.tec.linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
-Subject: x86: adjust enable_NMI_through_LVT0()
-
-commit e94271017f0933b29362a3c9dea5a6b9d04d98e1
-From: Jan Beulich <jbeulich@novell.com>
-Date: Wed Jan 30 13:31:24 2008 +0100
-
-Its previous use in a call to on_each_cpu() was pointless, as at the
-time that code gets executed only one CPU is online. Further, the
-function can be __cpuinit, and for this to work without
-CONFIG_HOTPLUG_CPU setup_nmi() must also get an attribute (this one
-can even be __init; on 64-bits check_timer() also was lacking that
-attribute).
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[ tglx@linutronix.de: backport to 2.6.24.3]
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Constantin Baranov <const@tltsu.ru>
 ---
- arch/x86/kernel/apic_32.c    |    2 +-
- arch/x86/kernel/apic_64.c    |    2 +-
- arch/x86/kernel/io_apic_32.c |    4 ++--
- arch/x86/kernel/io_apic_64.c |    6 +++---
- arch/x86/kernel/smpboot_32.c |    2 +-
- arch/x86/kernel/smpboot_64.c |    2 +-
- include/asm-x86/apic_32.h    |    2 +-
- include/asm-x86/io_apic_64.h |    2 +-
- 8 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/usb/storage/transport.c    |    3 ++-
+ drivers/usb/storage/unusual_devs.h |   11 +++++++++++
+ include/linux/usb_usual.h          |    4 +++-
+ 3 files changed, 16 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -154,7 +154,7 @@ unsigned long safe_apic_wait_icr_idle(vo
- /**
-  * enable_NMI_through_LVT0 - enable NMI through local vector table 0
-  */
--void enable_NMI_through_LVT0 (void * dummy)
-+void __cpuinit enable_NMI_through_LVT0(void)
- {
- 	unsigned int v = APIC_DM_NMI;
- 
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -151,7 +151,7 @@ unsigned int safe_apic_wait_icr_idle(voi
- 	return send_status;
- }
- 
--void enable_NMI_through_LVT0 (void * dummy)
-+void enable_NMI_through_LVT0(void)
- {
- 	unsigned int v;
- 
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2080,7 +2080,7 @@ static struct irq_chip lapic_chip __read
- 	.eoi		= ack_apic,
- };
- 
--static void setup_nmi (void)
-+static void __init setup_nmi(void)
- {
- 	/*
-  	 * Dirty trick to enable the NMI watchdog ...
-@@ -2093,7 +2093,7 @@ static void setup_nmi (void)
- 	 */ 
- 	apic_printk(APIC_VERBOSE, KERN_INFO "activating NMI Watchdog ...");
- 
--	on_each_cpu(enable_NMI_through_LVT0, NULL, 1, 1);
-+	enable_NMI_through_LVT0();
- 
- 	apic_printk(APIC_VERBOSE, " done.\n");
- }
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -1565,7 +1565,7 @@ static struct hw_interrupt_type lapic_ir
- 	.end = end_lapic_irq,
- };
- 
--static void setup_nmi (void)
-+static void __init setup_nmi(void)
- {
- 	/*
-  	 * Dirty trick to enable the NMI watchdog ...
-@@ -1578,7 +1578,7 @@ static void setup_nmi (void)
- 	 */ 
- 	printk(KERN_INFO "activating NMI Watchdog ...");
- 
--	enable_NMI_through_LVT0(NULL);
-+	enable_NMI_through_LVT0();
- 
- 	printk(" done.\n");
- }
-@@ -1654,7 +1654,7 @@ static inline void unlock_ExtINT_logic(v
-  *
-  * FIXME: really need to revamp this for modern platforms only.
-  */
--static inline void check_timer(void)
-+static inline void __init check_timer(void)
- {
- 	struct irq_cfg *cfg = irq_cfg + 0;
- 	int apic1, pin1, apic2, pin2;
---- a/arch/x86/kernel/smpboot_32.c
-+++ b/arch/x86/kernel/smpboot_32.c
-@@ -405,7 +405,7 @@ static void __cpuinit start_secondary(vo
- 	setup_secondary_clock();
- 	if (nmi_watchdog == NMI_IO_APIC) {
- 		disable_8259A_irq(0);
--		enable_NMI_through_LVT0(NULL);
-+		enable_NMI_through_LVT0();
- 		enable_8259A_irq(0);
+diff -upr linux-2.6.25-rc4/drivers/usb/storage/transport.c
+linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/transport.c
+--- linux-2.6.25-rc4/drivers/usb/storage/transport.c	2008-03-11
+22:08:20.000000000 +0400
++++ linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/transport.c
+2008-03-11 22:09:42.000000000 +0400
+@@ -1009,7 +1009,8 @@ int usb_stor_Bulk_transport(struct scsi_
+ 	US_DEBUGP("Bulk Status S 0x%x T 0x%x R %u Stat 0x%x\n",
+ 			le32_to_cpu(bcs->Signature), bcs->Tag,
+ 			residue, bcs->Status);
+-	if (bcs->Tag != us->tag || bcs->Status > US_BULK_STAT_PHASE) {
++	if (!(bcs->Tag == us->tag || (us->flags & US_FL_BULK_IGNORE_TAG)) ||
++		bcs->Status > US_BULK_STAT_PHASE) {
+ 		US_DEBUGP("Bulk logical error\n");
+ 		return USB_STOR_TRANSPORT_ERROR;
  	}
- 	/*
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -338,7 +338,7 @@ void __cpuinit start_secondary(void)
- 
- 	if (nmi_watchdog == NMI_IO_APIC) {
- 		disable_8259A_irq(0);
--		enable_NMI_through_LVT0(NULL);
-+		enable_NMI_through_LVT0();
- 		enable_8259A_irq(0);
- 	}
- 
---- a/include/asm-x86/apic_32.h
-+++ b/include/asm-x86/apic_32.h
-@@ -109,7 +109,7 @@ extern void setup_boot_APIC_clock (void)
- extern void setup_secondary_APIC_clock (void);
- extern int APIC_init_uniprocessor (void);
- 
--extern void enable_NMI_through_LVT0 (void * dummy);
-+extern void enable_NMI_through_LVT0(void);
- 
- #define ARCH_APICTIMER_STOPS_ON_C3	1
- 
---- a/include/asm-x86/io_apic_64.h
-+++ b/include/asm-x86/io_apic_64.h
-@@ -129,7 +129,7 @@ extern int io_apic_set_pci_routing (int 
- 
- extern int sis_apic_bug; /* dummy */ 
- 
--void enable_NMI_through_LVT0 (void * dummy);
-+void enable_NMI_through_LVT0(void);
- 
- extern spinlock_t i8259A_lock;
- 
+diff -upr linux-2.6.25-rc4/drivers/usb/storage/unusual_devs.h
+linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/unusual_devs.h
+--- linux-2.6.25-rc4/drivers/usb/storage/unusual_devs.h	2008-03-11
+22:08:20.000000000 +0400
++++ linux-2.6.25-rc4-motorokr_z6/drivers/usb/storage/unusual_devs.h
+2008-03-11 22:14:59.000000000 +0400
+@@ -1589,6 +1589,17 @@ UNUSUAL_DEV(  0x22b8, 0x4810, 0x0001, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY),
+
++/*
++ * Patch by Constantin Baranov <const@tltsu.ru>
++ * Report by Andreas Koenecke.
++ * Motorola ROKR Z6.
++ */
++UNUSUAL_DEV(  0x22b8, 0x6426, 0x0101, 0x0101,
++		"Motorola",
++		"MSnc.",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_INQUIRY | US_FL_FIX_CAPACITY | US_FL_BULK_IGNORE_TAG),
++
+ /* Reported by Radovan Garabik <garabik@kassiopeia.juls.savba.sk> */
+ UNUSUAL_DEV(  0x2735, 0x100b, 0x0000, 0x9999,
+ 		"MPIO",
+diff -upr linux-2.6.25-rc4/include/linux/usb_usual.h
+linux-2.6.25-rc4-motorokr_z6/include/linux/usb_usual.h
+--- linux-2.6.25-rc4/include/linux/usb_usual.h	2008-03-11
+22:08:21.000000000 +0400
++++ linux-2.6.25-rc4-motorokr_z6/include/linux/usb_usual.h	2008-03-11
+22:09:42.000000000 +0400
+@@ -50,7 +50,9 @@
+ 	US_FLAG(CAPACITY_HEURISTICS,	0x00001000)		\
+ 		/* sometimes sizes is too big */		\
+ 	US_FLAG(MAX_SECTORS_MIN,0x00002000)			\
+-		/* Sets max_sectors to arch min */
++		/* Sets max_sectors to arch min */		\
++	US_FLAG(BULK_IGNORE_TAG,0x00004000)			\
++		/* Ignore tag mismatch in bulk operations */
 
 
-Patches currently in stable-queue which might be from tglx@linutronix.de are
+ #define US_FLAG(name, value)	US_FL_##name = value ,
 
-queue-2.6.24/x86-adjust-enable_nmi_through_lvt0.patch
+
