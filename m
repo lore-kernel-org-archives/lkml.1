@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbYCKTLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYCKTMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbYCKTLu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 15:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYCKTLm
+	id S1755937AbYCKTMG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 15:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbYCKTLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 15:11:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40762 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752702AbYCKTLl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 15:11:41 -0400
-Date: Tue, 11 Mar 2008 12:11:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: akinobu.mita@gmail.com, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] lib: introduce call_once()
-Message-Id: <20080311121107.4774ff5e.akpm@linux-foundation.org>
-In-Reply-To: <1205261815.3165.21.camel@localhost>
-References: <20080310145704.GA6396@APFDCB5C>
-	<20080310204853.3108d21c.akpm@linux-foundation.org>
-	<200803111510.52761.nickpiggin@yahoo.com.au>
-	<20080310212108.5882011e.akpm@linux-foundation.org>
-	<961aa3350803110527g4d6654ew34847807e46da315@mail.gmail.com>
-	<20080311103517.5b6dc23f.akpm@linux-foundation.org>
-	<1205261815.3165.21.camel@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 15:11:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52871 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754545AbYCKTLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 15:11:47 -0400
+Message-ID: <47D6D96D.2000302@garzik.org>
+Date: Tue, 11 Mar 2008 15:11:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Junio C Hamano <gitster@pobox.com>
+CC: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.4.4
+References: <7vr6f31iwj.fsf@gitster.siamese.dyndns.org> <7vr6eknpjf.fsf@gitster.siamese.dyndns.org> <47D416C8.1020903@garzik.org> <7v1w6jod54.fsf@gitster.siamese.dyndns.org> <47D459D5.2020101@garzik.org> <7vmyp7kryp.fsf@gitster.siamese.dyndns.org>
+In-Reply-To: <7vmyp7kryp.fsf@gitster.siamese.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 11:56:55 -0700
-Joe Perches <joe@perches.com> wrote:
-
-> On Tue, 2008-03-11 at 10:35 -0700, Andrew Morton wrote:
-> > #define ONCE()                                              \
-> >     ({                                              \
-> >             static long flag;                       \
-> >                                                     \
-> >             return !test_and_set_bit(0, flag);      \
-> >     })
+Junio C Hamano wrote:
+> Jeff Garzik <jeff@garzik.org> writes:
 > 
-> test_and_set_bit takes an address
-
-duh.
-
-> Perhaps:
+>> Yes, I regularly run both 'git gc' and 'git prune'.
+>>
+>> But since (ref original email) I was doing some rebasing, there are
+>> inevitably changesets left dangling after such an operation.
 > 
-> #define DO_ONCE(x) \
-> 	({ static long flag; if (test_and_set_bit(0, &flag)) x; 1; })
-> 
-> DO_ONCE(foo);
+> Yeah, I'd say it is stupid if "am" ran "gc --auto" for every patch.  I
+> recall that we had the same issue with git-svn and we made it run once
+> every 1k round, and we probably should do the same for "am" and "rebase",
+> running once at the very end.
 
-No, that's completely unnecessary and would produce nasty-looking code. 
-Take a look at some of the wait_event monstrosities we have.
+> Perhaps we would want to raise the default "gc --auto" limit?  Currently
 
 
-I'm not sure that we need any of this once() stuff really.
+That seems quite reasonable.  This "feels" like a threshold-too-low problem.
+
+
+
+> when it estimates that you have roughly 6700 objects unpacked it runs
+> "repack --prune-packed", and if there still are that many unpacked objects
+> after that, it suggests you to run "git prune" to remove them.  If you are
+> rebasing, the commits in the old history that are rewritten will _not_
+> immediately become dangling because they will still be reachable from your
+> reflog.  If you are getting the message, these objects were already
+> dangling (ancient commits that are not even reachable from your reflog
+> entries that are by default kept for 90 days) even before you started your
+> rebase or am run.
+
+My workflow generally looks like this:
+
+	# repo was created in this manner....  this was done ONCE,
+	# not every time I apply patches
+
+	git clone --reference ../linux-2.6 ../linux-2.6 libata-dev
+
+
+	# a patch-applying session
+
+	git checkout master
+	git pull ../linux-2.6
+	git fetch --tags ../linux-2.6	# yes, still necessary...
+
+	git branch -D ALL NEXT
+	git branch -D upstream-fixes upstream-linus
+
+	git checkout -b upstream-fixes master
+	git-am --utf8 --signoff -i /g/tmp/mbox	# repeat many times...
+	git branch upstream-linus upstream-fixes
+
+	git-checkout sii-lbt && git-rebase master
+	git-checkout mv-ahci-pata && git-rebase master
+	git-checkout new-eh && git-rebase master
+	git branch NEXT master
+	git branch ALL new-eh
+
+	git checkout master
+	git prune
+	git push --force --all $URL
+
+Thus, 'git prune' is run on a very regular basis, but 'git gc' is not.
+
+However, I presume the lack of 'git gc' regularity on libata-dev.git is 
+mitigated by the fact that I _do_ run 'git gc' regularly on 
+linux-2.6.git (listed in libata-dev's alternatives, as noted by 
+git-clone statement above)
+
+
+> After you finished your day's work on a typical day, what does the output
+> from "git count-objects -v" and "git fsck-objects" look like, I wonder?
+
+[jgarzik@pretzel libata-dev]$ git count-objects -v
+count: 51
+size: 244
+in-pack: 475
+packs: 4
+prune-packable: 0
+garbage: 0
+[jgarzik@pretzel libata-dev]$ git fsck-objects
+[jgarzik@pretzel libata-dev]$
+
+
+
+
+As an aside...  a git-debug-info might be a useful command, wrapping up 
+everything you (a git developer) would find interesting from me (a 
+humble and appreciative git user).  Users could attach the output from 
+git-debug-info to emails, when discussing problems in their repositories.
+
+	Jeff
+
+
+
