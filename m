@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYCKJKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYCKJKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbYCKJKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 05:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYCKJKH
+	id S1754638AbYCKJKp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 05:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYCKJKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 05:10:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40053 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751524AbYCKJKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 05:10:06 -0400
-Date: Tue, 11 Mar 2008 10:09:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86 Fix test_poke for vmalloced pages
-Message-ID: <20080311090947.GG25110@elte.hu>
-References: <20080310183653.GA4482@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080310183653.GA4482@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 11 Mar 2008 05:10:10 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:50041 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbYCKJKJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 05:10:09 -0400
+From: Zhang Wei <wei.zhang@freescale.com>
+To: mporter@kernel.crashing.org, akpm@linux-foundation.org,
+       galak@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Zhang Wei <wei.zhang@freescale.com>
+Subject: [PATCH 03/17] Move include/asm-ppc/rio.h to include/asm-powerpc/rio.h
+Date: Tue, 11 Mar 2008 17:07:44 +0800
+Message-Id: <1205226478-7641-3-git-send-email-wei.zhang@freescale.com>
+X-Mailer: git-send-email 1.5.4
+In-Reply-To: <1205226478-7641-2-git-send-email-wei.zhang@freescale.com>
+References: <1205226478-7641-1-git-send-email-wei.zhang@freescale.com>
+ <1205226478-7641-2-git-send-email-wei.zhang@freescale.com>
+X-OriginalArrivalTime: 11 Mar 2008 09:10:00.0149 (UTC) FILETIME=[AF006050:01C88357]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ include/asm-powerpc/rio.h |   18 ++++++++++++++++++
+ include/asm-ppc/rio.h     |   18 ------------------
+ 2 files changed, 18 insertions(+), 18 deletions(-)
+ create mode 100644 include/asm-powerpc/rio.h
+ delete mode 100644 include/asm-ppc/rio.h
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+diff --git a/include/asm-powerpc/rio.h b/include/asm-powerpc/rio.h
+new file mode 100644
+index 0000000..0018bf8
+--- /dev/null
++++ b/include/asm-powerpc/rio.h
+@@ -0,0 +1,18 @@
++/*
++ * RapidIO architecture support
++ *
++ * Copyright 2005 MontaVista Software, Inc.
++ * Matt Porter <mporter@kernel.crashing.org>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef ASM_PPC_RIO_H
++#define ASM_PPC_RIO_H
++
++extern void platform_rio_init(void);
++
++#endif				/* ASM_PPC_RIO_H */
+diff --git a/include/asm-ppc/rio.h b/include/asm-ppc/rio.h
+deleted file mode 100644
+index 0018bf8..0000000
+--- a/include/asm-ppc/rio.h
++++ /dev/null
+@@ -1,18 +0,0 @@
+-/*
+- * RapidIO architecture support
+- *
+- * Copyright 2005 MontaVista Software, Inc.
+- * Matt Porter <mporter@kernel.crashing.org>
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#ifndef ASM_PPC_RIO_H
+-#define ASM_PPC_RIO_H
+-
+-extern void platform_rio_init(void);
+-
+-#endif				/* ASM_PPC_RIO_H */
+-- 
+1.5.4
 
-> The shadow vmap for DEBUG_RODATA kernel text modification uses 
-> virt_to_page to get the pages from the pointer address.
-> 
-> However, I think vmalloc_to_page would be required in case the page is 
-> used for modules.
-> 
-> Since only the core kernel text is marked read-only, use 
-> kernel_text_address() to make sure we only shadow map the core kernel 
-> text, not modules.
-
-actually, i think we should mark module text readonly too.
-
-	Ingo
