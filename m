@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYCKUTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYCKUTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbYCKUTf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 16:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYCKUTM
+	id S1756805AbYCKUTv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 16:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYCKUTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 16:19:12 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:11680 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbYCKUTL (ORCPT
+	Tue, 11 Mar 2008 16:19:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:39983 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752793AbYCKUTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 16:19:11 -0400
+	Tue, 11 Mar 2008 16:19:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=R496/uOqs2HbegNYD46wd7Z1tjVu0AXB1QlnT0OZ6qut9qmzx8vtuhsvh8pod+zQDP5hWgjnfit/N+x4ofopoSuxl3PokmznxrQ++UMJdvA2Q7GKuc6bHxcL1tFwfxzCUCn9lV72angZeJHxbUElEPQQH+2fzjoDyeVpzYPp0s8=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=Y5FUpvty6jEw1hHf2ve/6kp9HamDCBTU5NcIv/ywQPVwKzEtiQ2gWv6mWWqHW8hlcGplNFRfoNctlVEWFxFnvIAS4eMPtwpdRY54GYhZ53QvwLDRiVZ0Ta37iZPFvaO1hsNlgcVH9kggd+21LHwQWt6SS1mQlyPvaV2fxVH1n5I=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/3] ide: mark "hdx=[driver_name]" and "hdx=scsi" kernel parameters as obsoleted
-Date: Tue, 11 Mar 2008 21:32:00 +0100
+Subject: [PATCH 3/3] ide: mark "hdx=remap" and "hdx=remap63" kernel parameters as obsoleted
+Date: Tue, 11 Mar 2008 21:32:50 +0100
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200803112132.50440.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803112132.00122.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark "hdx=[driver_name]" and "hdx=scsi" kernel parameters as obsoleted
-(nowadays device-driver binding can be changed at runtime through sysfs
- and it can also be dealt with using per device driver parameters).
+Mark "hdx=remap" and "hdx=remap63" kernel parameters as obsoleted
+(they are layering violation and should be dealt with in the same
+ way as done by libata - device-mapper should be used instead).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- Documentation/ide/ide.txt |    4 ----
+ Documentation/ide/ide.txt |    5 -----
  drivers/ide/ide.c         |    4 ++--
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
 Index: b/Documentation/ide/ide.txt
 ===================================================================
 --- a/Documentation/ide/ide.txt
 +++ b/Documentation/ide/ide.txt
-@@ -219,10 +219,6 @@ Summary of ide driver parameters for ker
+@@ -203,11 +203,6 @@ Summary of ide driver parameters for ker
  
-  "hdx=nodma"		: disallow DMA
+  "hdx=cyl,head,sect"	: disk drive is present, with specified geometry
  
-- "hdx=scsi"		: the return of the ide-scsi flag, this is useful for
-- 			  allowing ide-floppy, ide-tape, and ide-cdrom|writers
-- 			  to use ide-scsi emulation on a device specific option.
+- "hdx=remap"		: remap access of sector 0 to sector 1 (for EZDrive)
 -
-  "idebus=xx"		: inform IDE driver of VESA/PCI bus speed in MHz,
- 			  where "xx" is between 20 and 66 inclusive,
- 			  used when tuning chipset PIO modes.
+- "hdx=remap63"		: remap the drive: add 63 to all sector numbers
+-			  (for DM OnTrack)
+-
+  "idex=noautotune"	: driver will NOT attempt to tune interface speed
+ 
+  "hdx=autotune"		: driver will attempt to tune interface speed
 Index: b/drivers/ide/ide.c
 ===================================================================
 --- a/drivers/ide/ide.c
 +++ b/drivers/ide/ide.c
-@@ -919,7 +919,7 @@ static int __init ide_setup(char *s)
- 		drive = &hwif->drives[unit];
- 		if (strncmp(s + 4, "ide-", 4) == 0) {
- 			strlcpy(drive->driver_req, s + 4, sizeof(drive->driver_req));
--			goto done;
-+			goto obsolete_option;
- 		}
- 		switch (match_parm(&s[3], hd_words, vals, 3)) {
- 			case -1: /* "none" */
-@@ -952,7 +952,7 @@ static int __init ide_setup(char *s)
+@@ -946,10 +946,10 @@ static int __init ide_setup(char *s)
  				goto done;
- 			case -14: /* "scsi" */
- 				drive->scsi = 1;
+ 			case -12: /* "remap" */
+ 				drive->remap_0_to_1 = 1;
 -				goto done;
 +				goto obsolete_option;
- 			case 3: /* cyl,head,sect */
- 				drive->media	= ide_disk;
- 				drive->ready_stat = READY_STAT;
+ 			case -13: /* "remap63" */
+ 				drive->sect0 = 63;
+-				goto done;
++				goto obsolete_option;
+ 			case -14: /* "scsi" */
+ 				drive->scsi = 1;
+ 				goto obsolete_option;
