@@ -1,259 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYCKPTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYCKPUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbYCKPTq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 11:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYCKPTi
+	id S1757954AbYCKPUX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 11:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYCKPUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 11:19:38 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55284 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752204AbYCKPTh (ORCPT
+	Tue, 11 Mar 2008 11:20:07 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:5676 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbYCKPUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 11:19:37 -0400
-Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <200803101900.25430.david-b@pacbell.net>
-References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main>
-	 <200803071943.14805.david-b@pacbell.net>
-	 <1205061053.13653.114.camel@localhost.localdomain>
-	 <200803101900.25430.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Tue, 11 Mar 2008 15:19:34 +0000
-Message-Id: <1205248774.13653.347.camel@localhost.localdomain>
+	Tue, 11 Mar 2008 11:20:05 -0400
+Date: Tue, 11 Mar 2008 16:17:19 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: Optimize find_next_(zero_)bit for small constant-size bitmaps
+Message-ID: <20080311151719.GA15313@mailshack.com>
+References: <20080309200103.GA895@mailshack.com> <20080309201152.GB28454@elte.hu> <1205094704.6430.1241420859@webmail.messagingengine.com> <20080309205132.GA9021@elte.hu> <20080310231724.GA8370@mailshack.com> <20080311095631.GT25110@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311095631.GT25110@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Tue, 11 Mar 2008 16:19:40 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.16; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-10 at 18:00 -0800, David Brownell wrote:
-> On Sunday 09 March 2008, Liam Girdwood wrote:
-> > 
-> > > > +int regulator_set_voltage(struct regulator *regulator, int uV);
-> > > 
-> > > You described a mode where consumers could set ranges that
-> > > might overlap (e.g. 1.6 to 1.9V, 1.8 to 2.0) and the result
-> > > would be some compatible result.  But I don't see how that
-> > > could be achieved, since that's the only call to provide
-> > > a consumer's constraints.
-> > 
-> > In this example the power domain constraint (not consumer constraint)
-> > would be 1.6 - > 2.0 V. 
+x86: Optimize find_next_(zero_)bit for small constant-size bitmaps.
+
+This moves an optimization for searching constant-sized small 
+bitmaps form x86_64-specific to generic code.
+
+On an i386 defconfig (the x86#testing one), the size of vmlinux hardly
+changes with this applied. I have observed only four places where this
+optimization avoids a call into find_next_bit:
+
+In the functions return_unused_surplus_pages, alloc_fresh_huge_page,
+and adjust_pool_surplus, this patch avoids a call for a 1-bit bitmap.
+In __next_cpu a call is avoided for a 32-bit bitmap. That's it.
+
+On x86_64, 52 locations are optimized with a minimal increase in
+code size:
+
+Current #testing defconfig: 
+	146 x bsf, 27 x find_next_*bit
+   text    data     bss     dec     hex filename
+   5392637  846592  724424 6963653  6a41c5 vmlinux
+
+After removing the x86_64 specific optimization for find_next_*bit:
+	94 x bsf, 79 x find_next_*bit
+   text    data     bss     dec     hex filename
+   5392358  846592  724424 6963374  6a40ae vmlinux
+
+After this patch (making the optimization generic):
+	146 x bsf, 27 x find_next_*bit
+   text    data     bss     dec     hex filename
+   5392396  846592  724424 6963412  6a40d4 vmlinux
+
+---
+
+Hi Ingo,
+
+I have now tested (in user-space) the one-long-versions of the 
+find_next_(zero_)bit in the patch. They give the expected
+results.
+
+> > +#ifdef CONFIG_GENERIC_FIND_NEXT_BIT
+> > +unsigned long __find_next_bit(const unsigned long *addr,
+> > +		unsigned long size, unsigned long offset);
+> > +
+> > +static __always_inline unsigned long
+> > +find_next_bit(const unsigned long *addr, unsigned long size,
+> > +		unsigned long offset)
 > 
-> I was actually thinking of a chip I've used which has four
-> prgrammable regulators:
+> > +#endif /* CONFIG_GENERIC_FIND_NEXT_BIT */
 > 
->   * Three are similar ... they can supply 2.5V, 2.75V, or
->     3.0V; plus a regulator-specific fourth setting of either
->     3.3V, 1.8V, or adjusted by board-specific feedback.
+> there should be an #else here i think, which maps find_next_bit to 
+> __find_next_bit / etc.
+
+No, that is intentional: architectures are expected to either set
+CONFIG_GENERIC_FIND_NEXT_BIT, or provide their own implementation
+of find_next_bit.
+
+An alternative would be to have all architectures providing
+__find_next_bit/__find_next_zero_bit and do the optimization
+unconditionally.
+
+> > +unsigned long __find_next_bit(const unsigned long *addr,
+> > +		unsigned long size, unsigned long offset);
 > 
->   * The fourth has eight settings (from 0.85V up to 1.6V).
-> 
-> Those are the hard power domain constraints for the chip.
-> 
-> But any given board (set of "consumers") needs to be able to
-> provide additional constraints.
+> should be explicitly "extern", so that we see that it's a prototype 
+> declaration.
 
-I think we probably have some confusion over the nomenclature here (as
-there are several 'levels' of constraint). I'll detail this in the docs
-though. 
+ok.
 
-I think you are meaning the board (or power domain) constraint here:-
+This version runs fine on qemu.
 
-The regulator driver currently enforces the chip (or regulator)
-constraints, whilst the power domain (board) constraints are defined in
-board.c.
+Greetings,
+	Alexander
 
-e.g.
-
-struct regulation_constraints led = {
-	.min_uA		= 0,
-	.max_uA		= 27898,
-	.valid_ops_mask	= REGULATOR_CHANGE_CURRENT,
-	.valid_modes_mask	= REGULATOR_MODE_NORMAL,
-};
-
-struct regulation_constraints cpufreq = {
-	.min_uV		= mV_to_uV(1300),
-	.max_uV		= mV_to_uV(1600),
-	.valid_ops_mask	= REGULATOR_CHANGE_VOLTAGE | REGULATOR_CHANGE_MODE,
-	.valid_modes_mask	= REGULATOR_MODE_NORMAL | REGULATOR_MODE_FAST,
-};
-
-It designed to work as follows:-
-
-1. Consumer: set voltage 1.8V
-2. reg core: if 1.8V is not within board (power domain) constraint then
-return err.
-3. regulator (chip) driver: check that 1.8V is ok then write to chip to
-change voltage.
-
-> 
-> 
-> > i.e. this range is safe for all consumers on 
-> > this domain as all can operate at 2.0V and some can operate as low as
-> > 1.6V.
-> 
-> You've declared similar hidden assumptions in response to some
-> of my other questions.  Such hidden assumptions are not helpful.
-> Best to document them, if they survive discussion ...
-> 
-> One assumption is that consumers can't make constraints.  That's
-> because of a second one, that somehow board designers can and will
-> ensure they don't need to.
-> 
-
-A board designer must make sure that the power domain constraints are
-within the regulator (chip) constraints. He must also make sure that all
-consumers on a power domain can all operate similtaiously at the same
-voltage and that they are not damaged by other domain consumers
-operating at different voltages.
-
-> I don't buy that.  If the designer ensured that there would be
-> no need for such constraints, then why even have a set_voltage()
-> request?  That adds a constraint ... but it's an inflexible one.
-> 
-
-Basically there are two types of consumers.
-
-1. Consumers that don't care about their supply voltage/current. They
-use the voltage specified by the system designer and don't care about
-it's value. They only need to enable()/disable()
-
-2. Consumers that do care about their voltage/current. This group of
-consumers do care about voltage and current. Typical users are
-Backlight, CPUfreq, LED's, MMC, vibrator, USB.....
-
-The first type can usually share a supply regulator whilst the latter
-group have a 1:1 consumer to regulator mapping. 
-
-The system designer ensures that all type 1 consumers exist on domains
-with compatible power requirements. Type 1 consumers don't care about
-voltage or current constraints.
-
-Type 2 consumers do care about power domain constraints.
-
-This also leads to 3 different types of power domain :-
-
-1. Fixed Voltage.
-2. Variable Voltage.
-3. Variable Current limit.
-
-> 
-> But maybe the broader issue is:  just what model are you using
-> for customization here?  At what points are constraints specific
-> to a chip, board, or external connection applied?
-> 
-
-We have the physical constraints of the regulators (chip) and the
-physical constraints of the power domain. The power domain example near
-the top hopefully answers this. 
-
-> 
-> My assumption is that the regulators themselves should know
-> only about their hard constraints
-
-Agreed, they do.
-
->  ... most often specific to
-> the chip (this regulator is optimized for these voltages),
-> but sometimes specific to a given board's wiring (e.g. the
-> resistor ladder for a given voltage feedback channel).
-> 
-
-Imho, the regulator driver should not no anything about the board. It's
-up to the board init code to configure things like this. 
-
-We do this atm for a WM8350 resistor config in platform code and pass
-onto the pmic driver. 
-
-> And then additional constraints could come from consumers,
-> which would basically be of two types:  (a) board setup code,
-> and (b) drivers that cope with various situations, some of
-> which are externally imposed.  Those drivers would tend to
-> need just on/off controls for power domains they manage,
-> but in some cases (like the MMC example I mentioned) would
-> need more capability than that.
-> 
-> 
-> > The actual regulator output will be determined by consumer voltage
-> > requests. e.g. On power domain A, consumer x sets 1.8V and consumer y
-> > sets 1.9V, hence regulator output will be 1.9V. (as y needs 1.9 to
-> > operate, but x can operate at 1.8 - 2.0)
-> 
-> So when consumer X tunes everything to run in a low power mode
-> (using 1.6V as a better example), consumer Y can come along and
-> change things (to 2.0V ... 25% higher voltage, a "huge" delta)?
-
-This is probably a bad example as the voltage delta is quite large and
-probably unrealistic. I was thinking of smaller deltas in the range of a
-few percent. The big numbers just make it easier to read. I'm beginning
-to consider removing this feature.
-
-> 
-> How would consume X know that it's got to re-adjust things, and
-> shift out of a low power operational mode?  Or prevent the need
-> to do that?  (Or vice versa.  Y could come first, preventing X
-> from entering a low power mode ... though maybe X could still
-> run in a high power mode.)
-> 
-
-We have a notifier block for notifying changes atm but it doesn't notify
-other domain consumers of a pending domain voltage change yet.  
-
-> 
-> > > Presumably one configures a voltage then enables it?  How
-> > > does one turn a voltage supply on or off?  I'm guessing
-> > > that zero volts doesn't equate to "off"...
-> > 
-> > Some regulators cant go down as far as 0V ;)
-> 
-> For the ones that can, shouldn't that be equivalent to disabling
-> the regulator?  
-
-Imho no, as the regulator internals will probably still be clocking and
-burning power when set to 0V. I think we need the enable() and disable()
-calls to do make this cleaner.
-
-> And for ones that can't, doesn't that mean
-> that regulator can not be enabled or disabled??
-> 
-> This "interface" definition is at best vague about quite a
-> lot of issues like these.
-> 
->  
-> > We have regulator_enable() and regulator
-> > regulator output.
-> > 
-> > e.g. set voltage -> enable -> do some stuff -> disable. 
-> 
-> Would it be allowable to enable -> set voltage too?
-> 
-
-Yes, this is fine.
-
-> Oh ... and if the regulator doesn't have a setting for
-> the specific voltage requested, is it allowed to choose
-> something "close"?  (How close is close enough?)  Or must
-> it instead fail?
-> 
-
-It should fail. However, it might be worth adding something like :-
-
-regulator_set_voltage(client, min, max);
-regulator_set_current(client, min, max);
-
-I think it's probably best that I write some docs describing the
-architecture and usage model before any more patches. Hopefully, this
-will clear up the ambiguities around constraints and nomenclature. I'll
-also factor in the recent comments in this email chain. 
-
-Liam 
-
+diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
+index 7fbf93a..1a23ce1 100644
+--- a/include/asm-x86/bitops.h
++++ b/include/asm-x86/bitops.h
+@@ -312,12 +312,6 @@ static int test_bit(int nr, const volatile unsigned long *addr);
+ 
+ #undef ADDR
+ 
+-unsigned long find_next_bit(const unsigned long *addr,
+-		unsigned long size, unsigned long offset);
+-unsigned long find_next_zero_bit(const unsigned long *addr,
+-		unsigned long size, unsigned long offset);
+-
+-
+ #ifdef CONFIG_X86_32
+ # include "bitops_32.h"
+ #else
+diff --git a/include/asm-x86/bitops_64.h b/include/asm-x86/bitops_64.h
+index 40bf0f8..87e1a17 100644
+--- a/include/asm-x86/bitops_64.h
++++ b/include/asm-x86/bitops_64.h
+@@ -20,21 +20,11 @@ static inline long __scanbit(unsigned long val, unsigned long max)
+   (__scanbit(*(unsigned long *)addr,(size))) : \
+   find_first_bit(addr,size)))
+ 
+-#define find_next_bit(addr,size,off) \
+-((__builtin_constant_p(size) && (size) <= BITS_PER_LONG ? 	  \
+-  ((off) + (__scanbit((*(unsigned long *)addr) >> (off),(size)-(off)))) : \
+-	find_next_bit(addr,size,off)))
+-
+ #define find_first_zero_bit(addr,size) \
+ ((__builtin_constant_p(size) && (size) <= BITS_PER_LONG ? \
+   (__scanbit(~*(unsigned long *)addr,(size))) : \
+   	find_first_zero_bit(addr,size)))
+ 	
+-#define find_next_zero_bit(addr,size,off) \
+-((__builtin_constant_p(size) && (size) <= BITS_PER_LONG ? 	  \
+-  ((off)+(__scanbit(~(((*(unsigned long *)addr)) >> (off)),(size)-(off)))) : \
+-	find_next_zero_bit(addr,size,off)))
+-
+ static inline void set_bit_string(unsigned long *bitmap, unsigned long i, 
+ 				  int len) 
+ { 
+diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+index 69c1edb..15360f9 100644
+--- a/include/linux/bitops.h
++++ b/include/linux/bitops.h
+@@ -72,4 +72,81 @@ static inline unsigned fls_long(unsigned long l)
+ 	return fls64(l);
+ }
+ 
++#ifdef __KERNEL__
++#ifdef CONFIG_GENERIC_FIND_NEXT_BIT
++extern unsigned long __find_next_bit(const unsigned long *addr,
++		unsigned long size, unsigned long offset);
++
++/**
++ * find_next_bit - find the next set bit in a memory region
++ * @addr: The address to base the search on
++ * @offset: The bitnumber to start searching at
++ * @size: The bitmap size in bits
++ */
++static __always_inline unsigned long
++find_next_bit(const unsigned long *addr, unsigned long size,
++		unsigned long offset)
++{
++	unsigned long value;
++
++	/* Avoid a function call if the bitmap size is a constant */
++	/* and not bigger than BITS_PER_LONG. */
++
++	/* insert a sentinel so that __ffs returns size if there */
++	/* are no set bits in the bitmap */
++	if (__builtin_constant_p(size) && (size < BITS_PER_LONG)) {
++		value = (*addr) & ((~0ul) << offset);
++		value |= (1ul << size);
++		return __ffs(value);
++	}
++
++	/* the result of __ffs(0) is undefined, so it needs to be */
++	/* handled separately */
++	if (__builtin_constant_p(size) && (size == BITS_PER_LONG)) {
++		value = (*addr) & ((~0ul) << offset);
++		return (value == 0) ? BITS_PER_LONG : __ffs(value);
++	}
++
++	/* size is not constant or too big */
++	return __find_next_bit(addr, size, offset);
++}
++
++extern unsigned long __find_next_zero_bit(const unsigned long *addr,
++		unsigned long size, unsigned long offset);
++
++/**
++ * find_next_zero_bit - find the next cleared bit in a memory region
++ * @addr: The address to base the search on
++ * @offset: The bitnumber to start searching at
++ * @size: The bitmap size in bits
++ */
++static __always_inline unsigned long
++find_next_zero_bit(const unsigned long *addr, unsigned long size,
++		unsigned long offset)
++{
++	unsigned long value;
++
++	/* Avoid a function call if the bitmap size is a constant */
++	/* and not bigger than BITS_PER_LONG. */
++
++	/* insert a sentinel so that __ffs returns size if there */
++	/* are no set bits in the bitmap */
++	if (__builtin_constant_p(size) && (size < BITS_PER_LONG)) {
++		value = (~(*addr)) & ((~0ul) << offset);
++		value |= (1ul << size);
++		return __ffs(value);
++	}
++
++	/* the result of __ffs(0) is undefined, so it needs to be */
++	/* handled separately */
++	if (__builtin_constant_p(size) && (size == BITS_PER_LONG)) {
++		value = (~(*addr)) & ((~0ul) << offset);
++		return (value == 0) ? BITS_PER_LONG : __ffs(value);
++	}
++
++	/* size is not constant or too big */
++	return __find_next_zero_bit(addr, size, offset);
++}
++#endif /* CONFIG_GENERIC_FIND_NEXT_BIT */
++#endif /* __KERNEL__ */
+ #endif
+diff --git a/lib/find_next_bit.c b/lib/find_next_bit.c
+index 5820e07..ce94c4c 100644
+--- a/lib/find_next_bit.c
++++ b/lib/find_next_bit.c
+@@ -15,17 +15,12 @@
+ #include <asm/byteorder.h>
+ 
+ #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
+-#undef find_next_bit
+-#undef find_next_zero_bit
+-
+-/**
+- * find_next_bit - find the next set bit in a memory region
+- * @addr: The address to base the search on
+- * @offset: The bitnumber to start searching at
+- * @size: The maximum size to search
++
++/*
++ * Find the next set bit in a memory region.
+  */
+-unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
+-		unsigned long offset)
++unsigned long __find_next_bit(const unsigned long *addr,
++		unsigned long size, unsigned long offset)
+ {
+ 	const unsigned long *p = addr + BITOP_WORD(offset);
+ 	unsigned long result = offset & ~(BITS_PER_LONG-1);
+@@ -62,15 +57,14 @@ found_first:
+ found_middle:
+ 	return result + __ffs(tmp);
+ }
+-
+-EXPORT_SYMBOL(find_next_bit);
++EXPORT_SYMBOL(__find_next_bit);
+ 
+ /*
+  * This implementation of find_{first,next}_zero_bit was stolen from
+  * Linus' asm-alpha/bitops.h.
+  */
+-unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
+-		unsigned long offset)
++unsigned long __find_next_zero_bit(const unsigned long *addr,
++		unsigned long size, unsigned long offset)
+ {
+ 	const unsigned long *p = addr + BITOP_WORD(offset);
+ 	unsigned long result = offset & ~(BITS_PER_LONG-1);
+@@ -107,8 +101,7 @@ found_first:
+ found_middle:
+ 	return result + ffz(tmp);
+ }
+-
+-EXPORT_SYMBOL(find_next_zero_bit);
++EXPORT_SYMBOL(__find_next_zero_bit);
+ 
+ #ifdef __BIG_ENDIAN
+ 
 
