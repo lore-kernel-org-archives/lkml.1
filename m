@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYCKI3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbYCKIfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbYCKI3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 04:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYCKI2x
+	id S1753247AbYCKIfs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 04:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYCKIfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 04:28:53 -0400
-Received: from n11.bullet.mail.mud.yahoo.com ([209.191.125.210]:21677 "HELO
-	n11.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752590AbYCKI2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 04:28:51 -0400
-X-Yahoo-Newman-Id: 245464.81849.bm@omp404.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=L2cMsnIYB1LI6MzmvUO01GGZmeAU2TR9PhOUxpYfM0dcFoSEY9H/SUL8EKNr/BCyhQMJ9WXxQ1UbzidFVG9ZhHynMWPVD6qgeX3+yqLS2qPTH5rD3Xh+E8wDy7rJwCFWCRboUzTg6RyhNDDOG1SYH3F9IOq/FjOQdhkDKA1oDyM=  ;
-X-YMail-OSG: 4KVlA14VM1njhVUDyIHNITZ_7kdKPC_SIGKX1lNQhc3amXTuj9ODJIF4DIm10KK_1X4tXoIvyQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
-Date: Tue, 11 Mar 2008 19:28:19 +1100
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <200803111749.29143.nickpiggin@yahoo.com.au> <20080311075845.GA13758@elte.hu>
-In-Reply-To: <20080311075845.GA13758@elte.hu>
+	Tue, 11 Mar 2008 04:35:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47884 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750765AbYCKIfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 04:35:37 -0400
+Date: Tue, 11 Mar 2008 09:35:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
+       tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v5
+Message-ID: <20080311083517.GC25110@elte.hu>
+References: <20080310222955.565902000@linux-os.sc.intel.com> <20080311050644.GB4589@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803111928.20043.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080311050644.GB4589@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 March 2008 18:58, Ingo Molnar wrote:
-> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > PostgreSQL is different. It has zero idle time when running this
-> > workload. It actually scaled "super linearly" on my system here, from
-> > single threaded performance to 8 cores (giving an 8.2x performance
-> > increase)!
-> >
-> > So PostgreSQL performance profile is actually much more interesting.
-> > To my dismay, I found that Linux 2.6.25-rc5 performs really badly
-> > after saturating the runqueues and subsequently increasing threads.
-> > 2.6.22 drops a little bit, but basically settles near the peak
-> > performance. With 2.6.25-rc5, throughput seems to be falling off
-> > linearly with the number of threads.
->
-> thanks Nick, i'll check this
 
-Thanks.
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
+> > -	extern void __bad_fxsave_alignment(void);
+> > -
+> > -	if (offsetof(struct task_struct, thread.i387.fxsave) & 15)
+> > -		__bad_fxsave_alignment();
+> 
+> I think removal of such checks needs giving necessary alignment to 
+> cache. Previously it worked because of __aligned((16)) and 
+> L1_CACHE_SHIFT combo.
 
-> - and i agree that this very much looks 
-> like a scheduler regression.
+it's still checked, just elsewhere:
 
-I'd say it is. Quite a nasty one too: if your server gets nudged over
-the edge of the cliff, it goes into a feedback loop and goes splat at
-the bottom somewhere ;)
+> +       WARN_ON((unsigned long)dst->thread.xstate & 15);
 
+i'd not expect us to ever align worse than 16 bytes in the future so 
+this is a non-issue i think.
 
-> Just a quick suggestion, does a simple 
-> runtime tune like this fix the workload:
->
->   for N in /proc/sys/kernel/sched_domain/*/*/flags; do
->      echo $[`cat $N`|16] > N
->   done
->
-> this sets SD_WAKE_IDLE for all the nodes in the scheduler domains tree.
-> (doing this results in over-agressive idle balancing - but if this fixes
-> your testcase it shows that we were balancing under-agressively for this
-> workload.) Thanks,
-
-It doesn't change anything.
-
-There is no idle time for this workload, btw.
-
+	Ingo
