@@ -1,366 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYCKHLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYCKHNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbYCKHLI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 03:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYCKHKz
+	id S1755154AbYCKHNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 03:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYCKHNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 03:10:55 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:15645 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbYCKHKy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 03:10:54 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kvm: provide kvm.h for all architecture: fixes headers_install
-Date: Tue, 11 Mar 2008 08:10:49 +0100
-User-Agent: KMail/1.9.7
-Cc: Avi Kivity <avi@qumranet.com>, Sam Ravnborg <sam@ravnborg.org>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>, David Howells <dhowells@redhat.com>,
-       linux-arch@vger.kernel.org, mm-commits@vger.kernel.org
-References: <200803071326.06682.borntraeger@de.ibm.com> <20080310232039.d2a34f5a.akpm@linux-foundation.org> <1205217745.2592.86.camel@shinybook.infradead.org>
-In-Reply-To: <1205217745.2592.86.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	Tue, 11 Mar 2008 03:13:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58643 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751265AbYCKHNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 03:13:35 -0400
+Date: Tue, 11 Mar 2008 08:13:31 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+Message-ID: <20080311071330.GA20271@wotan.suse.de>
+References: <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com> <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com> <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com> <20080307043700.GI21185@wotan.suse.de> <Pine.LNX.4.64.0803062108210.1143@schroedinger.engr.sgi.com> <20080307051944.GJ21185@wotan.suse.de> <Pine.LNX.4.64.0803062120410.1215@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803110810.49759.borntraeger@de.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0803062120410.1215@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 11. März 2008 schrieb David Woodhouse:
-> 
-> On Mon, 2008-03-10 at 23:20 -0700, Andrew Morton wrote:
-> > 
-> > > Changes since v1:
-> > > o use asm-generic/Kbuild.asm (Arnd Bergmann)
-> 
-> I don't see that in the diffstat of the patch you dropped (looking at
-> the immediately subsequent mail in my inbox). Which might explain...
+On Thu, Mar 06, 2008 at 09:26:24PM -0800, Christoph Lameter wrote:
+> Internode alignment is 4k. If you need an object aligned like that then it 
+> may be better to go to the page allocator.
 
+I never got a reply about this. Again: how can the modern slab allocator
+avoid the need for internode alignment in order to prevent cacheline
+pingpong on vsmp? Because I'm going to resubmit the SMP_ALIGN patch.
 
-I cross tested my patch on all architectures and, yes, that part did not make
-it into mm. Maybe it was caused by my last patch being word wrapped.
-Here is a resend:
+Also, the last I heard about the HWCACHE_ALIGN from you is that it didn't
+make sense... I see it's merged now, which I appreciate, but I think it is
+really important that we're on the same page here, so let me know if it
+still doesn't make sense.
 
+Thanks,
+Nick
 
-[PATCH v2] kvm: provide kvm.h for all architecture: fixes headers_install
-
-Currently include/linux/kvm.h is not considered by make headers_install, 
-because Kbuild cannot handle " unifdef-$(CONFIG_FOO) += foo.h. 
-This problem was introduced by 040922c04cf2c8ac70be2e88a8a9614ecdb41d2e, 
-which makes this an 2.6.25 regression.
-
-One way of solving the issue is to enhance Kbuild, but Avi and David 
-conviced me, that changing headers_install is not the way to go. This patch 
-changes the definition for linux/kvm.h to unifdef-y.
-
-If  unifdef-y is used for linux/kvm.h "make headers_check" will fail on all
-architectures without asm/kvm.h. Therefore, this patch also provides 
-asm/kvm.h on all architectures.
-
-Changes since v1:
-o use asm-generic/Kbuild.asm (Arnd Bergmann)
-o fix comment in asm-frv (David Howells)
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Acked-by: Avi Kivity <avi@qumranet.com>
-CCed: Sam Ravnborg <sam@ravnborg.org
-CCed: David Woodhouse <dwmw2@infradead.org>
-
----
- include/asm-alpha/kvm.h        |    6 ++++++
- include/asm-arm/kvm.h          |    6 ++++++
- include/asm-avr32/kvm.h        |    6 ++++++
- include/asm-blackfin/kvm.h     |    6 ++++++
- include/asm-cris/kvm.h         |    6 ++++++
- include/asm-frv/kvm.h          |    6 ++++++
- include/asm-generic/Kbuild.asm |    2 ++
- include/asm-h8300/kvm.h        |    6 ++++++
- include/asm-ia64/kvm.h         |    6 ++++++
- include/asm-m32r/kvm.h         |    6 ++++++
- include/asm-m68k/kvm.h         |    6 ++++++
- include/asm-m68knommu/kvm.h    |    6 ++++++
- include/asm-mips/kvm.h         |    6 ++++++
- include/asm-mn10300/kvm.h      |    6 ++++++
- include/asm-parisc/kvm.h       |    6 ++++++
- include/asm-powerpc/kvm.h      |    6 ++++++
- include/asm-s390/kvm.h         |    6 ++++++
- include/asm-sh/kvm.h           |    6 ++++++
- include/asm-sparc/kvm.h        |    6 ++++++
- include/asm-sparc64/kvm.h      |    6 ++++++
- include/asm-um/kvm.h           |    6 ++++++
- include/asm-v850/kvm.h         |    6 ++++++
- include/asm-xtensa/kvm.h       |    6 ++++++
- include/linux/Kbuild           |    2 +-
- 24 files changed, 135 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.git/include/asm-alpha/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-alpha/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_ALPHA_H
-+#define __LINUX_KVM_ALPHA_H
-+
-+/* alpha does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-arm/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-arm/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_ARM_H
-+#define __LINUX_KVM_ARM_H
-+
-+/* arm does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-avr32/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-avr32/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_AVR32_H
-+#define __LINUX_KVM_AVR32_H
-+
-+/* avr32 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-blackfin/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-blackfin/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_BLACKFIN_H
-+#define __LINUX_KVM_BLACKFIN_H
-+
-+/* blackfin does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-cris/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-cris/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_CRIS_H
-+#define __LINUX_KVM_CRIS_H
-+
-+/* cris does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-frv/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-frv/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_FRV_H
-+#define __LINUX_KVM_FRV_H
-+
-+/* frv does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-generic/Kbuild.asm
-===================================================================
---- linux-2.6.git.orig/include/asm-generic/Kbuild.asm
-+++ linux-2.6.git/include/asm-generic/Kbuild.asm
-@@ -1,3 +1,5 @@
-+header-y  += kvm.h
-+
- ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
- unifdef-y += a.out.h
- endif
-Index: linux-2.6.git/include/asm-h8300/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-h8300/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_H8300_H
-+#define __LINUX_KVM_H8300_H
-+
-+/* h8300 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-ia64/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-ia64/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_IA64_H
-+#define __LINUX_KVM_IA64_H
-+
-+/* ia64 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-m32r/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-m32r/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_M32R_H
-+#define __LINUX_KVM_M32R_H
-+
-+/* m32r does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-m68k/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-m68k/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_M68K_H
-+#define __LINUX_KVM_M68K_H
-+
-+/* m68k does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-m68knommu/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-m68knommu/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_M68KNOMMU_H
-+#define __LINUX_KVM_M68KNOMMU_H
-+
-+/* m68knommu does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-mips/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-mips/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_MIPS_H
-+#define __LINUX_KVM_MIPS_H
-+
-+/* mips does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-mn10300/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-mn10300/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_MN10300_H
-+#define __LINUX_KVM_MN10300_H
-+
-+/* mn10300 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-parisc/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-parisc/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_PARISC_H
-+#define __LINUX_KVM_PARISC_H
-+
-+/* parisc does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-powerpc/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-powerpc/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_POWERPC_H
-+#define __LINUX_KVM_POWERPC_H
-+
-+/* powerpc does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-s390/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-s390/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_S390_H
-+#define __LINUX_KVM_S390_H
-+
-+/* s390 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-sh/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-sh/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_SH_H
-+#define __LINUX_KVM_SH_H
-+
-+/* sh does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-sparc/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-sparc/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_SPARC_H
-+#define __LINUX_KVM_SPARC_H
-+
-+/* sparc does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-sparc64/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-sparc64/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_SPARC64_H
-+#define __LINUX_KVM_SPARC64_H
-+
-+/* sparc64 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-um/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-um/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_UM_H
-+#define __LINUX_KVM_UM_H
-+
-+/* um does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-v850/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-v850/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_V850_H
-+#define __LINUX_KVM_V850_H
-+
-+/* v850 does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/asm-xtensa/kvm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.git/include/asm-xtensa/kvm.h
-@@ -0,0 +1,6 @@
-+#ifndef __LINUX_KVM_XTENSA_H
-+#define __LINUX_KVM_XTENSA_H
-+
-+/* xtensa does not support KVM */
-+
-+#endif
-Index: linux-2.6.git/include/linux/Kbuild
-===================================================================
---- linux-2.6.git.orig/include/linux/Kbuild
-+++ linux-2.6.git/include/linux/Kbuild
-@@ -257,7 +257,7 @@ unifdef-y += kd.h
- unifdef-y += kernelcapi.h
- unifdef-y += kernel.h
- unifdef-y += keyboard.h
--unifdef-$(CONFIG_HAVE_KVM) += kvm.h
-+unifdef-y += kvm.h
- unifdef-y += llc.h
- unifdef-y += loop.h
- unifdef-y += lp.h
