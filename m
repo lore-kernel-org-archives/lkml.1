@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbYCKSSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYCKSSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754427AbYCKSSE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYCKSRx
+	id S1755521AbYCKSSX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYCKSR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:17:53 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:34455 "EHLO mail.screens.ru"
+	Tue, 11 Mar 2008 14:17:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58734 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751313AbYCKSRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:17:52 -0400
-Date: Tue, 11 Mar 2008 21:22:13 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH] signals: print_fatal_signal: fix the signr "calculation"
-Message-ID: <20080311182213.GD586@tv-sign.ru>
-References: <20080308172453.GA28323@tv-sign.ru> <20080308190311.779B326F990@magilla.localdomain> <20080309110511.GA18128@elte.hu> <20080309161153.GA76@tv-sign.ru> <20080311021928.B725E26F991@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311021928.B725E26F991@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+	id S1753374AbYCKSR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:17:57 -0400
+Message-ID: <47D6CCAA.7020506@redhat.com>
+Date: Tue, 11 Mar 2008 14:17:14 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Shaohua Li <shaohua.li@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ia64 <linux-ia64@vger.kernel.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [PATCH -mm] kprobes: kprobe-booster for ia64
+References: <47D166E7.2050803@redhat.com>	 <1205120600.20271.3.camel@sli10-desk.sh.intel.com>	 <47D57D28.7070100@redhat.com> <1205198417.24178.10.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1205198417.24178.10.camel@sli10-desk.sh.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/10, Roland McGrath wrote:
->
-> > For various reasons we can't currently do the same for sig_kernel_coredump()
-> > signals. But, when rlim[RLIMIT_CORE] == 0, we don't actually need coredumping?
-> > So, we could do something like
-> > 
-> > 
-> > 	-	if (!sig_kernel_coredump(sig)) {
-> > 	+	if (!sig_kernel_coredump(sig) || !signal->rlim[RLIMIT_CORE]) {
-> 
-> I don't like this.  I think it's better to leave logic like RLIMIT_CORE
-> checks to the core dump code itself.
+Hi Shaohua,
 
-As I said, this was just for illustration.
+Shaohua Li wrote:
+> Hi,
+> On Tue, 2008-03-11 at 02:25 +0800, Masami Hiramatsu wrote:
+>> Shaohua Li wrote:
+>>> On Sat, 2008-03-08 at 00:01 +0800, Masami Hiramatsu wrote:
+>>> There is no lock to protect the flag. If one cpu invokes other_kp
+>> and
+>>> the other cpu is changing the flag, what's the result?
+>> I think that other cpu never change the flag, because the caller of
+>> this
+>> function(__register_kprobe) locks kprobe_mutex in kernel/kprobes.c.
+> I mean if one cpu is doing register_kprobe, which will change other_kp's
+> flag. Another cpu is running into other_kp's break point, which will
+> look at the flag, there is a window (between the second cpu looks at the
+> flag and doing boost) the first cpu can change the flag in the window.
+> It appears we will lose one probe, but not sure if this is over
+> thinking.
 
-What I am thinking about is how to restore the "sig_kernel_coredump() signal
-freezes the whole group on delivery" behaviour, we had this before
-198466b41d11dd062fb26ee0376080458d7bfcaf.
+Sure, it is possible to lose just one probe in that time, but in next time,
+we do not lose it. So, I think it is not a problem.
 
-Afaics this is possible, we could add another SIGNAL_XXX flag but send SIGKILL,
-this also unifies the fatal signals processing.
+Thanks,
 
-Oleg.
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
 
