@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbYCKXnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbYCKXsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752567AbYCKXnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYCKXnR
+	id S1752138AbYCKXsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYCKXrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:43:17 -0400
-Received: from n1a.bullet.mail.tp2.yahoo.com ([203.188.202.90]:27660 "HELO
-	n1a.bullet.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750932AbYCKXnQ (ORCPT
+	Tue, 11 Mar 2008 19:47:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45601 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751123AbYCKXrx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:43:16 -0400
-X-Yahoo-Newman-Id: 787761.60739.bm@omp402.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IR8URbMPqwtn3v+mtho++Rmz2I/TXZe4sMPqIUPmbtPGPoJQ0E2LLwKzlYJ/wiQVH23IxviEEkdEL64slo7ZoD0ncTZiprYNHxMyFQkB5OwkleVSiDO4VoLWDS3JNaeeGAwy/VagdeLYIVFYmkwJxY5mpGCmOuxjy36BkWoIAl0=  ;
-X-YMail-OSG: 3HD0FJYVM1nfgukJSjnymFQDgm32wNNoDQXyt993Yzsh7n2pqe8bpXQeN7PmL9Bt_.9cVJo8Qw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+	Tue, 11 Mar 2008 19:47:53 -0400
+Date: Tue, 11 Mar 2008 16:47:21 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 To: Nicholas Miell <nmiell@comcast.net>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
-Date: Wed, 12 Mar 2008 10:42:43 +1100
-User-Agent: KMail/1.9.5
-Cc: Cyrus Massoumi <cyrusm@gmx.net>, "Molnar, Ingo" <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200803111749.29143.nickpiggin@yahoo.com.au> <47D6FAD0.1020608@gmx.net> <1205277132.12854.19.camel@entropy>
+Message-ID: <20080311164721.1d0a5654@extreme>
 In-Reply-To: <1205277132.12854.19.camel@entropy>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+References: <200803111749.29143.nickpiggin@yahoo.com.au>
+	<1205269674.12854.16.camel@entropy>
+	<47D6FAD0.1020608@gmx.net>
+	<1205277132.12854.19.camel@entropy>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121042.43895.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 10:12, Nicholas Miell wrote:
-> On Tue, 2008-03-11 at 22:34 +0100, Cyrus Massoumi wrote:
+On Tue, 11 Mar 2008 16:12:12 -0700
+Nicholas Miell <nmiell@comcast.net> wrote:
 
+> 
+> On Tue, 2008-03-11 at 22:34 +0100, Cyrus Massoumi wrote:
+> > Nicholas Miell wrote:
+> >
+> > > (Also, ignoring MySQL because it's a terrible piece of software at least
+> > > when regarding it's scalability is a bad idea. It's the M in LAMP, it
+> > > has a huge user base, and FreeBSD manages to outperform Linux with the
+> > > same unscalable piece of software.)
+> > 
+> > Did you actually see this? 
+> > http://www.kernel.org/pub/linux/kernel/people/npiggin/sysbench/
+> > 
+> > FreeBSD does not outperform Linux, it's actually a bit faster according 
+> > to Nick's tests.
+> 
+> I am aware of those results, but in the mail I was responding to, Nick
 > Piggin said the following:
+> 
 > > The problem with MySQL contention means that if the scheduler
 > > unluckily chooses to deschedule a lock holder, then you can get
 > > idle time building up on other cores and you can get context switch
@@ -47,15 +58,10 @@ On Wednesday 12 March 2008 10:12, Nicholas Miell wrote:
 > > such, it means MySQL is not an ideal candidate for looking at
 > > performance behaviour. I discounted the relatively worse scaling of
 > > MySQL with 2.6.25-rc (than 2.6.22) as such an effect.
->
+> 
 > which I interpreted to mean that MySQL performs worse on 2.6.23+ than on
 > 2.6.22 but for some reason this doesn't matter.
+> 
 
-I didn't try 2.6.23, which I think has bigger problems due to new
-CFS code. 2.6.25-rc fixes that, but yes in general I think the MySQL
-performance profile is worse on later kernels: while it has a
-very slightly higher peak performance, it drops off in performance
-more quickly after that peak. I initially wasn't too worried about
-it, but seeing as postgresql has a similar problem, I've made the
-scheduler developers aware of it.
-
+How many of these problems are due to poorly implemented userlevel
+spinlocks?  Do the database spinlocks map to futexes?
