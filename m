@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYCKITh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYCKI0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbYCKITh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 04:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYCKITH
+	id S1753482AbYCKI0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 04:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbYCKI0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 04:19:07 -0400
-Received: from www.tglx.de ([62.245.132.106]:42405 "EHLO www.tglx.de"
+	Tue, 11 Mar 2008 04:26:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:59106 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbYCKITF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 04:19:05 -0400
-Date: Tue, 11 Mar 2008 09:16:49 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: gregkh@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
-       Ben Nizette <bn@niasdigital.com>
-Subject: Re: [PATCH: RESEND] UIO:  UIO interface to the SMX Cryptengine
-Message-ID: <20080311091649.132213fb@dilbert.local>
-In-Reply-To: <1205223444.3893.4.camel@moss.renham>
-References: <1205223444.3893.4.camel@moss.renham>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751040AbYCKI0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 04:26:07 -0400
+Date: Tue, 11 Mar 2008 09:25:21 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for
+ pageattr-test.c
+In-Reply-To: <20080311013014.GA28682@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de>
+References: <20080311013014.GA28682@basil.nowhere.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Tue, 11 Mar 2008 19:17:24 +1100
-schrieb Ben Nizette <bn@niasdigital.com>:
+On Tue, 11 Mar 2008, Andi Kleen wrote:
+> Use an own random generator for pageattr-test.c
+> 
+> [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
+> candidate because it fixes a subtle bug]
 
-> [Resend, apologies, linewrap death >( ] 
+Care to point out which "subtle bug" is fixed ? 
 
-Sorry, just hit the reply button for my review of your old patch...
-
-Please fix the issues mentioned there, and resend it again.
+You replace a random generator by another to get repeateable
+sequences. The non repeatability of the cpa test patterns is hardly a
+"subtle bug".
 
 Thanks,
-Hans
+
+	tglx
