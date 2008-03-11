@@ -1,106 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYCKTGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYCKTJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754568AbYCKTGv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 15:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYCKTGk
+	id S1754730AbYCKTJR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 15:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYCKTJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 15:06:40 -0400
-Received: from sp604003av.neufgp.fr ([84.96.92.124]:43565 "EHLO
-	neuf-infra-smtp-out-sp604003av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751617AbYCKTGj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 15:06:39 -0400
-Message-ID: <47D6D24D.2080007@cosmosbay.com>
-Date: Tue, 11 Mar 2008 19:41:17 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-CC: "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, stable@kernel.org
-Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
-References: <47BDBC23.10605@cosmosbay.com> <170fa0d20803111115n3e8eb438s9b1ad7fff2fb8672@mail.gmail.com>
-In-Reply-To: <170fa0d20803111115n3e8eb438s9b1ad7fff2fb8672@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Tue, 11 Mar 2008 15:09:03 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:49894 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751625AbYCKTJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 15:09:03 -0400
+Date: Tue, 11 Mar 2008 14:08:58 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com
+Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
+Message-Id: <20080311140858.d0ecd47f.pj@sgi.com>
+In-Reply-To: <47D6C08E.9040701@qualcomm.com>
+References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com>
+	<1205215046-27085-2-git-send-email-maxk@qualcomm.com>
+	<20080311015711.9c4615a6.pj@sgi.com>
+	<47D6C08E.9040701@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Snitzer a écrit :
-> On 2/21/08, Eric Dumazet <dada1@cosmosbay.com> wrote:
->   
->> Some oprofile results obtained while using tbench on a 2x2 cpu machine
->>  were very surprising.
->>
->>  For example, loopback_xmit() function was using high number of cpu
->>  cycles to perform
->>  the statistic updates, supposed to be real cheap since they use percpu data
->>
->>         pcpu_lstats = netdev_priv(dev);
->>         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
->>         lb_stats->packets++;  /* HERE : serious contention */
->>         lb_stats->bytes += skb->len;
->>
->>
->>  struct pcpu_lstats is a small structure containing two longs. It appears
->>  that on my 32bits platform,
->>  alloc_percpu(8) allocates a single cache line,  instead of giving to
->>  each cpu a separate
->>  cache line.
->>
->>  Using the following patch gave me impressive boost in various benchmarks
->>  ( 6 % in tbench)
->>  (all percpu_counters hit this bug too)
->>
->>  Long term fix (ie >= 2.6.26) would be to let each CPU allocate their own
->>  block of memory, so that we
->>  dont need to roudup sizes to L1_CACHE_BYTES, or merging the SGI stuffof
->>  course...
->>
->>  Note : SLUB vs SLAB is important here to *show* the improvement, since
->>  they dont have the same minimum
->>  allocation sizes (8 bytes vs 32 bytes).
->>  This could very well explain regressions some guys reported when they
->>  switched to SLUB.
->>     
->
->
-> I see that this fix was committed to mainline as commit
-> be852795e1c8d3829ddf3cb1ce806113611fa555
->
-> The commit didn't "Cc: <stable@kernel.org>", and it doesn't appear to
-> be queued for 2.6.24.x.  Should it be?
->
->   
-Yes, it should be queued fo 2.6.24.x
+Max wrote:
+> Please take a look at
+> 	[PATCH 2/2] cpusets: Improved irq affinity handling
+> I'm treating irqs just like tasks (at least I think I'm :).
 
-> If I understand you correctly, SLAB doesn't create this particular
-> cache thrashing on 32bit systems?  Is SLAB ok on other architectures
-> too?  Can you (or others) comment on the importance of this fix
-> relative to x86_64 (64byte cacheline) and SLAB?
->
->   
+Well, I see the one comment in your Patch 2/2 noting you're unsure
+of the locking in one place.
 
-Fix is important both for 32 and 64 bits kernels, SLAB or SLUB.
+I don't see any further comments on or additional code involving
+locking.
 
-SLAB does have this problem, but less prevalent than SLUB, because these
-allocators dont have the same minimal size allocation (32 vs 8)
+I don't see where you respond to my discussion with Peter of March
+6 and 7, where I expressed some doubts about Peters patch (which you
+built on in your patch 1/2 in this series).
 
-So with SLUB, it is possible that 8 CPUS share the same 64 bytes
-cacheline to store their percpu counters, while only 2 cpus can share
-this same cache line with SLAB allocator.
+I see only a little bit of additional comments in your patch 2/2
+regarding handling of moving irqs to higher non-empty cpusets if a
+cpuset is emptied of its CPUs.
 
-> I'm particularly interested in this given the use of percpu_counters
-> with the per bdi write throttling.
->
-> Mike
-> --
->   
+I don't see any explanation of what you mean by "desired semantics."
 
+I don't see any response to the alternatives to Peter's earlier patch
+(your Patch 1/2 here) that Peter and I discussed in that discussion of
+March 6 and 7.
 
+And, in particular, could you respond to the question in my last
+message:
 
+> What semantics to you impose on irqs in overlapping cpusets,
+> which would seem to lead to conflicting directives as to
+> whether one set or another of irqs was to be applied to the
+> CPUs in the overlap?
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
