@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYCKNBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYCKNFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbYCKNBn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 09:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYCKNBe
+	id S1757313AbYCKNFd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 09:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYCKNF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 09:01:34 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:50832 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbYCKNBe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 09:01:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aRwMybLtQ5z2wl3VgJi3MaCTWsoHv7UT04CVSHD8WHZ8xoNwTMcBboricxiWI+cOVECdNH8bielLqIYGlAcNnAFtaKAyh4fOsSuerGkzv5OoD1bYzw+Ergcf9HkbvjPy1XXJ5TNIIUHsOeDLRMND6vLQl+Fo86VeKzC8noiZoV0=
-Message-ID: <4d8e3fd30803110601j612e24a6gd3d9a36d8e447b55@mail.gmail.com>
-Date: Tue, 11 Mar 2008 14:01:31 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/2] x86: coding style fixes to arch/x86/kernel/setup_32.c
-Cc: hpa <hpa@zytor.com>, tglx <tglx@linutronix.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080311123150.GB10343@elte.hu>
+	Tue, 11 Mar 2008 09:05:26 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53014 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752817AbYCKNF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 09:05:26 -0400
+Date: Tue, 11 Mar 2008 15:04:49 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Meyer <thomas@m3y3r.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
+Message-ID: <20080311130449.GA21157@cs181133002.pp.htv.fi>
+References: <200803110014.52985.rjw@sisk.pl> <47D67992.8010308@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080307192459.52c0a330@paolo-desktop>
-	 <4d8e3fd30803110503n28692bcbt3f0ef3b94f4a3805@mail.gmail.com>
-	 <20080311123150.GB10343@elte.hu>
+In-Reply-To: <47D67992.8010308@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 1:31 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
->
->  > On 3/7/08, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
->  > > Compile tested, patch #2 depends on #1
->  > >
->  > > Paolo Ciarrocchi (2):
->  > > x86: coding style fixes to arch/x86/kernel/setup_32.c
->  > > x86: coding style fixes to arch/x86/kernel/setup_32.c
->  > >
->  > > arch/x86/kernel/setup_32.c | 9 ++++-----
->  > > 1 files changed, 4 insertions(+), 5 deletions(-)
->  >
->  > hi Ingo, all,
->  > i think i didn't get any feedback, do you want me to submit again?
->
->  should all be in latest x86.git. Did i miss any of them? [i only picked
->  up one because the other was already handled iirc]
+On Tue, Mar 11, 2008 at 01:22:42PM +0100, Stefan Richter wrote:
+> Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10080
+> > Subject		: 2.6.25-rc2: ohci1394 problem
+> > Submitter	: Thomas Meyer <thomas@m3y3r.de>
+> > Date		: 2008-02-20 08:47
+> > References	: http://lkml.org/lkml/2008/2/20/58
+> > Handled-By	: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> 
+> Thomas wrote on 2008-02-25:
+> ''So i did a "make clean" and a "make" (not a make
+> -j3 as i use to do) and recompiled 2.6.25-rc3 and now it works again.
+> Case closed under strange error.''
+>...
 
-I now see the patch here:
-http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=shortlog;h=latest
-When I wrote the patch gitweb was not showing it :-)
+Although I don't think this would cause the error, it would be nice if 
+Thomas could verify that the -j3 did not cause the problem.
 
-Thanks.
+cu
+Adrian
 
-Ciao,
 -- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
