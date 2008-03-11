@@ -1,84 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYCKVrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYCKVzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYCKVrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 17:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYCKVrc
+	id S1755548AbYCKVzk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 17:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbYCKVza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 17:47:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48980 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbYCKVrc (ORCPT
+	Tue, 11 Mar 2008 17:55:30 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:64309 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbYCKVz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 17:47:32 -0400
-Date: Tue, 11 Mar 2008 22:49:26 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for pageattr-test.c
-Message-ID: <20080311214925.GA428@one.firstfloor.org>
-References: <20080311013014.GA28682@basil.nowhere.org> <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de> <20080311104531.GB18917@one.firstfloor.org> <alpine.LFD.1.00.0803111233440.3781@apollo.tec.linutronix.de> <20080311114832.GE18917@one.firstfloor.org> <alpine.LFD.1.00.0803112128190.3781@apollo.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Mar 2008 17:55:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Ius7GFVjHviICidLfhNjeHDkkGAfg16VxUdbp1fzYAnP609cHq+cDW6mHzrrJv7RNXWTaP/JiF8NxsIlyFJdbNgERj3ACnGxSF3IMD/disE47hSNSnFQVO3HqOEKc3TK5OmnD3SXb0GY5voi6QILpDLuYVUV1bRKlqAguyxrQGk=
+Message-ID: <e9c3a7c20803111455g354741f0sff7d4fc0172dc65e@mail.gmail.com>
+Date: Tue, 11 Mar 2008 14:55:28 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Zhang Wei" <wei.zhang@freescale.com>
+Subject: Re: [PATCH 2/2] Add device_prep_dma_interrupt support to fsldma.c
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1205205917-21861-2-git-send-email-wei.zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803112128190.3781@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.4.2.1i
+References: <1205205917-21861-1-git-send-email-wei.zhang@freescale.com>
+	 <1205205917-21861-2-git-send-email-wei.zhang@freescale.com>
+X-Google-Sender-Auth: 5e9c657706344b31
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 10:08:07PM +0100, Thomas Gleixner wrote:
-> On Tue, 11 Mar 2008, Andi Kleen wrote:
-> > > > > > Use an own random generator for pageattr-test.c
-> > > > > > 
-> > > > > > [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
-> > > > > > candidate because it fixes a subtle bug]
-> > > > > 
-> > > > > Care to point out which "subtle bug" is fixed ? 
-> > > > > 
-> > > > > You replace a random generator by another to get repeateable
-> > > > > sequences. The non repeatability of the cpa test patterns is hardly a
-> > > > > "subtle bug".
-> > > > 
-> > > > The subtle bug(s) are first that it is not repeatable (it really should),
-> > > 
-> > > As I said before. It's hardly a bug. In fact it is questionable
-> > > whether fully reproducible test patterns are desired.
-> > 
-> > Ok then you won't be able to repeat the test ever.
-> > 
-> > I consider this bad practice in test code because it makes it impossible
-> > to stabilize bugs
-> 
-> Test code with constant test patterns tend to miss the corner case
-> bugs, while random pattern test cases hit them assumed that there is a
-> broad enough tester base. 
+On Mon, Mar 10, 2008 at 8:25 PM, Zhang Wei <wei.zhang@freescale.com> wrote:
+> This is a bug that I assigned DMA_INTERRUPT capability to fsldma
+>  but missing device_prep_dma_interrupt function. For a bug in
+>  dmaengine.c the driver passed BUG_ON() checking. The patch fixes it.
+>
+>  Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+>  ---
+>   drivers/dma/fsldma.c |   27 +++++++++++++++++++++++++++
+>   1 files changed, 27 insertions(+), 0 deletions(-)
+>
+>  diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+>  index 5dfedf3..5428f81 100644
+>  --- a/drivers/dma/fsldma.c
+>  +++ b/drivers/dma/fsldma.c
+>  @@ -406,6 +406,32 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
+>         dma_pool_destroy(fsl_chan->desc_pool);
+>   }
+>
+>  +static struct dma_async_tx_descriptor *fsl_dma_prep_interrupt(
+>  +                                               struct dma_chan *chan)
+>  +{
+>  +       struct fsl_dma_chan *fsl_chan;
+>  +       struct fsl_desc_sw *new;
+>  +
+>  +       if (!chan)
+>  +               return NULL;
+>  +
+>  +       fsl_chan = to_fsl_chan(chan);
+>  +
+>  +       new = fsl_dma_alloc_descriptor(fsl_chan);
+>  +       if (!new) {
+>  +               dev_err(fsl_chan->dev, "No free memory for link descriptor\n");
+>  +               return NULL;
+>  +       }
+>  +
+>  +       new->async_tx.cookie = -EBUSY;
+>  +       new->async_tx.ack = 0;
+>  +
+>  +       /* Set End-of-link to the last link descriptor of new list*/
+>  +       set_ld_eol(fsl_chan, new);
 
-The original idea was that there is enough variability in memory
-maps that you still get the various scenarios tested, but that
-a boot on a single machine stays deterministic in its behaviour.
+Question, is 'set_ld_eol' safe to call on descriptors that may not be
+the last in the list?  For example what about the following sequence:
 
-> 
-> It's a question of how you write such test code to achieve
-> reproducability. It's not rocket science to track the variables of a
-> test run and print them along with the printk, when a wrong state is
-> detected. 
+/* prepare two descriptors */
+tx1 = fsl_dma_prep_interrupt(chan);
+tx2 = fsl_dma_prep_memcpy(chan);
 
-If you wanted to do that you would need some variant of my patch too --
-to do it with random32() you would first need to print all NR_CPUS
-state (and implement "kernel less" first for NR_CPUS > 128 kernels :),
-then keep track of all CPUs the test thread ran on and print that
-out too and also disable the regular timer reseeder to avoid races.
-Clearly doesn't make sense.
+/* submit out of order */
+tx2->tx_submit(tx2);
+tx1->tx_submit(tx1);
 
-random32() in lib/ is simply unusable as a deterministic RND,
-it's more like super weak strange /dev/random variant which
-probably should be never put into lib/ anyways because it's unlikely
-to be generally useful.
+This is only a concern if you plan to support channel switching at
+some point.  For example, switching from a memcpy channel to an xor
+channel.
 
-So for a random but repeatable sequence like you describe you could keep the 
-patch, replace the static int next = 1; with static int next and add a 
-get_random_bytes(&next, sizeof(next)); and then print out the next value
-
--andi
-
+Thanks,
+Dan
