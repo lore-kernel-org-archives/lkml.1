@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYCKSHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYCKSIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbYCKSHp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYCKSHR
+	id S1755449AbYCKSIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYCKSIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:07:17 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53767 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753462AbYCKSHQ (ORCPT
+	Tue, 11 Mar 2008 14:08:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:32072 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752788AbYCKSIC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:07:16 -0400
-Date: Tue, 11 Mar 2008 14:07:15 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Sven Schnelle <svens@stackframe.org>, <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL
- pointer dereference
-In-Reply-To: <47D6B050.7070803@panasas.com>
-Message-ID: <Pine.LNX.4.44L0.0803111352450.21625-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 11 Mar 2008 14:08:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,481,1199692800"; 
+   d="scan'208";a="217379388"
+Date: Tue, 11 Mar 2008 11:04:03 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+       warthog19@eaglescrag.net, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080311110403.7db9527c@appleyard>
+In-Reply-To: <47D684D0.6060200@jp.fujitsu.com>
+References: <20080229002341.GA21420@ldl.fc.hp.com>
+	<20080301144307.GD24386@parisc-linux.org>
+	<20080304054927.GA15566@suse.de>
+	<200803041018.29035.jbarnes@virtuousgeek.org>
+	<20080304193036.GB5534@suse.de>
+	<20080304230937.GD3694@ldl.fc.hp.com>
+	<47CDF339.3060304@jp.fujitsu.com>
+	<20080305202052.GN3694@ldl.fc.hp.com>
+	<47D684D0.6060200@jp.fujitsu.com>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Boaz Harrosh wrote:
+On Tue, 11 Mar 2008 22:10:40 +0900
+Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
 
-> I would like to fix this better by calling scsi_get/put_command but there is 
-> something fundamental that bothers me with isd200 driver. I can see that 
-> an isd200_info struct is allocated and put on a struct us_data->extra. But 
-> as I understand the code, the struct us_data is associated with a scsi_host 
-> not a scsi_device. Are we guarantied that we have only one scsi_device 
-> per host at all times?
+> Hi Alex-san,
 > 
-> If not than the resources in isd200_info that are related to a request_queue 
-> and are used from a .queuecommand code-path are not thread safe. (Like the
-> srb member)
-> 
-> If Yes, then where in the code initialization sequence is the earliest place I
-> can get to a scsi_device. I could do that on first call to .queuecommand but
-> I would rather do it in a place that I could use GFP_KERNEL for allocation
-> of the extra command? (Same question on the tear down of the scsi_device)
+> Alex Chiang wrote:
+> >>> It wasn't the IBM machine that was breaking; it was Fujitsu. They
+> >>> were returning an error code (the numerical value 1023) when I
+> >>> called the _SUN method on a slot object that existed in the ACPI
+> >>> namespace but was not present (as reported by the _STA method).
+> >>> By the time I got that error report, I'd already dropped the
+> >>> duplicate name detection code, and was letting the kobject
+> >>> infrastructure warn about duplicate names because for my test
+> >>> cases, refcounting was a better solution.
+> >>> [Kenji-san from Fujitsu seemed to be ok with the progress I'd
+> >>> made at the time, he can speak up if he's changed his mind ;)]
+> >> Unfortunatelly, I have not tried the new version of slot detection
+> >> driver because of the lack of test environment. Maybe we need more
+> >> several days to wait for test environment. 
+> >> BTW, does the new one fixes the issue I reported before? I could
+> >> not find it in the changelog. IIRC, this issue was difficult to
+> >> solve because the root cause of this issue is from the difference
+> >> of interpretation of ACPI spec between HP and Fujitsu (I still
+> >> don't think it's a good idea to evaluate _SUN for the device
+> >> object whose _STA is 0).
+> > 
+> > It looks like we disagree on how to interpret the spec (IBM
+> > machines interpret the spec the same way HP machines do).
+> > 
 
-You can first get to the scsi_device in isd200_ata_command().  The last
-place you can get to the scsi_device (if one exists!) is
-quiesce_and_remove_host() -- but that's part of the core, not specific
-to isd200.
+OK, let me see if I can understand what the issue is here.  Please
+correct me if I'm wrong.  The debate is about whether or not it is
+legitimate to call _SUN if _STA indicates that the device is not
+present and functional.  I've checked ACPI 3.0b, and from what I've
+read, you may not evaluate _SUN until _INI is called.  And _INI should
+not be called unless _STA indicates that a device is present and
+functional.
 
-> (And one more stupid question. Why does isd200_init_info allocates the info 
-> structure but the isd200_free_info_ptrs does not free it, it kind of
-> limits the way it can be allocated, no?)
+"OSPM evaluates the _STA object before it evaluates a device _INI
+method. The return values of the Present and Functioning bits
+determines whether _INI should be evaluated and whether children of the
+device should be enumerated and initialized. See section 6.5.1, “_INI
+(Init)”."
 
-Not at all.  isd200_free_info_ptrs() frees everything pointed to by the
-info structure, and the info structure itself is freed later on by the
-usb-storage core in usb_stor_release_resources().
+My interpretation of this is that if Alex's driver scans the Fujitsu
+machine and calls _STA on one of the slots and gets Bit 0 (present) and
+Bit 3 (functioning) set, then it is ok to enumerate it's children and
+evaluate _ADR and _SUN for the children.  If they are returning 1023,
+that would mean you should not evaluate the children of that object
+since the functional bit is not set.  Is this correct?
 
-If you wanted to free it in isd200_free_info_ptrs() you could; just 
-make sure to set us->extra to NULL when you do, to avoid a double-free 
-error.
+If that is the case, I would say that Alex's driver needs to obey the
+spec - or else if the this is allowed in an earlier version of the spec
+then he needs to check for the version of the spec that was implemented
+and make some different rules for that.
 
-Alan Stern
+Thanks for the clarification,
+Kristen
 
