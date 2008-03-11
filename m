@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755763AbYCKAnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbYCKAng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755763AbYCKAnY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 20:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYCKAm5
+	id S1752441AbYCKAng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 20:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbYCKAnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:42:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39409 "EHLO mx2.suse.de"
+	Mon, 10 Mar 2008 20:43:03 -0400
+Received: from mx1.suse.de ([195.135.220.2]:58625 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752847AbYCKAm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:42:57 -0400
-Date: Mon, 10 Mar 2008 17:42:24 -0700
+	id S1754924AbYCKAnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:43:00 -0400
+Date: Mon, 10 Mar 2008 17:42:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: [GIT PATCH] PCI fixes for 2.6.25-rc5 git tree
-Message-ID: <20080311004224.GB17890@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB fixes for 2.6.25-rc5 git
+Message-ID: <20080311004232.GC17890@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,34 +23,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are 2 PCI patches against your 2.6.25-rc5 git tree.
+Here are some USB fixes against your 2.6.25-rc5 git tree.
 
-A pci.h header file fix from Andrew for a #define and a memory leak fix
-for a pci hotplug driver.
+It includes:
+	- more device id updates
+	- documentation updates
+	- headerfile fixes
+	- ehci driver fixes for "broken" hardware
+	- minor bugfixes
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-The full patches will be sent to the linux-pci mailing list, if anyone
-wants to see them.
+A lot of these patches have been in the -mm tree for a while, as well as
+-next.
+
+The full patches will be sent to the linux-usb mailing list (note the
+address change), if anyone wants to see them.
 
 thanks,
 
 greg k-h
 
+------------
 
--------------
 
- Documentation/pci.txt             |    4 ++--
- drivers/pci/hotplug/ibmphp_ebda.c |    1 +
- include/linux/pci.h               |    4 ++--
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ Documentation/usb/usb-help.txt  |    8 ++---
+ drivers/usb/gadget/Kconfig      |    2 +-
+ drivers/usb/host/ehci-hcd.c     |   62 ++++++++++++++++++++++++--------
+ drivers/usb/serial/cypress_m8.c |    2 +
+ drivers/usb/serial/cypress_m8.h |    4 ++
+ drivers/usb/serial/ftdi_sio.c   |    1 +
+ drivers/usb/serial/ftdi_sio.h   |    3 ++
+ drivers/usb/serial/generic.c    |   10 +++--
+ drivers/usb/serial/option.c     |   75 ++++++++++++++++++++++++++++++++-------
+ drivers/usb/storage/sddr55.c    |    4 +-
+ include/linux/usb/Kbuild        |    2 +-
+ include/linux/usb/gadget.h      |    4 --
+ sound/usb/usbaudio.c            |    2 +
+ 13 files changed, 133 insertions(+), 46 deletions(-)
 
 ---------------
 
 Andrew Morton (1):
-      PCI: rename DECLARE_PCI_DEVICE_TABLE to DEFINE_PCI_DEVICE_TABLE
+      USB: drivers/usb/storage/sddr55.c: fix uninitialized var warnings
 
-Jesper Juhl (1):
-      PCI Hotplug: Fix small mem leak in IBM Hot Plug Controller Driver
+David Brownell (1):
+      USB: fix ehci unlink regressions
+
+Dirk DeSchepper (1):
+      USB: option: add novatel device ids
+
+Dmitry Shapin (1):
+      USB: cypress_m8: add UPS Powercom (0d9f:0002)
+
+Jim Meyering (1):
+      USB: usbaudio: handle kcalloc failure
+
+Li Yang (1):
+      USB: fsl_usb2_udc: fix broken Kconfig
+
+Mirko Bordignon (1):
+      USB: new ftdi_sio device id
+
+Pete Zaitcev (1):
+      USB: fix usb-serial generic recursive lock
+
+Robert P. J. Day (3):
+      USB: g_printer.h does not need to be "unifdef"ed.
+      USB: Remove __KERNEL__ check from non-exported gadget.h.
+      USB:Update mailing list information in documentation
 
