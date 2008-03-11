@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbYCKU1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYCKU2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbYCKU1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 16:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYCKU1K
+	id S1756646AbYCKU2d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 16:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYCKU20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 16:27:10 -0400
-Received: from mga02.intel.com ([134.134.136.20]:40943 "EHLO mga02.intel.com"
+	Tue, 11 Mar 2008 16:28:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41529 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbYCKU1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 16:27:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,482,1199692800"; 
-   d="scan'208";a="353264767"
-Date: Tue, 11 Mar 2008 13:22:40 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v5
-Message-ID: <20080311202239.GF15909@linux-os.sc.intel.com>
-References: <20080310222955.565902000@linux-os.sc.intel.com> <20080311050644.GB4589@martell.zuzino.mipt.ru> <20080311083517.GC25110@elte.hu> <b6fcc0a0803110309m1108382dm7b4aa714576ba813@mail.gmail.com> <20080311101126.GY25110@elte.hu>
-Mime-Version: 1.0
+	id S1751999AbYCKU2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 16:28:25 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311101126.GY25110@elte.hu>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] signals: document CLD_CONTINUED notification mechanics
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 11 March 2008 21:36:06 +0300 <20080311183606.GE586@tv-sign.ru>
+References: <20080309215338.GA2296@tv-sign.ru>
+	<20080311021741.A863826F991@magilla.localdomain>
+	<20080311183606.GE586@tv-sign.ru>
+X-Shopping-List: (1) Ferocious faceers
+   (2) Tempestuous photogenic mounds
+   (3) Ruminating contraception geese
+   (4) Repentant face witches
+Message-Id: <20080311202817.3919F26F991@magilla.localdomain>
+Date: Tue, 11 Mar 2008 13:28:17 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 11:11:26AM +0100, Ingo Molnar wrote:
-> 
-> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > On 3/11/08, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > >
-> > > > > -	extern void __bad_fxsave_alignment(void);
-> > > > > -
-> > > > > -	if (offsetof(struct task_struct, thread.i387.fxsave) & 15)
-> > > > > -	__bad_fxsave_alignment();
-> > > >
-> > > > I think removal of such checks needs giving necessary alignment to
-> > > > cache. Previously it worked because of __aligned((16)) and
-> > > > L1_CACHE_SHIFT combo.
-> > >
-> > > it's still checked, just elsewhere:
-> > >
-> > > > + WARN_ON((unsigned long)dst->thread.xstate & 15);
-> > >
-> > > i'd not expect us to ever align worse than 16 bytes in the future
-> > 
-> > But sysfs tells me alignment of "xstate" is 8 now. Object size is 512 
-> > which is masking it.
-> 
-> ok - you are right, that needs to be solved then. (object size could 
-> change anytime someone adds a few fields for debugging or whatever)
+> Yes, I know. But the latter needs an extra line! [...]
 
-Which sysfs file are we referring here?
+It doesn't matter what your taste is, or mine.  That's why we have
+conventions.  We just follow them and don't spend time grousing about
+trivia.  The worst thing for a reader is to have the flow broken up by
+inconsistent style.  New code follows the conventions.  Old code
+(eventually) gets fixed up to follow the conventions.  End of story
+(and a deathly dull one it is at that).
+
+
+Thanks,
+Roland
