@@ -1,52 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYCKRsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYCKRuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbYCKRsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYCKRsP
+	id S1754532AbYCKRuM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYCKRuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:48:15 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:44845 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbYCKRsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:48:14 -0400
-Date: Tue, 11 Mar 2008 11:48:12 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Alex Chiang <achiang@hp.com>, lenb@kernel.org, linux-ia64@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Create 'slot' sysfs attribute in/sys/devices/system/cpu/cpuN/topology/
-Message-ID: <20080311174812.GD21482@parisc-linux.org>
-References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
+	Tue, 11 Mar 2008 13:50:00 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36863 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752296AbYCKRt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 13:49:59 -0400
+X-Authenticated: #7313500
+X-Provags-ID: V01U2FsdGVkX18qi59TqAIqe262nbL6b9NOGqJRtFsEiIfMDCnF6s
+	Ri84/HMHdY8auK
+From: Jan-Simon =?iso-8859-1?q?M=F6ller?= <dl9pf@gmx.de>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Date: Tue, 11 Mar 2008 18:49:52 +0100
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+       Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       devzero@web.de, linux-kernel@vger.kernel.org, rick@vanrein.org
+References: <182234194@web.de> <200803101959.47202.dl9pf@gmx.de> <200803111323.11524.lenb@kernel.org>
+In-Reply-To: <200803111323.11524.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200803111849.53272.dl9pf@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 10:31:43AM -0700, Luck, Tony wrote:
-> Perhaps this next rant is beyond the scope of Linux architecture
-> and more on overall systems useabilty.  It is just asking for
-> trouble to print a message on the console telling the user to go
-> pull out the board in "slot 2".  Do the slot numbers count from
-> "0" or from "1"?  Are they numbered left-to-right or right-to-left?
-> What if the rack is non-standard so the system was rotated 90
-> degrees?  Now are they numbered top-to-bottom or bottom-to-top.
+Patches V3 with corrected Syntax, tnx hpa !
+Changed also text according to idea from Len.
 
-Some systems (particularly those designed for hotplug) have the numbers
-silk-screened onto the case.  It's like PCI slots ... my beige-box
-homebrew PCs don't have slot numbers written on them, but the machines I
-have from HP are very clearly labelled with slot numbers beside each PCI
-slot.
+diff --git a/Documentation/kernel-parameters.txt 
+b/Documentation/kernel-parameters.txt
+index 533e67f..f25da88 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1131,6 +1131,10 @@ and is between 256 and 4096 characters. It is defined 
+in the file
+        memmap=nn[KMG]$ss[KMG]
+                        [KNL,ACPI] Mark specific memory as reserved.
+                        Region of memory to be used, from ss to ss+nn.
++                       Example: Exclude memory from 0x18690000-0x1869ffff
++                                memmap=64K$0x18690000
++                                or
++                                memmap=0x10000$0x18690000
 
-Admittedly, the flashing red LED is a better UI, but it's not
-necessarily as confusing as you're painting it.
+        meye.*=         [HW] Set MotionEye Camera parameters
+                        See Documentation/video4linux/meye.txt.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+Signed-off-by: Jan-Simon Moeller <dl9pf@gmx.de>
+
+
+
+--- /dev/null   2007-09-21 21:12:45.000000000 +0200
++++ bad-memory.txt      2008-03-11 18:44:45.101344820 +0100
+@@ -0,0 +1,56 @@
++March 2008
++Jan-Simon Moeller, dl9pf@gmx.de
++
++
++How to deal with bad memory e.g. reported by memtest86+ ?
++#########################################################
++
++There are three possibilities I know of:
++
++1) Reinsert/swap the memory modules (bad contact?)
++
++2) Buy new modules (best!) or try to exchange the memory
++   if you have spare-parts
++
++3) Use BadRAM or memmap
++
++This Howto is about number 3) .
++
++
++BadRAM
++######
++BadRAM is the actively developed and available as kernel-patch
++here:  http://rick.vanrein.org/linux/badram/
++
++It takes the patterns of memtest86+ as arguments to exclude the defective
++areas of the memory.
++
++Example: memtest86+ reported here errors at address 0x18691458, 0x18698424 
+and
++         some others. All had 0x1869xxxx in common, so I chose a pattern of
++         0x18690000,0xffff0000.
++         This means exclusion of the area from 0x18690000 to 0x1869ffff
++         (which is a block of 64k).
++         My kernel-cmdline was:  badram=0x18690000,0xffff0000
++
++There are efforts to bring BadRAM into mainline in some way, possibly using
++memmap internally (maybe 2.6.26 ?).
++Thread on lkml: http://lkml.org/lkml/2008/3/2/42
++
++For more details see the BadRAM documentation.
++
++
++memmap
++######
++memmap is already in the kernel and usable as kernel-parameter at boot-time.
++Its syntax is different and you may need to calculate the values by yourself!
++
++Syntax to exclude a memory area (see kernel-parameters for details):
++memmap=<size>$<address>
++
++With the numbers of the example above:
++memmap=64K$0x18690000
++ or
++memmap=0x10000$0x18690000
++
++TODO: Multiple areas to exclude using memmap ?
++
+
+
+Signed-off-by: Jan-Simon Moeller <dl9pf@gmx.de>
