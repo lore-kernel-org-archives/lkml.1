@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbYCKKPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYCKKQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbYCKKPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbYCKKPT
+	id S1754835AbYCKKQp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYCKKQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:15:19 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:59407 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753886AbYCKKPS (ORCPT
+	Tue, 11 Mar 2008 06:16:36 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:34010 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbYCKKQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:15:18 -0400
-Message-ID: <47D65BAA.60908@linux.vnet.ibm.com>
-Date: Tue, 11 Mar 2008 15:45:06 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 11 Mar 2008 06:16:35 -0400
+Date: Tue, 11 Mar 2008 15:46:30 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
+       apw@shadowen.org, balbir@linux.vnet.ibm.com
+Subject: [Build Faliure] 2.6.25-rc5-mm1 build fails 
+Message-ID: <20080311101630.GA23757@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 2/3] memcg: put a restriction on writing memory.force_empty
-References: <47D65A36.4020008@cn.fujitsu.com>
-In-Reply-To: <47D65A36.4020008@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> We can write whatever to memory.force_empty:
-> 
->         echo 999 > memory.force_empty
->         echo wow > memory.force_empty
-> 
-> This is odd, so let's make '1' to be the only valid value.
+Hi Andrew,
 
-I suspect as long as there is no unreasonable side-effect, writing 999 or wow
-should be OK.
+The 2.6.25-rc5-mm1 kernel build fails with allyesconfig
 
+  LD      .tmp_vmlinux1
+fs/built-in.o: In function `reiser4_debugtrap':
+/root/kernels/linux-2.6.25-rc5/fs/reiser4/debug.c:295: undefined reference to `breakpoint'
+make: *** [.tmp_vmlinux1] Error 1
+
+This build failure has been introduced by reiser4.patch, i think the
+breakpoint() have been used instead of kgdb_breakpoint().
+
+
+--- linux-2.6.25-rc5/fs/reiser4/debug.c	2008-03-11 22:12:45.000000000 +0530
++++ linux-2.6.25-rc5/fs/reiser4/~debug.c	2008-03-11 23:14:54.000000000 +0530
+@@ -291,8 +291,8 @@ void reiser4_debugtrap(void)
+ {
+ 	/* do nothing. Put break point here. */
+ #if defined(CONFIG_KGDB) && !defined(CONFIG_REISER4_FS_MODULE)
+-	extern void breakpoint(void);
+-	breakpoint();
++	extern void kgdb_breakpoint(void);
++	kgdb_breakpoint();
+ #endif
+ }
+ #endif
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
