@@ -1,209 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYCKTWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYCKTX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYCKTWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 15:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYCKTV6
+	id S1755569AbYCKTX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 15:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYCKTXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 15:21:58 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:48445 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752699AbYCKTV5 (ORCPT
+	Tue, 11 Mar 2008 15:23:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:59114 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751617AbYCKTXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 15:21:57 -0400
-Subject: [PATCH -mm v3] mempolicy: disallow static or relative flags for
-	local preferred mode
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Andi Kleen <ak@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <alpine.DEB.1.00.0803081409260.12095@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0803081409260.12095@chino.kir.corp.google.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 11 Mar 2008 15:21:51 -0400
-Message-Id: <1205263312.5293.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 11 Mar 2008 15:23:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ZdxqIZMN2cBDCH7cqizWn2HHl7Q90bTpDfQrygEhXo01ERcY+MPgPmBZ6cELBveQTb/cFOMVR7r0m2m4w4/ctFSvI4UUM4iCodYMR5E14RH+Qn31pFGcioLW/8zWpyT/Nn8WCrbaII5x7oZwJQjJaceAameVEEC010A/6qsj67A=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Build Failure] 2.6.25-rc5-mm1 Build fails with allmodconfig probe_4drives undefined
+Date: Tue, 11 Mar 2008 20:35:24 +0100
+User-Agent: KMail/1.9.9
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       apw@shadowen.org
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D68126.40109@linux.vnet.ibm.com> <20080311104137.3c6b3f22.akpm@linux-foundation.org>
+In-Reply-To: <20080311104137.3c6b3f22.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803112035.24811.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David, Andrew:  I've rebased David's recent patch--the one with
-"significant-looking reject"--atop 25-rc5-mm1 and retested.
+On Tuesday 11 March 2008, Andrew Morton wrote:
+> On Tue, 11 Mar 2008 18:25:02 +0530
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+> > The 2.6.25-rc5-mm1 kernel build fails with allmodconfig 
+> > 
+> >   MODPOST 2279 modules
+> > ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
+> 
+> Yes, it has been doing this for a while.  But apparently it doesn't happen
+> for Bart with just his patch queue.  <slightlypeeved>If your subssytem
+> fails in my tree, that doesn't automatically make it my
+> problem</slightlypeeved>
 
-Lee
+No need to peeve - it is not like I forget about the problem or ignored it
+after I got your _first_ mail.
 
-mempolicy: disallow static or relative flags for local preferred mode
+I just couldn't reproduce it here so instead I has been working on making
+_all_ probe_* variables static (it should make the problem vanish alongside
+some other nice improvements).
 
-Against:  2.6.25-rc5-mm1
-
-V2 -> V3 [lts]:
-+ rebased to 25-rc5-mm1
-+ preserved behavior of MPOL_PREFERRED w/ non-empty nodemask containing
-  only dis-allowed nodes.
-+ pulled the setting of policy->flags outside of the "if(nodes)..."
-  block as future flags might not be associated only with nodemasks
-  as STATIC and RELATIVE are.  This is safe, now that David disallows
-  these flags for the case of MPOL_PREFERRED with empty nodemask.
-+ dropped the localalloc variable in favor of just NULLing out nodes
-  pointer to indicate "local preferred" mode.  
-
-MPOL_F_STATIC_NODES and MPOL_F_RELATIVE_NODES don't mean anything for
-MPOL_PREFERRED policies that were created with an empty nodemask (for
-purely local allocations).  They'll never be invalidated because the
-allowed mems of a task changes or need to be rebound relative to a
-cpuset's placement.
-
-Also fixes a bug identified by Lee Schermerhorn that disallowed empty
-nodemasks to be passed to MPOL_PREFERRED to specify local allocations.
-[A different, somewhat incomplete, patch already existed in 25-rc5-mm1.]
-
-Cc: Paul Jackson <pj@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
-
- Documentation/vm/numa_memory_policy.txt |   16 ++++++++++--
- mm/mempolicy.c                          |   42 +++++++++++++++++++-------------
- 2 files changed, 40 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.25-rc5-mm1/Documentation/vm/numa_memory_policy.txt
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/Documentation/vm/numa_memory_policy.txt	2008-03-11 14:22:56.000000000 -0400
-+++ linux-2.6.25-rc5-mm1/Documentation/vm/numa_memory_policy.txt	2008-03-11 14:32:40.000000000 -0400
-@@ -205,6 +205,12 @@ Components of Memory Policies
- 	    local allocation for a specific range of addresses--i.e. for
- 	    VMA policies.
- 
-+	    It is possible for the user to specify that local allocation is
-+	    always preferred by passing an empty nodemask with this mode.
-+	    If an empty nodemask is passed, the policy cannot use the
-+	    MPOL_F_STATIC_NODES or MPOL_F_RELATIVE_NODES flags described
-+	    below.
-+
- 	MPOL_INTERLEAVED:  This mode specifies that page allocations be
- 	interleaved, on a page granularity, across the nodes specified in
- 	the policy.  This mode also behaves slightly differently, based on
-@@ -254,7 +260,10 @@ Components of Memory Policies
- 	    occurs over that node.  If no nodes from the user's nodemask are
- 	    now allowed, the Default behavior is used.
- 
--	    MPOL_F_STATIC_NODES cannot be used with MPOL_F_RELATIVE_NODES.
-+	    MPOL_F_STATIC_NODES cannot be combined with the
-+	    MPOL_F_RELATIVE_NODES flag.  It also cannot be used for
-+	    MPOL_PREFERRED policies that were created with an empty nodemask
-+	    (local allocation).
- 
- 	MPOL_F_RELATIVE_NODES:  This flag specifies that the nodemask passed
- 	by the user will be mapped relative to the set of the task or VMA's
-@@ -301,7 +310,10 @@ Components of Memory Policies
- 	    set of memory nodes allowed by the task's cpuset, as that may
- 	    change over time.
- 
--	    MPOL_F_RELATIVE_NODES cannot be used with MPOL_F_STATIC_NODES.
-+	    MPOL_F_RELATIVE_NODES cannot be combined with the
-+	    MPOL_F_STATIC_NODES flag.  It also cannot be used for
-+	    MPOL_PREFERRED policies that were created with an empty nodemask
-+	    (local allocation).
- 
- MEMORY POLICY APIs
- 
-Index: linux-2.6.25-rc5-mm1/mm/mempolicy.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/mm/mempolicy.c	2008-03-11 14:32:17.000000000 -0400
-+++ linux-2.6.25-rc5-mm1/mm/mempolicy.c	2008-03-11 15:14:49.000000000 -0400
-@@ -181,27 +181,43 @@ static struct mempolicy *mpol_new(unsign
- {
- 	struct mempolicy *policy;
- 	nodemask_t cpuset_context_nmask;
--	int localalloc = 0;
- 	int ret;
- 
- 	pr_debug("setting mode %d flags %d nodes[0] %lx\n",
- 		 mode, flags, nodes ? nodes_addr(*nodes)[0] : -1);
- 
--	if (mode == MPOL_DEFAULT)
--		return NULL;
--	if (!nodes || nodes_empty(*nodes)) {
--		if (mode != MPOL_PREFERRED)
-+	if (mode == MPOL_DEFAULT) {
-+		if (nodes && !nodes_empty(*nodes))
- 			return ERR_PTR(-EINVAL);
--		localalloc = 1;	/* special case:  no mode flags */
-+		return NULL;
- 	}
-+	VM_BUG_ON(!nodes);
-+
-+	/*
-+	 * MPOL_PREFERRED cannot be used with MPOL_F_STATIC_NODES or
-+	 * MPOL_F_RELATIVE_NODES if the nodemask is empty (local allocation).
-+	 * All other modes require a valid pointer to a non-empty nodemask.
-+	 */
-+	if (mode == MPOL_PREFERRED) {
-+		if (nodes_empty(*nodes)) {
-+			if (((flags & MPOL_F_STATIC_NODES) ||
-+			     (flags & MPOL_F_RELATIVE_NODES)))
-+				return ERR_PTR(-EINVAL);
-+			nodes = NULL;	/* flag local alloc */
-+		}
-+	} else if (nodes_empty(*nodes))
-+		return ERR_PTR(-EINVAL);
- 	policy = kmem_cache_alloc(policy_cache, GFP_KERNEL);
- 	if (!policy)
- 		return ERR_PTR(-ENOMEM);
- 	atomic_set(&policy->refcnt, 1);
- 	policy->policy = mode;
-+	policy->flags = flags;
- 
--	if (!localalloc) {
--		policy->flags = flags;
-+	if (nodes) {
-+		/*
-+		 * cpuset related setup doesn't apply to local allocation
-+		 */
- 		cpuset_update_task_memory_state();
- 		if (flags & MPOL_F_RELATIVE_NODES)
- 			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
-@@ -217,7 +233,7 @@ static struct mempolicy *mpol_new(unsign
- 	}
- 
- 	ret = mpol_ops[mode].create(policy,
--				localalloc ? NULL : &cpuset_context_nmask);
-+				nodes ? &cpuset_context_nmask : NULL);
- 	if (ret < 0) {
- 		kmem_cache_free(policy_cache, policy);
- 		return ERR_PTR(ret);
-@@ -259,10 +275,6 @@ static void mpol_rebind_preferred(struct
- {
- 	nodemask_t tmp;
- 
--	/*
--	 * check 'STATIC_NODES first, as preferred_node == -1 may be
--	 * a temporary, "fallback" state for this policy.
--	 */
- 	if (pol->flags & MPOL_F_STATIC_NODES) {
- 		int node = first_node(pol->w.user_nodemask);
- 
-@@ -270,12 +282,10 @@ static void mpol_rebind_preferred(struct
- 			pol->v.preferred_node = node;
- 		else
- 			pol->v.preferred_node = -1;
--	} else if (pol->v.preferred_node == -1) {
--		return;	/* no remap required for explicit local alloc */
- 	} else if (pol->flags & MPOL_F_RELATIVE_NODES) {
- 		mpol_relative_nodemask(&tmp, &pol->w.user_nodemask, nodes);
- 		pol->v.preferred_node = first_node(tmp);
--	} else {
-+	} else if (pol->v.preferred_node != -1) {
- 		pol->v.preferred_node = node_remap(pol->v.preferred_node,
- 						   pol->w.cpuset_mems_allowed,
- 						   *nodes);
-
-
+Thanks,
+Bart
