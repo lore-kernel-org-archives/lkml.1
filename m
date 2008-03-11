@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbYCKBey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYCKBfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbYCKBey (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 21:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYCKBer
+	id S1757473AbYCKBfO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 21:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757092AbYCKBe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 21:34:47 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:54862 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751435AbYCKBeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 21:34:46 -0400
-Date: Tue, 11 Mar 2008 02:34:44 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org, clameter@sgi.com,
-       willy@linux.intel.com
-Subject: [PATCH] Enable dmapool debugging for CONFIG_SLUB_DEBUG_ON too
-Message-ID: <20080311013444.GA705@basil.nowhere.org>
-MIME-Version: 1.0
+	Mon, 10 Mar 2008 21:34:58 -0400
+Received: from mga02.intel.com ([134.134.136.20]:15396 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756956AbYCKBe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 21:34:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,477,1199692800"; 
+   d="scan'208";a="261807428"
+Date: Mon, 10 Mar 2008 18:34:56 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gregory Haskins <ghaskins@novell.com>, suresh.b.siddha@intel.com,
+       ego@in.ibm.com, rjw@sisk.pl, dmitry.adamushko@gmail.com, mingo@elte.hu,
+       oleg@sign.ru, yi.y.yang@intel.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH v2] keep rd->online and cpu_online_map in sync
+Message-ID: <20080311013456.GD15909@linux-os.sc.intel.com>
+References: <20080310221014.GB27329@linux-os.sc.intel.com> <20080310215813.10968.960.stgit@novell1.haskins.net> <20080310163613.65a7313c.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 11 Mar 2008 01:28:12.0482 (UTC) FILETIME=[2BF1EA20:01C88317]
+In-Reply-To: <20080310163613.65a7313c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable dmapool debugging for CONFIG_SLUB_DEBUG_ON too
+On Mon, Mar 10, 2008 at 04:36:13PM -0700, Andrew Morton wrote:
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -5881,7 +5881,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+> >  		spin_unlock_irq(&rq->lock);
+> >  		break;
+> >  
+> > -	case CPU_DOWN_PREPARE:
+> > +	case CPU_DYING:
+> > +	case CPU_DYING_FROZEN:
+> >  		/* Update our root-domain */
+> >  		rq = cpu_rq(cpu);
+> >  		spin_lock_irqsave(&rq->lock, flags);
+> 
+> Does this make
+> cpu-hotplug-register-update_sched_domains-notifier-with-higher-prio.patch
+> (below) obsolete,
 
-Previously it was only enabled for CONFIG_SLAB_DEBUG.
+Yes. I would like to Ack for the
+keep-rd-online-and-cpu_online_map-in-sync.patch, as it is more cleaner.
 
-Not hooked into the slub runtime debug configuration, so you currently
-only get it with CONFIG_SLUB_DEBUG_ON, not plain CONFIG_SLUB_DEBUG
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+> or do we want both?  
 
-Index: linux/mm/dmapool.c
-===================================================================
---- linux.orig/mm/dmapool.c
-+++ linux/mm/dmapool.c
-@@ -37,6 +37,10 @@
- #include <linux/types.h>
- #include <linux/wait.h>
- 
-+#if defined(CONFIG_SLAB_DEBUG) || defined(CONFIG_SLUB_DEBUG_ON)
-+#define DMAPOOL_DEBUG 1
-+#endif
-+
- struct dma_pool {		/* the pool */
- 	struct list_head page_list;
- 	spinlock_t lock;
-@@ -216,7 +220,7 @@ static struct dma_page *pool_alloc_page(
- 	page->vaddr = dma_alloc_coherent(pool->dev, pool->allocation,
- 					 &page->dma, mem_flags);
- 	if (page->vaddr) {
--#ifdef	CONFIG_DEBUG_SLAB
-+#ifdef	DMAPOOL_DEBUG
- 		memset(page->vaddr, POOL_POISON_FREED, pool->allocation);
- #endif
- 		pool_initialise_page(pool, page);
-@@ -239,7 +243,7 @@ static void pool_free_page(struct dma_po
- {
- 	dma_addr_t dma = page->dma;
- 
--#ifdef	CONFIG_DEBUG_SLAB
-+#ifdef	DMAPOOL_DEBUG
- 	memset(page->vaddr, POOL_POISON_FREED, pool->allocation);
- #endif
- 	dma_free_coherent(pool->dev, pool->allocation, page->vaddr, dma);
-@@ -336,7 +340,7 @@ void *dma_pool_alloc(struct dma_pool *po
- 	page->offset = *(int *)(page->vaddr + offset);
- 	retval = offset + page->vaddr;
- 	*handle = offset + page->dma;
--#ifdef	CONFIG_DEBUG_SLAB
-+#ifdef	DMAPOOL_DEBUG
- 	memset(retval, POOL_POISON_ALLOCATED, pool->size);
- #endif
-  done:
-@@ -391,7 +395,7 @@ void dma_pool_free(struct dma_pool *pool
- 	}
- 
- 	offset = vaddr - page->vaddr;
--#ifdef	CONFIG_DEBUG_SLAB
-+#ifdef	DMAPOOL_DEBUG
- 	if ((dma - page->dma) != offset) {
- 		if (pool->dev)
- 			dev_err(pool->dev,
+No. I don't think so. Gautham, do you agree?
+
+thanks,
+suresh
+
+> 
+> --- a/kernel/sched.c~cpu-hotplug-register-update_sched_domains-notifier-with-higher-prio
+> +++ a/kernel/sched.c
+> @@ -7096,8 +7096,16 @@ void __init sched_init_smp(void)
+>  	if (cpus_empty(non_isolated_cpus))
+>  		cpu_set(smp_processor_id(), non_isolated_cpus);
+>  	put_online_cpus();
+> -	/* XXX: Theoretical race here - CPU may be hotplugged now */
+> -	hotcpu_notifier(update_sched_domains, 0);
+> +	/*
+> +	 * XXX: Theoretical race here - CPU may be hotplugged now
+> +	 *
+> +	 * We register the notifier with priority 11, which means that
+> +	 * update_sched_domains() will be called just before migration_call().
+> +	 *
+> +	 * This is necessary to ensure that the rt wake up logic works fine
+> +	 * and the rq->rd->online_map remains in sync with the cpu_online_map.
+> +	 */
+> +	hotcpu_notifier(update_sched_domains, 11);
+>  
+>  	/* Move init over to a non-isolated CPU */
+>  	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
+> _
+> 
