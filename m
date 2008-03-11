@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYCKRdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYCKRd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYCKRdQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYCKRdF
+	id S1754750AbYCKRd4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYCKRds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:33:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:50645 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214AbYCKRdC convert rfc822-to-8bit (ORCPT
+	Tue, 11 Mar 2008 13:33:48 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52574 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752501AbYCKRds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:33:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,481,1199692800"; 
-   d="scan'208";a="217364717"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH, RFC] Create 'slot' sysfs attribute in/sys/devices/system/cpu/cpuN/topology/
-Date: Tue, 11 Mar 2008 10:31:43 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080310222735.GA22619@ldl.fc.hp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH, RFC] Create 'slot' sysfs attribute in/sys/devices/system/cpu/cpuN/topology/
-Thread-Index: AciC/fH/EZSgZKXLRHiH2V78Fqzs0wAnovfA
-References: <20080310222735.GA22619@ldl.fc.hp.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Alex Chiang" <achiang@hp.com>, <lenb@kernel.org>
-Cc: <linux-ia64@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Mar 2008 17:31:46.0170 (UTC) FILETIME=[C7969DA0:01C8839D]
+	Tue, 11 Mar 2008 13:33:48 -0400
+Date: Tue, 11 Mar 2008 18:35:40 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [0/13] General DMA zone rework
+Message-ID: <20080311173540.GG27593@one.firstfloor.org>
+References: <200803071007.493903088@firstfloor.org> <20080307175148.3a49d8d3@mandriva.com.br> <20080308004654.GQ7365@one.firstfloor.org> <20080310150316.752e4489@mandriva.com.br> <20080310180843.GC28780@one.firstfloor.org> <20080311142624.1dbd3af5@mandriva.com.br>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311142624.1dbd3af5@mandriva.com.br>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> A while back, I submitted a patch to expose the value of the _SUN
-> method for CPUs. On ia64, the "physical id" field in
-> /proc/cpuinfo isn't sufficient for some legacy HP ia64 platforms,
-> as they do not have a modern SAL or PAL.
+On Tue, Mar 11, 2008 at 02:26:24PM -0300, Luiz Fernando N. Capitulino wrote:
+> ===================================================================
+> --- linux-2.6.24.orig/sound/core/memalloc.c
+> +++ linux-2.6.24/sound/core/memalloc.c
+> @@ -218,7 +218,6 @@ static void *snd_malloc_dev_pages(struct
+>  	snd_assert(dma != NULL, return NULL);
+>  	pg = get_order(size);
+>  	gfp_flags = GFP_KERNEL
+> -		| __GFP_COMP	/* compound page lets parts be mapped */
 
-Do these legacy systems with ancient SAL/PAL actually support
-processor hot plug?
+Oops. Thanks. I'll double check that. mask allocator indeed doesn't
+handle __GFP_COMP and nobody should be passing that into dma_alloc_coherent
+anyways. But the bug you got was for the small size wasn't it?
 
-Perhaps this next rant is beyond the scope of Linux architecture
-and more on overall systems useabilty.  It is just asking for
-trouble to print a message on the console telling the user to go
-pull out the board in "slot 2".  Do the slot numbers count from
-"0" or from "1"?  Are they numbered left-to-right or right-to-left?
-What if the rack is non-standard so the system was rotated 90
-degrees?  Now are they numbered top-to-bottom or bottom-to-top.
+>  		| __GFP_NORETRY /* don't trigger OOM-killer */
+>  		| __GFP_NOWARN; /* no stack trace print - this call is non-critical */
+>  	res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
+> """
+> 
+>  Also, I think you forgot to protect the __free_pages_mask()
+> call with "#ifdef CONFIG_MASK_ALLOC" in patch mask-compat.
 
-Best idea is to have a (blinking) (red) light on the board and
-instruct the operator to pull out the board with the fail-light
-(but even then a red-green colour blind operator will still mess
-it up for you and pull the wrong board :-)
+PageMaskAlloc() returns constant 0 in this case so the compiler should e
+liminate it.
 
--Tony
+> 
+>  Question: let's say that the devices I have consumes only
+> 5MB of the whole reserved pool (16MB), of course that it's
+
+It's likely less than 16MB because there are already some users in there
+like the kernel text. The default sizing without swiotlb just grabs anything 
+left over up to the 16Mb boundary.
+
+> ok to reduce the pool to 5MB, right?
+
+Yes, but not leaving any free over is a little risky, someone might need
+more later. But e.g. going down to 8-9MB would be likely possible.
+
+The long term plan (but that is some time off and a little vague still) 
+would be to let the various subsystem size the mask zone dynamically for 
+their need.
+
+Then especially on 64bit swiotlb machines who allocate 64MB by default
+for swiotlb that would save significant memory.
+
+> 
+>  I have more machines to test this stuff...
+
+Thanks. Keep me posted.
+
+-Andi
