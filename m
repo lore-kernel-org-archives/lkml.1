@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbYCKJOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbYCKJOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbYCKJOj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 05:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYCKJKd
+	id S1758154AbYCKJOx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 05:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYCKJKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 05:10:33 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:50262 "EHLO
+	Tue, 11 Mar 2008 05:10:34 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:50300 "EHLO
 	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbYCKJK0 (ORCPT
+	with ESMTP id S1753906AbYCKJK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 05:10:26 -0400
+	Tue, 11 Mar 2008 05:10:27 -0400
 From: Zhang Wei <wei.zhang@freescale.com>
 To: mporter@kernel.crashing.org, akpm@linux-foundation.org,
        galak@kernel.crashing.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
        Zhang Wei <wei.zhang@freescale.com>
-Subject: [PATCH 14/17] Add the RapidIO master port maintance and doorbell window to space resources.
-Date: Tue, 11 Mar 2008 17:07:55 +0800
-Message-Id: <1205226478-7641-14-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 15/17] Add RapidIO proc fs for memory mapping debugging.
+Date: Tue, 11 Mar 2008 17:07:56 +0800
+Message-Id: <1205226478-7641-15-git-send-email-wei.zhang@freescale.com>
 X-Mailer: git-send-email 1.5.4
-In-Reply-To: <1205226478-7641-13-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <1205226478-7641-14-git-send-email-wei.zhang@freescale.com>
 References: <1205226478-7641-1-git-send-email-wei.zhang@freescale.com>
  <1205226478-7641-2-git-send-email-wei.zhang@freescale.com>
  <1205226478-7641-3-git-send-email-wei.zhang@freescale.com>
@@ -33,80 +33,173 @@ References: <1205226478-7641-1-git-send-email-wei.zhang@freescale.com>
  <1205226478-7641-11-git-send-email-wei.zhang@freescale.com>
  <1205226478-7641-12-git-send-email-wei.zhang@freescale.com>
  <1205226478-7641-13-git-send-email-wei.zhang@freescale.com>
-X-OriginalArrivalTime: 11 Mar 2008 09:10:02.0664 (UTC) FILETIME=[B0802280:01C88357]
+ <1205226478-7641-14-git-send-email-wei.zhang@freescale.com>
+X-OriginalArrivalTime: 11 Mar 2008 09:10:02.0852 (UTC) FILETIME=[B09CD240:01C88357]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the RapidIO master port maintance and doorbell IO windows to
-RIO space resources.
+Get RapidIO space resource by catting /proc/riores.
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_rio.c |   26 +++++++++++++++++++++-----
- include/linux/rio.h           |    1 +
- 2 files changed, 22 insertions(+), 5 deletions(-)
+ drivers/rapidio/Kconfig |    8 +++
+ drivers/rapidio/rio.c   |  121 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 129 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 917eed0..656f754 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -192,6 +192,8 @@ struct rio_priv {
- 	int bellirq;
- 	int txirq;
- 	int rxirq;
-+	struct resource maint_res;
-+	struct resource dbell_res;
- };
+diff --git a/drivers/rapidio/Kconfig b/drivers/rapidio/Kconfig
+index fde2bb3..f669108 100644
+--- a/drivers/rapidio/Kconfig
++++ b/drivers/rapidio/Kconfig
+@@ -9,4 +9,12 @@ config RAPIDIO_DISC_TIMEOUT
+ 	  Amount of time a discovery node waits for a host to complete
+ 	  enumeration before giving up.
  
- /**
-@@ -1362,15 +1364,29 @@ int fsl_rio_setup(struct of_device *dev)
- 		out_be32((priv->regs_win + RIO_ISR_AACR), RIO_ISR_AACR_AA);
++config RAPIDIO_PROC_FS
++	bool "I/O and Memory resource debug"
++	depends on RAPIDIO && PROC_FS
++	default y
++	---help---
++	  Enable this option, it will create a /proc/riores node for
++	  monitoring the RapidIO I/O and Memory resource.
++
+ source "drivers/rapidio/sallocator/Kconfig"
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index cda8fce..9bae341 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -31,6 +31,9 @@
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/interrupt.h>
++#include <linux/seq_file.h>
++#include <linux/fs.h>
++#include <linux/proc_fs.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/hardirq.h>
  
- 	/* Configure maintenance transaction window */
--	out_be32(&priv->maint_atmu_regs->rowbar, 0x000c0000);
--	out_be32(&priv->maint_atmu_regs->rowar, 0x80077015);
-+	rio_init_io_res(&priv->maint_res, law_start, RIO_MAINT_WIN_SIZE,
-+			"maint_win", RIO_RESOURCE_MAINT);
-+	rc = rio_request_io_region(port, &priv->maint_res);
-+	if (rc) {
-+		dev_err(&dev->dev, "request maint window error!\n");
-+		goto err;
+@@ -872,3 +875,121 @@ EXPORT_SYMBOL_GPL(rio_request_inb_mbox);
+ EXPORT_SYMBOL_GPL(rio_release_inb_mbox);
+ EXPORT_SYMBOL_GPL(rio_request_outb_mbox);
+ EXPORT_SYMBOL_GPL(rio_release_outb_mbox);
++
++#ifdef CONFIG_RAPIDIO_PROC_FS
++enum { MAX_IORES_LEVEL = 5 };
++
++struct riors {
++	struct rio_mport *mp;
++	int res;
++	struct resource *p;
++} riomres;
++
++static void *r_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct resource *p = v;
++	struct riors *rs = m->private;
++
++	(*pos)++;
++	if (p->child)
++		return p->child;
++	while (!p->sibling && p->parent)
++		p = p->parent;
++	if (p->sibling)
++		return p->sibling;
++	else {
++		rs->res++;
++		if (rs->res >= RIO_MAX_MPORT_RESOURCES) {
++			rs->mp = list_entry(rs->mp->node.next, struct rio_mport,
++					node);
++			rs->res = 0;
++			if (&rs->mp->node == &rio_mports)
++				return NULL;
++		}
++		seq_printf(m, "%2d: ", rs->res);
++		rs->p = &rs->mp->riores[rs->res];
++		p = rs->p;
++
++		return p;
 +	}
-+	out_be32(&priv->maint_atmu_regs->rowbar, (law_start >> 12) & 0xffffff);
-+	out_be32(&priv->maint_atmu_regs->rowar, 0x80077000
-+					| (__ilog2(RIO_MAINT_WIN_SIZE) - 1));
- 
- 	priv->maint_win = ioremap(law_start, RIO_MAINT_WIN_SIZE);
- 
- 	/* Configure outbound doorbell window */
--	out_be32(&priv->dbell_atmu_regs->rowbar, 0x000c0400);
--	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);
--	fsl_rio_doorbell_init(port);
-+	rio_init_io_res(&priv->dbell_res, law_start + RIO_MAINT_WIN_SIZE,
-+			RIO_DBELL_WIN_SIZE, "dbell_win", RIO_RESOURCE_DOORBELL);
-+	out_be32(&priv->dbell_atmu_regs->rowbar, (priv->dbell_res.start >> 12)
-+							& 0xffffff);
-+	out_be32(&priv->dbell_atmu_regs->rowar, 0x80042000
-+					| (__ilog2(RIO_DBELL_WIN_SIZE) - 1));
-+	rc = fsl_rio_doorbell_init(port);
-+	if (rc)
-+		goto err;
- 
- 	return 0;
- err:
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index 15a008b..93ca55d 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -257,6 +257,7 @@ struct rio_ops {
- #define RIO_RESOURCE_MEM	0x00000100
- #define RIO_RESOURCE_DOORBELL	0x00000200
- #define RIO_RESOURCE_MAILBOX	0x00000400
-+#define RIO_RESOURCE_MAINT	0x00000800
- 
- #define RIO_RESOURCE_CACHEABLE	0x00010000
- #define RIO_RESOURCE_PCI	0x00020000
++}
++
++static void *r_start(struct seq_file *m, loff_t *pos)
++{
++	struct riors *rs = m->private;
++	struct resource *p;
++
++	if (*pos) {
++		*pos = 0;
++		return NULL;
++	}
++
++	rs->mp = list_entry(rio_mports.next, struct rio_mport, node);
++	rs->res = -1;
++	rs->p = &rs->mp->iores;
++	p = rs->p;
++
++	seq_printf(m, "IO: ");
++
++	return p;
++}
++
++static void r_stop(struct seq_file *m, void *v)
++{
++}
++
++static int r_show(struct seq_file *m, void *v)
++{
++	struct riors *rs = m->private;
++	struct resource *root = rs->p;
++	struct resource *r = v, *p;
++	int width = root->end < 0x10000 ? 4 : 8;
++	int depth;
++
++	for (depth = 0, p = r; p->parent && depth < MAX_IORES_LEVEL; depth++,
++					p = p->parent)
++		if (p == root)
++			break;
++	seq_printf(m, "%*s%0*llx-%0*llx : %s\n",
++			depth * 2, "",
++			width, (unsigned long long) r->start,
++			width, (unsigned long long) r->end,
++			r->name ? r->name : "<BAD>");
++	return 0;
++}
++
++static const struct seq_operations resource_op = {
++	.start	= r_start,
++	.next	= r_next,
++	.stop	= r_stop,
++	.show	= r_show,
++};
++
++static int riores_open(struct inode *inode, struct file *file)
++{
++	int res = seq_open(file, &resource_op);
++	if (!res) {
++		struct seq_file *m = file->private_data;
++		m->private = &riomres;
++	}
++	return res;
++}
++
++static const struct file_operations proc_riores_operations = {
++	.open		= riores_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
++static int __init rioresources_init(void)
++{
++	struct proc_dir_entry *entry;
++
++	entry = create_proc_entry("riores", 0, NULL);
++	if (entry)
++		entry->proc_fops = &proc_riores_operations;
++	return 0;
++}
++__initcall(rioresources_init);
++#endif
 -- 
 1.5.4
 
