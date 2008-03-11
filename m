@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbYCKNmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYCKNq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbYCKNmt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 09:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYCKNmm
+	id S1756128AbYCKNq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 09:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYCKNqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 09:42:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35403 "EHLO mx1.redhat.com"
+	Tue, 11 Mar 2008 09:46:21 -0400
+Received: from sacred.ru ([62.205.161.221]:41948 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYCKNml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 09:42:41 -0400
-Date: Tue, 11 Mar 2008 09:29:21 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: chandru@in.ibm.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jdmason@kudzu.us,
-       Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
-	in kdump
-Message-ID: <20080311132921.GA10828@redhat.com>
-References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com> <20071014054110.GB4399@rhun.haifa.ibm.com> <20071015062919.GA4598@in.ibm.com> <476F4064.8010601@in.ibm.com> <47D5359D.5000909@in.ibm.com>
+	id S1750859AbYCKNqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 09:46:20 -0400
+Message-ID: <47D68D1B.1040901@openvz.org>
+Date: Tue, 11 Mar 2008 16:46:03 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D5359D.5000909@in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Christoph Hellwig <hch@infradead.org>, trond.myklebust@fys.uio.no
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [NFS]: Lock daemon start/stop rework.
+References: <1201693294-11460-1-git-send-email-den@openvz.org> <20080131033320.GA15067@infradead.org>
+In-Reply-To: <20080131033320.GA15067@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 11 Mar 2008 16:46:00 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 10, 2008 at 06:50:29PM +0530, Chandru wrote:
+Christoph Hellwig wrote:
+> On Wed, Jan 30, 2008 at 02:41:34PM +0300, Denis V. Lunev wrote:
+>> The pid of the locking daemon can be substituted with a task struct
+>> without a problem. Namely, the value if filled in the context of the lockd
+>> thread and used in lockd_up/lockd_down.
+>>
+>> It is possible to save task struct instead and use it to kill the process.
+>> The safety of this operation is guaranteed by the RCU, i.e. task can't
+>> disappear without passing a quiscent state.
+> 
+> We have a patch series pending on the nfs list that does this plus a lot
+> more in the area.
+> 
 
-[..]
-> -       specified_table_size = determine_tce_table_size(end_pfn * 
-> PAGE_SIZE);
-> +       max_pfn = is_kdump_kernel() ? saved_max_pfn : end_pfn ;
-> +       specified_table_size = determine_tce_table_size(max_pfn * 
-> PAGE_SIZE);
->
->        for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
->                struct calgary_bus_info *info = &bus_info[bus];
-> @@ -1411,10 +1480,16 @@ void __init detect_calgary(void)
->
->                if (calgary_bus_has_devices(bus, pci_device) ||
->                    translate_empty_slots) {
-> -                       tbl = alloc_tce_table();
-> -                       if (!tbl)
-> -                               goto cleanup;
-> -                       info->tce_space = tbl;
-> +                       /*
-> +                        * If this is a kdump kernel find and use
-> +                        * the tce tables from first kernel
-> +                        */
-> +                       if (!is_kdump_kernel()) {
-> +                               tbl = alloc_tce_table();
-> +                               if (!tbl)
-> +                                       goto cleanup;
-> +                               info->tce_space = tbl;
-> +                       }
+Sorry for bringing it up that late, but I haven't found any patches doing
+the same for nfs/callback.c. What are the plans about this code? Can we 
+start turning this to kthreads? Or is there some grand rework pending in 
+this code, so that we will just duplicate someone's work or cause unneeded 
+patches conflicts?
 
-Hi Chandru,
+You see, this code is the last user of kill_proc(), which in turn is the
+last user of find_pid() which (in turn) is about to be removed.
 
-- How do we make sure that previous kernel's TCE tables are not
-  overwritten
-  by new kernel (In case previous kernel allocated TCE tables in first
-  640 KB?)
-
-- How do we make sure that when new kernel tries to setup an entry in
-  TCE table, then it does not try to clear up an existing entry which is
-  still in use?
-
-Did you try the Muli suggestion of ignoring DMA error in exception
-handler? What happens if I setup new table and try to switch to new
-table? Some sort of error will occur. Can't we modify the handler and
-ignore it for kdump case and move on?
-
-Thanks
-Vivek
+Thanks,
+Pavel
