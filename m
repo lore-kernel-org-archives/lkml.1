@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYCKLiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYCKLmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbYCKLiP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 07:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYCKLh7
+	id S1756043AbYCKLmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 07:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYCKLmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 07:37:59 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:29294 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbYCKLh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 07:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=njgFgB7UoOJp3jESvwwec0XqLyupk3MOG+LCik4rTwaRBiY6hEHHpR6VU6bsA4roDzl+worraOzhBayD6VwMJjpOPurehztmqqdT8YiHqcPJQxcavpZJIz1hQ5r/gnSVTOZNf+k4ikrceXjdZ+5I4HR4HKL4/t+TUimS44Qh03g=
-Message-ID: <47D66F0E.9020703@gmail.com>
-Date: Tue, 11 Mar 2008 20:37:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Tue, 11 Mar 2008 07:42:09 -0400
+Received: from www.tglx.de ([62.245.132.106]:33795 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753051AbYCKLmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 07:42:08 -0400
+Date: Tue, 11 Mar 2008 12:41:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH REPOST for 2.6.25] Use an own random generator for
+ pageattr-test.c
+In-Reply-To: <20080311104531.GB18917@one.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0803111233440.3781@apollo.tec.linutronix.de>
+References: <20080311013014.GA28682@basil.nowhere.org> <alpine.LFD.1.00.0803110922430.3781@apollo.tec.linutronix.de> <20080311104531.GB18917@one.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
-Subject: Re: Unknown SATA PIIX PCI device ID 0x29b6
-References: <Pine.LNX.4.64.0802282306190.10087@axis700.grange> <20080228225603.2764bfd1@core> <Pine.LNX.4.64.0802290010320.10498@axis700.grange> <47CFADDF.20200@gmail.com> <Pine.LNX.4.64.0803061248070.5670@axis700.grange> <47D0C9E6.8090301@gmail.com> <Pine.LNX.4.64.0803082345000.6749@axis700.grange> <47D3723B.3040700@gmail.com> <Pine.LNX.4.64.0803092221560.7385@axis700.grange> <47D485EC.1060103@gmail.com> <Pine.LNX.4.64.0803100821440.3948@axis700.grange> <47D53231.30107@gmail.com> <Pine.LNX.4.64.0803111058090.5503@axis700.grange> <47D66071.7010906@gmail.com> <Pine.LNX.4.64.0803111210010.5775@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0803111210010.5775@axis700.grange>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Guennadi Liakhovetski wrote:
->> Guennadi Liakhovetski wrote:
->>> Well, I am not sure, whether it helps, tried booting with both 1.5Gbps and 
->>> this patch, it recovers now within 30 sec in both cold- and hot-plug 
->>> cases. To really state, that it has improved from about 55 sec down to 30 
->>> sec one would need more testing. Is this the kind of improvement you 
->>> expected?
->> Not really.  :-P
->>
->>> Can it be, that with this hardware it just cannot get better? 
->>> Remember, the disk is an external eSATA enclosure with a (relatively new) 
->>> PATA disk inside.
->> Can you try out a shorter cable?  I had a lot of troubles with eSATA +
->> long cable + PMP combinations.  Using shorter cable usually solves the
->> problem for me.
+
+On Tue, 11 Mar 2008, Andi Kleen wrote:
+
+> On Tue, Mar 11, 2008 at 09:25:21AM +0100, Thomas Gleixner wrote:
+> > On Tue, 11 Mar 2008, Andi Kleen wrote:
+> > > Use an own random generator for pageattr-test.c
+> > > 
+> > > [Repost. Please ack/nack. This is a bug fix and imho a .25 late merge 
+> > > candidate because it fixes a subtle bug]
+> > 
+> > Care to point out which "subtle bug" is fixed ? 
+> > 
+> > You replace a random generator by another to get repeateable
+> > sequences. The non repeatability of the cpa test patterns is hardly a
+> > "subtle bug".
 > 
-> Well, this cable is only about 50cm long, or even shorter, and using a 
-> shorter one would be difficult there, even if I manage to get hold of one. 
-> But, in principle, if this is not a generic ahci problem that needs to be 
-> solved, I personally can somehow live with it. Having to wait 1 minute is 
-> not very nice, but so far not critical.
+> The subtle bug(s) are first that it is not repeatable (it really should),
 
-50cm gotta be short enough.  For intel ahci, it definitely isn't a
-general problem but it would still be nice if we can find out what's
-going on but I don't have much idea what to do next.  I'll keep your
-problem in mind and see whether any pattern emerges.  If you find out
-something new, please let us know.
+As I said before. It's hardly a bug. In fact it is questionable
+whether fully reproducible test patterns are desired.
 
-Thanks.
+> then that it only initializes the CPU where the code first runs
+> (since srandom32 is per CPU) and later might change CPUs and then that it 
+> adds totally unnecessary state bits to CPU #0 (or whatever runs first).
 
--- 
-tejun
+Can you please elaborate why changing the seed of the random generator
+is a bug ? Networking reseeds the random generator itself, so what ?
+
+Thanks,
+	tglx
