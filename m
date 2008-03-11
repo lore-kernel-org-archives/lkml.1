@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYCKMH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbYCKMHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbYCKMH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 08:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYCKMHP
+	id S1757633AbYCKMHm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 08:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYCKMHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 11 Mar 2008 08:07:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:45559 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753469AbYCKMHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Mar 2008 08:07:15 -0400
-Received: from phunq.net ([64.81.85.152]:38551 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753329AbYCKMHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 08:07:13 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-Subject: Re: [RFC] Stacking bio support
-Date: Tue, 11 Mar 2008 04:07:10 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200803110352.41479.phillips@phunq.net> <200803111233.21386.philipp.marek@bmlv.gv.at>
-In-Reply-To: <200803111233.21386.philipp.marek@bmlv.gv.at>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: virtualization@lists.linux-foundation.org
+Subject: [PATCH 3/4] virtio: handle > 2 billion page balloon targets
+Date: Tue, 11 Mar 2008 23:05:23 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Jeremy Katz <katzj@redhat.com>
+References: <200803112303.22984.rusty@rustcorp.com.au> <200803112304.21680.rusty@rustcorp.com.au>
+In-Reply-To: <200803112304.21680.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803110507.10858.phillips@phunq.net>
+Message-Id: <200803112305.23648.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 March 2008 04:33, Ph. Marek wrote:
-> Win32 has IRP stacks, which do mostly the same AFAIU.
-> 	http://msdn2.microsoft.com/en-us/library/ms796144.aspx
+If the host asks for a huge target towards_target() can overflow, and
+we up oops as we try to release more pages than we have.  The simple
+fix is to use a 64-bit value.
 
-That seems to be filling a similar need all right, though it looks
-like a fancier (read: clunkier) solution.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/virtio/virtio_balloon.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> How do you handle the reallocation?
-> - If you don't do it (but rely on the fact that the initial allocation is
->   enough), you might end up with NO_MORE_IRP_STACK_LOCATIONS
->     http://msdn2.microsoft.com/en-us/library/ms793675.aspx
-> - If you do reallocate, the allocations have to register themselves in
->   the emergency pool (see the current thread about swapping over NFS)
-
-Yes, I reallocate.  I do not currently register these with the
-emergency pool, good spotting.  I intend to do all such reallocations
-with GFP_MEMALLOC (out of tree deadlock-prevention allocation flag) and
-rely on (out of tree) bio throttling to prevent the memalloc reserve
-from being exhausted.  Hopefully these things will be in-tree in due
-course.
-
-Incidentally, the bio stack should make the bio throttling somewhat
-more elegant, a nice circular effect.
-
-> I don't say that it's impossible ... just that some "interesting" things will 
-> await you. 
-
-Tell me about it :-)
-
-> That's different from the Win32 way AFAIK - there it's defined that every 
-> layer *has* to use its own stack location. (But it's been some time since I 
-> needed that, so I might be wrong.)
-
-I think you are right.  In fact, I thought about this for a couple of
-years, always getting hung up at exactly that point.  When I stopped
-trying to see the stack as a fixed size object with preassigned frames,
-the rest fell into place.  One obvious problem with the pre-assigned
-approach: you don't always know the path ahead of time that a bio
-will take to a physical device.
+diff -r fd0c80dbbd95 drivers/virtio/virtio_balloon.c
+--- a/drivers/virtio/virtio_balloon.c	Tue Mar 11 09:21:00 2008 +1100
++++ b/drivers/virtio/virtio_balloon.c	Tue Mar 11 11:25:52 2008 +1100
+@@ -152,7 +152,7 @@ static void virtballoon_changed(struct v
+ 	wake_up(&vb->config_change);
+ }
  
-> But I sure hope you succeed!
-
-Thankyou for your useful comments.  I do need to present a solution
-complete with deadlock prevention.  I guess the bio code will end up
-simpler there too, because with the memalloc anti-deadlock approach,
-the array of bio mempools can go away.
-
-Regards,
-
-Daniel
+-static inline int towards_target(struct virtio_balloon *vb)
++static inline s64 towards_target(struct virtio_balloon *vb)
+ {
+ 	u32 v;
+ 	__virtio_config_val(vb->vdev,
+@@ -176,7 +183,7 @@ static int balloon(void *_vballoon)
+ 
+ 	set_freezable();
+ 	while (!kthread_should_stop()) {
+-		int diff;
++		s64 diff;
+ 
+ 		try_to_freeze();
+ 		wait_event_interruptible(vb->config_change,
