@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbYCKLab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYCKLdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbYCKLab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 07:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYCKLaV
+	id S1755872AbYCKLdh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 07:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYCKLd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 07:30:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:17721 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbYCKLaT (ORCPT
+	Tue, 11 Mar 2008 07:33:29 -0400
+Received: from mail.bmlv.gv.at ([193.171.152.37]:53434 "EHLO mail.bmlv.gv.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752751AbYCKLd3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 07:30:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Waq7oIjOdegDEBYTREufrWhIyUzfOR0SwRZ4LYNVKa8pLF6inpopccIVMfO0ENEAqvsrYL7sLWxs7llOwviDz+4h/2zOIMSQymADEHk+Aq3tD3k4OeGJUG2xoI1Rp4OHxmiuAjnY3xmSB+QfYxTpHWo0g08zFlEcrDoe/3zBmuA=
-Message-ID: <1ba2fa240803110430h5cabec18s5be16b586769dec@mail.gmail.com>
-Date: Tue, 11 Mar 2008 13:30:16 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Lukas Hejtmanek" <xhejtman@ics.muni.cz>
-Subject: Re: Recent driver in linux kernel 2.6.25-rc2
-Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
-       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20080311094236.GB4344@ics.muni.cz>
+	Tue, 11 Mar 2008 07:33:29 -0400
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: Daniel Phillips <phillips@phunq.net>
+Subject: Re: [RFC] Stacking bio support
+Date: Tue, 11 Mar 2008 12:33:21 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200803110352.41479.phillips@phunq.net>
+In-Reply-To: <200803110352.41479.phillips@phunq.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20080219153910.GA4303@ics.muni.cz>
-	 <D936D925018D154694D8A362EEB0892003AF3199@orsmsx416.amr.corp.intel.com>
-	 <20080219224418.GA20926@ics.muni.cz>
-	 <D936D925018D154694D8A362EEB0892003DB2DC5@orsmsx416.amr.corp.intel.com>
-	 <20080311094236.GB4344@ics.muni.cz>
+Message-Id: <200803111233.21386.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/3/11 Lukas Hejtmanek <xhejtman@ics.muni.cz>:
-> On Mon, Mar 10, 2008 at 05:35:32PM -0700, Chatre, Reinette wrote:
->  > sorry for the delay - please do submit a bug at bughost.org to enable us
->  > to track this problem.
->  >
->  > The error you get is strange - the reason why the channel could not be
->  > set was because the device is not considered to be ready. Yet, from your
->  > debug log all the required steps appear to have completed successfully.
->  > Could you please add a print to the function
->  > iwl4965-base.c:iwl4965_is_ready to see what the value of priv->status
->  > is?
->
->  I don't have this problem in 2.6.25-rc3 and rc4. However, it seems that the
->  card does not associate with AP if I set iwcofnig wlan0 essid any. Is this
->  a bug or a feature? The AP does not use key and is visible.
->
-It looks more like mac80211 bug but frankly I would prefer if this
-'any' feature will be not supported.
-It has security implications. The decision about to which AP to
-associate should be left solely to user space.
+Hello Daniel!
 
-Tomas
+On Dienstag, 11. März 2008, Daniel Phillips wrote:
+> 3: bio.stack-2.6.23.12
+>
+> This adds an internal stack to each struct bio and introduces two new
+> bio operations:
+>
+>         data = bio_push(bio, worksize, endio);
+>         data = bio_pop(bio);
+>
+> The first is used before submitting a bio and the second is used in the
+> endio handler, which gives the driver a nice way to share context
+> between the two events.  If the requested amount stack space is not
+> available in the bio, the bio stack is automatically extended.
+...
+> (I learned from Andreas Dilger last month at FAST that Lustre already
+> implements a mechanism along these lines.)
+Win32 has IRP stacks, which do mostly the same AFAIU.
+	http://msdn2.microsoft.com/en-us/library/ms796144.aspx
+
+How do you handle the reallocation?
+- If you don't do it (but rely on the fact that the initial allocation is
+  enough), you might end up with NO_MORE_IRP_STACK_LOCATIONS
+    http://msdn2.microsoft.com/en-us/library/ms793675.aspx
+- If you do reallocate, the allocations have to register themselves in
+  the emergency pool (see the current thread about swapping over NFS)
+
+I don't say that it's impossible ... just that some "interesting" things will 
+await you. 
+
+> Currently the stack size in the bio is set to zero and is always
+> extended on the first bio_push.  An upcoming revision will add a
+> mechanism for a block driver to specify the initial amount of stack
+> space it knows will always be needed.  Some time further in the future,
+> a mechanism for discovering the stack requirements of several block
+> devices in a stack may be added, so that a typical bio submission is
+> able to traverse the entire stack with only a single bio allocation.
+That's different from the Win32 way AFAIK - there it's defined that every 
+layer *has* to use its own stack location. (But it's been some time since I 
+needed that, so I might be wrong.)
+
+
+But I sure hope you succeed!
+
+
+Regards,
+
+Phil
