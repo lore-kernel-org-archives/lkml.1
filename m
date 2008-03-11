@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYCKPUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYCKPXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbYCKPUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 11:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYCKPUe
+	id S1757562AbYCKPXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 11:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYCKPXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 11:20:34 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:59514 "EHLO smtp.drzeus.cx"
+	Tue, 11 Mar 2008 11:23:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46048 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753878AbYCKPUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 11:20:34 -0400
-Date: Tue, 11 Mar 2008 16:20:26 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
-       Lee Revell <rlrevell@joe-job.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080311162026.012744cd@mjolnir.drzeus.cx>
-In-Reply-To: <20080311104822.GC18917@one.firstfloor.org>
-References: <20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
-	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
-	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
-	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
-	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
-	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
-	<20080306092730.4412d085@mjolnir.drzeus.cx>
-	<20080309151659.63d54f38@mjolnir.drzeus.cx>
-	<20080311085145.5fcf3186@mjolnir.drzeus.cx>
-	<20080311104822.GC18917@one.firstfloor.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752341AbYCKPXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 11:23:23 -0400
+Date: Tue, 11 Mar 2008 16:23:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Optimize find_next_(zero_)bit for small
+	constant-size bitmaps
+Message-ID: <20080311152303.GA21530@elte.hu>
+References: <20080309200103.GA895@mailshack.com> <20080309201152.GB28454@elte.hu> <1205094704.6430.1241420859@webmail.messagingengine.com> <20080309205132.GA9021@elte.hu> <20080310231724.GA8370@mailshack.com> <20080311095631.GT25110@elte.hu> <20080311151719.GA15313@mailshack.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311151719.GA15313@mailshack.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 11:48:22 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
 
-> > I have now found a very hacky workaround that is slightly better than
-> > disabling C3 altogether; making C3 exclusive to one core at a time. It
-> > seems to kill the noise and the system now spends 50% in C3, instead of
-> > 0%.
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
+
+> > > +#endif /* CONFIG_GENERIC_FIND_NEXT_BIT */
+> > 
+> > there should be an #else here i think, which maps find_next_bit to 
+> > __find_next_bit / etc.
 > 
-> I suspect it won't do much of C3 if only one core is idle this way.
-> Most likely you just disabled C3 this way in a way invisible to software.
-> 
+> No, that is intentional: architectures are expected to either set 
+> CONFIG_GENERIC_FIND_NEXT_BIT, or provide their own implementation of 
+> find_next_bit.
 
-What a letdown... I'll pull out the old watt meter again and see if I can confirm that.
+indeed, you are right.
 
-Rgds
--- 
-     -- Pierre Ossman
+> This version runs fine on qemu.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+great - i've queued it up into x86.git.
+
+	Ingo
