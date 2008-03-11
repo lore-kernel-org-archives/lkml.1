@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbYCKRmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbYCKRr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbYCKRmf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbYCKRmH
+	id S1754283AbYCKRr1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYCKRrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:42:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47812 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754314AbYCKRmB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 13:42:01 -0400
-Date: Tue, 11 Mar 2008 10:41:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, apw@shadowen.org
-Subject: Re: [Build Failure] 2.6.25-rc5-mm1 Build fails with allmodconfig
- probe_4drives undefined
-Message-Id: <20080311104137.3c6b3f22.akpm@linux-foundation.org>
-In-Reply-To: <47D68126.40109@linux.vnet.ibm.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D68126.40109@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 11 Mar 2008 13:47:19 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35385 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752664AbYCKRrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 13:47:18 -0400
+Date: Tue, 11 Mar 2008 20:51:22 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/6] signals: send_signal: factor out SIGNAL_GROUP_EXIT checks
+Message-ID: <20080311175122.GA586@tv-sign.ru>
+References: <20080309185926.GA5649@tv-sign.ru> <20080311021633.BF1B326F991@magilla.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311021633.BF1B326F991@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 18:25:02 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On 03/10, Roland McGrath wrote:
+>
+> I don't really like dropping the signal on the floor.
 
-> The 2.6.25-rc5-mm1 kernel build fails with allmodconfig 
-> 
->   MODPOST 2279 modules
-> ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
+To clarify: my opinion is quite opposite, but it is only based on the
+"personal feeling", I don't have any "strong" arguments. If you still
+think we shouldn't do this, please nack this change.
 
-Yes, it has been doing this for a while.  But apparently it doesn't happen
-for Bart with just his patch queue.  <slightlypeeved>If your subssytem
-fails in my tree, that doesn't automatically make it my
-problem</slightlypeeved>
+> If the posting says
+> it succeeded (vs -ESRCH) then I'd like to see it appear later in the
+> pending set of the zombie thread, when we look at /proc/pid/status at exit
+> tracing or whatnot (and in core dumps).  Seeing those pending signal bits
+> is sometimes a useful clue about how something died in a strange scenario.
 
-I'll take a look, see what went wrong.
+As for core dumps. Suppose that the task has already started do_coredump()
+and another signal comes. Why should fill_prstatus() report this new signal?
+This doesn't look exactly right for me. The coredump should try to reflect
+the state of the task which it had when it was killed.
+
+Actually, the same for zombies. If the task sits in Z state, one can look
+at /proc/pid/status to see what signals it had when exited. To me, it looks
+just better if it is visible that a zombie doesn "accept" the new signals,
+because it is dead. (offtopic: currently the single-threaded exit doesn't
+set SIGNAL_GROUP_EXIT. This doesn't matter now, but I think it would be
+nice to be more consistent here).
+
+Now, suppose that due to some kernel bug the running thread/process doesn't
+want to die despite of SIGNAL_GROUP_EXIT. In that case another kill() may help
+because of additional wakeup, but this will hide the problem which won't be
+reported.
+
+But again, I see your point, thanks.
+
+Oleg.
+
