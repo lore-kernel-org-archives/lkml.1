@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYCKWTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYCKWZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYCKWTh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 18:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYCKWTa
+	id S1753439AbYCKWZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 18:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYCKWZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 18:19:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36703 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbYCKWT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 18:19:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Date: Tue, 11 Mar 2008 23:18:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080311211004.GA30164@redhat.com>
-In-Reply-To: <20080311211004.GA30164@redhat.com>
+	Tue, 11 Mar 2008 18:25:14 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:43297 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751474AbYCKWZN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 18:25:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ClBVA38ujqVF+m6ZfpoiyfpazdOHGyzZdD0BunOt1Dk75WnbpFUKdOr7Sqny978Z8LSuOZ+Gw8Jq1RdPGNrY3wcyLdmbYXHDcFzz4j3maSZEjsAYNNECWVwmZdj159nSYIKgeEkU98JikcwcCExBxoyXQe/CtP93HAaoJlem9aQ=  ;
+X-YMail-OSG: VEI35xoVM1mYQI3E85p6qzkwXk19KS1PCPxHN_2PAPdRgGeDbZaKutB9Md5.aEilhFZWjFacEQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
+Date: Tue, 11 Mar 2008 14:25:10 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <1205230841.13653.204.camel@localhost.localdomain> <200803111436.29073.david-b@pacbell.net>
+In-Reply-To: <200803111436.29073.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200803112318.28120.rjw@sisk.pl>
+Message-Id: <200803111525.10717.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 of March 2008, Vivek Goyal wrote:
-> On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
-> > This is a minimal patch with only the essential features. All
-> > additional features are split out and can be discussed later. I think
-> > it may be easier to get consensus on this minimal patch.
-> > 
-> 
-> Hi Huang,
-> 
-> This patchset is slowly getting better. True that first we need to come
-> up with minimal infrastructure patch and then think of building more
-> functionality on top of it.
-> 
-> 
-> > This patch provides an enhancement to kexec/kdump. It implements
-> > the following features:
-> > 
-> > - Jumping between the original kernel and the kexeced kernel.
-> > 
-> > - Backup/restore memory used by both the original kernel and the
-> >   kexeced kernel.
-> > 
-> > - Save/restore CPU and devices state before after kexec.
-> > 
-> > 
-> > The features of this patch can be used for as follow:
-> > 
-> > - A simple hibernation implementation without ACPI support. You can
-> >   kexec a hibernating kernel, save the memory image of original system
-> >   and shutdown the system. When resuming, you restore the memory image
-> >   of original system via ordinary kexec load then jump back.
-> > 
-> 
-> The main usage of this functionality is for hibernation. I am not sure
-> what has been the conclusion of previous discussions.
-> 
-> Rafael/Pavel, does the approach of doing hibernation using a separate
-> kernel holds promise?
+On Tuesday 11 March 2008, David Brownell wrote:
+> How would you see your notion of a "regulator" (client?)
+> relating to a "power domain"?  My first thought is that
+> there's a one-to-one correspondence but they may not be
+> quite the same thing.  Example, one might want to ask the
+> domain what devices it supports ... so that you could ask
+> them all to power off.
 
-Well, what can I say?
+Actually, it's clearly not one-to-one.  Counter-example:
+a 3V3 regulator powering one of a SOC's I/O power domains,
+which is managed by a digital switch.  That same regulator
+can power several I/O devices too.  It may even feed a 1V8
+regulator.
 
-I haven't been a big fan of doing hibernation this way since the very beginning
-and I still have the same reservations.  Namely, my opinion is that the
-hibernation-related problems we have are not just solvable this way.  For one
-example, in order to stop using the freezer for suspend/hibernation we first
-need to revamp the suspending/resuming of devices (uder way) and the
-kexec-based approach doesn't help us here.  I wouldn't like to start another
-discussion about it though.
+So the relationship is probably that regulators define a
+domain ... but such domains can be subdivided.  There's
+a tree; it's probably more shallow than the clock tree.
 
-That said, I can imagine some applications of the $subject functionality
-not directly related to hibernation.  For example, one can use it for kernel
-debgging (jump to a new kernel, change something in the old kernel's
-data, jump back and see what happens etc.).  Also, in principle it may be used
-for such things as live migration of VMs.
+And enable/disable primitives probably map best to power
+domains, not all of which are entire regulators.
 
-Thanks,
-Rafael
+- Dave
