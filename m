@@ -1,114 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbYCKGTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYCKGWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbYCKGTI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 02:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYCKGSy
+	id S1756907AbYCKGWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 02:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYCKGWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 02:18:54 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48627 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbYCKGSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 02:18:53 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 11 Mar 2008 11:48:36 +0530
-Message-Id: <20080311061836.6664.5072.sendpatchset@localhost.localdomain>
-Subject: [PATCH] Move memory controller allocations to their own slabs (v2)
+	Tue, 11 Mar 2008 02:22:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32946 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750699AbYCKGW3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 02:22:29 -0400
+Date: Mon, 10 Mar 2008 23:20:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Avi Kivity <avi@qumranet.com>,
+       Sam Ravnborg <sam@ravnborg.org>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       David Howells <dhowells@redhat.com>, linux-arch@vger.kernel.org,
+       mm-commits@vger.kernel.org
+Subject: Re: [PATCH] kvm: provide kvm.h for all architecture: fixes
+ headers_install
+Message-Id: <20080310232039.d2a34f5a.akpm@linux-foundation.org>
+In-Reply-To: <200803101411.04175.borntraeger@de.ibm.com>
+References: <200803071326.06682.borntraeger@de.ibm.com>
+	<1204933418.2495.14.camel@shinybook.infradead.org>
+	<200803101411.04175.borntraeger@de.ibm.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 10 Mar 2008 14:11:04 +0100 Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
+> [PATCH v2] kvm: provide kvm.h for all architecture: fixes headers_install
+> 
+> Currently include/linux/kvm.h is not considered by make headers_install, 
+> because Kbuild cannot handle " unifdef-$(CONFIG_FOO) += foo.h. 
+> This problem was introduced by 040922c04cf2c8ac70be2e88a8a9614ecdb41d2e, 
+> which makes this an 2.6.25 regression.
+> 
+> One way of solving the issue is to enhance Kbuild, but Avi Kivity and David
+> Woodhouse conviced me, that changing headers_install is not the way to go. 
+> This patch changes the definition for linux/kvm.h to unifdef-y.
+> 
+> If  unifdef-y is used for linux/kvm.h "make headers_check" will fail on all
+> architectures without asm/kvm.h. Therefore, this patch also provides 
+> asm/kvm.h on all architectures.
+> 
+> Changes since v1:
+> o use asm-generic/Kbuild.asm (Arnd Bergmann)
+> o fix comment in asm-frv (David Howells)
 
-Move the memory controller data structure page_cgroup to its own slab cache.
-It saves space on the system, allocations are not necessarily pushed to order
-of 2 and should provide performance benefits. Users who disable the memory
-controller can also double check that the memory controller is not allocating
-page_cgroup's.
+err, this doesn't work.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+alpha and m68k (at least) fail make headers_check
 
- mm/memcontrol.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff -puN mm/memcontrol.c~memory-controller-move-to-own-slab mm/memcontrol.c
---- linux-2.6.25-rc4/mm/memcontrol.c~memory-controller-move-to-own-slab	2008-03-10 23:22:34.000000000 +0530
-+++ linux-2.6.25-rc4-balbir/mm/memcontrol.c	2008-03-11 10:29:00.000000000 +0530
-@@ -26,6 +26,7 @@
- #include <linux/backing-dev.h>
- #include <linux/bit_spinlock.h>
- #include <linux/rcupdate.h>
-+#include <linux/slab.h>
- #include <linux/swap.h>
- #include <linux/spinlock.h>
- #include <linux/fs.h>
-@@ -35,6 +36,7 @@
- 
- struct cgroup_subsys mem_cgroup_subsys;
- static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
-+static struct kmem_cache *page_cgroup_cache;
- 
- /*
-  * Statistics for memory cgroup.
-@@ -560,7 +562,7 @@ retry:
- 	}
- 	unlock_page_cgroup(page);
- 
--	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
-+	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
- 	if (pc == NULL)
- 		goto err;
- 
-@@ -622,7 +624,7 @@ retry:
- 		 */
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
- 		css_put(&mem->css);
--		kfree(pc);
-+		kmem_cache_free(page_cgroup_cache, pc);
- 		goto retry;
- 	}
- 	page_assign_page_cgroup(page, pc);
-@@ -637,7 +639,7 @@ done:
- 	return 0;
- out:
- 	css_put(&mem->css);
--	kfree(pc);
-+	kmem_cache_free(page_cgroup_cache, pc);
- err:
- 	return -ENOMEM;
- }
-@@ -695,7 +697,7 @@ void mem_cgroup_uncharge_page(struct pag
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
- 		css_put(&mem->css);
- 
--		kfree(pc);
-+		kmem_cache_free(page_cgroup_cache, pc);
- 		return;
- 	}
- 
-@@ -1020,6 +1022,8 @@ mem_cgroup_create(struct cgroup_subsys *
- 	if (unlikely((cont->parent) == NULL)) {
- 		mem = &init_mem_cgroup;
- 		init_mm.mem_cgroup = mem;
-+		page_cgroup_cache = KMEM_CACHE(page_cgroup,
-+					SLAB_HWCACHE_ALIGN | SLAB_PANIC);
- 	} else
- 		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
- 
-diff -puN include/linux/memcontrol.h~memory-controller-move-to-own-slab include/linux/memcontrol.h
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+/usr/src/devel/usr/include/linux/kvm.h requires asm/kvm.h, which does not exist in exported headers
