@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYCKN23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbYCKNc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYCKN23 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 09:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYCKN2V
+	id S1755101AbYCKNc1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 09:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYCKNcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 09:28:21 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:57221 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753260AbYCKN2U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 09:28:20 -0400
-Date: Tue, 11 Mar 2008 07:28:00 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Gary Hade <garyhade@us.ibm.com>, warthog19@eaglescrag.net,
-       kristen.c.accardi@intel.com, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080311132800.GC21482@parisc-linux.org>
-References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de> <20080304230937.GD3694@ldl.fc.hp.com> <47CDF339.3060304@jp.fujitsu.com> <20080305202052.GN3694@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com>
+	Tue, 11 Mar 2008 09:32:20 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:44392 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750859AbYCKNcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 09:32:19 -0400
+Message-ID: <47D689DF.10408@o2.pl>
+Date: Tue, 11 Mar 2008 14:32:15 +0100
+From: Artur Skawina <art_k@o2.pl>
+User-Agent: Thunderbird 3.0a1pre (X11/2008030620)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D684D0.6060200@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Daniel Phillips <phillips@phunq.net>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+References: <200803092346.17556.phillips@phunq.net> <20080310092213.7ba878b3@core> <200803102050.40567.phillips@phunq.net>
+In-Reply-To: <200803102050.40567.phillips@phunq.net>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 10:10:40PM +0900, Kenji Kaneshige wrote:
-> 1) I checked ACPI spec again and again, but I could not find any
->    reason to add Fujitsu servers to quirks list. So I'd like you to
->    add HP servers to the quirks list. I'll send the following patches
->    followed by this e-mail.
-
-Alex pointed out that IBM interprets the spec the same way that HP does.
-Are there any other machines that follow the spec the same way that
-Fujitsu does?
-
-> 2) The ACPI PCI slot detection driver would change the slot names of
->    some hotplug drivers (at least I checked shpchp and pciehp). And
->    the name of slots are depending on the order of driver loading.
->    For example, on my system which has several SHPCHP slots and
->    PCIEHP slots, the name of PCIEHP slots are changed as
->    follows. Please note that PCIEHP based slots are 0034_0027 and
->    0032_0026, and others are SHPCHP based slots.
+Daniel Phillips wrote:
 > 
->    - Without ACPI PCI slot detection driver
->      # ls /sys/bus/pci/slots/
->      0009_0016  0014_0018  0019_0020  0021_0022  0034_0027
->      0011_0017  0016_0019  0021_0021  0032_0026
+> Right, and now with ramback you will be able to preserve that state and
+> have the performance too.  It is a wonderful world.
 > 
->    - With ACPI PCI slot detection driver
->      # ls /sys/bus/pci/slots/
->      0009_0016  0014_0018  0019_0020  0021_0022  27
->      0011_0017  0016_0019  0021_0021  26
+>>> If UPS power runs out while ramback still holds unflushed dirty data 
+>>> then things get ugly.  Hopefully a fsck -f will be able to pull 
+>>> something useful out of the mess.  (This is where you might want to be 
+>>> running Ext3.)  The name of the game is to install sufficient UPS power 
+>>> to get your dirty ramdisk data onto stable storage this time, every 
+>>> time.
+>> Ext3 is only going to help you if the ramdisk writeback respects barriers
+>> and ordering rules ?
 
-I hadn't realised that patch got in to put the bus name in as a
-uniquifier.  I thought we'd rejected it because the problem only
-occurred on one box with bad firmware.
+> extra programming to maintain cache consistency.  Then there is the
+> issue of ramdisks on the way that exceed the 40 bit physical addressing
+> of current generation processors.
 
->    - Unify slot names among all hotplug drivers
+>>>  * Per chunk locking is not feasible for a terabyte scale ramdisk.
 
-That is the plan.  I'm not sure why the shpc slots aren't renamed in
-this revision of the patch -- maybe Alex dropped that part?
+> backing store is not expected to represent a consistent filesystem
+> state during normal operation.  Only the ramdisk needs to maintain a
+> consistent state, which I have taken care to ensure.  You just need
+> to believe in your battery, Linux and the hardware it runs on.  Which
+> of these do you mistrust?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+expecting the hw to never fail is unreasonable - it will. it's just a
+question what happens when (not if) it fails.
+and it's not about the backing store being inconsistent during normal
+operation - it's about what you are left with after an unclean shutdown.
+With your scheme the only time you can trust the on-disk data is when
+the device is off; when it fails for some reason (batteries do fail,
+kernel bugs do happen, DOS, overheating etc etc) you can no longer
+trust any of the data, and no - fsck doesn't help when you have a mix
+of old data overwritten by new stuff in basically random order. i can't
+see any scenario when it would make sense to trust the corrupted on-disk
+fs instead of restoring from backup (or regenerating). So is it just
+about avoiding repopulating the fs in the (likely) case of normal,
+clean shutdown? This could be a reasonable application of ramback (OTOH
+how often will this (shutdown) happen in practice...). IOW you get
+a ramdisk-based (ie fast) device that is capable of surviving power loss,
+but that's about it.
+
+Now, if you add snapshots to the backing store it suddenly becomes much
+more interesting -- you no longer need to put so much trust in all the
+hw. Should the device fail for whatever reason then you just rollback to
+the last good snapshot upon restart. No corrupted fs, no fsck; you lose
+some newly written data (that you couldn't recover w/o a snapshot anyway),
+but can trust the rest of it (assuming you trust the fs and storage hw,
+but that's no different then w/o ramback).
+
+artur
