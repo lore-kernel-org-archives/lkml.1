@@ -1,91 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYCKRmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbYCKRmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYCKRmW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 13:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYCKRmE
+	id S1756086AbYCKRmf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 13:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbYCKRmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 13:42:04 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:46598
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754061AbYCKRmB (ORCPT
+	Tue, 11 Mar 2008 13:42:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47812 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754314AbYCKRmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Mar 2008 13:42:01 -0400
-Date: Tue, 11 Mar 2008 10:39:45 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL pointer dereference
-Message-ID: <20080311173945.GJ2820@one-eyed-alien.net>
-Mail-Followup-To: Boaz Harrosh <bharrosh@panasas.com>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-	linux-scsi <linux-scsi@vger.kernel.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <867igc3w8r.fsf@deprecated.bitebene.org> <47D551B8.9080807@panasas.com> <1205183577.2941.38.camel@localhost.localdomain> <47D6B050.7070803@panasas.com>
+Date: Tue, 11 Mar 2008 10:41:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, apw@shadowen.org
+Subject: Re: [Build Failure] 2.6.25-rc5-mm1 Build fails with allmodconfig
+ probe_4drives undefined
+Message-Id: <20080311104137.3c6b3f22.akpm@linux-foundation.org>
+In-Reply-To: <47D68126.40109@linux.vnet.ibm.com>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	<47D68126.40109@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EdRE1UL8d3mMOE6m"
-Content-Disposition: inline
-In-Reply-To: <47D6B050.7070803@panasas.com>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 11 Mar 2008 10:39:49 -0700 (PDT)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 11 Mar 2008 18:25:02 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
---EdRE1UL8d3mMOE6m
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The 2.6.25-rc5-mm1 kernel build fails with allmodconfig 
+> 
+>   MODPOST 2279 modules
+> ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
 
-On Tue, Mar 11, 2008 at 06:16:16PM +0200, Boaz Harrosh wrote:
-> I would like to fix this better by calling scsi_get/put_command but there=
- is=20
-> something fundamental that bothers me with isd200 driver. I can see that=
-=20
-> an isd200_info struct is allocated and put on a struct us_data->extra. Bu=
-t=20
-> as I understand the code, the struct us_data is associated with a scsi_ho=
-st=20
-> not a scsi_device. Are we guarantied that we have only one scsi_device=20
-> per host at all times?
+Yes, it has been doing this for a while.  But apparently it doesn't happen
+for Bart with just his patch queue.  <slightlypeeved>If your subssytem
+fails in my tree, that doesn't automatically make it my
+problem</slightlypeeved>
 
-Yes.  We allocate a scsi_host for each USB device that we see.  The only
-time you can have more than one scsi_device is in the case of multi-target
-devices, of which the ISD-200 is NOT one.
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-Hey, has anyone seen the Microsoft sales guy? It's his feeding time...
-					-- Mike
-User Friendly, 4/17/1998
-
---EdRE1UL8d3mMOE6m
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFH1sPhHL9iwnUZqnkRAmhMAJkB5UlBfVPWuhk8V4qNDTqxVfmmUQCeKKSN
-xgvwLgPFw79jRClCVf+I29E=
-=FzME
------END PGP SIGNATURE-----
-
---EdRE1UL8d3mMOE6m--
+I'll take a look, see what went wrong.
