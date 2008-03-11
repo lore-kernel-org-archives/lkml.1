@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYCKA71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbYCKA7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYCKA71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 20:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYCKA7R
+	id S1756785AbYCKA7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 20:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYCKA7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:59:17 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40883 "EHLO mx2.suse.de"
+	Mon, 10 Mar 2008 20:59:22 -0400
+Received: from mx1.suse.de ([195.135.220.2]:60521 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbYCKA7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:59:16 -0400
+	id S1753906AbYCKA7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:59:20 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-usb@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/6] USB: EHCI: carry out port handover during each root-hub resume
-Date: Mon, 10 Mar 2008 17:59:07 -0700
-Message-Id: <1205197152-18146-1-git-send-email-gregkh@suse.de>
+Subject: [PATCH 2/6] USB: reorganize code in hub.c
+Date: Mon, 10 Mar 2008 17:59:08 -0700
+Message-Id: <1205197152-18146-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <20080311004239.GD17890@suse.de>
 References: <20080311004239.GD17890@suse.de>
@@ -25,102 +25,124 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch (as1044) causes EHCI port handover for non-high-speed
-devices to occur during every root-hub resume, not just in cases where
-the controller lost power or was reset.  This is necessary because:
+This patch (as1045) reorganizes some code in the hub driver.
+hub_port_status() is moved earlier in the file, and a new hub_stop()
+routine is created to do the work currently in hub_preset() (i.e.,
+disconnect all child devices and quiesce the hub).
 
-	When some machines go into suspend, they remove power from
-	on-board USB devices while retaining suspend current for USB
-	controllers.
-
-	The user might well unplug a USB device while the system is
-	suspended and then plug it back in before resuming.
-
-A corresponding change is made to the core resume routine; now
-high-speed root hubs will always be resumed when the system wakes up,
-even if they were suspended before the system went to sleep.  If this
-weren't done then EHCI port handover wouldn't work, since it is called
-when the EHCI root hub is resumed.
-
-Finally, a comment is added to the hub driver explaining the khubd has
-to be freezable; if it weren't frozen then it could interfere with
-port handover.
+There are no functional changes.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/core/driver.c   |    9 +++++++--
- drivers/usb/core/hub.c      |    6 ++++++
- drivers/usb/host/ehci-hub.c |    4 +---
- drivers/usb/host/ehci-pci.c |    1 -
- 4 files changed, 14 insertions(+), 6 deletions(-)
+ drivers/usb/core/hub.c |   58 ++++++++++++++++++++++++++---------------------
+ 1 files changed, 32 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-index 801b6f1..ebccdef 100644
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -1523,9 +1523,14 @@ static int usb_suspend(struct device *dev, pm_message_t message)
- 	udev = to_usb_device(dev);
- 
- 	/* If udev is already suspended, we can skip this suspend and
--	 * we should also skip the upcoming system resume. */
-+	 * we should also skip the upcoming system resume.  High-speed
-+	 * root hubs are an exception; they need to resume whenever the
-+	 * system wakes up in order for USB-PERSIST port handover to work
-+	 * properly.
-+	 */
- 	if (udev->state == USB_STATE_SUSPENDED) {
--		udev->skip_sys_resume = 1;
-+		if (udev->parent || udev->speed != USB_SPEED_HIGH)
-+			udev->skip_sys_resume = 1;
- 		return 0;
- 	}
- 
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 68fc521..acd4658 100644
+index acd4658..98c39fb 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
-@@ -2891,7 +2891,13 @@ loop:
+@@ -334,6 +334,27 @@ static int get_port_status(struct usb_device *hdev, int port1,
+ 	return status;
+ }
  
- static int hub_thread(void *__unused)
- {
-+	/* khubd needs to be freezable to avoid intefering with USB-PERSIST
-+	 * port handover.  Otherwise it might see that a full-speed device
-+	 * was gone before the EHCI controller had handed its port over to
-+	 * the companion full-speed controller.
-+	 */
- 	set_freezable();
++static int hub_port_status(struct usb_hub *hub, int port1,
++		u16 *status, u16 *change)
++{
++	int ret;
 +
- 	do {
- 		hub_events();
- 		wait_event_freezable(khubd_wait,
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 40e8240..3a2eb01 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -280,9 +280,7 @@ static int ehci_bus_resume (struct usb_hcd *hcd)
- 	ehci_writel(ehci, INTR_MASK, &ehci->regs->intr_enable);
++	mutex_lock(&hub->status_mutex);
++	ret = get_port_status(hub->hdev, port1, &hub->status->port);
++	if (ret < 4) {
++		dev_err(hub->intfdev,
++			"%s failed (err = %d)\n", __func__, ret);
++		if (ret >= 0)
++			ret = -EIO;
++	} else {
++		*status = le16_to_cpu(hub->status->port.wPortStatus);
++		*change = le16_to_cpu(hub->status->port.wPortChange);
++		ret = 0;
++	}
++	mutex_unlock(&hub->status_mutex);
++	return ret;
++}
++
+ static void kick_khubd(struct usb_hub *hub)
+ {
+ 	unsigned long	flags;
+@@ -611,9 +632,8 @@ static void hub_port_logical_disconnect(struct usb_hub *hub, int port1)
+ }
  
- 	spin_unlock_irq (&ehci->lock);
--
--	if (!power_okay)
--		ehci_handover_companion_ports(ehci);
-+	ehci_handover_companion_ports(ehci);
+ /* caller has locked the hub device */
+-static int hub_pre_reset(struct usb_interface *intf)
++static void hub_stop(struct usb_hub *hub)
+ {
+-	struct usb_hub *hub = usb_get_intfdata(intf);
+ 	struct usb_device *hdev = hub->hdev;
+ 	int i;
+ 
+@@ -623,6 +643,14 @@ static int hub_pre_reset(struct usb_interface *intf)
+ 			usb_disconnect(&hdev->children[i]);
+ 	}
+ 	hub_quiesce(hub);
++}
++
++/* caller has locked the hub device */
++static int hub_pre_reset(struct usb_interface *intf)
++{
++	struct usb_hub *hub = usb_get_intfdata(intf);
++
++	hub_stop(hub);
  	return 0;
  }
  
-diff --git a/drivers/usb/host/ehci-pci.c b/drivers/usb/host/ehci-pci.c
-index 3ba0166..c12ada6 100644
---- a/drivers/usb/host/ehci-pci.c
-+++ b/drivers/usb/host/ehci-pci.c
-@@ -315,7 +315,6 @@ static int ehci_pci_resume(struct usb_hcd *hcd)
+@@ -911,7 +939,7 @@ static void hub_disconnect(struct usb_interface *intf)
  
- 	/* here we "know" root ports should always stay powered */
- 	ehci_port_power(ehci, 1);
--	ehci_handover_companion_ports(ehci);
+ 	/* Disconnect all children and quiesce the hub */
+ 	hub->error = 0;
+-	hub_pre_reset(intf);
++	hub_stop(hub);
  
- 	hcd->state = HC_STATE_SUSPENDED;
- 	return 0;
+ 	usb_set_intfdata (intf, NULL);
+ 
+@@ -1511,28 +1539,6 @@ out_authorized:
+ }
+ 
+ 
+-static int hub_port_status(struct usb_hub *hub, int port1,
+-			       u16 *status, u16 *change)
+-{
+-	int ret;
+-
+-	mutex_lock(&hub->status_mutex);
+-	ret = get_port_status(hub->hdev, port1, &hub->status->port);
+-	if (ret < 4) {
+-		dev_err (hub->intfdev,
+-			"%s failed (err = %d)\n", __FUNCTION__, ret);
+-		if (ret >= 0)
+-			ret = -EIO;
+-	} else {
+-		*status = le16_to_cpu(hub->status->port.wPortStatus);
+-		*change = le16_to_cpu(hub->status->port.wPortChange); 
+-		ret = 0;
+-	}
+-	mutex_unlock(&hub->status_mutex);
+-	return ret;
+-}
+-
+-
+ /* Returns 1 if @hub is a WUSB root hub, 0 otherwise */
+ static unsigned hub_is_wusb(struct usb_hub *hub)
+ {
+@@ -2727,7 +2733,7 @@ static void hub_events(void)
+ 		/* If the hub has died, clean up after it */
+ 		if (hdev->state == USB_STATE_NOTATTACHED) {
+ 			hub->error = -ENODEV;
+-			hub_pre_reset(intf);
++			hub_stop(hub);
+ 			goto loop;
+ 		}
+ 
 -- 
 1.5.4.3
 
