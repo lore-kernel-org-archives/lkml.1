@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbYCKEOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbYCKEQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbYCKEOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 00:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYCKEOK
+	id S1755452AbYCKEQo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 00:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYCKEQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 00:14:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46432 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750847AbYCKEOJ (ORCPT
+	Tue, 11 Mar 2008 00:16:37 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:39470 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbYCKEQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 00:14:09 -0400
-Date: Mon, 10 Mar 2008 21:12:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, staubach@redhat.com,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, hch@lst.de
-Subject: Re: [PATCH 1/3] enhanced lookup ESTALE error handling (v3)
-Message-Id: <20080310211209.19a25c75.akpm@linux-foundation.org>
-In-Reply-To: <1205187584.8385.6.camel@nimitz.home.sr71.net>
-References: <4790C761.1010603@redhat.com>
-	<47A387CF.70201@redhat.com>
-	<47D598C5.7080609@redhat.com>
-	<20080310143832.08ad52a9.akpm@linux-foundation.org>
-	<E1JYq5I-0000D9-8a@pomaz-ex.szeredi.hu>
-	<1205187584.8385.6.camel@nimitz.home.sr71.net>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 00:16:36 -0400
+From: Zhang Wei <wei.zhang@freescale.com>
+To: dan.j.williams@intel.com
+Cc: linux-kernel@vger.kernel.org, Zhang Wei <wei.zhang@freescale.com>
+Subject: [PATCH 1/2] Fix a bug about BUG_ON() on DMA engine capability DMA_INTERRUPT.
+Date: Tue, 11 Mar 2008 11:25:16 +0800
+Message-Id: <1205205917-21861-1-git-send-email-wei.zhang@freescale.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 11 Mar 2008 03:27:16.0090 (UTC) FILETIME=[CDDDFDA0:01C88327]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008 15:19:44 -0700 Dave Hansen <haveblue@us.ibm.com> wrote:
+The device->device_prep_dma_interrupt function is used by
+DMA_INTERRUPT capability, not DMA_ZERO_SUM.
 
-> On Mon, 2008-03-10 at 23:03 +0100, Miklos Szeredi wrote:
-> > > > This is a patch to enhance ESTALE error handling during the
-> > > > lookup process.  The error, ESTALE, can occur when out of data
-> > > > dentries, stored in the dcache, is used to translate a pathname
-> > > > component to a dentry.  When this occurs, the dentry which
-> > > > contains the pointer to the inode which refers to the non-existent
-> > > > file is dropped from the dcache and then the lookup process
-> > > > started again.  Care is taken to ensure that forward process is
-> > > > always being made.  If forward process is not detected, then the
-> > > > lookup process is terminated and the error, ENOENT, is returned
-> > > > to the caller.
-> > > 
-> > > This collides in non-trivial ways with the always-coming-never-arrives
-> > > r-o-bind-mounts patches.
-> > > 
-> > > I have an old version of those patches in -mm and I believe that Al
-> > > is/was/has set up some git tree with these patches and perhaps other stuff.
-> 
-> Al's tree is here:
-> 
-> http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/viro/vfs-2.6.git;a=summary
-> 
-> It's probably best to try and base your patches on top of there.  
-> 
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ drivers/dma/dmaengine.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Al has a unique versioning scheme which I am not smart enough to
-understand, so I'd be reluctant to pick this up without coordinating with
-him.
-
-afacit the "b1" branch there is the latest, but it doesn't appear to have
-been touched for a couple of weeks.
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 2996523..8db0e7f 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -357,7 +357,7 @@ int dma_async_device_register(struct dma_device *device)
+ 		!device->device_prep_dma_zero_sum);
+ 	BUG_ON(dma_has_cap(DMA_MEMSET, device->cap_mask) &&
+ 		!device->device_prep_dma_memset);
+-	BUG_ON(dma_has_cap(DMA_ZERO_SUM, device->cap_mask) &&
++	BUG_ON(dma_has_cap(DMA_INTERRUPT, device->cap_mask) &&
+ 		!device->device_prep_dma_interrupt);
+ 
+ 	BUG_ON(!device->device_alloc_chan_resources);
+-- 
+1.5.4
 
