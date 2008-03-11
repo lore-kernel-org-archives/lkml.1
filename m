@@ -1,42 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYCKKqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYCKKvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbYCKKqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbYCKKqa
+	id S1754846AbYCKKvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYCKKvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:46:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58423 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbYCKKq3 (ORCPT
+	Tue, 11 Mar 2008 06:51:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:46923 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbYCKKvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:46:29 -0400
-Date: Tue, 11 Mar 2008 11:48:22 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Adam Belay <abelay@novell.com>,
-       Lee Revell <rlrevell@joe-job.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080311104822.GC18917@one.firstfloor.org>
-References: <20080303231033.GB15255@one.firstfloor.org> <20080304040048.GA31562@codemonkey.org.uk> <20080304071423.0e6b71c1@mjolnir.drzeus.cx> <20080304181924.70aaf8c1@mjolnir.drzeus.cx> <924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com> <20080305070201.0d16cd40@mjolnir.drzeus.cx> <20080305094023.6486ebdf@mjolnir.drzeus.cx> <20080306092730.4412d085@mjolnir.drzeus.cx> <20080309151659.63d54f38@mjolnir.drzeus.cx> <20080311085145.5fcf3186@mjolnir.drzeus.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311085145.5fcf3186@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 11 Mar 2008 06:51:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=xkbCYYoF604N2zjl3g6MsOie7ovMycwOhenpaumjp0X4UX6IbwEV4CxK9kejZSmJZtj68wBK/7zee+Cn4oQhKCbvmfFyc1VD/jAwwmzjFFEF8PeEyIXICvJN1Jnk2pJtTvnAf6GUpDMR4o5npOw25d2e3D1Io9FFKBXfyByqJ7Q=
+Message-ID: <47D6643A.6060001@gmail.com>
+Date: Tue, 11 Mar 2008 19:51:38 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] devres: implement pcim_iomap_regions_request_all()
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have now found a very hacky workaround that is slightly better than
-> disabling C3 altogether; making C3 exclusive to one core at a time. It
-> seems to kill the noise and the system now spends 50% in C3, instead of
-> 0%.
+Some drivers need to reserve all PCI BARs to prevent other drivers
+misusing unoccupied BARs.  pcim_iomap_regions_request_all() requests
+all BARs and iomap specified BARs.
 
-I suspect it won't do much of C3 if only one core is idle this way.
-Most likely you just disabled C3 this way in a way invisible to software.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>
+---
+After acked, it's probably best to push this through libata-dev as
+that's the only user for now.
 
--Andi
+Thanks.
 
+ lib/devres.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+Index: work/lib/devres.c
+===================================================================
+--- work.orig/lib/devres.c
++++ work/lib/devres.c
+@@ -298,6 +298,31 @@ int pcim_iomap_regions(struct pci_dev *p
+ EXPORT_SYMBOL(pcim_iomap_regions);
+ 
+ /**
++ * pcim_iomap_regions_request_all - Request all BARs and iomap specified ones
++ * @pdev: PCI device to map IO resources for
++ * @mask: Mask of BARs to iomap
++ * @name: Name used when requesting regions
++ *
++ * Request all PCI BARs and iomap regions specified by @mask.
++ */
++int pcim_iomap_regions_request_all(struct pci_dev *pdev, u16 mask,
++				   const char *name)
++{
++	int request_mask = ((1 << 6) - 1) & ~mask;
++	int rc;
++
++	rc = pci_request_selected_regions(pdev, request_mask, name);
++	if (rc)
++		return rc;
++
++	rc = pcim_iomap_regions(pdev, mask, name);
++	if (rc)
++		pci_release_selected_regions(pdev, request_mask);
++	return rc;
++}
++EXPORT_SYMBOL(pcim_iomap_regions_request_all);
++
++/**
+  * pcim_iounmap_regions - Unmap and release PCI BARs
+  * @pdev: PCI device to map IO resources for
+  * @mask: Mask of BARs to unmap and release
