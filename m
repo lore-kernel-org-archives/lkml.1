@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYCKDe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYCKDoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbYCKDe1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 23:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYCKDeS
+	id S1756042AbYCKDoV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 23:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYCKDoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 23:34:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43962 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751369AbYCKDeR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 23:34:17 -0400
-Date: Mon, 10 Mar 2008 20:33:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       tony.luck@intel.com, tomof@acm.org
-Subject: Re: [PATCH -mm] ia64: make IOMMU respect the segment boundary
- limits
-Message-Id: <20080310203344.acf50d71.akpm@linux-foundation.org>
-In-Reply-To: <20080310221538U.tomof@acm.org>
-References: <20080310221538U.tomof@acm.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Mar 2008 23:44:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38933 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753993AbYCKDoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 23:44:11 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+X-Fcc: ~/Mail/linus
+Cc: "Ingo Molnar" <mingo@elte.hu>, <markus.t.metzger@intel.com>,
+       <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: fix typo(?) in step.c
+In-Reply-To: Jan Beulich's message of  Monday, 10 March 2008 11:53:19 +0000 <47D52F3F.76E4.0078.0@novell.com>
+References: <47CE69B0.76E4.0078.0@novell.com>
+	<20080305134150.GA16477@elte.hu>
+	<20080306075223.BA28B2700FD@magilla.localdomain>
+	<20080306112819.GC17906@elte.hu>
+	<20080306120309.E4BE52700FD@magilla.localdomain>
+	<20080306131119.GC21359@elte.hu>
+	<47D52F3F.76E4.0078.0@novell.com>
+X-Zippy-Says: Oh my GOD -- the SUN just fell into YANKEE STADIUM!!
+Message-Id: <20080311034408.4F1A226F991@magilla.localdomain>
+Date: Mon, 10 Mar 2008 20:44:08 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008 22:17:20 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> So, is this going to be fully reverted, or is it worth pointing out/fixing
+> other issues? The thing I'm recognizing right now is that
+> eee3af4a2c83a97fff107ddc445d9df6fded9ce4 made the writes to
+> DebugCtlMSR unconditional, which means any attempt to do
+> debugging on i[345]86 will ultimately cause the kernel to oops. All of
+> that stuff should really depend on CONFIG_X86_DEBUGCTLMSR...
 
-> This patch is another sequel to my patchset that fixes iommu segment
-> boundary problems, that is, IOMMUs allocate memory areas without
-> considering a low level driver's segment boundary limits:
-> 
-> http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg11919.html
+I think it would be wise to excise all the BTS-related additions until
+after 2.6.25.  But I am too swamped already and not planning to do
+anything about this myself.  But, that said, FWIW it does not look to
+me like debugctlmsr will ever be written on hardware that doesn't
+support it.  The stores are all only enabled if TIF_DEBUGCTLMSR gets
+set and thread.debugctlmsr is nonzero.  That can't be set by ptrace
+unless arch_has_block_step() returns true.
 
-Please make this easier.
 
-afacit the patches to which you refer are already in mainline, so this is
-*not* a "-mm" patch.  It is needed in mainline, correct?
-
-> This patchset fixes the IA64 IOMMU code.
-
-And if it fixes a bug then it is needed in 2.6.25.
-
-Is that correct?
-
-> This assumes that ioc->ibase is on iovp_size boundary. If not, please
-> let me know. I'll fix the patch.
-
-Who is the person who who knows the answer to this?
-
-Does this mean that the patch wasn't runtime tested?  If so, how do you
-know there is a bug?
-
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH -mm] ia64: make IOMMU respect the segment boundary limits
-> 
-> This makes IA64's IOMMU implementation not allocate a memory area
-> spanning LLD's segment boundary.
-
-This changelog doesn't actually tell us that this patch fixed a bug.
-
-It should tell us what the bug is, and how it fixed it, please.
-
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  arch/ia64/Kconfig               |    3 ++
->  arch/ia64/hp/common/sba_iommu.c |   56 +++++++++++++++++++++++++++------------
-
+Thanks,
+Roland
