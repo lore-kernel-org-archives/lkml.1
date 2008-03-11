@@ -1,115 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYCKSPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYCKSP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbYCKSPl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYCKSPN
+	id S1755348AbYCKSP4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYCKSPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:15:13 -0400
-Received: from mga03.intel.com ([143.182.124.21]:58589 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753407AbYCKSPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:15:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,481,1199692800"; 
-   d="scan'208";a="217382494"
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
-	engine
-From: Dan Williams <dan.j.williams@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Olof Johansson <olof@lixom.net>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>,
-       linux-kernel@vger.kernel.org, pasemi-linux@ozlabs.org,
-       linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
-In-Reply-To: <20080311105355.64a9c380.akpm@linux-foundation.org>
-References: <20080306233900.GA3969@lixom.net>
-	 <20080311000619.ba39311f.akpm@linux-foundation.org>
-	 <20080311142545.GA18843@lixom.net>
-	 <20080311105355.64a9c380.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 11 Mar 2008 11:15:11 -0700
-Message-Id: <1205259311.26723.40.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
+	Tue, 11 Mar 2008 14:15:44 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:38528 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754756AbYCKSPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:15:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wmYY27B1egm1S0CuMOHk2khA2a8FdyJk6PMygHq4AySkzBlpbHctZTxYwyqtOgsZiyXqiWSCG9ThbC/q38z4faqpLkGhX7oXcW6UDDC102WvY9VBF9ky6HForGDnir+G2ObfDChQKdvyM56LmjU8W0GZ+35RY4C6sZcizd0JQVA=
+Message-ID: <170fa0d20803111115n3e8eb438s9b1ad7fff2fb8672@mail.gmail.com>
+Date: Tue, 11 Mar 2008 14:15:30 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
+Cc: "David S. Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, stable@kernel.org
+In-Reply-To: <47BDBC23.10605@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47BDBC23.10605@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-11 at 10:53 -0700, Andrew Morton wrote:
-> On Tue, 11 Mar 2008 09:25:45 -0500
-> Olof Johansson <olof@lixom.net> wrote:
-> 
-> > On Tue, Mar 11, 2008 at 12:06:19AM -0700, Andrew Morton wrote:
-> > > On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
-> > >
-> > > > pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
-> > > >    
-> > > > First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
-> > > > platform-specific functions to allocate channels, etc.
-> > >
-> > > Applied this on Paul's latest and powerpc allmodconfig goes boom.
-> >
-> > It's dependent on my latest pull request of pasemi.git for-2.6.26 that
-> > Paul hasn't pulled/pushed yet.
-> 
-> Maybe we should get that tree into -mm and/or linux-next.
-> 
-> People do test -mm on powerpc.
-> 
-> > > drivers/dma/pasemi_dma.c: In function `pasemi_dma_alloc_chan_resources':
-> > > drivers/dma/pasemi_dma.c:152: error: `PAS_DMA_TXCHAN_CFG_TY_COPY' undeclared (first use in this function)
-> > > drivers/dma/pasemi_dma.c:152: error: (Each undeclared identifier is reported only once
-> > > drivers/dma/pasemi_dma.c:152: error: for each function it appears in.)
-> > > drivers/dma/pasemi_dma.c:154: error: `PAS_DMA_TXCHAN_CFG_LPDQ' undeclared (first use in this function)
-> > > drivers/dma/pasemi_dma.c:155: error: `PAS_DMA_TXCHAN_CFG_LPSQ' undeclared (first use in this function)
-> > > drivers/dma/pasemi_dma.c: In function `pasemi_dma_probe':
-> > > drivers/dma/pasemi_dma.c:394: error: structure has no member named `device_dependency_added'
-> >
-> > .. and that one is caused by recent changes in async_tx.git. I was
-> > waiting on other review comments from the DMA maintainers before
-> > resubmitting; timer has expired though and I'll do it anyway today.
-> 
-> What is async_tx.git?
-
-I recently moved the async_tx git tree to kernel.org.  I gave a heads up
-[1].  Here is the reasoning:
-
-<quote>
-For -mm please replace the 'git-md-accel' url with the following, it
-should also be renamed to 'git-async-tx' as anything that impacts MD
-will go through Neil.
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git upstream
-</quote>
-
-> > > Also this driver from git-md-accel is pretty sick:
-> > >
-> > >
-> > > drivers/dma/fsldma.c:439: warning: comparison of distinct pointer types lacks a cast
-> > > drivers/dma/fsldma.c: In function `fsl_chan_xfer_ld_queue':
-> > > drivers/dma/fsldma.c:584: warning: long long unsigned int format, dma_addr_t arg (arg 4)
-> > > drivers/dma/fsldma.c: In function `fsl_dma_chan_do_interrupt':
-> > > drivers/dma/fsldma.c:661: warning: unsigned int format, different type arg (arg 5)
-> > > drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 4)
-> > > drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 5)
-> > > drivers/dma/fsldma.c:694: warning: unsigned int format, different type arg (arg 4)
-> > > drivers/dma/fsldma.c: In function `fsl_dma_self_test':
-> > > drivers/dma/fsldma.c:833: warning: int format, different type arg (arg 5)
-> > > drivers/dma/fsldma.c: In function `of_fsl_dma_probe':
-> > > drivers/dma/fsldma.c:1003: warning: unsigned int format, different type arg (arg 5)
-> > > drivers/dma/fsldma.c: At top level:
-> > > drivers/dma/fsldma.c:723: warning: 'fsl_dma_callback_test' defined but not used
-> >
-> > Yeah, Zhang Wei posted a patch for that on lkml yesterday.
-> 
-> OK.
-
-My fault for not pushing out this cleanup to the old url while the
-git-md-accel changeover was pending.
-
---
-Dan
-
-[1] http://marc.info/?l=linux-kernel&m=120465351720649&w=2
+On 2/21/08, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> Some oprofile results obtained while using tbench on a 2x2 cpu machine
+>  were very surprising.
+>
+>  For example, loopback_xmit() function was using high number of cpu
+>  cycles to perform
+>  the statistic updates, supposed to be real cheap since they use percpu data
+>
+>         pcpu_lstats = netdev_priv(dev);
+>         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
+>         lb_stats->packets++;  /* HERE : serious contention */
+>         lb_stats->bytes += skb->len;
+>
+>
+>  struct pcpu_lstats is a small structure containing two longs. It appears
+>  that on my 32bits platform,
+>  alloc_percpu(8) allocates a single cache line,  instead of giving to
+>  each cpu a separate
+>  cache line.
+>
+>  Using the following patch gave me impressive boost in various benchmarks
+>  ( 6 % in tbench)
+>  (all percpu_counters hit this bug too)
+>
+>  Long term fix (ie >= 2.6.26) would be to let each CPU allocate their own
+>  block of memory, so that we
+>  dont need to roudup sizes to L1_CACHE_BYTES, or merging the SGI stuff of
+>  course...
+>
+>  Note : SLUB vs SLAB is important here to *show* the improvement, since
+>  they dont have the same minimum
+>  allocation sizes (8 bytes vs 32 bytes).
+>  This could very well explain regressions some guys reported when they
+>  switched to SLUB.
 
 
+I see that this fix was committed to mainline as commit
+be852795e1c8d3829ddf3cb1ce806113611fa555
+
+The commit didn't "Cc: <stable@kernel.org>", and it doesn't appear to
+be queued for 2.6.24.x.  Should it be?
+
+If I understand you correctly, SLAB doesn't create this particular
+cache thrashing on 32bit systems?  Is SLAB ok on other architectures
+too?  Can you (or others) comment on the importance of this fix
+relative to x86_64 (64byte cacheline) and SLAB?
+
+I'm particularly interested in this given the use of percpu_counters
+with the per bdi write throttling.
+
+Mike
