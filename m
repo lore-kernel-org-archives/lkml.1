@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYCKQ4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYCKQ5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753012AbYCKQ4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 12:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYCKQ4i
+	id S1753763AbYCKQ5X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 12:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYCKQ5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 12:56:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:50746 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbYCKQ4h (ORCPT
+	Tue, 11 Mar 2008 12:57:12 -0400
+Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:56929 "HELO
+	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751480AbYCKQ5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 12:56:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=fqJ5AP3jp5zQtyICS7cGy0EaHtxfyuF4IfTh8KdDAYDulYQcKkJWfkiMfJEeDITrlz4gPIR54eNqqajrGuyMkZ5q8MothEfmGO4CsC9gwztgrPDCVASaO45o+oCSDAoWsTwfF9hB5VWXbi3zd07VuW83y8uu60KjOjJEzdXynMg=
-Subject: [PATCH] bitops: add 8-bit and 16-bit rotation functions
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 11 Mar 2008 09:56:09 -0700
-Message-Id: <1205254569.22317.8.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 11 Mar 2008 12:57:10 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Date: Tue, 11 Mar 2008 09:56:37 -0700
+User-Agent: KMail/1.9.9
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       Gary Hade <garyhade@us.ibm.com>, warthog19@eaglescrag.net,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20080229002341.GA21420@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311132800.GC21482@parisc-linux.org>
+In-Reply-To: <20080311132800.GC21482@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803110956.37619.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Flesh out the api a bit, done in the same style as the 32-bit
-version.  Currently there are hand-rolled versions elsewhere
-in the tree that can be consolidated.
+On Tuesday, March 11, 2008 6:28 am Matthew Wilcox wrote:
+> On Tue, Mar 11, 2008 at 10:10:40PM +0900, Kenji Kaneshige wrote:
+> > 1) I checked ACPI spec again and again, but I could not find any
+> >    reason to add Fujitsu servers to quirks list. So I'd like you to
+> >    add HP servers to the quirks list. I'll send the following patches
+> >    followed by this e-mail.
+>
+> Alex pointed out that IBM interprets the spec the same way that HP does.
+> Are there any other machines that follow the spec the same way that
+> Fujitsu does?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Andrew, once this is in I'll feed the patches replacing hand-rolled
-versions of this through appropriate maintainers.
+So Kenji is arguing that _STA should be called before _SUN (iow that the _SUN 
+value is bogus unless _STA indicates that the slot is powered)?  That seems 
+harder for the user; often times you want to find a slot even if it's powered 
+down & empty (say to add a new card)...  It looks like the current code won't 
+provide a slot name on Fujitsu machines in this case, or am I missing 
+something?
 
- include/linux/bitops.h |   40 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 40 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-index 69c1edb..40d5473 100644
---- a/include/linux/bitops.h
-+++ b/include/linux/bitops.h
-@@ -65,6 +65,46 @@ static inline __u32 ror32(__u32 word, unsigned int shift)
- 	return (word >> shift) | (word << (32 - shift));
- }
- 
-+/**
-+ * rol16 - rotate a 16-bit value left
-+ * @word: value to rotate
-+ * @shift: bits to roll
-+ */
-+static inline __u16 rol16(__u16 word, unsigned int shift)
-+{
-+	return (word << shift) | (word >> (16 - shift));
-+}
-+
-+/**
-+ * ror16 - rotate a 16-bit value right
-+ * @word: value to rotate
-+ * @shift: bits to roll
-+ */
-+static inline __u16 ror16(__u16 word, unsigned int shift)
-+{
-+	return (word >> shift) | (word << (16 - shift));
-+}
-+
-+/**
-+ * rol8 - rotate an 8-bit value left
-+ * @word: value to rotate
-+ * @shift: bits to roll
-+ */
-+static inline __u8 rol8(__u8 word, unsigned int shift)
-+{
-+	return (word << shift) | (word >> (8 - shift));
-+}
-+
-+/**
-+ * ror8 - rotate an 8-bit value right
-+ * @word: value to rotate
-+ * @shift: bits to roll
-+ */
-+static inline __u8 ror8(__u8 word, unsigned int shift)
-+{
-+	return (word >> shift) | (word << (8 - shift));
-+}
-+
- static inline unsigned fls_long(unsigned long l)
- {
- 	if (sizeof(l) == 4)
--- 
-1.5.4.4.592.g32d4c
-
-
-
+Thanks,
+Jesse
