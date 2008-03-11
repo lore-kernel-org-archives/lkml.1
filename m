@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYCKBAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbYCKBAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbYCKBAU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Mar 2008 21:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbYCKA7c
+	id S1757575AbYCKBAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Mar 2008 21:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbYCKA7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Mar 2008 20:59:32 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60532 "EHLO mx1.suse.de"
+	Mon, 10 Mar 2008 20:59:35 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40911 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755977AbYCKA7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Mar 2008 20:59:30 -0400
+	id S1756102AbYCKA7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Mar 2008 20:59:34 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-usb@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 4/6] USB: remove CONFIG_USB_PERSIST setting
-Date: Mon, 10 Mar 2008 17:59:10 -0700
-Message-Id: <1205197152-18146-4-git-send-email-gregkh@suse.de>
+Subject: [PATCH 5/6] USB: check serial-number string after device reset
+Date: Mon, 10 Mar 2008 17:59:11 -0700
+Message-Id: <1205197152-18146-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <20080311004239.GD17890@suse.de>
 References: <20080311004239.GD17890@suse.de>
@@ -25,351 +25,160 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch (as1047) removes the USB_PERSIST Kconfig option, enabling
-it permanently.  It also prevents the power/persist attribute from
-being created for hub devices; there's no point in having it since
-USB-PERSIST is always turned on for hubs.
+This patch (as1048) extends the descriptor checking after a device is
+reset.  Now the SerialNumber string descriptor is compared to its old
+value, in addition to the device and configuration descriptors.
+
+As a consequence, the kmalloc() call in usb_string() is now on the
+error-handling pathway for usb-storage.  Hence its allocation type is
+changed to GFO_NOIO.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/usb/persist.txt |   35 +++++++++++++++++++----------------
- drivers/usb/core/Kconfig      |   25 -------------------------
- drivers/usb/core/hub.c        |   27 ++++++++++-----------------
- drivers/usb/core/quirks.c     |   12 ++++++++++++
- drivers/usb/core/sysfs.c      |   22 ++++++++++------------
- drivers/usb/host/ehci-hub.c   |   11 +----------
- include/linux/usb.h           |    2 +-
- 7 files changed, 53 insertions(+), 81 deletions(-)
+ Documentation/usb/persist.txt |    8 ++--
+ drivers/usb/core/hub.c        |   65 +++++++++++++++++++++++++++++++---------
+ drivers/usb/core/message.c    |    2 +-
+ 3 files changed, 55 insertions(+), 20 deletions(-)
 
 diff --git a/Documentation/usb/persist.txt b/Documentation/usb/persist.txt
-index df54d64..bea58db 100644
+index bea58db..d56cb1a 100644
 --- a/Documentation/usb/persist.txt
 +++ b/Documentation/usb/persist.txt
-@@ -2,7 +2,7 @@
+@@ -136,10 +136,10 @@ aren't guaranteed to be 100% accurate.
  
- 		   Alan Stern <stern@rowland.harvard.edu>
+ If you replace one USB device with another of the same type (same
+ manufacturer, same IDs, and so on) there's an excellent chance the
+-kernel won't detect the change.  Serial numbers and other strings are
+-not compared.  In many cases it wouldn't help if they were, because
+-manufacturers frequently omit serial numbers entirely in their
+-devices.
++kernel won't detect the change.  The serial number string and other
++descriptors are compared with the kernel's stored values, but this
++might not help since manufacturers frequently omit serial numbers
++entirely in their devices.
  
--		 September 2, 2006 (Updated May 29, 2007)
-+		September 2, 2006 (Updated February 25, 2008)
- 
- 
- 	What is the problem?
-@@ -65,9 +65,10 @@ much better.)
- 
- 	What is the solution?
- 
--Setting CONFIG_USB_PERSIST will cause the kernel to work around these
--issues.  It enables a mode in which the core USB device data
--structures are allowed to persist across a power-session disruption.
-+The kernel includes a feature called USB-persist.  It tries to work
-+around these issues by allowing the core USB device data structures to
-+persist across a power-session disruption.
-+
- It works like this.  If the kernel sees that a USB host controller is
- not in the expected state during resume (i.e., if the controller was
- reset or otherwise had lost power) then it applies a persistence check
-@@ -80,28 +81,30 @@ re-enumeration shows that the device now attached to that port has the
- same descriptors as before, including the Vendor and Product IDs, then
- the kernel continues to use the same device structure.  In effect, the
- kernel treats the device as though it had merely been reset instead of
--unplugged.
-+unplugged.  The same thing happens if the host controller is in the
-+expected state but a USB device was unplugged and then replugged.
- 
- If no device is now attached to the port, or if the descriptors are
- different from what the kernel remembers, then the treatment is what
- you would expect.  The kernel destroys the old device structure and
- behaves as though the old device had been unplugged and a new device
--plugged in, just as it would without the CONFIG_USB_PERSIST option.
-+plugged in.
- 
- The end result is that the USB device remains available and usable.
- Filesystem mounts and memory mappings are unaffected, and the world is
- now a good and happy place.
- 
--Note that even when CONFIG_USB_PERSIST is set, the "persist" feature
--will be applied only to those devices for which it is enabled.  You
--can enable the feature by doing (as root):
-+Note that the "USB-persist" feature will be applied only to those
-+devices for which it is enabled.  You can enable the feature by doing
-+(as root):
- 
- 	echo 1 >/sys/bus/usb/devices/.../power/persist
- 
- where the "..." should be filled in the with the device's ID.  Disable
- the feature by writing 0 instead of 1.  For hubs the feature is
--automatically and permanently enabled, so you only have to worry about
--setting it for devices where it really matters.
-+automatically and permanently enabled and the power/persist file
-+doesn't even exist, so you only have to worry about setting it for
-+devices where it really matters.
- 
- 
- 	Is this the best solution?
-@@ -112,19 +115,19 @@ centralized Logical Volume Manager.  Such a solution would allow you
- to plug in a USB flash device, create a persistent volume associated
- with it, unplug the flash device, plug it back in later, and still
- have the same persistent volume associated with the device.  As such
--it would be more far-reaching than CONFIG_USB_PERSIST.
-+it would be more far-reaching than USB-persist.
- 
- On the other hand, writing a persistent volume manager would be a big
- job and using it would require significant input from the user.  This
- solution is much quicker and easier -- and it exists now, a giant
- point in its favor!
- 
--Furthermore, the USB_PERSIST option applies to _all_ USB devices, not
-+Furthermore, the USB-persist feature applies to _all_ USB devices, not
- just mass-storage devices.  It might turn out to be equally useful for
- other device types, such as network interfaces.
- 
- 
--	WARNING: Using CONFIG_USB_PERSIST can be dangerous!!
-+	WARNING: USB-persist can be dangerous!!
- 
- When recovering an interrupted power session the kernel does its best
- to make sure the USB device hasn't been changed; that is, the same
-@@ -152,5 +155,5 @@ but yourself.
- YOU HAVE BEEN WARNED!  USE AT YOUR OWN RISK!
- 
- That having been said, most of the time there shouldn't be any trouble
--at all.  The "persist" feature can be extremely useful.  Make the most
--of it.
-+at all.  The USB-persist feature can be extremely useful.  Make the
-+most of it.
-diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
-index a2b0aa4..c15621d 100644
---- a/drivers/usb/core/Kconfig
-+++ b/drivers/usb/core/Kconfig
-@@ -102,31 +102,6 @@ config USB_SUSPEND
- 
- 	  If you are unsure about this, say N here.
- 
--config USB_PERSIST
--	bool "USB device persistence during system suspend (DANGEROUS)"
--	depends on USB && PM && EXPERIMENTAL
--	default n
--	help
--
--	  If you say Y here and enable the "power/persist" attribute
--	  for a USB device, the device's data structures will remain
--	  persistent across system suspend, even if the USB bus loses
--	  power.  (This includes hibernation, also known as swsusp or
--	  suspend-to-disk.)  The devices will reappear as if by magic
--	  when the system wakes up, with no need to unmount USB
--	  filesystems, rmmod host-controller drivers, or do anything
--	  else.
--
--	  	WARNING: This option can be dangerous!
--
--	  If a USB device is replaced by another of the same type while
--	  the system is asleep, there's a good chance the kernel won't
--	  detect the change.  Likewise if the media in a USB storage
--	  device is replaced.  When this happens it's almost certain to
--	  cause data corruption and maybe even crash your system.
--
--	  If you are unsure, say N here.
--
- config USB_OTG
- 	bool
- 	depends on USB && EXPERIMENTAL
+ Furthermore it's quite possible to leave a USB device exactly the same
+ while changing its media.  If you replace the flash memory card in a
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index a0fd307..277d4ec 100644
+index 277d4ec..545fa72 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
-@@ -31,12 +31,6 @@
- #include "hcd.h"
- #include "hub.h"
+@@ -3011,16 +3011,36 @@ void usb_hub_cleanup(void)
+ 	usb_deregister(&hub_driver);
+ } /* usb_hub_cleanup() */
  
--#ifdef	CONFIG_USB_PERSIST
--#define	USB_PERSIST	1
--#else
--#define	USB_PERSIST	0
--#endif
--
- /* if we are in debug mode, always announce new devices */
- #ifdef DEBUG
- #ifndef CONFIG_USB_ANNOUNCE_NEW_DEVICES
-@@ -696,7 +690,7 @@ static void hub_restart(struct usb_hub *hub, int type)
- 		 * turn off the various status changes to prevent
- 		 * khubd from disconnecting it later.
- 		 */
--		if (USB_PERSIST && udev->persist_enabled && status == 0 &&
-+		if (udev->persist_enabled && status == 0 &&
- 				!(portstatus & USB_PORT_STAT_ENABLE)) {
- 			if (portchange & USB_PORT_STAT_C_ENABLE)
- 				clear_port_feature(hub->hdev, port1,
-@@ -1924,9 +1918,8 @@ static int finish_port_resume(struct usb_device *udev)
-  * the host and the device is the same as it was when the device
-  * suspended.
-  *
-- * If CONFIG_USB_PERSIST and @udev->reset_resume are both set then this
-- * routine won't check that the port is still enabled.  Furthermore,
-- * if @udev->reset_resume is set then finish_port_resume() above will
-+ * If @udev->reset_resume is set then this routine won't check that the
-+ * port is still enabled.  Furthermore, finish_port_resume() above will
-  * reset @udev.  The end result is that a broken power session can be
-  * recovered and @udev will appear to persist across a loss of VBUS power.
-  *
-@@ -1938,8 +1931,8 @@ static int finish_port_resume(struct usb_device *udev)
-  * to it will be lost.  Using the USB_PERSIST facility, the device can be
-  * made to appear as if it had not disconnected.
-  *
-- * This facility is inherently dangerous.  Although usb_reset_device()
-- * makes every effort to insure that the same device is present after the
-+ * This facility can be dangerous.  Although usb_reset_device() makes
-+ * every effort to insure that the same device is present after the
-  * reset as before, it cannot provide a 100% guarantee.  Furthermore it's
-  * quite possible for a device to remain unaltered but its media to be
-  * changed.  If the user replaces a flash memory card while the system is
-@@ -1984,7 +1977,7 @@ int usb_port_resume(struct usb_device *udev)
- 		status = hub_port_status(hub, port1, &portstatus, &portchange);
- 
-  SuspendCleared:
--		if (USB_PERSIST && udev->reset_resume)
-+		if (udev->reset_resume)
- 			want_flags = USB_PORT_STAT_POWER
- 					| USB_PORT_STAT_CONNECTION;
- 		else
-@@ -2114,10 +2107,10 @@ static int hub_reset_resume(struct usb_interface *intf)
-  *
-  * The USB host controller driver calls this function when its root hub
-  * is resumed and Vbus power has been interrupted or the controller
-- * has been reset.  The routine marks @rhdev as having lost power.  When
-- * the hub driver is resumed it will take notice; if CONFIG_USB_PERSIST
-- * is enabled then it will carry out power-session recovery, otherwise
-- * it will disconnect all the child devices.
-+ * has been reset.  The routine marks @rhdev as having lost power.
-+ * When the hub driver is resumed it will take notice and carry out
-+ * power-session recovery for all the "USB-PERSIST"-enabled child devices;
-+ * the others will be disconnected.
-  */
- void usb_root_hub_lost_power(struct usb_device *rhdev)
- {
-diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index d9d1eb1..10d66d0 100644
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -94,4 +94,16 @@ void usb_detect_quirks(struct usb_device *udev)
- 	if (udev->descriptor.bDeviceClass != USB_CLASS_HUB)
- 		udev->autosuspend_disabled = 1;
- #endif
+-static int config_descriptors_changed(struct usb_device *udev)
+-{
+-	unsigned			index;
+-	unsigned			len = 0;
+-	struct usb_config_descriptor	*buf;
++static int descriptors_changed(struct usb_device *udev,
++		struct usb_device_descriptor *old_device_descriptor)
++{
++	int		changed = 0;
++	unsigned	index;
++	unsigned	serial_len = 0;
++	unsigned	len;
++	unsigned	old_length;
++	int		length;
++	char		*buf;
 +
-+#ifdef	CONFIG_PM
-+	/* Hubs are automatically enabled for USB-PERSIST */
-+	if (udev->descriptor.bDeviceClass == USB_CLASS_HUB)
-+		udev->persist_enabled = 1;
-+#else
-+	/* In the absense of PM, we can safely enable USB-PERSIST
-+	 * for all devices.  It will affect things like hub resets
-+	 * and EMF-related port disables.
++	if (memcmp(&udev->descriptor, old_device_descriptor,
++			sizeof(*old_device_descriptor)) != 0)
++		return 1;
++
++	/* Since the idVendor, idProduct, and bcdDevice values in the
++	 * device descriptor haven't changed, we will assume the
++	 * Manufacturer and Product strings haven't changed either.
++	 * But the SerialNumber string could be different (e.g., a
++	 * different flash card of the same brand).
 +	 */
-+	udev->persist_enabled = 1;
-+#endif	/* CONFIG_PM */
- }
-diff --git a/drivers/usb/core/sysfs.c b/drivers/usb/core/sysfs.c
-index a37ccbd..5b20a60 100644
---- a/drivers/usb/core/sysfs.c
-+++ b/drivers/usb/core/sysfs.c
-@@ -180,11 +180,9 @@ show_urbnum(struct device *dev, struct device_attribute *attr, char *buf)
- static DEVICE_ATTR(urbnum, S_IRUGO, show_urbnum, NULL);
++	if (udev->serial)
++		serial_len = strlen(udev->serial) + 1;
  
- 
--#if defined(CONFIG_USB_PERSIST) || defined(CONFIG_USB_SUSPEND)
--static const char power_group[] = "power";
--#endif
-+#ifdef	CONFIG_PM
- 
--#ifdef	CONFIG_USB_PERSIST
-+static const char power_group[] = "power";
- 
- static ssize_t
- show_persist(struct device *dev, struct device_attribute *attr, char *buf)
-@@ -222,12 +220,13 @@ static int add_persist_attributes(struct device *dev)
- 	if (is_usb_device(dev)) {
- 		struct usb_device *udev = to_usb_device(dev);
- 
--		/* Hubs are automatically enabled for USB_PERSIST */
--		if (udev->descriptor.bDeviceClass == USB_CLASS_HUB)
--			udev->persist_enabled = 1;
--		rc = sysfs_add_file_to_group(&dev->kobj,
--				&dev_attr_persist.attr,
--				power_group);
-+		/* Hubs are automatically enabled for USB_PERSIST,
-+		 * no point in creating the attribute file.
-+		 */
-+		if (udev->descriptor.bDeviceClass != USB_CLASS_HUB)
-+			rc = sysfs_add_file_to_group(&dev->kobj,
-+					&dev_attr_persist.attr,
-+					power_group);
++	len = serial_len;
+ 	for (index = 0; index < udev->descriptor.bNumConfigurations; index++) {
+-		if (len < le16_to_cpu(udev->config[index].desc.wTotalLength))
+-			len = le16_to_cpu(udev->config[index].desc.wTotalLength);
++		old_length = le16_to_cpu(udev->config[index].desc.wTotalLength);
++		len = max(len, old_length);
  	}
- 	return rc;
++
+ 	buf = kmalloc(len, GFP_NOIO);
+ 	if (buf == NULL) {
+ 		dev_err(&udev->dev, "no mem to re-read configs after reset\n");
+@@ -3028,25 +3048,41 @@ static int config_descriptors_changed(struct usb_device *udev)
+ 		return 1;
+ 	}
+ 	for (index = 0; index < udev->descriptor.bNumConfigurations; index++) {
+-		int length;
+-		int old_length = le16_to_cpu(udev->config[index].desc.wTotalLength);
+-
++		old_length = le16_to_cpu(udev->config[index].desc.wTotalLength);
+ 		length = usb_get_descriptor(udev, USB_DT_CONFIG, index, buf,
+ 				old_length);
+-		if (length < old_length) {
++		if (length != old_length) {
+ 			dev_dbg(&udev->dev, "config index %d, error %d\n",
+ 					index, length);
++			changed = 1;
+ 			break;
+ 		}
+ 		if (memcmp (buf, udev->rawdescriptors[index], old_length)
+ 				!= 0) {
+ 			dev_dbg(&udev->dev, "config index %d changed (#%d)\n",
+-				index, buf->bConfigurationValue);
++				index,
++				((struct usb_config_descriptor *) buf)->
++					bConfigurationValue);
++			changed = 1;
+ 			break;
+ 		}
+ 	}
++
++	if (!changed && serial_len) {
++		length = usb_string(udev, udev->descriptor.iSerialNumber,
++				buf, serial_len);
++		if (length + 1 != serial_len) {
++			dev_dbg(&udev->dev, "serial string error %d\n",
++					length);
++			changed = 1;
++		} else if (memcmp(buf, udev->serial, length) != 0) {
++			dev_dbg(&udev->dev, "serial string changed\n");
++			changed = 1;
++		}
++	}
++
+ 	kfree(buf);
+-	return index != udev->descriptor.bNumConfigurations;
++	return changed;
  }
-@@ -238,13 +237,12 @@ static void remove_persist_attributes(struct device *dev)
- 			&dev_attr_persist.attr,
- 			power_group);
- }
--
- #else
  
- #define add_persist_attributes(dev)	0
- #define remove_persist_attributes(dev)	do {} while (0)
+ /**
+@@ -3119,8 +3155,7 @@ int usb_reset_device(struct usb_device *udev)
+ 		goto re_enumerate;
+  
+ 	/* Device might have changed firmware (DFU or similar) */
+-	if (memcmp(&udev->descriptor, &descriptor, sizeof descriptor)
+-			|| config_descriptors_changed (udev)) {
++	if (descriptors_changed(udev, &descriptor)) {
+ 		dev_info(&udev->dev, "device firmware changed\n");
+ 		udev->descriptor = descriptor;	/* for disconnect() calls */
+ 		goto re_enumerate;
+diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
+index fefb922..a45076e 100644
+--- a/drivers/usb/core/message.c
++++ b/drivers/usb/core/message.c
+@@ -784,7 +784,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
+ 	if (size <= 0 || !buf || !index)
+ 		return -EINVAL;
+ 	buf[0] = 0;
+-	tbuf = kmalloc(256, GFP_KERNEL);
++	tbuf = kmalloc(256, GFP_NOIO);
+ 	if (!tbuf)
+ 		return -ENOMEM;
  
--#endif	/* CONFIG_USB_PERSIST */
-+#endif	/* CONFIG_PM */
- 
- #ifdef	CONFIG_USB_SUSPEND
- 
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 3a2eb01..e41b373 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -28,7 +28,7 @@
- 
- /*-------------------------------------------------------------------------*/
- 
--#ifdef	CONFIG_USB_PERSIST
-+#ifdef	CONFIG_PM
- 
- static int ehci_hub_control(
- 	struct usb_hcd	*hcd,
-@@ -104,15 +104,6 @@ static void ehci_handover_companion_ports(struct ehci_hcd *ehci)
- 	ehci->owned_ports = 0;
- }
- 
--#else	/* CONFIG_USB_PERSIST */
--
--static inline void ehci_handover_companion_ports(struct ehci_hcd *ehci)
--{ }
--
--#endif
--
--#ifdef	CONFIG_PM
--
- static int ehci_bus_suspend (struct usb_hcd *hcd)
- {
- 	struct ehci_hcd		*ehci = hcd_to_ehci (hcd);
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 583e048..7e31cac 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -387,6 +387,7 @@ struct usb_device {
- 
- 	unsigned can_submit:1;		/* URBs may be submitted */
- 	unsigned discon_suspended:1;	/* Disconnected while suspended */
-+	unsigned persist_enabled:1;	/* USB_PERSIST enabled for this dev */
- 	unsigned have_langid:1;		/* whether string_langid is valid */
- 	unsigned authorized:1;		/* Policy has said we can use it */
- 	unsigned wusb:1;		/* Device is Wireless USB */
-@@ -433,7 +434,6 @@ struct usb_device {
- 	unsigned auto_pm:1;		/* autosuspend/resume in progress */
- 	unsigned do_remote_wakeup:1;	/* remote wakeup should be enabled */
- 	unsigned reset_resume:1;	/* needs reset instead of resume */
--	unsigned persist_enabled:1;	/* USB_PERSIST enabled for this dev */
- 	unsigned autosuspend_disabled:1; /* autosuspend and autoresume */
- 	unsigned autoresume_disabled:1;  /*  disabled by the user */
- 	unsigned skip_sys_resume:1;	/* skip the next system resume */
 -- 
 1.5.4.3
 
