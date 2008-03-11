@@ -1,127 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYCKSiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYCKSrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYCKSiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYCKSiI
+	id S1754127AbYCKSrl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYCKSrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:38:08 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:40932 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbYCKSiG (ORCPT
+	Tue, 11 Mar 2008 14:47:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49013 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbYCKSrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:38:06 -0400
-Message-ID: <47D6D148.1090304@panasas.com>
-Date: Tue, 11 Mar 2008 20:36:56 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL pointer
- dereference
-References: <Pine.LNX.4.44L0.0803111352450.21625-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803111352450.21625-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 14:47:31 -0400
+Date: Tue, 11 Mar 2008 19:49:26 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [0/13] General DMA zone rework
+Message-ID: <20080311184926.GI27593@one.firstfloor.org>
+References: <200803071007.493903088@firstfloor.org> <20080307175148.3a49d8d3@mandriva.com.br> <20080308004654.GQ7365@one.firstfloor.org> <20080310150316.752e4489@mandriva.com.br> <20080310180843.GC28780@one.firstfloor.org> <20080311142624.1dbd3af5@mandriva.com.br> <20080311173540.GG27593@one.firstfloor.org> <20080311150048.4376c73a@mandriva.com.br>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311150048.4376c73a@mandriva.com.br>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11 2008 at 20:07 +0200, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Tue, 11 Mar 2008, Boaz Harrosh wrote:
+> | Oops. Thanks. I'll double check that. mask allocator indeed doesn't
+> | handle __GFP_COMP and nobody should be passing that into dma_alloc_coherent
+> | anyways. But the bug you got was for the small size wasn't it?
 > 
->> I would like to fix this better by calling scsi_get/put_command but there is 
->> something fundamental that bothers me with isd200 driver. I can see that 
->> an isd200_info struct is allocated and put on a struct us_data->extra. But 
->> as I understand the code, the struct us_data is associated with a scsi_host 
->> not a scsi_device. Are we guarantied that we have only one scsi_device 
->> per host at all times?
->>
->> If not than the resources in isd200_info that are related to a request_queue 
->> and are used from a .queuecommand code-path are not thread safe. (Like the
->> srb member)
->>
->> If Yes, then where in the code initialization sequence is the earliest place I
->> can get to a scsi_device. I could do that on first call to .queuecommand but
->> I would rather do it in a place that I could use GFP_KERNEL for allocation
->> of the extra command? (Same question on the tear down of the scsi_device)
+>  No, it triggers the BUG_ON() which checks the gfp, not the one
+> which checks MASK_MIN_SIZE.
+
+I see. I misdiagnosed your original problem then. But fixing the 
+size < 16 bytes case was a good idea anyways, someone else would
+have triggered that.
+
 > 
-> You can first get to the scsi_device in isd200_ata_command().  
+>  On the other hand I'm not sure whether it does the right thing
+> (ie, pass size in bytes instead of order) it does:
 
-I was afraid of that. I don't think I want to call scsi_get_command
-from within .queuecommand. I will leave the code hacked as today.
-
-> The last
-> place you can get to the scsi_device (if one exists!) is
-> quiesce_and_remove_host() -- but that's part of the core, not specific
-> to isd200.
 > 
+> """
+> pg = get_order(size);
+> [...]
+> res = dma_alloc_coherent(dev, PAGE_SIZE << pg, dma, gfp_flags);
 
-Here two, it looks like I need to introduce a new function pointer for isd200
-I'll leave it for now. Though I know this is not the last I'll see of this driver.
+With the mask allocator it can be changed to pass size directly
+and save some memory. Before that it didn't make any difference.
 
->> (And one more stupid question. Why does isd200_init_info allocates the info 
->> structure but the isd200_free_info_ptrs does not free it, it kind of
->> limits the way it can be allocated, no?)
+Can you perhaps send me a complete patch fixing that for sound and the 
+__GFP_COMP with description and Signed-off-by etc.? I can add it to my 
+patchkit then and you would be correctly attributed. Otherwise I can do it 
+myself too if you prefer. I'll also do a grep over the tree for other
+such bogus __GFP_COMP users. That was an issue I hadn't considered before.
+
+> if (res != NULL)
+> 	inc_snd_pages(pg);
+> """
 > 
-> Not at all.  isd200_free_info_ptrs() frees everything pointed to by the
-> info structure, and the info structure itself is freed later on by the
-> usb-storage core in usb_stor_release_resources().
-> 
+>  Maybe it could be changed to:
 
-OK so in isd200_get_inquiry_data() at the end near the call to:
-			us->extra_destructor(info);
-			us->extra = NULL;
+Agreed.
 
-It leaks the info.
-
-> If you wanted to free it in isd200_free_info_ptrs() you could; just 
-> make sure to set us->extra to NULL when you do, to avoid a double-free 
-> error.
-> 
-
-Patch attached to fix the above fix
-
-> Alan Stern
-> 
-
-Please ACK the first patch sent, so James can put it in scsi-rc-fixes as part
-of the sense_buffer effort for 2.6.25-rc
-
-The below patch you can put threw the USB tree, it's for you.
----
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Tue, 11 Mar 2008 20:30:53 +0200
-Subject: [PATCH] isd200: Fix memory leak in isd200_get_inquiry_data
-
-if the inquiry fails then the call to us->extra_destructor()
-is assumed to also free the info structure. So make that
-so in isd200_free_info_ptrs()
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/usb/storage/isd200.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
-index 9eb2cdf..77f4754 100644
---- a/drivers/usb/storage/isd200.c
-+++ b/drivers/usb/storage/isd200.c
-@@ -1471,6 +1471,9 @@ static void isd200_free_info_ptrs(void *info_)
- 		kfree(info->id);
- 		kfree(info->RegsBuf);
- 		kfree(info->sense_buffer);
-+		kfree(info);
-+		us->extra = NULL;
-+		us->extra_destructor = NULL;
- 	}
- }
- 
--- 
-1.5.3.3
+-Andi
 
