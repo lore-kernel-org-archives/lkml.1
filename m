@@ -1,112 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYCKTjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYCKTjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYCKTjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 15:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYCKTjE
+	id S1756466AbYCKTjn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 15:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYCKTjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 15:39:04 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:23894 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbYCKTjD convert rfc822-to-8bit (ORCPT
+	Tue, 11 Mar 2008 15:39:33 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37617 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751085AbYCKTjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 15:39:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TzROHZR9iWdw+e6T2M/AWLUfXNKPNXPXNaN3wZfz+cRAa0C4a4jVcobfZCi5c7X0NsJmwN9dX6vZVsM+WwJsKQUrQrjjKP/QILJUPcVPX6GyvB+HK+0pQIQ216h6h+woUsdxQYqSmMPxxgTAxlrM8zQP8/zCJsuhvsDtyBTn2dY=
-Message-ID: <170fa0d20803111239u4d25b7c8p915e63a43cb389c6@mail.gmail.com>
-Date: Tue, 11 Mar 2008 15:39:00 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, stable@kernel.org
-In-Reply-To: <47D6D24D.2080007@cosmosbay.com>
+	Tue, 11 Mar 2008 15:39:32 -0400
+Date: Tue, 11 Mar 2008 20:39:31 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Faster way to run through building single modules
+In-Reply-To: <Pine.LNX.4.64.0802102035000.7915@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0803112036110.18745@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0802101950020.7915@fbirervta.pbzchgretzou.qr>
+ <20080210192821.GB13733@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0802102035000.7915@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <47BDBC23.10605@cosmosbay.com>
-	 <170fa0d20803111115n3e8eb438s9b1ad7fff2fb8672@mail.gmail.com>
-	 <47D6D24D.2080007@cosmosbay.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/11/08, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Mike Snitzer a écrit :
->
-> > On 2/21/08, Eric Dumazet <dada1@cosmosbay.com> wrote:
->  >
->  >> Some oprofile results obtained while using tbench on a 2x2 cpu machine
->  >>  were very surprising.
->  >>
->  >>  For example, loopback_xmit() function was using high number of cpu
->  >>  cycles to perform
->  >>  the statistic updates, supposed to be real cheap since they use percpu data
->  >>
->  >>         pcpu_lstats = netdev_priv(dev);
->  >>         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
->  >>         lb_stats->packets++;  /* HERE : serious contention */
->  >>         lb_stats->bytes += skb->len;
->  >>
->  >>
->  >>  struct pcpu_lstats is a small structure containing two longs. It appears
->  >>  that on my 32bits platform,
->  >>  alloc_percpu(8) allocates a single cache line,  instead of giving to
->  >>  each cpu a separate
->  >>  cache line.
->  >>
->  >>  Using the following patch gave me impressive boost in various benchmarks
->  >>  ( 6 % in tbench)
->  >>  (all percpu_counters hit this bug too)
->  >>
->  >>  Long term fix (ie >= 2.6.26) would be to let each CPU allocate their own
->  >>  block of memory, so that we
->  >>  dont need to roudup sizes to L1_CACHE_BYTES, or merging the SGI stuffof
->  >>  course...
->  >>
->  >>  Note : SLUB vs SLAB is important here to *show* the improvement, since
->  >>  they dont have the same minimum
->  >>  allocation sizes (8 bytes vs 32 bytes).
->  >>  This could very well explain regressions some guys reported when they
->  >>  switched to SLUB.
->  >>
->  >
->  >
->  > I see that this fix was committed to mainline as commit
->  > be852795e1c8d3829ddf3cb1ce806113611fa555
->  >
->  > The commit didn't "Cc: <stable@kernel.org>", and it doesn't appear to
->  > be queued for 2.6.24.x.  Should it be?
->  >
->  >
->
-> Yes, it should be queued fo 2.6.24.x
 
-That means both of the following commits need to be cherry-picked into 2.6.24.x:
-b3242151906372f30f57feaa43b4cac96a23edb1
-be852795e1c8d3829ddf3cb1ce806113611fa555
+On Feb 10 2008, Sam Ravnborg and Jan Engelhardt wrote:
 
->  > If I understand you correctly, SLAB doesn't create this particular
->  > cache thrashing on 32bit systems?  Is SLAB ok on other architectures
->  > too?  Can you (or others) comment on the importance of this fix
->  > relative to x86_64 (64byte cacheline) and SLAB?
->  >
->  >
+>>>> I was wondering whether there is a shortcut in kbuild I can take if I 
+>>>> just want to rebuild one module. Currently, I have:
+>>>> 
+>>>> make net/bridge/netfilter/ebtables.ko
+>>>
+>>>Fool kbuild to think this is an external module using:
+>>>make M=`pwd` net/bridge/netfilter/ebtables.ko
+>>>
+>>>That should do the trick.
+>>
+>>How would I combine that with O=? Not quite doing the right thing yet.
+>>
+>>linux$ touch net/bridge/netfilter/ebtables.c 
+>>linux$ make O=/home/jengelh/Coding/linux-obj M=$PWD
+>>       net/bridge/netfilter/ebtables.ko
 >
+>O=tells where to find the kernel output files.
+>We do not have a possibility to do so for external
+>modules - so they will alwys build in same dir as the source.
 >
-> Fix is important both for 32 and 64 bits kernels, SLAB or SLUB.
->
->  SLAB does have this problem, but less prevalent than SLUB, because these
->  allocators dont have the same minimal size allocation (32 vs 8)
->
->  So with SLUB, it is possible that 8 CPUS share the same 64 bytes
->  cacheline to store their percpu counters, while only 2 cpus can share
->  this same cache line with SLAB allocator.
+>Bad luck :-(
 
-Thanks for the clarification.
+I just noticed that with v2.6.25-rc3-302-g03923eb, running
+make builds the final .ko really quick. Maybe there has been
+some magic added that skips a lot of directories, but the
+process certainly takes less than 120 seconds, so I am happy.
+
+Previously, it seemed to have visited lots of directories
+(even though we know make is not called recursively in 2.6)
+before it printed "Building modules stage 2" for the first time.
+
+Nice :)
