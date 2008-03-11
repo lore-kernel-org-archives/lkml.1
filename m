@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYCKKvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbYCKKwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYCKKvy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 06:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYCKKvp
+	id S1756305AbYCKKwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 06:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYCKKwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 06:51:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:46923 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbYCKKvo (ORCPT
+	Tue, 11 Mar 2008 06:52:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:10031 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752586AbYCKKwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 06:51:44 -0400
+	Tue, 11 Mar 2008 06:52:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=xkbCYYoF604N2zjl3g6MsOie7ovMycwOhenpaumjp0X4UX6IbwEV4CxK9kejZSmJZtj68wBK/7zee+Cn4oQhKCbvmfFyc1VD/jAwwmzjFFEF8PeEyIXICvJN1Jnk2pJtTvnAf6GUpDMR4o5npOw25d2e3D1Io9FFKBXfyByqJ7Q=
-Message-ID: <47D6643A.6060001@gmail.com>
-Date: Tue, 11 Mar 2008 19:51:38 +0900
+        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=DiHNnssc6RjQfvgibd5Vlb4UrHweMogvMs/Wearx8PTUbd8JLj8joyyoTWUkWZMtP938TYK9FvQwoPvsV6W7NtI3XTi2inlfo4RasBt5TIs6oK193Xc3fwdilXdXHoAq4EtQ4kIXj8JPxequF9Vyn1XeY9foWxwIo3rJy/1Z86c=
+Message-ID: <47D6646F.9070109@gmail.com>
+Date: Tue, 11 Mar 2008 19:52:31 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
@@ -24,7 +24,9 @@ To: Jeff Garzik <jeff@garzik.org>,
        linux-pci@atrey.karlin.mff.cuni.cz,
        Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
        Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] devres: implement pcim_iomap_regions_request_all()
+Subject: [PATCH libata-dev#upstream-fixes] ahci: request all PCI BARs
+References: <47D6643A.6060001@gmail.com>
+In-Reply-To: <47D6643A.6060001@gmail.com>
 X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -32,56 +34,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some drivers need to reserve all PCI BARs to prevent other drivers
-misusing unoccupied BARs.  pcim_iomap_regions_request_all() requests
-all BARs and iomap specified BARs.
+ahci is often implemented with accompanying SFF compatible interface
+and legacy IDE driver may attach to the legacy IO ports when the
+controller is already claimed by ahci and vice-versa.  This patch
+makes ahci use pcim_iomap_regions_request_all() so that all IO regions
+are claimed on attach.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>
 ---
-After acked, it's probably best to push this through libata-dev as
-that's the only user for now.
+ drivers/ata/ahci.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Thanks.
-
- lib/devres.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-Index: work/lib/devres.c
+Index: work/drivers/ata/ahci.c
 ===================================================================
---- work.orig/lib/devres.c
-+++ work/lib/devres.c
-@@ -298,6 +298,31 @@ int pcim_iomap_regions(struct pci_dev *p
- EXPORT_SYMBOL(pcim_iomap_regions);
+--- work.orig/drivers/ata/ahci.c
++++ work/drivers/ata/ahci.c
+@@ -2234,7 +2234,10 @@ static int ahci_init_one(struct pci_dev 
+ 	if (rc)
+ 		return rc;
  
- /**
-+ * pcim_iomap_regions_request_all - Request all BARs and iomap specified ones
-+ * @pdev: PCI device to map IO resources for
-+ * @mask: Mask of BARs to iomap
-+ * @name: Name used when requesting regions
-+ *
-+ * Request all PCI BARs and iomap regions specified by @mask.
-+ */
-+int pcim_iomap_regions_request_all(struct pci_dev *pdev, u16 mask,
-+				   const char *name)
-+{
-+	int request_mask = ((1 << 6) - 1) & ~mask;
-+	int rc;
-+
-+	rc = pci_request_selected_regions(pdev, request_mask, name);
-+	if (rc)
-+		return rc;
-+
-+	rc = pcim_iomap_regions(pdev, mask, name);
-+	if (rc)
-+		pci_release_selected_regions(pdev, request_mask);
-+	return rc;
-+}
-+EXPORT_SYMBOL(pcim_iomap_regions_request_all);
-+
-+/**
-  * pcim_iounmap_regions - Unmap and release PCI BARs
-  * @pdev: PCI device to map IO resources for
-  * @mask: Mask of BARs to unmap and release
+-	rc = pcim_iomap_regions(pdev, 1 << AHCI_PCI_BAR, DRV_NAME);
++	/* AHCI controllers often implement SFF compatible interface.
++	 * Grab all PCI BARs just in case.
++	 */
++	rc = pcim_iomap_regions_request_all(pdev, 1 << AHCI_PCI_BAR, DRV_NAME);
+ 	if (rc == -EBUSY)
+ 		pcim_pin_device(pdev);
+ 	if (rc)
