@@ -1,135 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbYCKXfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbYCKXgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752226AbYCKXfq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYCKXfj
+	id S1751285AbYCKXgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYCKXgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:35:39 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:14491 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbYCKXfi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:35:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pX/1qbqhybF40SdpeDeCnee+MNVaPGZMFwDvlkl123cyCauwNOcKns0a67rav6XOVIcVhq2KPwlxe0itoyEuBZuae6Y6a/4Ryy0bQwqIUo8Ti19e8ngkUdaww/aUCCbyRKYF5IMz5I24TwlgJAYeas2iatE5zu0WZXRTdr+QMpU=
-Message-ID: <f188924b0803111635k42a186c6nc616fa05a830d9b7@mail.gmail.com>
-Date: Wed, 12 Mar 2008 00:35:36 +0100
-From: "Fred ." <eldmannen@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: EXT3-fs error corruption
+	Tue, 11 Mar 2008 19:36:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37028 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752248AbYCKXgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:36:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] Hibernation: Fix mark_nosave_pages()
+Date: Wed, 12 Mar 2008 00:34:57 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200803120034.58615.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am running Ubuntu 8.04 "Hardy Heron" (alpha).
+Hi Len,
 
-MSI P35 Neo
-Samsung SpinPoint T166 500 gb (7200 rpm, SATA-2, 16 mb cache)
-Samsung SpinPoint T166 250 gb (7200 rpm, SATA-2, 16 mb cache)
+The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=9966 .
 
-sda1 = Windows XP
-sdb1 = Linux
+Although the problem has been there for quite some time (since before 2.6.22,
+apparently), it would be good to have in 2.6.25, because it may fix booting
+problems on the affected systems.
 
-So I am listening to MP3 music in Rhythmbox 0.11.4, and surfing with
-Mozilla Firefox 3.0b3 and perhaps doing some other stuff, like maybe
-running apt-update && upgrade && clean && autoclean && autoremove or
-something in a Terminal or something.
+Please note that it doesn't modify the code behavior on the systems which are
+not affected by bug #9966 .
 
-And then my computer becomes unresponsive. The HDD LED shine all the
-time on the computer case.
+Thanks,
+Rafael
 
-Then I do Ctrl+Alt+F2 and try to login, and I type my username and
-press enter, and it waits there for a while, then it start spit some
-error messages, and wont let me in.
 
-Like:
-EXT3-fs error (device sdb1): ext3_get_inode_loc: unable to read node
-block - inode=1599522, block=3211298
-And it can spam the console with that kind of stuff.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Then I shut down the computer (by PSU switch), restart and it borked out again.
-Shut down computer by PSU switch again, and runned HUTIL v2.10 by
-Samsung, a disk diagnostic tool that checks SMART, does disk spin up,
-spin down, read surface scan, and couple other diagnostic stuff. It
-reported no errors, and said the disk were okay.
+There is a problem in the hibernation code that triggers on some NUMA
+systems on which pfn_valid() returns 'true' for some PFNs that don't
+belong to any zone.  Namely, there is a BUG_ON() in
+memory_bm_find_bit() that triggers for PFNs not belonging to any
+zone and passing the pfn_valid() test.  On the affected systems it
+triggers when we mark PFNs reported by the platform as not saveable,
+because the PFNs in question belong to a region mapped directly using
+iorepam() (i.e. the ACPI data area) and they pass the pfn_valid()
+test.
 
-Then I rebooted into my old Ubuntu 7.04 "Gutsy Gibbon" LiveCD and run
-some commands to fix it.
-$ sudo e2fsck -pcf /dev/sdb1
-$ sudo badblocks -sv /dev/sdb1
+Modify memory_bm_find_bit() so that it returns an error if given PFN
+doesn't belong to any zone instead of crashing the kernel and ignore
+the result returned by it in mark_nosave_pages(), while marking the
+"nosave" memory regions.
 
-After that, computer worked again.
-But today (next day), my computer borked out again.
-In the same way and started spitting out error messages...
+This doesn't affect the hibernation functionality, as we won't touch
+the PFNs in question anyway.
 
-[20061.478996] journal commit I/O error
-[numbers] EXT3-fs error (device sdb1): ext3_find_entry: reading
-directory #2399041 offset 0
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/snapshot.c |   41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
 
-and stuff like:
-[numbers] EXT3-fs error (device sdb1): ext3_reserve_inode_write:
-Journal has aborted
-
-It happened when I was using the 2.6.24-11-386 kernel.
-I am scared, I don't know if my hard disk maybe is broken. Samsung's
-HUTIL said the hard disk was okay.
-But now it happened more than once, and maybe its a bug in the kernel,
-or ext3 file system? I don't know. =/
-
-Mar 9 16:46:06 ubuntu kernel: [ 25.735768] ext3_orphan_cleanup:
-deleting unreferenced inode 1485173
-Mar 9 16:46:06 ubuntu kernel: [ 25.735786] ext3_orphan_cleanup:
-deleting unreferenced inode 1501809
-Mar 9 16:46:06 ubuntu kernel: [ 25.735794] ext3_orphan_cleanup:
-deleting unreferenced inode 1501680
-Mar 9 16:46:06 ubuntu kernel: [ 25.735799] ext3_orphan_cleanup:
-deleting unreferenced inode 1501678
-Mar 9 16:46:06 ubuntu kernel: [ 25.735803] ext3_orphan_cleanup:
-deleting unreferenced inode 1501677
-Mar 9 16:46:06 ubuntu kernel: [ 25.735808] ext3_orphan_cleanup:
-deleting unreferenced inode 1501676
-Mar 9 16:46:06 ubuntu kernel: [ 25.735812] ext3_orphan_cleanup:
-deleting unreferenced inode 1501675
-Mar 9 16:46:06 ubuntu kernel: [ 25.735816] ext3_orphan_cleanup:
-deleting unreferenced inode 1501674
-Mar 9 16:46:06 ubuntu kernel: [ 25.735821] ext3_orphan_cleanup:
-deleting unreferenced inode 1501673
-Mar 9 16:46:06 ubuntu kernel: [ 25.735825] ext3_orphan_cleanup:
-deleting unreferenced inode 1501672
-Mar 9 16:46:06 ubuntu kernel: [ 25.735830] ext3_orphan_cleanup:
-deleting unreferenced inode 1501671
-Mar 9 16:46:06 ubuntu kernel: [ 25.735834] ext3_orphan_cleanup:
-deleting unreferenced inode 1501669
-Mar 9 16:46:06 ubuntu kernel: [ 25.735838] ext3_orphan_cleanup:
-deleting unreferenced inode 1501668
-Mar 9 16:46:06 ubuntu kernel: [ 25.735843] ext3_orphan_cleanup:
-deleting unreferenced inode 1501667
-Mar 9 16:46:06 ubuntu kernel: [ 25.746330] ext3_orphan_cleanup:
-deleting unreferenced inode 1501666
-Mar 9 16:46:06 ubuntu kernel: [ 25.746336] ext3_orphan_cleanup:
-deleting unreferenced inode 1338406
-Mar 9 16:46:06 ubuntu kernel: [ 25.750996] ext3_orphan_cleanup:
-deleting unreferenced inode 1504210
-Mar 9 16:46:06 ubuntu kernel: [ 25.751001] ext3_orphan_cleanup:
-deleting unreferenced inode 1504199
-Mar 9 16:46:06 ubuntu kernel: [ 25.751006] ext3_orphan_cleanup:
-deleting unreferenced inode 1504191
-Mar 9 16:46:06 ubuntu kernel: [ 25.756010] ext3_orphan_cleanup:
-deleting unreferenced inode 2872358
-Mar 9 16:46:06 ubuntu kernel: [ 25.756019] ext3_orphan_cleanup:
-deleting unreferenced inode 1338610
-Mar 9 16:46:06 ubuntu kernel: [ 25.756024] ext3_orphan_cleanup:
-deleting unreferenced inode 1338441
-Mar 9 16:46:06 ubuntu kernel: [ 25.762751] ext3_orphan_cleanup:
-deleting unreferenced inode 2415376
-
-https://bugs.launchpad.net/ubuntu/+bug/200747
-
-I would like to get sent a reply to my email, since i don't subscribe
-to this list.
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -447,7 +447,7 @@ static void memory_bm_free(struct memory
+  *	of @bm->cur_zone_bm are updated.
+  */
+ 
+-static void memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
++static int memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
+ 				void **addr, unsigned int *bit_nr)
+ {
+ 	struct zone_bitmap *zone_bm;
+@@ -461,7 +461,8 @@ static void memory_bm_find_bit(struct me
+ 		while (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
+ 			zone_bm = zone_bm->next;
+ 
+-			BUG_ON(!zone_bm);
++			if (!zone_bm)
++				return -EFAULT;
+ 		}
+ 		bm->cur.zone_bm = zone_bm;
+ 	}
+@@ -479,23 +480,40 @@ static void memory_bm_find_bit(struct me
+ 	pfn -= bb->start_pfn;
+ 	*bit_nr = pfn % BM_BITS_PER_CHUNK;
+ 	*addr = bb->data + pfn / BM_BITS_PER_CHUNK;
++	return 0;
+ }
+ 
+ static void memory_bm_set_bit(struct memory_bitmap *bm, unsigned long pfn)
+ {
+ 	void *addr;
+ 	unsigned int bit;
++	int error;
+ 
+-	memory_bm_find_bit(bm, pfn, &addr, &bit);
++	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
++	BUG_ON(error);
+ 	set_bit(bit, addr);
+ }
+ 
++static int mem_bm_set_bit_check(struct memory_bitmap *bm, unsigned long pfn)
++{
++	void *addr;
++	unsigned int bit;
++	int error;
++
++	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
++	if (!error)
++		set_bit(bit, addr);
++	return error;
++}
++
+ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
+ {
+ 	void *addr;
+ 	unsigned int bit;
++	int error;
+ 
+-	memory_bm_find_bit(bm, pfn, &addr, &bit);
++	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
++	BUG_ON(error);
+ 	clear_bit(bit, addr);
+ }
+ 
+@@ -503,8 +521,10 @@ static int memory_bm_test_bit(struct mem
+ {
+ 	void *addr;
+ 	unsigned int bit;
++	int error;
+ 
+-	memory_bm_find_bit(bm, pfn, &addr, &bit);
++	error = memory_bm_find_bit(bm, pfn, &addr, &bit);
++	BUG_ON(error);
+ 	return test_bit(bit, addr);
+ }
+ 
+@@ -709,8 +729,15 @@ static void mark_nosave_pages(struct mem
+ 				region->end_pfn << PAGE_SHIFT);
+ 
+ 		for (pfn = region->start_pfn; pfn < region->end_pfn; pfn++)
+-			if (pfn_valid(pfn))
+-				memory_bm_set_bit(bm, pfn);
++			if (pfn_valid(pfn)) {
++				/*
++				 * It is safe to ignore the result of
++				 * mem_bm_set_bit_check() here, since we won't
++				 * touch the PFNs for which the error is
++				 * returned anyway.
++				 */
++				mem_bm_set_bit_check(bm, pfn);
++			}
+ 	}
+ }
+ 
