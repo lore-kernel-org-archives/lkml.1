@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbYCKWs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbYCKWyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751508AbYCKWs7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 18:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYCKWsw
+	id S1751581AbYCKWyg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 18:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYCKWy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 18:48:52 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:56662 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbYCKWsv (ORCPT
+	Tue, 11 Mar 2008 18:54:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34172 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbYCKWy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 18:48:51 -0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@osdl.org, wli@holomorphy.com, linux-kernel@vger.kernel.org
+	Tue, 11 Mar 2008 18:54:27 -0400
+Date: Tue, 11 Mar 2008 23:56:23 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, wli@holomorphy.com,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Terminate hugetlbfs mount argument list
-X-Message-Flag: Warning: May contain useful information
-References: <20080311224204.GA16719@basil.nowhere.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 11 Mar 2008 15:48:46 -0700
-In-Reply-To: <20080311224204.GA16719@basil.nowhere.org> (Andi Kleen's message of "Tue, 11 Mar 2008 23:42:04 +0100")
-Message-ID: <adabq5klvw1.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
+Message-ID: <20080311225623.GE428@one.firstfloor.org>
+References: <20080311224204.GA16719@basil.nowhere.org> <adabq5klvw1.fsf@cisco.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Mar 2008 22:48:47.0315 (UTC) FILETIME=[11130230:01C883CA]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <adabq5klvw1.fsf@cisco.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The match_table_t for the mount arguments in hugetlbfs wasn't 
- > terminated as match_tokens expect. I didn't see a crash just code
- > audit, but it's still safer to terminate it in case the variables after
- > that in .data are not NULL.
+On Tue, Mar 11, 2008 at 03:48:46PM -0700, Roland Dreier wrote:
+>  > The match_table_t for the mount arguments in hugetlbfs wasn't 
+>  > terminated as match_tokens expect. I didn't see a crash just code
+>  > audit, but it's still safer to terminate it in case the variables after
+>  > that in .data are not NULL.
+> 
+> I think you're misunderstanding the match_token() interface.  The
+> comment before match_token() says:
 
-I think you're misunderstanding the match_token() interface.  The
-comment before match_token() says:
+Hmm indeed I did. To my defense it's a weird unusual coding pattern
+that tricked me.  What good is it to give terminator elements own enum values?
 
- * @table: match_table_t describing the set of allowed option tokens and the
- * arguments that may be associated with them. Must be terminated with a
- * &struct match_token whose pattern is set to the NULL pointer.
-
-and that's exactly what already exists here:
-
- 	{Opt_gid,	"gid=%u"},
- 	{Opt_err,	NULL},
-
-So your patch is effectively an obfuscated NOP.
-
- - R.
+-Andi
