@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYCKS6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYCKS6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbYCKS6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYCKS6C
+	id S1755255AbYCKS6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYCKS62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:58:02 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39862 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752664AbYCKS6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:58:01 -0400
-Message-ID: <47D6D61F.4050805@garzik.org>
-Date: Tue, 11 Mar 2008 14:57:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
-References: <200803110014.52985.rjw@sisk.pl> <47D5D4E7.1060900@garzik.org> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 11 Mar 2008 14:58:28 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:50348 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752579AbYCKS61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:58:27 -0400
+Date: Tue, 11 Mar 2008 13:58:21 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: hch@infradead.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH 1/2] cpuset: cpuset irq affinities
+Message-Id: <20080311135821.99a419e2.pj@sgi.com>
+In-Reply-To: <47D6BBC8.7090608@qualcomm.com>
+References: <1205215046-27085-1-git-send-email-maxk@qualcomm.com>
+	<1205215046-27085-2-git-send-email-maxk@qualcomm.com>
+	<20080311063514.GA29824@infradead.org>
+	<47D6BBC8.7090608@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Mon, 10 Mar 2008, Jeff Garzik wrote:
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10123
->>> Subject		: No power-off / reboot with 2.6.25-rcX (up to -rc3)
+Max wrote:
+> Sorry I missed your comment. Actually I just looked at the archive of the
+> original thread and I do not see any comments from you. Were they maybe sent
+> in private to Peter Z ? Can you please resend them ?
 
->> FWIW, I have this same problem.
+I suspect Christoph is referring to a comment he made on lkml, at:
 
-> Jeff, does that one ("keep rd->online and cpu_online_map in sync") fix the 
-> problem for you?
+  http://lkml.org/lkml/2008/3/2/3
 
-Nope.  I am running baadac8b10c5ac15ce3d26b68fa266c8889b163f now, and it 
-still hangs on reboot or power-off.
-
-Interestingly, if I reboot -immediately- from gdm, it succeeds.  However 
-if I login to Fedora GNOME via gdm, and load my standard apps (1001 
-terminals, firefox, tbird, IRC) reboot and poweroff no longer work.
-
-My guess was always some ACPI regression.  I'll bisect today or 
-tomorrow.  It is reproducible regression that appeared recently (circa 
-2.6.24 or 2.6.25-rc1 I think), so I should be able to find the culprit.
-
-	Jeff
-
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
