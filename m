@@ -1,37 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbYCKXae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYCKXcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbYCKXae (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 19:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYCKXa1
+	id S1752420AbYCKXcZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 19:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYCKXcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 19:30:27 -0400
-Received: from phunq.net ([64.81.85.152]:34580 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751046AbYCKXa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 19:30:26 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Lars Marowsky-Bree <lmb@suse.de>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Tue, 11 Mar 2008 15:30:11 -0800
-User-Agent: KMail/1.9.5
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grzegorz Kulewski <kangur@polcom.net>,
-       linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de>
-In-Reply-To: <20080311215601.GM23784@marowsky-bree.de>
+	Tue, 11 Mar 2008 19:32:18 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:42475 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYCKXcR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 19:32:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ULnFNkcid/jaOLydr5wPAWmmqR++rGvSVphHojG0r641PqYpA56VVLeOIPjzexrUwALRV9sAkNSSIC0NQRVbDD0OlLBqQY7VsHRAsAFkHkfThAGRwBXNhkuKRdWW3Zv20g9WD57rlowgkeGui/ovAH6z7Wcw10P1Z/l7Tn54rx4=
+Message-ID: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com>
+Date: Wed, 12 Mar 2008 00:32:14 +0100
+From: "Fred ." <eldmannen@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Keys get stuck
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803111630.12093.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By the way are you aware that all you have to do is:
+I (and many others) have a problem.
 
-   echo 1 >/proc/driver/ramback/<name>
+I am using Ubuntu 8.04 "Hardy Heron" (alpha).
+xorg  1:7.3+10ubuntu6
+Linux ubuntu 2.6.24-12-generic #1 SMP Mon Mar 10 15:32:00 UTC 2008
+i686 GNU/Linux
 
-and ramback already runs in the mode you speak of?
+MSI P35 Neo motherboard with a HP USB keyboard.
 
-Daniel
+Sometimes the keys get "stuck" and it keeps on repeating the button
+all the time.
+It often happen when I play games, that it repeats one of the arrow keys.
+
+Now this is a problem that lots of people have experienced.
+I've experienced it with other kernels too.
+
+https://bugs.launchpad.net/ubuntu/+source/xorg/+bug/194214
+
+It is a very annoying bug, that happens to many users.
+Restarting Xorg solves the problem.
+
+Someone said this was a problem with dynticks, but I don't know.
+
+Does anyone know what is causing this problem, and how to fix it?
+
+As I don't subscribe to this list, I would like to get a reply sent to my email.
