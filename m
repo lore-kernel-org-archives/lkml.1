@@ -1,162 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbYCKEmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbYCKEmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbYCKEmW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 00:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYCKEmF
+	id S1757668AbYCKEmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 00:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbYCKEm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 00:42:05 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44707 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbYCKEmE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 00:42:04 -0400
-Date: Tue, 11 Mar 2008 13:45:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] Move memory controller allocations to their own slabs
-Message-Id: <20080311134556.297e8c10.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
-References: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Mar 2008 00:42:28 -0400
+Received: from mga02.intel.com ([134.134.136.20]:4100 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbYCKEm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 00:42:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,478,1199692800"; 
+   d="scan'208";a="352836198"
+Subject: [PATCH -mm crypto] AES: remove crypto_fl_tab and replace
+	crypto_il_tab with isb_tab
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Adam J. Richter" <adam@yggdrasil.com>,
+       Alexander Kjeldaas <astor@fast.no>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 11 Mar 2008 12:42:56 +0800
+Message-Id: <1205210576.3676.7.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 11 Mar 2008 04:41:40.0132 (UTC) FILETIME=[32A4BE40:01C88332]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 10:01:49 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Remove crypto_fl_tab from aes implementation. Because mix_col(1,n) = n,
+all information in cryto_fl_tab is in crypto_ft_tab too.
+crypto_il_tab is replaced by isb_tab, the byte shift is done
+during decryption.
 
-> 
-> Move the memory controller data structures page_cgroup and
-> mem_cgroup_per_zone to their own slab caches. It saves space on the system,
-> allocations are not necessarily pushed to order of 2 and should provide
-> performance benefits. Users who disable the memory controller can also double
-> check that the memory controller is not allocating page_cgroup's.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-I think using its own kmem_cache for mem_cgroup_per_zone is a bit overkill.
+These changes reduce the encryption cache footprint to 50% and
+decryption cache footprint to 53.1%. The code size is increased
+slightly. On my Intel CORE micro-architecture CPU, there is almost no
+performance penalty.
 
-Thanks,
--Kame
+This patch has been built and tested against 2.6.25-rc3-mm1.
 
+This patch is only for generic C implementation. If this kind of idea
+is desired, I will implement the ASM version for x86.
 
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-> 
->  linux/memcontrol.h |    0 
->  mm/memcontrol.c    |   21 ++++++++++++++-------
->  2 files changed, 14 insertions(+), 7 deletions(-)
-> 
-> diff -puN mm/memcontrol.c~memory-controller-move-to-own-slab mm/memcontrol.c
-> --- linux-2.6.25-rc4/mm/memcontrol.c~memory-controller-move-to-own-slab	2008-03-10 23:22:34.000000000 +0530
-> +++ linux-2.6.25-rc4-balbir/mm/memcontrol.c	2008-03-10 23:34:42.000000000 +0530
-> @@ -26,6 +26,7 @@
->  #include <linux/backing-dev.h>
->  #include <linux/bit_spinlock.h>
->  #include <linux/rcupdate.h>
-> +#include <linux/slab.h>
->  #include <linux/swap.h>
->  #include <linux/spinlock.h>
->  #include <linux/fs.h>
-> @@ -35,6 +36,8 @@
->  
->  struct cgroup_subsys mem_cgroup_subsys;
->  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
-> +static struct kmem_cache *page_cgroup_cache;
-> +static struct kmem_cache *mem_cgroup_per_zone_cache;
->  
->  /*
->   * Statistics for memory cgroup.
-> @@ -560,7 +563,7 @@ retry:
->  	}
->  	unlock_page_cgroup(page);
->  
-> -	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
-> +	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
->  	if (pc == NULL)
->  		goto err;
->  
-> @@ -622,7 +625,7 @@ retry:
->  		 */
->  		res_counter_uncharge(&mem->res, PAGE_SIZE);
->  		css_put(&mem->css);
-> -		kfree(pc);
-> +		kmem_cache_free(page_cgroup_cache, pc);
->  		goto retry;
->  	}
->  	page_assign_page_cgroup(page, pc);
-> @@ -637,7 +640,7 @@ done:
->  	return 0;
->  out:
->  	css_put(&mem->css);
-> -	kfree(pc);
-> +	kmem_cache_free(page_cgroup_cache, pc);
->  err:
->  	return -ENOMEM;
->  }
-> @@ -695,7 +698,7 @@ void mem_cgroup_uncharge_page(struct pag
->  		res_counter_uncharge(&mem->res, PAGE_SIZE);
->  		css_put(&mem->css);
->  
-> -		kfree(pc);
-> +		kmem_cache_free(page_cgroup_cache, pc);
->  		return;
->  	}
->  
-> @@ -988,9 +991,10 @@ static int alloc_mem_cgroup_per_zone_inf
->  	 *       function.
->  	 */
->  	if (node_state(node, N_HIGH_MEMORY))
-> -		pn = kmalloc_node(sizeof(*pn), GFP_KERNEL, node);
-> +		pn = kmem_cache_alloc_node(mem_cgroup_per_zone_cache,
-> +						GFP_KERNEL, node);
->  	else
-> -		pn = kmalloc(sizeof(*pn), GFP_KERNEL);
-> +		pn = kmem_cache_alloc(mem_cgroup_per_zone_cache, GFP_KERNEL);
->  	if (!pn)
->  		return 1;
->  
-> @@ -1008,7 +1012,7 @@ static int alloc_mem_cgroup_per_zone_inf
->  
->  static void free_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
->  {
-> -	kfree(mem->info.nodeinfo[node]);
-> +	kmem_cache_free(mem_cgroup_per_zone_cache, mem->info.nodeinfo[node]);
->  }
->  
->  static struct cgroup_subsys_state *
-> @@ -1020,6 +1024,9 @@ mem_cgroup_create(struct cgroup_subsys *
->  	if (unlikely((cont->parent) == NULL)) {
->  		mem = &init_mem_cgroup;
->  		init_mm.mem_cgroup = mem;
-> +		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
-> +		mem_cgroup_per_zone_cache = KMEM_CACHE(mem_cgroup_per_zone,
-> +							SLAB_PANIC);
->  	} else
->  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
->  
-> diff -puN include/linux/memcontrol.h~memory-controller-move-to-own-slab include/linux/memcontrol.h
-> _
-> 
-> -- 
-> 	Warm Regards,
-> 	Balbir Singh
-> 	Linux Technology Center
-> 	IBM, ISTL
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+---
+ crypto/aes_generic.c |   47 ++++++++++++++++-------------------------------
+ include/crypto/aes.h |    2 --
+ 2 files changed, 16 insertions(+), 33 deletions(-)
+
+--- a/crypto/aes_generic.c
++++ b/crypto/aes_generic.c
+@@ -63,18 +63,14 @@ static inline u8 byte(const u32 x, const
+ static u8 pow_tab[256] __initdata;
+ static u8 log_tab[256] __initdata;
+ static u8 sbx_tab[256] __initdata;
+-static u8 isb_tab[256] __initdata;
++static u8 isb_tab[256];
+ static u32 rco_tab[10];
+ 
+ u32 crypto_ft_tab[4][256];
+-u32 crypto_fl_tab[4][256];
+ u32 crypto_it_tab[4][256];
+-u32 crypto_il_tab[4][256];
+ 
+ EXPORT_SYMBOL_GPL(crypto_ft_tab);
+-EXPORT_SYMBOL_GPL(crypto_fl_tab);
+ EXPORT_SYMBOL_GPL(crypto_it_tab);
+-EXPORT_SYMBOL_GPL(crypto_il_tab);
+ 
+ static inline u8 __init f_mult(u8 a, u8 b)
+ {
+@@ -122,12 +118,6 @@ static void __init gen_tabs(void)
+ 	for (i = 0; i < 256; ++i) {
+ 		p = sbx_tab[i];
+ 
+-		t = p;
+-		crypto_fl_tab[0][i] = t;
+-		crypto_fl_tab[1][i] = rol32(t, 8);
+-		crypto_fl_tab[2][i] = rol32(t, 16);
+-		crypto_fl_tab[3][i] = rol32(t, 24);
+-
+ 		t = ((u32) ff_mult(2, p)) |
+ 		    ((u32) p << 8) |
+ 		    ((u32) p << 16) | ((u32) ff_mult(3, p) << 24);
+@@ -139,12 +129,6 @@ static void __init gen_tabs(void)
+ 
+ 		p = isb_tab[i];
+ 
+-		t = p;
+-		crypto_il_tab[0][i] = t;
+-		crypto_il_tab[1][i] = rol32(t, 8);
+-		crypto_il_tab[2][i] = rol32(t, 16);
+-		crypto_il_tab[3][i] = rol32(t, 24);
+-
+ 		t = ((u32) ff_mult(14, p)) |
+ 		    ((u32) ff_mult(9, p) << 8) |
+ 		    ((u32) ff_mult(13, p) << 16) |
+@@ -173,10 +157,10 @@ static void __init gen_tabs(void)
+ } while (0)
+ 
+ #define ls_box(x)		\
+-	crypto_fl_tab[0][byte(x, 0)] ^	\
+-	crypto_fl_tab[1][byte(x, 1)] ^	\
+-	crypto_fl_tab[2][byte(x, 2)] ^	\
+-	crypto_fl_tab[3][byte(x, 3)]
++	(crypto_ft_tab[2][byte(x, 0)] & 0x000000ff) ^	\
++	(crypto_ft_tab[3][byte(x, 1)] & 0x0000ff00) ^	\
++	(crypto_ft_tab[0][byte(x, 2)] & 0x00ff0000) ^	\
++	(crypto_ft_tab[1][byte(x, 3)] & 0xff000000)
+ 
+ #define loop4(i)	do {		\
+ 	t = ror32(t, 8);		\
+@@ -303,11 +287,12 @@ EXPORT_SYMBOL_GPL(crypto_aes_set_key);
+ 	k += 4;			\
+ } while (0)
+ 
+-#define f_rl(bo, bi, n, k)	do {				\
+-	bo[n] = crypto_fl_tab[0][byte(bi[n], 0)] ^			\
+-		crypto_fl_tab[1][byte(bi[(n + 1) & 3], 1)] ^		\
+-		crypto_fl_tab[2][byte(bi[(n + 2) & 3], 2)] ^		\
+-		crypto_fl_tab[3][byte(bi[(n + 3) & 3], 3)] ^ *(k + n);	\
++#define f_rl(bo, bi, n, k)	do {					    \
++	bo[n] = (crypto_ft_tab[2][byte(bi[n], 0)] & 0x000000ff) ^ 	    \
++		(crypto_ft_tab[3][byte(bi[(n + 1) & 3], 1)] & 0x0000ff00) ^ \
++		(crypto_ft_tab[0][byte(bi[(n + 2) & 3], 2)] & 0x00ff0000) ^ \
++		(crypto_ft_tab[1][byte(bi[(n + 3) & 3], 3)] & 0xff000000) ^ \
++		*(k + n);						    \
+ } while (0)
+ 
+ #define f_lround(bo, bi, k)	do {\
+@@ -375,11 +360,11 @@ static void aes_encrypt(struct crypto_tf
+ 	k += 4;			\
+ } while (0)
+ 
+-#define i_rl(bo, bi, n, k)	do {			\
+-	bo[n] = crypto_il_tab[0][byte(bi[n], 0)] ^		\
+-	crypto_il_tab[1][byte(bi[(n + 3) & 3], 1)] ^		\
+-	crypto_il_tab[2][byte(bi[(n + 2) & 3], 2)] ^		\
+-	crypto_il_tab[3][byte(bi[(n + 1) & 3], 3)] ^ *(k + n);	\
++#define i_rl(bo, bi, n, k)	do {					\
++	bo[n] = (u32)isb_tab[byte(bi[n], 0)] ^				\
++	((u32)isb_tab[byte(bi[(n + 3) & 3], 1)] << 8) ^			\
++	((u32)isb_tab[byte(bi[(n + 2) & 3], 2)] << 16) ^		\
++	((u32)isb_tab[byte(bi[(n + 1) & 3], 3)] << 24) ^ *(k + n);	\
+ } while (0)
+ 
+ #define i_lround(bo, bi, k)	do {\
+--- a/include/crypto/aes.h
++++ b/include/crypto/aes.h
+@@ -22,9 +22,7 @@ struct crypto_aes_ctx {
+ };
+ 
+ extern u32 crypto_ft_tab[4][256];
+-extern u32 crypto_fl_tab[4][256];
+ extern u32 crypto_it_tab[4][256];
+-extern u32 crypto_il_tab[4][256];
+ 
+ int crypto_aes_set_key(struct crypto_tfm *tfm, const u8 *in_key,
+ 		unsigned int key_len);
 
