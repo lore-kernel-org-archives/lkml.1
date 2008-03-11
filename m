@@ -1,105 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYCKSIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYCKSIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYCKSIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 14:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYCKSIF
+	id S1755847AbYCKSIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 14:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYCKSIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 14:08:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:32072 "EHLO mga03.intel.com"
+	Tue, 11 Mar 2008 14:08:39 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:53230 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752788AbYCKSIC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 14:08:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,481,1199692800"; 
-   d="scan'208";a="217379388"
-Date: Tue, 11 Mar 2008 11:04:03 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-       warthog19@eaglescrag.net, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080311110403.7db9527c@appleyard>
-In-Reply-To: <47D684D0.6060200@jp.fujitsu.com>
-References: <20080229002341.GA21420@ldl.fc.hp.com>
-	<20080301144307.GD24386@parisc-linux.org>
-	<20080304054927.GA15566@suse.de>
-	<200803041018.29035.jbarnes@virtuousgeek.org>
-	<20080304193036.GB5534@suse.de>
-	<20080304230937.GD3694@ldl.fc.hp.com>
-	<47CDF339.3060304@jp.fujitsu.com>
-	<20080305202052.GN3694@ldl.fc.hp.com>
-	<47D684D0.6060200@jp.fujitsu.com>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1752925AbYCKSIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 14:08:38 -0400
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+In-Reply-To: <47D6A28C.4060804@keyaccess.nl> "from Rene Herman at Mar 11, 2008
+ 04:17:32 pm"
+To: Rene Herman <rene.herman@keyaccess.nl>
+Date: Tue, 11 Mar 2008 13:08:31 -0500 (CDT)
+CC: Bob Tracy <rct@frus.com>, Takashi Iwai <tiwai@suse.de>,
+       ALSA devel <alsa-devel@alsa-project.org>,
+       Michael Cree <mcree@orcon.net.nz>, linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20080311180831.8CE90DBA3@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 22:10:40 +0900
-Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+Rene Herman wrote:
+> This is behaviour consistent with the IRQ being dead ...
+>
+> I suppose it used to work and I suppose the behaviour 
+> you are describing above is 100% repeatable?
 
-> Hi Alex-san,
-> 
-> Alex Chiang wrote:
-> >>> It wasn't the IBM machine that was breaking; it was Fujitsu. They
-> >>> were returning an error code (the numerical value 1023) when I
-> >>> called the _SUN method on a slot object that existed in the ACPI
-> >>> namespace but was not present (as reported by the _STA method).
-> >>> By the time I got that error report, I'd already dropped the
-> >>> duplicate name detection code, and was letting the kobject
-> >>> infrastructure warn about duplicate names because for my test
-> >>> cases, refcounting was a better solution.
-> >>> [Kenji-san from Fujitsu seemed to be ok with the progress I'd
-> >>> made at the time, he can speak up if he's changed his mind ;)]
-> >> Unfortunatelly, I have not tried the new version of slot detection
-> >> driver because of the lack of test environment. Maybe we need more
-> >> several days to wait for test environment. 
-> >> BTW, does the new one fixes the issue I reported before? I could
-> >> not find it in the changelog. IIRC, this issue was difficult to
-> >> solve because the root cause of this issue is from the difference
-> >> of interpretation of ACPI spec between HP and Fujitsu (I still
-> >> don't think it's a good idea to evaluate _SUN for the device
-> >> object whose _STA is 0).
-> > 
-> > It looks like we disagree on how to interpret the spec (IBM
-> > machines interpret the spec the same way HP machines do).
-> > 
+I can't tell you exactly *when* it used to work, or even *if* it did
+with 2.6 kernels.  I'll try to explain...
 
-OK, let me see if I can understand what the issue is here.  Please
-correct me if I'm wrong.  The debate is about whether or not it is
-legitimate to call _SUN if _STA indicates that the device is not
-present and functional.  I've checked ACPI 3.0b, and from what I've
-read, you may not evaluate _SUN until _INI is called.  And _INI should
-not be called unless _STA indicates that a device is present and
-functional.
+Sometime back in the 2.6.14 to 2.6.16 timeframe there was an issue with
+the ALSA driver not recognizing interrupts (causing looping).  Tyson
+Whitehead had put together a patch for the interrupt problem that worked
+for him, but not for me or Michael.  One workaround back then was using
+the snd-sb8 driver that supports only one DMA channel (half-duplex
+operation) anyway: that was a reliable workaround, and may be what I'm
+remembering for the "it used to work" case.  I can't find any reliable
+evidence that I've *ever* been able to use the ES1888 with its proper
+driver under ALSA with 2.6 kernels.  As far as Tyson's patch, I know
+he reported it upstream to the ALSA developers, but I saw no followup
+communication from either Tyson or the developers.
 
-"OSPM evaluates the _STA object before it evaluates a device _INI
-method. The return values of the Present and Functioning bits
-determines whether _INI should be evaluated and whether children of the
-device should be enumerated and initialized. See section 6.5.1, “_INI
-(Init)”."
+> Given that you can use aplay -- probably no difference with "aplay -M" ?
 
-My interpretation of this is that if Alex's driver scans the Fujitsu
-machine and calls _STA on one of the slots and gets Bit 0 (present) and
-Bit 3 (functioning) set, then it is ok to enumerate it's children and
-evaluate _ADR and _SUN for the children.  If they are returning 1023,
-that would mean you should not evaluate the children of that object
-since the functional bit is not set.  Is this correct?
+I'll give it a shot.
 
-If that is the case, I would say that Alex's driver needs to obey the
-spec - or else if the this is allowed in an earlier version of the spec
-then he needs to check for the version of the spec that was implemented
-and make some different rules for that.
+> To get to the bottom of this we might need to get a specific failed version 
+> (for readers, it's not been verified that this is a regression since 2.6.24) 
+> but we can try to get lucky first.
 
-Thanks for the clarification,
-Kristen
+I'm beginning to think this is *not* a regression, but merely a long-
+standing ALSA issue that was never addressed.  I would be fine with
+reclassifying this as an ALSA bug and dropping linux-kernel from the
+discussion.
 
+> Okay. (tests) seem to at least confirm it's not the 16-bit DMA.
+
+As far as how to proceed from here, I'm certain things were broken in
+2.6.1[4-6].  I could try various later releases between .16 and .24 to
+see if snd-es18xx worked for any of those, but I think the answer will
+be "no."  I think a useful test would be to see if "snd-sb8" works in
+2.6.25-rcX, which would at least narrow things down a bit.
+
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
