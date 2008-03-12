@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYCLMAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYCLMIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbYCLMAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 08:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYCLMAk
+	id S1752078AbYCLMIj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 08:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYCLMIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 08:00:40 -0400
-Received: from anyanka.rfc1149.net ([81.56.47.149]:54625 "EHLO
-	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbYCLMAj (ORCPT
+	Wed, 12 Mar 2008 08:08:31 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:51300 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbYCLMIa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 08:00:39 -0400
-Date: Wed, 12 Mar 2008 13:00:36 +0100
-To: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>, junker@anduras.de,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: w83697hf_wdt.c stops watchdog on load
-References: <47D564CA.1040507@draigBrady.com> <2008-03-10-18-48-16+trackit+sam@rfc1149.net> <47D5C1DC.6080808@draigBrady.com> <20080311202214.GA7505@infomag.infomag.iguana.be> <2008-03-11-21-28-21+trackit+sam@rfc1149.net> <47D7C464.7060909@draigBrady.com>
+	Wed, 12 Mar 2008 08:08:30 -0400
+From: Chr <chunkeey@web.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Jike Song" <albcamus@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: 2.6.25-rc5-git2: Reported regressions from 2.6.24
+Date: Wed, 12 Mar 2008 13:08:26 +0100
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+References: <200803120141.51844.rjw@sisk.pl>
+In-Reply-To: <200803120141.51844.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47D7C464.7060909@draigBrady.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Samuel Tardieu <sam@rfc1149.net>
-Organization: RFC 1149 (see http://www.rfc1149.net/)
-X-WWW: http://www.rfc1149.net/sam
-X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
-X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
-Message-Id: <2008-03-12-13-00-36+trackit+sam@rfc1149.net>
+Message-Id: <200803121308.27662.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX19DZDGUIRevPLMCAeT8ffslhs17LXlb5cylOhV1
+	IQZXz4rqmybU2zKSQy2cZgiShxescd3gCiOknVwuFvSC5L/+uW
+	MFZ/SguL8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03, Pádraig Brady wrote:
+On Wednesday 12 March 2008 01:41:51 Rafael J. Wysocki wrote:
+>
+> This message contains a list of some regressions from 2.6.24 reported since
+> 2.6.25-rc1 was released, for which there are no fixes in the mainline I
+> know of.  If any of them have been fixed already, please let me know.
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10228
+> Subject		: endless loop in native_flush_tlb_others in smp_64.c
+> Submitter	: Chr <chunkeey@web.de>
+> Date		: 2008-03-10 23:16 (3 days old)
+> References	: http://lkml.org/lkml/2008/3/10/333
+> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+>
+My bug report is a "dup" from that one:
 
-| When doing this it would be useful to print a warning iif the watchdog
-| was running.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10207
+Subject		: INFO: task mount:11202 blocked for more than 120 seconds
+Submitter	: Christian Kujau <lists@nerdbynature.de>
+Date		: 2008-03-07 21:32 (6 days old)
+References	: http://lkml.org/lkml/2008/3/7/308
+		  http://lkml.org/lkml/2008/3/9/186
+Handled-By	: David Chinner <dgc@sgi.com>
 
-Agreed.
-
-| p.s. I'm still not sure it should default to turning off.
-| It would be unusual for userspace to take over 60s to _start_
-| If that was the case then the user shouldn't enable the watchdog in the
-| BIOS at all.
-
-Most users I know using this watchdog are using it on an hosted
-dedicated server, for which the boot messages are not available.
-Aborting because of the watchdog triggering during fsck would not be
-easily spottable. I prefer to err on the safe side from the user point
-of view, even though I guess what you see as being "on the safe side"
-would be to keep the watchdog enabled :)
-
-  Sam
+Thanks,
+	Chr
 
