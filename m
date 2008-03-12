@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbYCLRgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYCLRjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751798AbYCLRgM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYCLRex
+	id S1754327AbYCLRjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbYCLRjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:34:53 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:64346 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755471AbYCLRev (ORCPT
+	Wed, 12 Mar 2008 13:39:13 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:49797 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750968AbYCLRjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:34:51 -0400
-Message-ID: <47D8142E.6060305@pobox.com>
-Date: Wed, 12 Mar 2008 13:34:38 -0400
-From: Mark Lord <mlord@pobox.com>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 12 Mar 2008 13:39:12 -0400
+X-Sasl-enc: Jzp3vOPhkKNNGUEty8x/hb4yJ1cSQiVX2UL+GAIOUhHd 1205343550
+Date: Wed, 12 Mar 2008 14:39:08 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080312173908.GA30864@khazad-dum.debian.net>
+References: <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk> <47CDBE11.4010900@gmail.com> <20080312125912.GM17940@kernel.dk> <20080312131737.GA21290@khazad-dum.debian.net> <20080312132419.GN17940@kernel.dk> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz>
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>, mlord@pobox.com, kristen.c.accardi@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regression] pciehp hang on hp ia64 rx6600
-References: <20080312064755.GA31493@ldl.fc.hp.com>
-In-Reply-To: <20080312064755.GA31493@ldl.fc.hp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080312135521.GE8141@ics.muni.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> Hi Mark, Kristin,
+On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
+> On Wed, Mar 12, 2008 at 10:35:29AM -0300, Henrique de Moraes Holschuh wrote:
+> > You shouldn't need to do anything other than teach userspace to respond to
+> > them, as they generate the proper KEY_* events.  If you are giving the AML
+> > _OSI(Linux), at least...
+> > 
+> > But maybe looking at the keyboard output in console mode, to make triple
+> > sure the events ARE being sent over the KDC as they should, would be in
+> > order?
 > 
-> On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
-> system hang on 2.6.25-rc4. My system often hangs when only pciehp
-> is loaded and my console is sitting idle, but I can accelerate
-> the hang 100% of the time by immediately doing a 'modprobe
-> acpiphp' right afterwards.
-..
+> so, do I understand correctly that volume keys have been controlled by ACPI
+> and seemed to work independently on SW and now (exactly since when?) are
+> passed complety to the user space as key codes?
 
-Does this patch fix things for you?
+Yes, since the first *61 model.  And field-upgradeable firmware revisons
+have a say on how this thing works, since the entire KDC is software in a
+Lenovo ThinkPad (it is just a small part of the EC firmware, that comes with
+the BIOS upgrades).
 
-* * *
+I have some long email sitting on my draft folders about how to restore full
+sanity to thinkpad mixer behaviour on Linux, but I have to cool down for a
+few days before I revise it and send it.
 
-Invoke pciehp_enable_slot() at startup only when pciehp_force=1.
-Some HP equipment apparently cannot cope with it otherwise.
-
-This restores the (previously working) 2.6.24 behaviour here,
-while allowing machines that need a kick to use pciehp_force=1.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
----
-
---- linux-2.6.25-rc5-git2/drivers/pci/hotplug/pciehp_core.c	2008-03-12 13:21:46.000000000 -0400
-+++ linux/drivers/pci/hotplug/pciehp_core.c	2008-03-12 13:23:54.000000000 -0400
-@@ -467,7 +467,7 @@
- 	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
- 
- 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
--	if (value) {
-+	if (value && pciehp_force) {
- 		rc = pciehp_enable_slot(t_slot);
- 		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
- 			value = 0;
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
