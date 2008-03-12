@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYCLRk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbYCLRqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbYCLRk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYCLRkO
+	id S1752717AbYCLRqW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbYCLRqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:40:14 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38696
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbYCLRkN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:40:13 -0400
-Subject: Re: + n_tty-loss-of-sync-following-a-buffer-overflow.patch added
-	to -mm tree
-From: Paul Fulghum <paulkf@microgate.com>
-To: rupesh.sugathan@gmail.com
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1205339539.8873.14.camel@estonia>
-References: <200803120455.m2C4t4Aw010881@imap1.linux-foundation.org>
-	 <20080312102729.58956d2c@the-village.bc.nu>
-	 <47D7F531.2070400@microgate.com>  <1205339539.8873.14.camel@estonia>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 12:39:50 -0500
-Message-Id: <1205343590.4094.17.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 12 Mar 2008 13:46:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57180 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751188AbYCLRqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 13:46:11 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Dave Jones <davej@codemonkey.org.uk>, linux-acpi@vger.kernel.org,
+       Adam M Belay <abelay@mit.edu>
+Subject: Re: PNP: increase the maximum number of resources
+Date: Wed, 12 Mar 2008 13:45:20 -0400
+User-Agent: KMail/1.9.9
+Cc: Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Thomas Renninger <trenn@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20080312151452.GA4523@codemonkey.org.uk>
+In-Reply-To: <20080312151452.GA4523@codemonkey.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803121345.21297.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 09:32 -0700, Rupesh Sugathan wrote:
-> The max line size from sender is 100 bytes. The read call waits for a
-> maximum of 200 bytes.
+On Wednesday 12 March 2008, Dave Jones wrote:
+> In commit a7839e960675b549f06209d18283d5cee2ce9261 the number of PNP resources
+> was increased.  In testing, we've found that the 'exceeded' warnings still get
+> hit with quite high frequency. See https://bugzilla.redhat.com/show_bug.cgi?id=436589
 
-OK, I understand what is happening.
+In 2.6.23 we had:
 
-Multiple lines are received while the N_TTY buffer is
-full which increments canon_data multiple time without
-setting multiple bits in read_flags. Essentially the
-same bit in read_flags is set over and over.
+#define PNP_MAX_PORT            8
+#define PNP_MAX_MEM             4
 
-When read_chan starts returning data, canon_data is
-decremented once for each bit in read_flags which
-leaves canon_data > 0 when there is no data to be read.
+And the kernel silently ignored a BIOS exceeding these limits
 
-Even for the case of a single NL when N_TTY buffer is
-full, the read_flag bit is set for tty->read_head when
-that slot already contains data (same as tty->read_tail).
+In 2.6.24 we have:
 
-So the current code is wrong for the buffer full case.
+#define PNP_MAX_PORT            40
+#define PNP_MAX_MEM             12
 
-What I suggest is the following patch for processing NL
-in canonical mode.
+And the kernel complains with KERN_ERR when a BIOS has more resources
+than the kernel can describe within these limits.
 
-If buffer full and previous character is not NL then
-overwrite that char with NL truncating that line so
-it is not prepended to subsequent data or left waiting
-without a final NL.
+We know that there are cases where these static limits will be exceeded
+but refrained from making these numbers larger due to concern about data structure size
+and expectation that the majory of systems will fit within these limits.
+(eg. there was one box with about 96 IO resources)
 
-If buffer full and previous character is NL (read_flag set)
-then do nothing so canon_data remains in sync with read_flags.
+I agree that having a KERN_ERR that you know is going to fire is not a good situation.
+We can either delete or KERN_DEBUG the message if it causes support issues --
+for we know that <= 2.6.23 did worse by being silent.
 
-Rupesh, can you try this out please?
-Also, none of this answers why your N_TTY buffer is overflowing
-it simply keeps things sane when it happens.
+Thomas worked on a patch to make resource allocation dynamic and do away
+with these limits.  Unfortunately it was rather large and it wasn't in
+time for the 2.6.25-rc1 window.  So right now we are on a trajectory
+for 2.6.25 to behave exactly like 2.6.24.
+Indeed, I don't think that patch made it into the test tree,
+so unless we revive that patch, it will miss 2.6.26 as well.
 
---- a/drivers/char/n_tty.c	2008-01-24 16:58:37.000000000 -0600
-+++ b/drivers/char/n_tty.c	2008-03-12 12:16:06.000000000 -0500
-@@ -839,10 +839,24 @@ send_signal:
- 
- 		handle_newline:
- 			spin_lock_irqsave(&tty->read_lock, flags);
--			set_bit(tty->read_head, tty->read_flags);
--			put_tty_queue_nolock(c, tty);
--			tty->canon_head = tty->read_head;
--			tty->canon_data++;
-+			if (tty->read_cnt == N_TTY_BUF_SIZE) {
-+				int prev_head;
-+				if (tty->read_head)
-+					prev_head = tty->read_head - 1;
-+				else
-+					prev_head = N_TTY_BUF_SIZE - 1;
-+				if (!test_bit(prev_head, tty->read_flags)) {
-+					/* overwrite previous non NL char */
-+					tty->read_cnt--;
-+					tty->read_head = prev_head;
-+				}
-+			}
-+			if (tty->read_cnt < N_TTY_BUF_SIZE) {
-+				set_bit(tty->read_head, tty->read_flags);
-+				put_tty_queue_nolock(c, tty);
-+				tty->canon_head = tty->read_head;
-+				tty->canon_data++;
-+			}
- 			spin_unlock_irqrestore(&tty->read_lock, flags);
- 			kill_fasync(&tty->fasync, SIGIO, POLL_IN);
- 			if (waitqueue_active(&tty->read_wait))
-
-
+thanks,
+-Len
