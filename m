@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYCLRaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYCLRcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbYCLRaJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYCLR37
+	id S1753941AbYCLRcg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYCLRcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:29:59 -0400
-Received: from phunq.net ([64.81.85.152]:45057 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751797AbYCLR36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:29:58 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Wed, 12 Mar 2008 09:29:53 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803102050.40567.phillips@phunq.net> <20080312131133.60e99d29@the-village.bc.nu>
-In-Reply-To: <20080312131133.60e99d29@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121029.54108.phillips@phunq.net>
+	Wed, 12 Mar 2008 13:32:21 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:21479 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbYCLRcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 13:32:21 -0400
+Message-Id: <20080312173155.703966894@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Mar 2008 18:31:55 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [patch 00/10] System z10 patches.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 06:11, Alan Cox wrote:
-> > > Ext3 is only going to help you if the ramdisk writeback respects barriers
-> > > and ordering rules ?
-> > 
-> > I was alluding to to e2fsck's amazing repair ability, not ext3's journal.
-> 
-> Oh you mean "pray hard". e2fsck works well with typical disk style
-> failures, it is not robust against random chunks vanishing. I know this
-> as I've worked on and debugged a case where a raid card rebooted silently
-> and threw out the write back cache.
+Greetings,
+two weeks ago System z10 has been announced. This patchset adds support
+for some of the new features of this machine. The two main features
+are large page support (1MB pages) and cpu topology supporty. There are
+some common code dependencies for these two, see patches #3, #4, #5, #8
+and #9. Most notably we found that we need to add a new tlb flush for the
+copy-on-write of a large page (patch #8). We think that this is a bug,
+but obviously one that hasn't shown up so far on any of the other large
+page architectures.
 
-So then you know that people already rely on batteries in critical storage
-applications.  So I do not understand why all the FUD from you.
+The patches are queued in the features/for-andrew branches of git390 and
+will be included linux-next and -mm (keeping fingers crossed that we
+don't create any rejects).
 
-Particularly about Ext2/Ext3, which does recover well from random damage.
-My experience.
+-- 
+blue skies,
+   Martin.
 
-> > Your comment re fs chunk size reveals that I have failed to
-> > communicate the most basic principle of the ramback design: the
-> > backing store is not expected to represent a consistent filesystem
-> 
-> No I get that. You've ignored the fact I'm suggesting that design choice
-> is dumb.
+"Reality continues to ruin my life." - Calvin.
 
-You seem to be calling Linux unreliable.
-
-Daniel
