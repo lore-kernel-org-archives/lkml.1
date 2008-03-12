@@ -1,107 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbYCLDio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbYCLDns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbYCLDio (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 23:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYCLDif
+	id S1753216AbYCLDns (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 23:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYCLDnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 23:38:35 -0400
-Received: from n5a.bullet.mud.yahoo.com ([209.191.126.232]:29168 "HELO
-	n5a.bullet.mud.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751518AbYCLDie (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 23:38:34 -0400
-X-Yahoo-Newman-Id: 167832.69639.bm@omp411.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=HVUA4yYOkD6kIh5QiUrPo12cTLUzYP70pE5lqo80N4Sg+6oA04bqfrmuU0NKbgCi6hU8tIRP6H6xoAV1Wi/TUH1oixRl+/1r4ISls8jrUIJBotQAmQCeQPPEBQpDUxBbl4yogoOXQMvE77xEdjFOG3iE7tGAXXe7FTs9tSEDJxA=  ;
-X-YMail-OSG: FmDLaJgVM1k9Y4z.ebpVbWHd_rxfyM6IDRuMjN9_Cid.ra08uLAJNLuCcMonh_8NYVlKn_RovQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] Move memory controller allocations to their own slabs (v2)
-Date: Wed, 12 Mar 2008 14:38:01 +1100
-User-Agent: KMail/1.9.5
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain> <47D66865.1080508@linux.vnet.ibm.com> <Pine.LNX.4.64.0803111256110.18261@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0803111256110.18261@blonde.site>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 11 Mar 2008 23:43:41 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:47073 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbYCLDnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 23:43:41 -0400
+Subject: Re: [2.6.25-rc5-mm1] BUG() at mnt_want_write().
+From: Dave Hansen <haveblue@us.ibm.com>
+To: penguin-kernel@i-love.sakura.ne.jp
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200803120137.m2C1bffL037440@www262.sakura.ne.jp>
+References: <200803120137.m2C1bffL037440@www262.sakura.ne.jp>
+Content-Type: text/plain
+Date: Tue, 11 Mar 2008 20:43:30 -0700
+Message-Id: <1205293410.9828.65.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121438.02857.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 00:05, Hugh Dickins wrote:
-> On Tue, 11 Mar 2008, Balbir Singh wrote:
-> > On my 64 bit powerpc system (structure size could be different on other
-> > systems)
-> >
-> > 1. sizeof page_cgroup is 40 bytes
-> >    which means kmalloc will allocate 64 bytes
-> > 2. With 4K pagesize SLAB with HWCACHE_ALIGN, 59 objects are packed per
-> > slab 3. With SLUB the value is 102 per slab
->
-> I expect you got those numbers with 2.6.25-rc4?  Towards the end of -rc5
-> there's a patch from Nick to make SLUB's treatment of HWCACHE_ALIGN the
-> same as SLAB's, so I expect you'd be back to a similar poor density with
-> SLUB too.  (But I'm replying without actually testing it out myself.)
+On Wed, 2008-03-12 at 10:37 +0900, penguin-kernel@i-love.sakura.ne.jp
+wrote:
+> I encountered
+> 
+>   BUG: unable to handle kernel paging request at de92efe8
+>   IP: [<c017e0bb>] mnt_want_write+0x40/0x5f
+> 
+> 2.6.25-rc5 works fine.
+> 
+> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.25-rc5-mm1
 
-Yes, that will be the case.
+I'm not seeing anything jump out at me about what this bug might be.
+Could you give me a little bit more information on your setup?
 
-With a 64 byte cacheline size, 
+I see you're running with an inird.  Are you doing anything funky like
+pivoting over to a nfs root?  Could you send me the initrd you are
+using?  I might as well just try and boot with it.
 
-page_cgroup: |----|----|----|----|----|----|----|----
-cacheline:   |-------|-------|-------|-------|-------
-
-So if you are accessing each field in a random page_cgroup, then it
-will statistically cost you 1.5 cachelines (really: half the time, it
-takes 2 cachelines).
-
-If you HWCACHE_ALIGN this, it will cost you just 1 line.
-
-Long live the size/speed tradeoff ;)
-
-Whether this improvement is actually noticable is a different matter.
-
-
-> I think you'd need a strong reason to choose HWCACHE_ALIGN for these.
->
-> Consider: the (normal configuration) x86_64 struct page size was 56
-> bytes for a long time (and still is without MEM_RES_CTLR), but we've
-> never inserted padding to make that a round 64 bytes (and they would
-> benefit additionally from some simpler arithmetic, not the case with
-> page_cgroups).
-
-I actually still think padding struct page will be a good idea. And
-hopefully we can get rid of the page_cgroups pointer out of struct
-page in order that we can have both config cases padded to 64 bytes
-and use the extra space for larger refcounters maybe ;)
-
-I simply haven't tried to run a realistic workload where it would
-matter a great deal. I have a feeling that the oltp workloads could
-see some improvement, because they're mainly just using the kernel
-for direct IO, struct page is one of the few data structures that
-they actually spend any cache on.
-
-
-> Though it's good to avoid unnecessary sharing and 
-> multiple cacheline accesses, it's not so good as to justify almost
-> doubling the size of a very very common structure.  I think.
-
-Anyway, back on topic from my rant, yes I agree with Hugh: I think
-there should be some demonstration of a speedup (even in a "best
-case" situation), before spending more bytes on a common data
-structure.
+-- Dave
 
