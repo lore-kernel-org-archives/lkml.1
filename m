@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYCLCx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbYCLCyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYCLCx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 22:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYCLCxc
+	id S1752644AbYCLCyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 22:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYCLCxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 22:53:32 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:25921 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753365AbYCLCxb (ORCPT
+	Tue, 11 Mar 2008 22:53:33 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:9280 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYCLCxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Mar 2008 22:53:31 -0400
 From: Andi Kleen <andi@firstfloor.org>
@@ -15,171 +15,115 @@ References: <20080312353.598285931@firstfloor.org>
 In-Reply-To: <20080312353.598285931@firstfloor.org>
 To: andreas.herrmann3@amd.com, tglx@linutronix.de, mingo@elte.hu,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/7] Account overlapped mappings in end_pfn_map
-Message-Id: <20080312025328.A29741B41D1@basil.firstfloor.org>
-Date: Wed, 12 Mar 2008 03:53:28 +0100 (CET)
-X-OriginalArrivalTime: 12 Mar 2008 02:46:56.0535 (UTC) FILETIME=[561CF270:01C883EB]
+Subject: [PATCH] [3/7] Add set_memory_4k to pageattr.c
+Message-Id: <20080312025329.A74C71B41D1@basil.firstfloor.org>
+Date: Wed, 12 Mar 2008 03:53:29 +0100 (CET)
+X-OriginalArrivalTime: 12 Mar 2008 02:46:57.0551 (UTC) FILETIME=[56B7F9F0:01C883EB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[old patch repost, needed for further patches in the series)
+Add a new function to force split large pages into 4k pages.
+This is needed for some followup optimizations.
 
-When end_pfn is not aligned to 2MB (or 1GB) then the kernel might
-map more memory than end_pfn. Account this in end_pfn_mapped.
+I had to add a new field to cpa_data to pass down the information
+that try_preserve_large_page should not run.
+
+Right now no set_page_4k() because I didn't need it and all the
+specialized users I have in mind would be more comfortable with
+pure addresses. I also didn't export it because it's unlikely
+external code needs it.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
----
- arch/x86/kernel/setup_64.c |    2 +-
- arch/x86/mm/init_64.c      |   33 +++++++++++++++++++++++----------
- include/asm-x86/proto.h    |    3 ++-
- 3 files changed, 26 insertions(+), 12 deletions(-)
-
-Index: linux/arch/x86/mm/init_64.c
+Index: linux/arch/x86/mm/pageattr.c
 ===================================================================
---- linux.orig/arch/x86/mm/init_64.c
-+++ linux/arch/x86/mm/init_64.c
-@@ -296,7 +296,7 @@ __meminit void early_iounmap(void *addr,
- 	__flush_tlb_all();
- }
+--- linux.orig/arch/x86/mm/pageattr.c
++++ linux/arch/x86/mm/pageattr.c
+@@ -28,6 +28,7 @@ struct cpa_data {
+ 	int		numpages;
+ 	int		flushtlb;
+ 	unsigned long	pfn;
++	unsigned	force_split : 1;
+ };
  
--static void __meminit
-+static unsigned long __meminit
- phys_pmd_init(pmd_t *pmd_page, unsigned long address, unsigned long end)
- {
- 	int i = pmd_index(address);
-@@ -318,21 +318,25 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
- 		set_pte((pte_t *)pmd,
- 			pfn_pte(address >> PAGE_SHIFT, PAGE_KERNEL_LARGE));
- 	}
-+	return address;
- }
+ #ifdef CONFIG_X86_64
+@@ -259,6 +260,9 @@ try_preserve_large_page(pte_t *kpte, uns
+ 	int i, do_split = 1;
+ 	unsigned int level;
  
--static void __meminit
-+static unsigned long __meminit
- phys_pmd_update(pud_t *pud, unsigned long address, unsigned long end)
- {
-+	unsigned long true_end;
- 	pmd_t *pmd = pmd_offset(pud, 0);
- 	spin_lock(&init_mm.page_table_lock);
--	phys_pmd_init(pmd, address, end);
-+	true_end = phys_pmd_init(pmd, address, end);
- 	spin_unlock(&init_mm.page_table_lock);
- 	__flush_tlb_all();
-+	return true_end;
- }
- 
--static void __meminit
-+static unsigned long __meminit
- phys_pud_init(pud_t *pud_page, unsigned long addr, unsigned long end)
- {
-+	unsigned long true_end = end;
- 	int i = pud_index(addr);
- 
- 	for (; i < PTRS_PER_PUD; i++, addr = (addr & PUD_MASK) + PUD_SIZE) {
-@@ -351,13 +355,14 @@ phys_pud_init(pud_t *pud_page, unsigned 
- 
- 		if (pud_val(*pud)) {
- 			if (!pud_large(*pud))
--				phys_pmd_update(pud, addr, end);
-+				true_end = phys_pmd_update(pud, addr, end);
- 			continue;
- 		}
- 
- 		if (direct_gbpages) {
- 			set_pte((pte_t *)pud,
- 				pfn_pte(addr >> PAGE_SHIFT, PAGE_KERNEL_LARGE));
-+			true_end = (addr & PUD_MASK) + PUD_SIZE;
- 			continue;
- 		}
- 
-@@ -365,12 +370,14 @@ phys_pud_init(pud_t *pud_page, unsigned 
- 
- 		spin_lock(&init_mm.page_table_lock);
- 		set_pud(pud, __pud(pmd_phys | _KERNPG_TABLE));
--		phys_pmd_init(pmd, addr, end);
-+		true_end = phys_pmd_init(pmd, addr, end);
- 		spin_unlock(&init_mm.page_table_lock);
- 
- 		unmap_low_page(pmd);
- 	}
- 	__flush_tlb_all();
++	if (cpa->force_split)
++		return 1;
 +
-+	return true_end >> PAGE_SHIFT;
+ 	spin_lock_irqsave(&pgd_lock, flags);
+ 	/*
+ 	 * Check for races, another CPU might have split this page
+@@ -693,7 +697,8 @@ static inline int cache_attr(pgprot_t at
  }
  
- static void __init find_early_table_space(unsigned long end)
-@@ -415,9 +422,10 @@ static void __init init_gbpages(void)
-  * This runs before bootmem is initialized and gets pages directly from
-  * the physical memory. To access them they are temporarily mapped.
-  */
--void __init_refok init_memory_mapping(unsigned long start, unsigned long end)
-+unsigned long __init_refok
-+init_memory_mapping(unsigned long start, unsigned long end)
+ static int change_page_attr_set_clr(unsigned long addr, int numpages,
+-				    pgprot_t mask_set, pgprot_t mask_clr)
++				    pgprot_t mask_set, pgprot_t mask_clr,
++				    int force_split)
  {
--	unsigned long next;
-+	unsigned long next, true_end = end;
+ 	struct cpa_data cpa;
+ 	int ret, cache, checkalias;
+@@ -704,7 +709,7 @@ static int change_page_attr_set_clr(unsi
+ 	 */
+ 	mask_set = canon_pgprot(mask_set);
+ 	mask_clr = canon_pgprot(mask_clr);
+-	if (!pgprot_val(mask_set) && !pgprot_val(mask_clr))
++	if (!pgprot_val(mask_set) && !pgprot_val(mask_clr) && !force_split)
+ 		return 0;
  
- 	pr_debug("init_memory_mapping\n");
+ 	/* Ensure we are PAGE_SIZE aligned */
+@@ -721,6 +726,7 @@ static int change_page_attr_set_clr(unsi
+ 	cpa.mask_set = mask_set;
+ 	cpa.mask_clr = mask_clr;
+ 	cpa.flushtlb = 0;
++	cpa.force_split = force_split;
  
-@@ -449,7 +457,7 @@ void __init_refok init_memory_mapping(un
- 		next = start + PGDIR_SIZE;
- 		if (next > end)
- 			next = end;
--		phys_pud_init(pud, __pa(start), __pa(next));
-+		true_end = phys_pud_init(pud, __pa(start), __pa(next));
- 		if (!after_bootmem)
- 			set_pgd(pgd_offset_k(start), mk_kernel_pgd(pud_phys));
- 		unmap_low_page(pud);
-@@ -462,6 +470,8 @@ void __init_refok init_memory_mapping(un
- 	if (!after_bootmem)
- 		reserve_early(table_start << PAGE_SHIFT,
- 				 table_end << PAGE_SHIFT, "PGTABLE");
-+
-+	return true_end;
+ 	/* No alias checking for _NX bit modifications */
+ 	checkalias = (pgprot_val(mask_set) | pgprot_val(mask_clr)) != _PAGE_NX;
+@@ -759,13 +765,13 @@ out:
+ static inline int change_page_attr_set(unsigned long addr, int numpages,
+ 				       pgprot_t mask)
+ {
+-	return change_page_attr_set_clr(addr, numpages, mask, __pgprot(0));
++	return change_page_attr_set_clr(addr, numpages, mask, __pgprot(0), 0);
  }
  
- #ifndef CONFIG_NUMA
-@@ -503,9 +513,12 @@ int arch_add_memory(int nid, u64 start, 
- 	struct zone *zone = pgdat->node_zones + ZONE_NORMAL;
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-+	unsigned long true_end_pfn;
- 	int ret;
+ static inline int change_page_attr_clear(unsigned long addr, int numpages,
+ 					 pgprot_t mask)
+ {
+-	return change_page_attr_set_clr(addr, numpages, __pgprot(0), mask);
++	return change_page_attr_set_clr(addr, numpages, __pgprot(0), mask, 0);
+ }
  
--	init_memory_mapping(start, start + size-1);
-+	true_end_pfn = init_memory_mapping(start, start + size-1);
-+	if (true_end_pfn > end_pfn_map)
-+		end_pfn_map = true_end_pfn;
+ int set_memory_uc(unsigned long addr, int numpages)
+@@ -809,6 +815,12 @@ int set_memory_np(unsigned long addr, in
+ 	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_PRESENT));
+ }
  
- 	ret = __add_pages(zone, start_pfn, nr_pages);
- 	WARN_ON(1);
-Index: linux/include/asm-x86/proto.h
++int set_memory_4k(unsigned long addr, int numpages)
++{
++	return change_page_attr_set_clr(addr, numpages, __pgprot(0),
++					__pgprot(0), 1);
++}
++
+ int set_pages_uc(struct page *page, int numpages)
+ {
+ 	unsigned long addr = (unsigned long)page_address(page);
+Index: linux/include/asm-x86/cacheflush.h
 ===================================================================
---- linux.orig/include/asm-x86/proto.h
-+++ linux/include/asm-x86/proto.h
-@@ -7,7 +7,8 @@
+--- linux.orig/include/asm-x86/cacheflush.h
++++ linux/include/asm-x86/cacheflush.h
+@@ -41,6 +41,7 @@ int set_memory_nx(unsigned long addr, in
+ int set_memory_ro(unsigned long addr, int numpages);
+ int set_memory_rw(unsigned long addr, int numpages);
+ int set_memory_np(unsigned long addr, int numpages);
++int set_memory_4k(unsigned long addr, int numpages);
  
- extern void early_idt_handler(void);
- 
--extern void init_memory_mapping(unsigned long start, unsigned long end);
-+extern unsigned long init_memory_mapping(unsigned long start,
-+					 unsigned long end);
- 
- extern void system_call(void);
- extern void syscall_init(void);
-Index: linux/arch/x86/kernel/setup_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/setup_64.c
-+++ linux/arch/x86/kernel/setup_64.c
-@@ -341,7 +341,7 @@ void __init setup_arch(char **cmdline_p)
- 
- 	check_efer();
- 
--	init_memory_mapping(0, (end_pfn_map << PAGE_SHIFT));
-+	end_pfn_map = init_memory_mapping(0, (end_pfn_map << PAGE_SHIFT));
- 	if (efi_enabled)
- 		efi_init();
+ void clflush_cache_range(void *addr, unsigned int size);
  
