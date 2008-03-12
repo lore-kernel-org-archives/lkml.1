@@ -1,129 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbYCLC1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbYCLC1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975AbYCLC1G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 22:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYCLC0x
+	id S1753339AbYCLC1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 22:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYCLC1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 22:26:53 -0400
-Received: from mailsrv1.zmi.at ([212.69.162.198]:50968 "EHLO mailsrv1.zmi.at"
+	Tue, 11 Mar 2008 22:27:04 -0400
+Received: from mga02.intel.com ([134.134.136.20]:20488 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751591AbYCLC0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 22:26:51 -0400
-From: Michael Monnerie <michael.monnerie@it-management.at>
-Organization: it-management http://it-management.at
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: netatalk slow after system upgrade (possibly kernel problem?)
-Date: Wed, 12 Mar 2008 03:26:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netatalk-admins@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <200801251255.48105@zmi.at> <20080126220051.d753266b.akpm@linux-foundation.org>
-In-Reply-To: <20080126220051.d753266b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1983773.zTW2VC7L4x";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	id S1752622AbYCLC1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 22:27:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,483,1199692800"; 
+   d="scan'208";a="353418540"
+Subject: Re: [PATCH -mm] kexec jump -v9
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <200803112318.28120.rjw@sisk.pl>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	 <20080311211004.GA30164@redhat.com>  <200803112318.28120.rjw@sisk.pl>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <200803120326.47950@zmi.at>
+Date: Wed, 12 Mar 2008 10:26:28 +0800
+Message-Id: <1205288788.29875.28.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 12 Mar 2008 02:24:12.0508 (UTC) FILETIME=[2916F1C0:01C883E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1983773.zTW2VC7L4x
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 2008-03-11 at 23:18 +0100, Rafael J. Wysocki wrote:
+> On Tuesday, 11 of March 2008, Vivek Goyal wrote:
+[...]
+> > Rafael/Pavel, does the approach of doing hibernation using a separate
+> > kernel holds promise?
+> 
+> Well, what can I say?
+> 
+> I haven't been a big fan of doing hibernation this way since the very beginning
+> and I still have the same reservations.  Namely, my opinion is that the
+> hibernation-related problems we have are not just solvable this way.  For one
+> example, in order to stop using the freezer for suspend/hibernation we first
+> need to revamp the suspending/resuming of devices (uder way) and the
+> kexec-based approach doesn't help us here.  I wouldn't like to start another
+> discussion about it though.
 
-(full quote below, because this message was in January)
+Yes. We need to work on device drivers for all hibernation
+implementations. And kexec-based hibernation provides a possible method
+to avoid freezer after driver works done.
 
-I did some new tests, see http://zmi.at/x/wire.delayack2.pcap
-Dump from SUSE10.3, Apple client had delayed ACK set to 2 with
-sysctl -w net.inet.tcp.delayed_ack=3D2, and also MacOS10.5 has this=20
-problem. It was suggested I could have this problem:
-http://www.helios.de/support/ti.phtml?110
+Best Regards,
+Huang Ying
 
-On the same hardware, I can start the old SUSE10.0 at the same time in=20
-parallel with the new SUSE10.3, both are virtual machines in VMware,=20
-and the old machine is always fast and the new one always slow. From=20
-the dump I would say it's the fault of MacOS - sometimes a very long=20
-delay before an ACK. But then again, it's fast when copying to the old=20
-SUSE linux box. Very strange.
-
-On Sonntag, 27. Januar 2008 Andrew Morton wrote:
-> (cc netdev)
->
-> > On Fri, 25 Jan 2008 12:55:42 +0100 Michael Monnerie
-> > <michael.monnerie@it-management.at> wrote: Dear lists,
-> >
-> > I've been spending a LOT of time trying to find out where's the
-> > problem, but can't find it and therefore seek urgent help now. We
-> > have the following system:
-> >
-> > Server with VMware server
-> > -> VM running a webserver and netatalk
-> > -> 2 other VMs not related
-> >
-> > The VM with netatalk was SUSE 10.0 with kernel 2.6.13-15.15-smp
-> > (from SUSE), and things were pretty fun and quick. Then we upgraded
-> > to SUSE 10.2 and now 10.3, where everything EXCEPT netatalk runs
-> > perfect. Since this upgrade, Apple clients (MacOS X) now do READ
-> > very very slowly (about 512KB/s over the gigabit LAN), while
-> > writing to the server still is normal (>20MB/s). I've even retried
-> > with the newest kernel 2.6.23.13, tried different
-> > /proc/sys/net/ipv4/tcp_congestion_control (cubic, reno, bic, etc.)
-> > and nothing helps. I've then tried to install Samba and found that
-> > we have similar problems reading with it from MacOS clients. Now
-> > I'm pretty sure it should be something with the linux kernel, but I
-> > don't understand what.
-> >
-> > Here are the wireshark dumps in pcap format:
-> > http://zmi.at/x/atalk-write-fast.pcap
-> > -> you can see writing to the server (192.168.120.9) is normal and
-> > fast
-> >
-> > http://zmi.at/x/atalk-read-slow.pcap
-> > -> reading is horribly slow. Lots of "unknown", because of netatalk
-> > or what?
-> >
-> > http://zmi.at/x/unknown-atalk.pcap
-> > -> another dump while reading, you see "unknown" reads. I'm not
-> > sure if it's just wireshark not understanding the packets or
-> > netatalk.
-> >
-> > And trying with samba:
-> > http://zmi.at/x/smb-read-slow.pcap
-> > http://zmi.at/x/smb-write-quick.pcap
-> > you can see that it's also slow.
-> >
-> > Now why did it work with the old 2.6.13 kernel? I still have that
-> > old VM, and when I start it, it is always perfectly fast. Only
-> > newer versions are slow. Can somebody give me a hint please?
->
-> It would be interesting if this could be repeated on bare hardware,
-> so we can eliminate the possibility that it is some weird interaction
-> with vmware.
-
-
-
-=2D-=20
-// Michael Monnerie, Ing.BSc    -----      http://it-management.at
-// Tel: 0676/846 914 666                      .network.your.ideas.
-// PGP Key:         "curl -s http://zmi.at/zmi.asc | gpg --import"
-// Fingerprint: AC19 F9D5 36ED CD8A EF38  500E CE14 91F7 1C12 09B4
-// Keyserver: www.keyserver.net                   Key-ID: 1C1209B4
-
---nextPart1983773.zTW2VC7L4x
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBH1z9nzhSR9xwSCbQRAsQSAJ0ZGetUp7v4EUndyUCg8c6uE60zVgCg4iaW
-ihNChU3aiPva2Ah2fskujZk=
-=hler
------END PGP SIGNATURE-----
-
---nextPart1983773.zTW2VC7L4x--
