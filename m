@@ -1,52 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYCLN41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYCLN4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbYCLN41 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbYCLN4Q
+	id S1754416AbYCLN4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYCLN4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:56:16 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:35888 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbYCLN4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:56:15 -0400
-Date: Wed, 12 Mar 2008 14:55:21 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080312135521.GE8141@ics.muni.cz>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk> <47CDBE11.4010900@gmail.com> <20080312125912.GM17940@kernel.dk> <20080312131737.GA21290@khazad-dum.debian.net> <20080312132419.GN17940@kernel.dk> <20080312133529.GB21290@khazad-dum.debian.net>
+	Wed, 12 Mar 2008 09:56:24 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:55265 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754257AbYCLN4W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 09:56:22 -0400
+Message-ID: <47D7E0D1.8050403@panasas.com>
+Date: Wed, 12 Mar 2008 15:55:29 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080312133529.GB21290@khazad-dum.debian.net>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 12 Mar 2008 14:55:21 +0100 (CET)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] isd200: Fix memory leak in isd200_get_inquiry_data
+References: <Pine.LNX.4.44L0.0803111456590.26916-100000@iolanthe.rowland.org> <47D7D580.5060406@panasas.com>
+In-Reply-To: <47D7D580.5060406@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 10:35:29AM -0300, Henrique de Moraes Holschuh wrote:
-> You shouldn't need to do anything other than teach userspace to respond to
-> them, as they generate the proper KEY_* events.  If you are giving the AML
-> _OSI(Linux), at least...
+On Wed, Mar 12 2008 at 15:07 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> On Tue, Mar 11 2008 at 21:18 +0200, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> On Tue, 11 Mar 2008, Boaz Harrosh wrote:
+>>
+>>>> You can first get to the scsi_device in isd200_ata_command().  
+>>> I was afraid of that. I don't think I want to call scsi_get_command
+>>> from within .queuecommand. I will leave the code hacked as today.
+>> What are you talking about?  isd200_ata_command isn't called by 
+>> queuecommand.
+>>
+>>>> The last
+>>>> place you can get to the scsi_device (if one exists!) is
+>>>> quiesce_and_remove_host() -- but that's part of the core, not specific
+>>>> to isd200.
+>>>>
+>>> Here two, it looks like I need to introduce a new function pointer for isd200
+>> Why?  And why do you need to get to the scsi_device in the first place?
+>>
+>>> I'll leave it for now. Though I know this is not the last I'll see of this driver.
+>>>
 > 
-> But maybe looking at the keyboard output in console mode, to make triple
-> sure the events ARE being sent over the KDC as they should, would be in
-> order?
+> OK Now I see isd200_ata_command() is called from a usb.c internal thread.
+> 
+> What I need to do is call scsi_get_command(scsi_device*) on first invocation.
+> Now for the call to scsi_put_command()? At the time of the call to 
+> isd200_free_info_ptrs() do you think I still have a valid scsi_device at this point?
+> 
+> What I will do is this. I will resend my original patch with your comments
+> fixed. This is for the 2.6.25-rc. And I will send another patch that uses
+> the proper scsi_get/put_command() for testing and inclusion into the 2.6.26 kernel.
+> Please ACK on the patch
+> 
+>>>>> (And one more stupid question. Why does isd200_init_info allocates the info 
+>>>>> structure but the isd200_free_info_ptrs does not free it, it kind of
+>>>>> limits the way it can be allocated, no?)
+>>>> Not at all.  isd200_free_info_ptrs() frees everything pointed to by the
+>>>> info structure, and the info structure itself is freed later on by the
+>>>> usb-storage core in usb_stor_release_resources().
+>>>>
+>>> OK so in isd200_get_inquiry_data() at the end near the call to:
+>>> 			us->extra_destructor(info);
+>>> 			us->extra = NULL;
+>>>
+>>> It leaks the info.
+>> Yes.  The three lines of code there are unnecessary.  You should remove
+>> them (and the comment) instead of adding more somewhere else.  Or if
+>> you want to keep them, just add a line to kfree(us->extra) before 
+>> us->extra is set to NULL.
+> 
+> How are they unnecessary? who will free them? other wise they will only be
+> freed at the very end. And that is only because usb_stor_transparent_scsi_command()
+> does not need any us->extra of it's own. But if ever it will, then this code
+> buried here will become a leak.
+> 
+> And I disagree. with your solution. The module that did the allocation should
+> do the freeing. The above is just an example of what happens with bad programing
+> style. the core should not have attempted a free on a void pointer just so
+> protocols can get lazy and not register a destructor. Other wise we do not
+> learn from passed mistakes and keep doing the same errors. The free should
+> always be at same file right next to the alloc. (And don't get me started
+> on the flexibility that enables)
+> 
+> I keep the patch as it is, I recommend to commit it for solving the leak.
+> 
 
-so, do I understand correctly that volume keys have been controlled by ACPI
-and seemed to work independently on SW and now (exactly since when?) are
-passed complety to the user space as key codes?
+rrr only I cannot do that because the destructor does not have access to the us_data
+that contains it. As I said, very ugly. New patch attached.
 
+Boaz
+---
+From: Boaz Harrosh <bharrosh@panasas.com>
+Date: Tue, 11 Mar 2008 20:30:53 +0200
+Subject: [PATCH] isd200: Fix memory leak in isd200_get_inquiry_data
+
+if the inquiry fails then the info structure on
+us->extra was not freed.
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/usb/storage/isd200.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
+index ac1764b..2de1f1e 100644
+--- a/drivers/usb/storage/isd200.c
++++ b/drivers/usb/storage/isd200.c
+@@ -1231,6 +1231,7 @@ static int isd200_get_inquiry_data( struct us_data *us )
+ 	    
+ 			/* Free driver structure */	    
+ 			us->extra_destructor(info);
++			kfree(info);
+ 			us->extra = NULL;
+ 			us->extra_destructor = NULL;
+ 		}
 -- 
-Luká¹ Hejtmánek
+1.5.3.3
+
+
