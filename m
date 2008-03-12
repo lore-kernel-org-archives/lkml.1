@@ -1,97 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751974AbYCLEIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbYCLEKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751974AbYCLEIo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 00:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbYCLEIf
+	id S1752171AbYCLEKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 00:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYCLEKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 00:08:35 -0400
-Received: from n8a.bullet.mail.mud.yahoo.com ([209.191.87.104]:47975 "HELO
-	n8a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750768AbYCLEIe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 00:08:34 -0400
-X-Yahoo-Newman-Id: 745496.4156.bm@omp414.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TGFRSyvx8DVatoyg/TRdeCo1Eosh74KGK7jZyRcSXlLBsXkDUxN1TN17/trJr3Bw3BjrRl6VgbHyzaKKUEaXa1RiNOsYdqKBPPkwZZTe6kyR2dLMWMCRYK7dDTywsWtHIXiEPpzhVUCP/WtZ+uEQj6+R502tmbyiNvB6AI1T1/0=  ;
-X-YMail-OSG: E5KbgCUVM1m4lyc2rJggNuTvgOMaydXHwljU8UsfYY.qmapUwDrMMq1H2s0o6I2kIG2lrjhm3g--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] genhd must_check warning fix
-Date: Wed, 12 Mar 2008 15:07:38 +1100
-User-Agent: KMail/1.9.5
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20080312001317.D68A526F991@magilla.localdomain> <200803121440.26356.nickpiggin@yahoo.com.au> <47D753AC.8080206@garzik.org>
-In-Reply-To: <47D753AC.8080206@garzik.org>
+	Wed, 12 Mar 2008 00:10:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47061 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbYCLEK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 00:10:29 -0400
+Message-ID: <47D75749.5060203@jp.fujitsu.com>
+Date: Wed, 12 Mar 2008 13:08:41 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803121507.39347.nickpiggin@yahoo.com.au>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Gary Hade <garyhade@us.ibm.com>, warthog19@eaglescrag.net,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de> <20080304230937.GD3694@ldl.fc.hp.com> <47CDF339.3060304@jp.fujitsu.com> <20080305202052.GN3694@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311132800.GC21482@parisc-linux.org>
+In-Reply-To: <20080311132800.GC21482@parisc-linux.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 14:53, Jeff Garzik wrote:
-> Nick Piggin wrote:
-> > On Wednesday 12 March 2008 14:25, Jeff Garzik wrote:
-> >> Roland McGrath wrote:
-> >>> Fixes:
-> >>>
-> >>> 	block/genhd.c:361: warning: ignoring return value of ‘class_register’,
-> >>> declared with attribute warn_unused_result
-> >>>
-> >>> Signed-off-by: Roland McGrath <roland@redhat.com>
-> >>> ---
-> >>>  block/genhd.c |    4 +++-
-> >>>  1 files changed, 3 insertions(+), 1 deletions(-)
-> >>>
-> >>> diff --git a/block/genhd.c b/block/genhd.c
-> >>> index c44527d..00da521 100644
-> >>> --- a/block/genhd.c
-> >>> +++ b/block/genhd.c
-> >>> @@ -360,7 +360,9 @@ static struct kobject *base_probe(dev_t devt, int
-> >>> *part, void *data)
-> >>>
-> >>>  static int __init genhd_device_init(void)
-> >>>  {
-> >>> -	class_register(&block_class);
-> >>> +	int error = class_register(&block_class);
-> >>> +	if (unlikely(error))
-> >>> +		return error;
-> >>>  	bdev_map = kobj_map_init(base_probe, &block_class_lock);
-> >>>  	blk_dev_init();
-> >>
-> >> ACK
-> >>
-> >> I was silly and simply tuned out this warning, assuming [wrongly] that
-> >> it was difficult to fix like the fs/partitions.c warning.
-> >>
-> >> Shows how "helpful" those warnings are...
-> >
-> > I don't see why? If the warning wasn't there, then Roland probably
-> > wouldn't have noticed. So to me it shows that the warning actually
-> > is helpful (without "") in this case.
+Hi,
+
+Matthew Wilcox wrote:
+> On Tue, Mar 11, 2008 at 10:10:40PM +0900, Kenji Kaneshige wrote:
+>> 1) I checked ACPI spec again and again, but I could not find any
+>>    reason to add Fujitsu servers to quirks list. So I'd like you to
+>>    add HP servers to the quirks list. I'll send the following patches
+>>    followed by this e-mail.
+> 
+> Alex pointed out that IBM interprets the spec the same way that HP does.
+> Are there any other machines that follow the spec the same way that
+> Fujitsu does?
+> 
+
+I don't know.
+
+>> 2) The ACPI PCI slot detection driver would change the slot names of
+>>    some hotplug drivers (at least I checked shpchp and pciehp). And
+>>    the name of slots are depending on the order of driver loading.
+>>    For example, on my system which has several SHPCHP slots and
+>>    PCIEHP slots, the name of PCIEHP slots are changed as
+>>    follows. Please note that PCIEHP based slots are 0034_0027 and
+>>    0032_0026, and others are SHPCHP based slots.
+>>
+>>    - Without ACPI PCI slot detection driver
+>>      # ls /sys/bus/pci/slots/
+>>      0009_0016  0014_0018  0019_0020  0021_0022  0034_0027
+>>      0011_0017  0016_0019  0021_0021  0032_0026
+>>
+>>    - With ACPI PCI slot detection driver
+>>      # ls /sys/bus/pci/slots/
+>>      0009_0016  0014_0018  0019_0020  0021_0022  27
+>>      0011_0017  0016_0019  0021_0021  26
+> 
+> I hadn't realised that patch got in to put the bus name in as a
+> uniquifier.  I thought we'd rejected it because the problem only
+> occurred on one box with bad firmware.
 >
-> The point was more that the warnings are so often silly that it teaches
-> the human to tune out the warnings -- even when they turn out to reveal
-> real problems, as in this case.
 
-But the must_check warning? fs/partitions/check.c warning seems like it
-is still a real error, whether or not it is hard to fix.
+Maybe I've told you before :-)
 
+I also don't like to put bus into the names of those directories,
+because I think the names of those directories are used as physical
+slot identifier, not logical identifier, and neither PCI-to-PCI
+Bridge Architecture spec, PCI Hot-Plug spec, SHPC spec nor PCI
+Express spec allow putting bus number into physical slot identifier.
 
-> I've been working quietly, the past several kernels, trying to kill most
-> compiler warnings, so I've been paying close attention to this sort of
-> stuff in general.
+Removing bus number from the names of those directories would fix
+the problem in a short term. But I think it is only a band-aid
+because all of those specifications allow using chassis number
+in the physical slot identifier. If any hotplug driver will put
+chassis number into slot names, the same problem will happen.
 
-If you tune out the must_check warnings, then how is that better than
-not having them at all? In either case, you'd have missed this genhd
-bug(let).
+I think it's the right direction to use combination of chassis and
+slot number as a slot name if we try to unify slot names among
+drivers, though there will be some challenges as follows.
+
+- how to handle the names of vendor specific hotplug drivers?
+- SHPC spec allows vendor specific names, IIRC. how to handle it?
+- and so on.
+
+>>    - Unify slot names among all hotplug drivers
+> 
+> That is the plan.  I'm not sure why the shpc slots aren't renamed in
+> this revision of the patch -- maybe Alex dropped that part?
+> 
+
+Maybe the reason is very simple. The SHPCHP driver was loaded first,
+and then ACPI PCI slot detection driver was loaded. Both are loaded
+automatically at boot time. If we changed the order, we would get
+another result.
+
+Thanks,
+Kenji Kaneshige
 
