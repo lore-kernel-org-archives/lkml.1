@@ -1,136 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbYCLNIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYCLNJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbYCLNIo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYCLNIe
+	id S1753507AbYCLNJa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYCLNJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:08:34 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:41609 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbYCLNId (ORCPT
+	Wed, 12 Mar 2008 09:09:21 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46277 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbYCLNJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:08:33 -0400
-Message-ID: <47D7D580.5060406@panasas.com>
-Date: Wed, 12 Mar 2008 15:07:12 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 12 Mar 2008 09:09:20 -0400
+Date: Wed, 12 Mar 2008 08:09:04 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Greg KH <greg@kroah.com>, serue@us.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       menage@google.com, sukadev@us.ibm.com,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-ID: <20080312130904.GB8308@sergelap.austin.ibm.com>
+References: <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com> <47D793AB.6070008@openvz.org>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [SCSI] gdth: Allocate sense_buffer to prevent NULL pointer
- dereference
-References: <Pine.LNX.4.44L0.0803111456590.26916-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803111456590.26916-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D793AB.6070008@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11 2008 at 21:18 +0200, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Tue, 11 Mar 2008, Boaz Harrosh wrote:
+Quoting Pavel Emelyanov (xemul@openvz.org):
+> Greg KH wrote:
+> > On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
+> >> Besides, I've measured some things - the lat_syscall test for open from 
+> >> lmbench test suite and the nptl perf test. Here are the results:
+> >>
+> >>         sec     nosec
+> >> open    3.0980s  3.0709s
+> >> nptl    2.7746s  2.7710s
+> >>
+> >> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
+> >> much, but it is noticeable. Besides, this is only two tests, digging deeper
+> >> may reveal more.
+> > 
+> > I think that is in the noise of sampling if you run that test many more
+> > times.
 > 
->>> You can first get to the scsi_device in isd200_ata_command().  
->> I was afraid of that. I don't think I want to call scsi_get_command
->> from within .queuecommand. I will leave the code hacked as today.
+> These numbers are average values of 20 runs of each test. I didn't
+> provide the measurement accuracy, but the abs(open.sec - open.nosec)
+> is greater than it.
 > 
-> What are you talking about?  isd200_ata_command isn't called by 
-> queuecommand.
+> >> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
+> >> to the vmlinux...
+> >>
+> >> I think, I finally agree with you and Al Viro, that the kobj mapper is 
+> >> not the right place to put the filtering, but taking the above numbers 
+> >> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
+> >> versions of security_inode_permission/security_file_permission/etc?
+> > 
+> > Ask the security module interface maintainers about this, not me :)
 > 
->>> The last
->>> place you can get to the scsi_device (if one exists!) is
->>> quiesce_and_remove_host() -- but that's part of the core, not specific
->>> to isd200.
->>>
->> Here two, it looks like I need to introduce a new function pointer for isd200
+> OK :) Thanks for your time, Greg.
 > 
-> Why?  And why do you need to get to the scsi_device in the first place?
-> 
->> I'll leave it for now. Though I know this is not the last I'll see of this driver.
->>
+> So, Serge, since you already have a LSM-based version, maybe you can
+> change it with the proposed "fix" and send it to LSM maintainers for
+> review?
 
-OK Now I see isd200_ata_command() is called from a usb.c internal thread.
+To take the point of view of someone who neither wants containers nor
+LSM but just a fast box,
 
-What I need to do is call scsi_get_command(scsi_device*) on first invocation.
-Now for the call to scsi_put_command()? At the time of the call to 
-isd200_free_info_ptrs() do you think I still have a valid scsi_device at this point?
+you're asking me to introduce LSM hooks for the !SECURITY case?  :)
 
-What I will do is this. I will resend my original patch with your comments
-fixed. This is for the 2.6.25-rc. And I will send another patch that uses
-the proper scsi_get/put_command() for testing and inclusion into the 2.6.26 kernel.
-Please ACK on the patch
+I can give it a shot, but I expect some complaints.  Now at least the
+_mknod hook shouldn't be a hotpath,  and I suppose I can add yet
+an #ifdef inside the !SECURITY version of security_inode_permission().
+I still expect some complaints though.  I'll send something soon.
 
->>>> (And one more stupid question. Why does isd200_init_info allocates the info 
->>>> structure but the isd200_free_info_ptrs does not free it, it kind of
->>>> limits the way it can be allocated, no?)
->>> Not at all.  isd200_free_info_ptrs() frees everything pointed to by the
->>> info structure, and the info structure itself is freed later on by the
->>> usb-storage core in usb_stor_release_resources().
->>>
->> OK so in isd200_get_inquiry_data() at the end near the call to:
->> 			us->extra_destructor(info);
->> 			us->extra = NULL;
->>
->> It leaks the info.
-> 
-> Yes.  The three lines of code there are unnecessary.  You should remove
-> them (and the comment) instead of adding more somewhere else.  Or if
-> you want to keep them, just add a line to kfree(us->extra) before 
-> us->extra is set to NULL.
+thanks,
+-serge
 
-How are they unnecessary? who will free them? other wise they will only be
-freed at the very end. And that is only because usb_stor_transparent_scsi_command()
-does not need any us->extra of it's own. But if ever it will, then this code
-buried here will become a leak.
-
-And I disagree. with your solution. The module that did the allocation should
-do the freeing. The above is just an example of what happens with bad programing
-style. the core should not have attempted a free on a void pointer just so
-protocols can get lazy and not register a destructor. Other wise we do not
-learn from passed mistakes and keep doing the same errors. The free should
-always be at same file right next to the alloc. (And don't get me started
-on the flexibility that enables)
-
-I keep the patch as it is, I recommend to commit it for solving the leak.
-
-> 
->> Please ACK the first patch sent, so James can put it in scsi-rc-fixes as part
->> of the sense_buffer effort for 2.6.25-rc
-> 
-> The first patch is okay except for style violations:
-> 
->> @@ -294,6 +294,7 @@ struct isd200_info {
->>  	unsigned char MaxLUNs;
->> 	struct scsi_cmnd srb;
->> 	struct scatterlist sg;
->> +	u8*	sense_buffer;
-> 
-> This should be
-> 
-> 	u8 *sense_buffer;
-> 
-> And
-> 
->>  			isd200_free_info_ptrs(info);
->>  			kfree(info);
->>  			retStatus = ISD200_ERROR;
->>  		}
->> +		else
->> +			info->srb.sense_buffer = info->sense_buffer;
-> 
-> The "else" should go on the same line as the closing brace, and it
-> should have its own opening brace.
-> 
-> Alan Stern
-> 
-> --
-
-The important sense_buffer bugfix is posted as reply to this mail
-
-Boaz
-
+> > good luck,
+> > 
+> > greg k-h
+> > 
