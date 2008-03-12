@@ -1,57 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYCLVUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYCLVVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYCLVUz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYCLVUq
+	id S1755167AbYCLVVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYCLVVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:20:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:32040 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbYCLVUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 17:20:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=wKWcUY5RAyv9LBbGGnrGB1NsLeFeCh4xBMtCBU+Yv5TihFoAADapMcyMRvfLc+o+KOAYTtUIZcPL7Jhp4eBCW06NhzJgPcIT8dUljO/P6W+RP1vqLb7RYDt+YMp4yT9VIXdZfTa4Rpe2lI69LNqnEPl9n1P2yDmZc/e37pvvwKE=
-Subject: Re: + n_tty-loss-of-sync-following-a-buffer-overflow.patch added
-	to -mm tree
-From: Rupesh Sugathan <rupesh.sugathan@gmail.com>
-Reply-To: rupesh.sugathan@gmail.com
-To: Paul Fulghum <paulkf@microgate.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47D844B5.2090001@microgate.com>
-References: <200803120455.m2C4t4Aw010881@imap1.linux-foundation.org>
-	 <20080312102729.58956d2c@the-village.bc.nu>
-	 <47D7F531.2070400@microgate.com>  <1205339539.8873.14.camel@estonia>
-	 <1205343590.4094.17.camel@x2.microgate.com>
-	 <47D844B5.2090001@microgate.com>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 13:54:43 -0700
-Message-Id: <1205355283.8873.29.camel@estonia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 17:21:02 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:37698 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754426AbYCLVU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 17:20:57 -0400
+Date: Wed, 12 Mar 2008 14:20:04 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>, torvalds@osdl.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH,TRIVIAL] Fix default compose table
+	initialization
+Message-ID: <20080312212004.GD4416@sequoia.sous-sol.org>
+References: <20080303012349.GA12338@implementation>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080303012349.GA12338@implementation>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Paul Fulghum wrote:
-> > What I suggest is the following patch for processing NL
-> > in canonical mode.
+* Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
+> Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
+> 0300...  This fixes the default unicode compose table by using integers
+> instead of character constants.
 
-I tested the patch in 2.4.x and seems to meet all the discussed
-requirements. 
+I think this patch breaks the s390 build, no?
+-chris
 
-I have another suggestion to this subject. When the buffer oveflows in
-icaonon mode, it would be *best* if the application either gets a
-complete line or does not get it at all. On a buffer overflow, it would
-be good that the n_tty discard the whole line data in the buffer (part
-of which has overflown) and make more room in the buffer.
-
-Does it make sense to any of you?
-
---
-Rupesh Sugathan
-
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> 
+> --- linux/drivers/char/defkeymap.c_shipped.orig	2008-03-02 22:25:22.000000000 +0000
+> +++ linux/drivers/char/defkeymap.c_shipped	2008-03-02 22:30:52.000000000 +0000
+> @@ -223,40 +223,40 @@
+>  };
+>  
+>  struct kbdiacruc accent_table[MAX_DIACR] = {
+> -	{'`', 'A', '\300'},	{'`', 'a', '\340'},
+> -	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
+> -	{'^', 'A', '\302'},	{'^', 'a', '\342'},
+> -	{'~', 'A', '\303'},	{'~', 'a', '\343'},
+> -	{'"', 'A', '\304'},	{'"', 'a', '\344'},
+> -	{'O', 'A', '\305'},	{'o', 'a', '\345'},
+> -	{'0', 'A', '\305'},	{'0', 'a', '\345'},
+> -	{'A', 'A', '\305'},	{'a', 'a', '\345'},
+> -	{'A', 'E', '\306'},	{'a', 'e', '\346'},
+> -	{',', 'C', '\307'},	{',', 'c', '\347'},
+> -	{'`', 'E', '\310'},	{'`', 'e', '\350'},
+> -	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
+> -	{'^', 'E', '\312'},	{'^', 'e', '\352'},
+> -	{'"', 'E', '\313'},	{'"', 'e', '\353'},
+> -	{'`', 'I', '\314'},	{'`', 'i', '\354'},
+> -	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
+> -	{'^', 'I', '\316'},	{'^', 'i', '\356'},
+> -	{'"', 'I', '\317'},	{'"', 'i', '\357'},
+> -	{'-', 'D', '\320'},	{'-', 'd', '\360'},
+> -	{'~', 'N', '\321'},	{'~', 'n', '\361'},
+> -	{'`', 'O', '\322'},	{'`', 'o', '\362'},
+> -	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
+> -	{'^', 'O', '\324'},	{'^', 'o', '\364'},
+> -	{'~', 'O', '\325'},	{'~', 'o', '\365'},
+> -	{'"', 'O', '\326'},	{'"', 'o', '\366'},
+> -	{'/', 'O', '\330'},	{'/', 'o', '\370'},
+> -	{'`', 'U', '\331'},	{'`', 'u', '\371'},
+> -	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
+> -	{'^', 'U', '\333'},	{'^', 'u', '\373'},
+> -	{'"', 'U', '\334'},	{'"', 'u', '\374'},
+> -	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
+> -	{'T', 'H', '\336'},	{'t', 'h', '\376'},
+> -	{'s', 's', '\337'},	{'"', 'y', '\377'},
+> -	{'s', 'z', '\337'},	{'i', 'j', '\377'},
+> +	{'`', 'A', 0300},	{'`', 'a', 0340},
+> +	{'\'', 'A', 0301},	{'\'', 'a', 0341},
+> +	{'^', 'A', 0302},	{'^', 'a', 0342},
+> +	{'~', 'A', 0303},	{'~', 'a', 0343},
+> +	{'"', 'A', 0304},	{'"', 'a', 0344},
+> +	{'O', 'A', 0305},	{'o', 'a', 0345},
+> +	{'0', 'A', 0305},	{'0', 'a', 0345},
+> +	{'A', 'A', 0305},	{'a', 'a', 0345},
+> +	{'A', 'E', 0306},	{'a', 'e', 0346},
+> +	{',', 'C', 0307},	{',', 'c', 0347},
+> +	{'`', 'E', 0310},	{'`', 'e', 0350},
+> +	{'\'', 'E', 0311},	{'\'', 'e', 0351},
+> +	{'^', 'E', 0312},	{'^', 'e', 0352},
+> +	{'"', 'E', 0313},	{'"', 'e', 0353},
+> +	{'`', 'I', 0314},	{'`', 'i', 0354},
+> +	{'\'', 'I', 0315},	{'\'', 'i', 0355},
+> +	{'^', 'I', 0316},	{'^', 'i', 0356},
+> +	{'"', 'I', 0317},	{'"', 'i', 0357},
+> +	{'-', 'D', 0320},	{'-', 'd', 0360},
+> +	{'~', 'N', 0321},	{'~', 'n', 0361},
+> +	{'`', 'O', 0322},	{'`', 'o', 0362},
+> +	{'\'', 'O', 0323},	{'\'', 'o', 0363},
+> +	{'^', 'O', 0324},	{'^', 'o', 0364},
+> +	{'~', 'O', 0325},	{'~', 'o', 0365},
+> +	{'"', 'O', 0326},	{'"', 'o', 0366},
+> +	{'/', 'O', 0330},	{'/', 'o', 0370},
+> +	{'`', 'U', 0331},	{'`', 'u', 0371},
+> +	{'\'', 'U', 0332},	{'\'', 'u', 0372},
+> +	{'^', 'U', 0333},	{'^', 'u', 0373},
+> +	{'"', 'U', 0334},	{'"', 'u', 0374},
+> +	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
+> +	{'T', 'H', 0336},	{'t', 'h', 0376},
+> +	{'s', 's', 0337},	{'"', 'y', 0377},
+> +	{'s', 'z', 0337},	{'i', 'j', 0377},
+>  };
+>  
+>  unsigned int accent_table_size = 68;
+> --- linux/drivers/acorn/char/defkeymap-l7200.c.orig	2008-03-02 22:27:34.000000000 +0000
+> +++ linux/drivers/acorn/char/defkeymap-l7200.c	2008-03-02 22:30:36.000000000 +0000
+> @@ -347,40 +347,40 @@
+>  };
+>  
+>  struct kbdiacruc accent_table[MAX_DIACR] = {
+> -	{'`', 'A', '\300'},	{'`', 'a', '\340'},
+> -	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
+> -	{'^', 'A', '\302'},	{'^', 'a', '\342'},
+> -	{'~', 'A', '\303'},	{'~', 'a', '\343'},
+> -	{'"', 'A', '\304'},	{'"', 'a', '\344'},
+> -	{'O', 'A', '\305'},	{'o', 'a', '\345'},
+> -	{'0', 'A', '\305'},	{'0', 'a', '\345'},
+> -	{'A', 'A', '\305'},	{'a', 'a', '\345'},
+> -	{'A', 'E', '\306'},	{'a', 'e', '\346'},
+> -	{',', 'C', '\307'},	{',', 'c', '\347'},
+> -	{'`', 'E', '\310'},	{'`', 'e', '\350'},
+> -	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
+> -	{'^', 'E', '\312'},	{'^', 'e', '\352'},
+> -	{'"', 'E', '\313'},	{'"', 'e', '\353'},
+> -	{'`', 'I', '\314'},	{'`', 'i', '\354'},
+> -	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
+> -	{'^', 'I', '\316'},	{'^', 'i', '\356'},
+> -	{'"', 'I', '\317'},	{'"', 'i', '\357'},
+> -	{'-', 'D', '\320'},	{'-', 'd', '\360'},
+> -	{'~', 'N', '\321'},	{'~', 'n', '\361'},
+> -	{'`', 'O', '\322'},	{'`', 'o', '\362'},
+> -	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
+> -	{'^', 'O', '\324'},	{'^', 'o', '\364'},
+> -	{'~', 'O', '\325'},	{'~', 'o', '\365'},
+> -	{'"', 'O', '\326'},	{'"', 'o', '\366'},
+> -	{'/', 'O', '\330'},	{'/', 'o', '\370'},
+> -	{'`', 'U', '\331'},	{'`', 'u', '\371'},
+> -	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
+> -	{'^', 'U', '\333'},	{'^', 'u', '\373'},
+> -	{'"', 'U', '\334'},	{'"', 'u', '\374'},
+> -	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
+> -	{'T', 'H', '\336'},	{'t', 'h', '\376'},
+> -	{'s', 's', '\337'},	{'"', 'y', '\377'},
+> -	{'s', 'z', '\337'},	{'i', 'j', '\377'},
+> +	{'`', 'A', 0300},	{'`', 'a', 0340},
+> +	{'\'', 'A', 0301},	{'\'', 'a', 0341},
+> +	{'^', 'A', 0302},	{'^', 'a', 0342},
+> +	{'~', 'A', 0303},	{'~', 'a', 0343},
+> +	{'"', 'A', 0304},	{'"', 'a', 0344},
+> +	{'O', 'A', 0305},	{'o', 'a', 0345},
+> +	{'0', 'A', 0305},	{'0', 'a', 0345},
+> +	{'A', 'A', 0305},	{'a', 'a', 0345},
+> +	{'A', 'E', 0306},	{'a', 'e', 0346},
+> +	{',', 'C', 0307},	{',', 'c', 0347},
+> +	{'`', 'E', 0310},	{'`', 'e', 0350},
+> +	{'\'', 'E', 0311},	{'\'', 'e', 0351},
+> +	{'^', 'E', 0312},	{'^', 'e', 0352},
+> +	{'"', 'E', 0313},	{'"', 'e', 0353},
+> +	{'`', 'I', 0314},	{'`', 'i', 0354},
+> +	{'\'', 'I', 0315},	{'\'', 'i', 0355},
+> +	{'^', 'I', 0316},	{'^', 'i', 0356},
+> +	{'"', 'I', 0317},	{'"', 'i', 0357},
+> +	{'-', 'D', 0320},	{'-', 'd', 0360},
+> +	{'~', 'N', 0321},	{'~', 'n', 0361},
+> +	{'`', 'O', 0322},	{'`', 'o', 0362},
+> +	{'\'', 'O', 0323},	{'\'', 'o', 0363},
+> +	{'^', 'O', 0324},	{'^', 'o', 0364},
+> +	{'~', 'O', 0325},	{'~', 'o', 0365},
+> +	{'"', 'O', 0326},	{'"', 'o', 0366},
+> +	{'/', 'O', 0330},	{'/', 'o', 0370},
+> +	{'`', 'U', 0331},	{'`', 'u', 0371},
+> +	{'\'', 'U', 0332},	{'\'', 'u', 0372},
+> +	{'^', 'U', 0333},	{'^', 'u', 0373},
+> +	{'"', 'U', 0334},	{'"', 'u', 0374},
+> +	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
+> +	{'T', 'H', 0336},	{'t', 'h', 0376},
+> +	{'s', 's', 0337},	{'"', 'y', 0377},
+> +	{'s', 'z', 0337},	{'i', 'j', 0377},
+>  };
+>  
+>  unsigned int accent_table_size = 68;
+> --- linux/drivers/s390/char/defkeymap.c.orig	2008-03-02 22:28:27.000000000 +0000
+> +++ linux/drivers/s390/char/defkeymap.c	2008-03-02 22:30:45.000000000 +0000
+> @@ -151,8 +151,8 @@
+>  };
+>  
+>  struct kbdiacruc accent_table[MAX_DIACR] = {
+> -	{'^', 'c', '\003'},	{'^', 'd', '\004'},
+> -	{'^', 'z', '\032'},	{'^', '\012', '\000'},
+> +	{'^', 'c', 0003},	{'^', 'd', 0004},
+> +	{'^', 'z', 0032},	{'^', 0012', 0000},
+>  };
+>  
+>  unsigned int accent_table_size = 4;
