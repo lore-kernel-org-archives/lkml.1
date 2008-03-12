@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYCLNJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbYCLNLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbYCLNJa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYCLNJV
+	id S1752444AbYCLNLt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbYCLNLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:09:21 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46277 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbYCLNJU (ORCPT
+	Wed, 12 Mar 2008 09:11:40 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:21561 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751729AbYCLNLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:09:20 -0400
-Date: Wed, 12 Mar 2008 08:09:04 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Greg KH <greg@kroah.com>, serue@us.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080312130904.GB8308@sergelap.austin.ibm.com>
-References: <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com> <47D793AB.6070008@openvz.org>
+	Wed, 12 Mar 2008 09:11:39 -0400
+Message-ID: <47D7D670.40306@panasas.com>
+Date: Wed, 12 Mar 2008 15:11:12 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D793AB.6070008@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] isd200: Allocate sense_buffer for hacked up scsi_cmnd
+References: <Pine.LNX.4.44L0.0803111456590.26916-100000@iolanthe.rowland.org> <47D7D580.5060406@panasas.com>
+In-Reply-To: <47D7D580.5060406@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Mar 2008 13:11:14.0978 (UTC) FILETIME=[8D15C020:01C88442]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Emelyanov (xemul@openvz.org):
-> Greg KH wrote:
-> > On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
-> >> Besides, I've measured some things - the lat_syscall test for open from 
-> >> lmbench test suite and the nptl perf test. Here are the results:
-> >>
-> >>         sec     nosec
-> >> open    3.0980s  3.0709s
-> >> nptl    2.7746s  2.7710s
-> >>
-> >> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
-> >> much, but it is noticeable. Besides, this is only two tests, digging deeper
-> >> may reveal more.
-> > 
-> > I think that is in the noise of sampling if you run that test many more
-> > times.
-> 
-> These numbers are average values of 20 runs of each test. I didn't
-> provide the measurement accuracy, but the abs(open.sec - open.nosec)
-> is greater than it.
-> 
-> >> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
-> >> to the vmlinux...
-> >>
-> >> I think, I finally agree with you and Al Viro, that the kobj mapper is 
-> >> not the right place to put the filtering, but taking the above numbers 
-> >> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
-> >> versions of security_inode_permission/security_file_permission/etc?
-> > 
-> > Ask the security module interface maintainers about this, not me :)
-> 
-> OK :) Thanks for your time, Greg.
-> 
-> So, Serge, since you already have a LSM-based version, maybe you can
-> change it with the proposed "fix" and send it to LSM maintainers for
-> review?
 
-To take the point of view of someone who neither wants containers nor
-LSM but just a fast box,
+Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
+own struct scsi_cmnd like here isd200, must also take care of their own
+sense_buffer.
 
-you're asking me to introduce LSM hooks for the !SECURITY case?  :)
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/usb/storage/isd200.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-I can give it a shot, but I expect some complaints.  Now at least the
-_mknod hook shouldn't be a hotpath,  and I suppose I can add yet
-an #ifdef inside the !SECURITY version of security_inode_permission().
-I still expect some complaints though.  I'll send something soon.
+diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
+index 2ae1e86..ac1764b 100644
+--- a/drivers/usb/storage/isd200.c
++++ b/drivers/usb/storage/isd200.c
+@@ -294,6 +294,7 @@ struct isd200_info {
+ 	unsigned char MaxLUNs;
+ 	struct scsi_cmnd srb;
+ 	struct scatterlist sg;
++	u8* sense_buffer;
+ };
+ 
+ 
+@@ -1469,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
+ 	if (info) {
+ 		kfree(info->id);
+ 		kfree(info->RegsBuf);
++		kfree(info->sense_buffer);
+ 	}
+ }
+ 
+@@ -1494,11 +1496,13 @@ static int isd200_init_info(struct us_data *us)
+ 				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
+ 		info->RegsBuf = (unsigned char *)
+ 				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
+-		if (!info->id || !info->RegsBuf) {
++		info->sense_buffer = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
++		if (!info->id || !info->RegsBuf || !info->sense_buffer) {
+ 			isd200_free_info_ptrs(info);
+ 			kfree(info);
+ 			retStatus = ISD200_ERROR;
+-		}
++		} else
++			info->srb.sense_buffer = info->sense_buffer;
+ 	}
+ 
+ 	if (retStatus == ISD200_GOOD) {
+-- 
+1.5.3.3
 
-thanks,
--serge
 
-> > good luck,
-> > 
-> > greg k-h
-> > 
