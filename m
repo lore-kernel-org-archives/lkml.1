@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYCLSh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbYCLSnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbYCLSh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 14:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYCLShR
+	id S1752380AbYCLSnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 14:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbYCLSnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 14:37:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37135 "EHLO mx2.suse.de"
+	Wed, 12 Mar 2008 14:43:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46935 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579AbYCLShQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 14:37:16 -0400
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Save some bytes in mm_struct by filling holes on 64bit
-Date: Wed, 12 Mar 2008 19:38:05 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-References: <20080312142807.GA2290@bingen.suse.de> <20080312110537.3f812130.akpm@linux-foundation.org>
-In-Reply-To: <20080312110537.3f812130.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751628AbYCLSnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 14:43:06 -0400
+Subject: Re: [RFC] correct flags to f_mode conversion in __dentry_open
+From: Eric Paris <eparis@redhat.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, alan <alan@redhat.com>, aviro@redhat.com,
+       drepper@redhat.com, hch@infradead.org, sds@tycho.nsa.gov,
+       jmorris@namei.org
+In-Reply-To: <20080312183441.GJ27894@ZenIV.linux.org.uk>
+References: <1205346327.5297.232.camel@localhost.localdomain>
+	 <20080312183441.GJ27894@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 12 Mar 2008 14:41:00 -0400
+Message-Id: <1205347260.2925.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121938.05497.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> The current ioctx_list_lock position is better from a cache layout POV?
+On Wed, 2008-03-12 at 18:34 +0000, Al Viro wrote:
+> On Wed, Mar 12, 2008 at 02:25:27PM -0400, Eric Paris wrote:
+> > I recently tried to add an SELinux BUG_ON in the case where the kernel
+> > made a permission request for no permissions and was able to stumble
+> > over it with something as simple as
+> > 
+> > open("/dev/null", 3);
+> > 
+> > Notice that 3 == (O_RDWR | O_WRONLY)
+> > 
+> > First question, is 3 ever a valid flag from from userspace to sys_open?
+> 
+> Yes.  "Check for both read and write permissions, set neither FMODE_READ
+> nor FMODE_WRITE".
+> 
+> Don't break drivers, please - some use that for "ioctl-only" opens,
+> with special semantics for those.
 
-Hmm ok you're right perhaps it's better to move core_waiters up
-instead. Updated  patch
-Save some bytes in mm_struct by filling holes v2
+Ok, I'll just make SELinux happy allow the request if we don't have
+FMODE_READ or FMODE_WRITE set.
 
-Putting int values together for better packing on 64bit 
-shrinks sizeof(struct mm_struct) from 776 bytes to 760 bytes.
+-Eric
 
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux-2.6.25-rc5/include/linux/mm_types.h
-===================================================================
---- linux-2.6.25-rc5.orig/include/linux/mm_types.h
-+++ linux-2.6.25-rc5/include/linux/mm_types.h
-@@ -172,6 +172,7 @@ struct mm_struct {
- 	atomic_t mm_users;			/* How many users with user space? */
- 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users 
-count as 1) */
- 	int map_count;				/* number of VMAs */
-+	int core_waiters;
- 	struct rw_semaphore mmap_sem;
- 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
- 
-@@ -216,11 +217,10 @@ struct mm_struct {
- 	unsigned long flags; /* Must use atomic bitops to access the bits */
- 
- 	/* coredumping support */
--	int core_waiters;
- 	struct completion *core_startup_done, core_done;
- 
- 	/* aio bits */
--	rwlock_t		ioctx_list_lock;
-+	rwlock_t		ioctx_list_lock;	/* aio lock */
- 	struct kioctx		*ioctx_list;
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 	struct mem_cgroup *mem_cgroup;
