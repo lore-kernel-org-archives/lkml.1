@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbYCLKfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYCLKjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178AbYCLKfq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 06:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYCLKfi
+	id S1752051AbYCLKjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 06:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYCLKjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 06:35:38 -0400
-Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:15344
-	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750992AbYCLKfh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 06:35:37 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmABADhP10d8qMER/2dsb2JhbAAIqUE
-X-IronPort-AV: E=Sophos;i="4.25,487,1199631600"; 
-   d="scan'208";a="288471151"
-Subject: Re: [PATCH] UIO: Implement a UIO interface for the SMX Cryptengine
-From: Ben Nizette <bn@niasdigital.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: gregkh@suse.de, linux-kernel <linux-kernel@vger.kernel.org>,
-       hjk@linutronix.de
-In-Reply-To: <20080312100831.GB21854@linux-sh.org>
-References: <1205211430.3817.15.camel@moss.renham>
-	 <20080312100831.GB21854@linux-sh.org>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Wed, 12 Mar 2008 21:41:08 +1100
-Message-Id: <1205318468.4344.23.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 06:39:06 -0400
+Received: from mail.suse.de ([195.135.220.2]:40664 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbYCLKjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 06:39:05 -0400
+Date: Wed, 12 Mar 2008 11:40:35 +0100
+From: Holger Macht <hmacht@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Len Brown <lenb@kernel.org>, stable@kernel.org
+Subject: Re: [PATCH] ACPI: Set flag DOCK_UNDOCKING when triggered via sysfs
+Message-ID: <20080312104034.GA4371@homac>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Len Brown <lenb@kernel.org>, stable@kernel.org
+References: <20080312000727.GB4089@homac> <20080311223522.3326b6ee.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080311223522.3326b6ee.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-03-12 at 19:08 +0900, Paul Mundt wrote:
-> On Tue, Mar 11, 2008 at 03:57:10PM +1100, Ben Nizette wrote:
-> > +
-> > +	info->mem[0].size = regs->end - regs->start;
-> > +	info->mem[0].memtype = UIO_MEM_PHYS;
-> > +
-> You have an off-by-1 in the resource size. ioremap and struct resource
-> are not equal in their expectations. You probably want to do something
-> like:
+On Di 11. Mär - 22:35:22, Andrew Morton wrote:
+> On Wed, 12 Mar 2008 01:07:27 +0100 Holger Macht <hmacht@suse.de> wrote:
 > 
-> 	info->mem[0].size = regs->end - regs->start + 1;
-> 	info->mem[0].internal_addr = ioremap(regs->start, info->mem[0].size);
-> 	...
+> > begin_undock() is only called when triggered via a acpi notify handler
+> > (pressing the undock button on the dock station), but complete_undock() is
+> > always called after the eject. So if a undock is triggered through a sysfs
+> > write, the flag DOCK_UNDOCKING has to be set for the dock station,
+> > too. Otherwise this will freeze the system hard.
+> > 
 > 
-You're right, thanks.  I hadn't noticed since we don't actually access
-all the way to the end of the region in normal use.
+> We prefer not to make systems freeze hard.
+> 
+> > ---
+> > 
+> > diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+> > index 307cef6..fa44fb9 100644
+> > --- a/drivers/acpi/dock.c
+> > +++ b/drivers/acpi/dock.c
+> > @@ -710,6 +710,7 @@ static ssize_t write_undock(struct device *dev, struct device_attribute *attr,
+> >  	if (!count)
+> >  		return -EINVAL;
+> >  
+> > +	begin_undock(dock_station);
+> >  	ret = handle_eject_request(dock_station, ACPI_NOTIFY_EJECT_REQUEST);
+> >  	return ret ? ret: count;
+> >  }
+> 
+> I assume that this is needed in 2.6.24.x as well?
 
-> and make sure that your resource end doesn't overlap with a start address
-> of an unrelated resource in your definition. /proc/iomem tends to be
-> useful for this.
+I tested this, and no, I weren't able to reproduce on 2.6.24.
 
-Yup.  In our case this is fairly easy as the engine just takes up a
-whole Chip Select's worth of address space on an AVR32 AT32AP7000.
+Moreover, it seems that the freeze is related to some libata issue because
+it only freezes when a drive is in the dock station.
 
-		--Ben.
+Nevertheless, I think the patch is correct. Maybe there's a race involved
+somewhere I'm not aware of. I really like to wait for Kristen to comment
+before pushing it into more trees.
+
+Thanks,
+	Holger
