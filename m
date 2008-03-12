@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYCLWmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYCLWns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYCLWmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYCLWme
+	id S1755966AbYCLWns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYCLWnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:42:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:38631 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbYCLWmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:42:33 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [patch 0/6] Guest page hinting version 6.
-Date: Thu, 13 Mar 2008 09:41:47 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       hugh@veritas.com
-References: <20080312132132.520833247@de.ibm.com>
-In-Reply-To: <20080312132132.520833247@de.ibm.com>
+	Wed, 12 Mar 2008 18:43:40 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:39263 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbYCLWnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 18:43:39 -0400
+Date: Wed, 12 Mar 2008 23:44:11 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: broken access to a USB HID device after suspend
+Message-ID: <20080312224411.GB2290@dose.home.local>
+Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
+	Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+	linux-usb@vger.kernel.org
+References: <Pine.LNX.4.64.0803122217580.7266@twin.jikos.cz> <Pine.LNX.4.44L0.0803121739590.6966-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803130941.48480.rusty@rustcorp.com.au>
+In-Reply-To: <Pine.LNX.4.44L0.0803121739590.6966-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 00:21:32 Martin Schwidefsky wrote:
-> My question now is how to proceed with the code. I sure
-> would love to see the code going upstream some day but that depends on
-> the mm developers as the code adds complexity that needs to be supported.
+On Wed, Mar 12, 2008 at 17:44:56 -0400, Alan Stern wrote:
 
-Well, I want this feature, but I agree about complexity.
+[...]
 
-AFAICT, the trivial subset of this is the hinting of Unused pages.  It seems 
-that would buy us something, and perhaps be a stepping stone to full page 
-hinting?
+> Tino, it would help to see a kernel log showing what happened during 
+> the suspend, resume, and failure of hidmon.  It would help even more if 
+> you test under a kernel with CONFIG_USB_DEBUG enabled.
 
-Cheers,
-Rusty.
+A full kernel log is available at http://tikei.de/dmesg
+
+> 
+> Even if you can't reproduce the problem, do you have the complete 
+> kernel log from before?
+> 
+> Is it possible that this is really a problem with the LCD device, not 
+> with the kernel?  I ask because if the device was working properly then 
+> unplugging and replugging the USB cable should do a complete reset.
+
+I did the following:
+
+- suspended the computer
+
+- switched off the LCD
+
+- resumed the computer
+
+- tried to use hidmon, got the error
+
+- unplugged the LCD
+
+- plugged in the LCD
+
+- tried to use hidmon again, got the error again
+
+- suspended the computer
+
+- resumed the computer
+
+- tried to use hidmon again, and it worked
+
+Note that I didn't switch off the LCD during the second suspend, in the
+case that matters.
+
+Regards,
+Tino
