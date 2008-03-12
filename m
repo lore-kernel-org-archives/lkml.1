@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYCLXMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbYCLXM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbYCLXMG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYCLXLz
+	id S1755748AbYCLXM1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYCLXMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:11:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48129 "EHLO
+	Wed, 12 Mar 2008 19:12:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34142 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751543AbYCLXLy (ORCPT
+	by vger.kernel.org with ESMTP id S1752854AbYCLXMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:11:54 -0400
-Date: Wed, 12 Mar 2008 16:09:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
- Reported regressions from 2.6.24)
-In-Reply-To: <20080312225421.GA24449@kroah.com>
-Message-ID: <alpine.LFD.1.00.0803121604580.3557@woody.linux-foundation.org>
-References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com>
- <20080312212704.GA16836@kroah.com> <20080312213826.GA17101@kroah.com> <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org> <20080312225421.GA24449@kroah.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 12 Mar 2008 19:12:15 -0400
+Date: Wed, 12 Mar 2008 16:11:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       heiko.carstens@de.ibm.com, schwidefsky@de.ibm.com
+Subject: Re: [patch 06/10] cpu topology support for s390.
+Message-Id: <20080312161137.63bdfa67.akpm@linux-foundation.org>
+In-Reply-To: <20080312173217.505558934@de.ibm.com>
+References: <20080312173155.703966894@de.ibm.com>
+	<20080312173217.505558934@de.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 12 Mar 2008 18:32:01 +0100
+Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
-
-On Wed, 12 Mar 2008, Greg KH wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> I can't get a box here to produce both of those PCI: messages myself,
-> and neither can Len, so something is really odd here.
+> Add s390 backend so we can give the scheduler some hints about the
+> cpu topology.
+> 
+> ===================================================================
+> --- /dev/null
+> +++ quilt-2.6/arch/s390/kernel/topology.c
+> @@ -0,0 +1,271 @@
+> +/*
+> + *  arch/s390/kernel/topology.c
+> + *
+> + *    Copyright IBM Corp. 2007
+> + *    Author(s): Heiko Carstens <heiko.carstens@de.ibm.com>
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/mm.h>
+> +#include <linux/init.h>
+> +#include <linux/device.h>
+> +#include <linux/bootmem.h>
+> +#include <linux/sched.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/cpu.h>
+> +#include <linux/smp.h>
+> +#include <asm/delay.h>
+> +#include <asm/s390_ext.h>
+> +
+> +#define CPU_BITS 64
+> +
+> +struct tl_cpu {
+> +	unsigned char reserved[6];
+> +	unsigned short origin;
+> +	unsigned long mask[CPU_BITS / BITS_PER_LONG];
+> +};
 
-You can't?
+mask[] will be too small for CPU_BITS=65 ;)
 
-I can trivially reproduce the warnings on my laptop by just adding 
-"acpi=noirq" to the command line in grub.
+> ...
+>
+> +static union tl_entry *next_tle(union tl_entry *tle)
+> +{
+> +	if (tle->nl)
+> +		return (union tl_entry *)((struct tl_container *)tle + 1);
+> +	else
+> +		return (union tl_entry *)((struct tl_cpu *)tle + 1);
+> +}
 
-	PCI: Probing PCI hardware
-	kobject (ffff81007e08d9c8): tried to init an initialized object, something is seriously wrong.
-	Pid: 1, comm: swapper Not tainted 2.6.25-rc3-00081-g7704a8b #29
-	
-	Call Trace:
-	 [<ffffffff8054f921>] __down_read+0x12/0x93
-	 [<ffffffff80313d60>] kobject_init+0x39/0x82
-	 [<ffffffff803956d6>] device_initialize+0x25/0xa4
-	 [<ffffffff80395f83>] device_register+0x9/0x12
-	 [<ffffffff80322cdc>] pci_bus_add_devices+0xe2/0x13e
-	 [<ffffffff807491be>] pci_legacy_init+0x66/0xf9
-	 [<ffffffff8039763e>] bus_register+0x15b/0x221
-	 [<ffffffff8072a6ba>] kernel_init+0x14a/0x2b4
-	 [<ffffffff8020be38>] child_rip+0xa/0x12
-	 [<ffffffff8072a570>] kernel_init+0x0/0x2b4
-	 [<ffffffff8020be2e>] child_rip+0x0/0x12
+omg.
 
-did you try just adding that simple command line thing?
+> +static void tl_to_cores(struct tl_info *info)
+> +{
+> +	union tl_entry *tle, *end;
+> +	struct core_info *core = &core_info;
+> +
+> +	mutex_lock(&smp_cpu_state_mutex);
+> +	clear_cores();
+> +	tle = (union tl_entry *)&info->tle;
 
-			Linus
+and this cast was unneeded!
+
+> +	end = (union tl_entry *)((unsigned long)info + info->length);
+
+I'd suggest that you take a look at all the pointer arith games which are
+being played in this code and see if it can be done better with a more
+appropriate use of the C type system.  Before someone dies.
+
+
