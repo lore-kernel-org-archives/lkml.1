@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYCLSWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbYCLSX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbYCLSWT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 14:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYCLSWD
+	id S1754354AbYCLSX0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 14:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYCLSXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 14:22:03 -0400
-Received: from khc.piap.pl ([195.187.100.11]:41553 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681AbYCLSWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 14:22:01 -0400
-To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: WAN: new PPP code for generic HDLC
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 12 Mar 2008 19:21:55 +0100
-Message-ID: <m3prtzsszg.fsf@maximus.localdomain>
+	Wed, 12 Mar 2008 14:23:19 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:45295 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbYCLSXS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 14:23:18 -0400
+X-Greylist: delayed 687 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 14:23:17 EDT
+Message-ID: <47D81CD9.6000802@nortel.com>
+Date: Wed, 12 Mar 2008 12:11:37 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Daniel Phillips <phillips@phunq.net>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+References: <200803092346.17556.phillips@phunq.net> <200803102050.40567.phillips@phunq.net> <20080312131133.60e99d29@the-village.bc.nu> <200803121029.54108.phillips@phunq.net>
+In-Reply-To: <200803121029.54108.phillips@phunq.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Mar 2008 18:11:40.0440 (UTC) FILETIME=[8518F980:01C8846C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Daniel Phillips wrote:
+> On Wednesday 12 March 2008 06:11, Alan Cox wrote:
 
-I'll follow up with a patch for generic HDLC PPP code.
+>>No I get that. You've ignored the fact I'm suggesting that design choice
+>>is dumb.
+> 
+> 
+> You seem to be calling Linux unreliable.
 
-Current status of generic HDLC is:
-- up to 2.6.22 - working.
-- 2.6.23.* and 2.6.24.* - Frame Relay and PPP protocols panic instantly,
-  breakage caused by a change to netdev code that I overlooked.
-- 2.6.25-git - Frame Relay is already fixed, PPP still panics.
+It's more reliable than many others, but it's not perfect.
 
-The fix to FR was simple (983e23041b28abb113862b2935a85cfb9aab4f5a).
+Besides, there are many failure modes beyond the control of the kernel. 
+  Hardware errors can lock up the bus and prevent I/O, RAM modules can 
+go bad, technicians can yank out cards without waiting for the ready 
+light.
 
-PPP has been using syncppp.c implementation for years, meaning working
-as a mid-layer between hardware drivers and syncppp. This situation is
-increasingly hard to maintain, and I've decided to write a dedicated
-PPP implementation for generic HDLC.
+For certain classes of devices it's necessary to plan for these sorts of 
+things, and a model where the on-disk structures may be inconsistent by 
+design is not going to be very attractive.
 
-Rationale:
-- syncppp assumes no mid-layer between itself and hw drivers - dirty
-  hacks must be used to work around this
-- syncppp doesn't even try to implement PPP correctly, it looks like
-  it was written to work with another specific implementation and then
-  left in this state for *teen years
-- every protocol (LCP and IPCP) uses different state machine code.
-- lack of IPv6 support and adding it is non-trivial.
-- I've considered using the generic PPP stack, however it's oriented
-  towards async tty and requires the pppd daemon - I guess code to
-  interface to it would be more complicated than the new PPP code.
-
-The PPP state machine is distributed over many functions and this is
-extremely hard to maintain or even understand. No wonder it's not very
-standard-compliant.
-
-Instead my new implementation has:
-- a single state machine code for all control protocols (LCP, IPCP,
-  IPV6CP, and whatever is needed)
-- it's modelled after STD-51
-- even more minimalistic than syncppp (no "magic number"), though
-  adding optional support (if needed) is simple.
-- can actually be maintained.
-
-I have positively tested it on i686 and big-endian ARM, against itself
-and against syncppp.c. I can't test it against any other device due to
--ENOHW, so I expect some bugs/problems in/with this code, though I hope
-it's better than the current brokenness.
-
-I guess it should go into 2.6.25, not sure about "stable" series.
-I will appreciate any feedback, review and/or test results.
--- 
-Krzysztof Halasa
+Chris
