@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbYCLC1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYCLC3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbYCLC1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 22:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYCLC1E
+	id S1753226AbYCLC3L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 22:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYCLC25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 22:27:04 -0400
-Received: from mga02.intel.com ([134.134.136.20]:20488 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbYCLC1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 22:27:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,483,1199692800"; 
-   d="scan'208";a="353418540"
-Subject: Re: [PATCH -mm] kexec jump -v9
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <200803112318.28120.rjw@sisk.pl>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	 <20080311211004.GA30164@redhat.com>  <200803112318.28120.rjw@sisk.pl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 12 Mar 2008 10:26:28 +0800
-Message-Id: <1205288788.29875.28.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 12 Mar 2008 02:24:12.0508 (UTC) FILETIME=[2916F1C0:01C883E8]
+	Tue, 11 Mar 2008 22:28:57 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:58004 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbYCLC24 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 22:28:56 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 2/2] Add device_prep_dma_interrupt support to fsldma.c
+Date: Wed, 12 Mar 2008 10:28:49 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AECE527E@zch01exm26.fsl.freescale.net>
+In-Reply-To: <e9c3a7c20803111455g354741f0sff7d4fc0172dc65e@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] Add device_prep_dma_interrupt support to fsldma.c
+Thread-Index: AciDwqKwKblje3mXSA6S13WXe3U1LgAJBEKQ
+References: <1205205917-21861-1-git-send-email-wei.zhang@freescale.com> <1205205917-21861-2-git-send-email-wei.zhang@freescale.com> <e9c3a7c20803111455g354741f0sff7d4fc0172dc65e@mail.gmail.com>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-11 at 23:18 +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 11 of March 2008, Vivek Goyal wrote:
-[...]
-> > Rafael/Pavel, does the approach of doing hibernation using a separate
-> > kernel holds promise?
+Hi, Dan, 
+
+> -----Original Message-----
+> From: dan.j.williams@gmail.com 
+> >  +
+> >  +       /* Set End-of-link to the last link descriptor of 
+> new list*/
+> >  +       set_ld_eol(fsl_chan, new);
 > 
-> Well, what can I say?
+> Question, is 'set_ld_eol' safe to call on descriptors that may not be
+> the last in the list?  For example what about the following sequence:
+
+set_ld_eol() is a safe function, which is only for preparing the tx descriptors
+lists. When adding prepared tx descriptior list to DMA channel tx list,
+the function append_ld_queue() should be called.
+
 > 
-> I haven't been a big fan of doing hibernation this way since the very beginning
-> and I still have the same reservations.  Namely, my opinion is that the
-> hibernation-related problems we have are not just solvable this way.  For one
-> example, in order to stop using the freezer for suspend/hibernation we first
-> need to revamp the suspending/resuming of devices (uder way) and the
-> kexec-based approach doesn't help us here.  I wouldn't like to start another
-> discussion about it though.
+> /* prepare two descriptors */
+> tx1 = fsl_dma_prep_interrupt(chan);
+> tx2 = fsl_dma_prep_memcpy(chan);
+> 
+> /* submit out of order */
+> tx2->tx_submit(tx2);
+> tx1->tx_submit(tx1);
+> 
+> This is only a concern if you plan to support channel switching at
+> some point.  For example, switching from a memcpy channel to an xor
+> channel.
+> 
+It's no problem. :) In fact, I've added out of order testing codes in fsl_dma_self_test()
+ function.
 
-Yes. We need to work on device drivers for all hibernation
-implementations. And kexec-based hibernation provides a possible method
-to avoid freezer after driver works done.
+But I have a question about device_prep_dma_interrupt(), which is no way to assign
+ dest and src address. Is it a null tx action dma_async_tx_descriptor except to trigger
+ an interrupt?
 
-Best Regards,
-Huang Ying
-
+Thanks!
+Wei.
