@@ -1,59 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbYCLCxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbYCLCxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbYCLCxU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 22:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYCLCxN
+	id S1753580AbYCLCxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 22:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYCLCxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 22:53:13 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:18847 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbYCLCxM (ORCPT
+	Tue, 11 Mar 2008 22:53:31 -0400
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:44811 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYCLCxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 22:53:12 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5249"; a="1050907"
-Message-ID: <47D74595.4080100@qualcomm.com>
-Date: Tue, 11 Mar 2008 19:53:09 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: boot cgroup questions
-References: <47D73086.2030008@qualcomm.com>	 <6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	 <47D7411E.1000009@qualcomm.com> <6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
-In-Reply-To: <6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 22:53:30 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <20080312353.598285931@firstfloor.org>
+To: andreas.herrmann3@amd.com, tglx@linutronix.de, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/7] Implement true end_pfn_mapped for 32bit
+Date: Wed, 12 Mar 2008 03:53:27 +0100 (CET)
+X-OriginalArrivalTime: 12 Mar 2008 02:46:55.0582 (UTC) FILETIME=[558B87E0:01C883EB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+[Old patch; repost, but needed for further patches in the series]
 
-Paul Menage wrote:
-> On Tue, Mar 11, 2008 at 7:34 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->>  Suppose we were to do it from kernel. What's the right way to create a cgroup
->>  without mounting a cgroupfs ?
-> 
-> There isn't really a way, but you could always kern_mount() a
-> filesystem inside the kernel.
-Aha, that's what I was missing. kern_mount(). Cool :).
+Even on 32bit 2MB pages can map more memory than is in the true
+max_low_pfn if end_pfn is not highmem and not aligned to 2MB. 
+Add a end_pfn_map similar to x86-64 that accounts for this 
+fact. This is important for code that really needs to know about
+all mapping aliases.
 
->>  I just want to play with it. There are a couple of advantages that I see for
->>  doing it from kernel. We can move 'kthreadd' and idle threads into the 'boot'
->>  cgroup early on and therefor later on won't even have to iterate through the
->>  tasks and stuff.
-> 
-> Would this be done based on some boot commandline option? I don't
-> think you'd want to do it unconditionally.
-Hmm, I believe the original discussion was about doing it unconditionally.
-Why not I guess ? It probably won't even affect your existing scripts since
-they will be able to move tasks into another set just like they do now. The
-only thing I can think of is that if your scripts use sched_load_balance then
-they will now have to unset it in the 'boot' set as well. Otherwise since the
-'boot' set will be non-exclusive (cpus and mems) it should not really affect
-anything.
-So what's your concern with unconditional 'boot' cgroup/cpuset ?
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-Max
+---
+ arch/x86/mm/init_32.c     |    4 ++++
+ include/asm-x86/page.h    |    4 +++-
+ include/asm-x86/page_64.h |    1 -
+ 3 files changed, 7 insertions(+), 2 deletions(-)
+
+Index: linux/arch/x86/mm/init_32.c
+===================================================================
+--- linux.orig/arch/x86/mm/init_32.c
++++ linux/arch/x86/mm/init_32.c
+@@ -50,6 +50,8 @@
+ 
+ unsigned int __VMALLOC_RESERVE = 128 << 20;
+ 
++unsigned long end_pfn_map;
++
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ unsigned long highstart_pfn, highend_pfn;
+ 
+@@ -193,6 +195,7 @@ static void __init kernel_physical_mappi
+ 				set_pmd(pmd, pfn_pmd(pfn, prot));
+ 
+ 				pfn += PTRS_PER_PTE;
++				end_pfn_map = pfn;
+ 				continue;
+ 			}
+ 			pte = one_page_table_init(pmd);
+@@ -207,6 +210,7 @@ static void __init kernel_physical_mappi
+ 
+ 				set_pte(pte, pfn_pte(pfn, prot));
+ 			}
++			end_pfn_map = pfn;
+ 		}
+ 	}
+ }
+Index: linux/include/asm-x86/page.h
+===================================================================
+--- linux.orig/include/asm-x86/page.h
++++ linux/include/asm-x86/page.h
+@@ -36,7 +36,7 @@
+ #define max_pfn_mapped		end_pfn_map
+ #else
+ #include <asm/page_32.h>
+-#define max_pfn_mapped		max_low_pfn
++#define max_pfn_mapped		end_pfn_map
+ #endif	/* CONFIG_X86_64 */
+ 
+ #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
+@@ -51,6 +51,8 @@
+ extern int page_is_ram(unsigned long pagenr);
+ extern int devmem_is_allowed(unsigned long pagenr);
+ 
++extern unsigned long end_pfn_map;
++
+ struct page;
+ 
+ static void inline clear_user_page(void *page, unsigned long vaddr,
+Index: linux/include/asm-x86/page_64.h
+===================================================================
+--- linux.orig/include/asm-x86/page_64.h
++++ linux/include/asm-x86/page_64.h
+@@ -55,7 +55,6 @@ void clear_page(void *page);
+ void copy_page(void *to, void *from);
+ 
+ extern unsigned long end_pfn;
+-extern unsigned long end_pfn_map;
+ extern unsigned long phys_base;
+ 
+ extern unsigned long __phys_addr(unsigned long);
