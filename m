@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYCLGWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbYCLGYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbYCLGWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 02:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYCLGWo
+	id S1752967AbYCLGYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 02:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYCLGYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 02:22:44 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52990 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751882AbYCLGWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 02:22:43 -0400
-Date: Tue, 11 Mar 2008 23:21:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
-In-Reply-To: <20080311071330.GA20271@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0803112316090.4794@schroedinger.engr.sgi.com>
-References: <20080303200355.GB8974@wotan.suse.de>
- <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
- <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
- <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
- <20080307043700.GI21185@wotan.suse.de> <Pine.LNX.4.64.0803062108210.1143@schroedinger.engr.sgi.com>
- <20080307051944.GJ21185@wotan.suse.de> <Pine.LNX.4.64.0803062120410.1215@schroedinger.engr.sgi.com>
- <20080311071330.GA20271@wotan.suse.de>
+	Wed, 12 Mar 2008 02:24:46 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:19640 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbYCLGYp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 02:24:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=TIyymED6eYMfOG4aRHXoHyUY5uSKiwWvWchEFsqEry9PXDiesMh56U8OvTcuz6uTU8XUNPG9eiOkgVy+n26qb5cYzQA/1bxo8KfzAq7G2a87gfwF7k7O6ulAFlRZTNLYUw27kYHjAdcmP+uJmBeanHYRSAqce0HjHASehfYBF9I=
+Message-ID: <2f9dd5d80803112324x631c1c29yffe8824f18acd2e5@mail.gmail.com>
+Date: Wed, 12 Mar 2008 11:54:45 +0530
+From: "Prashant Shah" <pshah.mumbai@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [bug] networking, network not detected if lan wire not connected while boot
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Nick Piggin wrote:
+I am using ubuntu gutsy.
 
-> On Thu, Mar 06, 2008 at 09:26:24PM -0800, Christoph Lameter wrote:
-> > Internode alignment is 4k. If you need an object aligned like that then it 
-> > may be better to go to the page allocator.
-> 
-> I never got a reply about this. Again: how can the modern slab allocator
-> avoid the need for internode alignment in order to prevent cacheline
-> pingpong on vsmp? Because I'm going to resubmit the SMP_ALIGN patch.
+Kernel details :
 
-You quoted my answer. Use the page allocator to allocate data that has an 
-alignment requirement on a 4k boundary.
+2.6.22-14-generic
 
-> Also, the last I heard about the HWCACHE_ALIGN from you is that it didn't
-> make sense... I see it's merged now, which I appreciate, but I think it is
-> really important that we're on the same page here, so let me know if it
-> still doesn't make sense.
+Lan card details :
 
-I still think that the semantics are weird because it only works sometimes 
-and then performs an alignment within a cacheline that improves the 
-situation somewhat in some cases but does not give the user what he 
-expected.
+DFE-538TX 10/100 Ethernet Adapter
+RTL8139 Ethernet chipset
+
+While booting, if the LAN wire is not connected and I connect it
+later, the network does not get activated.
+
+If the LAN wire is connected during the boot process and I remove and
+reconnect the wire later on - it works.
+
+ps : sorry i dont know where to report bugs..
