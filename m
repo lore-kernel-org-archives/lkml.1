@@ -1,104 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbYCLPZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYCLP11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbYCLPZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYCLPZV
+	id S1753953AbYCLP11 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 11:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYCLP1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:25:21 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:45521 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbYCLPZU (ORCPT
+	Wed, 12 Mar 2008 11:27:20 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38701 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbYCLP1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:25:20 -0400
-Message-ID: <47D7F5A3.9010004@panasas.com>
-Date: Wed, 12 Mar 2008 17:24:19 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 12 Mar 2008 11:27:19 -0400
+Date: Wed, 12 Mar 2008 17:27:16 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Patrick McHardy <kaber@trash.net>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 3/8] [NET]: uninline dev_alloc_skb, de-bloats a lot
+In-Reply-To: <Pine.LNX.4.64.0802202135080.32171@kivilampi-30.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0803121711400.24534@kivilampi-30.cs.helsinki.fi>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <Pine.LNX.4.64.0802201651580.26109@fbirervta.pbzchgretzou.qr>
+ <47BC54FB.2050508@trash.net> <Pine.LNX.4.64.0802201730240.26109@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0802202135080.32171@kivilampi-30.cs.helsinki.fi>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH resend] isd200: Allocate sense_buffer for hacked up scsi_cmnd
-References: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-652228311-1205335636=:24534"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12 2008 at 17:10 +0200, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Wed, 12 Mar 2008, Boaz Harrosh wrote:
-> 
->> Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
->> own struct scsi_cmnd like here isd200, must also take care of their own
->> sense_buffer.
-> 
-> Did you run this through checkpatch?
-> 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> Alan Stern
-> 
-> --
-No I did not, Thanks. Here it is again. 
-Again this is for 2.6.25 rc-fixes a NULL dereference bugfix!
- 
----
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Tue, 11 Mar 2008 17:23:06 +0200
-Subject: [PATCH] isd200: Allocate sense_buffer for hacked up scsi_cmnd
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
-own struct scsi_cmnd like here isd200, must also take care of their own
-sense_buffer.
+---696243703-652228311-1205335636=:24534
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/usb/storage/isd200.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+On Thu, 21 Feb 2008, Ilpo Järvinen wrote:
 
-diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
-index 2ae1e86..ac1764b 100644
---- a/drivers/usb/storage/isd200.c
-+++ b/drivers/usb/storage/isd200.c
-@@ -294,6 +294,7 @@ struct isd200_info {
- 	unsigned char MaxLUNs;
- 	struct scsi_cmnd srb;
- 	struct scatterlist sg;
-+	u8 *sense_buffer;
- };
- 
- 
-@@ -1469,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
- 	if (info) {
- 		kfree(info->id);
- 		kfree(info->RegsBuf);
-+		kfree(info->sense_buffer);
- 	}
- }
- 
-@@ -1494,11 +1496,13 @@ static int isd200_init_info(struct us_data *us)
- 				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
- 		info->RegsBuf = (unsigned char *)
- 				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
--		if (!info->id || !info->RegsBuf) {
-+		info->sense_buffer = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
-+		if (!info->id || !info->RegsBuf || !info->sense_buffer) {
- 			isd200_free_info_ptrs(info);
- 			kfree(info);
- 			retStatus = ISD200_ERROR;
--		}
-+		} else
-+			info->srb.sense_buffer = info->sense_buffer;
- 	}
- 
- 	if (retStatus == ISD200_GOOD) {
+> On Wed, 20 Feb 2008, Jan Engelhardt wrote:
+> 
+> > On Feb 20 2008 17:27, Patrick McHardy wrote:
+> >
+> > > __dev_alloc_skb() is also an inline function which performs
+> > > some extra work. Which raises the question - if dev_alloc_skb()
+> >
+> > I'd like to see the results when {__dev_alloc_skb is externed
+> > and dev_alloc_skb remains inlined}.
+> 
+> The results are right under your nose already... ;-)
+> See from the list of the series introduction:
+> 
+>   http://marc.info/?l=linux-netdev&m=120351526210711&w=2
+> 
+> IMHO more interesting number (which I currently don't have) is the 
+> _remaining_ benefits of uninlining __dev_alloc_skb after
+> dev_alloc_skb was first uninlined.
+
+I've measured this now... Without many debug CONFIGs (in v2.6.25-rc2-mm1), 
+the dev_alloc_skb is much less than 23kB:
+
+    382 funcs, 157 +, 12335 -, diff: -12178 --- dev_alloc_skb
+    dev_alloc_skb                 |  +37
+
+...and on top of that, I got only this:
+    48 funcs, 111 +, 836 -, diff: -725 --- __dev_alloc_skb
+
+Not that impressive compared with many much worse cases (wasn't a big 
+surprise because there were fewer callsites for the latter).
+
+Anyway, would I uninline it (or one some another function that has such 
+two variants that are good candidates for uninlining), should I try to 
+avoid deepening the call-chain by two functions? To me it seems that only 
+way to fool gcc to do that for sure would be using some trick like this:
+Rename __dev_alloc_skb to ___dev_alloc_skb in the header (with appropriate
+don't ever call this due to bloat comment added) and both __dev_alloc_skb 
+and dev_alloc_skb could then be made to call that one in .c file. 
+Otherwise I'm not that sure gcc wouldn't try to be too clever if I just 
+use inline in .c file.
+
 -- 
-1.5.3.3
-
-
+ i.
+---696243703-652228311-1205335636=:24534--
