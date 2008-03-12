@@ -1,166 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbYCLVxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYCLVyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbYCLVxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYCLVww
+	id S1755194AbYCLVyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYCLVyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:52:52 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:38768 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752231AbYCLVwv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 17:52:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=Ko0KN7SHbOw7vMEImFDqirboEuLY5xrl+uOqT5C1Uf7tLlqeAC/tOEyyOi7pWyc4yBZ/a5lbHPmobyYPyM8DZ60uxP5UgKAHtqt9lGbT1NsAKJqSBHLv7dXYoFyoJ/ZzEKyVpNA3hDeZIZAqk2yadfb+8cERdyYIfWrV16HDN4I=  ;
-X-YMail-OSG: cNzpGEIVM1k2RRB4Tw9cQwVeiGBGMB8hm1d9V92pUP9h6Y0QVuHYMMwXTNOq4Zf7ZnW6_xdvCrW8SuguBwbMr2WjToSgqc37iWlviATk8CeJ0K1uDg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
-Date: Wed, 12 Mar 2008 13:52:46 -0800
-User-Agent: KMail/1.9.6
-Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	Wed, 12 Mar 2008 17:54:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44138 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752425AbYCLVyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 17:54:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Date: Wed, 12 Mar 2008 22:53:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <200803120031.59742.david-b@pacbell.net> <20080312130216.GA26583@rakim.wolfsonmicro.main>
-In-Reply-To: <20080312130216.GA26583@rakim.wolfsonmicro.main>
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803121452.47600.david-b@pacbell.net>
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803122253.07631.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008, Mark Brown wrote:
-> On Tue, Mar 11, 2008 at 11:31:59PM -0800, David Brownell wrote:
-
-> > > This is pretty much the model that is currently implemented.
+On Wednesday, 12 of March 2008, Alan Stern wrote:
+> On Wed, 12 Mar 2008, Huang, Ying wrote:
 > 
-> > Then the tree should be a bit more of a first class citizen,
-> > IMO, like it is in the clock framework.  Both clock and power
-> > distribution have similar hardware infrastructure; the software
-> > interfaces can be more similar than it is.
+> > I think "kexec based hibernation" is the only currently available
+> > possible method to write out image without freezer (after driver works
+> > are done). If other process is running, how to prevent them from writing
+> > to disk without freezing them in current implementation?
 > 
-> What do you see as being missing in the externally presented interface?
-
-It's not *presented* as a tree of power domains, and it's not clear
-that's the intended model.  Plus, what Liam said about the names
-being global, not local/logical.
-
-
-> As far as I can see the main difference between the two APIs on this
-> front is that the regulator API explicitly separates the interface used
-> to set up the tree from the interface used by consumers.
-
-I'd say that differently.  The clock framework *has* no such
-implementor/setup support ... which has caused problems for
-many new implementations.  I'm unclear on the status of some
-recent patches [1] from Dmitry Baryshkov to help address that.
-
-
-> > > A given 
-> > > power management IC can have several regulators (that is, things which
-> > > have regulator IDs registered and can supply power). 
+> This is a very good question.
 > 
-> > Those are the outputs.  Are the inputs visible?  Like batteries
-> > or loosely regulated DC voltages ... drivers/power/* stuff.
+> It's a matter of managing the block layer's request queues.  Somehow 
+> the existing I/O requests must remain blocked while the requests needed 
+> for writing the image must be allowed to proceed.
 > 
-> Not as part of this API at present unless the input is another
-> regulator, though obviously drivers could set up associations in the
-> device tree.
+> I don't know what would be needed to make this work, but it ought to be 
+> possible somehow...
 
-That may not be an issue; it's something which can be provided
-by a PMIC driver, in any case.  If they both catch on, maybe
-some integration will become useful.
+Yes, it ought to be possible.
 
+Ultimately, IMHO, we should put all devices unnecessary for saving the image
+(and doing some eye-candy work) into low power states before the image is
+created and keep them in low power states until the system is eventually
+powered off.
 
-> > > Each regulator can 
-> > > have multiple clients bound to it (that is, things that have called
-> > > regulator_get() and can consume power). 
-> 
-> > In the clock framework, clk_get_parent() exposes one part of this
-> > relationship.  But there's also the association of logical clock
-> > names to devices ... 
-> 
-> Right, though that does tend to break down when clocks go off chip - the
-> association of devices with symbolic names is generally only done for
-> things that are hard wired as part of the same chip since the devices
-> are registered along with the clock.   Other clocks generally just get
-> the name that the chip documents for them.  Indeed, looking around the
-> tree almost all current use of clock API appears to be for on-SoC devices.
+If this is done, the remaining problem is the handling of the devices that we
+need to save the image.  I believe that will be achievable without using the
+freezer.
 
-That's because there's essentially no way to plug in other clocks
-in an arch-neutral way ... so the only implementations of clocks
-are arch-specific!!  This is at least partly addressed by [1], but
-platforms would also need to adopt that implementation framework.
-So far the only patches showing that are on PXA and SA-1100, which
-hardly present challenges in that area ... compared to e.g. OMAP.
-
-Specifically, it's awkard even to do simple things like binding
-one of a SOC's programmable clocks onto an off-chip audio codec
-or video controller; that's got to go through platform_data or
-something similar.  And plugging in external clock generators ...
-not portably, no way!
-
-You seem to be aiming to not recreate those problems, which is good.
-
-
-> What might be nicer would be an API that platform code could use to map
-> regulators to device/name tuples.  The core could then search these when
-> a client calls regulator_get() (either by maintaining a separate table
-> or by setting up virtual regulators).
-
-Right.
-
-
-> > > While the leaf enable/disable operations do happen at the client level
-> > > the core reference counts the enabled clients to control enabling of the
-> > > actual supply.
-> 
-> > Right.  But what I was getting at was that there can be
-> > domains hooked up like:
-> 
-> >     Power --> Regulator -+-> Switch-1 -+-> Switch-2 --> [Dev-A]
-> >                          |             |
-> >                          |             +-> [Dev-B], [Dev-C]
-> >                          |
-> >                          +-> [Dev-D], [Dev-E]
-> 
-> > Those switches can be as simple as a MOSFET under GPIO control.
-> 
-> > And I'd expect power domains under Linux to be able to represent
-> > all of those ... including software controls wherevever they're
-> > practical, which in this case might include everything except the
-> > battery input.
-> 
-> I don't see a particular problem fitting this into the structure of
-> the current API - to me the switches inflexible regulators with no
-> configurable voltage control of their own.
-
-To me, they aren't regulators at all.  :)
-
-I see power domains as having various capabilities.  Most of them
-support on/off switching ... else there's no reason to list them
-(except for the root nodes of the tree).  Some are programmable,
-and suppport configuring the voltage or current drive.
-
-That maps exactly to the clock tree model.  Not all clocks can
-support clk_set_rate() or clk_set_parent().  Not all power domains
-can support a set_voltage() call, etc.
-
-This just suggests a bit of refocusing of your current code,
-so it'll be more widely applicable.
-
-- Dave
-
-[1] http://marc.info/?l=linux-kernel&m=120237673527430&w=2
-    http://marc.info/?l=linux-kernel&m=120237674327434&w=2
-
-
+Thanks,
+Rafael
