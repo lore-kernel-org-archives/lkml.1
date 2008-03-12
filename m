@@ -1,156 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbYCLPmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbYCLPpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbYCLPmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYCLPmi
+	id S1753789AbYCLPpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 11:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYCLPph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:42:38 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:38444 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYCLPmh (ORCPT
+	Wed, 12 Mar 2008 11:45:37 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:23195 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbYCLPpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:42:37 -0400
-Message-ID: <47D7FAA0.1090802@linux.vnet.ibm.com>
-Date: Wed, 12 Mar 2008 16:45:36 +0100
-From: Frank Munzert <frankm@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 12 Mar 2008 11:45:36 -0400
+Date: Wed, 12 Mar 2008 09:45:35 -0600
+From: Alex Chiang <achiang@hp.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: lenb@kernel.org, linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] Create 'slot' sysfs attribute
+	in/sys/devices/system/cpu/cpuN/topology/
+Message-ID: <20080312154535.GB9996@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	"Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
+	linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: linux-kernel@vger.kernel.org
-Subject: BUG: lock held when returning to user space
-Content-Type: multipart/mixed;
- boundary="------------050907070707060506010700"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECC8960D@orsmsx424.amr.corp.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050907070707060506010700
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+* Luck, Tony <tony.luck@intel.com>:
+> > A while back, I submitted a patch to expose the value of the _SUN
+> > method for CPUs. On ia64, the "physical id" field in
+> > /proc/cpuinfo isn't sufficient for some legacy HP ia64 platforms,
+> > as they do not have a modern SAL or PAL.
+> 
+> Do these legacy systems with ancient SAL/PAL actually support
+> processor hot plug?
 
-Hi Ingo,
+No, they do not; that was simply the most convenient / obvious
+example I could think of for someone reading changelogs a few
+years later and wondering why we created this sysfs attribute.
 
-we provided a device driver vmur dealing with z/VM virtual unit record 
-devices (reader, punch, printer). A corresponding user space tool 
-provides functions similar to the CMS commands RECEIVE, PUNCH, PRINT.  
-Unit record devices are not meant for concurrent read or write by 
-multiple users, that's why we need to serialize access. The driver's 
-open method uses  mutex_trylock or  mutex_lock_interruptible  to  ensure 
-exclusive access to the device, while its  release method  uses 
-mutex_unlock.
+A real world example would be HP managability software keeping
+track of CMC/CPE data for CPUs over a long period of time for the
+purpose of doing long-term failure analysis.
 
-As a consequence, lockdep complains about locks being held when 
-returning to user space. We used a very simple char device driver 
-(appended below) to produce this message: 
-================================================
-[ BUG: lock held when returning to user space! ]
-------------------------------------------------
-testapp/2683 is leaving the kernel with locks still held!
-1 lock held by testapp/2683:
- #0:  (&test_mutex){--..}, at: [<000003e00003316c>] test_open+0x30/0x64 
-[test]
+This software can already grab a bunch of info from IPMI, such as
+CPU serial number, date code, physical location, but cannot
+correlate it to the kernel's idea of logical CPU number and
+physloc.
 
-For the vmur device driver it is crucial to have only one process access 
-a given unit record device node at a given time. So having open hold the 
-mutex and return to user space is exactly what we want. Is  there any 
-annotation  to tell lockdep to suppress or bypass this kind of warning?
+Having the kernel expose the physical slot ties it all together.
 
-Thanks in advance,
+This example is something any vendor selling higher level
+managability software might want to do, and specifically HP wants
+to do it to take care of our customers who have large deployments
+of these legacy systems.
 
-Frank
+Hopefully that is enough justification to warrant at least
+looking at the patch and telling me why it sucks. ;)
 
+> Perhaps this next rant is beyond the scope of Linux architecture
+> and more on overall systems useabilty.  It is just asking for
+> trouble to print a message on the console telling the user to go
+> pull out the board in "slot 2".  Do the slot numbers count from
+> "0" or from "1"?  Are they numbered left-to-right or right-to-left?
+> What if the rack is non-standard so the system was rotated 90
+> degrees?  Now are they numbered top-to-bottom or bottom-to-top.
 
---------------050907070707060506010700
-Content-Type: text/plain;
- name="test.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="test.c"
+Well, at least for HP ia64 machines, we have lots of
+silk-screening on the backplane, as well as pretty diagrams on
+chassis covers, and we took care in making sure our what our
+firmware matches up with those pictures.
 
-#include  <linux/module.h>
-#include  <linux/init.h>
-#include  <linux/fs.h>
-#include  <linux/types.h>
-#include  <linux/cdev.h>
+But in general, I like the idea of das blinkenlights too. :)
 
-#define  DEVICE_NAME  "test"
-#define  MODULE_NAME  "test"
+> Best idea is to have a (blinking) (red) light on the board and
+> instruct the operator to pull out the board with the fail-light
+> (but even then a red-green colour blind operator will still
+> mess it up for you and pull the wrong board :-)
 
-static dev_t Devno;
-static struct cdev test_cdev;
-static struct mutex test_mutex;
+Heh, then just make the failure light either blink (for failure)
+or not blink (default). Then as long as the operator can detect
+lumens, he/she would just be able to pull the blinky board. :)
 
-static ssize_t test_read(struct file *filp, char *buff, size_t len,
-			 loff_t *whence)
-{
-	return 1;
-}
+Thanks.
 
-static ssize_t test_write(struct file *filp, const char *buff,
-			  size_t len, loff_t *whence)
-{
-	return 1;
-}
-
-static int test_open(struct inode *ino, struct file *filp)
-{
-	if (mutex_lock_interruptible(&test_mutex))
-		return -ERESTARTSYS;
-	printk("%s: test device is open.\n", MODULE_NAME);
-	return 0;
-}
-
-static int test_close(struct inode *ino, struct file *filp)
-{
-	printk("%s: test device is closed.\n", MODULE_NAME);
-	mutex_unlock(&test_mutex);
-	return 0;
-}
-
-static struct file_operations Fops  =  { .owner   = THIS_MODULE,
-				         .read    = test_read,
-				         .write   = test_write,
-				         .open    = test_open,
-				         .release = test_close    };
-
-static int __init test_init(void)
-{
-	int rc;
-	rc = alloc_chrdev_region(&Devno, 0, 1, DEVICE_NAME);
-	if (rc < 0)
-	{
-		printk("%s: Registration failed...\n",MODULE_NAME);
-		return rc;
-	}
-	printk("%s: Registration %s at major number %d\n", MODULE_NAME,
-				DEVICE_NAME, MAJOR(Devno));
-	cdev_init(&test_cdev, &Fops);
-	test_cdev.owner = THIS_MODULE;
-	rc = cdev_add(&test_cdev, Devno, 1);
-	if (rc < 0) {
-		printk("%s: Device object not added!\n", MODULE_NAME);
-		unregister_chrdev_region(Devno, 1);
-		return rc;
-	}
-	printk("%s: Device added.\n", MODULE_NAME);
-	mutex_init(&test_mutex);
-	return 0;
-}
-
-static void __exit test_exit(void)
-{
-	cdev_del(&test_cdev);
-	unregister_chrdev_region(Devno, 1);
-	printk("%s: Module removed.\n", MODULE_NAME);
-}
-
-module_init(test_init);
-module_exit(test_exit);
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Frank");
-MODULE_DESCRIPTION("Simple char driver.");
-
---------------050907070707060506010700--
+/ac
 
