@@ -1,75 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYCLDj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbYCLDio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbYCLDj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 23:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYCLDjR
+	id S1752995AbYCLDio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 23:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYCLDif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 23:39:17 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:53141 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753244AbYCLDjK (ORCPT
+	Tue, 11 Mar 2008 23:38:35 -0400
+Received: from n5a.bullet.mud.yahoo.com ([209.191.126.232]:29168 "HELO
+	n5a.bullet.mud.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751518AbYCLDie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 23:39:10 -0400
-X-IronPort-AV: E=McAfee;i="5100,188,5249"; a="1236170"
-Message-ID: <47D7505B.6080706@qualcomm.com>
-Date: Tue, 11 Mar 2008 20:39:07 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 11 Mar 2008 23:38:34 -0400
+X-Yahoo-Newman-Id: 167832.69639.bm@omp411.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=HVUA4yYOkD6kIh5QiUrPo12cTLUzYP70pE5lqo80N4Sg+6oA04bqfrmuU0NKbgCi6hU8tIRP6H6xoAV1Wi/TUH1oixRl+/1r4ISls8jrUIJBotQAmQCeQPPEBQpDUxBbl4yogoOXQMvE77xEdjFOG3iE7tGAXXe7FTs9tSEDJxA=  ;
+X-YMail-OSG: FmDLaJgVM1k9Y4z.ebpVbWHd_rxfyM6IDRuMjN9_Cid.ra08uLAJNLuCcMonh_8NYVlKn_RovQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs (v2)
+Date: Wed, 12 Mar 2008 14:38:01 +1100
+User-Agent: KMail/1.9.5
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain> <47D66865.1080508@linux.vnet.ibm.com> <Pine.LNX.4.64.0803111256110.18261@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0803111256110.18261@blonde.site>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: boot cgroup questions
-References: <47D73086.2030008@qualcomm.com>	 <6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	 <47D7411E.1000009@qualcomm.com>	 <6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	 <47D74595.4080100@qualcomm.com> <6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
-In-Reply-To: <6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803121438.02857.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Tue, Mar 11, 2008 at 7:53 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
->> It probably won't even affect your existing scripts since
->> they will be able to move tasks into another set just like they do now.
-> 
-> My boot scripts look in /dev/cpuset/tasks to find processes to move
-> into the system cpuset. So that would break them.
-I see. I assumed you just iterate through /proc/[0-9]*
+On Wednesday 12 March 2008 00:05, Hugh Dickins wrote:
+> On Tue, 11 Mar 2008, Balbir Singh wrote:
+> > On my 64 bit powerpc system (structure size could be different on other
+> > systems)
+> >
+> > 1. sizeof page_cgroup is 40 bytes
+> >    which means kmalloc will allocate 64 bytes
+> > 2. With 4K pagesize SLAB with HWCACHE_ALIGN, 59 objects are packed per
+> > slab 3. With SLUB the value is 102 per slab
+>
+> I expect you got those numbers with 2.6.25-rc4?  Towards the end of -rc5
+> there's a patch from Nick to make SLUB's treatment of HWCACHE_ALIGN the
+> same as SLAB's, so I expect you'd be back to a similar poor density with
+> SLUB too.  (But I'm replying without actually testing it out myself.)
 
->>  they will now have to unset it in the 'boot' set as well.
-> 
-> That can break existing userspace, so I presume PaulJ isn't in favour
-> of this change.
-My impression was that he was ok with changing his stuff. But I maybe
-completely wrong of course. I'm actually perfectly fine with making it
-conditional.
-Maybe something like
-	bootcpuset=1
-?
+Yes, that will be the case.
 
->> Otherwise since the
->>  'boot' set will be non-exclusive (cpus and mems) it should not really affect
->>  anything.
-> 
-> Apart from other cpusets that *are* mem_exclusive or cpu_exclusive.
-Hold on, if you move all the tasks ... Oh, never mind :). You mean that you
-won't be able to create any cpusets that must be exclusive unless you nuke
-'boot' set. Makes sense.
+With a 64 byte cacheline size, 
 
->>  So what's your concern with unconditional 'boot' cgroup/cpuset ?
-> 
-> The exclusivity problem, as above.
-Yes I agree. If this 'boot' set is unconditional user-space tools will have to
-change. As I mentioned above I totally do not mind if is is conditional. Any
-other opinions out there ?
+page_cgroup: |----|----|----|----|----|----|----|----
+cacheline:   |-------|-------|-------|-------|-------
 
-> 
-> Which subsystems are you going to include in this boot hierarchy?
-> Userspace is going to have to be aware of the fact that there's a
-> cpusets hierarchy which might have to be dismantled if it wants to set
-> up something different.
-I was going to only include 'cpusets'. Does it make sense for anything else ?
+So if you are accessing each field in a random page_cgroup, then it
+will statistically cost you 1.5 cachelines (really: half the time, it
+takes 2 cachelines).
 
-Max
+If you HWCACHE_ALIGN this, it will cost you just 1 line.
+
+Long live the size/speed tradeoff ;)
+
+Whether this improvement is actually noticable is a different matter.
+
+
+> I think you'd need a strong reason to choose HWCACHE_ALIGN for these.
+>
+> Consider: the (normal configuration) x86_64 struct page size was 56
+> bytes for a long time (and still is without MEM_RES_CTLR), but we've
+> never inserted padding to make that a round 64 bytes (and they would
+> benefit additionally from some simpler arithmetic, not the case with
+> page_cgroups).
+
+I actually still think padding struct page will be a good idea. And
+hopefully we can get rid of the page_cgroups pointer out of struct
+page in order that we can have both config cases padded to 64 bytes
+and use the extra space for larger refcounters maybe ;)
+
+I simply haven't tried to run a realistic workload where it would
+matter a great deal. I have a feeling that the oltp workloads could
+see some improvement, because they're mainly just using the kernel
+for direct IO, struct page is one of the few data structures that
+they actually spend any cache on.
+
+
+> Though it's good to avoid unnecessary sharing and 
+> multiple cacheline accesses, it's not so good as to justify almost
+> doubling the size of a very very common structure.  I think.
+
+Anyway, back on topic from my rant, yes I agree with Hugh: I think
+there should be some demonstration of a speedup (even in a "best
+case" situation), before spending more bytes on a common data
+structure.
+
