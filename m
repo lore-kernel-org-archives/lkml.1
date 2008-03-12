@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYCLWhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYCLWkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbYCLWhU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbYCLWhF
+	id S1754831AbYCLWkb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbYCLWkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:37:05 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:43370 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753297AbYCLWhE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:37:04 -0400
-Subject: Re: [PATCH] firewire: fw-ohci: sync AT dma buffer before use
-From: David Moore <dcm@MIT.EDU>
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <200803121743.29438.jwilson@redhat.com>
-References: <200803121743.29438.jwilson@redhat.com>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 18:35:49 -0400
-Message-Id: <1205361349.19600.24.camel@aries.csail.mit.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 12 Mar 2008 18:40:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44431 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042AbYCLWkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 18:40:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: 2.6.25-rc4-git3: Reported regressions from 2.6.24
+Date: Wed, 12 Mar 2008 23:39:31 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>
+References: <200803100132.57160.rjw@sisk.pl> <1205311874.3215.29.camel@ymzhang>
+In-Reply-To: <1205311874.3215.29.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Disposition: inline
+Message-Id: <200803122339.32662.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 17:43 -0400, Jarod Wilson wrote:
-> diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
-> index 081a434..fc45868 100644
-> --- a/drivers/firewire/fw-ohci.c
-> +++ b/drivers/firewire/fw-ohci.c
-> @@ -780,6 +780,10 @@ at_context_queue_packet(struct context *ctx, struct fw_packet *packet)
->  
->  	context_append(ctx, d, z, 4 - z);
->  
-> +	/* Sync the DMA buffer up for the device to read from */
-> +	dma_sync_single_for_device(ohci->card.device, payload_bus,
-> +				   packet->payload_length, DMA_TO_DEVICE);
-> +
->  	/* If the context isn't already running, start it up. */
->  	reg = reg_read(ctx->ohci, CONTROL_SET(ctx->regs));
->  	if ((reg & CONTEXT_RUN) == 0)
-> 
+On Wednesday, 12 of March 2008, Zhang, Yanmin wrote:
+> On Mon, 2008-03-10 at 01:32 +0100, Rafael J. Wysocki wrote:
+> > [Due to the lack of time for reviewing all of the email threads related to the
+> > regressions marked as "unresolved" below, I might have missed some patches
+> > fixing them.  If you are involved in debugging/fixing any of them, please let
+> > me know if I should update the list.  Thanks!]
+> > 
+> > This message contains a list of some regressions from 2.6.24 reported since
+> > 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> > of.  If any of them have been fixed already, please let me know.
+> > 
+> > If you know of any other unresolved regressions from 2.6.24, please let me know
+> > either and I'll add them to the list.  Also, please let me know if any of the
+> > entries below are invalid.
+> > 
+> > 
+> > Listed regressions statistics:
+> > 
+> >   Date          Total  Pending  Unresolved
+> >   ----------------------------------------
+> >   2008-03-10      138       66          47
+> >   2008-03-03      115       65          49
+> >   2008-02-25       90       51          39
+> >   2008-02-17       61       45          37
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10013
+> > Subject		: tbench regression in 2.6.25-rc1
+> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date		: 2008-02-15 02:52
+> > References	: http://lkml.org/lkml/2008/2/14/546
+> > Handled-By	: Eric Dumazet <dada1@cosmosbay.com>
+> > 		  David Miller <davem@davemloft.net>
+> > Patch		: http://lkml.org/lkml/2008/2/18/66
+> > 		  http://lkml.org/lkml/2008/2/18/117
+> > 
+> The latest patch is http://lkml.org/lkml/2008/2/20/83. 2.6.25-rc5 doesn't
+> include it. tbench regression still exists on my tigerton machine.
 
-Two things:
+I updated the entry with this information.
 
-1. The dma_sync should probably be done before the context_append
-because the controller could in theory start reading the data as soon as
-context_append is called right?
-
-2. As an optimization, we should attempt to allocate the payload in the
-lower 32-bits of physical memory, to prevent extra memcopies on x86_64.
-I think this can be done by adding GFP_DMA32 to kmalloc where the
-payload was allocated in fw-cdev.c.  There might be other places where
-we would benefit from GFP_DMA32 also.  Of course, these optimizations
-are probably better saved for another patch.
-
--David
-
+Thanks,
+Rafael
