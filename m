@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752189AbYCLHg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYCLHis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752189AbYCLHg5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 03:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYCLHgt
+	id S1752733AbYCLHis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 03:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYCLHik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 03:36:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57684 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbYCLHgt (ORCPT
+	Wed, 12 Mar 2008 03:38:40 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:52324 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751201AbYCLHij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 03:36:49 -0400
-Subject: Re: physmap and "request_module: runaway loop modprobe net-pf-1"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-In-Reply-To: <20080311225926.6515e18c.akpm@linux-foundation.org>
-References: <97a0a9ac0803112235l157706adoa84b131549a46049@mail.gmail.com>
-	 <20080311225926.6515e18c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 08:36:51 +0100
-Message-Id: <1205307411.2592.120.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
+	Wed, 12 Mar 2008 03:38:39 -0400
+Message-ID: <47D78863.101@linux.vnet.ibm.com>
+Date: Wed, 12 Mar 2008 13:08:11 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH rc5-mm1 1/3] mm-have-zonelist: fix memcg ooms
+References: <Pine.LNX.4.64.0803112108470.17067@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0803112108470.17067@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-11 at 22:59 -0700, Andrew Morton wrote:
-> > This solution would require simply changing the parser configuration
-> > options to bool in drivers/mtd/Kconfig. Is there a reason to allow the
-> > parsing code to be built as a module?
+Hugh Dickins wrote:
+> Memcgroups up against their limit were OOMing unjustifiably on x86_32
+> with highmem: pages ripe for freeing were not being found.
 > 
-> That sounds reasonable.
+> It's because the zonelist changes in vmscan.c now derive zone from gfp_mask,
+> and the gfp mask being passed into try_to_free_mem_cgroup_pages is atuned
+> to allocating a struct page_cgroup (__GFP_HIGHMEM masked off), whereas here
+> we need to be scanning highmem zones.
+> 
 
-I have no particular objection to that. But shouldn't we call
-af_unix_init() earlier if modprobe doesn't run without it? 
+Very good catch. I see a high_zoneidx field being derived from gfp_mask -mm.
+I've been looking at mainline code too often.
 
-> I'd suggest that you make your own decision as to what is the best fix, then
-> send a patch.  Please cc me on it and I'll make sure that it gets
-> appropriately handled.  This may take a bit of time, as the MTD patch
-> backlog is rather large at present.
-
-Yeah, things have been interesting. But I get to spend a whole three
-weeks at home, starting next week. So feel free to LART me if I don't
-catch up. Thanks, again, for your help in making sure things don't fall
-through the cracks.
 
 -- 
-dwmw2
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
 
