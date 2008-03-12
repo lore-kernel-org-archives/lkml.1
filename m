@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYCLXnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYCLXrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbYCLXnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYCLXnr
+	id S1754762AbYCLXrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYCLXrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:43:47 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:57279 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751584AbYCLXnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:43:46 -0400
-X-Sasl-enc: GZwr1ZphzqxrPsHso/WFFaN11kXKO+JaI7L08jlB7SNA 1205365424
-Message-ID: <47D86AA5.2080306@imap.cc>
-Date: Thu, 13 Mar 2008 00:43:33 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Wed, 12 Mar 2008 19:47:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34716 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751572AbYCLXrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 19:47:12 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19+FqgV9a9+3tQqxmimNGOhWkAlX//LDjp+U/rZGX
+	iiTRO9wfBbcPNS
+Date: Thu, 13 Mar 2008 00:47:13 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
+ Reported regressions from 2.6.24)
+In-Reply-To: <alpine.LFD.1.00.0803121636030.3557@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0803130045570.14097@axis700.grange>
+References: <200803110014.52985.rjw@sisk.pl>
+ <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
+ <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl>
+ <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
+ <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com>
+ <alpine.LFD.1.00.0803121502450.3557@woody.linux-foundation.org>
+ <20080312223431.GA24150@kroah.com> <alpine.LFD.1.00.0803121553070.3557@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0803130012470.14097@axis700.grange>
+ <alpine.LFD.1.00.0803121636030.3557@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Laurent Riffard <laurent.riffard@free.fr>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc5-mm1: NO_HZ=Y && PREEMPT_RCU=Y fails to build
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D78485.3030104@free.fr>
-In-Reply-To: <47D78485.3030104@free.fr>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1468B0FFCEA01BC5A7D09287"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1468B0FFCEA01BC5A7D09287
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, 12 Mar 2008, Linus Torvalds wrote:
 
-Am 12.03.2008 08:21 schrieb Laurent Riffard:
-> Le 11.03.2008 09:14, Andrew Morton a =E9crit :
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-r=
-c5/2.6.25-rc5-mm1/
->=20
-> The kernel won't build if CONFIG_NO_HZ=3Dy and CONFIG_PREEMPT_RCU=3Dy:
+> On Thu, 13 Mar 2008, Guennadi Liakhovetski wrote:
+> > 
+> > No, no oops, no blinking LEDs.
+> 
+> Oh, the original report says:
+> 
+>   "Problem Description: Power off / reboot blink keyboard LEDs and leave 
+>    the system at .."
+> 
+> which is why I thought it might be a hidden oops.
+> 
+> But that must have been some unrelated and misleading red herring.
 
-Works fine here with those very same settings, except for a BUG message
-and a warning I'll report separately and which don't seem to have any
-serious consequences. This is a 32 bit build on a rather ordinary
-Pentium D/Intel motherboard/openSUSE 10.3 workstation.
+Ah, ok, I see now. No, no herring here. The LEDs just blink _once_ as they 
+always do before shutdown (on this machine?). But the machine stays on.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig1468B0FFCEA01BC5A7D09287
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFH2GquMdB4Whm86/kRAknkAJ9bdQRg0jIRbCP/aaSjvkzjhgTsVwCfZrKx
-TosOBUT0TYJke5NOd9pYXSQ=
-=SgED
------END PGP SIGNATURE-----
-
---------------enig1468B0FFCEA01BC5A7D09287--
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
