@@ -1,130 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751471AbYCLQkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYCLQl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751471AbYCLQkr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYCLQkk
+	id S1753726AbYCLQl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYCLQlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:40:40 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:56374 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbYCLQkj (ORCPT
+	Wed, 12 Mar 2008 12:41:49 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:7036 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYCLQls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:40:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EW8s4kM/aSAZCJOL8QfwuXS6juBFhE6HjGBdhaxIG7HVLyiwgE6p1YL5h1lMEAvZ5MbbK30mjPblZFGIERzXG3nWE9bG/D63UZQxLN59qB5TMjkViyP6N96DC7xGIaLcrJaHJx67KAGTIjkOPsVUGL2mQxqM5eBAX4cIGWQng0o=
-Message-ID: <86802c440803120940y1e8643ecv3657019f206aa11e@mail.gmail.com>
-Date: Wed, 12 Mar 2008 09:40:36 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mel Gorman" <mel@csn.ul.ie>
-Subject: Re: [PATCH] mm: make mem_map allocation continuous.
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andy Whitcroft" <apw@shadowen.org>
-In-Reply-To: <20080312113902.GA16192@csn.ul.ie>
+	Wed, 12 Mar 2008 12:41:48 -0400
+Message-ID: <47D807BA.7020102@hp.com>
+Date: Wed, 12 Mar 2008 12:41:30 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
+Subject: Re: [PATCH 0/7] IO CPU affinity testing series
+References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440803102322i74333718h60de0da329b139c8@mail.gmail.com>
-	 <20080311081410.GA24240@elte.hu> <20080312113902.GA16192@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 4:39 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On (11/03/08 09:14), Ingo Molnar didst pronounce:
->
->
-> >
->  > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  >
->  > > [PATCH] mm: make mem_map allocation continuous.
->  > >
->  > > vmemmap allocation current got
->  > >  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
->  > >  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001800000 on node 0
->  > >  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001c00000 on node 0
->  > >  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810002000000 on node 0
->  > >  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810002400000 on node 0
->  > > ...
->  > >
->  > > there is 2M hole between them.
->  > >
->  > > the rootcause is that usemap (24 bytes) will be allocated after every 2M
->  > > mem_map. and it will push next vmemmap (2M) to next align (2M).
->  > >
->  > > solution:
->  > > try to allocate mem_map continously.
->  > >
->  > > after patch, will get
->  > >  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
->  > >  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001600000 on node 0
->  > >  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001800000 on node 0
->  > >  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810001a00000 on node 0
->  > >  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810001c00000 on node 0
->  > > ...
->  > > and usemap will share in page because of they are allocated continuously too.
->  > > sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
->  > > sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
->  > > sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
->  > > sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
->  > > ...
->  > >
->  > > so we make the bootmem allocation more compact and use less memory for usemap.
->  > >
->  > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->  >
->  > very nice fix!
->  >
->
->  Agreed, good work.
->
->
->  > i suspect this patch should go via -mm.
->  >
->  > >     usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
->  > > +   printk(KERN_INFO "sparse_early_usemap_alloc: usemap = %p size = %ld\n", usemap, usemap_size());
->  >
->  > this should be in a separate patch.
->  >
->
->  Should this be KERN_DEBUG instead of KERN_INFO?
-yes. to KERN_DEBUG or removed.
->
->  I don't have the original mail because I got unsubscribed from the lists
->  a few days ago and didn't notice (have been having mail issues) so
->  pardon awkward cut & pastes
->
->
->  > +/* section_map pointer array is 64k */
->  > +static __initdata struct page *section_map[NR_MEM_SECTIONS];
->
->  The size of this varies depending on architecture so the comment may be
->  misleading.  Maybe a comment like the following would be better?
->
->  /*
->   * The portions of the mem_map used by SPARSEMEM are allocated in
->   * batch and temporarily stored in this array. When sparse_init()
->   * completes, the array is discarded
->   */
-Yes. for x86_64 is (1<<13)*8 at most. others should much less.
->
->  I can see why you file-scoped it because its too large for the stack but
->  would it be better to allocate it from bootmem instead? It is
->  available by the time you need to use the array.
-Yes.
-need to after another patch I sent out yesterday to make
-free_bootmem_core could handle out of range inputs.
 
-then could use alloc_bootmem and
-for_each_online_node(node)
-             free_bootmem_node(node, section_map, size);
+Subject: [PATCH] Fixed race: using potentially invalid pointer
 
-will send delta to Andrew.
+When data->flags & CSD_FLAG_ALLOC is true, the data could be freed by the other processor before we check for CSD_FLAG_WAIT.
 
-YH
+Also: removed old comment, doesn't quite fit anymore.
 
-YH
+This is applied against Jens' git tree w/ the ia64 additional commit.
+
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+---
+ arch/ia64/kernel/smp.c   |    5 ++---
+ arch/x86/kernel/smp_32.c |    5 ++---
+ arch/x86/kernel/smp_64.c |    5 ++---
+ 3 files changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index 521bc52..ad153e2 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -407,8 +407,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ {
+ 	struct call_single_queue *dst;
+ 	unsigned long flags;
+-	/* prevent preemption and reschedule on another processor */
+-	int ipi;
++	int ipi, wait_done = data->flags & CSD_FLAG_WAIT;
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+@@ -424,7 +423,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ 	if (ipi)
+ 		send_IPI_single(cpu, IPI_CALL_FUNC_SINGLE);
+ 
+-	if (data->flags & CSD_FLAG_WAIT) {
++	if (wait_done) {
+ 		/* Wait for response */
+ 		while (data->flags)
+ 			cpu_relax();
+diff --git a/arch/x86/kernel/smp_32.c b/arch/x86/kernel/smp_32.c
+index dcbb89c..8239814 100644
+--- a/arch/x86/kernel/smp_32.c
++++ b/arch/x86/kernel/smp_32.c
+@@ -638,8 +638,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ 	cpumask_t mask = cpumask_of_cpu(cpu);
+ 	struct call_single_queue *dst;
+ 	unsigned long flags;
+-	/* prevent preemption and reschedule on another processor */
+-	int ipi;
++	int ipi, wait_done = data->flags & CSD_FLAG_WAIT;
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+@@ -655,7 +654,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ 	if (ipi)
+ 		send_IPI_mask(mask, CALL_FUNCTION_SINGLE_VECTOR);
+ 
+-	if (data->flags & CSD_FLAG_WAIT) {
++	if (wait_done) {
+ 		/* Wait for response */
+ 		while (data->flags)
+ 			cpu_relax();
+diff --git a/arch/x86/kernel/smp_64.c b/arch/x86/kernel/smp_64.c
+index 7e4e300..c89a4f7 100644
+--- a/arch/x86/kernel/smp_64.c
++++ b/arch/x86/kernel/smp_64.c
+@@ -458,8 +458,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ 	cpumask_t mask = cpumask_of_cpu(cpu);
+ 	struct call_single_queue *dst;
+ 	unsigned long flags;
+-	/* prevent preemption and reschedule on another processor */
+-	int ipi;
++	int ipi, wait_done = data->flags & CSD_FLAG_WAIT;
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+@@ -475,7 +474,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ 	if (ipi)
+ 		send_IPI_mask(mask, CALL_FUNCTION_SINGLE_VECTOR);
+ 
+-	if (data->flags & CSD_FLAG_WAIT) {
++	if (wait_done) {
+ 		/* Wait for response */
+ 		while (data->flags)
+ 			cpu_relax();
+-- 
+1.5.2.5
+
