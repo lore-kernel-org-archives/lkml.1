@@ -1,104 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYCLOS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbYCLOWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYCLOS4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 10:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYCLOSr
+	id S1752869AbYCLOWZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 10:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYCLOWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 10:18:47 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:51724 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbYCLOSq (ORCPT
+	Wed, 12 Mar 2008 10:22:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44440 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbYCLOWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 10:18:46 -0400
-Date: Wed, 12 Mar 2008 09:18:42 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Emelyanov <xemul@openvz.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, menage@google.com, sukadev@us.ibm.com,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080312141842.GE8308@sergelap.austin.ibm.com>
-References: <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com> <47D793AB.6070008@openvz.org> <20080312130904.GB8308@sergelap.austin.ibm.com> <1205327912.23866.228.camel@moss-spartans.epoch.ncsc.mil> <1205328432.23866.233.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 12 Mar 2008 10:22:17 -0400
+Message-ID: <47D7E6DB.6030709@zytor.com>
+Date: Wed, 12 Mar 2008 15:21:15 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1205328432.23866.233.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Mark early_printk as asmlinkage
+References: <1205330034-28828-1-git-send-email-jirislaby@gmail.com> <1205330034-28828-2-git-send-email-jirislaby@gmail.com> <47D7E2FB.2020801@zytor.com> <47D7E392.3080807@gmail.com>
+In-Reply-To: <47D7E392.3080807@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@tycho.nsa.gov):
+Jiri Slaby wrote:
+> On 03/12/2008 03:04 PM, H. Peter Anvin wrote:
+>> Jiri Slaby wrote:
+>>> It's not explicitly marked as asmlinkage, but invoked from x86_32
+>>> startup code with parameters on stack.
+>>>
+>>> No other architectures define early_printk and none of them are affected
+>>> by this change, since defines asmlinkage as empty token.
+>>
+>> NAK.
+>>
+>> The regparm ABI for x86-32 uses parameters on the stack when the 
+>> function is varadic (as it is here), so this is unnecessary.
 > 
-> On Wed, 2008-03-12 at 09:18 -0400, Stephen Smalley wrote:
-> > On Wed, 2008-03-12 at 08:09 -0500, Serge E. Hallyn wrote:
-> > > Quoting Pavel Emelyanov (xemul@openvz.org):
-> > > > Greg KH wrote:
-> > > > > On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
-> > > > >> Besides, I've measured some things - the lat_syscall test for open from 
-> > > > >> lmbench test suite and the nptl perf test. Here are the results:
-> > > > >>
-> > > > >>         sec     nosec
-> > > > >> open    3.0980s  3.0709s
-> > > > >> nptl    2.7746s  2.7710s
-> > > > >>
-> > > > >> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
-> > > > >> much, but it is noticeable. Besides, this is only two tests, digging deeper
-> > > > >> may reveal more.
-> > > > > 
-> > > > > I think that is in the noise of sampling if you run that test many more
-> > > > > times.
-> > > > 
-> > > > These numbers are average values of 20 runs of each test. I didn't
-> > > > provide the measurement accuracy, but the abs(open.sec - open.nosec)
-> > > > is greater than it.
-> > > > 
-> > > > >> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
-> > > > >> to the vmlinux...
-> > > > >>
-> > > > >> I think, I finally agree with you and Al Viro, that the kobj mapper is 
-> > > > >> not the right place to put the filtering, but taking the above numbers 
-> > > > >> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
-> > > > >> versions of security_inode_permission/security_file_permission/etc?
-> > > > > 
-> > > > > Ask the security module interface maintainers about this, not me :)
-> > > > 
-> > > > OK :) Thanks for your time, Greg.
-> > > > 
-> > > > So, Serge, since you already have a LSM-based version, maybe you can
-> > > > change it with the proposed "fix" and send it to LSM maintainers for
-> > > > review?
-> > > 
-> > > To take the point of view of someone who neither wants containers nor
-> > > LSM but just a fast box,
-> > > 
-> > > you're asking me to introduce LSM hooks for the !SECURITY case?  :)
-> > > 
-> > > I can give it a shot, but I expect some complaints.  Now at least the
-> > > _mknod hook shouldn't be a hotpath,  and I suppose I can add yet
-> > > an #ifdef inside the !SECURITY version of security_inode_permission().
-> > > I still expect some complaints though.  I'll send something soon.
-> > 
-> > Not sure I'm following the plot here, but please don't do anything that
-> > will prohibit the use of containers/namespaces with security modules
-> > like SELinux/Smack.  Yes, that's a legitimate use case, and there will
-> > be people who will want to do that - they serve different but
-> > complementary purposes (containers are _not_ a substitute for MAC).  We
-> > don't want them to be exclusive of one another.
-> 
-> Also, note that "real" device labeling and access control (i.e. bind a
-> label to a device in the kernel irrespective of what device node is used
-> to access it so that a process that can create any device nodes at all
-> can't effectively bypass all device access controls just by creating an
-> arbitrary node to any device in a type accessible to it) is already
-> called out on our kernel todo list for SELinux, and contributions there
-> would be welcome.  
+> Makes sense. Why is printk marked as asmlinkage?
 
-I'll take a look at the todo list (James' I assume).  The dev_cgroup lsm
-will have to come first, I'll see about doing the SELinux version as
-well.
+Hm.  Don't know if it's historical, stylistic (anything called from 
+assembly should have "asmlinkage"), or just based on a misunderstanding 
+of the regparm ABI.
 
-thanks,
--serge
+	-hpa
