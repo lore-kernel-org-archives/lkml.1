@@ -1,155 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYCLM1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYCLM3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYCLM1z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 08:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYCLM1s
+	id S1753684AbYCLM3b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 08:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYCLM3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 08:27:48 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:26084 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751206AbYCLM1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 08:27:48 -0400
-Date: Wed, 12 Mar 2008 15:27:46 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] gpiolib: implement dynamic base allocation
-Message-ID: <20080312122746.GB500@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080311174116.GA12397@localhost.localdomain> <200803111349.29166.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Wed, 12 Mar 2008 08:29:24 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46789 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751138AbYCLM3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 08:29:23 -0400
+Date: Wed, 12 Mar 2008 12:29:20 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH rc5-mm1 1/3] mm-have-zonelist: fix memcg ooms
+Message-ID: <20080312122920.GB25250@csn.ul.ie>
+References: <Pine.LNX.4.64.0803112108470.17067@blonde.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <200803111349.29166.david-b@pacbell.net>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <Pine.LNX.4.64.0803112108470.17067@blonde.site>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 12:49:28PM -0800, David Brownell wrote:
-> On Tuesday 11 March 2008, Anton Vorontsov wrote:
-> > If gpio_chip->base is negative during registration, gpiolib requests
-> > dynamic base allocation. This is useful for devices being registered
-> > at run-time (in contrast to platform devices).
+On (11/03/08 21:12), Hugh Dickins didst pronounce:
+> Memcgroups up against their limit were OOMing unjustifiably on x86_32
+> with highmem: pages ripe for freeing were not being found.
 > 
-> The issue isn't runtime or platform_device ... it's whether the
-> numbers are defined by the board/platform, versus on-the fly.
-> I2C and FPGA based expanders may be part of the board, and thus
-> use static assignment, for just one example.  So:
+> It's because the zonelist changes in vmscan.c now derive zone from gfp_mask,
+> and the gfp mask being passed into try_to_free_mem_cgroup_pages is atuned
+> to allocating a struct page_cgroup (__GFP_HIGHMEM masked off), whereas here
+> we need to be scanning highmem zones.
 > 
-> 	... This dynamic allocation of GPIO numbers is useful
-> 	for devices that aren't always present, such as GPIOs
-> 	from expanders on add-in cards rather than mainboards.
+> Frankenstein a gfp_mask from GFP_HIGHUSER_MOVABLE and the mask passed in.
 > 
-> > To avoid reusing any numbers that may have been explicitly assigned,
-> > but not yet registered, dynamic gpio base allocator will assign GPIO
-> > numbers from the biggest number on down, instead of from the smallest
-> > on up.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+Well spotted, but I have one query below.
+
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> Same error was in -rc3-mm1, sorry for not sending fix in time for -rc5-mm1.
+> The error comes 1 or 4 patches earlier, but this patch atop 2.6.25-rc5-mm1
+> fits best just after
+> mm-have-zonelist-contains-structs-with-both-a-zone-pointer-and-zone_idx.patch
 > 
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+> I've other GFP masking fixes or cleanups to come another day: this fixes
+> just one clear bug, peculiar to the -mm tree, orthogonal to the rest.
+> But two little do_try_to_free_pages cleanups follow on from this...
 > 
-> ... given commit comment fixup as above, since that's the only
-> documentation just now.
+>  mm/vmscan.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- 2.6.25-rc5-mm1/mm/vmscan.c	2008-03-11 14:19:36.000000000 +0000
+> +++ linux/mm/vmscan.c	2008-03-11 20:09:05.000000000 +0000
+> @@ -1444,7 +1444,6 @@ unsigned long try_to_free_mem_cgroup_pag
+>  						gfp_t gfp_mask)
+>  {
+>  	struct scan_control sc = {
+> -		.gfp_mask = gfp_mask,
+>  		.may_writepage = !laptop_mode,
+>  		.may_swap = 1,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+> @@ -1454,9 +1453,10 @@ unsigned long try_to_free_mem_cgroup_pag
+>  		.isolate_pages = mem_cgroup_isolate_pages,
+>  	};
+>  	struct zonelist *zonelist;
+> -	int target_zone = gfp_zonelist(GFP_HIGHUSER_MOVABLE);
+>  
+> -	zonelist = &NODE_DATA(numa_node_id())->node_zonelists[target_zone];
+> +	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
+> +			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
+> +	zonelist = NODE_DATA(numa_node_id())->node_zonelists;
 
-Thanks, below is the patch with updated log.
+While it is clear you are setting the mask to include HIGHMEM-related flags,
+it's not as clear to me why you alter the zonelist as well. target_zone was
+already based on HIGHMEM so what are you fixing there?
 
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: gpiolib: implement dynamic base allocation
+It should still work as ->node_zonelists[0] is a zonelist suitable for node
+fallback as opposed to node_zonelists[1] which is for GFP_THISNODE but
+maybe this was not quite what you intended?
 
-If gpio_chip->base is negative during registration, gpiolib requests
-dynamic base allocation. This is useful for devices that aren't always
-present, such as GPIOs from expanders on add-in cards rather than
-mainboards.
+Probably something obvious that will hit me the second I push send :)
 
-To avoid reusing any numbers that may have been explicitly assigned,
-but not yet registered, dynamic gpio base allocator will assign GPIO
-numbers from the biggest number on down, instead of from the smallest
-on up.
+>  	if (do_try_to_free_pages(zonelist, sc.gfp_mask, &sc))
+>  		return 1;
+>  	return 0;
+> 
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/gpio/gpiolib.c |   43 ++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 38 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 623fcd9..81d81c9 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -80,6 +80,33 @@ static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
- 	return gpio_desc[gpio].chip;
- }
- 
-+static int gpiochip_find_base(int ngpio)
-+{
-+	int i;
-+	int spare = 0;
-+	int base = -ENOSPC;
-+
-+	for (i = ARCH_NR_GPIOS - 1; i >= 0 ; i--) {
-+		struct gpio_chip *chip = gpio_desc[i].chip;
-+
-+		if (!chip) {
-+			spare++;
-+			if (spare == ngpio) {
-+				base = i;
-+				break;
-+			}
-+		} else {
-+			spare = 0;
-+			i -= chip->ngpio - 1;
-+		}
-+	}
-+
-+	if (gpio_is_valid(base))
-+		pr_debug("%s: found new base at %d\n", __func__, base);
-+
-+	return base;
-+}
-+
- /**
-  * gpiochip_add() - register a gpio_chip
-  * @chip: the chip to register, with chip->base initialized
-@@ -95,17 +122,22 @@ int gpiochip_add(struct gpio_chip *chip)
- 	int		status = 0;
- 	unsigned	id;
- 
--	/* NOTE chip->base negative is reserved to mean a request for
--	 * dynamic allocation.  We don't currently support that.
--	 */
--
--	if (chip->base < 0 || !gpio_is_valid(chip->base  + chip->ngpio)) {
-+	if (gpio_is_valid(chip->base) &&
-+			!gpio_is_valid(chip->base  + chip->ngpio)) {
- 		status = -EINVAL;
- 		goto fail;
- 	}
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
- 
-+	if (!gpio_is_valid(chip->base)) {
-+		chip->base = gpiochip_find_base(chip->ngpio);
-+		if (!gpio_is_valid(chip->base)) {
-+			status = chip->base;
-+			goto fail_unlock;
-+		}
-+	}
-+
- 	/* these GPIO numbers must not be managed by another gpio_chip */
- 	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
- 		if (gpio_desc[id].chip != NULL) {
-@@ -120,6 +152,7 @@ int gpiochip_add(struct gpio_chip *chip)
- 		}
- 	}
- 
-+fail_unlock:
- 	spin_unlock_irqrestore(&gpio_lock, flags);
- fail:
- 	/* failures here can mean systems won't boot... */
 -- 
-1.5.2.2
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
