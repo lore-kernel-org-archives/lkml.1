@@ -1,116 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYCLQl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbYCLQom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbYCLQl4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYCLQlt
+	id S1753475AbYCLQom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYCLQod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:41:49 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:7036 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYCLQls (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:41:48 -0400
-Message-ID: <47D807BA.7020102@hp.com>
-Date: Wed, 12 Mar 2008 12:41:30 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 12 Mar 2008 12:44:33 -0400
+Received: from h155.mvista.com ([63.81.120.155]:16051 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751766AbYCLQoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 12:44:32 -0400
+Message-ID: <47D808BD.2080902@ru.mvista.com>
+Date: Wed, 12 Mar 2008 19:45:49 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: [PATCH 0/7] IO CPU affinity testing series
-References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ide: sanitize handling of IDE_HFLAG_NO_SET_MODE host
+ flag
+References: <200802232115.11908.bzolnier@gmail.com>
+In-Reply-To: <200802232115.11908.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-Subject: [PATCH] Fixed race: using potentially invalid pointer
+Bartlomiej Zolnierkiewicz wrote:
 
-When data->flags & CSD_FLAG_ALLOC is true, the data could be freed by the other processor before we check for CSD_FLAG_WAIT.
+> * Check for IDE_HFLAG_NO_SET_MODE host flag in ide_set_pio(),
+>   ide_set_[pio,dma]_mode(), ide_set_xfer_rate() and set_pio_mode().
 
-Also: removed old comment, doesn't quite fit anymore.
+> * Remove no longer needed IDE_HFLAG_NO_SET_MODE host flag checking
+>   from ide_tune_dma().
 
-This is applied against Jens' git tree w/ the ia64 additional commit.
+> * Remove superfluous ->set_pio_mode checking from do_special().
 
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
----
- arch/ia64/kernel/smp.c   |    5 ++---
- arch/x86/kernel/smp_32.c |    5 ++---
- arch/x86/kernel/smp_64.c |    5 ++---
- 3 files changed, 6 insertions(+), 9 deletions(-)
+> This is a part of preparations for adding 'struct ide_port_ops'.
 
-diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
-index 521bc52..ad153e2 100644
---- a/arch/ia64/kernel/smp.c
-+++ b/arch/ia64/kernel/smp.c
-@@ -407,8 +407,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- {
- 	struct call_single_queue *dst;
- 	unsigned long flags;
--	/* prevent preemption and reschedule on another processor */
--	int ipi;
-+	int ipi, wait_done = data->flags & CSD_FLAG_WAIT;
- 
- 	/* Can deadlock when called with interrupts disabled */
- 	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
-@@ -424,7 +423,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- 	if (ipi)
- 		send_IPI_single(cpu, IPI_CALL_FUNC_SINGLE);
- 
--	if (data->flags & CSD_FLAG_WAIT) {
-+	if (wait_done) {
- 		/* Wait for response */
- 		while (data->flags)
- 			cpu_relax();
-diff --git a/arch/x86/kernel/smp_32.c b/arch/x86/kernel/smp_32.c
-index dcbb89c..8239814 100644
---- a/arch/x86/kernel/smp_32.c
-+++ b/arch/x86/kernel/smp_32.c
-@@ -638,8 +638,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- 	cpumask_t mask = cpumask_of_cpu(cpu);
- 	struct call_single_queue *dst;
- 	unsigned long flags;
--	/* prevent preemption and reschedule on another processor */
--	int ipi;
-+	int ipi, wait_done = data->flags & CSD_FLAG_WAIT;
- 
- 	/* Can deadlock when called with interrupts disabled */
- 	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
-@@ -655,7 +654,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- 	if (ipi)
- 		send_IPI_mask(mask, CALL_FUNCTION_SINGLE_VECTOR);
- 
--	if (data->flags & CSD_FLAG_WAIT) {
-+	if (wait_done) {
- 		/* Wait for response */
- 		while (data->flags)
- 			cpu_relax();
-diff --git a/arch/x86/kernel/smp_64.c b/arch/x86/kernel/smp_64.c
-index 7e4e300..c89a4f7 100644
---- a/arch/x86/kernel/smp_64.c
-+++ b/arch/x86/kernel/smp_64.c
-@@ -458,8 +458,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- 	cpumask_t mask = cpumask_of_cpu(cpu);
- 	struct call_single_queue *dst;
- 	unsigned long flags;
--	/* prevent preemption and reschedule on another processor */
--	int ipi;
-+	int ipi, wait_done = data->flags & CSD_FLAG_WAIT;
- 
- 	/* Can deadlock when called with interrupts disabled */
- 	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
-@@ -475,7 +474,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data)
- 	if (ipi)
- 		send_IPI_mask(mask, CALL_FUNCTION_SINGLE_VECTOR);
- 
--	if (data->flags & CSD_FLAG_WAIT) {
-+	if (wait_done) {
- 		/* Wait for response */
- 		while (data->flags)
- 			cpu_relax();
--- 
-1.5.2.5
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
+> Index: b/drivers/ide/ide-lib.c
+> ===================================================================
+> --- a/drivers/ide/ide-lib.c
+> +++ b/drivers/ide/ide-lib.c
+> @@ -353,6 +354,9 @@ int ide_set_pio_mode(ide_drive_t *drive,
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+>  
+> +	if (hwif->host_flags & IDE_HFLAG_NO_SET_MODE)
+> +		return 0;
+> +
+
+    Shouldn't this be considered an error?
+
+>  	if (hwif->set_pio_mode == NULL)
+>  		return -1;
+>  
+> @@ -380,6 +384,9 @@ int ide_set_dma_mode(ide_drive_t *drive,
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+>  
+> +	if (hwif->host_flags & IDE_HFLAG_NO_SET_MODE)
+> +		return 0;
+> +
+
+    Same here....
+
+>  	if (hwif->set_dma_mode == NULL)
+>  		return -1;
+>  
+> @@ -410,7 +417,8 @@ int ide_set_xfer_rate(ide_drive_t *drive
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+>  
+> -	if (hwif->set_dma_mode == NULL)
+> +	if (hwif->set_dma_mode == NULL ||
+> +	    (hwif->host_flags & IDE_HFLAG_NO_SET_MODE))
+>  		return -1;
+
+    Hm, this is was not considered an error before...
+
+MBR, Sergei
