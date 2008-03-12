@@ -1,117 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbYCLPy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752233AbYCLQAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430AbYCLPy2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYCLPyV
+	id S1752233AbYCLQAZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYCLQAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:54:21 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:59083 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751914AbYCLPyU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:54:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqoEABKa10dMQWoK/2dsb2JhbACBWaZS
-Date: Wed, 12 Mar 2008 11:54:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH] x86 Fix test_poke for vmalloced pages
-Message-ID: <20080312155415.GA11230@Krystal>
-References: <20080310183653.GA4482@Krystal> <20080311090947.GG25110@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 12:00:12 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:34625 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbYCLQAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 12:00:10 -0400
+Date: Wed, 12 Mar 2008 12:00:07 -0400
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>
+Subject: Re: Oops in NFSv4 server in 2.6.23.17
+Message-ID: <20080312160007.GA10015@fieldses.org>
+References: <20080312122550.GB8141@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080311090947.GG25110@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:45:20 up 12 days, 11:56,  7 users,  load average: 0.26, 0.64,
-	0.65
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080312122550.GB8141@ics.muni.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+On Wed, Mar 12, 2008 at 01:25:50PM +0100, Lukas Hejtmanek wrote:
+> Hello,
 > 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> I'm running NFSv4 server (nfs-utils 1.1.1) with vanila kernel 2.6.23.17.
+> It works while I use the server from standard ethernet lines.
 > 
-> > The shadow vmap for DEBUG_RODATA kernel text modification uses 
-> > virt_to_page to get the pages from the pointer address.
-> > 
-> > However, I think vmalloc_to_page would be required in case the page is 
-> > used for modules.
-> > 
-> > Since only the core kernel text is marked read-only, use 
-> > kernel_text_address() to make sure we only shadow map the core kernel 
-> > text, not modules.
+> However, I tried to mount the volume over GPRS network. For the first time, it
+> replies premission denied and the second try results in the following oops.
 > 
-> actually, i think we should mark module text readonly too.
+> Anything I should try?
 > 
+> I guess that the last oops is induced from the first one due to some memory 
+> corruption.
+> 
+> WARNING: at lib/kref.c:33 kref_get()
 
-Yes, but in the meantime, the x86 tree would need this patch to make
-kprobes work correctly on modules.
+Hm.  So looks like that means kref_get() was called on something with a
+zero reference count.
 
-I suspect that without this fix, with the enhanced hotplug and kprobes
-patch, kprobes will use text_poke to insert breakpoints in modules
-(vmalloced pages used), which will map the wrong pages and corrupt
-random kernel locations instead of updating the correct page.
+> 
+> Call Trace:
+>  [<ffffffff803a1315>] kref_get+0x35/0x40
+>  [<ffffffff88128f34>] :sunrpc:sunrpc_cache_lookup+0x64/0x160
 
-Work that would write protect the module pages should clearly be done,
-but it can come in a later time. We have to make sure we interact
-correctly with the page allocation debugging, as an example.
+So sunrpc_cache_lookup found something with a zero reference count,
+in...
 
-Here is the patch against x86.git 2.6.25-rc5 :
+>  [<ffffffff881b5910>] :nfsd:svc_export_lookup+0xc0/0xd0
 
-The shadow vmap for DEBUG_RODATA kernel text modification uses virt_to_page to
-get the pages from the pointer address.
+... the has table that keeps the kernel's cached view of the export
+table.
 
-However, I think vmalloc_to_page would be required in case the page is used for
-modules.
+>  [<ffffffff881b594f>] :nfsd:exp_get_by_name+0x2f/0x80
+>  [<ffffffff88128f34>] :sunrpc:sunrpc_cache_lookup+0x64/0x160
+>  [<ffffffff88127b89>] :sunrpc:cache_check+0x49/0x490
+>  [<ffffffff881b5fb7>] :nfsd:exp_find_key+0x57/0xc0
+>  [<ffffffff881b6064>] :nfsd:exp_find+0x44/0xa0
+>  [<ffffffff881b615e>] :nfsd:rqst_exp_find+0x9e/0xf0
+>  [<ffffffff881b0c45>] :nfsd:fh_verify+0x425/0x540
+>  [<ffffffff881bf25e>] :nfsd:nfsd4_proc_compound+0x1de/0x330
+>  [<ffffffff881ad271>] :nfsd:nfsd_dispatch+0xb1/0x250
+>  [<ffffffff8811fe91>] :sunrpc:svc_process+0x491/0x7d0
+>  [<ffffffff804e8032>] __down_read+0x12/0xb0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad9b0>] :nfsd:nfsd+0x1a0/0x2f0
+>  [<ffffffff8020d068>] child_rip+0xa/0x12
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff8020d05e>] child_rip+0x0/0x12
+> 
+> WARNING: at lib/kref.c:33 kref_get()
+> 
+> Call Trace:
+>  [<ffffffff803a1315>] kref_get+0x35/0x40
+>  [<ffffffff88128f34>] :sunrpc:sunrpc_cache_lookup+0x64/0x160
+>  [<ffffffff881b5910>] :nfsd:svc_export_lookup+0xc0/0xd0
+>  [<ffffffff881b594f>] :nfsd:exp_get_by_name+0x2f/0x80
+>  [<ffffffff88128f34>] :sunrpc:sunrpc_cache_lookup+0x64/0x160
+>  [<ffffffff88127b89>] :sunrpc:cache_check+0x49/0x490
+>  [<ffffffff881b5fb7>] :nfsd:exp_find_key+0x57/0xc0
+>  [<ffffffff881b6064>] :nfsd:exp_find+0x44/0xa0
+>  [<ffffffff881b615e>] :nfsd:rqst_exp_find+0x9e/0xf0
+>  [<ffffffff881b0c45>] :nfsd:fh_verify+0x425/0x540
+>  [<ffffffff881bf25e>] :nfsd:nfsd4_proc_compound+0x1de/0x330
+>  [<ffffffff881ad271>] :nfsd:nfsd_dispatch+0xb1/0x250
+>  [<ffffffff8811fe91>] :sunrpc:svc_process+0x491/0x7d0
+>  [<ffffffff804e8032>] __down_read+0x12/0xb0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad9b0>] :nfsd:nfsd+0x1a0/0x2f0
+>  [<ffffffff8020d068>] child_rip+0xa/0x12
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff8020d05e>] child_rip+0x0/0x12
+> 
+> WARNING: at lib/kref.c:33 kref_get()
+> 
+> Call Trace:
+>  [<ffffffff803a1315>] kref_get+0x35/0x40
+>  [<ffffffff88128f34>] :sunrpc:sunrpc_cache_lookup+0x64/0x160
+>  [<ffffffff881b5910>] :nfsd:svc_export_lookup+0xc0/0xd0
+>  [<ffffffff881b594f>] :nfsd:exp_get_by_name+0x2f/0x80
+>  [<ffffffff88128f34>] :sunrpc:sunrpc_cache_lookup+0x64/0x160
+>  [<ffffffff88127b89>] :sunrpc:cache_check+0x49/0x490
+>  [<ffffffff881b5fb7>] :nfsd:exp_find_key+0x57/0xc0
+>  [<ffffffff881b6064>] :nfsd:exp_find+0x44/0xa0
+>  [<ffffffff881b615e>] :nfsd:rqst_exp_find+0x9e/0xf0
+>  [<ffffffff881b0c45>] :nfsd:fh_verify+0x425/0x540
+>  [<ffffffff881bf25e>] :nfsd:nfsd4_proc_compound+0x1de/0x330
+>  [<ffffffff881ad271>] :nfsd:nfsd_dispatch+0xb1/0x250
+>  [<ffffffff8811fe91>] :sunrpc:svc_process+0x491/0x7d0
+>  [<ffffffff804e8032>] __down_read+0x12/0xb0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad9b0>] :nfsd:nfsd+0x1a0/0x2f0
+>  [<ffffffff8020d068>] child_rip+0xa/0x12
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff8020d05e>] child_rip+0x0/0x12
+> 
+> general protection fault: 0000 [1] SMP 
+> CPU 0 
+> Modules linked in: des cbc blkcipher nfsd exportfs rpcsec_gss_krb5 auth_rpcgss nfs lockd nfs_acl sunrpc ipv6 dm_snapshot dm_mirror loop dm_round_robin dm_multipath dm_mod ata_piix ata_generic thermal mptfc libata processor scsi_transport_fc ehci_hcd e1000 evdev serio_raw psmouse uhci_hcd i2c_i801 i2c_core
+> Pid: 2863, comm: nfsd Not tainted 2.6.23.17 #1
+> RIP: 0010:[<ffffffff8819b113>]  [<ffffffff8819b113>] :auth_rpcgss:gss_get_mic+0x3/0x10
+> RSP: 0018:ffff81025c1d1c78  EFLAGS: 00010286
+> RAX: 762aba3d00000004 RBX: ffff81025b19f240 RCX: ffff81025c05c000
+> RDX: ffff81025c1d1cd0 RSI: ffff81025c1d1c80 RDI: ffff81025effa600
+> RBP: ffff81025c05c014 R08: 0000000000000000 R09: 0000000000000004
+> R10: 0000000000000000 R11: 0000000000000000 R12: ffff81025effa600
+> R13: ffff81025b596000 R14: ffff81025c05c018 R15: ffff81025b596130
+> FS:  00002b540c07b6d0(0000) GS:ffffffff805fe000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 00007fffa57e00e8 CR3: 000000025bb40000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process nfsd (pid: 2863, threadinfo ffff81025c1d0000, task ffff81025fe0c0c0)
+> Stack:  ffffffff8819c175 ffff81025c1d1cec 0000000000000004 0000000000000000
+>  0000000000000000 0000000000000000 0000000000000000 0000000400000004
+>  0000000000000000 ffff81025c1d1cec 0000000000000004 ffff81025effa600
+> Call Trace:
+>  [<ffffffff8819c175>] :auth_rpcgss:gss_write_verf+0xa5/0x130
 
-Since only the core kernel text is marked read-only, use kernel_text_address()
-to make sure we only shadow map the core kernel text, not modules.
+In this case it looks like something in the gss context cache is bad.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: akpm@linux-foundation.org
----
- arch/x86/kernel/alternative.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+I'm not sure what's going on.
 
-Index: linux-2.6-x86/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/alternative.c	2008-03-10 10:34:11.000000000 -0400
-+++ linux-2.6-x86/arch/x86/kernel/alternative.c	2008-03-10 10:50:38.000000000 -0400
-@@ -511,7 +511,7 @@
- 	BUG_ON(len > sizeof(long));
- 	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
- 		- ((long)addr & ~(sizeof(long) - 1)));
--	{
-+	if (kernel_text_address((unsigned long)addr)) {
- 		struct page *pages[2] = { virt_to_page(addr),
- 			virt_to_page(addr + PAGE_SIZE) };
- 		if (!pages[1])
-@@ -522,6 +522,13 @@
- 		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
- 		local_irq_restore(flags);
- 		vunmap(vaddr);
-+	} else {
-+		/*
-+		 * modules are in vmalloc'ed memory, always writable.
-+		 */
-+		local_irq_save(flags);
-+		memcpy(addr, opcode, len);
-+		local_irq_restore(flags);
- 	}
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+>From a quick
+
+	gitk v2.6.23..origin fs/nfsd net/sunrpc/cache.c include/linux/sunrpc/cache.h
+
+I don't see any recent commits that would address a problem like this.
+But it might be worth trying to reproduce this in v2.6.25-rc5.
+
+It'd also be interesting to know whether this is reproduceable with
+auth_unix (as opposed to auth_gss) access, and/or with nfsv3 as opposed
+to nfsv4.
+
+--b.
 
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>  [<ffffffff8819d408>] :auth_rpcgss:svcauth_gss_accept+0x8b8/0xc30
+>  [<ffffffff88120c7f>] :sunrpc:svc_sock_enqueue+0x19f/0x340
+>  [<ffffffff88122531>] :sunrpc:svc_tcp_recvfrom+0x81/0x980
+>  [<ffffffff80242250>] del_timer_sync+0x10/0x20
+>  [<ffffffff804e7057>] schedule_timeout+0x67/0xd0
+>  [<ffffffff80242060>] process_timeout+0x0/0x10
+>  [<ffffffff804e704a>] schedule_timeout+0x5a/0xd0
+>  [<ffffffff8811fd78>] :sunrpc:svc_process+0x378/0x7d0
+>  [<ffffffff80231d60>] default_wake_function+0x0/0x10
+>  [<ffffffff804e8032>] __down_read+0x12/0xb0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad9b0>] :nfsd:nfsd+0x1a0/0x2f0
+>  [<ffffffff8020d068>] child_rip+0xa/0x12
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff881ad810>] :nfsd:nfsd+0x0/0x2f0
+>  [<ffffffff8020d05e>] child_rip+0x0/0x12
+> 
+> 
+> Code: 48 8b 40 30 4c 8b 58 08 41 ff e3 66 90 48 8b 07 48 8b 40 30 
+> RIP  [<ffffffff8819b113>] :auth_rpcgss:gss_get_mic+0x3/0x10
+>  RSP <ffff81025c1d1c78>
+> 
+> 
+> kernel: invalid opcode: 0000 [2] SMP 
+> CPU 1 
+> Modules linked in: des cbc blkcipher nfsd exportfs rpcsec_gss_krb5 auth_rpcgss nfs lockd nfs_acl sunrpc ipv6 dm_snapshot dm_mirror loop dm_round_robin dm_multipath dm_mod ata_piix serio_raw mptfc psmouse scsi_transport_fc evdev ata_generic libata i2c_i801 e1000 i2c_core ehci_hcd uhci_hcd thermal processor
+> Pid: 2748, comm: multipathd Tainted: G      D 2.6.23.17 #1
+> RIP: 0010:[<ffffffff80291e9d>]  [<ffffffff80291e9d>] cache_alloc_refill+0x1ad/0x540
+> RSP: 0018:ffff810259aafe68  EFLAGS: 00010046
+> RAX: ffff81025e494040 RBX: 0000000000000020 RCX: 000000000000001c
+> RDX: ffff81025e494040 RSI: 000000000000000f RDI: ffff81025e810040
+> RBP: ffff81025fc6ec00 R08: ffff81025e810070 R09: 0000000000000000
+> R10: 0000000000159849 R11: 0000000000000000 R12: ffff81025fc00680
+> R13: ffff81025fc023c0 R14: 0000000000000000 R15: ffff81025fc0d000
+> FS:  0000000040061960(0063) GS:ffff81025fc6ce40(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 00002ba20d8f4e30 CR3: 0000000259b10000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process multipathd (pid: 2748, threadinfo ffff810259aae000, task ffff81025fd06040)
+> Stack:  000000d000000010 ffffffff80291d6a 000000d0000080d0 ffff810259b19000
+>  0000000000000296 00000000000080d0 ffff81025fc00680 00007fff9d909298
+>  0000000040060e10 ffffffff80291cd2 0000000040062000 ffff810259b19000
+> Call Trace:
+>  [<ffffffff80291d6a>] cache_alloc_refill+0x7a/0x540
+>  [<ffffffff80291cd2>] kmem_cache_alloc+0x82/0xa0
+>  [<ffffffff8029bcf6>] do_execve+0x46/0x230
+>  [<ffffffff8020ae44>] sys_execve+0x44/0xb0
+>  [<ffffffff8020c617>] stub_execve+0x67/0xb0
+> 
+> 
+> Code: 0f 0b eb fe 49 8b 45 10 49 8d 55 10 48 89 78 08 48 89 07 48 
+>  RSP <ffff810259aafe68>
+> 
+> 
+> -- 
+> Lukáš Hejtmánek
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
