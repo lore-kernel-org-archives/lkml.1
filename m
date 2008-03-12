@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYCLFtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYCLFwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbYCLFtx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 01:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYCLFto
+	id S1753070AbYCLFwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 01:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYCLFwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 01:49:44 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:56984 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752478AbYCLFtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 01:49:42 -0400
-Date: Wed, 12 Mar 2008 08:49:09 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/6] signals: send_signal: factor out SIGNAL_GROUP_EXIT checks
-Message-ID: <20080312054909.GA163@tv-sign.ru>
-References: <20080309185926.GA5649@tv-sign.ru> <20080311021633.BF1B326F991@magilla.localdomain> <20080311175122.GA586@tv-sign.ru> <20080311203206.2DAC526F991@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080311203206.2DAC526F991@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+	Wed, 12 Mar 2008 01:52:42 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51532 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbYCLFwl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 01:52:41 -0400
+Message-ID: <47D76F60.6000709@jp.fujitsu.com>
+Date: Wed, 12 Mar 2008 14:51:28 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>,
+       Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       Gary Hade <garyhade@us.ibm.com>, warthog19@eaglescrag.net,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+References: <20080229002341.GA21420@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311132800.GC21482@parisc-linux.org> <200803110956.37619.jbarnes@virtuousgeek.org>
+In-Reply-To: <200803110956.37619.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, please drop these patches:
+Hi,
 
-	signals-send_signal-factor-out-signal_group_exit-checks.patch
-	signals-fold-sig_ignored-into-prepare_signal.patch
-	signals-document-cld_continued-notification-mechanics.patch
+Jesse Barnes wrote:
+> On Tuesday, March 11, 2008 6:28 am Matthew Wilcox wrote:
+>> On Tue, Mar 11, 2008 at 10:10:40PM +0900, Kenji Kaneshige wrote:
+>>> 1) I checked ACPI spec again and again, but I could not find any
+>>>    reason to add Fujitsu servers to quirks list. So I'd like you to
+>>>    add HP servers to the quirks list. I'll send the following patches
+>>>    followed by this e-mail.
+>> Alex pointed out that IBM interprets the spec the same way that HP does.
+>> Are there any other machines that follow the spec the same way that
+>> Fujitsu does?
+> 
+> So Kenji is arguing that _STA should be called before _SUN (iow that the _SUN 
+> value is bogus unless _STA indicates that the slot is powered)?
 
-(the last one refers to prepare_signal() introduced in the first one,
- and the comment doesn't match the canonical style)
+Yes. And the another reason is _STA is not for representing the presence
+of PCI adapter card on the hot-plug slots because ACPI2.0 or later says
+"For _HID devices, OSPM evaluates the _STA method. For _ADR devices, OSPM
+checks with the bus driver for that device." in the explanation of _EJx.
+Since PCI adapter card on a hotplug slot is _ADR device, we must not
+provide _STA to represent the presence of PCI adapter card on a hotplug
+slot. Please look at the sample ASL codes for PCI hotplug slots in ACPI
+spec. There should be no _STA, of course.
 
-On 03/11, Roland McGrath wrote:
->
-> There are arguments to be had about deciding that change to the behavior.
-> We can discuss it more if you like.
+This is not described in ACPI1.0b spec and Alex's machine was based on
+ACPI1.0b. So I've suggested to check ACPI version in ACPI PCI slot
+detection driver. But it turned out that this suggestion didn't work
+because HP's ACPI2.0 based machine is doing same as ACPI1.0b based one.
 
-Of course, since I personally don't agree, I'd like to discuss it more
-if possible.
+>                                                                 That seems 
+> harder for the user; often times you want to find a slot even if it's powered 
+> down & empty (say to add a new card)...  It looks like the current code won't 
+> provide a slot name on Fujitsu machines in this case, or am I missing 
+> something?
+ 
+No. Even if we evaluate _STA before _SUN, ACPI PCI slot detection driver
+detects all of the slot on Fujitsu machine regardless of slot status
+(present or not) because Fujitsu server never provide _STA for representing
+presence of PCI adapter card on the slot.
 
-> But that is rather different from
-> quietly rolling in your choices of behavior change to a "cleanup" patch.
-
-"[PATCH 3/6] signals: use __group_complete_signal() for the specific signals too"
-adds a behaviour change too.
-
-Surely, I don't want to change the behaviour quietly, that is why I am
-cc'ing maintainers.
-
-(note also these patches are 8/6, 9/6. Originally I was going to send
- them in a separate series).
-
-Oleg.
+Thanks,
+Kenji Kaneshige
 
