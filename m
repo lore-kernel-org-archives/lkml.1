@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYCLWyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYCLWzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYCLWyu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYCLWym
+	id S1755542AbYCLWzJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYCLWyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:54:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47502 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751701AbYCLWyl (ORCPT
+	Wed, 12 Mar 2008 18:54:47 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:3440 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751501AbYCLWyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:54:41 -0400
-Date: Wed, 12 Mar 2008 15:54:21 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
-	Reported regressions from 2.6.24)
-Message-ID: <20080312225421.GA24449@kroah.com>
-References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com> <20080312213826.GA17101@kroah.com> <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org>
+	Wed, 12 Mar 2008 18:54:46 -0400
+Date: Wed, 12 Mar 2008 22:54:16 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: torvalds@osdl.org, stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH, TRIVIAL] Fix default compose table initialization
+Message-ID: <20080312225416.GA4822@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Chris Wright <chrisw@sous-sol.org>, torvalds@osdl.org,
+	stable@kernel.org, linux-kernel@vger.kernel.org
+References: <20080303012349.GA12338@implementation> <20080312212004.GD4416@sequoia.sous-sol.org> <20080312223355.GB4442@implementation> <20080312224742.GE4416@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080312224742.GE4416@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 03:25:41PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 12 Mar 2008, Greg KH wrote:
+Chris Wright, le Wed 12 Mar 2008 15:47:42 -0700, a écrit :
+> * Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
+> > Chris Wright, le Wed 12 Mar 2008 14:20:04 -0700, a écrit :
+> > > * Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
+> > > > Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
+> > > > 0300...  This fixes the default unicode compose table by using integers
+> > > > instead of character constants.
+> > > 
+> > > I think this patch breaks the s390 build, no?
 > > 
-> > Actually, here's a simple patch from -next that should test this logic
-> > for you.  Can you let me know if this solves the start up WARNING dump
-> > for you?
+> > Yes, that was reported and fixed iirc.
 > 
-> This patch looks bogus.
-> 
-> Why do you introduce a "dev->is_added" field that apparently has to match 
-> the old "list_empty(&dev->global_list)" 1:1 anyway?
-> 
-> In other words: when is it *ever* permissible for "is_added" to have a 
-> different value from the "list_empty(..)" logic? And if they must always 
-> match (and it looks like they have to, since you set and clear the flag 
-> exactly when you add/remove it from the list), then what exactly is this 
-> supposed to fix?
+> Care to send that along to stable, otherwise we'll just drop this one
+> from 2.6.24-stable queue.
 
-In the patch series in -next, it is supposed to replace the list_empty()
-logic exactly, as that list goes away in the next patch in the series.
+Ah, stable@ wasn't in the Cc list of the fix indeed, I've bounced the
+mail.
 
-So yes, it is not a "fix" per-say, but would be nice to see if it solves
-this issue in some way.
-
-All I can think is that somehow this pci device for the root hub isn't
-added to that extra list (as that is only done in the pcibios logic) and
-so it isn't set.
-
-I can't get a box here to produce both of those PCI: messages myself,
-and neither can Len, so something is really odd here.  And that has
-nothing to do with the pci_bus rework, that is just showing the problem
-more accuratly now.  Even if it were to be reverted, the root problem
-would still be present.
-
-thanks,
-
-greg k-h
+Samuel
