@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYCLUcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbYCLUcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbYCLUcG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYCLUb4
+	id S1752288AbYCLUcm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYCLUcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:31:56 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:39993 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbYCLUbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:31:55 -0400
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-In-Reply-To: <47D8304C.3090005@keyaccess.nl> "from Rene Herman at Mar 12, 2008
- 08:34:36 pm"
-To: Rene Herman <rene.herman@keyaccess.nl>
-Date: Wed, 12 Mar 2008 15:31:50 -0500 (CDT)
-CC: Bob Tracy <rct@frus.com>, Michael Cree <mcree@orcon.net.nz>,
-       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
-       linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Wed, 12 Mar 2008 16:32:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54728 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752022AbYCLUcc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 16:32:32 -0400
+Date: Wed, 12 Mar 2008 13:32:05 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
+Message-ID: <20080312203205.GB17187@kroah.com>
+References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080312203150.80E01DBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> (Re: interrupts not being seen by es18xx)
-> That is indeed what it soundeed like, or the first bit at least.
+On Wed, Mar 12, 2008 at 01:01:15PM -0700, Linus Torvalds wrote:
 > 
-> What does cat /proc/config.gz | grep CONFIG_ALPHA_ say? Miuchael, and for 
-> you? For some Alpha configs, arch/alpha/kernel/es1888.c is compiled and for 
-> some not. I expect for you (Bob) it's compiled in? And Michael?
+> 
+> On Tue, 11 Mar 2008, Rafael J. Wysocki wrote:
+> 
+> > 
+> > In http://bugzilla.kernel.org/show_bug.cgi?id=10123 Guennadi says that
+> > reverting
+> > 
+> > commit fd7d1ced29e5beb88c9068801da7a362606d8273
+> > Author: Greg Kroah-Hartman <gregkh@suse.de>
+> > Date:   Tue May 22 22:47:54 2007 -0400
+> > 
+> >     PCI: make pci_bus a struct device
+> > 
+> > fixes the problem for him (this seems to be yet another reboot/poweroff IOW).
+> 
+> Ahh, I thought this was done already, but nope, my PCI pull from Greg 
+> didn't contain the revert.
+> 
+> Greg? I know you must be aware of the problem, because you replied to the 
+> email at some point. Wazzup?
 
-Here is the requested list of CONFIG_ALPHA_* items for the
-2.6.25-rc4+iommu_patch kernel with support for snd-es18xx and snd-sb8:
+I'm still trying to figure out why his is the only machine having
+problems with this.  I think it's an acpi "we walk the list of pci
+devices twice" type thing, but don't know yet.
 
-CONFIG_ALPHA=y
-CONFIG_ALPHA_MIATA=y
-CONFIG_ALPHA_EV5=y
-CONFIG_ALPHA_CIA=y
-CONFIG_ALPHA_EV56=y
-CONFIG_ALPHA_PYXIS=y
-CONFIG_ALPHA_SRM=y
-CONFIG_ALPHA_LEGACY_START_ADDRESS=y
+I'm still working on it...
 
->From arch/alpha/kernel/Makefile, obj-${CONFIG_ALPHA_MIATA} adds es1888.o
-as a built-in object, so yes, it's built-in.
+thanks,
 
-I never noticed the init support for the ES1888 chip before...  The code
-appears to set up DMA channel 1, but does not mention anything about the
-second 16-bit DMA channel.
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+greg k-h
