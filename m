@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbYCLBzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYCLCIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752783AbYCLBzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 21:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYCLBzH
+	id S1752181AbYCLCIK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 22:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYCLCH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 21:55:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:22863 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbYCLBzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 21:55:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,483,1199692800"; 
-   d="scan'208";a="217551454"
-Subject: Re: [PATCH -mm] kexec jump -v9
-From: "Huang, Ying" <ying.huang@intel.com>
+	Tue, 11 Mar 2008 22:07:58 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51873 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbYCLCH5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 22:07:57 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Vivek Goyal <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+Cc: Vivek Goyal <vgoyal@redhat.com>, "Huang, Ying" <ying.huang@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-pm@lists.linux-foundation.org,
        Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <200803120049.06491.rjw@sisk.pl>
+Subject: Re: [PATCH -mm] kexec jump -v9
 References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	 <20080311211004.GA30164@redhat.com> <20080311232415.GA26320@elf.ucw.cz>
-	 <200803120049.06491.rjw@sisk.pl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 12 Mar 2008 09:55:37 +0800
-Message-Id: <1205286937.29875.9.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 12 Mar 2008 01:53:51.0336 (UTC) FILETIME=[EB962680:01C883E3]
+	<20080311211004.GA30164@redhat.com> <200803112318.28120.rjw@sisk.pl>
+Date: Tue, 11 Mar 2008 20:02:55 -0600
+In-Reply-To: <200803112318.28120.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Tue, 11 Mar 2008 23:18:27 +0100")
+Message-ID: <m1ejagzokw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 00:49 +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 12 of March 2008, Pavel Machek wrote:
-[...]
-> > 
-> > Its certainly "more traditional" method of doing hibernation than
-> > tricks swsusp currently plays.
-> 
-> What exactly are you referring to?
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Long long ago, the hibernation is not done by Linux kernel itself but
-BIOS (APM). Those days, kernel just does some preparation and jump to
-BIOS to do the hibernation. Imagine kernel B is the hibernation BIOS,
-kernel A does some prepare and jump to the BIOS (kernel B) just like the
-old days.
+> Well, what can I say?
+>
+> I haven't been a big fan of doing hibernation this way since the very beginning
+> and I still have the same reservations.  Namely, my opinion is that the
+> hibernation-related problems we have are not just solvable this way.  For one
+> example, in order to stop using the freezer for suspend/hibernation we first
+> need to revamp the suspending/resuming of devices (uder way) and the
+> kexec-based approach doesn't help us here.  I wouldn't like to start another
+> discussion about it though.
 
-> > Yes, I'd like these patches to go in, being able to switch kernels seems like
-> > useful tool. 
-> 
-> No objection from me.
->  
-> > Now, I guess they are some difficulties, like ACPI integration, and
-> > some basic drawbacks, like few seconds needed to boot second kernel
-> > during suspend.
-> > 
-> > ...OTOH this is probably only chance to eliminate freezer from
-> > swsusp...
-> 
-> Some facts:
-> 
-> * In order to be able to do suspend (STR) without the freezer, we need to make
->   device drivers block access to devices from applications during suspend.
-> * There's no reason to think that we can't use this same mechanism for
->   hibernation (the only difficulty seems to be the handling of devices used for
->   saving the image).
+Agreed.  At best all this does is moving the policy on how to save the kernel
+image from the kernel itself out to user space, and it not a cure all.
 
-I think "kexec based hibernation" is the only currently available
-possible method to write out image without freezer (after driver works
-are done). If other process is running, how to prevent them from writing
-to disk without freezing them in current implementation?
+> That said, I can imagine some applications of the $subject functionality
+> not directly related to hibernation.  For example, one can use it for kernel
+> debgging (jump to a new kernel, change something in the old kernel's
+> data, jump back and see what happens etc.).  Also, in principle it may be used
+> for such things as live migration of VMs.
 
-> * We need the drivers to quiesce devices to be able to do the kexec jump in the
->   first place (and to avoid races, we'll need them to block applications'
->   access to devices just like for STR, which is the sufficient condition for
->   removing the freezer).
-> 
-> So, I don't really think that the "freezer removal" argument is valid here.
-> 
-> Moreover, if this had been the _only_ argument for the $subject functionality,
-> I'd have been against it.
+Also such things as calling BIOS services or EFI services on x86_64.  Where
+vm86 is not useful.
 
-Best Regards,
-Huang Ying
+So in principle I think a kexec with return is a logical extension to
+the current kexec functionality.  
 
+That said it looks like next month before I will have time to do a reasonable
+job of reviewing the current patches.  
+
+Eric
