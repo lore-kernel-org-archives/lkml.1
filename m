@@ -1,109 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYCLN3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYCLNc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815AbYCLN3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYCLN2G
+	id S1753946AbYCLNc3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYCLNcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:28:06 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:42397 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854AbYCLN2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:28:04 -0400
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <1205327912.23866.228.camel@moss-spartans.epoch.ncsc.mil>
-References: <20080305171304.f686f6de.akpm@linux-foundation.org>
-	 <47D10939.6020806@openvz.org>
-	 <20080307013553.7ed35f91.akpm@linux-foundation.org>
-	 <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com>
-	 <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com>
-	 <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com>
-	 <47D793AB.6070008@openvz.org>
-	 <20080312130904.GB8308@sergelap.austin.ibm.com>
-	 <1205327912.23866.228.camel@moss-spartans.epoch.ncsc.mil>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 12 Mar 2008 09:27:12 -0400
-Message-Id: <1205328432.23866.233.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 12 Mar 2008 09:32:22 -0400
+Received: from zux006-051-205.adsl.green.ch ([81.6.51.205]:29897 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751483AbYCLNcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 09:32:21 -0400
+X-Greylist: delayed 1451 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 09:32:21 EDT
+Date: Wed, 12 Mar 2008 13:11:33 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Message-ID: <20080312131133.60e99d29@the-village.bc.nu>
+In-Reply-To: <200803102050.40567.phillips@phunq.net>
+References: <200803092346.17556.phillips@phunq.net>
+	<20080310092213.7ba878b3@core>
+	<200803102050.40567.phillips@phunq.net>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-03-12 at 09:18 -0400, Stephen Smalley wrote:
-> On Wed, 2008-03-12 at 08:09 -0500, Serge E. Hallyn wrote:
-> > Quoting Pavel Emelyanov (xemul@openvz.org):
-> > > Greg KH wrote:
-> > > > On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
-> > > >> Besides, I've measured some things - the lat_syscall test for open from 
-> > > >> lmbench test suite and the nptl perf test. Here are the results:
-> > > >>
-> > > >>         sec     nosec
-> > > >> open    3.0980s  3.0709s
-> > > >> nptl    2.7746s  2.7710s
-> > > >>
-> > > >> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
-> > > >> much, but it is noticeable. Besides, this is only two tests, digging deeper
-> > > >> may reveal more.
-> > > > 
-> > > > I think that is in the noise of sampling if you run that test many more
-> > > > times.
-> > > 
-> > > These numbers are average values of 20 runs of each test. I didn't
-> > > provide the measurement accuracy, but the abs(open.sec - open.nosec)
-> > > is greater than it.
-> > > 
-> > > >> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
-> > > >> to the vmlinux...
-> > > >>
-> > > >> I think, I finally agree with you and Al Viro, that the kobj mapper is 
-> > > >> not the right place to put the filtering, but taking the above numbers 
-> > > >> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
-> > > >> versions of security_inode_permission/security_file_permission/etc?
-> > > > 
-> > > > Ask the security module interface maintainers about this, not me :)
-> > > 
-> > > OK :) Thanks for your time, Greg.
-> > > 
-> > > So, Serge, since you already have a LSM-based version, maybe you can
-> > > change it with the proposed "fix" and send it to LSM maintainers for
-> > > review?
-> > 
-> > To take the point of view of someone who neither wants containers nor
-> > LSM but just a fast box,
-> > 
-> > you're asking me to introduce LSM hooks for the !SECURITY case?  :)
-> > 
-> > I can give it a shot, but I expect some complaints.  Now at least the
-> > _mknod hook shouldn't be a hotpath,  and I suppose I can add yet
-> > an #ifdef inside the !SECURITY version of security_inode_permission().
-> > I still expect some complaints though.  I'll send something soon.
+> > Nice fiction - stuff crashes eventually - not that this isn't useful. For
+> > a long time simply loading a 2-3GB Ramdisk off hard disk has been a good
+> > way to build things like compile engines where loss of state is not bad.
 > 
-> Not sure I'm following the plot here, but please don't do anything that
-> will prohibit the use of containers/namespaces with security modules
-> like SELinux/Smack.  Yes, that's a legitimate use case, and there will
-> be people who will want to do that - they serve different but
-> complementary purposes (containers are _not_ a substitute for MAC).  We
-> don't want them to be exclusive of one another.
+> Right, and now with ramback you will be able to preserve that state and
+> have the performance too.  It is a wonderful world.
 
-Also, note that "real" device labeling and access control (i.e. bind a
-label to a device in the kernel irrespective of what device node is used
-to access it so that a process that can create any device nodes at all
-can't effectively bypass all device access controls just by creating an
-arbitrary node to any device in a type accessible to it) is already
-called out on our kernel todo list for SELinux, and contributions there
-would be welcome.  
+Actually no - ramback would be useless to this. You might crash and end
+up with untrustworthy on disk state - not worth the risk.
 
--- 
-Stephen Smalley
-National Security Agency
+> > Ext3 is only going to help you if the ramdisk writeback respects barriers
+> > and ordering rules ?
+> 
+> I was alluding to to e2fsck's amazing repair ability, not ext3's journal.
 
+Oh you mean "pray hard". e2fsck works well with typical disk style
+failures, it is not robust against random chunks vanishing. I know this
+as I've worked on and debugged a case where a raid card rebooted silently
+and threw out the write back cache.
+
+> > /bin/cp from initrd
+> 
+> But that does not satisfy the requirement you snipped:
+
+True but its a lot simpler.
+
+> More accurately: in general, cannot transfer directly.  The ramdisk may
+
+DMA ?
+
+> > suck all the content back in presumably a log structure is not a big
+> > concern ?
+> 
+> Sorry, I failed to parse that.
+
+I was suggesting that you want log structure for the writeback disk so
+that you keep coherency and can recover it, an issue you seem intent on
+ignoring in the interest of speed over any kind of practical usability.
+> 
+> > >  * Per chunk locking is not feasible for a terabyte scale ramdisk.
+> > 
+> > And we care  8) ?
+> 
+> "640K should be enough for anyone"
+> 
+> http://www.violin-memory.com/products/violin1010.html <- 504 GB ramdisk
+
+Ok so almost nobody cares
+
+> The finer the granularity the faster the ramdisk syncs to backing
+> store.  The only attraction of coarse granularity I know of is
+
+False. Disks are ops/second devices not bits/second.
+
+> Your comment re fs chunk size reveals that I have failed to
+> communicate the most basic principle of the ramback design: the
+> backing store is not expected to represent a consistent filesystem
+
+No I get that. You've ignored the fact I'm suggesting that design choice
+is dumb.
+
+> state during normal operation.  Only the ramdisk needs to maintain a
+> consistent state, which I have taken care to ensure.  You just need
+> to believe in your battery, Linux and the hardware it runs on.  Which
+> of these do you mistrust?
+
+In a big critical environment - all three.
+
+Alan
