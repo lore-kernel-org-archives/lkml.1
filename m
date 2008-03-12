@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbYCLXIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYCLXMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbYCLXIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYCLXH5
+	id S1754764AbYCLXMG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYCLXLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:07:57 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:28958 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752139AbYCLXH4 (ORCPT
+	Wed, 12 Mar 2008 19:11:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48129 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751543AbYCLXLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:07:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PFBuzGKbVm5dOqnFVS3hPYP1j1O7n6OJs4e1akOBFjLVXkYsIkpWJHSlYq6pUSEsKlTGEiWx7qjFo5vKwv6yZpryyx0IqJI3tvoCCdW7XLjc+aSSP1N6dJVgk3M8+YKgjnVFGJixVWB4ezoIxsj1VzQBU2Ob99QXadEtGmqdEos=  ;
-X-YMail-OSG: T6IYeRQVM1nb4m3hFWFkUP14j7kMYXal_9wRbUp5edzKun31hEQTHISLCOkAJn_cyo8dgy6eXg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 3/3] gpiolib: add __must_check attribute to the gpiochip_add function
-Date: Wed, 12 Mar 2008 15:07:53 -0800
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20080311174129.GC12397@localhost.localdomain> <200803111402.38671.david-b@pacbell.net> <20080312123913.GA13266@localhost.localdomain>
-In-Reply-To: <20080312123913.GA13266@localhost.localdomain>
+	Wed, 12 Mar 2008 19:11:54 -0400
+Date: Wed, 12 Mar 2008 16:09:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
+ Reported regressions from 2.6.24)
+In-Reply-To: <20080312225421.GA24449@kroah.com>
+Message-ID: <alpine.LFD.1.00.0803121604580.3557@woody.linux-foundation.org>
+References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com>
+ <20080312212704.GA16836@kroah.com> <20080312213826.GA17101@kroah.com> <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org> <20080312225421.GA24449@kroah.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121607.54348.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008, Anton Vorontsov wrote:
-> On Tue, Mar 11, 2008 at 01:02:38PM -0800, David Brownell wrote:
-> > On Tuesday 11 March 2008, Anton Vorontsov wrote:
-> > > 
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > 
-> > I'm curious why you want to change this.   When it fails, a
-> > KERN_ERR message is emitted ...
+
+
+On Wed, 12 Mar 2008, Greg KH wrote:
 > 
-> Ah, I missed that the gpiochip_add() issuing pr_err(), not pr_debug().
-> 
-> So, please just ignore that patch.
+> I can't get a box here to produce both of those PCI: messages myself,
+> and neither can Len, so something is really odd here.
 
-OK ...
+You can't?
 
-> Though, printing errors from the 
-> generic functions is confusing, you never know when your code or the
-> function you call should print the error. And usually generic functions
-> tend to be silent...
+I can trivially reproduce the warnings on my laptop by just adding 
+"acpi=noirq" to the command line in grub.
 
-The logic in this case was that I don't really expect platform
-setup code to check this stuff any more than it checks IRQ setup.
-But, as the comment says, if platform setup code goofs, it can
-cause un-bootable systems.  Ergo the pr_err().
+	PCI: Probing PCI hardware
+	kobject (ffff81007e08d9c8): tried to init an initialized object, something is seriously wrong.
+	Pid: 1, comm: swapper Not tainted 2.6.25-rc3-00081-g7704a8b #29
+	
+	Call Trace:
+	 [<ffffffff8054f921>] __down_read+0x12/0x93
+	 [<ffffffff80313d60>] kobject_init+0x39/0x82
+	 [<ffffffff803956d6>] device_initialize+0x25/0xa4
+	 [<ffffffff80395f83>] device_register+0x9/0x12
+	 [<ffffffff80322cdc>] pci_bus_add_devices+0xe2/0x13e
+	 [<ffffffff807491be>] pci_legacy_init+0x66/0xf9
+	 [<ffffffff8039763e>] bus_register+0x15b/0x221
+	 [<ffffffff8072a6ba>] kernel_init+0x14a/0x2b4
+	 [<ffffffff8020be38>] child_rip+0xa/0x12
+	 [<ffffffff8072a570>] kernel_init+0x0/0x2b4
+	 [<ffffffff8020be2e>] child_rip+0x0/0x12
 
-It could be argued either way; that's just what I did, way back
-when I noticed the issue.
+did you try just adding that simple command line thing?
 
-- Dave
+			Linus
