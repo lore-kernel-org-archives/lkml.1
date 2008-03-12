@@ -1,115 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYCLCWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbYCLC1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbYCLCWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 22:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYCLCWl
+	id S1752975AbYCLC1G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 22:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYCLC0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 22:22:41 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40077 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbYCLCWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 22:22:40 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm] kexec jump -v9
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com>
-	<1205286326.29069.16.camel@caritas-dev.intel.com>
-Date: Tue, 11 Mar 2008 20:17:45 -0600
-In-Reply-To: <1205286326.29069.16.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Wed, 12 Mar 2008 09:45:26 +0800")
-Message-ID: <m1abl4znw6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 11 Mar 2008 22:26:53 -0400
+Received: from mailsrv1.zmi.at ([212.69.162.198]:50968 "EHLO mailsrv1.zmi.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591AbYCLC0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 22:26:51 -0400
+From: Michael Monnerie <michael.monnerie@it-management.at>
+Organization: it-management http://it-management.at
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: netatalk slow after system upgrade (possibly kernel problem?)
+Date: Wed, 12 Mar 2008 03:26:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netatalk-admins@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <200801251255.48105@zmi.at> <20080126220051.d753266b.akpm@linux-foundation.org>
+In-Reply-To: <20080126220051.d753266b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1983773.zTW2VC7L4x";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200803120326.47950@zmi.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+--nextPart1983773.zTW2VC7L4x
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Yes. The entry point should be saved in dump.elf itself, this can be
-> done via a user-space tool such as "makedumpfile". Because
-> "makedumpfile" is also used to exclude free pages from disk image, it
-> needs a communication method between two kernels (to get backup pages
-> map or something like that from kernel A). We have talked about this
-> before.
+(full quote below, because this message was in January)
+
+I did some new tests, see http://zmi.at/x/wire.delayack2.pcap
+Dump from SUSE10.3, Apple client had delayed ACK set to 2 with
+sysctl -w net.inet.tcp.delayed_ack=3D2, and also MacOS10.5 has this=20
+problem. It was suggested I could have this problem:
+http://www.helios.de/support/ti.phtml?110
+
+On the same hardware, I can start the old SUSE10.0 at the same time in=20
+parallel with the new SUSE10.3, both are virtual machines in VMware,=20
+and the old machine is always fast and the new one always slow. From=20
+the dump I would say it's the fault of MacOS - sometimes a very long=20
+delay before an ACK. But then again, it's fast when copying to the old=20
+SUSE linux box. Very strange.
+
+On Sonntag, 27. Januar 2008 Andrew Morton wrote:
+> (cc netdev)
 >
-> - Your opinion is to communicate via the purgatory. (But I don't know
-> how to communicate between kernel A and purgatory).
-
-How about the return address on the stack?
-
-> - Eric's opinion is to communicate between the user space in kernel A
-> and user space in kernel B.
-
-Purgatory is for all intents and purposes user space.  Because the
-return address falls on the trampoline page we won't know it's
-address before we call kexec.  But a return address and a stack
-on that page should be a perfectly good way to communicate.
-
-> - My opinion is to communicate between two kernel directly.
+> > On Fri, 25 Jan 2008 12:55:42 +0100 Michael Monnerie
+> > <michael.monnerie@it-management.at> wrote: Dear lists,
+> >
+> > I've been spending a LOT of time trying to find out where's the
+> > problem, but can't find it and therefore seek urgent help now. We
+> > have the following system:
+> >
+> > Server with VMware server
+> > -> VM running a webserver and netatalk
+> > -> 2 other VMs not related
+> >
+> > The VM with netatalk was SUSE 10.0 with kernel 2.6.13-15.15-smp
+> > (from SUSE), and things were pretty fun and quick. Then we upgraded
+> > to SUSE 10.2 and now 10.3, where everything EXCEPT netatalk runs
+> > perfect. Since this upgrade, Apple clients (MacOS X) now do READ
+> > very very slowly (about 512KB/s over the gigabit LAN), while
+> > writing to the server still is normal (>20MB/s). I've even retried
+> > with the newest kernel 2.6.23.13, tried different
+> > /proc/sys/net/ipv4/tcp_congestion_control (cubic, reno, bic, etc.)
+> > and nothing helps. I've then tried to install Samba and found that
+> > we have similar problems reading with it from MacOS clients. Now
+> > I'm pretty sure it should be something with the linux kernel, but I
+> > don't understand what.
+> >
+> > Here are the wireshark dumps in pcap format:
+> > http://zmi.at/x/atalk-write-fast.pcap
+> > -> you can see writing to the server (192.168.120.9) is normal and
+> > fast
+> >
+> > http://zmi.at/x/atalk-read-slow.pcap
+> > -> reading is horribly slow. Lots of "unknown", because of netatalk
+> > or what?
+> >
+> > http://zmi.at/x/unknown-atalk.pcap
+> > -> another dump while reading, you see "unknown" reads. I'm not
+> > sure if it's just wireshark not understanding the packets or
+> > netatalk.
+> >
+> > And trying with samba:
+> > http://zmi.at/x/smb-read-slow.pcap
+> > http://zmi.at/x/smb-write-quick.pcap
+> > you can see that it's also slow.
+> >
+> > Now why did it work with the old 2.6.13 kernel? I still have that
+> > old VM, and when I start it, it is always perfectly fast. Only
+> > newer versions are slow. Can somebody give me a hint please?
 >
-> I think as a minimal infrastructure patch, we can communicate minimal
-> information between user space of two kernels. When we have consensus on
-> this topic, we can use makedumpfile for both excluding free pages and
-> saving the entry point. Now, we can save the entry point in a separate
-> file or I can write a simple tool to do this.
+> It would be interesting if this could be repeated on bare hardware,
+> so we can eliminate the possibility that it is some weird interaction
+> with vmware.
 
-We need a fixed protocol so we do not make assumptions about how things
-will be implemented, allowing kernels to diverge and kinds of other
-good things.
 
-For communicating extra information from the kernel being shut down
-we have elf notes.
 
-Direct kernel to kernel communication is forbidden.  We must have
-a well defined protocol.  Allowing the implementations to change
-at their different speeds, and still work together.
+=2D-=20
+// Michael Monnerie, Ing.BSc    -----      http://it-management.at
+// Tel: 0676/846 914 666                      .network.your.ideas.
+// PGP Key:         "curl -s http://zmi.at/zmi.asc | gpg --import"
+// Fingerprint: AC19 F9D5 36ED CD8A EF38  500E CE14 91F7 1C12 09B4
+// Keyserver: www.keyserver.net                   Key-ID: 1C1209B4
 
->> May be we can have a separate load flag (--load-resume-image) to mark
->> that we are resuming an hibernated image and kexec does not have to
->> prepare commandline, does not have to prepare zero page/setup page etc.
->
-> There is already similar flag in original kexec-tools implementation:
-> "--args-none". If it is specified, kexec-tools does not prepare command
-> line and zero page/setup page etc. I think we can just re-use this flag.
-> And If it is desired an alias is good for me too.
+--nextPart1983773.zTW2VC7L4x
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-My gut feel is we look at the image and detect what kind it is, and simply
-not enable image processing after we have read the note that says it
-is a resumable core or whatever.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
 
->> I have thought through it again and try to put together some of the
->> new kexec options we can introduce to make the whole thing work. I am 
->> considering a simple case where a user boots the kernel A and then
->> launches kernel B using "kexec --load-preseve-context". Now a user
->> might save the hibernated image or might want to come back to A.
->> 
->> - kexec -l <kernel-image>
->>         Normal kexec functionality. Boot a new kernel, without preserving
->>         existing kernel's context.
->> 
->> - kexec --load-preserve-context <kernel-image>
->>         Boot a new kernel while preserving existing kernel's context.
->> 
->>         Will be used for booting kernel B for the first time.
->> 
->> - kexec --load-resume-image <resumable-core>
->
-> In original kexec-tools, this can be done through:
-> kexec -l --args-none <resumable-core>
->
-> Do you need to define an alias for it?
+iD8DBQBH1z9nzhSR9xwSCbQRAsQSAJ0ZGetUp7v4EUndyUCg8c6uE60zVgCg4iaW
+ihNChU3aiPva2Ah2fskujZk=
+=hler
+-----END PGP SIGNATURE-----
 
-Make common cases fast to use.  The UI equivalent of make the
-common case fast.
-
-Eric
-
+--nextPart1983773.zTW2VC7L4x--
