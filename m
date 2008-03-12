@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbYCLXcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbYCLXc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbYCLXcW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYCLXcO
+	id S1756343AbYCLXc5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYCLXct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:32:14 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:58767 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750795AbYCLXcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:32:13 -0400
-Date: Wed, 12 Mar 2008 18:32:10 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org
-Subject: Re: boot cgroup questions
-Message-Id: <20080312183210.33f3910c.pj@sgi.com>
-In-Reply-To: <47D8593A.6040503@qualcomm.com>
-References: <47D73086.2030008@qualcomm.com>
-	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
-	<47D7411E.1000009@qualcomm.com>
-	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
-	<47D74595.4080100@qualcomm.com>
-	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
-	<20080311235939.1ebee8e3.pj@sgi.com>
-	<47D81FE1.6030205@qualcomm.com>
-	<20080312135746.89456f2a.pj@sgi.com>
-	<47D82AD2.1070108@qualcomm.com>
-	<20080312143253.3dd72c7f.pj@sgi.com>
-	<47D83858.4030806@qualcomm.com>
-	<20080312153712.bc5df7a1.pj@sgi.com>
-	<47D8593A.6040503@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 19:32:49 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47523 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750795AbYCLXcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 19:32:48 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18h8hRBFc0hNk5sxjYr+phFSdfDRAZgXJ5FeYAqVf
+	wtpnDjDN/MxhIt
+Date: Thu, 13 Mar 2008 00:32:48 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
+ Reported regressions from 2.6.24)
+In-Reply-To: <20080312231601.GB24820@kroah.com>
+Message-ID: <Pine.LNX.4.64.0803130031190.14097@axis700.grange>
+References: <200803110014.52985.rjw@sisk.pl>
+ <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
+ <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl>
+ <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
+ <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com>
+ <alpine.LFD.1.00.0803121502450.3557@woody.linux-foundation.org>
+ <20080312223431.GA24150@kroah.com> <alpine.LFD.1.00.0803121553070.3557@woody.linux-foundation.org>
+ <20080312231601.GB24820@kroah.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max K wrote:
-> 1. use simple "irq == pseudo-task" concept and potentially brake some existing 
-> software. We do have working solution.
+On Wed, 12 Mar 2008, Greg KH wrote:
 
-Breaking existing software is not what I call working.
+> It oopses at shutdown?  I thought this was originally reported as a
+> "will not power off" which for a while was attributed to the cpufreq fix
+> that went into -rc2 or -rc3.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+As I already replied to Linus, no, it doesn't.
+
+> It would be interesting to see if reverting the pci_bus patch did
+> anything about the fact that we register the root PCI bus through two
+> different methods.
+
+You mean this: http://marc.info/?l=linux-kernel&m=120483340622706&w=2
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
