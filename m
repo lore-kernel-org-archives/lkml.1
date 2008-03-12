@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYCLVNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYCLVUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbYCLVNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYCLVNM
+	id S1754033AbYCLVUz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYCLVUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:13:12 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54418 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752218AbYCLVNL (ORCPT
+	Wed, 12 Mar 2008 17:20:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:32040 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbYCLVUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 17:13:11 -0400
-X-Sasl-enc: xAIaCWcgbAe/tFKX2lPe5Zev3qg9jbww0bPZQEFq24Yn 1205356389
-Date: Wed, 12 Mar 2008 18:13:07 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080312211306.GD30864@khazad-dum.debian.net>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080312193637.GA27873@ics.muni.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 12 Mar 2008 17:20:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=wKWcUY5RAyv9LBbGGnrGB1NsLeFeCh4xBMtCBU+Yv5TihFoAADapMcyMRvfLc+o+KOAYTtUIZcPL7Jhp4eBCW06NhzJgPcIT8dUljO/P6W+RP1vqLb7RYDt+YMp4yT9VIXdZfTa4Rpe2lI69LNqnEPl9n1P2yDmZc/e37pvvwKE=
+Subject: Re: + n_tty-loss-of-sync-following-a-buffer-overflow.patch added
+	to -mm tree
+From: Rupesh Sugathan <rupesh.sugathan@gmail.com>
+Reply-To: rupesh.sugathan@gmail.com
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47D844B5.2090001@microgate.com>
+References: <200803120455.m2C4t4Aw010881@imap1.linux-foundation.org>
+	 <20080312102729.58956d2c@the-village.bc.nu>
+	 <47D7F531.2070400@microgate.com>  <1205339539.8873.14.camel@estonia>
+	 <1205343590.4094.17.camel@x2.microgate.com>
+	 <47D844B5.2090001@microgate.com>
+Content-Type: text/plain
+Date: Wed, 12 Mar 2008 13:54:43 -0700
+Message-Id: <1205355283.8873.29.camel@estonia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
-> On Wed, Mar 12, 2008 at 07:52:41PM +0100, Arkadiusz Miskiewicz wrote:
-> > I'm also seeing regression on my thinkpad z60m where with git tree (tested 
-> > again with 2 days old git) "thinkvantage" button stopped working (pressing it 
-> > was previously seen by some userspace kde which run konsole).
-> > 
-> > On 2.6.24 presses are seen.
-> 
-> well, on 2.6.25-rc4, some keys are not reported as input (xev does not see any
-> key press), some keys are. Is this desired? Or all the keys (fn+f1-12 + volume
-> + backlight + think vantage) should be reported as some input event and thus
-> acpid makes no sense any more?
+> Paul Fulghum wrote:
+> > What I suggest is the following patch for processing NL
+> > in canonical mode.
 
-xev has to get events from somewhere.  That somewhere happens to be a buggy
-mess right now (X.org evdev device).  Or it is getting it through some other
-middleware, like HAL, which can have its own problems.
+I tested the patch in 2.4.x and seems to meet all the discussed
+requirements. 
 
-If you want to test thinkpad-acpi functionality, get HAL and X.org out of
-the way.  The easiest way is to do it in single user mode.
+I have another suggestion to this subject. When the buffer oveflows in
+icaonon mode, it would be *best* if the application either gets a
+complete line or does not get it at all. On a buffer overflow, it would
+be good that the n_tty discard the whole line data in the buffer (part
+of which has overflown) and make more room in the buffer.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Does it make sense to any of you?
+
+--
+Rupesh Sugathan
+
