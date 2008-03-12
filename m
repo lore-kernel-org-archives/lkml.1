@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbYCLNRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYCLNSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbYCLNRv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbYCLNRm
+	id S1753827AbYCLNSJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYCLNRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:17:42 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:36849 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750868AbYCLNRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:17:41 -0400
-X-Sasl-enc: TkOCwbvYY6qcIyoJBBcOKkiEu178HyoAP1uKCkSMwAxO 1205327860
-Date: Wed, 12 Mar 2008 10:17:37 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080312131737.GA21290@khazad-dum.debian.net>
-References: <20080225204951.GB4432@ics.muni.cz> <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk> <47CDBE11.4010900@gmail.com> <20080312125912.GM17940@kernel.dk>
-MIME-Version: 1.0
+	Wed, 12 Mar 2008 09:17:45 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:50262 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751729AbYCLNRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 09:17:44 -0400
+Date: Wed, 12 Mar 2008 16:17:16 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] signals: send_signal: be paranoid about signalfd_notify()
+Message-ID: <20080312131716.GA14324@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080312125912.GM17940@kernel.dk>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Jens Axboe wrote:
-> > >>Please take a look at patches in #10100.
-> > >
-> > >Can you be more specific (eg if you want me to test any/all of them, let
-> > >me know)?
-> > >  
-> > Patch from comment #3 is in -mm at the moment, and has good chance to 
-> > appear in linus tree.
-> > I am trying to invent something less crufty along the lines of comment 
-> > #4, but not succeeded yet.
-> 
-> Updating and doing what the bugzilla entry suggests, that is reverting
-> the offending commit. That makes my brightness controls work, but the
-> volume and mute keys still do not work.
+send_signal() shouldn't call signalfd_notify() if it then fails with -EAGAIN.
+Harmless, just a paranoid cleanup.
 
-Those are not an ACPI business in your thinkpad anymore.  They go over the
-KDC, so we're out of the loop.   That means the bug is fixed completely.
+Also remove the comment. It is obsolete, signalfd_notify() was simplified and
+does a simple wakeup.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 25/kernel/signal.c~3_SS_NOTIFY	2008-03-12 15:16:52.000000000 +0300
++++ 25/kernel/signal.c	2008-03-12 15:55:47.000000000 +0300
+@@ -769,13 +769,6 @@ static int send_signal(int sig, struct s
+ 	 */
+ 	if (legacy_queue(pending, sig))
+ 		return 0;
+-
+-	/*
+-	 * Deliver the signal to listening signalfds. This must be called
+-	 * with the sighand lock held.
+-	 */
+-	signalfd_notify(t, sig);
+-
+ 	/*
+ 	 * fast-pathed signals for kernel-internal things like SIGSTOP
+ 	 * or SIGKILL.
+@@ -825,6 +818,7 @@ static int send_signal(int sig, struct s
+ 	}
+ 
+ out_set:
++	signalfd_notify(t, sig);
+ 	sigaddset(&pending->signal, sig);
+ 	complete_signal(sig, t, group);
+ 	return 0;
+
