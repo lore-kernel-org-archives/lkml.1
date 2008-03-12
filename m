@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752430AbYCLBxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbYCLBzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752430AbYCLBxA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 21:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYCLBwv
+	id S1752783AbYCLBzT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 21:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYCLBzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 21:52:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:59859 "EHLO mail.goop.org"
+	Tue, 11 Mar 2008 21:55:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:22863 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751259AbYCLBwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 21:52:51 -0400
-Message-ID: <47D7372A.1010003@goop.org>
-Date: Tue, 11 Mar 2008 18:51:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <glommer@gmail.com>, shai@scalex86.org
-Subject: Re: 2.6.25-rc5-mm1 (paravirt/vsmp/no PCI)
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <20080311100955.ca113f90.randy.dunlap@oracle.com> <47D6CD04.8060303@goop.org> <20080312001040.GA6434@localdomain>
-In-Reply-To: <20080312001040.GA6434@localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751185AbYCLBzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 21:55:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,483,1199692800"; 
+   d="scan'208";a="217551454"
+Subject: Re: [PATCH -mm] kexec jump -v9
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Vivek Goyal <vgoyal@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <200803120049.06491.rjw@sisk.pl>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	 <20080311211004.GA30164@redhat.com> <20080311232415.GA26320@elf.ucw.cz>
+	 <200803120049.06491.rjw@sisk.pl>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 12 Mar 2008 09:55:37 +0800
+Message-Id: <1205286937.29875.9.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 12 Mar 2008 01:53:51.0336 (UTC) FILETIME=[EB962680:01C883E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravikiran G Thirumalai wrote:
-> Would anyone have objection to have PARAVIRT depend on PCI, since the
-> vsmp paravirt bits depend on PCI cfg space to determine if the system is
-> vsmp?   If not, this patch would suffice.
->   
+On Wed, 2008-03-12 at 00:49 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 12 of March 2008, Pavel Machek wrote:
+[...]
+> > 
+> > Its certainly "more traditional" method of doing hibernation than
+> > tricks swsusp currently plays.
+> 
+> What exactly are you referring to?
 
-NAK.  Xen doesn't depend on PCI at all.   Why not make VSMP depend on 
-PCI?  Then you could put something like:
+Long long ago, the hibernation is not done by Linux kernel itself but
+BIOS (APM). Those days, kernel just does some preparation and jump to
+BIOS to do the hibernation. Imagine kernel B is the hibernation BIOS,
+kernel A does some prepare and jump to the BIOS (kernel B) just like the
+old days.
 
-#ifdef CONFIG_X86_VSMP
-extern void vsmp_init(void);
-extern int is_vsmp_box(void);
-#else
-static inline void vsmp_init(void)
-{
-}
+> > Yes, I'd like these patches to go in, being able to switch kernels seems like
+> > useful tool. 
+> 
+> No objection from me.
+>  
+> > Now, I guess they are some difficulties, like ACPI integration, and
+> > some basic drawbacks, like few seconds needed to boot second kernel
+> > during suspend.
+> > 
+> > ...OTOH this is probably only chance to eliminate freezer from
+> > swsusp...
+> 
+> Some facts:
+> 
+> * In order to be able to do suspend (STR) without the freezer, we need to make
+>   device drivers block access to devices from applications during suspend.
+> * There's no reason to think that we can't use this same mechanism for
+>   hibernation (the only difficulty seems to be the handling of devices used for
+>   saving the image).
 
-static inline int is_vsmp_box(void)
-{
-	return 0;
-}
-#endif
+I think "kexec based hibernation" is the only currently available
+possible method to write out image without freezer (after driver works
+are done). If other process is running, how to prevent them from writing
+to disk without freezing them in current implementation?
 
+> * We need the drivers to quiesce devices to be able to do the kexec jump in the
+>   first place (and to avoid races, we'll need them to block applications'
+>   access to devices just like for STR, which is the sufficient condition for
+>   removing the freezer).
+> 
+> So, I don't really think that the "freezer removal" argument is valid here.
+> 
+> Moreover, if this had been the _only_ argument for the $subject functionality,
+> I'd have been against it.
 
-in an appropriate header.
+Best Regards,
+Huang Ying
 
-Hm, looks like arch/x86/kernel/Makefile should be
-
-obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
-
-
-rather than making it depend directly on CONFIG_PARAVIRT.
-
-    J
