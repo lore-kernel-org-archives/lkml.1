@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYCLOSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYCLOS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYCLOSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 10:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYCLOSD
+	id S1754045AbYCLOS4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 10:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYCLOSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 10:18:03 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:19613 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbYCLOSB (ORCPT
+	Wed, 12 Mar 2008 10:18:47 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51724 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbYCLOSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 10:18:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-disposition:message-id:cc:content-type:content-transfer-encoding;
-        b=Bnu22UfEemL58LZ2JyE1GJs3oqDiLy5bQ4U5Yk+GwkaiY66qE+K8VFomWfZt5vLXoqmRI5ct1yknDu/WqFh6Z1JWq6QOWv1vldlhyByLZvccXywSUyIYlhJo5DksZ1x+O3HbDAbrC8hWgfb+NijudjdH1tPMejEIVlWnhpS40EA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 2/4] ide-tape: remove pipeline-specific code from idetape_add_chrdev_write_request
-Date: Wed, 12 Mar 2008 15:31:58 +0100
-User-Agent: KMail/1.9.9
-References: <1205082632-3418-1-git-send-email-petkovbb@gmail.com> <200803110025.19650.bzolnier@gmail.com> <20080312054156.GC4266@gollum.tnic>
-In-Reply-To: <20080312054156.GC4266@gollum.tnic>
+	Wed, 12 Mar 2008 10:18:46 -0400
+Date: Wed, 12 Mar 2008 09:18:42 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Emelyanov <xemul@openvz.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, menage@google.com, sukadev@us.ibm.com,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-ID: <20080312141842.GE8308@sergelap.austin.ibm.com>
+References: <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com> <47D793AB.6070008@openvz.org> <20080312130904.GB8308@sergelap.austin.ibm.com> <1205327912.23866.228.camel@moss-spartans.epoch.ncsc.mil> <1205328432.23866.233.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803121531.58649.bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1205328432.23866.233.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008, Borislav Petkov wrote:
-
-> > > The remaining pipeline stage allocation code is used for the next current
-> > > pipeline stage (tape->merge_stage) and data buffer for an upcoming
-> > > request. The so allocated pipeline stage is rewired into the tape struct
-> > > thru idetape_switch_buffers() and used during the next request for
-> > > copying user data into it (see e.g. idetape_chrdev_write()). In case the
-> > > allocation fails, the current request is still attempted prior to failing.
-> > 
-> > Is this really needed now that we've removed pipeline operation for write
-> > requests?
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
 > 
-> I did this simply to keep behavior changes at minimum - after removing the
-> pipeline code completely this'll be simplified too.
+> On Wed, 2008-03-12 at 09:18 -0400, Stephen Smalley wrote:
+> > On Wed, 2008-03-12 at 08:09 -0500, Serge E. Hallyn wrote:
+> > > Quoting Pavel Emelyanov (xemul@openvz.org):
+> > > > Greg KH wrote:
+> > > > > On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
+> > > > >> Besides, I've measured some things - the lat_syscall test for open from 
+> > > > >> lmbench test suite and the nptl perf test. Here are the results:
+> > > > >>
+> > > > >>         sec     nosec
+> > > > >> open    3.0980s  3.0709s
+> > > > >> nptl    2.7746s  2.7710s
+> > > > >>
+> > > > >> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
+> > > > >> much, but it is noticeable. Besides, this is only two tests, digging deeper
+> > > > >> may reveal more.
+> > > > > 
+> > > > > I think that is in the noise of sampling if you run that test many more
+> > > > > times.
+> > > > 
+> > > > These numbers are average values of 20 runs of each test. I didn't
+> > > > provide the measurement accuracy, but the abs(open.sec - open.nosec)
+> > > > is greater than it.
+> > > > 
+> > > > >> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
+> > > > >> to the vmlinux...
+> > > > >>
+> > > > >> I think, I finally agree with you and Al Viro, that the kobj mapper is 
+> > > > >> not the right place to put the filtering, but taking the above numbers 
+> > > > >> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
+> > > > >> versions of security_inode_permission/security_file_permission/etc?
+> > > > > 
+> > > > > Ask the security module interface maintainers about this, not me :)
+> > > > 
+> > > > OK :) Thanks for your time, Greg.
+> > > > 
+> > > > So, Serge, since you already have a LSM-based version, maybe you can
+> > > > change it with the proposed "fix" and send it to LSM maintainers for
+> > > > review?
+> > > 
+> > > To take the point of view of someone who neither wants containers nor
+> > > LSM but just a fast box,
+> > > 
+> > > you're asking me to introduce LSM hooks for the !SECURITY case?  :)
+> > > 
+> > > I can give it a shot, but I expect some complaints.  Now at least the
+> > > _mknod hook shouldn't be a hotpath,  and I suppose I can add yet
+> > > an #ifdef inside the !SECURITY version of security_inode_permission().
+> > > I still expect some complaints though.  I'll send something soon.
+> > 
+> > Not sure I'm following the plot here, but please don't do anything that
+> > will prohibit the use of containers/namespaces with security modules
+> > like SELinux/Smack.  Yes, that's a legitimate use case, and there will
+> > be people who will want to do that - they serve different but
+> > complementary purposes (containers are _not_ a substitute for MAC).  We
+> > don't want them to be exclusive of one another.
+> 
+> Also, note that "real" device labeling and access control (i.e. bind a
+> label to a device in the kernel irrespective of what device node is used
+> to access it so that a process that can create any device nodes at all
+> can't effectively bypass all device access controls just by creating an
+> arbitrary node to any device in a type accessible to it) is already
+> called out on our kernel todo list for SELinux, and contributions there
+> would be welcome.  
 
-BTW I see now how poorly I explained things the last time. :(
+I'll take a look at the todo list (James' I assume).  The dev_cgroup lsm
+will have to come first, I'll see about doing the SELinux version as
+well.
 
-[ Sorry for that! ]
-
-Our goal is not "pure" minimal behavior changes but minimal "behavior + code"
-changes - IOW we are searching for the best balance for keeping both the old
-behavior and code changes (and thus patch _complexity_) at the minimal level.
-
+thanks,
+-serge
