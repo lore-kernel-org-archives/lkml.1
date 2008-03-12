@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYCLWd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYCLWeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbYCLWd1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYCLWdS
+	id S1755932AbYCLWeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYCLWeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:33:18 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47766 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbYCLWdR (ORCPT
+	Wed, 12 Mar 2008 18:34:09 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:38489 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753083AbYCLWeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:33:17 -0400
-Date: Wed, 12 Mar 2008 16:33:00 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on powerpc
-Message-ID: <20080312223300.GE613@parisc-linux.org>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D7D2C9.4090001@linux.vnet.ibm.com> <20080312104645.34e58319.akpm@linux-foundation.org> <20080312175102.GC613@parisc-linux.org> <1205360769.7436.8.camel@concordia.ozlabs.ibm.com>
+	Wed, 12 Mar 2008 18:34:08 -0400
+Date: Wed, 12 Mar 2008 22:33:55 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: torvalds@osdl.org, stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH,TRIVIAL] Fix default compose table initialization
+Message-ID: <20080312223355.GB4442@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Chris Wright <chrisw@sous-sol.org>, torvalds@osdl.org,
+	stable@kernel.org, linux-kernel@vger.kernel.org
+References: <20080303012349.GA12338@implementation> <20080312212004.GD4416@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1205360769.7436.8.camel@concordia.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080312212004.GD4416@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 09:26:09AM +1100, Michael Ellerman wrote:
-> down() looks OK, but there's still a spin_lock_irq() in __down_common(),
-> although I don't know if it makes sense for us to be in __down() at that
-> stage.
+Chris Wright, le Wed 12 Mar 2008 14:20:04 -0700, a écrit :
+> * Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
+> > Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
+> > 0300...  This fixes the default unicode compose table by using integers
+> > instead of character constants.
+> 
+> I think this patch breaks the s390 build, no?
 
-The spin_lock_irq in __down_common is correct.  We're going to schedule(),
-so we spin_unlock_irq() to save us passing the flags into the helper
-function.  If we had interrupts disabled on entry, there's an Aieee
-for that.
+Yes, that was reported and fixed iirc.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Samuel
