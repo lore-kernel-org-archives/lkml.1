@@ -1,62 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbYCLQBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbYCLQDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbYCLQBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYCLQB0
+	id S1752178AbYCLQDN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYCLQC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:01:26 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42601 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbYCLQBZ (ORCPT
+	Wed, 12 Mar 2008 12:02:59 -0400
+Received: from dip4-fw.champ.corp.yahoo.com ([64.198.211.64]:47621 "EHLO
+	enemycanmeet.champ.corp.yahoo.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751028AbYCLQC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:01:25 -0400
-Message-ID: <47D7FE4D.5090107@s5r6.in-berlin.de>
-Date: Wed, 12 Mar 2008 17:01:17 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
-MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH update] firewire: debug AT, AR, and selfID-complete events
-References: <tkrat.f96c4067f6a48f4a@s5r6.in-berlin.de>	<tkrat.ebca3f78fa768606@s5r6.in-berlin.de>	<47D79F3E.60803@s5r6.in-berlin.de> <200803121034.39583.jwilson@redhat.com>
-In-Reply-To: <200803121034.39583.jwilson@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 12:02:58 -0400
+X-Greylist: delayed 578 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 12:02:58 EDT
+Date: Wed, 12 Mar 2008 10:51:53 -0500
+From: Quentin Barnes <qbarnes+linux@yahoo-inc.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Zach Brown <zach.brown@oracle.com>
+Subject: [PATCH] aio: Bad AIO race in aio_complete() leads to process hang
+Message-ID: <20080312155153.GA28462@yahoo-inc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> Want to do that as a later follow-up patch, or roll it into this one and post 
-> another update?
+My group ran into a AIO process hang on a 2.6.24 kernel with the
+process sleeping indefinitely in io_getevents(2) waiting for the
+last wakeup to come and it never would.
 
-I haven't committed to linux1394-2.6.git, hence I prefer to post an
-update rather than incremental patch.
+We ran the tests on x86_64 SMP.  The hang only occurred on a Xeon box
+("Clovertown") but not a Core2Duo ("Conroe").  On the Xeon, the L2
+cache isn't shared between all eight processors, but is L2 is
+shared between between all two processors on the Core2Duo we use.
 
-> (I'm fully prepared to sign off on either way after having 
-> extensively used these patches the past several days...)
+My analysis of the hang is if you go down to the second while-loop
+in read_events(), what happens on processor #1:
+	1) add_wait_queue_exclusive() adds thread to ctx->wait
+	2) aio_read_evt() to check tail
+	3) if aio_read_evt() returned 0, call [io_]schedule() and sleep
 
-BTW, if I get sign-offs/ acks/ test feedback on a patch before another
-patch update (but not before committing the final version to the
-upstream submission branch), I add those sign-offs etc. like this
+In aio_complete() with processor #2:
+	A) info->tail = tail;
+	B) waitqueue_active(&ctx->wait)
+	C) if waitqueue_active() returned non-0, call wake_up()
 
-    S-o-b: Someone
-    S-o-b: Me (modified whitespace or something else trivial)
+The way the code is written, step 1 must be seen by all other
+processors before processor 1 checks for pending events in step 2
+(that were recorded by step A) and step A by processor 2 must be
+seen by all other processors (checked in step 2) before step B
+is done.
 
-or this
+The race I believed I was seeing is that steps 1 and 2 were
+effectively swapped due to the __list_add() being delayed by the L2
+cache not shared by some of the other processors.  Imagine:
+proc 2: just before step A
+proc 1, step 1: adds to ctx->wait, but is not visible by other processors yet
+proc 1, step 2: checks tail and sees no pending events
+proc 2, step A: updates tail
+proc 1, step 3: calls [io_]schedule() and sleeps
+proc 2, step B: checks ctx->wait, but sees no one waiting, skips wakeup
+                so proc 1 sleeps indefinitely
 
-    Initial changelog
+My patch adds a memory barrier between steps A and B.  It ensures
+that the update in step 1 gets seen on processor 2 before
+continuing.  If processor 1 was just before step 1, the memory
+barrier makes sure that step A (update tail) gets seen by the time
+processor 1 makes it to step 2 (check tail).
 
-    S-o-b: Someone
+Before the patch our AIO process would hang virtually 100% of the
+time.  After the patch, we have yet to see the process ever hang.
 
-    Changelog post scriptum
+I ran this patch and the analysis by the AIO mailing list
+(linux-aio@kvack.org).  Zach Brown agreed and suggested I go ahead
+and post the patch on here on linux-kernel.
 
-    S-o-b: Me
 
-provided that the update only marginally changes the patch or can be
-clearly distinguished from the formerly signed off parts.  Of course if
-I get sign-offs etc. on the final version of the patch
--- 
-Stefan Richter
--=====-==--- --== -==--
-http://arcgraph.de/sr/
+Signed-off-by: Quentin Barnes <qbarnes+linux@yahoo-inc.com>
+Reviewed-by: Zach Brown <zach.brown@oracle.com>
+
+
+diff --git a/fs/aio.c b/fs/aio.c
+index b74c567..6af9219 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -996,6 +996,14 @@ put_rq:
+ 	/* everything turned out well, dispose of the aiocb. */
+ 	ret = __aio_put_req(ctx, iocb);
+ 
++	/*
++	 * We have to order our ring_info tail store above and test
++	 * of the wait list below outside the wait lock.  This is
++	 * like in wake_up_bit() where clearing a bit has to be
++	 * ordered with the unlocked test.
++	 */
++	smp_mb();
++
+ 	if (waitqueue_active(&ctx->wait))
+ 		wake_up(&ctx->wait);
+ 
