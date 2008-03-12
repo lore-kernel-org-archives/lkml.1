@@ -1,131 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYCLN4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYCLN67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbYCLN4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYCLN4Y
+	id S1753905AbYCLN67 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYCLN6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:56:24 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:55265 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754257AbYCLN4W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:56:22 -0400
-Message-ID: <47D7E0D1.8050403@panasas.com>
-Date: Wed, 12 Mar 2008 15:55:29 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 12 Mar 2008 09:58:51 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57947 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751626AbYCLN6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 09:58:50 -0400
+Date: Wed, 12 Mar 2008 13:58:46 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH rc5-mm1 2/3] just return do_try_to_free_pages
+Message-ID: <20080312135846.GB6072@csn.ul.ie>
+References: <Pine.LNX.4.64.0803112108470.17067@blonde.site> <Pine.LNX.4.64.0803112112310.17067@blonde.site>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] isd200: Fix memory leak in isd200_get_inquiry_data
-References: <Pine.LNX.4.44L0.0803111456590.26916-100000@iolanthe.rowland.org> <47D7D580.5060406@panasas.com>
-In-Reply-To: <47D7D580.5060406@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803112112310.17067@blonde.site>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12 2008 at 15:07 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> On Tue, Mar 11 2008 at 21:18 +0200, Alan Stern <stern@rowland.harvard.edu> wrote:
->> On Tue, 11 Mar 2008, Boaz Harrosh wrote:
->>
->>>> You can first get to the scsi_device in isd200_ata_command().  
->>> I was afraid of that. I don't think I want to call scsi_get_command
->>> from within .queuecommand. I will leave the code hacked as today.
->> What are you talking about?  isd200_ata_command isn't called by 
->> queuecommand.
->>
->>>> The last
->>>> place you can get to the scsi_device (if one exists!) is
->>>> quiesce_and_remove_host() -- but that's part of the core, not specific
->>>> to isd200.
->>>>
->>> Here two, it looks like I need to introduce a new function pointer for isd200
->> Why?  And why do you need to get to the scsi_device in the first place?
->>
->>> I'll leave it for now. Though I know this is not the last I'll see of this driver.
->>>
+On (11/03/08 21:14), Hugh Dickins didst pronounce:
+> do_try_to_free_pages returns 0 or 1, and try_to_free_mem_cgroup_pages
+> returns 0 or 1 accordingly: let's accomplish that in the obvious way.
 > 
-> OK Now I see isd200_ata_command() is called from a usb.c internal thread.
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+
+Looks right, it means it's behaviour closer matches try_to_free_pages()
+which is a bonus.
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> ---
 > 
-> What I need to do is call scsi_get_command(scsi_device*) on first invocation.
-> Now for the call to scsi_put_command()? At the time of the call to 
-> isd200_free_info_ptrs() do you think I still have a valid scsi_device at this point?
+>  mm/vmscan.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 > 
-> What I will do is this. I will resend my original patch with your comments
-> fixed. This is for the 2.6.25-rc. And I will send another patch that uses
-> the proper scsi_get/put_command() for testing and inclusion into the 2.6.26 kernel.
-> Please ACK on the patch
-> 
->>>>> (And one more stupid question. Why does isd200_init_info allocates the info 
->>>>> structure but the isd200_free_info_ptrs does not free it, it kind of
->>>>> limits the way it can be allocated, no?)
->>>> Not at all.  isd200_free_info_ptrs() frees everything pointed to by the
->>>> info structure, and the info structure itself is freed later on by the
->>>> usb-storage core in usb_stor_release_resources().
->>>>
->>> OK so in isd200_get_inquiry_data() at the end near the call to:
->>> 			us->extra_destructor(info);
->>> 			us->extra = NULL;
->>>
->>> It leaks the info.
->> Yes.  The three lines of code there are unnecessary.  You should remove
->> them (and the comment) instead of adding more somewhere else.  Or if
->> you want to keep them, just add a line to kfree(us->extra) before 
->> us->extra is set to NULL.
-> 
-> How are they unnecessary? who will free them? other wise they will only be
-> freed at the very end. And that is only because usb_stor_transparent_scsi_command()
-> does not need any us->extra of it's own. But if ever it will, then this code
-> buried here will become a leak.
-> 
-> And I disagree. with your solution. The module that did the allocation should
-> do the freeing. The above is just an example of what happens with bad programing
-> style. the core should not have attempted a free on a void pointer just so
-> protocols can get lazy and not register a destructor. Other wise we do not
-> learn from passed mistakes and keep doing the same errors. The free should
-> always be at same file right next to the alloc. (And don't get me started
-> on the flexibility that enables)
-> 
-> I keep the patch as it is, I recommend to commit it for solving the leak.
+> --- 2.6.25-rc5-mm1+/mm/vmscan.c	2008-03-11 20:09:05.000000000 +0000
+> +++ linux/mm/vmscan.c	2008-03-11 20:15:47.000000000 +0000
+> @@ -1457,9 +1457,7 @@ unsigned long try_to_free_mem_cgroup_pag
+>  	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
+>  			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
+>  	zonelist = NODE_DATA(numa_node_id())->node_zonelists;
+> -	if (do_try_to_free_pages(zonelist, sc.gfp_mask, &sc))
+> -		return 1;
+> -	return 0;
+> +	return do_try_to_free_pages(zonelist, sc.gfp_mask, &sc);
+>  }
+>  #endif
+>  
 > 
 
-rrr only I cannot do that because the destructor does not have access to the us_data
-that contains it. As I said, very ugly. New patch attached.
-
-Boaz
----
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Tue, 11 Mar 2008 20:30:53 +0200
-Subject: [PATCH] isd200: Fix memory leak in isd200_get_inquiry_data
-
-if the inquiry fails then the info structure on
-us->extra was not freed.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/usb/storage/isd200.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
-index ac1764b..2de1f1e 100644
---- a/drivers/usb/storage/isd200.c
-+++ b/drivers/usb/storage/isd200.c
-@@ -1231,6 +1231,7 @@ static int isd200_get_inquiry_data( struct us_data *us )
- 	    
- 			/* Free driver structure */	    
- 			us->extra_destructor(info);
-+			kfree(info);
- 			us->extra = NULL;
- 			us->extra_destructor = NULL;
- 		}
 -- 
-1.5.3.3
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
