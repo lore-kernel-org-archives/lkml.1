@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYCLRIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbYCLRNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbYCLRIT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbYCLRIK
+	id S1752318AbYCLRNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYCLRNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:08:10 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:2681 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbYCLRIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:08:09 -0400
-Date: Wed, 12 Mar 2008 18:08:02 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Dave Jones <davej@codemonkey.org.uk>, Zhao Yakui <yakui.zhao@intel.com>,
-       Li Shaohua <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PNP: increase the maximum number of resources
-Message-ID: <20080312170802.GA10606@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Dave Jones <davej@codemonkey.org.uk>,
-	Zhao Yakui <yakui.zhao@intel.com>,
-	Li Shaohua <shaohua.li@intel.com>,
-	Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20080312151452.GA4523@codemonkey.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080312151452.GA4523@codemonkey.org.uk>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 12 Mar 2008 13:13:08 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:40332 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbYCLRNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 13:13:06 -0400
+Message-ID: <47D80F13.7040304@pobox.com>
+Date: Wed, 12 Mar 2008 13:12:51 -0400
+From: Mark Lord <mlord@pobox.com>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>, mlord@pobox.com, kristen.c.accardi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [regression] pciehp hang on hp ia64 rx6600
+References: <20080312064755.GA31493@ldl.fc.hp.com>
+In-Reply-To: <20080312064755.GA31493@ldl.fc.hp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 11:14:52AM -0400, Dave Jones wrote:
-> In commit a7839e960675b549f06209d18283d5cee2ce9261 the number of PNP resources
-> was increased.  In testing, we've found that the 'exceeded' warnings still get
-> hit with quite high frequency. See https://bugzilla.redhat.com/show_bug.cgi?id=436589
-> for examples.
+Alex Chiang wrote:
+> Hi Mark, Kristin,
 > 
-> I added the debug patch below, which yielded an interesting output.
+> On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
+> system hang on 2.6.25-rc4. My system often hangs when only pciehp
+> is loaded and my console is sitting idle, but I can accelerate
+> the hang 100% of the time by immediately doing a 'modprobe
+> acpiphp' right afterwards.
 > 
-> pnpacpi: exceeded the max number of mem resources. Max:12 Found:12
+> I have bisected the hang down to this commit:
 > 
-> off by one somewhere ?
+> 0a3c33d77ff7ad5b988997536a8f09c49e35ad20 is first bad commit
+> commit 0a3c33d77ff7ad5b988997536a8f09c49e35ad20
+> Author: Mark Lord <lkml@rtr.ca>
+> Date:   Wed Nov 28 15:11:28 2007 -0800
+> 
+>     PCIE: fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks (and others?) in conjunction with modparam of pciehp_force=1.
+..
 
-No, your patch is just not giving out any additional information.  'i'
-is the number of currently allocated resources, not the number asked
-for.  That number does not exist anywhere at that point as far as I
-can see, you'll have to add a counter for it.
+In this case, the bisection is probably not perfect,
+because that original patch had a couple of bugs that
+were fixed by a subsequent follow-up patch.
 
-That looks valid for every resource type btw.
+It is all rather fuzzy right now, because this work was all completed
+at the merge window for the *previous* kernel, but has now sat bit-rotting
+for nearly 6 months since I last looked at it.
 
-  OG.
+That said, I'm building the latest 2.6.25-rc* to retest with here,
+and hopefully we can work this out without much more fuss.
 
+Cheers
+-- 
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com
