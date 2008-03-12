@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbYCLGJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYCLGWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbYCLGJA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 02:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYCLGIt
+	id S1752565AbYCLGWy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 02:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYCLGWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 02:08:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33531 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751333AbYCLGIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 02:08:48 -0400
-Date: Tue, 11 Mar 2008 23:08:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] devres: implement pcim_iomap_regions_request_all()
-Message-Id: <20080311230825.fd631e29.akpm@linux-foundation.org>
-In-Reply-To: <47D6643A.6060001@gmail.com>
-References: <47D6643A.6060001@gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 02:22:44 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:52990 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751882AbYCLGWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 02:22:43 -0400
+Date: Tue, 11 Mar 2008 23:21:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+In-Reply-To: <20080311071330.GA20271@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0803112316090.4794@schroedinger.engr.sgi.com>
+References: <20080303200355.GB8974@wotan.suse.de>
+ <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
+ <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
+ <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+ <20080307043700.GI21185@wotan.suse.de> <Pine.LNX.4.64.0803062108210.1143@schroedinger.engr.sgi.com>
+ <20080307051944.GJ21185@wotan.suse.de> <Pine.LNX.4.64.0803062120410.1215@schroedinger.engr.sgi.com>
+ <20080311071330.GA20271@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008 19:51:38 +0900 Tejun Heo <htejun@gmail.com> wrote:
+On Tue, 11 Mar 2008, Nick Piggin wrote:
 
-> Some drivers need to reserve all PCI BARs to prevent other drivers
-> misusing unoccupied BARs.  pcim_iomap_regions_request_all() requests
-> all BARs and iomap specified BARs.
+> On Thu, Mar 06, 2008 at 09:26:24PM -0800, Christoph Lameter wrote:
+> > Internode alignment is 4k. If you need an object aligned like that then it 
+> > may be better to go to the page allocator.
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Cc: Jeff Garzik <jeff@garzik.org>
-> ---
-> After acked, it's probably best to push this through libata-dev as
-> that's the only user for now.
-> 
-> Thanks.
-> 
->  lib/devres.c |   25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
-> 
-> Index: work/lib/devres.c
-> ===================================================================
-> --- work.orig/lib/devres.c
-> +++ work/lib/devres.c
-> @@ -298,6 +298,31 @@ int pcim_iomap_regions(struct pci_dev *p
->  EXPORT_SYMBOL(pcim_iomap_regions);
->  
->  /**
-> + * pcim_iomap_regions_request_all - Request all BARs and iomap specified ones
-> + * @pdev: PCI device to map IO resources for
-> + * @mask: Mask of BARs to iomap
-> + * @name: Name used when requesting regions
-> + *
-> + * Request all PCI BARs and iomap regions specified by @mask.
-> + */
-> +int pcim_iomap_regions_request_all(struct pci_dev *pdev, u16 mask,
-> +				   const char *name)
-> +{
-> +	int request_mask = ((1 << 6) - 1) & ~mask;
-> +	int rc;
-> +
-> +	rc = pci_request_selected_regions(pdev, request_mask, name);
-> +	if (rc)
-> +		return rc;
-> +
-> +	rc = pcim_iomap_regions(pdev, mask, name);
-> +	if (rc)
-> +		pci_release_selected_regions(pdev, request_mask);
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL(pcim_iomap_regions_request_all);
-> +
-> +/**
+> I never got a reply about this. Again: how can the modern slab allocator
+> avoid the need for internode alignment in order to prevent cacheline
+> pingpong on vsmp? Because I'm going to resubmit the SMP_ALIGN patch.
 
-err, I think you lost a bit.
+You quoted my answer. Use the page allocator to allocate data that has an 
+alignment requirement on a 4k boundary.
 
-drivers/ata/ahci.c: In function 'ahci_init_one':
-drivers/ata/ahci.c:2247: error: implicit declaration of function 'pcim_iomap_regions_request_all'
+> Also, the last I heard about the HWCACHE_ALIGN from you is that it didn't
+> make sense... I see it's merged now, which I appreciate, but I think it is
+> really important that we're on the same page here, so let me know if it
+> still doesn't make sense.
 
---- a/include/linux/io.h~devres-implement-pcim_iomap_regions_request_all-fix
-+++ a/include/linux/io.h
-@@ -65,5 +65,7 @@ void __iomem * devm_ioremap_nocache(stru
- void devm_iounmap(struct device *dev, void __iomem *addr);
- int check_signature(const volatile void __iomem *io_addr,
- 			const unsigned char *signature, int length);
-+int pcim_iomap_regions_request_all(struct pci_dev *pdev, u16 mask,
-+			const char *name)
- 
- #endif /* _LINUX_IO_H */
-_
-
+I still think that the semantics are weird because it only works sometimes 
+and then performs an alignment within a cacheline that improves the 
+situation somewhat in some cases but does not give the user what he 
+expected.
