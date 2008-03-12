@@ -1,117 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbYCLNA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYCLNC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975AbYCLNA2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYCLNAS
+	id S1753330AbYCLNC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYCLNCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:00:18 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40186 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbYCLNAQ (ORCPT
+	Wed, 12 Mar 2008 09:02:19 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43697 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751521AbYCLNCS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:00:16 -0400
-Message-ID: <47D7D395.4070909@jp.fujitsu.com>
-Date: Wed, 12 Mar 2008 21:59:01 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 12 Mar 2008 09:02:18 -0400
+Date: Wed, 12 Mar 2008 13:02:16 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
+Message-ID: <20080312130216.GA26583@rakim.wolfsonmicro.main>
+Mail-Followup-To: David Brownell <david-b@pacbell.net>,
+	Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <200803111525.10717.david-b@pacbell.net> <20080312000044.GA30908@sirena.org.uk> <200803120031.59742.david-b@pacbell.net>
 MIME-Version: 1.0
-To: kristen.c.accardi@intel.com
-CC: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-       warthog19@eaglescrag.net, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-References: <20080229002341.GA21420@ldl.fc.hp.com>	<20080301144307.GD24386@parisc-linux.org>	<20080304054927.GA15566@suse.de>	<200803041018.29035.jbarnes@virtuousgeek.org>	<20080304193036.GB5534@suse.de>	<20080304230937.GD3694@ldl.fc.hp.com>	<47CDF339.3060304@jp.fujitsu.com>	<20080305202052.GN3694@ldl.fc.hp.com>	<47D684D0.6060200@jp.fujitsu.com> <20080311163411.7ddd9267@appleyard>
-In-Reply-To: <20080311163411.7ddd9267@appleyard>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803120031.59742.david-b@pacbell.net>
+X-Cookie: Marriage is the sole cause of divorce.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> On Tue, 11 Mar 2008 22:10:40 +0900
-> Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
-> 
->> Hi Alex-san,
->>
->> I tried your patches, and I have two comments. I want 1) to be fixed
->> before merge to Greg's tree (or linux-next?), at least.
-> 
-> yes, we will not merge these patches without your ack.
-> 
->>  1) I checked ACPI spec again and again, but I could not find any
->>     reason to add Fujitsu servers to quirks list. So I'd like you to
->>     add HP servers to the quirks list. I'll send the following patches
->>     followed by this e-mail.
-> 
-> I have followed up with a question on this on another thread, so I'll
-> skip to #2...
-> <snip>
-> 
->>  2) The ACPI PCI slot detection driver would change the slot names of
->>     some hotplug drivers (at least I checked shpchp and pciehp). And
->>     the name of slots are depending on the order of driver loading.
->>     For example, on my system which has several SHPCHP slots and
->>     PCIEHP slots, the name of PCIEHP slots are changed as
->>     follows. Please note that PCIEHP based slots are 0034_0027 and
->>     0032_0026, and others are SHPCHP based slots.
->>
->>     - Without ACPI PCI slot detection driver
->>       # ls /sys/bus/pci/slots/
->>       0009_0016  0014_0018  0019_0020  0021_0022  0034_0027
->>       0011_0017  0016_0019  0021_0021  0032_0026
->>
->>     - With ACPI PCI slot detection driver
->>       # ls /sys/bus/pci/slots/
->>       0009_0016  0014_0018  0019_0020  0021_0022  27
->>       0011_0017  0016_0019  0021_0021  26
->>
->>     I had thought it is not a big problem before because people who
->>     don't like new names would not load the PCI slot driver. But since
->>     it is loaded automatically at boot time, I'm wondering that it
->>     would be a problem. For example, some platform, not fujitsu,
->>     depends on the old slot name to work, IIRC (Maybe Kristen knows
->>     the background about it). And I don't think the fact that slot
->>     names are changed depending on the order of driver loading is
->>     acceptable by system management people/software, though I don't
->>     have such software.
->>
->>     Though I don't have any specific idea about this, folliwings might
->>     be candidates.
->>
->>     - Override slot names with hotplug driver's slot names
-> 
-> I think this should be done - if the pci slot driver detects that a
-> hotplug driver is controlling a slot, it should allow that driver to
-> set the name of the slot.
-> 
+On Tue, Mar 11, 2008 at 11:31:59PM -0800, David Brownell wrote:
+> On Tuesday 11 March 2008, Mark Brown wrote:
 
-Yes, it is what I thought.
-But maybe we should try unifying slots names first, I think.
+> > It's also common for devices to have multiple power inputs which can be
+> > run separately if required but which are normally tied together unless
+> > there is a special reason to do so.
 
->>     - Unify slot names among all hotplug drivers
-> 
-> I'm not sure if we can do this, since slot name might depend on what
-> spec people are implementing.
->
+> I've not happened across that idiom.  Is that common on
+> particular larger systems?
 
-I'm not sure too. But I think we can unify the slot names using the
-combination of chassis number and slot number among the controllers
-which is based on PCI Hot-Plug spec.
+It's standard on the analogue side of audio codecs, for example.
 
->>     - Stop automatic loading of ACPI PCI slot driver
-> 
-> I think we should definitely implement this one ^^^.
-> 
+> > This is pretty much the model that is currently implemented.
 
-Yes. It's the simplest workaround.
+> Then the tree should be a bit more of a first class citizen,
+> IMO, like it is in the clock framework.  Both clock and power
+> distribution have similar hardware infrastructure; the software
+> interfaces can be more similar than it is.
 
-BTW, I'll be out of office tomorrow. So replying to this discussion
-will be delayed. I'm sorry about that.
+What do you see as being missing in the externally presented interface?
+As far as I can see the main difference between the two APIs on this
+front is that the regulator API explicitly separates the interface used
+to set up the tree from the interface used by consumers.
 
-Thanks,
-Kenji Kaneshige
+> > A given 
+> > power management IC can have several regulators (that is, things which
+> > have regulator IDs registered and can supply power). 
 
+> Those are the outputs.  Are the inputs visible?  Like batteries
+> or loosely regulated DC voltages ... drivers/power/* stuff.
+
+Not as part of this API at present unless the input is another
+regulator, though obviously drivers could set up associations in the
+device tree.
+
+> > Each regulator can 
+> > have multiple clients bound to it (that is, things that have called
+> > regulator_get() and can consume power). 
+
+> In the clock framework, clk_get_parent() exposes one part of this
+> relationship.  But there's also the association of logical clock
+> names to devices ... 
+
+Right, though that does tend to break down when clocks go off chip - the
+association of devices with symbolic names is generally only done for
+things that are hard wired as part of the same chip since the devices
+are registered along with the clock.   Other clocks generally just get
+the name that the chip documents for them.  Indeed, looking around the
+tree almost all current use of clock API appears to be for on-SoC devices.
+
+Unless I'm missing something the obvious way to provide off-chip
+symbolic names in the clock API is for board code to register a virtual
+clock with the desired name and device and parent it off the actual
+clock source.  That said I can't immediately find any actual uses of that
+and at least some of the implementations I've seen wouldn't support it.
+A similar approach should work here, though I'm not sure it's terribly
+nice.
+
+What might be nicer would be an API that platform code could use to map
+regulators to device/name tuples.  The core could then search these when
+a client calls regulator_get() (either by maintaining a separate table
+or by setting up virtual regulators).
+
+> > While the leaf enable/disable operations do happen at the client level
+> > the core reference counts the enabled clients to control enabling of the
+> > actual supply.
+
+> Right.  But what I was getting at was that there can be
+> domains hooked up like:
+
+>     Power --> Regulator -+-> Switch-1 -+-> Switch-2 --> [Dev-A]
+>                          |             |
+>                          |             +-> [Dev-B], [Dev-C]
+>                          |
+>                          +-> [Dev-D], [Dev-E]
+
+> Those switches can be as simple as a MOSFET under GPIO control.
+
+> And I'd expect power domains under Linux to be able to represent
+> all of those ... including software controls wherevever they're
+> practical, which in this case might include everything except the
+> battery input.
+
+I don't see a particular problem fitting this into the structure of
+the current API - to me the switches inflexible regulators with no
+configurable voltage control of their own.  The core would need to be
+enhanced a bit to cope with passing through the configurability of the
+parent regulator when a child has no get/set operations of its own but
+that doesn't need to be visible to anything except the non-configurable
+regulators.
