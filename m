@@ -1,101 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYCLSQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYCLSWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbYCLSQZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 14:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYCLSQR
+	id S1753442AbYCLSWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 14:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYCLSWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 14:16:17 -0400
-Received: from asterix.m2000.com ([212.155.102.83]:3106 "EHLO
-	asterix.m2000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbYCLSQQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 14:16:16 -0400
-Message-ID: <47D81DE4.5040303@m2000.com>
-Date: Wed, 12 Mar 2008 11:16:04 -0700
-From: Adam Schrotenboer <adam@m2000.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 12 Mar 2008 14:22:03 -0400
+Received: from khc.piap.pl ([195.187.100.11]:41553 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751681AbYCLSWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 14:22:01 -0400
+To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: WAN: new PPP code for generic HDLC
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 12 Mar 2008 19:21:55 +0100
+Message-ID: <m3prtzsszg.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Thomas Daniel <tdaniel@m2000.com>,
-       jesper.juhl@gmail.com, Fred Revenu <frevenu@m2000.com>
-Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
-References: <47CF0829.4020502@m2000.com>	<1204752463.5035.34.camel@heimdal.trondhjem.org>	<47CF157B.1010908@m2000.com>	<18383.24847.381754.517731@notabene.brown>	<47CF62C5.7000908@m2000.com> <18384.50909.866848.966192@notabene.brown>	<47D0D8B5.6050403@m2000.com>  <47D818FB.8080302@m2000.com> <1205345284.9419.8.camel@heimdal.trondhjem.org>
-In-Reply-To: <1205345284.9419.8.camel@heimdal.trondhjem.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5BE7FD79FB07E04B58B7B750"
-X-Antivirus: avast! (VPS 080311-0, 03/11/2008), Outbound message
-X-Antivirus-Status: Clean
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5BE7FD79FB07E04B58B7B750
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Trond Myklebust wrote:
-> On Wed, 2008-03-12 at 10:55 -0700, Adam Schrotenboer wrote:
->  =20
->> Another excerpt from last night.
->>
->> Mar 12 00:53:16 wanda kernel: nfs: server 192.168.1.27 not responding,=
-=20
->> still trying
->> Mar 12 00:53:18 wanda kernel: nfs: server 192.168.1.27 OK
->> Mar 12 00:54:29 wanda kernel: nfs_update_inode: inode 1075049148 mode =
+I'll follow up with a patch for generic HDLC PPP code.
 
->> changed, 0040755 to 0100644
->>    =20
->
-> Hang on. That does not look like an XID collision problem...
->
-> That code path basically means that the fileids/inode numbers match,
-> which would not be the case if we were talking about an XID collision
-> causing the reply cache to replay an old request...
->
-> That message rather symptomatic of a filehandle reuse problem. In other=
+Current status of generic HDLC is:
+- up to 2.6.22 - working.
+- 2.6.23.* and 2.6.24.* - Frame Relay and PPP protocols panic instantly,
+  breakage caused by a change to netdev code that I overlooked.
+- 2.6.25-git - Frame Relay is already fixed, PPP still panics.
 
-> words a NFS filehandle appears to be reused to label a regular file
-> after it has been used for a directory with the same fileid/inode
-> number. That is a definite server bug.
->
-> Are you sure that you are using the regular kernel nfs server?
->
->  =20
-Quite. OpenSuSE 10.2 stock unmodified kernel.
+The fix to FR was simple (983e23041b28abb113862b2935a85cfb9aab4f5a).
 
-dolphin:~ # uname -a
-Linux dolphin 2.6.18.2-34-default #1 SMP Mon Nov 27 11:46:27 UTC 2006=20
-x86_64 x86_64 x86_64 GNU/Linux
+PPP has been using syncppp.c implementation for years, meaning working
+as a mid-layer between hardware drivers and syncppp. This situation is
+increasingly hard to maintain, and I've decided to write a dedicated
+PPP implementation for generic HDLC.
 
-dolphin:~ # top -bn1 |grep nfsd
+Rationale:
+- syncppp assumes no mid-layer between itself and hw drivers - dirty
+  hacks must be used to work around this
+- syncppp doesn't even try to implement PPP correctly, it looks like
+  it was written to work with another specific implementation and then
+  left in this state for *teen years
+- every protocol (LCP and IPCP) uses different state machine code.
+- lack of IPv6 support and adding it is non-trivial.
+- I've considered using the generic PPP stack, however it's oriented
+  towards async tty and requires the pppd daemon - I guess code to
+  interface to it would be more complicated than the new PPP code.
 
+The PPP state machine is distributed over many functions and this is
+extremely hard to maintain or even understand. No wonder it's not very
+standard-compliant.
 
-  PID  PPID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAN=
-D
- 3916     1 root      15   0     0    0    0 S    0  0.0   3:04.42 nfsd
- 3942     1 root      15   0     0    0    0 S    0  0.0   3:11.88 nfsd
-(there's quite a bit more of these threads than this (32), but they all=20
-look the same in top or ps)
+Instead my new implementation has:
+- a single state machine code for all control protocols (LCP, IPCP,
+  IPV6CP, and whatever is needed)
+- it's modelled after STD-51
+- even more minimalistic than syncppp (no "magic number"), though
+  adding optional support (if needed) is simple.
+- can actually be maintained.
 
+I have positively tested it on i686 and big-endian ARM, against itself
+and against syncppp.c. I can't test it against any other device due to
+-ENOHW, so I expect some bugs/problems in/with this code, though I hope
+it's better than the current brokenness.
 
-
---------------enig5BE7FD79FB07E04B58B7B750
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFH2B3kyWYDdvnGArwRAm4XAJ9KOX7o3+qns7jvH04eiXOWCxTyIQCfZHTN
-Qo7L6AtD7GzZyDVFRjZNxJU=
-=4eHi
------END PGP SIGNATURE-----
-
---------------enig5BE7FD79FB07E04B58B7B750--
+I guess it should go into 2.6.25, not sure about "stable" series.
+I will appreciate any feedback, review and/or test results.
+-- 
+Krzysztof Halasa
