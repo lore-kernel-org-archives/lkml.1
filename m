@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYCMKZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYCMKZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYCMKZK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 06:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYCMKY6
+	id S1753136AbYCMKZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 06:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbYCMKZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 06:24:58 -0400
-Received: from www.tglx.de ([62.245.132.106]:40346 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbYCMKY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 06:24:57 -0400
-Date: Thu, 13 Mar 2008 11:24:32 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Ben Nizette <bn@niasdigital.com>, gregkh <gregkh@suse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3] UIO: Implement a UIO interface for the SMX
- Cryptengine
-Message-ID: <20080313112432.578076a5@dilbert.local>
-In-Reply-To: <20080313100655.GA6705@linux-sh.org>
-References: <1205400940.3735.15.camel@moss.renham>
-	<20080313100655.GA6705@linux-sh.org>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+	Thu, 13 Mar 2008 06:25:08 -0400
+Received: from zux006-051-205.adsl.green.ch ([81.6.51.205]:11893 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751480AbYCMKZG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 06:25:06 -0400
+X-Greylist: delayed 76607 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 06:24:57 EDT
+Date: Wed, 12 Mar 2008 12:44:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, jgarzik <jgarzik@pobox.com>
+Subject: Re: [PATCH -mm] ne2: needs more 8390 support functions
+Message-ID: <20080312124412.6089948c@the-village.bc.nu>
+In-Reply-To: <20080311095643.01cd3708.randy.dunlap@oracle.com>
+References: <20080311095643.01cd3708.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,66 +31,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thu, 13 Mar 2008 19:06:55 +0900
-schrieb Paul Mundt <lethal@linux-sh.org>:
+On Tue, 11 Mar 2008 09:56:43 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> > +
-> > +	info->name = "smx-ce";
-> > +	info->version = "0.03";
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> You may as well use DRV_NAME and DRV_VERSION, then you can toss that over
-> to MODULE_VERSION() if you're so inclined. It's generally nice to keep
-> modinfo happy.
+> ne2 (MCA) needs both 8390.o and 8390p.o functions:
 
-UIO name and version are intentionally independent of module name and
-version. It's meant to be an information for the userspace part of the driver
-and should be set to values that are meaningful for it.
-
-> 
-> > +	info->irq = platform_get_irq(dev, 0);
-> > +	info->irq_flags = IRQF_SHARED;
-> > +	info->handler = smx_handler;
-> > +
-> platform_get_irq() can fail, which you don't presently handle (though I
-> guess uio_register_device() will error out if you hand off -ENXIO as your
-> IRQ anyways, so it's not technically an issue). That's a pretty minor
-> issue, though, but might be something you wish to fix up if you are
-> planning on using this as an example driver for others.
-
-uio_register_device() will silently not register an interrupt if the number
-is negative. This allows us to register a driver without interrupts. Hmm.
-Maybe we should explicitly check for UIO_IRQ_NONE there and fail if a
-different negative irq is passed in. Thanks for pointing this out.
-
-But I agree, Ben should check if platform_get_irq() failed.
-
-> 
-> > +	platform_set_drvdata(dev, info);
-> > +
-> > +	if (uio_register_device(&dev->dev, info))
-> > +		goto out_unmap;
-> > +
-> > +	return 0;
-> > +out_unmap:
-> > +	iounmap(info->mem[0].internal_addr);
-> > +out_free:
-> > +	kfree(info);
-> > +
-> > +	return -ENODEV;
-> > +}
-> > +
-> Your error paths are also pretty quiet. A dev_err() or so in the few
-> failure cases you do have might not be a terrible idea.
-
-I agree.
-
-> 
-> uio_register_device() also has quite a few different error cases, so it's
-> at least worth preserving the error value and returning that back,
-> rather than always returning -ENODEV.
-
-Right. Maybe we should make uio_register_device a bit more verbose, too.
-
-Thanks for your detailed review!
-
-Hans
+NAK - the two modules are alternatives nothing should use both - is 8390p
+not sufficient ?
