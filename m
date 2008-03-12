@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYCLNc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYCLNfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbYCLNc3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYCLNcW
+	id S1754059AbYCLNfP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYCLNfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:32:22 -0400
-Received: from zux006-051-205.adsl.green.ch ([81.6.51.205]:29897 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbYCLNcV (ORCPT
+	Wed, 12 Mar 2008 09:35:03 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:38464 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751816AbYCLNfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:32:21 -0400
-X-Greylist: delayed 1451 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 09:32:21 EDT
-Date: Wed, 12 Mar 2008 13:11:33 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080312131133.60e99d29@the-village.bc.nu>
-In-Reply-To: <200803102050.40567.phillips@phunq.net>
-References: <200803092346.17556.phillips@phunq.net>
-	<20080310092213.7ba878b3@core>
-	<200803102050.40567.phillips@phunq.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 12 Mar 2008 09:35:00 -0400
+Message-ID: <47D7DBE8.4090502@linux.vnet.ibm.com>
+Date: Wed, 12 Mar 2008 19:04:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH 03/17] sched: rt-group: full hierarchy support for
+ the rt groups
+References: <20080309170850.256853000@chello.nl> <20080309170926.354453000@chello.nl> <20080312082532.GB3784@linux.vnet.ibm.com> <661de9470803120129l66497656o948c13c6c0c26766@mail.gmail.com> <1205314176.8514.219.camel@twins>
+In-Reply-To: <1205314176.8514.219.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Nice fiction - stuff crashes eventually - not that this isn't useful. For
-> > a long time simply loading a 2-3GB Ramdisk off hard disk has been a good
-> > way to build things like compile engines where loss of state is not bad.
+Peter Zijlstra wrote:
+> On Wed, 2008-03-12 at 13:59 +0530, Balbir Singh wrote:
+>> On Wed, Mar 12, 2008 at 1:55 PM, Dhaval Giani
+>> <dhaval@linux.vnet.ibm.com> wrote:
+>>         On Sun, Mar 09, 2008 at 06:08:53PM +0100, Peter Zijlstra
+>>         wrote:
+>>         > Update the -rt bits to support the full hierarchy support
+>>         started by Dhaval.
+>>         >
+>>         
+>>         
+>>         Thanks for the effort. Just a very minor comment. I will try
+>>         these out
+>>         and give more feedback.
+>>         
+>>         
+>>         > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>         
+>>
+>> Shouldn't this have Dhaval's signed-off-by as well? Dhaval do you want
+>> to sign-off on these patches?
 > 
-> Right, and now with ramback you will be able to preserve that state and
-> have the performance too.  It is a wonderful world.
-
-Actually no - ramback would be useless to this. You might crash and end
-up with untrustworthy on disk state - not worth the risk.
-
-> > Ext3 is only going to help you if the ramdisk writeback respects barriers
-> > and ordering rules ?
+> He can Ack it, but the 3rd patch was not authored by him.
 > 
-> I was alluding to to e2fsck's amazing repair ability, not ext3's journal.
 
-Oh you mean "pray hard". e2fsck works well with typical disk style
-failures, it is not robust against random chunks vanishing. I know this
-as I've worked on and debugged a case where a raid card rebooted silently
-and threw out the write back cache.
+So, the first two patches should have his sign-off then? I don't mean to
+nit-pick, but want to follow DCO correctly.
 
-> > /bin/cp from initrd
+> That said, we should probably clean up the first 3 patches and fold
+> stuff.
 > 
-> But that does not satisfy the requirement you snipped:
 
-True but its a lot simpler.
+OK. I'll try and review the patchset tonight.
 
-> More accurately: in general, cannot transfer directly.  The ramdisk may
-
-DMA ?
-
-> > suck all the content back in presumably a log structure is not a big
-> > concern ?
-> 
-> Sorry, I failed to parse that.
-
-I was suggesting that you want log structure for the writeback disk so
-that you keep coherency and can recover it, an issue you seem intent on
-ignoring in the interest of speed over any kind of practical usability.
-> 
-> > >  * Per chunk locking is not feasible for a terabyte scale ramdisk.
-> > 
-> > And we care  8) ?
-> 
-> "640K should be enough for anyone"
-> 
-> http://www.violin-memory.com/products/violin1010.html <- 504 GB ramdisk
-
-Ok so almost nobody cares
-
-> The finer the granularity the faster the ramdisk syncs to backing
-> store.  The only attraction of coarse granularity I know of is
-
-False. Disks are ops/second devices not bits/second.
-
-> Your comment re fs chunk size reveals that I have failed to
-> communicate the most basic principle of the ramback design: the
-> backing store is not expected to represent a consistent filesystem
-
-No I get that. You've ignored the fact I'm suggesting that design choice
-is dumb.
-
-> state during normal operation.  Only the ramdisk needs to maintain a
-> consistent state, which I have taken care to ensure.  You just need
-> to believe in your battery, Linux and the hardware it runs on.  Which
-> of these do you mistrust?
-
-In a big critical environment - all three.
-
-Alan
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
