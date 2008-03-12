@@ -1,89 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYCLSP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYCLSQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYCLSP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 14:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYCLSPO
+	id S1755026AbYCLSQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 14:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYCLSQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 14:15:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50453 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751029AbYCLSPN (ORCPT
+	Wed, 12 Mar 2008 14:16:17 -0400
+Received: from asterix.m2000.com ([212.155.102.83]:3106 "EHLO
+	asterix.m2000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYCLSQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 14:15:13 -0400
-Date: Wed, 12 Mar 2008 11:15:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc5-mm1 - x86_64 boot problem ?
-Message-Id: <20080312111509.301c9d24.akpm@linux-foundation.org>
-In-Reply-To: <1205345451.23611.6.camel@dyn9047017100.beaverton.ibm.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<1205345451.23611.6.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 14:16:16 -0400
+Message-ID: <47D81DE4.5040303@m2000.com>
+Date: Wed, 12 Mar 2008 11:16:04 -0700
+From: Adam Schrotenboer <adam@m2000.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Thomas Daniel <tdaniel@m2000.com>,
+       jesper.juhl@gmail.com, Fred Revenu <frevenu@m2000.com>
+Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
+References: <47CF0829.4020502@m2000.com>	<1204752463.5035.34.camel@heimdal.trondhjem.org>	<47CF157B.1010908@m2000.com>	<18383.24847.381754.517731@notabene.brown>	<47CF62C5.7000908@m2000.com> <18384.50909.866848.966192@notabene.brown>	<47D0D8B5.6050403@m2000.com>  <47D818FB.8080302@m2000.com> <1205345284.9419.8.camel@heimdal.trondhjem.org>
+In-Reply-To: <1205345284.9419.8.camel@heimdal.trondhjem.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5BE7FD79FB07E04B58B7B750"
+X-Antivirus: avast! (VPS 080311-0, 03/11/2008), Outbound message
+X-Antivirus-Status: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008 10:10:50 -0800 Badari Pulavarty <pbadari@gmail.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5BE7FD79FB07E04B58B7B750
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 2008-03-11 at 01:14 -0700, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
-> > 
-> 
-> I am having trouble booting rc5-mm1 on my x86_64. (ppc64 boots & works
-> fine). Seems to be a networking issues (hangs on boot). Here are the 
-> messages on the console (not really useful to me).
-> 
-> On a good kernel (rc5), the next set of messages would be ..
-> 
-> IP route cache hash table entries: 262144 (order: 9, 2097152 bytes)
-> TCP established hash table entries: 524288 (order: 11, 8388608 bytes)
-> TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
-> TCP: Hash tables configured (established 524288 bind 65536)
-> TCP reno registered
-> Total HugeTLB memory allocated, 0
-> VFS: Disk quotas dquot_6.5.1
-> Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-> msgmni has been set to 13864 for ipc namespace ffffffff806903a0
-> ..
-> 
-> Sorry for not being really useful here. But would like to
-> know if its a known issue ?
+Trond Myklebust wrote:
+> On Wed, 2008-03-12 at 10:55 -0700, Adam Schrotenboer wrote:
+>  =20
+>> Another excerpt from last night.
+>>
+>> Mar 12 00:53:16 wanda kernel: nfs: server 192.168.1.27 not responding,=
+=20
+>> still trying
+>> Mar 12 00:53:18 wanda kernel: nfs: server 192.168.1.27 OK
+>> Mar 12 00:54:29 wanda kernel: nfs_update_inode: inode 1075049148 mode =
 
-No, it's not known (to me).
+>> changed, 0040755 to 0100644
+>>    =20
+>
+> Hang on. That does not look like an XID collision problem...
+>
+> That code path basically means that the fileids/inode numbers match,
+> which would not be the case if we were talking about an XID collision
+> causing the reply cache to replay an old request...
+>
+> That message rather symptomatic of a filehandle reuse problem. In other=
 
-> Or should I start bisecting ?
+> words a NFS filehandle appears to be reused to label a regular file
+> after it has been used for a directory with the same fileid/inode
+> number. That is a definite server bug.
+>
+> Are you sure that you are using the regular kernel nfs server?
+>
+>  =20
+Quite. OpenSuSE 10.2 stock unmodified kernel.
 
-Would be good, please.
+dolphin:~ # uname -a
+Linux dolphin 2.6.18.2-34-default #1 SMP Mon Nov 27 11:46:27 UTC 2006=20
+x86_64 x86_64 x86_64 GNU/Linux
 
-I guess here:
+dolphin:~ # top -bn1 |grep nfsd
 
-#
-# ipc
-#
-ipc-use-ipc_buildid-directly-from-ipc_addid.patch
-ipc-use-ipc_buildid-directly-from-ipc_addid-cleanup.patch
-#
-ipc-scale-msgmni-to-the-amount-of-lowmem.patch
-ipc-scale-msgmni-to-the-number-of-ipc-namespaces.patch
-ipc-define-the-slab_memory_callback-priority-as-a-constant.patch
-ipc-recompute-msgmni-on-memory-add--remove.patch
-ipc-invoke-the-ipcns-notifier-chain-as-a-work-item.patch
-ipc-recompute-msgmni-on-ipc-namespace-creation-removal.patch
-ipc-do-not-recompute-msgmni-anymore-if-explicitly-set-by-user.patch
-ipc-re-enable-msgmni-automatic-recomputing-msgmni-if-set-to-negative.patch
-#
-ipc-semaphores-code-factorisation.patch
-ipc-shared-memory-introduce-shmctl_down.patch
-ipc-message-queues-introduce-msgctl_down.patch
-ipc-semaphores-move-the-rwmutex-handling-inside-semctl_down.patch
-ipc-semaphores-remove-one-unused-parameter-from-semctl_down.patch
-ipc-get-rid-of-the-use-_setbuf-structure.patch
-ipc-introduce-ipc_update_perm.patch
-ipc-consolidate-all-xxxctl_down-functions.patch
-ipc-consolidate-all-xxxctl_down-functions-fix.patch
 
-would be the place to start looking.
+  PID  PPID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAN=
+D
+ 3916     1 root      15   0     0    0    0 S    0  0.0   3:04.42 nfsd
+ 3942     1 root      15   0     0    0    0 S    0  0.0   3:11.88 nfsd
+(there's quite a bit more of these threads than this (32), but they all=20
+look the same in top or ps)
+
+
+
+--------------enig5BE7FD79FB07E04B58B7B750
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFH2B3kyWYDdvnGArwRAm4XAJ9KOX7o3+qns7jvH04eiXOWCxTyIQCfZHTN
+Qo7L6AtD7GzZyDVFRjZNxJU=
+=4eHi
+-----END PGP SIGNATURE-----
+
+--------------enig5BE7FD79FB07E04B58B7B750--
