@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYCLADT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYCLADf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYCLADT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 20:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYCLACj
+	id S1753428AbYCLADf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 20:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYCLACn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 20:02:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37138 "EHLO ogre.sisk.pl"
+	Tue, 11 Mar 2008 20:02:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37145 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbYCLACh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 20:02:37 -0400
+	id S1751780AbYCLACm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 20:02:42 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Greg KH <greg@kroah.com>
-Subject: [PATCH 2/3] Driver core: Call device_pm_add() after bus_add_device() in device_add()
-Date: Wed, 12 Mar 2008 00:59:38 +0100
+Subject: [PATCH 3/3] PM: make wakeup flags available whenever CONFIG_PM is set
+Date: Wed, 12 Mar 2008 01:01:47 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Alan Stern <stern@rowland.harvard.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -26,74 +26,158 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803120059.39902.rjw@sisk.pl>
+Message-Id: <200803120101.48805.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-Include dpm_sysfs_add() into device_pm_add(), in analogy with
-device_pm_remove(), and modify device_add() to call the latter after
-bus_add_device(), to avoid situations in which the PM core may
-attempt to suspend a device the registration of which has not been
-successful.
+The various wakeup flags and their accessor macros in struct
+dev_pm_info should be available whenever CONFIG_PM is enabled, not
+just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
+be configurable for runtime power management.  This patch (as1056)
+fixes the oversight.
 
+[rjw: rebased the patch on top of the previous two.]
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: David Brownell <david-b@pacbell.net>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/core.c       |   15 +++++----------
- drivers/base/power/main.c |    4 +++-
- 2 files changed, 8 insertions(+), 11 deletions(-)
+ drivers/base/power/main.c  |    2 -
+ drivers/base/power/sysfs.c |    2 +
+ include/linux/pm.h         |   64 +++++++++++++++++++++++++--------------------
+ 3 files changed, 38 insertions(+), 30 deletions(-)
 
-Index: linux-2.6/drivers/base/core.c
+Index: linux-2.6/include/linux/pm.h
 ===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -812,17 +812,12 @@ int device_add(struct device *dev)
- 	error = device_add_attrs(dev);
- 	if (error)
- 		goto AttrsError;
--	error = dpm_sysfs_add(dev);
--	if (error)
--		goto PMError;
--	error = device_pm_add(dev);
--	if (error) {
--		dpm_sysfs_remove(dev);
--		goto PMError;
--	}
- 	error = bus_add_device(dev);
- 	if (error)
- 		goto BusError;
-+	error = device_pm_add(dev);
-+	if (error)
-+		goto PMError;
- 	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
- 	if (parent)
-@@ -842,9 +837,9 @@ int device_add(struct device *dev)
-  Done:
- 	put_device(dev);
- 	return error;
-- BusError:
--	device_pm_remove(dev);
-  PMError:
-+	bus_remove_device(dev);
-+ BusError:
- 	if (dev->bus)
- 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 					     BUS_NOTIFY_DEL_DEVICE, dev);
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -183,9 +183,9 @@ typedef struct pm_message {
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned		can_wakeup:1;
++	unsigned		should_wakeup:1;
+ 	bool			sleeping:1;	/* Owned by the PM core */
+ #ifdef	CONFIG_PM_SLEEP
+-	unsigned		should_wakeup:1;
+ 	struct list_head	entry;
+ #endif
+ };
+@@ -198,11 +198,6 @@ extern void device_resume(void);
+ extern int device_suspend(pm_message_t state);
+ extern int device_prepare_suspend(pm_message_t state);
+ 
+-#define device_set_wakeup_enable(dev,val) \
+-	((dev)->power.should_wakeup = !!(val))
+-#define device_may_wakeup(dev) \
+-	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
+-
+ extern void __suspend_report_result(const char *function, void *fn, int ret);
+ 
+ #define suspend_report_result(fn, ret)					\
+@@ -210,6 +205,35 @@ extern void __suspend_report_result(cons
+ 		__suspend_report_result(__FUNCTION__, fn, ret);		\
+ 	} while (0)
+ 
++#else /* !CONFIG_PM_SLEEP */
++
++static inline int device_suspend(pm_message_t state)
++{
++	return 0;
++}
++
++#define suspend_report_result(fn, ret) 		do {} while (0)
++
++#endif /* !CONFIG_PM_SLEEP */
++
++#ifdef CONFIG_PM
++
++/* changes to device_may_wakeup take effect on the next pm state change.
++ * by default, devices should wakeup if they can.
++ */
++#define device_can_wakeup(dev) \
++	((dev)->power.can_wakeup)
++#define device_init_wakeup(dev,val) \
++	do { \
++		device_can_wakeup(dev) = !!(val); \
++		device_set_wakeup_enable(dev,val); \
++	} while(0)
++
++#define device_set_wakeup_enable(dev,val) \
++	((dev)->power.should_wakeup = !!(val))
++#define device_may_wakeup(dev) \
++	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
++
+ /*
+  * Platform hook to activate device wakeup capability, if that's not already
+  * handled by enable_irq_wake() etc.
+@@ -224,35 +248,19 @@ static inline int call_platform_enable_w
+ 	return 0;
+ }
+ 
+-#else /* !CONFIG_PM_SLEEP */
+-
+-static inline int device_suspend(pm_message_t state)
+-{
+-	return 0;
+-}
+-
+-#define device_set_wakeup_enable(dev,val)	do{}while(0)
+-#define device_may_wakeup(dev)			(0)
++#else /* !CONFIG_PM */
+ 
+-#define suspend_report_result(fn, ret) do { } while (0)
++#define device_can_wakeup(dev)			0
++#define device_init_wakeup(dev,val)		do {} while (0)
++#define device_set_wakeup_enable(dev,val)	do {} while (0)
++#define device_may_wakeup(dev)			0
+ 
+ static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+ {
+ 	return 0;
+ }
+ 
+-#endif /* !CONFIG_PM_SLEEP */
+-
+-/* changes to device_may_wakeup take effect on the next pm state change.
+- * by default, devices should wakeup if they can.
+- */
+-#define device_can_wakeup(dev) \
+-	((dev)->power.can_wakeup)
+-#define device_init_wakeup(dev,val) \
+-	do { \
+-		device_can_wakeup(dev) = !!(val); \
+-		device_set_wakeup_enable(dev,val); \
+-	} while(0)
++#endif /* !CONFIG_PM */
+ 
+ /*
+  * Global Power Management flags
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -81,7 +81,9 @@ int device_pm_add(struct device *dev)
- 		WARN_ON(true);
- 		error = -EBUSY;
- 	} else {
--		list_add_tail(&dev->power.entry, &dpm_active);
-+		error = dpm_sysfs_add(dev);
-+		if (!error)
-+			list_add_tail(&dev->power.entry, &dpm_active);
- 	}
- 	mutex_unlock(&dpm_list_mtx);
- 	return error;
+@@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
+ /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
+ static bool all_sleeping;
+ 
+-int (*platform_enable_wakeup)(struct device *dev, int is_on);
+-
+ /**
+  *	device_pm_add - add a device to the list of active devices
+  *	@dev:	Device to be added to the list
+Index: linux-2.6/drivers/base/power/sysfs.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/sysfs.c
++++ linux-2.6/drivers/base/power/sysfs.c
+@@ -6,6 +6,8 @@
+ #include <linux/string.h>
+ #include "power.h"
+ 
++int (*platform_enable_wakeup)(struct device *dev, int is_on);
++
+ 
+ /*
+  *	wakeup - Report/change current wakeup option for device
