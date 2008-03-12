@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYCLNfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYCLNhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbYCLNfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYCLNfd
+	id S1753878AbYCLNhs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYCLNhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:35:33 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47268 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750875AbYCLNfc (ORCPT
+	Wed, 12 Mar 2008 09:37:37 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:54757 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbYCLNhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:35:32 -0400
-X-Sasl-enc: FYSFcr9lUPSsyijRuY+DNctP4UWjHLVcfqHDjGZCYknd 1205328931
-Date: Wed, 12 Mar 2008 10:35:29 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080312133529.GB21290@khazad-dum.debian.net>
-References: <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk> <47CDBE11.4010900@gmail.com> <20080312125912.GM17940@kernel.dk> <20080312131737.GA21290@khazad-dum.debian.net> <20080312132419.GN17940@kernel.dk>
+	Wed, 12 Mar 2008 09:37:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=jq7hSLewubrxc34mn2zKiDBVsQ/dbajt7lxmeOtgEgDQVjYZnMc5V06z9NqZA19q2Ylo4wqg+v5lmtegMZXQH5JQeiEZN2LrqalYl6oxhTF9o/T+Bjx4xXD7+Co6pLaby2F6wYVsfOKqubG/0dJGmgXbI1XIvHs1PE7bYaASWag=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 4/4] ide-tape: remove pipeline-specific code from idetape_add_chrdev_read_request()
+Date: Wed, 12 Mar 2008 14:51:23 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1205082632-3418-1-git-send-email-petkovbb@gmail.com> <200803110025.51072.bzolnier@gmail.com> <20080312055803.GD4266@gollum.tnic>
+In-Reply-To: <20080312055803.GD4266@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080312132419.GN17940@kernel.dk>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803121451.23925.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Jens Axboe wrote:
-> > Those are not an ACPI business in your thinkpad anymore.  They go over the
-> > KDC, so we're out of the loop.   That means the bug is fixed completely.
+
+Hi,
+
+On Wednesday 12 March 2008, Borislav Petkov wrote:
+
+[...]
+
+> > > the read request's buffer directly thru idetape_queue_rw_tail()
+> > > 
+> > > 3. Do next request buffer allocation (tape->merge_stage)
+> > 
+> > Isn't idetape_init_read() taking care of 3.?
 > 
-> KDC? Pressing the buttons used to indicate mute and volume level in
-> kmix, now they don't. That is somewhat annoying. If there's a way to get
-> that working, please let me know.
+> i wanted to have the whole handling at one place and let _init_read() only
+> prepare the read. Now we don't allocate any new tape->merge_stage anymore,
+> which is wrong. Originally, this happened in _init_read(), however, if we do
+> idetape_queue_rw_tail(), we should alloc the new stage _after_ queueing the
 
-You shouldn't need to do anything other than teach userspace to respond to
-them, as they generate the proper KEY_* events.  If you are giving the AML
-_OSI(Linux), at least...
+The original driver doesn't do this - it just calls idetape_queue_rw_tail(),
+could it be a bug in the original driver?
 
-But maybe looking at the keyboard output in console mode, to make triple
-sure the events ARE being sent over the KDC as they should, would be in
-order?
+[ ditto for idetape_queue_rw_tail() for writes ]
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> request, which means it cannot happen _init_read() now and should take place
+> afterwards, i.e. as it was in the original patch, or?
