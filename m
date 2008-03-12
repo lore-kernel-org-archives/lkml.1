@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYCLM3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbYCLMcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbYCLM3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 08:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYCLM3Y
+	id S1752280AbYCLMcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 08:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYCLMcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 08:29:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46789 "EHLO gir.skynet.ie"
+	Wed, 12 Mar 2008 08:32:45 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:53901 "EHLO pmx1.sophos.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751138AbYCLM3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 08:29:23 -0400
-Date: Wed, 12 Mar 2008 12:29:20 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH rc5-mm1 1/3] mm-have-zonelist: fix memcg ooms
-Message-ID: <20080312122920.GB25250@csn.ul.ie>
-References: <Pine.LNX.4.64.0803112108470.17067@blonde.site>
+	id S1750992AbYCLMcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 08:32:45 -0400
+X-Greylist: delayed 1885 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 08:32:45 EDT
+In-Reply-To: <200803092346.17556.phillips@phunq.net>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803112108470.17067@blonde.site>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Lotus Notes Release 6.5.5 November 30, 2005
+Message-ID: <OFEE15880F.3018E689-ON8025740A.0041A021-8025740A.004203F5@sophos.com>
+From: tvrtko.ursulin@sophos.com
+Date: Wed, 12 Mar 2008 12:01:03 +0000
+X-MIMETrack: Serialize by Router on Mercury/Servers/Sophos(Release 7.0.2FP1|January 10, 2007) at
+ 12/03/2008 12:01:04,
+	Serialize complete at 12/03/2008 12:01:04
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (11/03/08 21:12), Hugh Dickins didst pronounce:
-> Memcgroups up against their limit were OOMing unjustifiably on x86_32
-> with highmem: pages ripe for freeing were not being found.
-> 
-> It's because the zonelist changes in vmscan.c now derive zone from gfp_mask,
-> and the gfp mask being passed into try_to_free_mem_cgroup_pages is atuned
-> to allocating a struct page_cgroup (__GFP_HIGHMEM masked off), whereas here
-> we need to be scanning highmem zones.
-> 
-> Frankenstein a gfp_mask from GFP_HIGHUSER_MOVABLE and the mask passed in.
-> 
+linux-kernel-owner@vger.kernel.org wrote on 10/03/2008 06:46:16:
 
-Well spotted, but I have one query below.
-
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> Same error was in -rc3-mm1, sorry for not sending fix in time for -rc5-mm1.
-> The error comes 1 or 4 patches earlier, but this patch atop 2.6.25-rc5-mm1
-> fits best just after
-> mm-have-zonelist-contains-structs-with-both-a-zone-pointer-and-zone_idx.patch
+> Every little factor of 25 performance increase really helps.
 > 
-> I've other GFP masking fixes or cleanups to come another day: this fixes
-> just one clear bug, peculiar to the -mm tree, orthogonal to the rest.
-> But two little do_try_to_free_pages cleanups follow on from this...
-> 
->  mm/vmscan.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- 2.6.25-rc5-mm1/mm/vmscan.c	2008-03-11 14:19:36.000000000 +0000
-> +++ linux/mm/vmscan.c	2008-03-11 20:09:05.000000000 +0000
-> @@ -1444,7 +1444,6 @@ unsigned long try_to_free_mem_cgroup_pag
->  						gfp_t gfp_mask)
->  {
->  	struct scan_control sc = {
-> -		.gfp_mask = gfp_mask,
->  		.may_writepage = !laptop_mode,
->  		.may_swap = 1,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
-> @@ -1454,9 +1453,10 @@ unsigned long try_to_free_mem_cgroup_pag
->  		.isolate_pages = mem_cgroup_isolate_pages,
->  	};
->  	struct zonelist *zonelist;
-> -	int target_zone = gfp_zonelist(GFP_HIGHUSER_MOVABLE);
->  
-> -	zonelist = &NODE_DATA(numa_node_id())->node_zonelists[target_zone];
-> +	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
-> +			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> +	zonelist = NODE_DATA(numa_node_id())->node_zonelists;
+> Ramback is a new virtual device with the ability to back a ramdisk
+> by a real disk, obtaining the performance level of a ramdisk but with
+> the data durability of a hard disk.  To work this magic, ramback needs
+> a little help from a UPS.  In a typical test, ramback reduced a 25
+> second file operation[1] to under one second including sync.  Even
+> greater gains are possible for seek-intensive applications.
 
-While it is clear you are setting the mask to include HIGHMEM-related flags,
-it's not as clear to me why you alter the zonelist as well. target_zone was
-already based on HIGHMEM so what are you fixing there?
+What about doing a similar thing as a device mapper target? Have a look a 
+dm-cache, I know that development of that has stopped but it doesn't mean 
+it couldn't be ressurected. It has an advantage that it is generic (any 
+two block devices will do) and you don't need to populate the "cache" on 
+start-up - it happens automatically through cache misses.
 
-It should still work as ->node_zonelists[0] is a zonelist suitable for node
-fallback as opposed to node_zonelists[1] which is for GFP_THISNODE but
-maybe this was not quite what you intended?
+Another use could be a flash based disk accelerator which may be pretty 
+popular nowadays.
 
-Probably something obvious that will hit me the second I push send :)
+Tvrtko
 
->  	if (do_try_to_free_pages(zonelist, sc.gfp_mask, &sc))
->  		return 1;
->  	return 0;
-> 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
