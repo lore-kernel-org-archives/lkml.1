@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYCLUCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYCLUE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYCLUCz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYCLUCj
+	id S1754831AbYCLUE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYCLUET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:02:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43821 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752643AbYCLUCi (ORCPT
+	Wed, 12 Mar 2008 16:04:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:31050 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbYCLUES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:02:38 -0400
-Date: Wed, 12 Mar 2008 13:01:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Greg KH <greg@kroah.com>
-Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
-In-Reply-To: <200803112341.42517.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
-References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 12 Mar 2008 16:04:18 -0400
+Message-ID: <47D8373C.40105@codemonkey.ws>
+Date: Wed, 12 Mar 2008 15:04:12 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
+       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
+       hugh@veritas.com
+Subject: Re: [patch 6/6] Guest page hinting: s390 support.
+References: <20080312132132.520833247@de.ibm.com>	 <20080312132704.474209626@de.ibm.com>  <47D802A2.1030406@goop.org>	 <1205339285.8851.13.camel@localhost>  <47D8085E.9030701@goop.org> <1205341164.8851.44.camel@localhost> <47D81771.5070400@goop.org>
+In-Reply-To: <47D81771.5070400@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 11 Mar 2008, Rafael J. Wysocki wrote:
-
+Jeremy Fitzhardinge wrote:
+>> With stable_if_clean you are refering to stable_if_present?
 > 
-> In http://bugzilla.kernel.org/show_bug.cgi?id=10123 Guennadi says that
-> reverting
+> No.  I misunderstood and thought that stable_if_present sets the Px 
+> state.  I'd overlooked the writable flag on page_set_volatile().
 > 
-> commit fd7d1ced29e5beb88c9068801da7a362606d8273
-> Author: Greg Kroah-Hartman <gregkh@suse.de>
-> Date:   Tue May 22 22:47:54 2007 -0400
+>>  If yes the
+>> answer is that this operation is used to get a page from Vx/Px back to
+>> Sx but only if the page has not been discarded.
 > 
->     PCI: make pci_bus a struct device
-> 
-> fixes the problem for him (this seems to be yet another reboot/poweroff IOW).
+> So you mean it will change Vr/Pr to Sr but everything else will fail?  
 
-Ahh, I thought this was done already, but nope, my PCI pull from Greg 
-didn't contain the revert.
+Well presumably Vp/Pr => Sp?  Is is true that from the guest's 
+perspective, all of the 'p' states are identical to the 'r' states?
 
-Greg? I know you must be aware of the problem, because you replied to the 
-email at some point. Wazzup?
+Do the host states even really need visibility to the guest at all?  It 
+may be useful for the guest to be able to distinguish between Ur and Uz 
+but it doesn't seem necessary.
 
-		Linus
+BTW Jeremy, the .dot was very useful!
+
+Regards,
+
+Anthony Liguori
