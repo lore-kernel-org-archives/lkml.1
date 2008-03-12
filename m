@@ -1,200 +1,369 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYCLUBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYCLUC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYCLUBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYCLUBj
+	id S1755169AbYCLUC1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYCLUCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:01:39 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:26120 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYCLUBi (ORCPT
+	Wed, 12 Mar 2008 16:02:18 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:9226 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbYCLUCR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:01:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NMs5N3c4DEn/bCo3WAWxuCIWTQ9+Yr8gVSQQJWcvhor/iMKLGI8ixH2lqBtdr4+smg7jT4kMcvP1fissc5gAEYNscs6ltYfPGOC4AbouiZbu3NrfFyS2cRPjBkCrVhNYdfBFSEEMj/2gN0lLYwq4v1ybZ22ehEsKfwKtUL7bJNY=
-Message-ID: <64bb37e0803121301u6f836710m9ebb30e065751bec@mail.gmail.com>
-Date: Wed, 12 Mar 2008 21:01:36 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.25-rc5-mm1
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20080312124420.3ba8c3d7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 16:02:17 -0400
+Date: Wed, 12 Mar 2008 21:01:28 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: merge the simple bitops and move them to bitops.h
+Message-ID: <20080312200128.GA24983@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <20080311202300.GA8957@vino.hallyn.com>
-	 <20080311133920.68dc410b.akpm@linux-foundation.org>
-	 <64bb37e0803121233v30d12a58i77a1e23fd02ea6f2@mail.gmail.com>
-	 <20080312124420.3ba8c3d7.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8BIT
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Wed, 12 Mar 2008 21:01:43 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.22; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 8:44 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 12 Mar 2008 20:33:02 +0100
->  "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
->  > dmesg:
->  > [    0.000000] Linux version 2.6.25-rc5-mm1 (root@treogen) (gcc
->  > version 4.2.3 (Gentoo 4.2.3 p1.0)) #1 SMP Wed Mar 12 19:51:41 CET 2008
->  > [    0.000000] Command line: earlyprintk=serial,ttyS0,115200
->  > console=ttyS0,115200 console=tty1 crypt_root=/dev/md1 sata_nv.swncq=1
->
->  So you aren't using netconsole.  I had a series of hangs yesterday which
->  went away when netconsole was disabled.  I think netconsole is still
->  busted.
+x86: merge the simple bitops and move them to bitops.h
 
-No, just a plain serial console.
+Some of those can be written in such a way that the same
+inline assembly can be used to generate both 32 bit and
+64 bit code.
 
->  > be reserved
->  > [    1.943656] system 00:0d: iomem range 0xfec00000-0xffffffff could
->  > not be reserved
->  > [    1.961251] PCI: Bridge: 0000:00:06.0
->  > [    1.964921]   IO window: disabled.
->  > [    1.968331]   MEM window: 0xeff00000-0xefffffff
->  > [    1.980903]   PREFETCH window: 0x00000000eef00000-0x00000000eeffffff
->  > [    1.987254] PCI: Bridge: 0000:00:0b.0
->  > [    2.000871]   IO window: e000-efff
->  > [    2.004283]   MEM window: 0xefe00000-0xefefffff
->  > [    2.022569]   PREFETCH window: disabled.
->  > [    2.026646] PCI: Bridge: 0000:00:0c.0
->  > [    2.030312]   IO window: disabled.
->  > [    2.040486]   MEM window: 0xefd00000-0xefdfffff
->  > [    2.045020]   PREFETCH window: disabled.
->  > [    2.050486] PCI: Bridge: 0000:00:0d.0
->  > [    2.062526]   IO window: disabled.
->  > [    2.065935]   MEM window: 0xefc00000-0xefcfffff
->  > [    2.082499]   PREFETCH window: disabled.
->  > [    2.086432] PCI: Bridge: 0000:00:0f.0
->  > [    2.092499]   IO window: d000-dfff
->  > [    2.102467]   MEM window: 0xefb00000-0xefbfffff
->  > [    2.107000]   PREFETCH window: 0x00000000e0000000-0x00000000e7ffffff
->  > [    2.122526] NET: Registered protocol family 2
->  > -> System hang, no reaction to the SysRq keys.
-[snip]
->  OK, so it looks like it died during networking initialisation.
->
->  Could you please add initcall_debug to the boot command line so we can see
->  which function it is getting stuck in?
+For ffs and fls, x86_64 unconditionally used the cmov
+instruction and i386 unconditionally used a conditional
+branch over a mov instruction. In the current patch I
+chose to select the version based on the availability
+of the cmov instruction instead. A small detail here is
+that x86_64 did not previously set CONFIG_X86_CMOV=y.
 
-Yes, here is the result:
-[    2.573979] PCI-DMA: Disabling AGP.
-[    2.577639] PCI-DMA: aperture base @ 8000000 size 65536 KB
-[    2.589504] PCI-DMA: using GART IOMMU.
-[    2.593258] PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
-[    2.600132] initcall pci_iommu_init+0x0/0x20() returned 0 after 19 msecs
-[    2.622146] calling  hpet_late_init+0x0/0x140()
-[    2.626689] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
-[    2.633022] hpet0: 3 32-bit timers, 25000000 Hz
-[    2.638562] initcall hpet_late_init+0x0/0x140() returned 0 after 9 msecs
-[    2.654545] calling  clocksource_done_booting+0x0/0x20()
-[    2.659855] initcall clocksource_done_booting+0x0/0x20()<6>Time:
-hpet clocksource has been installed.
-[    2.662185]  returned 0 after 0 msecs
-[    2.688448] calling  init_pipe_fs+0x0/0x60()
-[    2.695423] initcall init_pipe_fs+0x0/0x60() returned 0 after 0 msecs
-[    2.705784] calling  init_mnt_writers+0x0/0x70()
-[    2.711681] initcall init_mnt_writers+0x0/0x70() returned 0 after 0 msecs
-[    2.721678] calling  eventpoll_init+0x0/0x90()
-[    2.731644] initcall eventpoll_init+0x0/0x90() returned 0 after 0 msecs
-[    2.738295] calling  anon_inode_init+0x0/0x130()
-[    2.751614] initcall anon_inode_init+0x0/0x130() returned 0 after 0 msecs
-[    2.771585] calling  pcie_aspm_init+0x0/0x30()
-[    2.779297] initcall pcie_aspm_init+0x0/0x30() returned 0 after 2 msecs
-[    2.793911] calling  acpi_event_init+0x0/0x52()
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
--> it looked like the system this time already hung here. But just
-pressing the 'Alt' key let the system continue until the network hang.
-(I tried this a second time, again it paused here until I pressed a key)
+---
 
-[   94.857929] initcall acpi_event_init+0x0/0x52() returned 0 after 29276 msecs
-[   94.865002] calling  pnp_system_init+0x0/0x20()
-[   94.877935] system 00:06: ioport range 0x4d0-0x4d1 has been reserved
-[   94.884286] system 00:06: ioport range 0x7b0-0x7df has been reserved
-[   94.897886] system 00:06: ioport range 0x800-0x80f has been reserved
-[   94.907886] system 00:06: ioport range 0xbb0-0xbdf has been reserved
-[   94.917855] system 00:06: ioport range 0x2000-0x207f has been reserved
-[   94.937827] system 00:06: ioport range 0x2080-0x20ff has been reserved
-[   94.947827] system 00:06: ioport range 0x2400-0x247f has been reserved
-[   94.957793] system 00:06: ioport range 0x2480-0x24ff has been reserved
-[   94.977766] system 00:06: ioport range 0x2800-0x287f has been reserved
-[   94.987766] system 00:06: ioport range 0x2880-0x28ff has been reserved
-[   94.997734] system 00:06: ioport range 0x2c00-0x2c7f has been reserved
-[   95.017708] system 00:06: ioport range 0x2c80-0x2cff has been reserved
-[   95.024234] system 00:06: iomem range 0x0-0x0 could not be reserved
-[   95.037678] system 00:06: iomem range 0xfee01000-0xfeefffff could
-not be reserved
-[   95.060158] system 00:06: iomem range 0xefa80000-0xefabffff has been reserved
-[   95.070158] system 00:06: iomem range 0xffb00000-0xffbfffff could
-not be reserved
-[   95.077633] system 00:06: iomem range 0xfff00000-0xffffffff could
-not be reserved
-[   95.097590] system 00:08: iomem range 0xfec00000-0xfec00fff could
-not be reserved
-[   95.120064] system 00:08: iomem range 0xfee00000-0xfee00fff could
-not be reserved
-[   95.130070] system 00:0c: ioport range 0x290-0x297 has been reserved
-[   95.137523] system 00:0d: iomem range 0x0-0x9ffff could not be reserved
-[   95.157495] system 00:0d: iomem range 0xc0000-0xcffff has been reserved
-[   95.167495] system 00:0d: iomem range 0xe0000-0xfffff could not be reserved
-[   95.177463] system 00:0d: iomem range 0x100000-0xdfffffff could not
-be reserved
-[   95.197437] system 00:0d: iomem range 0xfec00000-0xffffffff could
-not be reserved
-[   95.219983] initcall pnp_system_init+0x0/0x20() returned 0 after 162 msecs
-[   95.226887] calling  chr_dev_init+0x0/0xd0()
-[   95.237813] initcall chr_dev_init+0x0/0xd0() returned 0 after 0 msecs
-[   95.247378] calling  firmware_class_init+0x0/0x90()
-[   95.257320] initcall firmware_class_init+0x0/0x90() returned 0 after 0 msecs
-[   95.276031] calling  loopback_init+0x0/0x20()
-[   95.288590] initcall loopback_init+0x0/0x20() returned 0 after 0 msecs
-[   95.296837] calling  cpufreq_gov_performance_init+0x0/0x20()
-[   95.309084] initcall cpufreq_gov_performance_init+0x0/0x20()
-returned 0 after 0 msecs
-[   95.317734] calling  cpufreq_gov_dbs_init+0x0/0x50()
-[   95.338090] initcall cpufreq_gov_dbs_init+0x0/0x50() returned 0 after 0 msecs
-[   95.345254] calling  init_acpi_pm_clocksource+0x0/0xc0()
-[   95.355293] initcall init_acpi_pm_clocksource+0x0/0xc0() returned 0
-after 0 msecs
-[   95.374115] calling  pcibios_assign_resources+0x0/0x90()
-[   95.379618] PCI: Bridge: 0000:00:06.0
-[   95.394087]   IO window: disabled.
-[   95.397502]   MEM window: 0xeff00000-0xefffffff
-[   95.402032]   PREFETCH window: 0x00000000eef00000-0x00000000eeffffff
-[   95.415189] PCI: Bridge: 0000:00:0b.0
-[   95.418860]   IO window: e000-efff
-[   95.438075]   MEM window: 0xefe00000-0xefefffff
-[   95.442610]   PREFETCH window: disabled.
-[   95.455526] PCI: Bridge: 0000:00:0c.0
-[   95.459197]   IO window: disabled.
-[   95.462604]   MEM window: 0xefd00000-0xefdfffff
-[   95.475513]   PREFETCH window: disabled.
-[   95.479443] PCI: Bridge: 0000:00:0d.0
-[   95.485512]   IO window: disabled.
-[   95.495480]   MEM window: 0xefc00000-0xefcfffff
-[   95.500010]   PREFETCH window: disabled.
-[   95.515455] PCI: Bridge: 0000:00:0f.0
-[   95.519124]   IO window: d000-dfff
-[   95.522533]   MEM window: 0xefb00000-0xefbfffff
-[   95.535423]   PREFETCH window: 0x00000000e0000000-0x00000000e7ffffff
-[   95.545456] initcall pcibios_assign_resources+0x0/0x90() returned 0
-after 79 msecs
-[   95.557830] calling  fill_mp_bus_to_cpumask+0x0/0x100()
-[   95.575408] initcall fill_mp_bus_to_cpumask+0x0/0x100() returned 0
-after 0 msecs
-[   95.593777] calling  inet_init+0x0/0x380()
-[   95.597890] NET: Registered protocol family 2
+ arch/x86/Kconfig.cpu        |    2 +-
+ include/asm-x86/bitops.h    |   90 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/bitops_32.h |   64 ------------------------------
+ include/asm-x86/bitops_64.h |   76 ------------------------------------
+ 4 files changed, 91 insertions(+), 141 deletions(-)
 
--> same hang, no reaction to SysRq.
+Hi Ingo,
 
-What looks suspicious: The call to pcie_aspm_init is just before the
-temporary hang. When I used make oldconfig to upgrade the .config from
-2.6.25-rc3-mm1 to -rc5-mm1 I activated the new option CONFIG_PCIEASPM.
+On a 64-bit machine the cmov instruction is always available. I made
+that explicit by turning on CONFIG_X86_CMOV for all 64-bit builds.
 
-I will try with CONFIG_PCIEASPM_DEBUG added and completely without this option.
+This patch introduces a change in behaviour for 32-bit builds: if
+the selected cpu has the cmov instruction, it will now be used by
+the functions ffs and fls.
 
-Torsten
+For the i386 defconfig the number of occurrences of cmov increases
+from 4336 to 4429 and vmlinux text size increases 15 bytes. When
+building for 486 no cmovs are generated, as expected.
+
+Greetings,
+	Alexander
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 31e92fb..fb7399b 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -399,7 +399,7 @@ config X86_TSC
+ # generates cmov.
+ config X86_CMOV
+ 	def_bool y
+-	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7)
++	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || X86_64)
+ 
+ config X86_MINIMUM_CPU_FAMILY
+ 	int
+diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
+index 1a23ce1..bbdecee 100644
+--- a/include/asm-x86/bitops.h
++++ b/include/asm-x86/bitops.h
+@@ -310,6 +310,96 @@ static int test_bit(int nr, const volatile unsigned long *addr);
+ 	 constant_test_bit((nr),(addr)) :	\
+ 	 variable_test_bit((nr),(addr)))
+ 
++/**
++ * __ffs - find first bit in word.
++ * @word: The word to search
++ *
++ * Undefined if no bit exists, so code should check against 0 first.
++ */
++static inline unsigned long __ffs(unsigned long word)
++{
++	__asm__("bsf %1,%0"
++		:"=r" (word)
++		:"rm" (word));
++	return word;
++}
++
++/**
++ * ffz - find first zero in word.
++ * @word: The word to search
++ *
++ * Undefined if no zero exists, so code should check against ~0UL first.
++ */
++static inline unsigned long ffz(unsigned long word)
++{
++	__asm__("bsf %1,%0"
++		:"=r" (word)
++		:"r" (~word));
++	return word;
++}
++
++/*
++ * __fls: find last bit set.
++ * @word: The word to search
++ *
++ * Undefined if no zero exists, so code should check against ~0UL first.
++ */
++static inline unsigned long __fls(unsigned long word)
++{
++	__asm__("bsr %1,%0"
++		:"=r" (word)
++		:"rm" (word));
++	return word;
++}
++
++#ifdef __KERNEL__
++/**
++ * ffs - find first bit set
++ * @x: the word to search
++ *
++ * This is defined the same way as
++ * the libc and compiler builtin ffs routines, therefore
++ * differs in spirit from the above ffz() (man ffs).
++ */
++static inline int ffs(int x)
++{
++	int r;
++#ifdef CONFIG_X86_CMOV
++	__asm__("bsfl %1,%0\n\t"
++		"cmovzl %2,%0"
++		: "=r" (r) : "rm" (x), "r" (-1));
++#else
++	__asm__("bsfl %1,%0\n\t"
++		"jnz 1f\n\t"
++		"movl $-1,%0\n"
++		"1:" : "=r" (r) : "rm" (x));
++#endif
++	return r+1;
++}
++
++/**
++ * fls - find last bit set
++ * @x: the word to search
++ *
++ * This is defined the same way as ffs().
++ */
++static inline int fls(int x)
++{
++	int r;
++#ifdef CONFIG_X86_CMOV
++	__asm__("bsrl %1,%0\n\t"
++		"cmovzl %2,%0"
++		: "=&r" (r) : "rm" (x), "rm" (-1));
++#else
++	__asm__("bsrl %1,%0\n\t"
++		"jnz 1f\n\t"
++		"movl $-1,%0\n"
++		"1:" : "=r" (r) : "rm" (x));
++#endif
++	return r+1;
++}
++#endif /* __KERNEL__ */
++
+ #undef ADDR
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/include/asm-x86/bitops_32.h b/include/asm-x86/bitops_32.h
+index 570f0fa..c19fbe9 100644
+--- a/include/asm-x86/bitops_32.h
++++ b/include/asm-x86/bitops_32.h
+@@ -38,20 +38,6 @@ static inline int find_first_zero_bit(const unsigned long *addr, unsigned size)
+ }
+ 
+ /**
+- * __ffs - find first bit in word.
+- * @word: The word to search
+- *
+- * Undefined if no bit exists, so code should check against 0 first.
+- */
+-static inline unsigned long __ffs(unsigned long word)
+-{
+-	__asm__("bsfl %1,%0"
+-		:"=r" (word)
+-		:"rm" (word));
+-	return word;
+-}
+-
+-/**
+  * find_first_bit - find the first set bit in a memory region
+  * @addr: The address to start the search at
+  * @size: The maximum size to search
+@@ -72,60 +58,10 @@ static inline unsigned find_first_bit(const unsigned long *addr, unsigned size)
+ 	return x;
+ }
+ 
+-/**
+- * ffz - find first zero in word.
+- * @word: The word to search
+- *
+- * Undefined if no zero exists, so code should check against ~0UL first.
+- */
+-static inline unsigned long ffz(unsigned long word)
+-{
+-	__asm__("bsfl %1,%0"
+-		:"=r" (word)
+-		:"r" (~word));
+-	return word;
+-}
+-
+ #ifdef __KERNEL__
+ 
+ #include <asm-generic/bitops/sched.h>
+ 
+-/**
+- * ffs - find first bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as
+- * the libc and compiler builtin ffs routines, therefore
+- * differs in spirit from the above ffz() (man ffs).
+- */
+-static inline int ffs(int x)
+-{
+-	int r;
+-
+-	__asm__("bsfl %1,%0\n\t"
+-		"jnz 1f\n\t"
+-		"movl $-1,%0\n"
+-		"1:" : "=r" (r) : "rm" (x));
+-	return r+1;
+-}
+-
+-/**
+- * fls - find last bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as ffs().
+- */
+-static inline int fls(int x)
+-{
+-	int r;
+-
+-	__asm__("bsrl %1,%0\n\t"
+-		"jnz 1f\n\t"
+-		"movl $-1,%0\n"
+-		"1:" : "=r" (r) : "rm" (x));
+-	return r+1;
+-}
+-
+ #include <asm-generic/bitops/hweight.h>
+ 
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-x86/bitops_64.h b/include/asm-x86/bitops_64.h
+index 87e1a17..866ed56 100644
+--- a/include/asm-x86/bitops_64.h
++++ b/include/asm-x86/bitops_64.h
+@@ -35,71 +35,11 @@ static inline void set_bit_string(unsigned long *bitmap, unsigned long i,
+ 	}
+ } 
+ 
+-/**
+- * ffz - find first zero in word.
+- * @word: The word to search
+- *
+- * Undefined if no zero exists, so code should check against ~0UL first.
+- */
+-static inline unsigned long ffz(unsigned long word)
+-{
+-	__asm__("bsfq %1,%0"
+-		:"=r" (word)
+-		:"r" (~word));
+-	return word;
+-}
+-
+-/**
+- * __ffs - find first bit in word.
+- * @word: The word to search
+- *
+- * Undefined if no bit exists, so code should check against 0 first.
+- */
+-static inline unsigned long __ffs(unsigned long word)
+-{
+-	__asm__("bsfq %1,%0"
+-		:"=r" (word)
+-		:"rm" (word));
+-	return word;
+-}
+-
+-/*
+- * __fls: find last bit set.
+- * @word: The word to search
+- *
+- * Undefined if no zero exists, so code should check against ~0UL first.
+- */
+-static inline unsigned long __fls(unsigned long word)
+-{
+-	__asm__("bsrq %1,%0"
+-		:"=r" (word)
+-		:"rm" (word));
+-	return word;
+-}
+-
+ #ifdef __KERNEL__
+ 
+ #include <asm-generic/bitops/sched.h>
+ 
+ /**
+- * ffs - find first bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as
+- * the libc and compiler builtin ffs routines, therefore
+- * differs in spirit from the above ffz (man ffs).
+- */
+-static inline int ffs(int x)
+-{
+-	int r;
+-
+-	__asm__("bsfl %1,%0\n\t"
+-		"cmovzl %2,%0" 
+-		: "=r" (r) : "rm" (x), "r" (-1));
+-	return r+1;
+-}
+-
+-/**
+  * fls64 - find last bit set in 64 bit word
+  * @x: the word to search
+  *
+@@ -112,22 +52,6 @@ static inline int fls64(__u64 x)
+ 	return __fls(x) + 1;
+ }
+ 
+-/**
+- * fls - find last bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as ffs.
+- */
+-static inline int fls(int x)
+-{
+-	int r;
+-
+-	__asm__("bsrl %1,%0\n\t"
+-		"cmovzl %2,%0"
+-		: "=&r" (r) : "rm" (x), "rm" (-1));
+-	return r+1;
+-}
+-
+ #define ARCH_HAS_FAST_MULTIPLIER 1
+ 
+ #include <asm-generic/bitops/hweight.h>
