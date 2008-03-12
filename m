@@ -1,92 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYCLXsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYCLXvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYCLXsv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYCLXsn
+	id S1755218AbYCLXvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYCLXv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:48:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52814 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751343AbYCLXsm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:48:42 -0400
-Date: Wed, 12 Mar 2008 16:43:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: gerald.schaefer@de.ibm.com
-Cc: haveblue@us.ibm.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [patch 09/10] Hugetlb common code update for System z.
-Message-Id: <20080312164303.cac9cab5.akpm@linux-foundation.org>
-In-Reply-To: <1205363937.5237.60.camel@localhost.localdomain>
-References: <20080312173155.703966894@de.ibm.com>
-	<20080312173218.186436562@de.ibm.com>
-	<1205344286.9828.91.camel@nimitz.home.sr71.net>
-	<1205363937.5237.60.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 12 Mar 2008 19:51:29 -0400
+Received: from ozlabs.org ([203.10.76.45]:45474 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbYCLXv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 19:51:28 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18392.27765.985520.828367@cargo.ozlabs.ibm.com>
+Date: Thu, 13 Mar 2008 10:51:17 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Please pull powerpc.git merge branch
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 00:18:57 +0100
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
+Linus,
 
-> On Wed, 2008-03-12 at 10:51 -0700, Dave Hansen wrote:
-> > > +#ifndef ARCH_HAS_HUGE_PTE_TYPE
-> > > +#define huge_pte_none(pte)                     pte_none(pte)
-> > > +#define huge_pte_wrprotect(pte)                        pte_wrprotect(pte)
-> > > +#define huge_ptep_set_wrprotect(mm, addr, ptep)        \
-> > > +       ptep_set_wrprotect(mm, addr, ptep)
-> > > +#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)        \
-> > > +       ptep_set_access_flags(vma, addr, ptep, pte, dirty)
-> > > +#define huge_ptep_get(ptep)                    (*ptep)
-> > > +#endif
-> > > +
-> > > +#ifndef ARCH_HAS_PREPARE_HUGEPAGE
-> > 
-> > Can you guys please do these defines in Kconfig instead of headers?  I
-> > find them much easier to track down when I have one place to look,
-> > rather than a mess of 14 other #includes in a arch-specific header. :)
-> 
-> There are already several ARCH_HAS_xxx defines which are being used in
-> inlude/linux/hugetlb.h. All of them are defined in
-> include/asm-<arch>/page.h for every architecture that needs them (with
-> the exception of powerpc, where it is include/asm-powerpc/page_64.h).
+Please do:
 
-Yes, but that's fugly and it would be better to put in place the
-infrastructure for cleaning it up, rather than worsening it.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-So...
+to get some more bug-fixes for various powerpc platforms.
 
-Put this:
+Thanks,
+Paul.
 
-+#define huge_pte_none(pte)			pte_none(pte)
-+#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
-+#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
-+	ptep_set_wrprotect(mm, addr, ptep)
-+#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
-+	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
-+#define huge_ptep_get(ptep)			(*ptep)
+ arch/powerpc/Makefile                           |    2 
+ arch/powerpc/boot/Makefile                      |   18 -
+ arch/powerpc/boot/dts/mpc8377_mds.dts           |   70 ++
+ arch/powerpc/boot/dts/mpc8378_mds.dts           |   70 ++
+ arch/powerpc/boot/dts/mpc8379_mds.dts           |   70 ++
+ arch/powerpc/boot/dts/sbc8548.dts               |   16 
+ arch/powerpc/boot/wrapper                       |    6 
+ arch/powerpc/configs/adder875-uboot_defconfig   |  798 -----------------------
+ arch/powerpc/configs/adder875_defconfig         |   61 +-
+ arch/powerpc/kernel/head_8xx.S                  |   30 +
+ arch/powerpc/kernel/misc_32.S                   |   15 
+ arch/powerpc/kernel/pci-common.c                |    8 
+ arch/powerpc/kernel/ppc_ksyms.c                 |    3 
+ arch/powerpc/mm/hash_utils_64.c                 |    4 
+ arch/powerpc/platforms/83xx/mpc837x_mds.c       |    8 
+ arch/powerpc/platforms/Kconfig                  |    1 
+ arch/powerpc/platforms/Kconfig.cputype          |    7 
+ arch/powerpc/platforms/cell/spufs/context.c     |    3 
+ arch/powerpc/platforms/cell/spufs/run.c         |    3 
+ arch/powerpc/platforms/cell/spufs/sched.c       |    4 
+ arch/powerpc/platforms/cell/spufs/spufs.h       |    1 
+ arch/powerpc/platforms/powermac/pic.c           |    2 
+ arch/powerpc/sysdev/qe_lib/qe.c                 |    7 
+ arch/ppc/kernel/head_8xx.S                      |   30 +
+ drivers/block/viodasd.c                         |    3 
+ drivers/macintosh/via-pmu-backlight.c           |    5 
+ drivers/macintosh/via-pmu.c                     |    2 
+ include/asm-powerpc/pgtable-ppc32.h             |    8 
+ include/asm-ppc/pgtable.h                       |    8 
+ include/linux/pmu.h                             |    9 
+ 30 files changed, 389 insertions(+), 883 deletions(-)
+ delete mode 100644 arch/powerpc/configs/adder875-uboot_defconfig
+ rename arch/powerpc/configs/{adder875-redboot_defconfig => adder875_defconfig} (95%)
 
-into include/asm-generic/hugetlb.h
+Andy Fleming (1):
+      [POWERPC] 83xx: Make 83xx perfmon support selectable
 
-then for each architecture except s390 add an include/asm-foo/hugetlb.h
-which does
+Benjamin Herrenschmidt (3):
+      [POWERPC] Fix bogus test for unassigned PCI resources
+      [POWERPC] Fix sleep on some powerbooks
+      [POWERPC] Fix viodasd driver with scatterlist debug
 
-#include <asm-generic/hugetlb.h>
+Grant Likely (1):
+      [POWERPC] Fix zImage-dtb.initrd build error
 
-then in include/linux/hugetlb.h add
+Guido Guenther (1):
+      [POWERPC] Fix build of modular drivers/macintosh/apm_emu.c
 
-#include <asm/hugetlb.h>
+Ionut Nicu (1):
+      [POWERPC] QE: Make qe_get_firmware_info reentrant
 
-and then in include/asm-s390/hugetlb.h, add your s390-specific versions of
-huge_pte_none() and friends.
+Jeremy Kerr (2):
+      [POWERPC] spufs: don't (ab)use SCHED_IDLE
+      [POWERPC] spufs: fix rescheduling of non-runnable contexts
 
-later, someone can hopefully use this new infrastructure to rid us of
-ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
-ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
-ARCH_HAS_HUGETLB_PREFAULT_HOOK.
+Jeremy McNicoll (1):
+      [POWERPC] 85xx: sbc8548 - Fix incorrect PCI-X and PCI interrupt map
 
+Li Yang (2):
+      [POWERPC] 83xx: Fix wrong USB phy type in mpc837xmds dts
+      [POWERPC] 83xx: Add local bus device nodes to MPC837xMDS device trees.
+
+Michael Ellerman (1):
+      [POWERPC] Fix large hash table allocation on Cell blades
+
+Paul Mackerras (1):
+      [POWERPC] Add __ucmpdi2 for 64-bit comparisons in 32-bit kernels
+
+Scott Wood (1):
+      [POWERPC] 8xx: Fix wrapper platform for adder875, and combine defconfigs.
+
+Theodore Ts'o (1):
+      [POWERPC] Export empty_zero_page
+
+Timur Tabi (1):
+      [POWERPC] QE: Fix QE firmware uploading limit
+
+Tony Breeds (3):
+      [POWERPC] Fix undefined pmu_sys_suspended compilation error
+      [POWERPC] Fix drivers/macintosh/mediabay.c when !CONFIG_ADB_PMU
+      [POWERPC] Fix arch/powerpc/platforms/powermac/pic.c when !CONFIG_ADB_PMU
+
+Vitaly Bordug (1):
+      [POWERPC] 8xx: fix swap
+
+Yuri Tikhonov (1):
+      [PPC] 8xx: swap bug-fix
 
