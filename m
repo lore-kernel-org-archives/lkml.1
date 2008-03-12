@@ -1,76 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYCLFwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbYCLFxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbYCLFwu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 01:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYCLFwm
+	id S1753414AbYCLFxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 01:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYCLFxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 01:52:42 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51532 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbYCLFwl (ORCPT
+	Wed, 12 Mar 2008 01:53:23 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:58539 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYCLFxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 01:52:41 -0400
-Message-ID: <47D76F60.6000709@jp.fujitsu.com>
-Date: Wed, 12 Mar 2008 14:51:28 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 12 Mar 2008 01:53:23 -0400
+Message-Id: <200803120546.m2C5kE8L082233@www262.sakura.ne.jp>
+Subject: Re: [2.6.25-rc5-mm1] BUG() at mnt_want_write().
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>,
-       Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-       Gary Hade <garyhade@us.ibm.com>, warthog19@eaglescrag.net,
-       kristen.c.accardi@intel.com, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-References: <20080229002341.GA21420@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311132800.GC21482@parisc-linux.org> <200803110956.37619.jbarnes@virtuousgeek.org>
-In-Reply-To: <200803110956.37619.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 12 Mar 2008 14:46:14 +0900
+References: <200803120137.m2C1bffL037440@www262.sakura.ne.jp> <1205291010.9828.60.camel@nimitz.home.sr71.net>
+In-Reply-To: <1205291010.9828.60.camel@nimitz.home.sr71.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello.
 
-Jesse Barnes wrote:
-> On Tuesday, March 11, 2008 6:28 am Matthew Wilcox wrote:
->> On Tue, Mar 11, 2008 at 10:10:40PM +0900, Kenji Kaneshige wrote:
->>> 1) I checked ACPI spec again and again, but I could not find any
->>>    reason to add Fujitsu servers to quirks list. So I'd like you to
->>>    add HP servers to the quirks list. I'll send the following patches
->>>    followed by this e-mail.
->> Alex pointed out that IBM interprets the spec the same way that HP does.
->> Are there any other machines that follow the spec the same way that
->> Fujitsu does?
-> 
-> So Kenji is arguing that _STA should be called before _SUN (iow that the _SUN 
-> value is bogus unless _STA indicates that the slot is powered)?
+The file causing BUG seems to be "proc/sys/kernel/real-root-dev",
+which is not starting with '/'.
+I think the vfsmount used for name resolution
+is pointing invalid address.
 
-Yes. And the another reason is _STA is not for representing the presence
-of PCI adapter card on the hot-plug slots because ACPI2.0 or later says
-"For _HID devices, OSPM evaluates the _STA method. For _ADR devices, OSPM
-checks with the bus driver for that device." in the explanation of _EJx.
-Since PCI adapter card on a hotplug slot is _ADR device, we must not
-provide _STA to represent the presence of PCI adapter card on a hotplug
-slot. Please look at the sample ASL codes for PCI hotplug slots in ACPI
-spec. There should be no _STA, of course.
+Regards.
+---------- dmesg ----------
 
-This is not described in ACPI1.0b spec and Alex's machine was based on
-ACPI1.0b. So I've suggested to check ACPI version in ACPI PCI slot
-detection driver. But it turned out that this suggestion didn't work
-because HP's ACPI2.0 based machine is doing same as ACPI1.0b based one.
+input: ImPS/2 Generic Wheel Mouse as /class/input/input1
+do_sys_open: /dev/ram
+do_sys_open: /initrd.image
+RAMDISK: cramfs filesystem found at block 0
+RAMDISK: Loading 1060KiB [1 disk] into ram disk... done.
+VFS: Mounted root (cramfs filesystem) readonly.
+do_sys_open: /
+do_sys_open: /old
+do_sys_open: /dev/console
+do_sys_open: /etc/ld.so.preload
+do_sys_open: /etc/ld.so.cache
+do_sys_open: /lib/tls/i686/mmx/cmov/libc.so.6
+do_sys_open: /lib/tls/i686/mmx/libc.so.6
+do_sys_open: /lib/tls/i686/cmov/libc.so.6
+do_sys_open: /lib/tls/i686/libc.so.6
+do_sys_open: /lib/tls/mmx/cmov/libc.so.6
+do_sys_open: /lib/tls/mmx/libc.so.6
+do_sys_open: /lib/tls/cmov/libc.so.6
+do_sys_open: /lib/tls/libc.so.6
+do_sys_open: /linuxrc
+do_sys_open: /etc/ld.so.preload
+do_sys_open: /etc/ld.so.cache
+do_sys_open: /lib/tls/i686/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/tls/i686/mmx/libblkid.so.1
+do_sys_open: /lib/tls/i686/cmov/libblkid.so.1
+do_sys_open: /lib/tls/i686/libblkid.so.1
+do_sys_open: /lib/tls/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/tls/mmx/libblkid.so.1
+do_sys_open: /lib/tls/cmov/libblkid.so.1
+do_sys_open: /lib/tls/libblkid.so.1
+do_sys_open: /lib/i686/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/i686/mmx/libblkid.so.1
+do_sys_open: /lib/i686/cmov/libblkid.so.1
+do_sys_open: /lib/i686/libblkid.so.1
+do_sys_open: /lib/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/mmx/libblkid.so.1
+do_sys_open: /lib/cmov/libblkid.so.1
+do_sys_open: /lib/libblkid.so.1
+do_sys_open: /lib/tls/libuuid.so.1
+do_sys_open: /lib/libuuid.so.1
+do_sys_open: /lib/tls/libc.so.6
+do_sys_open: /dev/null
+do_sys_open: /etc/blkid.tab
+mount used greatest stack depth: 2632 bytes left
+do_sys_open: /etc/ld.so.preload
+do_sys_open: /etc/ld.so.cache
+do_sys_open: /lib/tls/i686/mmx/cmov/libc.so.6
+do_sys_open: /lib/tls/i686/mmx/libc.so.6
+do_sys_open: /lib/tls/i686/cmov/libc.so.6
+do_sys_open: /lib/tls/i686/libc.so.6
+do_sys_open: /lib/tls/mmx/cmov/libc.so.6
+do_sys_open: /lib/tls/mmx/libc.so.6
+do_sys_open: /lib/tls/cmov/libc.so.6
+do_sys_open: /lib/tls/libc.so.6
+do_sys_open: proc/sys/kernel/real-root-dev
+do_sys_open: proc/sys/kernel/real-root-dev
+do_sys_open: /etc/ld.so.preload
+do_sys_open: /etc/ld.so.cache
+do_sys_open: /lib/tls/i686/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/tls/i686/mmx/libblkid.so.1
+do_sys_open: /lib/tls/i686/cmov/libblkid.so.1
+do_sys_open: /lib/tls/i686/libblkid.so.1
+do_sys_open: /lib/tls/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/tls/mmx/libblkid.so.1
+do_sys_open: /lib/tls/cmov/libblkid.so.1
+do_sys_open: /lib/tls/libblkid.so.1
+do_sys_open: /lib/i686/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/i686/mmx/libblkid.so.1
+do_sys_open: /lib/i686/cmov/libblkid.so.1
+do_sys_open: /lib/i686/libblkid.so.1
+do_sys_open: /lib/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/mmx/libblkid.so.1
+do_sys_open: /lib/cmov/libblkid.so.1
+do_sys_open: /lib/libblkid.so.1
+do_sys_open: /lib/tls/libuuid.so.1
+do_sys_open: /lib/libuuid.so.1
+do_sys_open: /lib/tls/libc.so.6
+do_sys_open: /dev/null
+do_sys_open: /etc/blkid.tab
+do_sys_open: bin/root
+linuxrc used greatest stack depth: 2344 bytes left
+debug: unmapping init memory c048d000..c051f000
+Write protecting the kernel text: 2348k
+Write protecting the kernel read-only data: 1052k
+do_sys_open: /dev/console
+do_sys_open: /etc/ld.so.preload
+do_sys_open: /etc/ld.so.cache
+do_sys_open: /lib/tls/i686/mmx/cmov/libc.so.6
+do_sys_open: /lib/tls/i686/mmx/libc.so.6
+do_sys_open: /lib/tls/i686/cmov/libc.so.6
+do_sys_open: /lib/tls/i686/libc.so.6
+do_sys_open: /lib/tls/mmx/cmov/libc.so.6
+do_sys_open: /lib/tls/mmx/libc.so.6
+do_sys_open: /lib/tls/cmov/libc.so.6
+do_sys_open: /lib/tls/libc.so.6
+do_sys_open: /sbin/init
+do_sys_open: /linuxrc.conf
+initrd-tools: 0.1.81.1
+do_sys_open: bin/root
+do_sys_open: /etc/ld.so.preload
+do_sys_open: /etc/ld.so.cache
+do_sys_open: /lib/tls/i686/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/tls/i686/mmx/libblkid.so.1
+do_sys_open: /lib/tls/i686/cmov/libblkid.so.1
+do_sys_open: /lib/tls/i686/libblkid.so.1
+do_sys_open: /lib/tls/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/tls/mmx/libblkid.so.1
+do_sys_open: /lib/tls/cmov/libblkid.so.1
+do_sys_open: /lib/tls/libblkid.so.1
+do_sys_open: /lib/i686/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/i686/mmx/libblkid.so.1
+do_sys_open: /lib/i686/cmov/libblkid.so.1
+do_sys_open: /lib/i686/libblkid.so.1
+do_sys_open: /lib/mmx/cmov/libblkid.so.1
+do_sys_open: /lib/mmx/libblkid.so.1
+do_sys_open: /lib/cmov/libblkid.so.1
+do_sys_open: /lib/libblkid.so.1
+do_sys_open: /lib/tls/libuuid.so.1
+do_sys_open: /lib/libuuid.so.1
+do_sys_open: /lib/tls/libc.so.6
+do_sys_open: /etc/mtab
+do_sys_open: proc/sys/kernel/real-root-dev
+BUG: unable to handle kernel paging request at df368fe8
+IP: [<c017e0d0>] mnt_want_write+0x41/0x5f
+*pde = 1f884163 *pte = 1f368160
+Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
+last sysfs file:
+Modules linked in:
 
->                                                                 That seems 
-> harder for the user; often times you want to find a slot even if it's powered 
-> down & empty (say to add a new card)...  It looks like the current code won't 
-> provide a slot name on Fujitsu machines in this case, or am I missing 
-> something?
- 
-No. Even if we evaluate _STA before _SUN, ACPI PCI slot detection driver
-detects all of the slot on Fujitsu machine regardless of slot status
-(present or not) because Fujitsu server never provide _STA for representing
-presence of PCI adapter card on the slot.
-
-Thanks,
-Kenji Kaneshige
-
+Pid: 1, comm: init Not tainted (2.6.25-rc5-mm1 #2)
+EIP: 0060:[<c017e0d0>] EFLAGS: 00010286 CPU: 0
+EIP is at mnt_want_write+0x41/0x5f
+EAX: 00000000 EBX: c1453460 ECX: 00000001 EDX: df368f78
+ESI: df365f78 EDI: 00000000 EBP: df8e1ef0 ESP: df8e1ee4
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process init (pid: 1, ti=df8e1000 task=df8f8020 task.ti=df8e1000)
+Stack: ffffffeb 00000200 df8e1f20 df8e1f7c c0173481 ffffa7fe 00000000 ffffff9c
+       c053482b 00008242 00000000 00000002 00008241 df365f78 df56af50 df365f78
+       df56af50 92aaee34 0000000d df911010 00000300 00000000 00000000 c016a9ca
+Call Trace:
+ [<c0173481>] ? do_filp_open+0x233/0x52f
+ [<c016a9ca>] ? get_unused_fd_flags+0xb3/0xbe
+ [<c016aabd>] ? do_sys_open+0x50/0xd0
+ [<c016ab53>] ? sys_open+0x16/0x18
+ [<c0103966>] ? syscall_call+0x7/0xb
+ =======================
+Code: 8d 1c 02 89 d8 e8 d3 b4 1c 00 89 f0 e8 7e ff ff ff 85 c0 74 07 bf e2 ff ff ff eb 1f 8b 53 2c 39 f2 74 15 85 d2 74 0e 8b 43 28 90 <01> 42 70 c7 43 28
+00 00 00 00 89 73 2c ff 43 28 89 d8 e8 cf b5
+EIP: [<c017e0d0>] mnt_want_write+0x41/0x5f SS:ESP 0068:df8e1ee4
+---[ end trace c340a6739d39d70a ]---
+Kernel panic - not syncing: Attempted to kill init!
