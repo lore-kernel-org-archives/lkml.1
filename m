@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYCLXRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYCLXRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbYCLXRL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYCLXQ5
+	id S1756090AbYCLXRg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYCLXR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:16:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52020 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbYCLXQ5 (ORCPT
+	Wed, 12 Mar 2008 19:17:26 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:10950 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbYCLXRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:16:57 -0400
-Date: Wed, 12 Mar 2008 16:16:01 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
-	Reported regressions from 2.6.24)
-Message-ID: <20080312231601.GB24820@kroah.com>
-References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com> <alpine.LFD.1.00.0803121502450.3557@woody.linux-foundation.org> <20080312223431.GA24150@kroah.com> <alpine.LFD.1.00.0803121553070.3557@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803121553070.3557@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 12 Mar 2008 19:17:25 -0400
+Subject: Re: [patch 09/10] Hugetlb common code update for System z.
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Reply-To: gerald.schaefer@de.ibm.com
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+In-Reply-To: <1205344286.9828.91.camel@nimitz.home.sr71.net>
+References: <20080312173155.703966894@de.ibm.com>
+	 <20080312173218.186436562@de.ibm.com>
+	 <1205344286.9828.91.camel@nimitz.home.sr71.net>
+Content-Type: text/plain
+Date: Thu, 13 Mar 2008 00:18:57 +0100
+Message-Id: <1205363937.5237.60.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 04:02:57PM -0700, Linus Torvalds wrote:
+On Wed, 2008-03-12 at 10:51 -0700, Dave Hansen wrote:
+> > +#ifndef ARCH_HAS_HUGE_PTE_TYPE
+> > +#define huge_pte_none(pte)                     pte_none(pte)
+> > +#define huge_pte_wrprotect(pte)                        pte_wrprotect(pte)
+> > +#define huge_ptep_set_wrprotect(mm, addr, ptep)        \
+> > +       ptep_set_wrprotect(mm, addr, ptep)
+> > +#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)        \
+> > +       ptep_set_access_flags(vma, addr, ptep, pte, dirty)
+> > +#define huge_ptep_get(ptep)                    (*ptep)
+> > +#endif
+> > +
+> > +#ifndef ARCH_HAS_PREPARE_HUGEPAGE
 > 
+> Can you guys please do these defines in Kconfig instead of headers?  I
+> find them much easier to track down when I have one place to look,
+> rather than a mess of 14 other #includes in a arch-specific header. :)
+
+There are already several ARCH_HAS_xxx defines which are being used in
+inlude/linux/hugetlb.h. All of them are defined in
+include/asm-<arch>/page.h for every architecture that needs them (with
+the exception of powerpc, where it is include/asm-powerpc/page_64.h).
+So there is already one place to look for them, and so we put our
+defines into include/asm-s390/page.h.
+
+> I'm also a little concerned that you just #ifdef'd in about 44 new ptep
+> functions in here.  Have you carefully considered doing this in a way
+> that would fit in better with the other architectures?
+
+Other architectures should not be affected at all. Because of the
+#ifdef, the new ptep functions are either a nop for them or just the
+same as they were before our patch.
+
+> > Huge ptes have a special type on s390 and cannot be handled with the
+> > standard pte functions in certain cases.
 > 
-> On Wed, 12 Mar 2008, Greg KH wrote:
-> > 
-> > What happend in .25-rc was that we now catch these kinds of problems
-> > (watching for duplicate kobjects to be registered and such.)  So this
-> > might have always been happening, but no warning was ever produced.
-> 
-> It's not the warning that worries me. It's the apparent oops (keyboard 
-> leds blinking?) at shutdown/poweroff!
+> Can you elaborate a bit more on that?
 
-It oopses at shutdown?  I thought this was originally reported as a
-"will not power off" which for a while was attributed to the cpufreq fix
-that went into -rc2 or -rc3.
+Large ptes are not really ptes but segment table entries (pmd entries),
+in our case. This is similar to other architectures with hardware large
+page support, because there simply is no page table level (and thus no
+ptes) anymore. Unfortunately, the hugetlbfs common code does not
+consider that discrepancy and just uses a standard pte_t and standard
+pte functions, probably because it did not really make a difference on
+other architectures.
 
-I didn't realize there was an oops, sorry.
+On s390, a segment table entry (pmd) type is different from a pte type
+mainly in the location of its invalid bit. This means that we cannot
+use pte_none(), pte_wrprotect() and similar functions for large ptes,
+which was the reason for the new huge_pte functions that we introduced.
 
-> > The reason we aren't shutting down is also due to the way kobjects now
-> > work.  If you don't clean up properly, they linger around and something
-> > on the shutdown path (I haven't figured that out yet) doesn't want to
-> > stop the machine.
-> 
-> .. and that's my issue! We're too late in the game to try to figure things 
-> out and leave things hanging. The patch broke something, it needs to be 
-> fixed or reverted. It's been going on too long.
-> 
-> I think it should have been reverted probably two weeks ago already. We 
-> can re-apply it early in the 2.6.26 series, and then try to fix it right. 
-> 
-> Since there is at least a patch worth trying now, I'll hold off reverting 
-> it and wait for Guennardi to test the patch, but the fact is, we shouldn't 
-> have a known-broken kernel for several weeks, when there is a known fix 
-> for it in reverting a single commit!
-> 
-> We have _way_ too many regressions as it is. Regressions are bad. Ones 
-> that have known causes and haven't been fixed in three weeks are 
-> unacceptable.
+--
+Gerald Schaefer
 
-Sorry, I thought this was just a warning at boot time.
-
-It would be interesting to see if reverting the pci_bus patch did
-anything about the fact that we register the root PCI bus through two
-different methods.
-
-thanks,
-
-greg k-h
