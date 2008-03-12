@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYCLKjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbYCLKkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752051AbYCLKjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 06:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYCLKjG
+	id S1752643AbYCLKkr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 06:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYCLKkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 06:39:06 -0400
-Received: from mail.suse.de ([195.135.220.2]:40664 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbYCLKjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 06:39:05 -0400
-Date: Wed, 12 Mar 2008 11:40:35 +0100
-From: Holger Macht <hmacht@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Len Brown <lenb@kernel.org>, stable@kernel.org
-Subject: Re: [PATCH] ACPI: Set flag DOCK_UNDOCKING when triggered via sysfs
-Message-ID: <20080312104034.GA4371@homac>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Len Brown <lenb@kernel.org>, stable@kernel.org
-References: <20080312000727.GB4089@homac> <20080311223522.3326b6ee.akpm@linux-foundation.org>
+	Wed, 12 Mar 2008 06:40:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:43116 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750795AbYCLKki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 06:40:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kt9ImXRDSkpU3of9obM+YF9J+Poj6FlTPTxICFSwE01Mg+9ApulL6LmA3SBUkoWDAOhOaUwtzFmDlZoOH+BFDxzl+XrBg0FnnwgX/7C+iWfuOAlmUEi33U69X/YP+2teYbDl0BWJN5EorIu+EfZ0zkLpTOqLarFBDA/oUCz+9U4=
+Message-ID: <e2e108260803120340u6e42b1d1hd3fc51bb92f21830@mail.gmail.com>
+Date: Wed, 12 Mar 2008 11:40:36 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: How to compile kernel so it automatically reboots upon a crash instead of generating stack trace and then hang.
+Cc: "Prakhar Krishna" <prakhar2@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0803120602580.18745@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080311223522.3326b6ee.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <4f2ee0160803112152y21bb99a7t331fc9eff214e756@mail.gmail.com>
+	 <Pine.LNX.4.64.0803120602580.18745@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Di 11. Mär - 22:35:22, Andrew Morton wrote:
-> On Wed, 12 Mar 2008 01:07:27 +0100 Holger Macht <hmacht@suse.de> wrote:
-> 
-> > begin_undock() is only called when triggered via a acpi notify handler
-> > (pressing the undock button on the dock station), but complete_undock() is
-> > always called after the eject. So if a undock is triggered through a sysfs
-> > write, the flag DOCK_UNDOCKING has to be set for the dock station,
-> > too. Otherwise this will freeze the system hard.
-> > 
-> 
-> We prefer not to make systems freeze hard.
-> 
-> > ---
-> > 
-> > diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-> > index 307cef6..fa44fb9 100644
-> > --- a/drivers/acpi/dock.c
-> > +++ b/drivers/acpi/dock.c
-> > @@ -710,6 +710,7 @@ static ssize_t write_undock(struct device *dev, struct device_attribute *attr,
-> >  	if (!count)
-> >  		return -EINVAL;
-> >  
-> > +	begin_undock(dock_station);
-> >  	ret = handle_eject_request(dock_station, ACPI_NOTIFY_EJECT_REQUEST);
-> >  	return ret ? ret: count;
-> >  }
-> 
-> I assume that this is needed in 2.6.24.x as well?
+On Wed, Mar 12, 2008 at 6:04 AM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+>  On Mar 11 2008 23:52, Prakhar Krishna wrote:
+>  >
+>  >[I did search the mailing lists archives and the Web but did not find an answer,
+>  > apololgies if this is duplicate question]
+>  >
+>  >i need my linux box to automatically reboot if it ever runs into a
+>  >kernel panic/crash etc.
+>
+>  panic=<timeout> boot parameter, as per
+>  Documentation/kernel-parameters.txt.
 
-I tested this, and no, I weren't able to reproduce on 2.6.24.
+The best solution in this case is a hardware watchdog. Hardware
+watchdogs are present on some server motherboards, most embedded x86
+CPU boards and also in PowerPC CPU's. The Linux kernel supports some
+hardware watchdogs, see also Device Drivers/Watchdog Timer Support in
+the Linux kernel config.
 
-Moreover, it seems that the freeze is related to some libata issue because
-it only freezes when a drive is in the dock station.
+The nmi_watchdog=<timeout> parameter might be interesting too. See
+also Documentation/nmi_watchdog.txt.
 
-Nevertheless, I think the patch is correct. Maybe there's a race involved
-somewhere I'm not aware of. I really like to wait for Kristen to comment
-before pushing it into more trees.
-
-Thanks,
-	Holger
+Bart.
