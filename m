@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYCLOHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYCLOJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbYCLOHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 10:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYCLOHW
+	id S1753946AbYCLOJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 10:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYCLOJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 10:07:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:39299 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbYCLOHU (ORCPT
+	Wed, 12 Mar 2008 10:09:00 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37110 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751355AbYCLOJA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 10:07:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=j0NWDPuANJS7czJTuVC/b3l/o4F9HWTdZZJ8IgszC7Mkf2kUAh3ls7CunxRx6ha3yqiIvnrB9StvKNXmP0Hz4hqO1DEr1U74Iyz9p8xUav4GSij2RvJQcWgcS/9L6a0RcnOBA4/f+k14SiVGOa9JeV/7Btr/lrfPDaBVlzI/JD0=
-Message-ID: <47D7E392.3080807@gmail.com>
-Date: Wed, 12 Mar 2008 15:07:14 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 12 Mar 2008 10:09:00 -0400
+Message-ID: <47D7E3E0.3040401@linux.vnet.ibm.com>
+Date: Wed, 12 Mar 2008 19:38:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] Mark early_printk as asmlinkage
-References: <1205330034-28828-1-git-send-email-jirislaby@gmail.com> <1205330034-28828-2-git-send-email-jirislaby@gmail.com> <47D7E2FB.2020801@zytor.com>
-In-Reply-To: <47D7E2FB.2020801@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH 03/17] sched: rt-group: full hierarchy support for
+ the rt groups
+References: <20080309170850.256853000@chello.nl> <20080309170926.354453000@chello.nl> <20080312082532.GB3784@linux.vnet.ibm.com> <661de9470803120129l66497656o948c13c6c0c26766@mail.gmail.com> <1205314176.8514.219.camel@twins>
+In-Reply-To: <1205314176.8514.219.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/12/2008 03:04 PM, H. Peter Anvin wrote:
-> Jiri Slaby wrote:
->> It's not explicitly marked as asmlinkage, but invoked from x86_32
->> startup code with parameters on stack.
+Peter Zijlstra wrote:
+> On Wed, 2008-03-12 at 13:59 +0530, Balbir Singh wrote:
+>> On Wed, Mar 12, 2008 at 1:55 PM, Dhaval Giani
+>> <dhaval@linux.vnet.ibm.com> wrote:
+>>         On Sun, Mar 09, 2008 at 06:08:53PM +0100, Peter Zijlstra
+>>         wrote:
+>>         > Update the -rt bits to support the full hierarchy support
+>>         started by Dhaval.
+>>         >
+>>         
+>>         
+>>         Thanks for the effort. Just a very minor comment. I will try
+>>         these out
+>>         and give more feedback.
+>>         
+>>         
+>>         > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>         
 >>
->> No other architectures define early_printk and none of them are affected
->> by this change, since defines asmlinkage as empty token.
+>> Shouldn't this have Dhaval's signed-off-by as well? Dhaval do you want
+>> to sign-off on these patches?
 > 
-> NAK.
+> He can Ack it, but the 3rd patch was not authored by him.
 > 
-> The regparm ABI for x86-32 uses parameters on the stack when the 
-> function is varadic (as it is here), so this is unnecessary.
 
-Makes sense. Why is printk marked as asmlinkage?
+My bad, I saw his sign-off on the first two patches. I got confused due to the
+order in which my mailer received the patches.
+
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
