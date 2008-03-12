@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYCLXEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYCLXHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756480AbYCLXEI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYCLXDx
+	id S1754830AbYCLXHZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYCLXHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:03:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58897 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756348AbYCLXDw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:03:52 -0400
-Date: Wed, 12 Mar 2008 16:02:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
- Reported regressions from 2.6.24)
-In-Reply-To: <20080312223431.GA24150@kroah.com>
-Message-ID: <alpine.LFD.1.00.0803121553070.3557@woody.linux-foundation.org>
-References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com>
- <20080312212704.GA16836@kroah.com> <alpine.LFD.1.00.0803121502450.3557@woody.linux-foundation.org> <20080312223431.GA24150@kroah.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 12 Mar 2008 19:07:12 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:58076 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751385AbYCLXHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 19:07:11 -0400
+Date: Thu, 13 Mar 2008 00:07:04 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Chr <chunkeey@web.de>
+cc: Samuel Tardieu <sam@rfc1149.net>,
+       device-mapper development <dm-devel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
+In-Reply-To: <200803122053.13265.chunkeey@web.de>
+Message-ID: <alpine.DEB.1.00.0803130003110.5593@sheep.housecafe.de>
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080309213441.GQ155407@sgi.com> <2008-03-12-19-03-51+trackit+sam@rfc1149.net> <200803122053.13265.chunkeey@web.de>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 12 Mar 2008, Chr wrote:
+> http://lkml.org/lkml/2008/3/11/377
+> (BTW: I'm still bisecting it... can somebody please confirm that 2.6.24-git17
+> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.24-git17.bz2
+> was the _last_ "good" one?)
 
+Hm, -git17 locked up hard when trying to access the device mapper
+(just like -rc1), not even sysrq was usable any more. Sadly, 
+nothing was logged to the disks/network. Will try earlier snapshots 
+then. And yes, this resyncing of the md devices after an unclean shutdown 
+is a real pita right now...
 
-On Wed, 12 Mar 2008, Greg KH wrote:
-> 
-> What happend in .25-rc was that we now catch these kinds of problems
-> (watching for duplicate kobjects to be registered and such.)  So this
-> might have always been happening, but no warning was ever produced.
+Thanks for reporting!
+Christian.
+-- 
+BOFH excuse #197:
 
-It's not the warning that worries me. It's the apparent oops (keyboard 
-leds blinking?) at shutdown/poweroff!
-
-> The reason we aren't shutting down is also due to the way kobjects now
-> work.  If you don't clean up properly, they linger around and something
-> on the shutdown path (I haven't figured that out yet) doesn't want to
-> stop the machine.
-
-.. and that's my issue! We're too late in the game to try to figure things 
-out and leave things hanging. The patch broke something, it needs to be 
-fixed or reverted. It's been going on too long.
-
-I think it should have been reverted probably two weeks ago already. We 
-can re-apply it early in the 2.6.26 series, and then try to fix it right. 
-
-Since there is at least a patch worth trying now, I'll hold off reverting 
-it and wait for Guennardi to test the patch, but the fact is, we shouldn't 
-have a known-broken kernel for several weeks, when there is a known fix 
-for it in reverting a single commit!
-
-We have _way_ too many regressions as it is. Regressions are bad. Ones 
-that have known causes and haven't been fixed in three weeks are 
-unacceptable.
-
-			Linus
+I'm sorry a pentium won't do, you need an SGI to connect with us.
