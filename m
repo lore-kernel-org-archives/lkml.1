@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYCLVMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYCLVNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYCLVMb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbYCLVMW
+	id S1754689AbYCLVNV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYCLVNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:12:22 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35913 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754596AbYCLVMV (ORCPT
+	Wed, 12 Mar 2008 17:13:12 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54418 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752218AbYCLVNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 17:12:21 -0400
-Date: Wed, 12 Mar 2008 21:12:19 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "J.C. Pizarro" <jcpiza@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: linux+glibc memory allocator, poor performance
-Message-ID: <20080312211219.GL27894@ZenIV.linux.org.uk>
-References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 12 Mar 2008 17:13:11 -0400
+X-Sasl-enc: xAIaCWcgbAe/tFKX2lPe5Zev3qg9jbww0bPZQEFq24Yn 1205356389
+Date: Wed, 12 Mar 2008 18:13:07 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, Jens Axboe <jens.axboe@oracle.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080312211306.GD30864@khazad-dum.debian.net>
+References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080312193637.GA27873@ics.muni.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 09:09:04PM +0100, J.C. Pizarro wrote:
-
-> Assume a SMP system that has 8 CPUs. The main problem of requesting
-> pages is the BKL (Big Kernel Lock) in this SMP system used for mutual
-> exclusion of the shared resource (the memory).
-
-Really?  Used _where_?
-
-> To solve this major problem, i propose you freely
-
-I hate to think of what you'd propose under duress...
-
-> to allocate 8 local caches
-> of (e.g.) 2 MiB each CPU (total 2MiB x 8 CPUs = 16 MiB) acting as
-> 8 producer buffers for globally many consumer tasks (e.g. >= 20).
+On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
+> On Wed, Mar 12, 2008 at 07:52:41PM +0100, Arkadiusz Miskiewicz wrote:
+> > I'm also seeing regression on my thinkpad z60m where with git tree (tested 
+> > again with 2 days old git) "thinkvantage" button stopped working (pressing it 
+> > was previously seen by some userspace kde which run konsole).
+> > 
+> > On 2.6.24 presses are seen.
 > 
-> When the some producer buffer is empty then it does unfrequently BKL to
-> allocate another 2 MiB more from the shared resource (the memory).
+> well, on 2.6.25-rc4, some keys are not reported as input (xev does not see any
+> key press), some keys are. Is this desired? Or all the keys (fn+f1-12 + volume
+> + backlight + think vantage) should be reported as some input event and thus
+> acpid makes no sense any more?
 
-Excellent advice.  One question: why the bleeding hell would we use BKL
-in allocator, frequently or not, when we do not share the crucial resource
-needed to come up with such ideas?  Or are you proposing to share your
-crack pipe as well?
+xev has to get events from somewhere.  That somewhere happens to be a buggy
+mess right now (X.org evdev device).  Or it is getting it through some other
+middleware, like HAL, which can have its own problems.
 
-> In the reverse, it's simple, return back the unused pages to the local buffer
-> of the producer, and when this full then to do BKL too to unallocate its half
-> to the shared resource (the memory).
+If you want to test thinkpad-acpi functionality, get HAL and X.org out of
+the way.  The easiest way is to do it in single user mode.
 
-I wonder...  Are you seriously implying that nobody here had ever been able
-to come up with anything better than _that_ (e.g. with an amazingly advanced
-idea of googling for papers on allocators for all of two minutes)?  And that
-you are so sure of it that you couldn't be arsed to check what the hell is
-allocator really doing, on the off-chance that somebody might have been able
-to match your brilliant intellectual feat?
-
-And then we are told that linux-kernel regulars are mean and insulting...
-
-FWIW, the quality of proposed "solution" is not an issue; hell, even "what
-if that code is really so dumb that <....> would be an improvement" is not
-a problem - the estimate is too low, but far be it from me to suggest that
-one should apriori assume that unreviewed code is good.  What _really_
-makes the whole thing incredibly insulting is that you had not bothered
-to even look at the damn thing and just went on with "of course none of
-you could have ever come up with anything better - I don't even need to
-look at it to tell you that".
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
