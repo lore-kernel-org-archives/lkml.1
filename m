@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYCLUE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYCLUJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYCLUE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYCLUET
+	id S1754391AbYCLUJN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbYCLUI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:04:19 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:31050 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbYCLUES (ORCPT
+	Wed, 12 Mar 2008 16:08:59 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:18118 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbYCLUI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:04:18 -0400
-Message-ID: <47D8373C.40105@codemonkey.ws>
-Date: Wed, 12 Mar 2008 15:04:12 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 12 Mar 2008 16:08:58 -0400
+X-IronPort-AV: E=McAfee;i="5100,188,5250"; a="1250710"
+Message-ID: <47D83858.4030806@qualcomm.com>
+Date: Wed, 12 Mar 2008 13:08:56 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       hugh@veritas.com
-Subject: Re: [patch 6/6] Guest page hinting: s390 support.
-References: <20080312132132.520833247@de.ibm.com>	 <20080312132704.474209626@de.ibm.com>  <47D802A2.1030406@goop.org>	 <1205339285.8851.13.camel@localhost>  <47D8085E.9030701@goop.org> <1205341164.8851.44.camel@localhost> <47D81771.5070400@goop.org>
-In-Reply-To: <47D81771.5070400@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Paul Jackson <pj@sgi.com>
+CC: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: boot cgroup questions
+References: <47D73086.2030008@qualcomm.com>	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	<47D7411E.1000009@qualcomm.com>	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	<47D74595.4080100@qualcomm.com>	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>	<20080311235939.1ebee8e3.pj@sgi.com>	<47D81FE1.6030205@qualcomm.com>	<20080312135746.89456f2a.pj@sgi.com>	<47D82AD2.1070108@qualcomm.com> <20080312143253.3dd72c7f.pj@sgi.com>
+In-Reply-To: <20080312143253.3dd72c7f.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->> With stable_if_clean you are refering to stable_if_present?
+Paul Jackson wrote:
+> Max wrote:
+>> I was talking about running on the _cpus_ that belong to the "sets A and B but 
+>> not C" and not that a task must belong to more than one cpuset.
 > 
-> No.  I misunderstood and thought that stable_if_present sets the Px 
-> state.  I'd overlooked the writable flag on page_set_volatile().
+> This doesn't make sense to me.
 > 
->>  If yes the
->> answer is that this operation is used to get a page from Vx/Px back to
->> Sx but only if the page has not been discarded.
+> If a task is to run on the CPUs in both sets A and B, then it has to be
+> in both those cpusets, which isn't allowed, or in some super set of both
+> A and B (that is, in this example, in the top cpuset), which doesn't
+> restrict the task to just A or B or their union.
 > 
-> So you mean it will change Vr/Pr to Sr but everything else will fail?  
+> I have no idea what distinction you are seeing between what _cpus_ a task
+> can run on, and what cpuset it belongs to.
 
-Well presumably Vp/Pr => Sp?  Is is true that from the guest's 
-perspective, all of the 'p' states are identical to the 'r' states?
+Paul, we are in 100% agreement here about the tasks. All I'm saying is that 
+the same exact thing applies to the irqs. Again let me try your example.
 
-Do the host states even really need visibility to the guest at all?  It 
-may be useful for the guest to be able to distinguish between Ur and Uz 
-but it doesn't seem necessary.
+Suppose we have
+	/dev/cpuset/A
+	/dev/cpuset/B
+	/dev/cpuset/C
 
-BTW Jeremy, the .dot was very useful!
+Now suppose that for whatever reason I must run task1 on the cpus that belong 
+to sets A and B but not C. The only way to do that with cpusets is
 
-Regards,
+	/dev/cpuset/X
+         	  |-- A
+	          `-- B
+	/dev/cpuset/C
 
-Anthony Liguori
+i.e. create parent cpuset X and assign task1 into cpuset X.
+Of course if A and B are not cpu_exclusive then X does not have to be their 
+parent.
+
+Makes sense so far ?
+
+Now the same exact thing can be said about the irqs. If I need to assign irq1 
+to the cpus in sets A and B but not C I have to create set X that is the union 
+of A and B, and assign irq1 to the set X.
+
+This is what I meant by "deeper hierarchies" in the earlier emails.
+
+Did I do a better job explaining this time :) ?
+
+Max
+
+
+
+
+
+
