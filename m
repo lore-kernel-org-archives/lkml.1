@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbYCLWMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYCLWNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbYCLWMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYCLWMp
+	id S1755561AbYCLWNT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbYCLWNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:12:45 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:45297 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbYCLWMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:12:44 -0400
-Date: Wed, 12 Mar 2008 23:12:38 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
-In-Reply-To: <200803110014.52985.rjw@sisk.pl>
-Message-ID: <alpine.DEB.1.00.0803122303430.5088@sheep.housecafe.de>
-References: <200803110014.52985.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 12 Mar 2008 18:13:00 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:15102 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754222AbYCLWM7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 18:12:59 -0400
+Subject: Re: [patch 10/10] System z large page support.
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Reply-To: gerald.schaefer@de.ibm.com
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+In-Reply-To: <1205344332.9828.92.camel@nimitz.home.sr71.net>
+References: <20080312173155.703966894@de.ibm.com>
+	 <20080312173218.404592017@de.ibm.com>
+	 <1205344332.9828.92.camel@nimitz.home.sr71.net>
+Content-Type: text/plain
+Date: Wed, 12 Mar 2008 23:14:31 +0100
+Message-Id: <1205360071.5237.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10191
-> Subject		: Treason uncloaked spams syslog with latest git
-> Submitter	: Thomas Gleixner <tglx@linutronix.de>
-> Date		: 2008-03-06 05:47
-> References	: http://www.ussg.iu.edu/hypermail/linux/kernel/0803.0/2444.html
+On Wed, 2008-03-12 at 10:52 -0700, Dave Hansen wrote:
+> > 
+> > +pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
+> > +{
+> > +       pgd_t *pgdp;
+> > +       pud_t *pudp;
+> > +       pmd_t *pmdp = NULL;
+> > +
+> > +       pgdp = pgd_offset(mm, addr);
+> > +       pudp = pud_alloc(mm, pgdp, addr);
+> > +       if (pudp)
+> > +               pmdp = pmd_alloc(mm, pudp, addr);
+> > +       return (pte_t *) pmdp;
+> > +}
+> 
+> That looks pretty generic.  Why can't you share with the version we
+> already have?
 
-Dunno if you got this, but this seems to be fixed: 
-http://lkml.org/lkml/2008/3/11/435
+What version do you mean? Every architecture with hugetlbfs support has
+its own huge_pte_alloc() function in arch/<arch>/mm/hugetlbfs.c, and
+they are all doing slightly different things.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10207
-> Subject		: INFO: task mount:11202 blocked for more than 120 seconds
-> Submitter	: Christian Kujau <lists@nerdbynature.de>
-> Date		: 2008-03-07 21:32
-> References	: http://lkml.org/lkml/2008/3/7/308
-> 		  http://lkml.org/lkml/2008/3/9/186
-> Handled-By	: David Chinner <dgc@sgi.com>
-
-FWIW, it has been reported by Chr too: http://lkml.org/lkml/2008/3/12/313
-And David could be taken out of the loop, as it seems dm-crypt related 
-(dm-devel@redhat.com is already notified), not XFS related.
+--
+Gerald Schaefer
 
 
-Thanks for maintaining this list,
-Christian.
--- 
-BOFH excuse #348:
-
-We're on Token Ring, and it looks like the token got loose.
