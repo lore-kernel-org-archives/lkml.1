@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYCLSJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYCLSLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYCLSJw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 14:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYCLSJo
+	id S1755163AbYCLSLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 14:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYCLSKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 14:09:44 -0400
-Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:40383 "HELO
-	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751381AbYCLSJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 14:09:43 -0400
-X-YMail-OSG: Z9.1NJMVM1l7qksFDWjNICIJONzQ5i93G0bm5m411nSk0jWTDq03Hg6ix1GkxyAggw--
-X-RocketYMMF: rancidfat
-Date: Wed, 12 Mar 2008 11:09:39 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [RFC][PATCH -v2] Smack: Integrate with Audit
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Cc: casey@schaufler-ca.com, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Paul Moore <paul.moore@hp.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LSM-ML <linux-security-module@vger.kernel.org>,
-       Audit-ML <linux-audit@redhat.com>, Steve Grubb <sgrubb@redhat.com>
-In-Reply-To: <20080312164358.GA9540@ubuntu>
+	Wed, 12 Mar 2008 14:10:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44073 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbYCLSKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 14:10:52 -0400
+Date: Wed, 12 Mar 2008 14:08:06 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Chandru <chandru@in.ibm.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jdmason@kudzu.us
+Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
+	in kdump
+Message-ID: <20080312180806.GB13549@redhat.com>
+References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com> <20071014054110.GB4399@rhun.haifa.ibm.com> <20071015062919.GA4598@in.ibm.com> <476F4064.8010601@in.ibm.com> <47D5359D.5000909@in.ibm.com> <20080311132921.GA10828@redhat.com> <47D76561.8050805@in.ibm.com> <20080312095820.GG10790@tyrion.haifa.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <423839.91626.qm@web36615.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080312095820.GG10790@tyrion.haifa.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
-
+On Wed, Mar 12, 2008 at 11:58:20AM +0200, Muli Ben-Yehuda wrote:
+> On Wed, Mar 12, 2008 at 10:38:49AM +0530, Chandru wrote:
 > 
-> > Perhaps I misunderstand, but Smack labels don't represent users (i.e.
-> > user identity) in any way, so it seemed like a mismatch to use the _USER
-> > flag there.  Whereas types in SELinux bear some similarity to Smack
-> > labels - simple unstructured names whose meaning is only defined by the
-> > policy rules.
-> > 
+> > The system booted! , :) with the following change. Muli acceptable??
+> >
+> > static void calgary_watchdog(unsigned long data)
+> > {
+> > ...
+> > ...
+> > /* Disable bus that caused the error and ignore if it's kdump kernel */
+> > + if ( !is_kdump_kernel()) {
+> > target = calgary_reg(bbar, phb_offset(tbl->it_busno) |
+> > PHB_CONFIG_RW_OFFSET);
+> > val32 = be32_to_cpu(readl(target));
+> > val32 |= PHB_SLOT_DISABLE;
+> > writel(cpu_to_be32(val32), target);
+> > + }
+> > readl(target); /* flush */
 > 
-> I think Casey meant the common use of Smack where a login program
-> (openssh, bin/login, ..) sets a label for each user that logs in, thus
-> letting each label effectively representing a user.
-
-No, I really just don't care which name gets used because none
-of them map properly but I don't see value in adding a new one.
-I say _USER is fine. I dislike _TYPE because it implies structure
-that isn't there and I dislike _ROLE because someone may want to
-implement roles on top of Smack (it wouldn't be hard) and don't
-want to start using that term for a specific meaning that might
-give 'em fits.
-
+> Yikes, not really :-)
 > 
-> In a sense, smack labels share a bit of _USER and _TYPE.
+> You're basically saying "if we're in a kdump kernel, let's ignore all
+> DMA errors and hope for the best". This is not really acceptable. What
+> we could do is limit the scope of ignorance - only ignore errors from
+> the point the kdump kernel starts booting until we have reinitialized
+> the device and then go back to handling DMA errors correctly.
+> 
 
-And maybe _ROLE, if you look at it from the right angle.
-I don't think that it matters. Create a new _LATEFORDINNER
-if that makes y'all feel better. Best of all would be to
-stick with _USER and call it done.
+Agree. Ignoring all the DMA errors in kdump kernel does not sound very
+good.
 
-Thank you.
+On a side note, typically how much time does it take to for DMA operations
+to finish. Can we wait for a random amount of time in second kernel,
+hoping all the DMA operations are complete, and then setup a new table?
 
+This can be atleast a stop gap solution till we come up with a good
+solution?
 
-Casey Schaufler
-casey@schaufler-ca.com
+Thanks
+Vivek
