@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbYCLPF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYCLPH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbYCLPF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYCLPFV
+	id S1753600AbYCLPH5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 11:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYCLPHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:05:21 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:53440 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbYCLPFU (ORCPT
+	Wed, 12 Mar 2008 11:07:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44986 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751346AbYCLPHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:05:20 -0400
-From: Stephan Diestelhorst <langer_mann@web.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Wed, 12 Mar 2008 16:04:04 +0100
-User-Agent: KMail/1.9.6
-Cc: Andi Kleen <andi@firstfloor.org>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-References: <200803051559.09962.langer_mann@web.de> <200803102226.39044.langer_mann@web.de> <20080311093903.GS25110@elte.hu>
-In-Reply-To: <20080311093903.GS25110@elte.hu>
+	Wed, 12 Mar 2008 11:07:48 -0400
+Date: Wed, 12 Mar 2008 08:05:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Jeff Garzik <jeff@garzik.org>, Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] genhd must_check warning fix
+In-Reply-To: <200803121507.39347.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.1.00.0803120803530.12341@woody.linux-foundation.org>
+References: <20080312001317.D68A526F991@magilla.localdomain> <200803121440.26356.nickpiggin@yahoo.com.au> <47D753AC.8080206@garzik.org> <200803121507.39347.nickpiggin@yahoo.com.au>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121604.05065.langer_mann@web.de>
-X-Provags-ID: V01U2FsdGVkX18mhcUD/W7A8XKFiaka+N9AjfZ+FY/CT0nda+hD
-	Tdnb+N/MXpX+GIb0xN+gmOQKZm9HuRBYV5t9a9HXvohDdTm/hh
-	le+UZbYwQ=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+
+
+On Wed, 12 Mar 2008, Nick Piggin wrote:
 > 
-> I've applied your patch to  x86.git. 
+> If you tune out the must_check warnings, then how is that better than
+> not having them at all? In either case, you'd have missed this genhd
+> bug(let).
 
-Many thanks!
+Quite frankly, there have historically been too many people who just added 
+"must_check" to their function prototypes because they thought they were 
+oh-so-important. Which means that at least _I_ tend to just ignore them 
+(and have asked people to remove some when they get too annoying).
 
-> Do you think it's 2.6.25 material? I'm inclined to have it in  
-> the 2.6.26 bucket. We could do your first, minimal fix in 2.6.25 and do 
-> this second, full fix in 2.6.26.
+So I'm not at all surprised that people tune them out. They have become 
+debased by being overused.
 
-I am not familiar with the policies regarding the time-frame for
-inclusion. So I guess the decision is up to you. I feel that the
-changes are fairly small (at least for the first patch) so perhaps
-splitting the release as you suggested allows people to get more
-confidence in the larger patches with the clobbers and manual ebp
-push/pop.
-
-Doing this one step after the other has the additional benefit of
-havinga fix for the core problem in fairly soon, so I can continue
-using prebuilt distro kernels again, soon. :-) ( I know. I'm just lazy
-sometimes. )
-
-Apart from that: Feel free to do as you like, after all this code is
-GPL.
-
-Kind regards,
-  Stephan
+		Linus
