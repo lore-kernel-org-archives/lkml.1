@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbYCLRNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbYCLRSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbYCLRNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYCLRNI
+	id S1752613AbYCLRSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYCLRSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:13:08 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:40332 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbYCLRNG (ORCPT
+	Wed, 12 Mar 2008 13:18:40 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42035 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYCLRSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:13:06 -0400
-Message-ID: <47D80F13.7040304@pobox.com>
-Date: Wed, 12 Mar 2008 13:12:51 -0400
-From: Mark Lord <mlord@pobox.com>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>, mlord@pobox.com, kristen.c.accardi@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regression] pciehp hang on hp ia64 rx6600
-References: <20080312064755.GA31493@ldl.fc.hp.com>
-In-Reply-To: <20080312064755.GA31493@ldl.fc.hp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 13:18:39 -0400
+Date: Wed, 12 Mar 2008 17:18:33 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       matthew@wil.cx, dhowells@redhat.com
+Subject: Re: [PATCH] Remove <linux/genhd.h> from user-visible headers.
+Message-ID: <20080312171833.GI27894@ZenIV.linux.org.uk>
+References: <1205340777.2592.134.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1205340777.2592.134.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> Hi Mark, Kristin,
+On Wed, Mar 12, 2008 at 05:52:56PM +0100, David Woodhouse wrote:
+> It was all wrapped in '#ifdef CONFIG_BLOCK' anyway, so userspace was
+> getting nothing useful out of it. And the special #ifndef __KERNEL__
+> version of 'struct partition' makes me inclined to promote an attitude
+> of violence...
 > 
-> On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
-> system hang on 2.6.25-rc4. My system often hangs when only pciehp
-> is loaded and my console is sitting idle, but I can accelerate
-> the hang 100% of the time by immediately doing a 'modprobe
-> acpiphp' right afterwards.
-> 
-> I have bisected the hang down to this commit:
-> 
-> 0a3c33d77ff7ad5b988997536a8f09c49e35ad20 is first bad commit
-> commit 0a3c33d77ff7ad5b988997536a8f09c49e35ad20
-> Author: Mark Lord <lkml@rtr.ca>
-> Date:   Wed Nov 28 15:11:28 2007 -0800
-> 
->     PCIE: fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks (and others?) in conjunction with modparam of pciehp_force=1.
-..
+> Stick some comments on some of the #endifs too, while we're at it.
 
-In this case, the bisection is probably not perfect,
-because that original patch had a couple of bugs that
-were fixed by a subsequent follow-up patch.
-
-It is all rather fuzzy right now, because this work was all completed
-at the merge window for the *previous* kernel, but has now sat bit-rotting
-for nearly 6 months since I last looked at it.
-
-That said, I'm building the latest 2.6.25-rc* to retest with here,
-and hopefully we can work this out without much more fuss.
-
-Cheers
--- 
-Mark Lord
-Real-Time Remedies Inc.
-mlord@pobox.com
+Right...  Actually, if that goes in... the next step is to take fs/partitions
+to block and evict more than a half of genhd.h to block/blk.h and relevant
+partition handlers.  I have a long-rotten patch for that, will resurrect...
