@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbYCLRwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYCLRy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332AbYCLRwZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYCLRwQ
+	id S1754497AbYCLRy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYCLRyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:52:16 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58619 "EHLO e1.ny.us.ibm.com"
+	Wed, 12 Mar 2008 13:54:50 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:12570 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbYCLRwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:52:15 -0400
-Subject: Re: [patch 10/10] System z large page support.
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Gerald Schaefer <geraldsc@de.ibm.com>
-In-Reply-To: <20080312173218.404592017@de.ibm.com>
-References: <20080312173155.703966894@de.ibm.com>
-	 <20080312173218.404592017@de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 10:52:12 -0700
-Message-Id: <1205344332.9828.92.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1751280AbYCLRyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 13:54:49 -0400
+Date: Wed, 12 Mar 2008 18:54:45 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
+Subject: Re: [PATCH 0/7] IO CPU affinity testing series
+Message-ID: <20080312175443.GV17940@kernel.dk>
+References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com> <47D807BA.7020102@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D807BA.7020102@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-03-12 at 18:32 +0100, Martin Schwidefsky wrote:
+On Wed, Mar 12 2008, Alan D. Brunelle wrote:
 > 
-> +pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
-> +{
-> +       pgd_t *pgdp;
-> +       pud_t *pudp;
-> +       pmd_t *pmdp = NULL;
-> +
-> +       pgdp = pgd_offset(mm, addr);
-> +       pudp = pud_alloc(mm, pgdp, addr);
-> +       if (pudp)
-> +               pmdp = pmd_alloc(mm, pudp, addr);
-> +       return (pte_t *) pmdp;
-> +}
+> Subject: [PATCH] Fixed race: using potentially invalid pointer
+> 
+> When data->flags & CSD_FLAG_ALLOC is true, the data could be freed by the other processor before we check for CSD_FLAG_WAIT.
 
-That looks pretty generic.  Why can't you share with the version we
-already have?
+Oops, that was pretty dumb. Thanks!
 
--- Dave
+> Also: removed old comment, doesn't quite fit anymore.
+> 
+> This is applied against Jens' git tree w/ the ia64 additional commit.
+
+Thanks, I'll split this into 3 parts and apply them.
+
+-- 
+Jens Axboe
 
