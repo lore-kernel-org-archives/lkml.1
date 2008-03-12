@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYCLUh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYCLUhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbYCLUh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYCLUhN
+	id S1755649AbYCLUhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbYCLUhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:37:13 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:40801 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbYCLUhL (ORCPT
+	Wed, 12 Mar 2008 16:37:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47310 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754426AbYCLUhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:37:11 -0400
-X-IronPort-AV: E=McAfee;i="5100,188,5250"; a="1251469"
-Message-ID: <47D83EF5.6070302@qualcomm.com>
-Date: Wed, 12 Mar 2008 13:37:09 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: [PATCH 0/7] IO CPU affinity testing series
-References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 12 Mar 2008 16:37:19 -0400
+Date: Wed, 12 Mar 2008 15:37:12 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: boot cgroup questions
+Message-Id: <20080312153712.bc5df7a1.pj@sgi.com>
+In-Reply-To: <47D83858.4030806@qualcomm.com>
+References: <47D73086.2030008@qualcomm.com>
+	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	<47D7411E.1000009@qualcomm.com>
+	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	<47D74595.4080100@qualcomm.com>
+	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	<20080311235939.1ebee8e3.pj@sgi.com>
+	<47D81FE1.6030205@qualcomm.com>
+	<20080312135746.89456f2a.pj@sgi.com>
+	<47D82AD2.1070108@qualcomm.com>
+	<20080312143253.3dd72c7f.pj@sgi.com>
+	<47D83858.4030806@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> Hi,
-> 
-> Here's a new round of patches to play with io cpu affinity. It can,
-> as always, also be found in the block git repo. The branch name is
-> 'io-cpu-affinity'.
-> 
-> The major change since last post is the abandonment of the kthread
-> approach. It was definitely slower then may 'add IPI to signal remote
-> block softirq' hack. So I decided to base this on the scalable
-> smp_call_function_single() that Nick posted. I tweaked it a bit to
-> make it more suitable for my use and also faster.
-> 
-> As for functionality, the only change is that I added a bio hint
-> that the submitter can use to ask for completion on the same CPU
-> that submitted the IO. Pass in BIO_CPU_AFFINE for that to occur.
-> 
-> Otherwise the modes are the same as last time:
-> 
-> - You can set a specific cpumask for queuing IO, and the block layer
->   will move submitters to one of those CPUs.
-> - You can set a specific cpumask for completion of IO, in which case
->   the block layer will move the completion to one of those CPUs.
-> - You can set rq_affinity mode, in which case IOs will always be
->   completed on the CPU that submitted them.
-> 
-> Look in /sys/block/<dev>/queue/ for the three sysfs variables that
-> modify this behaviour.
-> 
-> I'd be interested in getting some testing done on this, to see if
-> it really helps the larger end of the scale. Dave, I know you
-> have a lot of experience in this area and would appreciate your
-> input and/or testing. I'm not sure if any of the above modes will
-> allow you to do what you need for eg XFS - if you want all meta data
-> IO completed on one (or a set of) CPU(s), then I can add a mode
-> that will allow you to play with that. Or if something else, give me
-> some input and we can take it from there!
+> This is what I meant by "deeper hierarchies" in the earlier emails.
 
-Very cool stuff. I think I can use it for cpu isolation purposes.
-ie Isolating a cpu from the io activity.
+These deeper hierarchies create an incompatibility in some common uses
+of cpusets.
 
-You may have noticed that I started a bunch of discussion on CPU isolation.
-One thing that came out of that is the suggestion to use cpusets for managing 
-this affinity masks. We're still discussing the details, the general idea is 
-to provide extra flags in the cpusets that enable/disable various activities
-on the cpus that belong to the set.
+When my example had cpusets A, B and C, that was as stated, not as
+might be modified to X, X/A, X/B and C.
 
-For example in this particular case we'd have something like "cpusets.io" flag 
-that would indicate whether cpus in the set are allowed to to the IO or not.
-In other words:
-	/dev/cpuset/io (cpus=0,1,2; io=1)
-	/dev/cpuset/no-io (cpus=3,4,5; io=0)
+If the user has or would have setup cpusets A, B and C because that's
+what they needed to manage the CPU and Memory Node placement of their
+tasks, then that's what they might have setup, and there is a good
+chance that they would find the imposition of the extra 'X' cpuset to
+be a problem, to require more code and to be a cause of bugs.
 
-I'm not sure whether this makes sense or not. One advantage is that it's more 
-dynamic and more flexible. If for example you add cpu to the io cpuset it will 
-automatically start handling io requests.
+Adding irqs to the cpuset hierarchy isn't free; it can further overload
+the hierarchy, with "deeper hierarchies" as you state.
 
-btw What did you mean by "to see if it really helps the larger end of the 
-scale", what problem were you guys trying to solve ? I'm guessing cpu 
-isolation would probably be an unexpected user of io cpu affinity :).
+If instead of deeper hierarchies, we allow the same irq to be listed in
+more than one cpuset (unlike tasks, which only get one cpuset) then we
+need some way, independent of the cpuset hierarchy, to determine how to
+resolve conflicts.  We can't just add all the cpus together, allowing an
+irq to be directed to any CPU which is listed in any cpuset that
+accepts that irq, because a major use for this is to remove irqs from
+certain realtime CPUs.
 
-Max
+So ... if the natural hierarchy needed to map irqs to CPUs is not a
+subset of the natural hierarchy needed to map tasks to sets of CPUs and
+Nodes, then we either deepen the hierarchy (cross product of the the
+two maps, essentially) or we allow the same irq to be listed in
+multiple cpusets and provide some alternative mechanism, outside the
+hierarchy, to resolve the resulting conflicts in the irq to CPU map.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
