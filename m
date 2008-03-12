@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYCLVjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYCLVlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYCLVjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYCLVjE
+	id S1755167AbYCLVlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYCLVlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:39:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:35877 "EHLO mail.goop.org"
+	Wed, 12 Mar 2008 17:41:00 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:60795 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754893AbYCLVjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 17:39:01 -0400
-Message-ID: <47D84CEB.6050300@goop.org>
-Date: Wed, 12 Mar 2008 14:36:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1752858AbYCLVk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 17:40:59 -0400
+Date: Wed, 12 Mar 2008 22:40:37 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Frank Munzert <frankm@linux.vnet.ibm.com>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: BUG: lock held when returning to user space
+In-Reply-To: <47D7FAA0.1090802@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0803122236030.7266@twin.jikos.cz>
+References: <47D7FAA0.1090802@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, akpm@osdl.org,
-       linux-s390@vger.kernel.org, frankeh@watson.ibm.com,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, schwidefsky@de.ibm.com, hugh@veritas.com
-Subject: Re: [patch 6/6] Guest page hinting: s390 support.
-References: <20080312132132.520833247@de.ibm.com>		<20080312132704.474209626@de.ibm.com>	<47D802A2.1030406@goop.org>		<1205339285.8851.13.camel@localhost>	<47D8085E.9030701@goop.org>	<1205341164.8851.44.camel@localhost>	<47D81771.5070400@goop.org> <47D8373C.40105@codemonkey.ws>	<47D840E3.5090902@goop.org> <47D8436F.9080901@codemonkey.ws>
-In-Reply-To: <47D8436F.9080901@codemonkey.ws>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
->> Vp should never happen, since you'd never preserve a V page.  And 
->> surely it would be Pr -> Sr, since the hypervisor wouldn't push the 
->> page to backing store when you change the client state.
->>     
->
-> You're right, I meant Vp/Pp but they are invalid states.  I think one of 
-> the things that keeps tripping me up is that the host can change both 
-> the host and guest page states.  My initial impression was that the host 
-> handled the host state and the guest handled the guest state.
->   
+On Wed, 12 Mar 2008, Frank Munzert wrote:
 
-Yes.  And it seems to me that you get unfortunate outcomes if you have a 
-Pr->Vz->Vr transition.
+> Unit record devices are not meant for concurrent read or write by 
+> multiple users, that's why we need to serialize access. The driver's 
+> open method uses mutex_trylock or mutex_lock_interruptible to ensure 
+> exclusive access to the device, while its release method uses 
+> mutex_unlock.
 
->>> Do the host states even really need visibility to the guest at all?  
->>> It may be useful for the guest to be able to distinguish between Ur 
->>> and Uz but it doesn't seem necessary.
->>>       
->> Well, you implicitly see the hypervisor state.  If you touch a [UV]z 
->> page then you get a fault telling you that the page has been taken 
->> away from you (I think).  And it would definitely help with debugging 
->> (seems likely there's lots of scope for race conditions if you 
->> prematurely tell the hypervisor you don't need the page any more...).
->>     
->
-> I was thinking that it may be useful to know a Ur verses a Uz when 
-> allocating memory.  In this case, you'd rather allocate Ur pages verses 
-> Uz to avoid the fault.  I don't read s390 arch code well, is the host 
-> state explicit to the guest?
->   
+Which is wrong usage of mutex.
 
-Yes, reusing Ur pages might well be better, but who knows - they've 
-probably got an instruction which makes Uz cheap...
+> As a consequence, lockdep complains about locks being held when returning to
+> user space. We used a very simple char device driver (appended below) to
+> produce this message:
+> ------------------------------------------------
+> testapp/2683 is leaving the kernel with locks still held!
+[ ... ]
+> For the vmur device driver it is crucial to have only one process access a
+> given unit record device node at a given time. So having open hold the mutex
+> and return to user space is exactly what we want. 
 
-Stuff like this suggets that both parts of the state are packed 
-together, and are guest-visible:
+No, it is not. You probably want just to have a single-bit flag somewhere, 
+and update/check it atomically, see below.
 
-+	return (state & ESSA_USTATE_MASK) == ESSA_USTATE_VOLATILE &&
-+		(state & ESSA_CSTATE_MASK) == ESSA_CSTATE_ZERO;
+> Is there any annotation to tell lockdep to suppress or bypass this kind 
+> of warning?
 
+No, as it is a real bug if you use mutexes in this way. What happens if 
+process that has called open() on your device (and has not closed it yet) 
+calls fork()? 
+Another breakage scenario -- what if the filedescriptor is sent through 
+unix socket to another process? etc.
 
-      J
+Look at test_and_set_bit_lock() and clear_bit_unlock(), those you want to 
+use.
+
+-- 
+Jiri Kosina
+SUSE Labs
+
