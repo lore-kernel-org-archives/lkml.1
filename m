@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYCLAJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYCLANi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbYCLAJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 20:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYCLAJg
+	id S1752734AbYCLANi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 20:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYCLANa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 20:09:36 -0400
-Received: from mail.lang.hm ([64.81.33.126]:42468 "EHLO bifrost.lang.hm"
+	Tue, 11 Mar 2008 20:13:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39813 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752708AbYCLAJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 20:09:35 -0400
-Date: Tue, 11 Mar 2008 17:09:32 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Nigel Cunningham <ncunningham@crca.org.au>
-cc: Vivek Goyal <vgoyal@redhat.com>, "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm] kexec jump -v9
-In-Reply-To: <1205272758.7990.37.camel@nigel-laptop>
-Message-ID: <alpine.DEB.1.00.0803111708270.32330@asgard.lang.hm>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>  <20080311211004.GA30164@redhat.com> <1205272758.7990.37.camel@nigel-laptop>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	id S1751107AbYCLAN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 20:13:29 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] genhd must_check warning fix
+X-Fcc: ~/Mail/linus
+X-Zippy-Says: NEWARK has been REZONED!!  DES MOINES has been REZONED!!
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <20080312001317.D68A526F991@magilla.localdomain>
+Date: Tue, 11 Mar 2008 17:13:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Nigel Cunningham wrote:
+Fixes:
 
-> 3. Usability.
->
-> Right now, kexec based hibernation looks quite complicated to configure,
-> and the user is apparently going to have to remember to boot a different
-> kernel or at least a different bootloader entry in order to resume. Not
-> a plus. It would be good if you could find a way to use one bootloader
-> entry, resuming if there's an image, booting normally if there's not.
+	block/genhd.c:361: warning: ignoring return value of ‘class_register’, declared with attribute warn_unused_result
 
-I don't see any reason why this couldn't be done with an initrd to decide 
-if you are doing a normal boot or a restore.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ block/genhd.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-David Lang
+diff --git a/block/genhd.c b/block/genhd.c
+index c44527d..00da521 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -360,7 +360,9 @@ static struct kobject *base_probe(dev_t devt, int *part, void *data)
+ 
+ static int __init genhd_device_init(void)
+ {
+-	class_register(&block_class);
++	int error = class_register(&block_class);
++	if (unlikely(error))
++		return error;
+ 	bdev_map = kobj_map_init(base_probe, &block_class_lock);
+ 	blk_dev_init();
+ 
