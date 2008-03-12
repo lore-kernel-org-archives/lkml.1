@@ -1,133 +1,539 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbYCLGmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752115AbYCLGsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752168AbYCLGmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 02:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbYCLGm0
+	id S1752115AbYCLGsN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 02:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbYCLGr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 02:42:26 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:55908 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbYCLGmZ (ORCPT
+	Wed, 12 Mar 2008 02:47:58 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:17126 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYCLGr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 02:42:25 -0400
-Message-Id: <200803120635.m2C6Zc03091406@www262.sakura.ne.jp>
-Subject: Re: [2.6.25-rc5-mm1] BUG() at mnt_want_write().
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
+	Wed, 12 Mar 2008 02:47:57 -0400
+Date: Wed, 12 Mar 2008 00:47:56 -0600
+From: Alex Chiang <achiang@hp.com>
+To: mlord@pobox.com, kristen.c.accardi@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [regression] pciehp hang on hp ia64 rx6600
+Message-ID: <20080312064755.GA31493@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, mlord@pobox.com,
+	kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 12 Mar 2008 15:35:38 +0900
-References: <200803120137.m2C1bffL037440@www262.sakura.ne.jp> <1205291010.9828.60.camel@nimitz.home.sr71.net> 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi Mark, Kristin,
 
-I modified /usr/share/initrd-tools/init and tested.
+On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
+system hang on 2.6.25-rc4. My system often hangs when only pciehp
+is loaded and my console is sitting idle, but I can accelerate
+the hang 100% of the time by immediately doing a 'modprobe
+acpiphp' right afterwards.
 
------ start of patch -----
-diff -u /usr/share/initrd-tools/init.org /usr/share/initrd-tools/init
---- /usr/share/initrd-tools/init.org    2005-05-27 08:44:00.000000000 +0900
-+++ /usr/share/initrd-tools/init        2008-03-12 15:14:31.000000000 +0900
-@@ -359,7 +359,10 @@
+I have bisected the hang down to this commit:
 
- read root < bin/root
- umount -n bin
-+echo "About to write real-root-dev"
-+echo "hello" > proc/version
- echo $root > proc/sys/kernel/real-root-dev
-+echo "Wrote real-root-dev"
+0a3c33d77ff7ad5b988997536a8f09c49e35ad20 is first bad commit
+commit 0a3c33d77ff7ad5b988997536a8f09c49e35ad20
+Author: Mark Lord <lkml@rtr.ca>
+Date:   Wed Nov 28 15:11:28 2007 -0800
 
- get_cmdline
+    PCIE: fix PCIe Hotplug so that it works with ExpressCard slots on Dell notebooks (and others?) in conjunction with modparam of pciehp_force=1.
 
-@@ -415,7 +418,9 @@
+    Fix pciehp_probe() to deal with ExpressCard cards
+    that were inserted prior to the driver being loaded.
 
- cd /
- mount -nt proc proc proc
-+echo "About to read real-root-dev"
- rootdev=$(cat proc/sys/kernel/real-root-dev)
-+echo "Read real-root-dev"
- cmdline=$(cat /proc/cmdline)
- umount -n proc
- if [ $rootdev != 256 ]; then
------ end of patch -----
+    Signed-off-by: Mark Lord <mlord@pobox.com>
+    Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
+    Cc: Theodore Ts'o <tytso@mit.edu>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-The result was
+:040000 040000 5fe9142c7d2add2db2891a8f469159e338e1c4e4 cd147cb51d7a2133679dd57796044c680159dab7 M      drivers
 
------------------------------------------------------------------------------
-initrd-tools: 0.1.81.1
-do_sys_open: bin/root
-do_sys_open: /etc/ld.so.preload
-do_sys_open: /etc/ld.so.cache
-do_sys_open: /lib/tls/i686/mmx/cmov/libblkid.so.1
-do_sys_open: /lib/tls/i686/mmx/libblkid.so.1
-do_sys_open: /lib/tls/i686/cmov/libblkid.so.1
-do_sys_open: /lib/tls/i686/libblkid.so.1
-do_sys_open: /lib/tls/mmx/cmov/libblkid.so.1
-do_sys_open: /lib/tls/mmx/libblkid.so.1
-do_sys_open: /lib/tls/cmov/libblkid.so.1
-do_sys_open: /lib/tls/libblkid.so.1
-do_sys_open: /lib/i686/mmx/cmov/libblkid.so.1
-do_sys_open: /lib/i686/mmx/libblkid.so.1
-do_sys_open: /lib/i686/cmov/libblkid.so.1
-do_sys_open: /lib/i686/libblkid.so.1
-do_sys_open: /lib/mmx/cmov/libblkid.so.1
-do_sys_open: /lib/mmx/libblkid.so.1
-do_sys_open: /lib/cmov/libblkid.so.1
-do_sys_open: /lib/libblkid.so.1
-do_sys_open: /lib/tls/libuuid.so.1
-do_sys_open: /lib/libuuid.so.1
-do_sys_open: /lib/tls/libc.so.6
-do_sys_open: /etc/mtab
-About to write real-root-dev
-do_sys_open: proc/version
-BUG: unable to handle kernel paging request at df366fe8
-IP: [<c017e0d0>] mnt_want_write+0x41/0x5f
-*pde = 1f884163 *pte = 1f366160
-Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
-last sysfs file:
-Modules linked in:
+Reverting this commit makes the hang go away (and I can modprobe
+pciehp / acpiphp again without problems).
 
-Pid: 1, comm: init Not tainted (2.6.25-rc5-mm1 #2)
-EIP: 0060:[<c017e0d0>] EFLAGS: 00010286 CPU: 0
-EIP is at mnt_want_write+0x41/0x5f
-EAX: 00000000 EBX: c1453460 ECX: 00000001 EDX: df366f78
-ESI: df363f78 EDI: 00000000 EBP: df8e1ef0 ESP: df8e1ee4
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process init (pid: 1, ti=df8e1000 task=df8f8020 task.ti=df8e1000)
-Stack: ffffffeb 00000200 df8e1f20 df8e1f7c c0173481 ffffa87b 00000000 ffffff9c
-       c053481a 00008242 00000000 00000002 00008241 df363f78 df56cf50 df363f78
-       df56cf50 57b32ee9 00000007 df911005 00000300 00000000 00000000 c016a9ca
+It looks like the patch is calling pciehp_enable_slot() if the
+slot is occupied. I'm not sure exactly what should be happening
+on my machine (it's late here ;), but I can try and do some more
+thinking tomorrow.
+
+Console log and lspci -vv output follows. Please let me know what
+else you might need.
+
+Thanks.
+
+/ac
+
+[root@canola ~]# dmesg -n 8
+[root@canola ~]# modprobe pciehp
+pciehp: HPC vendor_id 103c device_id 403b ss_vid 0 ss_did 0
+pciehp: pciehp_enable_slot: already enabled on slot(0016_0006)
+Load service driver hpdriver on pcie device 0000:0f:00.0:pcie02
+pciehp: HPC vendor_id 111d device_id 801c ss_vid 0 ss_did 0
+pciehp: pciehp_enable_slot: already enabled on slot(0082_0004)
+Load service driver hpdriver on pcie device 0000:51:00.0:pcie22
+pciehp: HPC vendor_id 111d device_id 801c ss_vid 0 ss_did 0
+pciehp: pciehp_enable_slot: latch open on slot(0139_0003)
+Load service driver hpdriver on pcie device 0000:51:01.0:pcie22
+pciehp: HPC vendor_id 103c device_id 403b ss_vid 0 ss_did 0
+Load service driver hpdriver on pcie device 0000:c4:00.0:pcie02
+pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+[root@canola ~]# modprobe acpiphp
+INFO: task rsyslogd:3753 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+rsyslogd      D a00000010023cec0     0  3753      1
+
 Call Trace:
- [<c0173481>] ? do_filp_open+0x233/0x52f
- [<c016a9ca>] ? get_unused_fd_flags+0xb3/0xbe
- [<c016aabd>] ? do_sys_open+0x50/0xd0
- [<c016ab53>] ? sys_open+0x16/0x18
- [<c0103966>] ? syscall_call+0x7/0xb
- =======================
-Code: 8d 1c 02 89 d8 e8 d3 b4 1c 00 89 f0 e8 7e ff ff ff 85 c0 74 07 bf e2 ff ff ff eb 1f 8b 53 2c 39 f2 74 15 85 d2 74 0e 8b 43 28 90 <01> 42 70 c7 43 28
-00 00 00 00 89 73 2c ff 43 28 89 d8 e8 cf b5
-EIP: [<c017e0d0>] mnt_want_write+0x41/0x5f SS:ESP 0068:df8e1ee4
----[ end trace e13043ee7a72cd3f ]---
-Kernel panic - not syncing: Attempted to kill init!
------------------------------------------------------------------------------
+ [<a0000001007d3c20>] schedule+0x1200/0x1400
+                                sp=e0000005167afcf0 bsp=e0000005167a1018
+ [<a00000010023cec0>] log_wait_commit+0x140/0x220
+                                sp=e0000005167afd80 bsp=e0000005167a0fd8
+ [<a00000010022f710>] journal_stop+0x430/0x4e0
+                                sp=e0000005167afdb0 bsp=e0000005167a0f90
+ [<a000000100230f40>] journal_force_commit+0x80/0xa0
+                                sp=e0000005167afdb0 bsp=e0000005167a0f70
+ [<a00000010021ffc0>] ext3_force_commit+0x60/0x80
+                                sp=e0000005167afdb0 bsp=e0000005167a0f50
+ [<a0000001002126e0>] ext3_write_inode+0xa0/0xc0
+                                sp=e0000005167afdb0 bsp=e0000005167a0f28
+ [<a0000001001a23b0>] __writeback_single_inode+0x4b0/0x740
+                                sp=e0000005167afdb0 bsp=e0000005167a0ee0
+ [<a0000001001a3ae0>] sync_inode+0x40/0x80
+                                sp=e0000005167afdf0 bsp=e0000005167a0eb0
+ [<a0000001002098f0>] ext3_sync_file+0x1b0/0x220
+                                sp=e0000005167afdf0 bsp=e0000005167a0e88
+ [<a0000001001a9700>] do_fsync+0xe0/0x180
+                                sp=e0000005167afe30 bsp=e0000005167a0e48
+ [<a0000001001a97f0>] __do_fsync+0x50/0x80
+                                sp=e0000005167afe30 bsp=e0000005167a0e18
+ [<a0000001001a98b0>] sys_fsync+0x30/0x60
+                                sp=e0000005167afe30 bsp=e0000005167a0db8
+ [<a00000010000a980>] ia64_ret_from_syscall+0x0/0x20
+                                sp=e0000005167afe30 bsp=e0000005167a0db8
+ [<a000000000010720>] __kernel_syscall_via_break+0x0/0x20
+                                sp=e0000005167b0000 bsp=e0000005167a0db8
 
-"proc/version" caused the same problem with "proc/sys/kernel/real-root-dev".
 
-And if I specify "bin/foo" instead of "proc/version", the result was
+[more soft lockup output, then my console becomes unresponsive, needs
+hard system reset]
 
------------------------------------------------------------------------------
-About to write real-root-dev
-do_sys_open: bin/foo
-/sbin/init: 363: cannot create bin/foo: Read-only file system
-do_sys_open: proc/sys/kernel/real-root-dev
-BUG: unable to handle kernel paging request at df379fe8
------------------------------------------------------------------------------
+[root@canola ~]# lspci -vv
+00:01.0 Class ff00: Hewlett-Packard Company RMP-3 (Remote Management Processor)
+	Subsystem: Hewlett-Packard Company RMP-3 (Remote Management Processor)
+	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (250ns max), Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 0
+	Capabilities: [e8] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/2 Enable-
+		Address: 0000000000000000  Data: 0000
 
-So, no problem with accessing "bin/", but has problem with "proc/".
+00:01.1 Communication controller: Hewlett-Packard Company RMP-3 Shared Memory Driver
+	Subsystem: Hewlett-Packard Company RMP-3 Shared Memory Driver
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (250ns max), Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 0
+	Region 1: Memory at 84034000 (64-bit, non-prefetchable) [size=4K]
+	Region 3: Memory at 80080000000 (64-bit, prefetchable) [size=128K]
+	Capabilities: [e8] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 Enable-
+		Address: 0000000000000000  Data: 0000
 
-Regards.
+00:01.2 Serial controller: Hewlett-Packard Company Diva Serial [GSP] Multiport UART (prog-if 02 [16550])
+	Subsystem: Hewlett-Packard Company Diva RMP3
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (250ns max), Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 59
+	Region 1: Memory at 84033000 (64-bit, non-prefetchable) [size=4K]
+	Capabilities: [e8] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/2 Enable-
+		Address: 0000000000000000  Data: 0000
+
+00:02.0 USB Controller: NEC Corporation USB (rev 43) (prog-if 10 [OHCI])
+	Subsystem: Unknown device 03f0:0226
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (250ns min, 10500ns max), Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 61
+	Region 0: Memory at 84032000 (32-bit, non-prefetchable) [size=4K]
+	Capabilities: [40] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:02.1 USB Controller: NEC Corporation USB (rev 43) (prog-if 10 [OHCI])
+	Subsystem: Unknown device 03f0:0226
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (250ns min, 10500ns max), Cache Line Size: 128 bytes
+	Interrupt: pin B routed to IRQ 62
+	Region 0: Memory at 84031000 (32-bit, non-prefetchable) [size=4K]
+	Capabilities: [40] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:02.2 USB Controller: NEC Corporation USB 2.0 (rev 04) (prog-if 20 [EHCI])
+	Subsystem: Unknown device 03f0:0326
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (4000ns min, 8500ns max), Cache Line Size: 128 bytes
+	Interrupt: pin C routed to IRQ 60
+	Region 0: Memory at 84030000 (32-bit, non-prefetchable) [size=256]
+	Capabilities: [40] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:04.0 VGA compatible controller: ATI Technologies Inc Radeon RV100 QY [Radeon 7000/VE] (prog-if 00 [VGA])
+	Subsystem: Hewlett-Packard Company Radeon 7000
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 128 (2000ns min), Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 58
+	Region 0: Memory at 80000000 (32-bit, prefetchable) [size=64M]
+	Region 1: I/O ports at 1001000 [size=256]
+	Region 2: Memory at 84020000 (32-bit, non-prefetchable) [size=64K]
+	Expansion ROM at 84000000 [disabled] [size=128K]
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+0f:00.0 PCI bridge: Hewlett-Packard Company PCIe Root Port (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Bus: primary=0f, secondary=10, subordinate=48, sec-latency=0
+	I/O behind bridge: 00001000-0000ffff
+	Memory behind bridge: b0000000-bfffffff
+	Prefetchable memory behind bridge: 0000080380000000-00000803ffffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+		Address: 00000000fee00000  Data: 4033
+	Capabilities: [60] Express Root Port (Slot+) IRQ 0
+		Device: Supported: MaxPayload 256 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s <64ns, L1 <1us
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s L1, Port 0
+		Link: Latency L0s <1us, L1 <16us
+		Link: ASPM Disabled RCB 128 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+		Slot: AtnBtn+ PwrCtrl+ MRL+ AtnInd+ PwrInd+ HotPlug+ Surpise-
+		Slot: Number 6, PowerLimit 25.000000
+		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq+
+		Slot: AttnInd Off, PwrInd On, Power-
+		Root: Correctable- Non-Fatal- Fatal- PME-
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [150] Unknown (11)
+
+10:00.0 RAID bus controller: Hewlett-Packard Company Smart Array Controller (rev 03)
+	Subsystem: Hewlett-Packard Company E500 SAS Controller
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 50
+	Region 0: Memory at b0000000 (64-bit, non-prefetchable) [size=1M]
+	Region 2: I/O ports at 4001000 [size=256]
+	Region 3: Memory at b0140000 (64-bit, non-prefetchable) [size=4K]
+	Expansion ROM at b0100000 [disabled] [size=256K]
+	Capabilities: [b0] Express Endpoint IRQ 0
+		Device: Supported: MaxPayload 512 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+		Device: MaxPayload 128 bytes, MaxReadReq 2048 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s, Port 0
+		Link: Latency L0s <2us, L1 unlimited
+		Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+	Capabilities: [d4] MSI-X: Enable+ Mask- TabSize=4
+		Vector table: BAR=0 offset=000fe000
+		PBA: BAR=0 offset=000ff000
+	Capabilities: [e0] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [ec] Vital Product Data
+	Capabilities: [100] Power Budgeting
+
+49:02.0 Ethernet controller: Intel Corporation 82546GB Gigabit Ethernet Controller (rev 03)
+	Subsystem: Hewlett-Packard Company Core Dual Port 1000Base-T [AB352A]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64 (63750ns min), Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 76
+	Region 0: Memory at c0120000 (64-bit, non-prefetchable) [size=128K]
+	Region 2: Memory at c00c0000 (64-bit, non-prefetchable) [size=256K]
+	Region 4: I/O ports at 5001040 [size=64]
+	Expansion ROM at c0080000 [disabled] [size=256K]
+	Capabilities: [dc] Power Management version 2
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [e4] PCI-X non-bridge device
+		Command: DPERE- ERO+ RBC=4096 OST=4
+		Status: Dev=49:02.0 64bit+ 133MHz+ SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=16 RSCEM- 266MHz- 533MHz-
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+
+49:02.1 Ethernet controller: Intel Corporation 82546GB Gigabit Ethernet Controller (rev 03)
+	Subsystem: Hewlett-Packard Company Core Dual Port 1000Base-T [AB352A]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64 (63750ns min), Cache Line Size: 128 bytes
+	Interrupt: pin B routed to IRQ 77
+	Region 0: Memory at c0100000 (64-bit, non-prefetchable) [size=128K]
+	Region 2: Memory at c0040000 (64-bit, non-prefetchable) [size=256K]
+	Region 4: I/O ports at 5001000 [size=64]
+	Expansion ROM at c0000000 [disabled] [size=256K]
+	Capabilities: [dc] Power Management version 2
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [e4] PCI-X non-bridge device
+		Command: DPERE- ERO+ RBC=4096 OST=4
+		Status: Dev=49:02.1 64bit+ 133MHz+ SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=16 RSCEM- 266MHz- 533MHz-
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+
+4f:00.0 PCI bridge: Hewlett-Packard Company PCIe Root Port (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Bus: primary=4f, secondary=50, subordinate=c3, sec-latency=0
+	I/O behind bridge: 00001000-0000ffff
+	Memory behind bridge: e0000000-efffffff
+	Prefetchable memory behind bridge: 0000080680000000-00000806ffffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+	BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+		Address: 00000000fee00000  Data: 4035
+	Capabilities: [60] Express Root Port (Slot-) IRQ 0
+		Device: Supported: MaxPayload 256 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s <64ns, L1 <1us
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s L1, Port 0
+		Link: Latency L0s <1us, L1 <16us
+		Link: ASPM Disabled RCB 128 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+		Root: Correctable- Non-Fatal- Fatal- PME-
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [150] Unknown (11)
+
+50:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 801c (rev 04) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Bus: primary=50, secondary=51, subordinate=c3, sec-latency=0
+	I/O behind bridge: 00001000-0000ffff
+	Memory behind bridge: e0000000-efffffff
+	Prefetchable memory behind bridge: 0000080680000000-00000806ffffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Express Upstream Port IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag+
+		Device: Latency L0s <64ns, L1 <1us
+		Device: AtnBtn+ AtnInd+ PwrInd+
+		Device: SlotPowerLimit 0.000000
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s L1, Port 0
+		Link: Latency L0s <2us, L1 <4us
+		Link: ASPM Disabled CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+	Capabilities: [70] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [100] Virtual Channel
+
+51:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 801c (rev 04) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Bus: primary=51, secondary=52, subordinate=8a, sec-latency=0
+	I/O behind bridge: 00001000-00008fff
+	Memory behind bridge: e8000000-efffffff
+	Prefetchable memory behind bridge: 0000080680000000-00000806bfffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Express Downstream Port (Slot+) IRQ 0
+		Device: Supported: MaxPayload 2048 bytes, PhantFunc 0, ExtTag+
+		Device: Latency L0s <64ns, L1 <1us
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s L1, Port 1
+		Link: Latency L0s <2us, L1 <4us
+		Link: ASPM Disabled CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+		Slot: AtnBtn+ PwrCtrl+ MRL+ AtnInd+ PwrInd+ HotPlug+ Surpise-
+		Slot: Number 4, PowerLimit 25.000000
+		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq+
+		Slot: AttnInd Off, PwrInd On, Power-
+	Capabilities: [70] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [7c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+		Address: 00000000fee00000  Data: 4036
+	Capabilities: [100] Virtual Channel
+
+51:01.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 801c (rev 04) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Bus: primary=51, secondary=8b, subordinate=c3, sec-latency=0
+	I/O behind bridge: 00009000-0000ffff
+	Memory behind bridge: e0000000-e7ffffff
+	Prefetchable memory behind bridge: 00000806c0000000-00000806ffffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Express Downstream Port (Slot+) IRQ 0
+		Device: Supported: MaxPayload 2048 bytes, PhantFunc 0, ExtTag+
+		Device: Latency L0s <64ns, L1 <1us
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s L1, Port 2
+		Link: Latency L0s <2us, L1 <4us
+		Link: ASPM Disabled CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+		Slot: AtnBtn+ PwrCtrl+ MRL+ AtnInd+ PwrInd+ HotPlug+ Surpise-
+		Slot: Number 3, PowerLimit 25.000000
+		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq+
+		Slot: AttnInd Off, PwrInd On, Power-
+	Capabilities: [70] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [7c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+		Address: 00000000fee00000  Data: 4037
+	Capabilities: [100] Virtual Channel
+
+52:00.0 RAID bus controller: Hewlett-Packard Company Smart Array Controller (rev 03)
+	Subsystem: Hewlett-Packard Company Smart Array P800
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 52
+	Region 0: Memory at e8000000 (64-bit, non-prefetchable) [size=1M]
+	Region 2: I/O ports at 7001000 [size=256]
+	Region 3: Memory at e8140000 (64-bit, non-prefetchable) [size=4K]
+	Expansion ROM at e8100000 [disabled] [size=256K]
+	Capabilities: [b0] Express Endpoint IRQ 0
+		Device: Supported: MaxPayload 512 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+		Device: MaxPayload 128 bytes, MaxReadReq 2048 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s, Port 0
+		Link: Latency L0s <2us, L1 unlimited
+		Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+	Capabilities: [d4] MSI-X: Enable+ Mask- TabSize=4
+		Vector table: BAR=0 offset=000fe000
+		PBA: BAR=0 offset=000ff000
+	Capabilities: [e0] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [ec] Vital Product Data
+	Capabilities: [100] Power Budgeting
+
+8b:00.0 RAID bus controller: Hewlett-Packard Company Smart Array Controller (rev 03)
+	Subsystem: Hewlett-Packard Company P400 SAS Controller
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 71
+	Region 0: Memory at e0000000 (64-bit, non-prefetchable) [size=1M]
+	Region 2: I/O ports at 7009000 [size=256]
+	Region 3: Memory at e0140000 (64-bit, non-prefetchable) [size=4K]
+	Expansion ROM at e0100000 [disabled] [size=256K]
+	Capabilities: [b0] Express Endpoint IRQ 0
+		Device: Supported: MaxPayload 512 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+		Device: MaxPayload 128 bytes, MaxReadReq 2048 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s, Port 0
+		Link: Latency L0s <2us, L1 unlimited
+		Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+	Capabilities: [d4] MSI-X: Enable+ Mask- TabSize=4
+		Vector table: BAR=0 offset=000fe000
+		PBA: BAR=0 offset=000ff000
+	Capabilities: [e0] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [ec] Vital Product Data
+	Capabilities: [100] Power Budgeting
+
+c4:00.0 PCI bridge: Hewlett-Packard Company PCIe Root Port (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 128 bytes
+	Bus: primary=c4, secondary=c5, subordinate=fe, sec-latency=0
+	I/O behind bridge: 00001000-0000ffff
+	Memory behind bridge: f0000000-fdffffff
+	Prefetchable memory behind bridge: 0000080780000000-00000807ffffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+		Address: 00000000fee00000  Data: 4039
+	Capabilities: [60] Express Root Port (Slot+) IRQ 0
+		Device: Supported: MaxPayload 256 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s <64ns, L1 <1us
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s L1, Port 0
+		Link: Latency L0s <1us, L1 <16us
+		Link: ASPM Disabled RCB 128 bytes Disabled CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x8
+		Slot: AtnBtn+ PwrCtrl+ MRL+ AtnInd+ PwrInd+ HotPlug+ Surpise-
+		Slot: Number 5, PowerLimit 25.000000
+		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq+
+		Slot: AttnInd Off, PwrInd Off, Power+
+		Root: Correctable- Non-Fatal- Fatal- PME-
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [150] Unknown (11)
+
+
+[root@canola ~]# lspci -vt
+-+-[0000:c4]---00.0-[0000:c5-fe]--
+ +-[0000:4f]---00.0-[0000:50-c3]----00.0-[0000:51-c3]--+-00.0-[0000:52-8a]----00.0  Hewlett-Packard Company Smart Array Controller
+ |                                                     \-01.0-[0000:8b-c3]----00.0  Hewlett-Packard Company Smart Array Controller
+ +-[0000:49]-+-02.0  Intel Corporation 82546GB Gigabit Ethernet Controller
+ |           \-02.1  Intel Corporation 82546GB Gigabit Ethernet Controller
+ +-[0000:0f]---00.0-[0000:10-48]----00.0  Hewlett-Packard Company Smart Array Controller
+ \-[0000:00]-+-01.0  Hewlett-Packard Company RMP-3 (Remote Management Processor)
+             +-01.1  Hewlett-Packard Company RMP-3 Shared Memory Driver
+             +-01.2  Hewlett-Packard Company Diva Serial [GSP] Multiport UART
+             +-02.0  NEC Corporation USB
+             +-02.1  NEC Corporation USB
+             +-02.2  NEC Corporation USB 2.0
+             \-04.0  ATI Technologies Inc Radeon RV100 QY [Radeon 7000/VE]
+
