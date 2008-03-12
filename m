@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYCLNxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYCLNzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbYCLNxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbYCLNx1
+	id S1753381AbYCLNzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYCLNzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:53:27 -0400
-Received: from zux006-051-205.adsl.green.ch ([81.6.51.205]:12206 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751259AbYCLNx0 (ORCPT
+	Wed, 12 Mar 2008 09:55:07 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:35170 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbYCLNzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:53:26 -0400
-Date: Wed, 12 Mar 2008 13:30:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Benny Amorsen <benny+usenet@amorsen.dk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080312133001.1668f40d@the-village.bc.nu>
-In-Reply-To: <m3d4q08477.fsf@ursa.amorsen.dk>
-References: <200803092346.17556.phillips@phunq.net>
-	<200803110450.19390.phillips@phunq.net>
-	<20080311215601.GM23784@marowsky-bree.de>
-	<200803111602.53835.phillips@phunq.net>
-	<m3d4q08477.fsf@ursa.amorsen.dk>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 09:55:07 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: mingo@redhat.com
+Cc: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] Arch: x86_32, fix fault_msg nul termination
+Date: Wed, 12 Mar 2008 14:53:53 +0100
+Message-Id: <1205330034-28828-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The fault_msg text is not explictly nul terminated now in startup
+assembly. Do so by converting .ascii to .asciz.
 
-> Everyone who has write cache turned on for their hard drives is
-> running in a mode similar to ramback anyway (except for when the file
-> system is set to force writes to the platter, but that is rare).
-> Admittedly, software crashes rarely cause the write cache to be lost,
-> but hardware failures do, practically every time.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/head_32.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-On the contrary - the hard disk cache is managed by the barrier logic in
-the kernel, and the ordering even on failures is fairly predictable.
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index 9e7e015..826988a 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -657,7 +657,7 @@ int_msg:
+ 	.asciz "Unknown interrupt or fault at EIP %p %p %p\n"
+ 
+ fault_msg:
+-	.ascii								\
++	.asciz								\
+ /* fault info: */	"BUG: Int %d: CR2 %p\n"				\
+ /* pusha regs: */	"     EDI %p  ESI %p  EBP %p  ESP %p\n"		\
+ 			"     EBX %p  EDX %p  ECX %p  EAX %p\n"		\
+-- 
+1.5.4.1
 
