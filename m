@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbYCLVnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYCLVoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbYCLVnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYCLVne
+	id S1754550AbYCLVoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYCLVnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:43:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42898 "EHLO mx1.redhat.com"
+	Wed, 12 Mar 2008 17:43:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42897 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbYCLVnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753679AbYCLVnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Mar 2008 17:43:33 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 Organization: Red Hat, Inc.
 To: linux1394-devel@lists.sourceforge.net
-Subject: [PATCH] firewire: fw-ohci: sync AT dma buffer before use
-Date: Wed, 12 Mar 2008 17:43:29 -0400
+Subject: [PATCH] firewire: fw-ohci: use dma_alloc_coherent for ar_buffer
+Date: Wed, 12 Mar 2008 17:43:26 -0400
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -21,44 +21,87 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803121743.29438.jwilson@redhat.com>
+Message-Id: <200803121743.27170.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Per DMA API docs, when using dma_map_single(), DMA_TO_DEVICE synchronization
-must be done after the last modification of the memory region by software
-before it can be handed off to the device and safely read. Such a sync is
-currently missing from firewire_ohci:at_context_queue_packet().
+Currently, we do nothing to guarantee we have a consistent DMA buffer for
+asynchronous receive packets. Rather than doing several sync's following a
+dma_map_single() to get consistent buffers, just switch to using
+dma_alloc_coherent().
 
-At least on my setup, where I could within seconds reliably reproduce a panic
-in handle_at_packet() by simply dd'ing from two drives on different controllers,
-the panic is gone.
-
-See http://bugzilla.kernel.org/show_bug.cgi?id=9617
+Resolves constant buffer failures on my own x86_64 laptop w/4GB of RAM and
+likely to fix a number of other failures witnessed on x86_64 systems with
+4GB of RAM or more.
 
 Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
 ---
 
- drivers/firewire/fw-ohci.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/firewire/fw-ohci.c |   18 +++++-------------
+ 1 files changed, 5 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
-index 081a434..fc45868 100644
+index 28ea78c..081a434 100644
 --- a/drivers/firewire/fw-ohci.c
 +++ b/drivers/firewire/fw-ohci.c
-@@ -780,6 +780,10 @@ at_context_queue_packet(struct context *ctx, struct fw_packet *packet)
+@@ -284,16 +284,10 @@ static int ar_context_add_page(struct ar_context *ctx)
+ 	dma_addr_t ab_bus;
+ 	size_t offset;
  
- 	context_append(ctx, d, z, 4 - z);
+-	ab = (struct ar_buffer *) __get_free_page(GFP_ATOMIC);
++	ab = dma_alloc_coherent(dev, PAGE_SIZE, &ab_bus, GFP_ATOMIC);
+ 	if (ab == NULL)
+ 		return -ENOMEM;
  
-+	/* Sync the DMA buffer up for the device to read from */
-+	dma_sync_single_for_device(ohci->card.device, payload_bus,
-+				   packet->payload_length, DMA_TO_DEVICE);
-+
- 	/* If the context isn't already running, start it up. */
- 	reg = reg_read(ctx->ohci, CONTROL_SET(ctx->regs));
- 	if ((reg & CONTEXT_RUN) == 0)
+-	ab_bus = dma_map_single(dev, ab, PAGE_SIZE, DMA_BIDIRECTIONAL);
+-	if (dma_mapping_error(ab_bus)) {
+-		free_page((unsigned long) ab);
+-		return -ENOMEM;
+-	}
+-
+ 	memset(&ab->descriptor, 0, sizeof(ab->descriptor));
+ 	ab->descriptor.control        = cpu_to_le16(DESCRIPTOR_INPUT_MORE |
+ 						    DESCRIPTOR_STATUS |
+@@ -304,8 +298,6 @@ static int ar_context_add_page(struct ar_context *ctx)
+ 	ab->descriptor.res_count      = cpu_to_le16(PAGE_SIZE - offset);
+ 	ab->descriptor.branch_address = 0;
+ 
+-	dma_sync_single_for_device(dev, ab_bus, PAGE_SIZE, DMA_BIDIRECTIONAL);
+-
+ 	ctx->last_buffer->descriptor.branch_address = cpu_to_le32(ab_bus | 1);
+ 	ctx->last_buffer->next = ab;
+ 	ctx->last_buffer = ab;
+@@ -409,6 +401,7 @@ static void ar_context_tasklet(unsigned long data)
+ 
+ 	if (d->res_count == 0) {
+ 		size_t size, rest, offset;
++		dma_addr_t buffer_bus;
+ 
+ 		/*
+ 		 * This descriptor is finished and we may have a
+@@ -417,9 +410,7 @@ static void ar_context_tasklet(unsigned long data)
+ 		 */
+ 
+ 		offset = offsetof(struct ar_buffer, data);
+-		dma_unmap_single(ohci->card.device,
+-			le32_to_cpu(ab->descriptor.data_address) - offset,
+-			PAGE_SIZE, DMA_BIDIRECTIONAL);
++		buffer_bus = le32_to_cpu(ab->descriptor.data_address) - offset;
+ 
+ 		buffer = ab;
+ 		ab = ab->next;
+@@ -435,7 +426,8 @@ static void ar_context_tasklet(unsigned long data)
+ 		while (buffer < end)
+ 			buffer = handle_ar_packet(ctx, buffer);
+ 
+-		free_page((unsigned long)buffer);
++		dma_free_coherent(ohci->card.device, PAGE_SIZE,
++				  buffer, buffer_bus);
+ 		ar_context_add_page(ctx);
+ 	} else {
+ 		buffer = ctx->pointer;
 
 -- 
 Jarod Wilson
