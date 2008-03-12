@@ -1,248 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbYCLF6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbYCLGAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbYCLF6X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 01:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbYCLF6L
+	id S1753331AbYCLGAR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 02:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYCLGAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 01:58:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:51816 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751392AbYCLF6J (ORCPT
+	Wed, 12 Mar 2008 02:00:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47864 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751488AbYCLGAC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 01:58:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
-        b=AS+78/aIXuAzFIIJJYKASRN6hqiiXKJOf2IbYdgGuo1V5oLxJ0arppU01mJmsaqEN3B/n45PfVjukaiDq0DMrVuh0l/95TZij/gsfFoViYzKpzYA+IMxFz7PkSsEvuWdAMroZ+EP/Uv0EZiSEgHUGb/5dEQxQpAvpSiKEjxLaJ8=
-Date: Wed, 12 Mar 2008 06:58:03 +0100
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 4/4] ide-tape: remove pipeline-specific code from
-	idetape_add_chrdev_read_request()
-Message-ID: <20080312055803.GD4266@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1205082632-3418-1-git-send-email-petkovbb@gmail.com> <1205082632-3418-5-git-send-email-petkovbb@gmail.com> <200803110025.51072.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200803110025.51072.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Wed, 12 Mar 2008 02:00:02 -0400
+Date: Tue, 11 Mar 2008 22:59:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Gordon Farquharson" <gordonfarquharson@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: physmap and "request_module: runaway loop modprobe net-pf-1"
+Message-Id: <20080311225926.6515e18c.akpm@linux-foundation.org>
+In-Reply-To: <97a0a9ac0803112235l157706adoa84b131549a46049@mail.gmail.com>
+References: <97a0a9ac0803112235l157706adoa84b131549a46049@mail.gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 12:25:50AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 09 March 2008, Borislav Petkov wrote:
-> > In order to do away with queueing read requests on the pipeline, several things
-> > have to be done:
-> > 
-> > 1. Do not allocate additional pipeline stages in idetape_init_read() until
-> > (tape->nr_stages < max_stages) and do only read operation preparations. As a
-> > collateral result, idetape_add_stage_tail() becomes unused so remove it.
-> > 
-> > 2. Wait for all queued pipeline requests to complete before queueing
-> 
-> Hmm, but we've just removed all pipeline requests with this patch?
+On Tue, 11 Mar 2008 23:35:28 -0600 "Gordon Farquharson" <gordonfarquharson@gmail.com> wrote:
 
-yep, this is me being overly cautious :).
+> Hi All
 
-> [ ->first_stage and ->next_stage are always NULL after this patch which makes
->   it possible to remove the rest of (now never executed) code for pipeline
->   support, same for idetape_plug_pipeline() and IDETAPE_FLAG_PIPELINE* flags ]
+Let's cc the MTD list.
 
-this'll happen next.
+> On machines that register a physmap flash platform device (e.g. many
+> arm machines), parse_mtd_partitions() in drivers/mtd/mtdpart.c can
+> cause the following output in the boot log:
+> 
+> request_module: runaway loop modprobe net-pf-1
+> modprobe: FATAL: Could not load
+> /lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load
+> /lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load
+> /lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+> ...
+> 
+> To illustrate how this can occur, I'll use the example where
+> CONFIG_KMOD=y, CONFIG_MTD_PARTITIONS=y, CONFIG_MTD_REDBOOT_PARTS=y,
+> and CONFIG_CMDLINE_PARTS is not set. I'll also refer to the following
+> code segment which is in drivers/mtd/mtdpart.c:parse_mtd_partitions():
+> 
+> 	for ( ; ret <= 0 && *types; types++) {
+> 		parser = get_partition_parser(*types);
+> #ifdef CONFIG_KMOD
+> 		if (!parser && !request_module("%s", *types))
+> 				parser = get_partition_parser(*types);
+> #endif
+> 		if (!parser) {
+> 			printk(KERN_NOTICE "%s partition parsing not available\n",
+> 			       *types);
+> 			continue;
+> 		}
+> 		ret = (*parser->parse_fn)(master, pparts, origin);
+> 		if (ret > 0) {
+> 			printk(KERN_NOTICE "%d %s partitions found on MTD device %s\n",
+> 			       ret, parser->name, master->name);
+> 		}
+> 		put_partition_parser(parser);
+> 	}
+> 
+> I should note that I am assuming (because I don't understand how) that
+> request_module() requires net-pf-1 to succeed. This assumption is
+> based on my observation of the request_module message
+> ("request_module: runaway loop modprobe net-pf-1"), and that
+> af_unix_init() (net-pf-1 initialization) is called only after the call
+> to request_module() in this example.
+> 
+> Based on the configuration and assumptions described above, the
+> sequence of events that cause the boot log messages above are:
+> 
+> 1. the first call to get_partition_parser() in parse_mtd_partitions()
+> does not find the parser in the the list of registered parsers, i.e.
+> get_partition_parser() returns a NULL pointer. In this example, the
+> only registered parser in the list is called Redboot;
+> 
+> 2. parse_mtd_partitions() calls request_module() with (in this
+> example) the parameter "cmdlinepart";
+> 
+> 3. request_module() complains (request_module: runaway loop modprobe
+> net-pf-1, etc.) because af_unix_init() has not been called. The boot
+> log shows that af_unix_init() is called only after
+> parse_mtd_partitions() finishes.
+> 
+> register_mtd_parser: RedBoot
+> physmap platform flash device: 00080000 at f0000000
+> Found: ST M29W400DB
+> physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
+> number of JEDEC chips: 1
+> cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+> parse_mtd_partitions:
+> get_partition_parser: name=cmdlinepart
+> get_partition_parser: p->name=RedBoot
+> get_partition_parser: p->owner=00000000
+> get_partition_parser: ret=00000000
+> parse_mtd_partitions: cmdlinepart
+> request_module: runaway loop modprobe net-pf-1
+> modprobe: FATAL: Could not load
+> /lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load
+> /lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+> 
+> modprobe: FATAL: Could not load
+> /lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+> 
+> <--- 47 repeated modprobe messages deleted --->
+> parse_mtd_partitions: request_module called
+> cmdlinepart partition parsing not available
+> get_partition_parser: name=RedBoot
+> get_partition_parser: p->name=RedBoot
+> get_partition_parser: p->owner=00000000
+> get_partition_parser: ret->name=RedBoot
+> get_partition_parser: ret=c02b0f8c
+> parse_mtd_partitions: RedBoot
+> parse_mtd_partitions: request_module called
+> Searching for RedBoot partition table in physmap-flash.0 at offset 0x70000
+> No RedBoot partition table detected in physmap-flash.0
+> parse_mtd_partitions: end of function
+> mice: PS/2 mouse device common for all mice
+> i2c /dev entries driver
+> rtc-rs5c372 0-0032: rs5c372a found, 24hr, driver version 0.5
+> rtc-rs5c372 0-0032: rtc core: registered rtc-rs5c372 as rtc0
+> iop-adma iop-adma.0: Intel(R) IOP: ( cpy intr )
+> iop-adma iop-adma.1: Intel(R) IOP: ( cpy intr )
+> NET: Registered protocol family 26
+> TCP bic registered
+> af_unix_init:
+> NET: Registered protocol family 1
+> NET: Registered protocol family 17
+> XScale DSP coprocessor detected.
+> registered taskstats version 1
+> rtc-rs5c372 0-0032: setting system clock to 2008-03-11 03:16:46 UTC (1205205406)
+> 
+> The reason parse_mtd_partitions() tries to use cmdlinepart, even
+> though it is not a registered parsing scheme when CONFIG_CMDLINE_PARTS
+> is not set, is because cmdlinepart is hard coded in
+> drivers/mtd/maps/physmap.c:
+> 
+> #ifdef CONFIG_MTD_PARTITIONS
+> static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
+> #endif
+> 
+> The simple solution to eliminating the messages in the boot log
+> appears to be to ensure that, for machines that use a physmap flash
+> device, CONFIG_MTD_REDBOOT_PARTS and CONFIG_CMDLINE_PARTS are set if
+> CONFIG_MTD_PARTITIONS is set. However, the problem also occurs if
+> CONFIG_MTD_REDBOOT_PARTS is configured to be built as a module,
+> because again, request_module() fails because af_unix_init() has not
+> been called.
+> 
+> It would be simpler if all parsing code could only be built into the
+> kernel. In this case, built in parsers would be registered by the time
+> parse_mtd_partitions() is called, so the call to request_module() in
+> parse_mtd_partitions() could be removed:
+> 
+> #ifdef CONFIG_KMOD
+> 		if (!parser && !request_module("%s", *types))
+> 				parser = get_partition_parser(*types);
+> #endif
+> 
+> This solution would require simply changing the parser configuration
+> options to bool in drivers/mtd/Kconfig. Is there a reason to allow the
+> parsing code to be built as a module?
 
-> > the read request's buffer directly thru idetape_queue_rw_tail()
-> > 
-> > 3. Do next request buffer allocation (tape->merge_stage)
-> 
-> Isn't idetape_init_read() taking care of 3.?
+That sounds reasonable.
 
-i wanted to have the whole handling at one place and let _init_read() only
-prepare the read. Now we don't allocate any new tape->merge_stage anymore,
-which is wrong. Originally, this happened in _init_read(), however, if we do
-idetape_queue_rw_tail(), we should alloc the new stage _after_ queueing the
-request, which means it cannot happen _init_read() now and should take place
-afterwards, i.e. as it was in the original patch, or?
+> Alternatively, if selecting CONFIG_MTD_PARTITIONS and not selecting
+> both CONFIG_MTD_REDBOOT_PARTS and CONFIG_CMDLINE_PARTS, or selecting
+> CONFIG_MTD_PARTITIONS and not selecting CONFIG_CMDLINE_PARTS and
+> selecting CONFIG_MTD_REDBOOT_PARTS as a module, are valid
+> configurations, it seems that parse_mtd_partitions() must be called
+> only after af_unix_init() has been called. Is this possible?
 
-> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> 
-> Seems like we can get away with:
-> 
-> From: Borislav Petkov <petkovbb@googlemail.com>
-> Subject: [PATCH 4/4] ide-tape: remove pipeline-specific code from idetape_add_chrdev_read_request()
-> 
-> In order to do away with queueing read requests on the pipeline, several things
-> have to be done:
-> 
-> 1. Do not allocate additional pipeline stages in idetape_init_read() until
-> (tape->nr_stages < max_stages) and do only read operation preparations. As a
-> collateral result, idetape_add_stage_tail() becomes unused so remove it.
-> 
-> 2. Queue the read request's buffer directly thru idetape_queue_rw_tail().
-> 
-> 3. Remove now unused idetape_kmalloc_stage() and idetape_switch_buffers().
-> 
-> [bart: simplify the original patch]
-> 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-tape.c |   96 ++-----------------------------------------------
->  1 file changed, 5 insertions(+), 91 deletions(-)
-> 
-> Index: b/drivers/ide/ide-tape.c
-> ===================================================================
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -1586,15 +1586,6 @@ abort:
->  	return NULL;
->  }
->  
-> -static idetape_stage_t *idetape_kmalloc_stage(idetape_tape_t *tape)
-> -{
-> -	debug_log(DBG_PROCS, "Enter %s\n", __func__);
-> -
-> -	if (tape->nr_stages >= tape->max_stages)
-> -		return NULL;
-> -	return __idetape_kmalloc_stage(tape, 0, 0);
-> -}
-> -
->  static int idetape_copy_stage_from_user(idetape_tape_t *tape,
->  		idetape_stage_t *stage, const char __user *buf, int n)
->  {
-> @@ -1672,39 +1663,6 @@ static void idetape_init_merge_stage(ide
->  	}
->  }
->  
-> -static void idetape_switch_buffers(idetape_tape_t *tape, idetape_stage_t *stage)
-> -{
-> -	struct idetape_bh *tmp;
-> -
-> -	tmp = stage->bh;
-> -	stage->bh = tape->merge_stage->bh;
-> -	tape->merge_stage->bh = tmp;
-> -	idetape_init_merge_stage(tape);
-> -}
-> -
-> -/* Add a new stage at the end of the pipeline. */
-> -static void idetape_add_stage_tail(ide_drive_t *drive, idetape_stage_t *stage)
-> -{
-> -	idetape_tape_t *tape = drive->driver_data;
-> -	unsigned long flags;
-> -
-> -	debug_log(DBG_PROCS, "Enter %s\n", __func__);
-> -
-> -	spin_lock_irqsave(&tape->lock, flags);
-> -	stage->next = NULL;
-> -	if (tape->last_stage != NULL)
-> -		tape->last_stage->next = stage;
-> -	else
-> -		tape->first_stage = stage;
-> -		tape->next_stage  = stage;
-> -	tape->last_stage = stage;
-> -	if (tape->next_stage == NULL)
-> -		tape->next_stage = tape->last_stage;
-> -	tape->nr_stages++;
-> -	tape->nr_pending_stages++;
-> -	spin_unlock_irqrestore(&tape->lock, flags);
-> -}
-> -
->  /* Install a completion in a pending request and sleep until it is serviced. The
->   * caller should ensure that the request will not be serviced before we install
->   * the completion (usually by disabling interrupts).
-> @@ -2228,10 +2186,7 @@ static void idetape_empty_write_pipeline
->  static int idetape_init_read(ide_drive_t *drive, int max_stages)
->  {
->  	idetape_tape_t *tape = drive->driver_data;
-> -	idetape_stage_t *new_stage;
-> -	struct request rq;
->  	int bytes_read;
-> -	u16 blocks = *(u16 *)&tape->caps[12];
->  
->  	/* Initialize read operation */
->  	if (tape->chrdev_dir != IDETAPE_DIR_READ) {
-> @@ -2267,21 +2222,7 @@ static int idetape_init_read(ide_drive_t
->  			}
->  		}
->  	}
-> -	idetape_init_rq(&rq, REQ_IDETAPE_READ);
-> -	rq.sector = tape->first_frame;
-> -	rq.nr_sectors = blocks;
-> -	rq.current_nr_sectors = blocks;
-> -	if (!test_bit(IDETAPE_FLAG_PIPELINE_ERR, &tape->flags) &&
-> -	    tape->nr_stages < max_stages) {
-> -		new_stage = idetape_kmalloc_stage(tape);
-> -		while (new_stage != NULL) {
-> -			new_stage->rq = rq;
-> -			idetape_add_stage_tail(drive, new_stage);
-> -			if (tape->nr_stages >= max_stages)
-> -				break;
-> -			new_stage = idetape_kmalloc_stage(tape);
-> -		}
-> -	}
-> +
->  	if (!test_bit(IDETAPE_FLAG_PIPELINE_ACTIVE, &tape->flags)) {
->  		if (tape->nr_pending_stages >= 3 * max_stages / 4) {
->  			tape->measure_insert_time = 1;
-> @@ -2301,9 +2242,6 @@ static int idetape_init_read(ide_drive_t
->  static int idetape_add_chrdev_read_request(ide_drive_t *drive, int blocks)
->  {
->  	idetape_tape_t *tape = drive->driver_data;
-> -	unsigned long flags;
-> -	struct request *rq_ptr;
-> -	int bytes_read;
->  
->  	debug_log(DBG_PROCS, "Enter %s, %d blocks\n", __func__, blocks);
->  
-> @@ -2311,37 +2249,13 @@ static int idetape_add_chrdev_read_reque
->  	if (test_bit(IDETAPE_FLAG_FILEMARK, &tape->flags))
->  		return 0;
->  
-> -	/* Wait for the next block to reach the head of the pipeline. */
->  	idetape_init_read(drive, tape->max_stages);
-> -	if (tape->first_stage == NULL) {
-> -		if (test_bit(IDETAPE_FLAG_PIPELINE_ERR, &tape->flags))
-> -			return 0;
-> -		return idetape_queue_rw_tail(drive, REQ_IDETAPE_READ, blocks,
-> -					tape->merge_stage->bh);
-> -	}
-> -	idetape_wait_first_stage(drive);
-> -	rq_ptr = &tape->first_stage->rq;
-> -	bytes_read = tape->blk_size * (rq_ptr->nr_sectors -
-> -					rq_ptr->current_nr_sectors);
-> -	rq_ptr->nr_sectors = 0;
-> -	rq_ptr->current_nr_sectors = 0;
->  
-> -	if (rq_ptr->errors == IDETAPE_ERROR_EOD)
-> +	if (test_bit(IDETAPE_FLAG_PIPELINE_ERR, &tape->flags))
->  		return 0;
-> -	else {
-> -		idetape_switch_buffers(tape, tape->first_stage);
-> -		if (rq_ptr->errors == IDETAPE_ERROR_FILEMARK)
-> -			set_bit(IDETAPE_FLAG_FILEMARK, &tape->flags);
-> -		spin_lock_irqsave(&tape->lock, flags);
-> -		idetape_remove_stage_head(drive);
-> -		spin_unlock_irqrestore(&tape->lock, flags);
-> -	}
-> -	if (bytes_read > blocks * tape->blk_size) {
-> -		printk(KERN_ERR "ide-tape: bug: trying to return more bytes"
-> -				" than requested\n");
-> -		bytes_read = blocks * tape->blk_size;
-> -	}
-> -	return (bytes_read);
-> +
-> +	return idetape_queue_rw_tail(drive, REQ_IDETAPE_READ, blocks,
-> +				     tape->merge_stage->bh);
->  }
->  
->  static void idetape_pad_zeros(ide_drive_t *drive, int bcount)
+Probably.
 
--- 
-Regards/Gruß,
-    Boris.
+We can specify the order in which these things are called at compile-time. 
+See these, from include/linux/init.h:
+
+#define core_initcall(fn)		__define_initcall("1",fn,1)
+#define postcore_initcall(fn)		__define_initcall("2",fn,2)
+#define arch_initcall(fn)		__define_initcall("3",fn,3)
+#define subsys_initcall(fn)		__define_initcall("4",fn,4)
+#define fs_initcall(fn)			__define_initcall("5",fn,5)
+#define rootfs_initcall(fn)		__define_initcall("rootfs",fn,rootfs)
+#define device_initcall(fn)		__define_initcall("6",fn,6)
+#define late_initcall(fn)		__define_initcall("7",fn,7)
+
+Now, af_unix_init() uses module_init(), which is really __initcall(), which
+is really device_initcall() (ug, don't ask).
+
+So you can do what you're sugesting here by locating the caller/callers of
+parse_mtd_partitions() and marking them late_initcall().
+
+> Lastly, does anybody care because this problem does not cause the
+> kernel to crash? :-)
+
+We're very caring people.
+
+I'd suggest that you make your own decision as to what is the best fix, then
+send a patch.  Please cc me on it and I'll make sure that it gets
+appropriately handled.  This may take a bit of time, as the MTD patch
+backlog is rather large at present.
+
