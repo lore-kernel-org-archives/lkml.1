@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYCLL5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYCLL5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbYCLL5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 07:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYCLL5M
+	id S1753666AbYCLL5t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 07:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYCLL5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 07:57:12 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25740 "EHLO kernel.dk"
+	Wed, 12 Mar 2008 07:57:13 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:25746 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751138AbYCLL5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751471AbYCLL5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Mar 2008 07:57:10 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: npiggin@suse.de, dgc@sgi.com, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 4/7] block: split softirq handling into blk-softirq.c
-Date: Wed, 12 Mar 2008 12:55:37 +0100
-Message-Id: <1205322940-20127-5-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 6/7] block: make kblockd_schedule_work() take the queue as parameter
+Date: Wed, 12 Mar 2008 12:55:39 +0100
+Message-Id: <1205322940-20127-7-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.4.GIT
 In-Reply-To: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
 References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
@@ -22,264 +22,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Preparatory patch for checking queuing affinity.
+
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/Makefile      |    3 +-
- block/blk-core.c    |   88 -------------------------------------------
- block/blk-softirq.c |  103 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 105 insertions(+), 89 deletions(-)
- create mode 100644 block/blk-softirq.c
+ block/as-iosched.c     |    6 +++---
+ block/blk-core.c       |    8 ++++----
+ block/cfq-iosched.c    |    2 +-
+ include/linux/blkdev.h |    2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/block/Makefile b/block/Makefile
-index 5a43c7d..b064190 100644
---- a/block/Makefile
-+++ b/block/Makefile
-@@ -4,7 +4,8 @@
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index 8c39467..6ef766f 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -450,7 +450,7 @@ static void as_antic_stop(struct as_data *ad)
+ 			del_timer(&ad->antic_timer);
+ 		ad->antic_status = ANTIC_FINISHED;
+ 		/* see as_work_handler */
+-		kblockd_schedule_work(&ad->antic_work);
++		kblockd_schedule_work(ad->q, &ad->antic_work);
+ 	}
+ }
  
- obj-$(CONFIG_BLOCK) := elevator.o blk-core.o blk-tag.o blk-sysfs.o \
- 			blk-barrier.o blk-settings.o blk-ioc.o blk-map.o \
--			blk-exec.o blk-merge.o ioctl.o genhd.o scsi_ioctl.o
-+			blk-exec.o blk-merge.o blk-softirq.o ioctl.o genhd.o \
-+			scsi_ioctl.o
+@@ -471,7 +471,7 @@ static void as_antic_timeout(unsigned long data)
+ 		aic = ad->io_context->aic;
  
- obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
- obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
+ 		ad->antic_status = ANTIC_FINISHED;
+-		kblockd_schedule_work(&ad->antic_work);
++		kblockd_schedule_work(q, &ad->antic_work);
+ 
+ 		if (aic->ttime_samples == 0) {
+ 			/* process anticipated on has exited or timed out*/
+@@ -831,7 +831,7 @@ static void as_completed_request(struct request_queue *q, struct request *rq)
+ 	}
+ 
+ 	if (ad->changed_batch && ad->nr_dispatched == 1) {
+-		kblockd_schedule_work(&ad->antic_work);
++		kblockd_schedule_work(q, &ad->antic_work);
+ 		ad->changed_batch = 0;
+ 
+ 		if (ad->batch_data_dir == REQ_SYNC)
 diff --git a/block/blk-core.c b/block/blk-core.c
-index 2a438a9..46819c1 100644
+index 46819c1..ec529dc 100644
 --- a/block/blk-core.c
 +++ b/block/blk-core.c
-@@ -26,8 +26,6 @@
- #include <linux/swap.h>
- #include <linux/writeback.h>
- #include <linux/task_io_accounting_ops.h>
--#include <linux/interrupt.h>
--#include <linux/cpu.h>
- #include <linux/blktrace_api.h>
- #include <linux/fault-inject.h>
+@@ -299,7 +299,7 @@ void blk_unplug_timeout(unsigned long data)
+ 	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_TIMER, NULL,
+ 				q->rq.count[READ] + q->rq.count[WRITE]);
  
-@@ -50,8 +48,6 @@ struct kmem_cache *blk_requestq_cachep;
-  */
- static struct workqueue_struct *kblockd_workqueue;
- 
--static DEFINE_PER_CPU(struct list_head, blk_cpu_done);
--
- static void drive_stat_acct(struct request *rq, int new_io)
- {
- 	int rw = rq_data_dir(rq);
-@@ -1632,82 +1628,6 @@ static int __end_that_request_first(struct request *req, int error,
+-	kblockd_schedule_work(&q->unplug_work);
++	kblockd_schedule_work(q, &q->unplug_work);
  }
  
- /*
-- * splice the completion data to a local structure and hand off to
-- * process_completion_queue() to complete the requests
-- */
--static void blk_done_softirq(struct softirq_action *h)
--{
--	struct list_head *cpu_list, local_list;
--
--	local_irq_disable();
--	cpu_list = &__get_cpu_var(blk_cpu_done);
--	list_replace_init(cpu_list, &local_list);
--	local_irq_enable();
--
--	while (!list_empty(&local_list)) {
--		struct request *rq;
--
--		rq = list_entry(local_list.next, struct request, donelist);
--		list_del_init(&rq->donelist);
--		rq->q->softirq_done_fn(rq);
--	}
--}
--
--static int __cpuinit blk_cpu_notify(struct notifier_block *self,
--				    unsigned long action, void *hcpu)
--{
--	/*
--	 * If a CPU goes away, splice its entries to the current CPU
--	 * and trigger a run of the softirq
--	 */
--	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
--		int cpu = (unsigned long) hcpu;
--
--		local_irq_disable();
--		list_splice_init(&per_cpu(blk_cpu_done, cpu),
--				 &__get_cpu_var(blk_cpu_done));
--		raise_softirq_irqoff(BLOCK_SOFTIRQ);
--		local_irq_enable();
--	}
--
--	return NOTIFY_OK;
--}
--
--
--static struct notifier_block blk_cpu_notifier __cpuinitdata = {
--	.notifier_call	= blk_cpu_notify,
--};
--
--/**
-- * blk_complete_request - end I/O on a request
-- * @req:      the request being processed
-- *
-- * Description:
-- *     Ends all I/O on a request. It does not handle partial completions,
-- *     unless the driver actually implements this in its completion callback
-- *     through requeueing. The actual completion happens out-of-order,
-- *     through a softirq handler. The user must have registered a completion
-- *     callback through blk_queue_softirq_done().
-- **/
--
--void blk_complete_request(struct request *req)
--{
--	struct list_head *cpu_list;
--	unsigned long flags;
--
--	BUG_ON(!req->q->softirq_done_fn);
--
--	local_irq_save(flags);
--
--	cpu_list = &__get_cpu_var(blk_cpu_done);
--	list_add_tail(&req->donelist, cpu_list);
--	raise_softirq_irqoff(BLOCK_SOFTIRQ);
--
--	local_irq_restore(flags);
--}
--EXPORT_SYMBOL(blk_complete_request);
--
--/*
-  * queue lock must be held
-  */
- static void end_that_request_last(struct request *req, int error)
-@@ -2038,8 +1958,6 @@ EXPORT_SYMBOL(kblockd_flush_work);
+ void blk_unplug(struct request_queue *q)
+@@ -340,7 +340,7 @@ void blk_start_queue(struct request_queue *q)
+ 		clear_bit(QUEUE_FLAG_REENTER, &q->queue_flags);
+ 	} else {
+ 		blk_plug_device(q);
+-		kblockd_schedule_work(&q->unplug_work);
++		kblockd_schedule_work(q, &q->unplug_work);
+ 	}
+ }
+ EXPORT_SYMBOL(blk_start_queue);
+@@ -408,7 +408,7 @@ void blk_run_queue(struct request_queue *q)
+ 			clear_bit(QUEUE_FLAG_REENTER, &q->queue_flags);
+ 		} else {
+ 			blk_plug_device(q);
+-			kblockd_schedule_work(&q->unplug_work);
++			kblockd_schedule_work(q, &q->unplug_work);
+ 		}
+ 	}
  
- int __init blk_dev_init(void)
- {
--	int i;
--
- 	kblockd_workqueue = create_workqueue("kblockd");
- 	if (!kblockd_workqueue)
- 		panic("Failed to create kblockd\n");
-@@ -2050,12 +1968,6 @@ int __init blk_dev_init(void)
- 	blk_requestq_cachep = kmem_cache_create("blkdev_queue",
- 			sizeof(struct request_queue), 0, SLAB_PANIC, NULL);
- 
--	for_each_possible_cpu(i)
--		INIT_LIST_HEAD(&per_cpu(blk_cpu_done, i));
--
--	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
--	register_hotcpu_notifier(&blk_cpu_notifier);
--
- 	return 0;
+@@ -1944,7 +1944,7 @@ void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+ 		rq->rq_disk = bio->bi_bdev->bd_disk;
  }
  
-diff --git a/block/blk-softirq.c b/block/blk-softirq.c
-new file mode 100644
-index 0000000..05f9451
---- /dev/null
-+++ b/block/blk-softirq.c
-@@ -0,0 +1,103 @@
-+/*
-+ * Functions related to softirq rq completions
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/bio.h>
-+#include <linux/blkdev.h>
-+#include <linux/interrupt.h>
-+#include <linux/cpu.h>
-+
-+#include "blk.h"
-+
-+static DEFINE_PER_CPU(struct list_head, blk_cpu_done);
-+
-+static int __cpuinit blk_cpu_notify(struct notifier_block *self,
-+				    unsigned long action, void *hcpu)
-+{
-+	/*
-+	 * If a CPU goes away, splice its entries to the current CPU
-+	 * and trigger a run of the softirq
-+	 */
-+	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
-+		int cpu = (unsigned long) hcpu;
-+
-+		local_irq_disable();
-+		list_splice_init(&per_cpu(blk_cpu_done, cpu),
-+				 &__get_cpu_var(blk_cpu_done));
-+		raise_softirq_irqoff(BLOCK_SOFTIRQ);
-+		local_irq_enable();
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+
-+static struct notifier_block blk_cpu_notifier __cpuinitdata = {
-+	.notifier_call	= blk_cpu_notify,
-+};
-+
-+/*
-+ * splice the completion data to a local structure and hand off to
-+ * process_completion_queue() to complete the requests
-+ */
-+static void blk_done_softirq(struct softirq_action *h)
-+{
-+	struct list_head *cpu_list, local_list;
-+
-+	local_irq_disable();
-+	cpu_list = &__get_cpu_var(blk_cpu_done);
-+	list_replace_init(cpu_list, &local_list);
-+	local_irq_enable();
-+
-+	while (!list_empty(&local_list)) {
-+		struct request *rq;
-+
-+		rq = list_entry(local_list.next, struct request, donelist);
-+		list_del_init(&rq->donelist);
-+		rq->q->softirq_done_fn(rq);
-+	}
-+}
-+
-+/**
-+ * blk_complete_request - end I/O on a request
-+ * @req:      the request being processed
-+ *
-+ * Description:
-+ *     Ends all I/O on a request. It does not handle partial completions,
-+ *     unless the driver actually implements this in its completion callback
-+ *     through requeueing. The actual completion happens out-of-order,
-+ *     through a softirq handler. The user must have registered a completion
-+ *     callback through blk_queue_softirq_done().
-+ **/
-+
-+void blk_complete_request(struct request *req)
-+{
-+	struct list_head *cpu_list;
-+	unsigned long flags;
-+
-+	BUG_ON(!req->q->softirq_done_fn);
-+
-+	local_irq_save(flags);
-+
-+	cpu_list = &__get_cpu_var(blk_cpu_done);
-+	list_add_tail(&req->donelist, cpu_list);
-+	raise_softirq_irqoff(BLOCK_SOFTIRQ);
-+
-+	local_irq_restore(flags);
-+}
-+EXPORT_SYMBOL(blk_complete_request);
-+
-+int __init blk_softirq_init(void)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i)
-+		INIT_LIST_HEAD(&per_cpu(blk_cpu_done, i));
-+
-+	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
-+	register_hotcpu_notifier(&blk_cpu_notifier);
-+	return 0;
-+}
-+subsys_initcall(blk_softirq_init);
+-int kblockd_schedule_work(struct work_struct *work)
++int kblockd_schedule_work(struct request_queue *q, struct work_struct *work)
+ {
+ 	return queue_work(kblockd_workqueue, work);
+ }
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 0f962ec..4b31f7c 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -235,7 +235,7 @@ static inline int cfq_bio_sync(struct bio *bio)
+ static inline void cfq_schedule_dispatch(struct cfq_data *cfqd)
+ {
+ 	if (cfqd->busy_queues)
+-		kblockd_schedule_work(&cfqd->unplug_work);
++		kblockd_schedule_work(cfqd->queue, &cfqd->unplug_work);
+ }
+ 
+ static int cfq_queue_empty(struct request_queue *q)
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 6f79d40..f48f32f 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -811,7 +811,7 @@ static inline void put_dev_sector(Sector p)
+ }
+ 
+ struct work_struct;
+-int kblockd_schedule_work(struct work_struct *work);
++int kblockd_schedule_work(struct request_queue *q, struct work_struct *work);
+ void kblockd_flush_work(struct work_struct *work);
+ 
+ #define MODULE_ALIAS_BLOCKDEV(major,minor) \
 -- 
 1.5.4.GIT
 
