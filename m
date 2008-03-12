@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYCLTsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYCLTzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbYCLTsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 15:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYCLTsI
+	id S1753565AbYCLTzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 15:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYCLTyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 15:48:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56248 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbYCLTsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 15:48:06 -0400
-Date: Wed, 12 Mar 2008 15:47:51 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Message-ID: <20080312194751.GF13549@redhat.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080311211004.GA30164@redhat.com> <1205286326.29069.16.camel@caritas-dev.intel.com>
+	Wed, 12 Mar 2008 15:54:52 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:52483 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbYCLTyv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 15:54:51 -0400
+From: Chr <chunkeey@web.de>
+To: Samuel Tardieu <sam@rfc1149.net>
+Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
+Date: Wed, 12 Mar 2008 20:53:12 +0100
+User-Agent: KMail/1.9.9
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Christian Kujau <lists@nerdbynature.de>, David Chinner <dgc@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080309213441.GQ155407@sgi.com> <2008-03-12-19-03-51+trackit+sam@rfc1149.net>
+In-Reply-To: <2008-03-12-19-03-51+trackit+sam@rfc1149.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1205286326.29069.16.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803122053.13265.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1/TTeeWfOjyNlSRcwjuX/CPw1hC24xQ2J3yJDI0
+	TTxGbbCKTcl3REXf5L5gunwauzJOHrEBAlhsFZ4ridXrkjaW2c
+	JyhtH8Iyc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 09:45:26AM +0800, Huang, Ying wrote:
+On Wednesday 12 March 2008 19:03:51 Samuel Tardieu wrote:
+>
+> David> Oh, dm-crypt. Well, I'd definitely start looking there. XFS has
+> David> a history of exposing dm-crypt bugs, and these hangs appear to
+> David> be I/O congestion/scheduling related and not XFS. Also, we
+> David> haven't changed anything related to plug/unplug of block
+> David> devices in XFS recently, so that also points to some other
+> David> change as well...
+>
+me too... 
 
-[..]
-> > I have thought through it again and try to put together some of the
-> > new kexec options we can introduce to make the whole thing work. I am 
-> > considering a simple case where a user boots the kernel A and then
-> > launches kernel B using "kexec --load-preseve-context". Now a user
-> > might save the hibernated image or might want to come back to A.
-> > 
-> > - kexec -l <kernel-image>
-> >         Normal kexec functionality. Boot a new kernel, without preserving
-> >         existing kernel's context.
-> > 
-> > - kexec --load-preserve-context <kernel-image>
-> >         Boot a new kernel while preserving existing kernel's context.
-> > 
-> >         Will be used for booting kernel B for the first time.
-> > 
-> > - kexec --load-resume-image <resumable-core>
-> 
-> In original kexec-tools, this can be done through:
-> kexec -l --args-none <resumable-core>
-> 
-> Do you need to define an alias for it?
+http://lkml.org/lkml/2008/3/11/377
+(BTW: I'm still bisecting it... can somebody please confirm that 2.6.24-git17 
+http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.24-git17.bz2
+was the _last_ "good" one?)  
 
-Ok, we can get rid of --load-resume-image and go by the Eric's idea
-of detecting image type and taking action accordingly.
+BTW:
+by pressing "SYSRQ-S (Emerg. Sync)" over and over again can unlock
+some but not all "D" tasks... 
 
-Thanks
-Vivek
+Regards,
+	Chr.
+
