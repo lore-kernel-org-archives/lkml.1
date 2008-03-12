@@ -1,69 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYCLPk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbYCLPmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbYCLPk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYCLPkS
+	id S1753367AbYCLPmp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 11:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYCLPmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:40:18 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:41639 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751252AbYCLPkQ (ORCPT
+	Wed, 12 Mar 2008 11:42:38 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:38444 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbYCLPmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:40:16 -0400
-X-YMail-OSG: 0ioOVj8VM1nBoRfT9IyUndWRwgann.nHXaV6l_jj5B.Bbl5pUm22AniJ3oHOtDuVlg--
-X-RocketYMMF: rancidfat
-Date: Wed, 12 Mar 2008 08:40:15 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [RFC][PATCH -v2] Smack: Integrate with Audit
-To: Stephen Smalley <sds@tycho.nsa.gov>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Paul Moore <paul.moore@hp.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LSM-ML <linux-security-module@vger.kernel.org>,
-       Audit-ML <linux-audit@redhat.com>
-In-Reply-To: <1205326375.23866.215.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 12 Mar 2008 11:42:37 -0400
+Message-ID: <47D7FAA0.1090802@linux.vnet.ibm.com>
+Date: Wed, 12 Mar 2008 16:45:36 +0100
+From: Frank Munzert <frankm@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <746579.84816.qm@web36612.mail.mud.yahoo.com>
+To: mingo@elte.hu
+CC: linux-kernel@vger.kernel.org
+Subject: BUG: lock held when returning to user space
+Content-Type: multipart/mixed;
+ boundary="------------050907070707060506010700"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050907070707060506010700
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+Hi Ingo,
 
-> 
-> On Wed, 2008-03-12 at 04:44 +0200, Ahmed S. Darwish wrote:
-> > Hi!,
-> > 
-> > Setup the new Audit hooks for Smack. The AUDIT_SUBJ_USER and 
-> > AUDIT_OBJ_USER SELinux flags are recycled to avoid `auditd' 
-> > userspace modifications. Smack only needs auditing on 
-> > a subject/object bases, so those flags were enough.
-> 
-> Only question I have is whether audit folks are ok with reuse of the
-> flags in this manner, and whether the _USER flag is best suited for this
-> purpose if you are going to reuse an existing flag (since Smack label
-> seems more like a SELinux type than a SELinux user).
+we provided a device driver vmur dealing with z/VM virtual unit record 
+devices (reader, punch, printer). A corresponding user space tool 
+provides functions similar to the CMS commands RECEIVE, PUNCH, PRINT.  
+Unit record devices are not meant for concurrent read or write by 
+multiple users, that's why we need to serialize access. The driver's 
+open method uses  mutex_trylock or  mutex_lock_interruptible  to  ensure 
+exclusive access to the device, while its  release method  uses 
+mutex_unlock.
 
-To-mate-o toe-maht-o.
+As a consequence, lockdep complains about locks being held when 
+returning to user space. We used a very simple char device driver 
+(appended below) to produce this message: 
+================================================
+[ BUG: lock held when returning to user space! ]
+------------------------------------------------
+testapp/2683 is leaving the kernel with locks still held!
+1 lock held by testapp/2683:
+ #0:  (&test_mutex){--..}, at: [<000003e00003316c>] test_open+0x30/0x64 
+[test]
 
-There really doesn't seem to be any real reason to create a new
-flag just because the granularity is different. The choice between
-_USER and _TYPE (and _ROLE for that matter) is arbitrary from a
-functional point of view. I say that since Smack has users, but
-not types or roles, _USER makes the most sense.
+For the vmur device driver it is crucial to have only one process access 
+a given unit record device node at a given time. So having open hold the 
+mutex and return to user space is exactly what we want. Is  there any 
+annotation  to tell lockdep to suppress or bypass this kind of warning?
 
-> Certainly will confuse matters if a user has audit filters on SELinux
-> users in their /etc/audit/audit.rules and then boots a kernel with Smack
-> enabled.
+Thanks in advance,
 
-Somehow I doubt that will be their biggest concern.
+Frank
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+--------------050907070707060506010700
+Content-Type: text/plain;
+ name="test.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="test.c"
+
+#include  <linux/module.h>
+#include  <linux/init.h>
+#include  <linux/fs.h>
+#include  <linux/types.h>
+#include  <linux/cdev.h>
+
+#define  DEVICE_NAME  "test"
+#define  MODULE_NAME  "test"
+
+static dev_t Devno;
+static struct cdev test_cdev;
+static struct mutex test_mutex;
+
+static ssize_t test_read(struct file *filp, char *buff, size_t len,
+			 loff_t *whence)
+{
+	return 1;
+}
+
+static ssize_t test_write(struct file *filp, const char *buff,
+			  size_t len, loff_t *whence)
+{
+	return 1;
+}
+
+static int test_open(struct inode *ino, struct file *filp)
+{
+	if (mutex_lock_interruptible(&test_mutex))
+		return -ERESTARTSYS;
+	printk("%s: test device is open.\n", MODULE_NAME);
+	return 0;
+}
+
+static int test_close(struct inode *ino, struct file *filp)
+{
+	printk("%s: test device is closed.\n", MODULE_NAME);
+	mutex_unlock(&test_mutex);
+	return 0;
+}
+
+static struct file_operations Fops  =  { .owner   = THIS_MODULE,
+				         .read    = test_read,
+				         .write   = test_write,
+				         .open    = test_open,
+				         .release = test_close    };
+
+static int __init test_init(void)
+{
+	int rc;
+	rc = alloc_chrdev_region(&Devno, 0, 1, DEVICE_NAME);
+	if (rc < 0)
+	{
+		printk("%s: Registration failed...\n",MODULE_NAME);
+		return rc;
+	}
+	printk("%s: Registration %s at major number %d\n", MODULE_NAME,
+				DEVICE_NAME, MAJOR(Devno));
+	cdev_init(&test_cdev, &Fops);
+	test_cdev.owner = THIS_MODULE;
+	rc = cdev_add(&test_cdev, Devno, 1);
+	if (rc < 0) {
+		printk("%s: Device object not added!\n", MODULE_NAME);
+		unregister_chrdev_region(Devno, 1);
+		return rc;
+	}
+	printk("%s: Device added.\n", MODULE_NAME);
+	mutex_init(&test_mutex);
+	return 0;
+}
+
+static void __exit test_exit(void)
+{
+	cdev_del(&test_cdev);
+	unregister_chrdev_region(Devno, 1);
+	printk("%s: Module removed.\n", MODULE_NAME);
+}
+
+module_init(test_init);
+module_exit(test_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Frank");
+MODULE_DESCRIPTION("Simple char driver.");
+
+--------------050907070707060506010700--
+
