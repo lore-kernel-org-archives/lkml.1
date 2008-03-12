@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYCLQas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbYCLQf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYCLQas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYCLQa0
+	id S1752628AbYCLQf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYCLQfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:30:26 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:11987 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbYCLQaY (ORCPT
+	Wed, 12 Mar 2008 12:35:50 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:35150 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbYCLQfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:30:24 -0400
-Message-ID: <47D7F1D0.1030206@oracle.com>
-Date: Wed, 12 Mar 2008 08:08:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 12 Mar 2008 12:35:50 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 12 Mar 2008 09:35:43 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] signals: send_signal: be paranoid about signalfd_notify()
+In-Reply-To: <20080312131716.GA14324@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0803120934360.30443@alien.or.mcafeemobile.com>
+References: <20080312131716.GA14324@tv-sign.ru>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, jgarzik <jgarzik@pobox.com>
-Subject: Re: [PATCH -mm] ne2: needs more 8390 support functions
-References: <20080311095643.01cd3708.randy.dunlap@oracle.com> <20080312124412.6089948c@the-village.bc.nu>
-In-Reply-To: <20080312124412.6089948c@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Tue, 11 Mar 2008 09:56:43 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> ne2 (MCA) needs both 8390.o and 8390p.o functions:
-> 
-> NAK - the two modules are alternatives nothing should use both - is 8390p
-> not sufficient ?
+On Wed, 12 Mar 2008, Oleg Nesterov wrote:
 
-8390p alone is not sufficient.
-http://lkml.org/lkml/2008/3/11/243
+> send_signal() shouldn't call signalfd_notify() if it then fails with -EAGAIN.
+> Harmless, just a paranoid cleanup.
+> 
+> Also remove the comment. It is obsolete, signalfd_notify() was simplified and
+> does a simple wakeup.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
--- 
-~Randy
+Looks fine to me.
+
+Acked-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+
+> 
+> --- 25/kernel/signal.c~3_SS_NOTIFY	2008-03-12 15:16:52.000000000 +0300
+> +++ 25/kernel/signal.c	2008-03-12 15:55:47.000000000 +0300
+> @@ -769,13 +769,6 @@ static int send_signal(int sig, struct s
+>  	 */
+>  	if (legacy_queue(pending, sig))
+>  		return 0;
+> -
+> -	/*
+> -	 * Deliver the signal to listening signalfds. This must be called
+> -	 * with the sighand lock held.
+> -	 */
+> -	signalfd_notify(t, sig);
+> -
+>  	/*
+>  	 * fast-pathed signals for kernel-internal things like SIGSTOP
+>  	 * or SIGKILL.
+> @@ -825,6 +818,7 @@ static int send_signal(int sig, struct s
+>  	}
+>  
+>  out_set:
+> +	signalfd_notify(t, sig);
+>  	sigaddset(&pending->signal, sig);
+>  	complete_signal(sig, t, group);
+>  	return 0;
+> 
+
+
+- Davide
+
+
