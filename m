@@ -1,205 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbYCLIZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbYCLI3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751899AbYCLIZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 04:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYCLIZq
+	id S1752084AbYCLI3v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 04:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYCLI3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 04:25:46 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:56542 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750800AbYCLIZp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 04:25:45 -0400
-Date: Wed, 12 Mar 2008 13:55:32 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Mike Galbraith <efault@gmx.de>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH 03/17] sched: rt-group: full hierarchy support for
-	the rt groups
-Message-ID: <20080312082532.GB3784@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080309170850.256853000@chello.nl> <20080309170926.354453000@chello.nl>
+	Wed, 12 Mar 2008 04:29:44 -0400
+Received: from sacred.ru ([62.205.161.221]:48139 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750835AbYCLI3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 04:29:43 -0400
+Message-ID: <47D793AB.6070008@openvz.org>
+Date: Wed, 12 Mar 2008 11:26:19 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080309170926.354453000@chello.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Greg KH <greg@kroah.com>, serue@us.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       menage@google.com, sukadev@us.ibm.com,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+References: <47CED717.60406@openvz.org> <47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com> <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com>
+In-Reply-To: <20080311173646.GA26931@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 12 Mar 2008 11:26:21 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 09, 2008 at 06:08:53PM +0100, Peter Zijlstra wrote:
-> Update the -rt bits to support the full hierarchy support started by Dhaval.
+Greg KH wrote:
+> On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
+>> Besides, I've measured some things - the lat_syscall test for open from 
+>> lmbench test suite and the nptl perf test. Here are the results:
+>>
+>>         sec     nosec
+>> open    3.0980s  3.0709s
+>> nptl    2.7746s  2.7710s
+>>
+>> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
+>> much, but it is noticeable. Besides, this is only two tests, digging deeper
+>> may reveal more.
+> 
+> I think that is in the noise of sampling if you run that test many more
+> times.
+
+These numbers are average values of 20 runs of each test. I didn't
+provide the measurement accuracy, but the abs(open.sec - open.nosec)
+is greater than it.
+
+>> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
+>> to the vmlinux...
+>>
+>> I think, I finally agree with you and Al Viro, that the kobj mapper is 
+>> not the right place to put the filtering, but taking the above numbers 
+>> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
+>> versions of security_inode_permission/security_file_permission/etc?
+> 
+> Ask the security module interface maintainers about this, not me :)
+
+OK :) Thanks for your time, Greg.
+
+So, Serge, since you already have a LSM-based version, maybe you can
+change it with the proposed "fix" and send it to LSM maintainers for
+review?
+
+> good luck,
+> 
+> greg k-h
 > 
 
-Thanks for the effort. Just a very minor comment. I will try these out
-and give more feedback.
-
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched.c |   52 ++++++++++++++++++++++++++++++----------------------
->  1 file changed, 30 insertions(+), 22 deletions(-)
-> 
-> Index: linux-2.6-2/kernel/sched.c
-> ===================================================================
-> --- linux-2.6-2.orig/kernel/sched.c
-> +++ linux-2.6-2/kernel/sched.c
-> @@ -7302,10 +7302,12 @@ static void init_tg_cfs_entry(struct tas
->  #endif
-> 
->  #ifdef CONFIG_RT_GROUP_SCHED
-> -static void init_tg_rt_entry(struct rq *rq, struct task_group *tg,
-> -		struct rt_rq *rt_rq, struct sched_rt_entity *rt_se,
-> -		int cpu, int add)
-> +static void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
-> +		struct sched_rt_entity *rt_se, int cpu, int add,
-> +		struct sched_rt_entity *parent)
->  {
-> +	struct rq *rq = cpu_rq(cpu);
-> +
->  	tg->rt_rq[cpu] = rt_rq;
->  	init_rt_rq(rt_rq, rq);
->  	rt_rq->tg = tg;
-> @@ -7318,6 +7320,11 @@ static void init_tg_rt_entry(struct rq *
->  	if (!rt_se)
->  		return;
-> 
-> +	if (!parent)
-> +		rt_se->rt_rq = &rq->rt;
-> +	else
-> +		rt_se->rt_rq = parent->my_q;
-> +
->  	rt_se->rt_rq = &rq->rt;
->  	rt_se->my_q = rt_rq;
->  	rt_se->parent = NULL;
-> @@ -7380,8 +7387,7 @@ void __init sched_init(void)
->  		 * We achieve this by letting init_task_group's tasks sit
->  		 * directly in rq->cfs (i.e init_task_group->se[] = NULL).
->  		 */
-> -		init_tg_cfs_entry(&init_task_group, &rq->cfs,
-> -							NULL, i, 1, NULL);
-> +		init_tg_cfs_entry(&init_task_group, &rq->cfs, NULL, i, 1, NULL);
-
-Shouldn't this go in the previous patch?
-
->  #elif defined CONFIG_USER_SCHED
->  		/*
->  		 * In case of task-groups formed thr' the user id of tasks,
-> @@ -7394,7 +7400,7 @@ void __init sched_init(void)
->  		 * (init_cfs_rq) and having one entity represent this group of
->  		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
->  		 */
-> -		init_tg_cfs_entry(rq, &init_task_group,
-> +		init_tg_cfs_entry(&init_task_group,
->  				&per_cpu(init_cfs_rq, i),
->  				&per_cpu(init_sched_entity, i), i, 1, NULL);
-> 
-
-Shouldn't this go in the previous patch? (my mistake, I missed this one in the
-patch I sent out).
-
-> @@ -7405,11 +7411,11 @@ void __init sched_init(void)
->  #ifdef CONFIG_RT_GROUP_SCHED
->  		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
->  #ifdef CONFIG_CGROUP_SCHED
-> -		init_tg_rt_entry(rq, &init_task_group, &rq->rt, NULL, i, 1);
-> +		init_tg_rt_entry(&init_task_group, &rq->rt, NULL, i, 1, NULL);
->  #elif defined CONFIG_USER_SCHED
-> -		init_tg_rt_entry(rq, &init_task_group,
-> +		init_tg_rt_entry(&init_task_group,
->  				&per_cpu(init_rt_rq, i),
-> -				&per_cpu(init_sched_rt_entity, i), i, 1);
-> +				&per_cpu(init_sched_rt_entity, i), i, 1, NULL);
->  #endif
->  #endif
-> 
-> @@ -7613,11 +7619,11 @@ static void free_fair_sched_group(struct
->  	kfree(tg->se);
->  }
-> 
-> -static int alloc_fair_sched_group(struct task_group *tg,
-> -					struct task_group *parent)
-> +static
-> +int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
->  {
->  	struct cfs_rq *cfs_rq;
-> -	struct sched_entity *se;
-> +	struct sched_entity *se, *parent_se;
->  	struct rq *rq;
->  	int i;
-> 
-> @@ -7643,10 +7649,8 @@ static int alloc_fair_sched_group(struct
->  		if (!se)
->  			goto err;
-> 
-> -		if (!parent)
-> -			init_tg_cfs_entry(tg, cfs_rq, se, i, 0, NULL);
-> -		else
-> -			init_tg_cfs_entry(tg, cfs_rq, se, i, 0,	parent->se[i]);
-> +		parent_se = parent ? parent->se[i] : NULL;
-> +		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent_se);
->  	}
-> 
->  	return 1;
-> @@ -7670,7 +7674,8 @@ static inline void free_fair_sched_group
->  {
->  }
-> 
-> -static inline int alloc_fair_sched_group(struct task_group *tg)
-> +static inline
-> +int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
->  {
->  	return 1;
->  }
-> @@ -7702,10 +7707,11 @@ static void free_rt_sched_group(struct t
->  	kfree(tg->rt_se);
->  }
-> 
-> -static int alloc_rt_sched_group(struct task_group *tg)
-> +static
-> +int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
->  {
->  	struct rt_rq *rt_rq;
-> -	struct sched_rt_entity *rt_se;
-> +	struct sched_rt_entity *rt_se, *parent_se;
->  	struct rq *rq;
->  	int i;
-> 
-> @@ -7732,7 +7738,8 @@ static int alloc_rt_sched_group(struct t
->  		if (!rt_se)
->  			goto err;
-> 
-> -		init_tg_rt_entry(rq, tg, rt_rq, rt_se, i, 0);
-> +		parent_se = parent ? parent->rt_se[i] : NULL;
-> +		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent_se);
->  	}
-> 
->  	return 1;
-> @@ -7756,7 +7763,8 @@ static inline void free_rt_sched_group(s
->  {
->  }
-> 
-> -static inline int alloc_rt_sched_group(struct task_group *tg)
-> +static inline
-> +int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
->  {
->  	return 1;
->  }
-> @@ -7792,7 +7800,7 @@ struct task_group *sched_create_group(st
->  	if (!alloc_fair_sched_group(tg, parent))
->  		goto err;
-> 
-> -	if (!alloc_rt_sched_group(tg))
-> +	if (!alloc_rt_sched_group(tg, parent))
->  		goto err;
-> 
->  	spin_lock_irqsave(&task_group_lock, flags);
-> 
-> --
-
--- 
-regards,
-Dhaval
