@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbYCLPvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYCLPwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbYCLPvX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYCLPvP
+	id S1754064AbYCLPwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 11:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYCLPwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:51:15 -0400
-Received: from mpadmx-1.MPA-Garching.MPG.DE ([130.183.82.41]:54189 "EHLO
-	mpadmx-1.MPA-Garching.MPG.DE" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750863AbYCLPvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:51:14 -0400
-X-Greylist: delayed 1331 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 11:51:13 EDT
-Message-ID: <47D7F67C.5040406@MPA-Garching.MPG.DE>
-Date: Wed, 12 Mar 2008 16:27:56 +0100
-From: Heinz-Ado Arnolds <arnolds@MPA-Garching.MPG.DE>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070809)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Douglas_Warzecha@dell.com
-Subject: Reboot problem with Dell Optiplex 745 on 2.6.23/24
-Content-Type: multipart/mixed;
- boundary="------------060409070407010708060006"
+	Wed, 12 Mar 2008 11:52:06 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:59078 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751464AbYCLPwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 11:52:04 -0400
+Subject: Re: [RFC][PATCH -v2] Smack: Integrate with Audit
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Paul Moore <paul.moore@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>,
+       Audit-ML <linux-audit@redhat.com>, Steve Grubb <sgrubb@redhat.com>
+In-Reply-To: <746579.84816.qm@web36612.mail.mud.yahoo.com>
+References: <746579.84816.qm@web36612.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 12 Mar 2008 11:48:17 -0400
+Message-Id: <1205336897.23866.296.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060409070407010708060006
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Hi there,
+On Wed, 2008-03-12 at 08:40 -0700, Casey Schaufler wrote:
+> --- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > 
+> > On Wed, 2008-03-12 at 04:44 +0200, Ahmed S. Darwish wrote:
+> > > Hi!,
+> > > 
+> > > Setup the new Audit hooks for Smack. The AUDIT_SUBJ_USER and 
+> > > AUDIT_OBJ_USER SELinux flags are recycled to avoid `auditd' 
+> > > userspace modifications. Smack only needs auditing on 
+> > > a subject/object bases, so those flags were enough.
+> > 
+> > Only question I have is whether audit folks are ok with reuse of the
+> > flags in this manner, and whether the _USER flag is best suited for this
+> > purpose if you are going to reuse an existing flag (since Smack label
+> > seems more like a SELinux type than a SELinux user).
+> 
+> To-mate-o toe-maht-o.
+> 
+> There really doesn't seem to be any real reason to create a new
+> flag just because the granularity is different. The choice between
+> _USER and _TYPE (and _ROLE for that matter) is arbitrary from a
+> functional point of view. I say that since Smack has users, but
+> not types or roles, _USER makes the most sense.
 
-we have seen a little problem in rebooting Dell Optiplex 745 with the
-0KW626 board. A small patch for 2.6.23 enabling reboot with this board is
-attached.
+Perhaps I misunderstand, but Smack labels don't represent users (i.e.
+user identity) in any way, so it seemed like a mismatch to use the _USER
+flag there.  Whereas types in SELinux bear some similarity to Smack
+labels - simple unstructured names whose meaning is only defined by the
+policy rules.
 
-Kind regards,
+Regardless, it seems like the audit maintainers ought to weigh in on the
+matter.
 
-Ado
+> > Certainly will confuse matters if a user has audit filters on SELinux
+> > users in their /etc/audit/audit.rules and then boots a kernel with Smack
+> > enabled.
+> 
+> Somehow I doubt that will be their biggest concern.
 
---
-________________________________________________________________________
+-- 
+Stephen Smalley
+National Security Agency
 
-Dipl.-Ing. Heinz-Ado Arnolds
-
-MPI fuer Astrophysik
-Karl-Schwarzschild-Strasse 1
-D-85748 Garching
-Phone:  +49/89/30000-2217
-FAX  :  +49/89/30000-2388
-email:  arnolds[at]MPA-Garching.MPG.DE
-________________________________________________________________________
-
---------------060409070407010708060006
-Content-Type: text/plain;
- name="reboot-dell-0kw626-linux-2.6.23"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="reboot-dell-0kw626-linux-2.6.23"
-
---- linux-2.6.23/arch/i386/kernel/reboot.c.orig	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.23/arch/i386/kernel/reboot.c	2008-02-25 16:26:11.000000000 +0100
-@@ -122,6 +122,15 @@
- 			DMI_MATCH(DMI_BOARD_NAME, "0WF810"),
- 		},
- 	},
-+	{       /* Handle problems with rebooting on Dell Optiplex 745 with 0KW626 */
-+		.callback = set_bios_reboot,
-+		.ident = "Dell OptiPlex 745",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 745"),
-+			DMI_MATCH(DMI_BOARD_NAME, "0KW626"),
-+		},
-+	},
- 	{	/* Handle problems with rebooting on Dell 2400's */
- 		.callback = set_bios_reboot,
- 		.ident = "Dell PowerEdge 2400",
-
---------------060409070407010708060006--
