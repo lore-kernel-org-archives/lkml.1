@@ -1,60 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753433AbYCLQw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYCLQx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753433AbYCLQw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYCLQwV
+	id S1754319AbYCLQx2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYCLQxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:52:21 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41013 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751392AbYCLQwU (ORCPT
+	Wed, 12 Mar 2008 12:53:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56836 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbYCLQxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:52:20 -0400
-Date: Wed, 12 Mar 2008 10:52:18 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>, penguin-kernel@i-love.sakura.ne.jp,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2.6.25-rc5-mm1] BUG() at mnt_want_write().
-Message-ID: <20080312165218.GB613@parisc-linux.org>
-References: <200803120137.m2C1bffL037440@www262.sakura.ne.jp> <1205291010.9828.60.camel@nimitz.home.sr71.net> <20080311202212.9fe1e5c1.akpm@linux-foundation.org> <1205313918.8514.215.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1205313918.8514.215.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 12 Mar 2008 12:53:20 -0400
+Subject: [PATCH] Remove <linux/genhd.h> from user-visible headers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: torvalds@linux-foundation.org
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org, matthew@wil.cx,
+       dhowells@redhat.com
+Content-Type: text/plain
+Date: Wed, 12 Mar 2008 17:52:56 +0100
+Message-Id: <1205340777.2592.134.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 10:25:18AM +0100, Peter Zijlstra wrote:
-> On Tue, 2008-03-11 at 20:22 -0700, Andrew Morton wrote:
-> > > > INFO: trying to register non-static key.
-> 
-> It means the lock_class_key ended up in non-static storage.
-> 
-> In practise it often means you initialized a on-stack structure
-> incorrectly. DECLARE_WAIT_QUEUE_HEAD() vs
-> DECLARE_WAIT_QUEUE_HEAD_ONSTACK() for example.
-> 
-> /me tries to untangle the sysfs stuff, finds nothing wrong, looks at
-> semaphore code, and.. the winner is: Matthew messed up the semaphores.
-> 
-> Tssk, rewriting locking primitives and not using lockdep...
+It was all wrapped in '#ifdef CONFIG_BLOCK' anyway, so userspace was
+getting nothing useful out of it. And the special #ifndef __KERNEL__
+version of 'struct partition' makes me inclined to promote an attitude
+of violence...
 
-I verified my use of spinlocks by hand ;-)
+Stick some comments on some of the #endifs too, while we're at it.
 
-> Compile tested defconfig with lockdep and !lockdep.
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-Thanks for the patch.  I'll merge it into my generic semaphore patch
-and add credit for you if that's OK -- no point in leaving a breakage
-point around for some innocent bisecter to stumble over.
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 994df37..0fac822 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -205,7 +205,6 @@ unifdef-y += futex.h
+ unifdef-y += fs.h
+ unifdef-y += gameport.h
+ unifdef-y += generic_serial.h
+-unifdef-y += genhd.h
+ unifdef-y += gfs2_ondisk.h
+ unifdef-y += hayesesp.h
+ unifdef-y += hdlcdrv.h
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 32c2ac4..ecd2bf6 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -55,24 +55,6 @@ enum {
+ 	UNIXWARE_PARTITION = 0x63,	/* Same as GNU_HURD and SCO Unix */
+ };
+ 
+-#ifndef __KERNEL__
+-
+-struct partition {
+-	unsigned char boot_ind;		/* 0x80 - active */
+-	unsigned char head;		/* starting head */
+-	unsigned char sector;		/* starting sector */
+-	unsigned char cyl;		/* starting cylinder */
+-	unsigned char sys_ind;		/* What partition type */
+-	unsigned char end_head;		/* end head */
+-	unsigned char end_sector;	/* end sector */
+-	unsigned char end_cyl;		/* end cylinder */
+-	unsigned int start_sect;	/* starting sector counting from 0 */
+-	unsigned int nr_sects;		/* nr of sectors in partition */
+-} __attribute__((packed));
+-
+-#endif
+-
+-#ifdef __KERNEL__
+ #include <linux/major.h>
+ #include <linux/device.h>
+ #include <linux/smp.h>
+@@ -228,7 +210,7 @@ static inline void part_stat_set_all(struct hd_struct *part, int value)	{
+ 		       sizeof(struct disk_stats));
+ }
+ 				
+-#else
++#else /* !CONFIG_SMP */
+ #define __disk_stat_add(gendiskp, field, addnd) \
+ 				(gendiskp->dkstats.field += addnd)
+ #define disk_stat_read(gendiskp, field)	(gendiskp->dkstats.field)
+@@ -256,7 +238,7 @@ static inline void part_stat_set_all(struct hd_struct *part, int value)
+ 	memset(&part->dkstats, value, sizeof(struct disk_stats));
+ }
+ 
+-#endif
++#endif /* CONFIG_SMP */
+ 
+ #define disk_stat_add(gendiskp, field, addnd)			\
+ 	do {							\
+@@ -395,8 +377,6 @@ static inline void set_capacity(struct gendisk *disk, sector_t size)
+ 	disk->capacity = size;
+ }
+ 
+-#endif  /*  __KERNEL__  */
+-
+ #ifdef CONFIG_SOLARIS_X86_PARTITION
+ 
+ #define SOLARIS_X86_NUMSLICE	16
+@@ -540,8 +520,6 @@ struct unixware_disklabel {
+ #   define MINIX_NR_SUBPARTITIONS  4
+ #endif /* CONFIG_MINIX_SUBPARTITION */
+ 
+-#ifdef __KERNEL__
+-
+ #define ADDPART_FLAG_NONE	0
+ #define ADDPART_FLAG_RAID	1
+ #define ADDPART_FLAG_WHOLEDISK	2
+@@ -570,8 +548,6 @@ static inline struct block_device *bdget_disk(struct gendisk *disk, int index)
+ 	return bdget(MKDEV(disk->major, disk->first_minor) + index);
+ }
+ 
+-#endif
+-
+ #else /* CONFIG_BLOCK */
+ 
+ static inline void printk_all_partitions(void) { }
+@@ -584,4 +560,4 @@ static inline dev_t blk_lookup_devt(const char *name)
+ 
+ #endif /* CONFIG_BLOCK */
+ 
+-#endif
++#endif /* _LINUX_GENHD_H */
+
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+dwmw2
+
