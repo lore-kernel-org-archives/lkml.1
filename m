@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbYCLOra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYCLOro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbYCLOra (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 10:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYCLOrX
+	id S1754011AbYCLOro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 10:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYCLOrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 10:47:23 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:53813 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751333AbYCLOrX (ORCPT
+	Wed, 12 Mar 2008 10:47:35 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:37391 "EHLO
+	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751346AbYCLOre (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 10:47:23 -0400
-Date: Wed, 12 Mar 2008 10:47:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Newall <davidn@davidnewall.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, "Fred ." <eldmannen@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Keys get stuck
-Message-ID: <20080312144701.GZ15804@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Newall <davidn@davidnewall.com>,
-	Jiri Kosina <jkosina@suse.cz>, "Fred ." <eldmannen@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com>
+	Wed, 12 Mar 2008 10:47:34 -0400
+Date: Wed, 12 Mar 2008 20:17:20 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH 02/17] sched: allow the CFS group scheduler to have
+	multiple levels
+Message-ID: <20080312144720.GD5264@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080309170850.256853000@chello.nl> <20080309170926.096086000@chello.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47D7B428.6010804@davidnewall.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080309170926.096086000@chello.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 09:14:56PM +1030, David Newall wrote:
-> It should be said that X implements auto-repeat out of necessity.  While
-> the kernel can report key down and up events, its further interpretation
-> of those events is not appropriate.  Many combinations of events are
-> possible, such as keyboard plus mouse, and this precludes the kernel
-> from providing a full interpretation.  It would be wrong for it to even
-> try.  X is the proper place to implement auto-repeat for X.
+On Sun, Mar 09, 2008 at 06:08:52PM +0100, Peter Zijlstra wrote:
+> This patch makes the group scheduler multi hierarchy aware.
+> 
 
-The problem is that under heavy load the auto-repeat problem is real;
-I've seen it as well, and it means that I've started to try to avoid
-"make -j4" since that's a great way to trigger it.
+Just a heads up, my system is hanging when I try to add tasks to groups
+till this patch applied. Debugging now.
 
-						- Ted
+thanks,
+-- 
+regards,
+Dhaval
