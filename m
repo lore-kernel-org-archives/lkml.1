@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYCLXrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYCLXsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYCLXrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYCLXrM
+	id S1755362AbYCLXsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYCLXsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:47:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34716 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751572AbYCLXrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:47:12 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19+FqgV9a9+3tQqxmimNGOhWkAlX//LDjp+U/rZGX
-	iiTRO9wfBbcPNS
-Date: Thu, 13 Mar 2008 00:47:13 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
- Reported regressions from 2.6.24)
-In-Reply-To: <alpine.LFD.1.00.0803121636030.3557@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0803130045570.14097@axis700.grange>
-References: <200803110014.52985.rjw@sisk.pl>
- <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
- <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl>
- <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
- <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com>
- <alpine.LFD.1.00.0803121502450.3557@woody.linux-foundation.org>
- <20080312223431.GA24150@kroah.com> <alpine.LFD.1.00.0803121553070.3557@woody.linux-foundation.org>
- <Pine.LNX.4.64.0803130012470.14097@axis700.grange>
- <alpine.LFD.1.00.0803121636030.3557@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Wed, 12 Mar 2008 19:48:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52814 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751343AbYCLXsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 19:48:42 -0400
+Date: Wed, 12 Mar 2008 16:43:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: gerald.schaefer@de.ibm.com
+Cc: haveblue@us.ibm.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [patch 09/10] Hugetlb common code update for System z.
+Message-Id: <20080312164303.cac9cab5.akpm@linux-foundation.org>
+In-Reply-To: <1205363937.5237.60.camel@localhost.localdomain>
+References: <20080312173155.703966894@de.ibm.com>
+	<20080312173218.186436562@de.ibm.com>
+	<1205344286.9828.91.camel@nimitz.home.sr71.net>
+	<1205363937.5237.60.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Linus Torvalds wrote:
+On Thu, 13 Mar 2008 00:18:57 +0100
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-> On Thu, 13 Mar 2008, Guennadi Liakhovetski wrote:
+> On Wed, 2008-03-12 at 10:51 -0700, Dave Hansen wrote:
+> > > +#ifndef ARCH_HAS_HUGE_PTE_TYPE
+> > > +#define huge_pte_none(pte)                     pte_none(pte)
+> > > +#define huge_pte_wrprotect(pte)                        pte_wrprotect(pte)
+> > > +#define huge_ptep_set_wrprotect(mm, addr, ptep)        \
+> > > +       ptep_set_wrprotect(mm, addr, ptep)
+> > > +#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)        \
+> > > +       ptep_set_access_flags(vma, addr, ptep, pte, dirty)
+> > > +#define huge_ptep_get(ptep)                    (*ptep)
+> > > +#endif
+> > > +
+> > > +#ifndef ARCH_HAS_PREPARE_HUGEPAGE
 > > 
-> > No, no oops, no blinking LEDs.
+> > Can you guys please do these defines in Kconfig instead of headers?  I
+> > find them much easier to track down when I have one place to look,
+> > rather than a mess of 14 other #includes in a arch-specific header. :)
 > 
-> Oh, the original report says:
-> 
->   "Problem Description: Power off / reboot blink keyboard LEDs and leave 
->    the system at .."
-> 
-> which is why I thought it might be a hidden oops.
-> 
-> But that must have been some unrelated and misleading red herring.
+> There are already several ARCH_HAS_xxx defines which are being used in
+> inlude/linux/hugetlb.h. All of them are defined in
+> include/asm-<arch>/page.h for every architecture that needs them (with
+> the exception of powerpc, where it is include/asm-powerpc/page_64.h).
 
-Ah, ok, I see now. No, no herring here. The LEDs just blink _once_ as they 
-always do before shutdown (on this machine?). But the machine stays on.
+Yes, but that's fugly and it would be better to put in place the
+infrastructure for cleaning it up, rather than worsening it.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+So...
+
+Put this:
+
++#define huge_pte_none(pte)			pte_none(pte)
++#define huge_pte_wrprotect(pte)			pte_wrprotect(pte)
++#define huge_ptep_set_wrprotect(mm, addr, ptep)	\
++	ptep_set_wrprotect(mm, addr, ptep)
++#define huge_ptep_set_access_flags(vma, addr, ptep, pte, dirty)	\
++	ptep_set_access_flags(vma, addr, ptep, pte, dirty)
++#define huge_ptep_get(ptep)			(*ptep)
+
+into include/asm-generic/hugetlb.h
+
+then for each architecture except s390 add an include/asm-foo/hugetlb.h
+which does
+
+#include <asm-generic/hugetlb.h>
+
+then in include/linux/hugetlb.h add
+
+#include <asm/hugetlb.h>
+
+and then in include/asm-s390/hugetlb.h, add your s390-specific versions of
+huge_pte_none() and friends.
+
+later, someone can hopefully use this new infrastructure to rid us of
+ARCH_HAS_HUGEPAGE_ONLY_RANGE, ARCH_HAS_HUGETLB_FREE_PGD_RANGE,
+ARCH_HAS_PREPARE_HUGEPAGE_RANGE, ARCH_HAS_SETCLEAR_HUGE_PTE and
+ARCH_HAS_HUGETLB_PREFAULT_HOOK.
+
+
