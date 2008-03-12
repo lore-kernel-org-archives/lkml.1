@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYCLBPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYCLBVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415AbYCLBPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 21:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYCLBO6
+	id S1752500AbYCLBVc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 21:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYCLBVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 21:14:58 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:39656 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbYCLBO5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 21:14:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=deryafyltrVnCZNzYSalMq0n8pi/6ffVzy65lpS49bIhIVUFprEa7CV96tp79/7b1V/bS22CarSOYjc7IoLzKqcCiz/ypRXr19F8WKnNAbtPWwMJhSm+P+PU9L/Ocs9FLETADBxh7LePEq5KkwC+0g9CERORDGmvLd8xuCxQNc4=
-Message-ID: <a8e1da0803111814h3192f856oe4ffa6e92d1d7a92@mail.gmail.com>
-Date: Wed, 12 Mar 2008 09:14:55 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.25-rc5-mm1
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       "Len Brown" <lenb@kernel.org>
-In-Reply-To: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Mar 2008 21:21:24 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43234 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751367AbYCLBVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 21:21:23 -0400
+From: akepner@sgi.com
+Date: Tue, 11 Mar 2008 18:19:54 -0700
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Mark Nelson <mdnelson@au1.ibm.com>
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080312011954.GN12370@sgi.com>
+References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com> <20080229182504.GA18102@colo.lackof.org> <1204310276.4003.48.camel@localhost.localdomain> <20080305181307.GR17802@sgi.com> <1204783306.14874.37.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+In-Reply-To: <1204783306.14874.37.camel@concordia.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I got the following lockdep warning:
-(add linux-acpi to cc)
 
-[    0.097109] ACPI: Core revision 20070126
-[    0.097282] INFO: trying to register non-static key.
-[    0.097355] the code is fine but needs lockdep annotation.
-[    0.097428] turning off the locking correctness validator.
-[    0.097503] Pid: 0, comm: swapper Not tainted 2.6.25-rc5-mm1 #3
-[    0.097578]  [<c0127bf8>] ? printk+0x18/0x20
-[    0.097716]  [<c014b01c>] __lock_acquire+0x40c/0x760
-[    0.097822]  [<c0181ba0>] ? alloc_debug_processing+0xb0/0x140
-[    0.097959]  [<c014b969>] lock_acquire+0x79/0xb0
-[    0.098063]  [<c0140204>] ? down_trylock+0x14/0x40
-[    0.098197]  [<c03df9e8>] _spin_lock_irqsave+0x48/0xa0
-[    0.098303]  [<c0140204>] ? down_trylock+0x14/0x40
-[    0.098436]  [<c0140204>] down_trylock+0x14/0x40
-[    0.098540]  [<c027c7ea>] acpi_os_wait_semaphore+0x3e/0xb9
-[    0.098647]  [<c029263e>] acpi_ut_acquire_mutex+0x34/0x72
-[    0.098753]  [<c0289ab1>] acpi_ns_root_initialize+0x19/0x250
-[    0.098859]  [<c05453e6>] acpi_initialize_subsystem+0x42/0x64
-[    0.098966]  [<c0545725>] acpi_early_init+0x50/0xef
-[    0.099070]  [<c052b7f6>] start_kernel+0x1e6/0x250
-[    0.099175]  [<c052b1a0>] ? unknown_bootoption+0x0/0x130
-[    0.099310]  [<c052b008>] __init_begin+0x8/0x10
-[    0.099414]  =======================
+I have a new proposal for the documentation portion of this 
+patchset. The code changes essentially amount to 
+s/DMA_ATTR_SYNC_ON_WRITE/DMA_ATTR_BARRIER/ so thought I'd send 
+just the doc change for comments now.
+
+The description of the DMA_ATTR_BARRIER is now very short and 
+generic - no particular architecture is even mentioned. I can add 
+a sentence or two near the architecture-specific changes in 
+arch/ia64/sn/pci/pci_dma.c about why the implementation works 
+on ia64/sn, etc.
+
+diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+index e69de29..a4106ec 100644
+--- a/Documentation/DMA-attributes.txt
++++ b/Documentation/DMA-attributes.txt
+@@ -0,0 +1,24 @@
++			DMA attributes
++			==============
++
++This document describes the semantics of the DMA attributes that are 
++defined in linux/dma-attrs.h. 
++
++DMA_ATTR_BARRIER
++----------------
++
++DMA_ATTR_BARRIER is a barrier attribute for DMA.  DMA to a memory 
++region with the DMA_ATTR_BARRIER attribute forces all pending DMA 
++writes to complete, and thus provides a mechanism to strictly order 
++DMA from a device across all intervening busses and bridges.  This 
++barrier is not specific to a particular type of interconnect, it 
++applies to the system as a whole, and so its implementation must 
++account for the idiosyncracies of the system all the way from the 
++DMA device to memory. 
++
++As an example of a situation where DMA_ATTR_BARRIER would be useful, 
++suppose that a device does a DMA write to indicate that data is ready 
++and available in memory.  The DMA of the "completion indication" could
++race with data DMA.  Mapping the memory used for completion indications 
++with DMA_ATTR_BARRIER would prevent the race.
++
+
