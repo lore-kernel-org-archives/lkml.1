@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYCLThc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYCLTiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbYCLThc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 15:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYCLThW
+	id S1755207AbYCLTiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 15:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYCLTiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 15:37:22 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:59955 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752039AbYCLThV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 15:37:21 -0400
-Date: Wed, 12 Mar 2008 20:36:37 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080312193637.GA27873@ics.muni.cz>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl>
+	Wed, 12 Mar 2008 15:38:05 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:51983 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbYCLTiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 15:38:04 -0400
+Date: Wed, 12 Mar 2008 20:38:01 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: WAN: new PPP code for generic HDLC
+In-Reply-To: <m3lk4nsskh.fsf@maximus.localdomain>
+Message-ID: <Pine.LNX.4.64.0803122032410.14822@fbirervta.pbzchgretzou.qr>
+References: <m3prtzsszg.fsf@maximus.localdomain> <m3lk4nsskh.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200803121952.42666.arekm@maven.pl>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 12 Mar 2008 20:36:38 +0100 (CET)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 07:52:41PM +0100, Arkadiusz Miskiewicz wrote:
-> I'm also seeing regression on my thinkpad z60m where with git tree (tested 
-> again with 2 days old git) "thinkvantage" button stopped working (pressing it 
-> was previously seen by some userspace kde which run konsole).
-> 
-> On 2.6.24 presses are seen.
 
-well, on 2.6.25-rc4, some keys are not reported as input (xev does not see any
-key press), some keys are. Is this desired? Or all the keys (fn+f1-12 + volume
-+ backlight + think vantage) should be reported as some input event and thus
-acpid makes no sense any more?
+On Mar 12 2008 19:30, Krzysztof Halasa wrote:
+>+	/* LCP only */
+>+	if (pid == PID_LCP)
+>+		switch (cp->code) {
+>+		case LCP_PROTO_REJ:
+>+			pid = ntohs(*(__be16*)skb->data);
 
--- 
-Luká¹ Hejtmánek
+What if skb->data happens to be unaligned (can that even happen?)
+
+BTW, here are some consts:
+
+
+diff --git a/drivers/net/wan/hdlc_ppp.c b/drivers/net/wan/hdlc_ppp.c
+index b626aae..0e4cb1f 100644
+--- a/drivers/net/wan/hdlc_ppp.c
++++ b/drivers/net/wan/hdlc_ppp.c
+@@ -40,7 +40,7 @@ enum {CP_CONF_REQ = 1, CP_CONF_ACK, CP_CONF_NAK, CP_CONF_REJ, CP_TERM_REQ,
+       CP_TERM_ACK, CP_CODE_REJ, LCP_PROTO_REJ, LCP_ECHO_REQ, LCP_ECHO_REPLY,
+       LCP_DISC_REQ, CP_CODES};
+ #if DEBUG_CP
+-static const char *code_names[CP_CODES] = {"0", "ConfReq", "ConfAck",
++static const char *const code_names[] = {"0", "ConfReq", "ConfAck",
+ 					   "ConfNak", "ConfRej", "TermReq",
+ 					   "TermAck", "CodeRej", "ProtoRej",
+ 					   "EchoReq", "EchoReply", "Discard"};
+@@ -90,10 +90,10 @@ enum {INV = 0x10, IRC = 0x20, ZRC = 0x40, SCR = 0x80, SCA = 0x100,
+       SCN = 0x200, STR = 0x400, STA = 0x800, SCJ = 0x1000};
+ 
+ #if DEBUG_STATE
+-static const char *state_names[STATES] = {"Closed", "Stopped", "Stopping",
++static const char *const state_names[] = {"Closed", "Stopped", "Stopping",
+ 					  "ReqSent", "AckRecv", "AckSent",
+ 					  "Opened"};
+-static const char *event_names[EVENTS] = {"Start", "Stop", "TO+", "TO-",
++static const char *const event_names[] = {"Start", "Stop", "TO+", "TO-",
+ 					  "RCR+", "RCR-", "RCA", "RCN",
+ 					  "RTR", "RTA", "RUC", "RXJ+", "RXJ-"};
+ #endif
+@@ -374,7 +374,7 @@ static void ppp_cp_event(struct net_device *dev, u16 pid, u16 event, u8 code,
+ static void ppp_cp_parse_cr(struct net_device *dev, u16 pid, u8 id,
+ 			    unsigned int len, u8 *data)
+ {
+-	static u8 valid_accm[6] = { LCP_OPTION_ACCM, 6, 0, 0, 0, 0 };
++	static const u8 valid_accm[] = { LCP_OPTION_ACCM, 6, 0, 0, 0, 0 };
+ 	u8 *opt, *out;
+ 	unsigned int nak_len = 0, rej_len = 0;
+ 
