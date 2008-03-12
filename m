@@ -1,58 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbYCLJ6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbYCLKBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752057AbYCLJ6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 05:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYCLJ6M
+	id S1752392AbYCLKBB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 06:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYCLKAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 05:58:12 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:19458 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYCLJ6L (ORCPT
+	Wed, 12 Mar 2008 06:00:54 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:56605
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751195AbYCLKAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 05:58:11 -0400
-Date: Wed, 12 Mar 2008 11:58:20 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Chandru <chandru@in.ibm.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jdmason@kudzu.us
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
-	in kdump
-Message-ID: <20080312095820.GG10790@tyrion.haifa.ibm.com>
-References: <1191962414.24134.68.camel@chandru> <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com> <20071014054110.GB4399@rhun.haifa.ibm.com> <20071015062919.GA4598@in.ibm.com> <476F4064.8010601@in.ibm.com> <47D5359D.5000909@in.ibm.com> <20080311132921.GA10828@redhat.com> <47D76561.8050805@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D76561.8050805@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 12 Mar 2008 06:00:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmABAH5G10d8qMER/2dsb2JhbAAIqVuCCg
+X-IronPort-AV: E=Sophos;i="4.25,487,1199631600"; 
+   d="scan'208";a="297088454"
+Subject: [PATCH v2] UIO: Implement a UIO interface for the SMX Cryptengine
+From: Ben Nizette <bn@niasdigital.com>
+To: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: gregkh <gregkh@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Organization: Nias Digital
+Date: Wed, 12 Mar 2008 21:06:22 +1100
+Message-Id: <1205316382.4344.15.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 10:38:49AM +0530, Chandru wrote:
+This patch implements a UIO interface for the SMX Cryptengine.
 
-> The system booted! , :) with the following change. Muli acceptable??
->
-> static void calgary_watchdog(unsigned long data)
-> {
-> ...
-> ...
-> /* Disable bus that caused the error and ignore if it's kdump kernel */
-> + if ( !is_kdump_kernel()) {
-> target = calgary_reg(bbar, phb_offset(tbl->it_busno) |
-> PHB_CONFIG_RW_OFFSET);
-> val32 = be32_to_cpu(readl(target));
-> val32 |= PHB_SLOT_DISABLE;
-> writel(cpu_to_be32(val32), target);
-> + }
-> readl(target); /* flush */
+The Cryptengine found on the Nias Digital SMX board is best suited
+for a UIO interface.  It is not wired in to the cryptographic API
+as the engine handles it's own keys, algorithms, everything.  All
+that we know about is that if there's room in the buffer, you can
+write data to it and when there's data ready, you read it out again.
 
-Yikes, not really :-)
+There isn't necessarily even any direct correlation between data
+going in and data coming out again, the engine may consume or
+generate data all on its own.
 
-You're basically saying "if we're in a kdump kernel, let's ignore all
-DMA errors and hope for the best". This is not really acceptable. What
-we could do is limit the scope of ignorance - only ignore errors from
-the point the kdump kernel starts booting until we have reinitialized
-the device and then go back to handling DMA errors correctly.
+This driver is for proprietary hardware but we're always told to
+submit the drivers anyway; here you are.  :-)
 
-Cheers,
-Muli
+This is version 2 of this patch and addresses all issues raised by
+Hans-Jürgen Koch in his review of version 1.
+
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
+---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2cdb591..480fd44 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3554,6 +3554,11 @@ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
+ 
++SMX UIO Interface
++P:	Ben Nizette
++M:	bn@niasdigital.com
++S:	Maintained
++
+ SOFTMAC LAYER (IEEE 802.11)
+ P:	Daniel Drake
+ M:	dsd@gentoo.org
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index b778ed7..f57b347 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -26,4 +26,16 @@ config UIO_CIF
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called uio_cif.
+ 
++config UIO_SMX
++	tristate "SMX cryptengine UIO interface"
++	depends on UIO
++	default n
++	help
++	  Userspace IO interface to the Cryptography engine found on the
++	  Nias Digital SMX boards.  These will be available from Q4 2008
++	  from http://www.niasdigital.com.  The userspace part of this
++	  driver will be released under the GPL at the same time as the
++	  hardware and will be able to be downloaded from the same site.
++
++	  If you compile this as a module, it will be called uio_smx.
+ endmenu
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 7fecfb4..18c4566 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -1,2 +1,3 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
++obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+diff --git a/drivers/uio/uio_smx.c b/drivers/uio/uio_smx.c
+new file mode 100644
+index 0000000..6a8bb6e
+--- /dev/null
++++ b/drivers/uio/uio_smx.c
+@@ -0,0 +1,118 @@
++/*
++ * UIO SMX Cryptengine driver.
++ *
++ * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++
++#include <asm/io.h>
++
++#define SMX_CSR  0x00000000
++#define SMX_EnD  0x00000001
++#define SMX_RUN  0x00000002
++#define SMX_DRDY 0x00000004
++#define SMX_ERR  0x00000008
++
++static irqreturn_t smx_handler(int irq, struct uio_info *dev_info)
++{
++	void __iomem *csr = dev_info->mem[0].internal_addr + SMX_CSR;
++
++	u32 status = ioread32(csr);
++
++	if (!csr & SMX_DRDY)
++		return IRQ_NONE;
++
++	/* Disable interrupt */
++	iowrite32(status & ~SMX_DRDY, csr);
++	return IRQ_HANDLED;
++}
++
++static int __devinit smx_ce_probe(struct platform_device *dev)
++{
++	struct uio_info *info;
++	struct resource *regs;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!regs)
++		goto out_free;
++
++	info->mem[0].addr = regs->start;
++	if (!info->mem[0].addr)
++		goto out_free;
++	info->mem[0].internal_addr = ioremap(regs->start,
++					     regs->end - regs->start);
++	if (!info->mem[0].internal_addr)
++		goto out_free;
++
++	info->mem[0].size = regs->end - regs->start;
++	info->mem[0].memtype = UIO_MEM_PHYS;
++
++	info->name = "smx-ce";
++	info->version = "0.03";
++	info->irq = platform_get_irq(dev, 0);
++	info->irq_flags = IRQF_SHARED;
++	info->handler = smx_handler;
++
++	platform_set_drvdata(dev, info);
++
++	if (uio_register_device(&dev->dev, info))
++		goto out_unmap;
++
++	return 0;
++out_unmap:
++	iounmap(info->mem[0].internal_addr);
++out_free:
++	kfree(info);
++
++	return -ENODEV;
++}
++
++static int __devexit smx_ce_remove(struct platform_device *dev)
++{
++	struct uio_info *info = platform_get_drvdata(dev);
++
++	uio_unregister_device(info);
++	platform_set_drvdata(dev, NULL);
++	iounmap(info->mem[0].internal_addr);
++
++	kfree(info);
++
++	return 0;
++}
++
++static struct platform_driver smx_ce_driver = {
++	.probe		= smx_ce_probe,
++	.remove		= __devexit_p(smx_ce_remove),
++	.driver		= {
++		.name	= "smx-ce",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init smx_ce_init_module(void)
++{
++	return platform_driver_register(&smx_ce_driver);
++}
++module_init(smx_ce_init_module);
++
++static void __exit smx_ce_exit_module(void)
++{
++	platform_driver_unregister(&smx_ce_driver);
++}
++module_exit(smx_ce_exit_module);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Ben Nizette <bn@niasdigital.com>");
+
