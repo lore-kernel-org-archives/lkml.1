@@ -1,80 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbYCLFQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752192AbYCLFfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbYCLFQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 01:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYCLFQH
+	id S1752192AbYCLFfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 01:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYCLFfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 01:16:07 -0400
-Received: from qb-out-0506.google.com ([72.14.204.224]:2399 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbYCLFQF (ORCPT
+	Wed, 12 Mar 2008 01:35:32 -0400
+Received: from hs-out-0708.google.com ([64.233.178.248]:10713 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbYCLFfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 01:16:05 -0400
+	Wed, 12 Mar 2008 01:35:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=AzlLXmPbsrAD6SOnJKLtDENMreURR/FCXlqDey2jUopjQEg/cYQ3XsCW3c9gukJ0lstUuVT19ukuRSpORmmapqLxrMbaOSo7n0yuTAh8q4v+Fwm5yLojbwfQpZwfsYn5NPlqXoWHkUCxPXSRyjOyoXe04/Wb5dKt9B7msA988Ug=
-Message-ID: <47D7670D.1060600@gmail.com>
-Date: Wed, 12 Mar 2008 14:15:57 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=l+ZIdyUnEJX5FEXJSQdsGnOWQXhUyvIGmTZXD2x1xXeoXARi16KzGyO8BOIvPhlCpoTanDQPwY+lH3zpafCHirt84EbCNn+i3okU17X7s/ej7DUcckuu9nnK1wDG7Ii3MAoAa0T5Tje6xrhVKcucGGFXIGlELKDanvvCRhHcuYM=
+Message-ID: <97a0a9ac0803112235l157706adoa84b131549a46049@mail.gmail.com>
+Date: Tue, 11 Mar 2008 23:35:28 -0600
+From: "Gordon Farquharson" <gordonfarquharson@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: physmap and "request_module: runaway loop modprobe net-pf-1"
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] libata: Register for dock events when the drive is	inside
- a dock station
-References: <20080221115305.GB5032@homac.suse.de> <47BE26A0.2040708@gmail.com> <20080226101551.GB10721@homac.suse.de> <47C6804A.50705@gmail.com> <20080228110927.GA5745@homac.suse.de> <47C6B1B1.2040602@gmail.com> <20080228155817.GB5593@homac.suse.de> <20080228183243.GA6146@homac.suse.de> <20080228233610.GA3808@homac> <47CCCC46.6070908@gmail.com> <20080311235548.GA4089@homac>
-In-Reply-To: <20080311235548.GA4089@homac>
-X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Holger.
+Hi All
 
-Holger Macht wrote:
->> dev_notify is being registered with a pointer to ap.  No wonder it causes
-> 
-> It seems this change is missing from your patch. I've attached a fixed
-> version...
+On machines that register a physmap flash platform device (e.g. many
+arm machines), parse_mtd_partitions() in drivers/mtd/mtdpart.c can
+cause the following output in the boot log:
 
-Ah... I must have sent the wrong version of patch.  Thanks for the fix.
+request_module: runaway loop modprobe net-pf-1
+modprobe: FATAL: Could not load
+/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
 
->> strange dereferences later on.  Attached is the fixed patch.  Can you
->> please give it a shot?
-> 
-> ...and now the good news...the new patch works flawlessly with
-> 2.6.25-rc5...
-> 
-> undocking...
-> ata5.00: disabled
-> ata5.00: detaching (SCSI 4:0:0:0)
-> ACPI: \_SB_.GDCK - undocking
-> usb 1-6: USB disconnect, address 5
-> 
-> docking...
-> ACPI: \_SB_.GDCK - docking
-> ata5: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xa frozen
-> ata5: ACPI event
-> ata5: soft resetting link
-> ata5.00: ATAPI: HL-DT-ST DVDRAM GSA-4083N, 1.08, max UDMA/33
-> ata5.00: configured for UDMA/33
-> ata5: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x1 t4
-> ata5: ACPI event
-> ata5: soft resetting link
-> ata5.00: configured for UDMA/33
-> ata5: EH complete
-> scsi 4:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4083N 1.08 PQ: 0 ANSI: 5
-> sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
-> sr 4:0:0:0: Attached scsi CD-ROM sr0
-> sr 4:0:0:0: Attached scsi generic sg1 type 5
+modprobe: FATAL: Could not load
+/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
 
-Super, I'll forward the patch upstream.
+modprobe: FATAL: Could not load
+/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+...
+
+To illustrate how this can occur, I'll use the example where
+CONFIG_KMOD=y, CONFIG_MTD_PARTITIONS=y, CONFIG_MTD_REDBOOT_PARTS=y,
+and CONFIG_CMDLINE_PARTS is not set. I'll also refer to the following
+code segment which is in drivers/mtd/mtdpart.c:parse_mtd_partitions():
+
+	for ( ; ret <= 0 && *types; types++) {
+		parser = get_partition_parser(*types);
+#ifdef CONFIG_KMOD
+		if (!parser && !request_module("%s", *types))
+				parser = get_partition_parser(*types);
+#endif
+		if (!parser) {
+			printk(KERN_NOTICE "%s partition parsing not available\n",
+			       *types);
+			continue;
+		}
+		ret = (*parser->parse_fn)(master, pparts, origin);
+		if (ret > 0) {
+			printk(KERN_NOTICE "%d %s partitions found on MTD device %s\n",
+			       ret, parser->name, master->name);
+		}
+		put_partition_parser(parser);
+	}
+
+I should note that I am assuming (because I don't understand how) that
+request_module() requires net-pf-1 to succeed. This assumption is
+based on my observation of the request_module message
+("request_module: runaway loop modprobe net-pf-1"), and that
+af_unix_init() (net-pf-1 initialization) is called only after the call
+to request_module() in this example.
+
+Based on the configuration and assumptions described above, the
+sequence of events that cause the boot log messages above are:
+
+1. the first call to get_partition_parser() in parse_mtd_partitions()
+does not find the parser in the the list of registered parsers, i.e.
+get_partition_parser() returns a NULL pointer. In this example, the
+only registered parser in the list is called Redboot;
+
+2. parse_mtd_partitions() calls request_module() with (in this
+example) the parameter "cmdlinepart";
+
+3. request_module() complains (request_module: runaway loop modprobe
+net-pf-1, etc.) because af_unix_init() has not been called. The boot
+log shows that af_unix_init() is called only after
+parse_mtd_partitions() finishes.
+
+register_mtd_parser: RedBoot
+physmap platform flash device: 00080000 at f0000000
+Found: ST M29W400DB
+physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
+number of JEDEC chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+parse_mtd_partitions:
+get_partition_parser: name=cmdlinepart
+get_partition_parser: p->name=RedBoot
+get_partition_parser: p->owner=00000000
+get_partition_parser: ret=00000000
+parse_mtd_partitions: cmdlinepart
+request_module: runaway loop modprobe net-pf-1
+modprobe: FATAL: Could not load
+/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+
+modprobe: FATAL: Could not load
+/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+
+modprobe: FATAL: Could not load
+/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+
+<--- 47 repeated modprobe messages deleted --->
+parse_mtd_partitions: request_module called
+cmdlinepart partition parsing not available
+get_partition_parser: name=RedBoot
+get_partition_parser: p->name=RedBoot
+get_partition_parser: p->owner=00000000
+get_partition_parser: ret->name=RedBoot
+get_partition_parser: ret=c02b0f8c
+parse_mtd_partitions: RedBoot
+parse_mtd_partitions: request_module called
+Searching for RedBoot partition table in physmap-flash.0 at offset 0x70000
+No RedBoot partition table detected in physmap-flash.0
+parse_mtd_partitions: end of function
+mice: PS/2 mouse device common for all mice
+i2c /dev entries driver
+rtc-rs5c372 0-0032: rs5c372a found, 24hr, driver version 0.5
+rtc-rs5c372 0-0032: rtc core: registered rtc-rs5c372 as rtc0
+iop-adma iop-adma.0: Intel(R) IOP: ( cpy intr )
+iop-adma iop-adma.1: Intel(R) IOP: ( cpy intr )
+NET: Registered protocol family 26
+TCP bic registered
+af_unix_init:
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+XScale DSP coprocessor detected.
+registered taskstats version 1
+rtc-rs5c372 0-0032: setting system clock to 2008-03-11 03:16:46 UTC (1205205406)
+
+The reason parse_mtd_partitions() tries to use cmdlinepart, even
+though it is not a registered parsing scheme when CONFIG_CMDLINE_PARTS
+is not set, is because cmdlinepart is hard coded in
+drivers/mtd/maps/physmap.c:
+
+#ifdef CONFIG_MTD_PARTITIONS
+static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
+#endif
+
+The simple solution to eliminating the messages in the boot log
+appears to be to ensure that, for machines that use a physmap flash
+device, CONFIG_MTD_REDBOOT_PARTS and CONFIG_CMDLINE_PARTS are set if
+CONFIG_MTD_PARTITIONS is set. However, the problem also occurs if
+CONFIG_MTD_REDBOOT_PARTS is configured to be built as a module,
+because again, request_module() fails because af_unix_init() has not
+been called.
+
+It would be simpler if all parsing code could only be built into the
+kernel. In this case, built in parsers would be registered by the time
+parse_mtd_partitions() is called, so the call to request_module() in
+parse_mtd_partitions() could be removed:
+
+#ifdef CONFIG_KMOD
+		if (!parser && !request_module("%s", *types))
+				parser = get_partition_parser(*types);
+#endif
+
+This solution would require simply changing the parser configuration
+options to bool in drivers/mtd/Kconfig. Is there a reason to allow the
+parsing code to be built as a module?
+
+Alternatively, if selecting CONFIG_MTD_PARTITIONS and not selecting
+both CONFIG_MTD_REDBOOT_PARTS and CONFIG_CMDLINE_PARTS, or selecting
+CONFIG_MTD_PARTITIONS and not selecting CONFIG_CMDLINE_PARTS and
+selecting CONFIG_MTD_REDBOOT_PARTS as a module, are valid
+configurations, it seems that parse_mtd_partitions() must be called
+only after af_unix_init() has been called. Is this possible?
+
+Lastly, does anybody care because this problem does not cause the
+kernel to crash? :-)
+
+Please CC me when replying because I am not subscribed to the list.
 
 Thanks.
 
+Gordon
+
 -- 
-tejun
+Gordon Farquharson
+GnuPG Key ID: 32D6D676
