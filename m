@@ -1,92 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYCLRfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbYCLRgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbYCLRfs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbYCLReS
+	id S1751798AbYCLRgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYCLRex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:34:18 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:27283 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755206AbYCLReR (ORCPT
+	Wed, 12 Mar 2008 13:34:53 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:64346 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755471AbYCLRev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:34:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=xIHW8xQBNRJFhstHfzUP4tb5Euq/aRjHhOthOswbOgcBciehXqfx/Qjb37S+wzz46s6GJWUU6XwhCxD/H7+bqfUmJX9hs93WLY9sg/0eA6FowroN0Huoak6glBUZ9NkUo3qQAL9R106PG9iJbINrWuKRqahsdx9U6n27CE1Zygc=
-Subject: Re: [PATCH 1/6] kernel: add clamp(), clamp_t() and clamp_val()
-	macros
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <200803121820.14883.mb@bu3sch.de>
-References: <1205269894.22317.32.camel@brick>
-	 <200803121613.09172.mb@bu3sch.de> <1205340866.8603.9.camel@brick>
-	 <200803121820.14883.mb@bu3sch.de>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 10:34:09 -0700
-Message-Id: <1205343249.8603.23.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 12 Mar 2008 13:34:51 -0400
+Message-ID: <47D8142E.6060305@pobox.com>
+Date: Wed, 12 Mar 2008 13:34:38 -0400
+From: Mark Lord <mlord@pobox.com>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>, mlord@pobox.com, kristen.c.accardi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [regression] pciehp hang on hp ia64 rx6600
+References: <20080312064755.GA31493@ldl.fc.hp.com>
+In-Reply-To: <20080312064755.GA31493@ldl.fc.hp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 18:20 +0100, Michael Buesch wrote:
-> On Wednesday 12 March 2008 17:54:26 Harvey Harrison wrote:
-> > On Wed, 2008-03-12 at 16:13 +0100, Michael Buesch wrote:
-> > > So why not call it clamp_const()?
-> > > One could even use __builtin_constant_p() and make clamp() use
-> > > either clamp_const() or clamp_nonconst() from above automagically.
-> > > I'd prefer that.
-> > 
-> > Did you mean something like this?  No more clamp_val, just clamp and
-> > clamp_t.  clamp_t forces all the types, clamp looks at the min and max
-> > args, and if they are constants, uses the type of val instead.  If not
-> > a constant, the strict typechecking is done.
+Alex Chiang wrote:
+> Hi Mark, Kristin,
 > 
-> > +#define clamp(val, min, max) ({				\
-> > +	typeof(val) __val = (val);			\
-> > +							\
-> > +	if (__builtin_constant_p(min)) {		\
-> > +		typeof(val) __min = (min);		\
-> > +		__val = __val < __min ? __min: __val;	\
-> > +	} else {					\
-> > +		typeof(min) __min = (min);		\
-> > +		(void) (&__val == &__min);		\
-> > +		__val = __val < __min ? __min: __val;	\
-> > +	}						\
-> > +							\
-> > +	if (__builtin_constant_p(max)) {		\
-> > +		typeof(val) __max = (max);		\
-> > +		__val > __max ? __max: __val;		\
-> > +	} else {					\
-> > +		typeof(max) __max = (max);		\
-> > +		(void) (&__val == &__max);		\
-> > +		__val > __max ? __max: __val;		\
-> > +	} })
-> 
-> Yeah, something like that.
-> Does returning of the value work over an indentation level, too?
-> I dunno this detail of the language.
-> But I'd prefer the following for readability anyway:
-> 
-> +       if (__builtin_constant_p(max)) {                \
-> +               typeof(val) __max = (max);              \
-> +               __val = __val > __max ? __max: __val;           \
-> +       } else {                                        \
-> +               typeof(max) __max = (max);              \
-> +               (void) (&__val == &__max);              \
-> +               __val = __val > __max ? __max: __val;           \
-> +       }
-> +	__val; })
+> On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
+> system hang on 2.6.25-rc4. My system often hangs when only pciehp
+> is loaded and my console is sitting idle, but I can accelerate
+> the hang 100% of the time by immediately doing a 'modprobe
+> acpiphp' right afterwards.
+..
 
-Yeah, that is better. (and even works).
+Does this patch fix things for you?
 
-Harvey
+* * *
 
+Invoke pciehp_enable_slot() at startup only when pciehp_force=1.
+Some HP equipment apparently cannot cope with it otherwise.
+
+This restores the (previously working) 2.6.24 behaviour here,
+while allowing machines that need a kick to use pciehp_force=1.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+---
+
+--- linux-2.6.25-rc5-git2/drivers/pci/hotplug/pciehp_core.c	2008-03-12 13:21:46.000000000 -0400
++++ linux/drivers/pci/hotplug/pciehp_core.c	2008-03-12 13:23:54.000000000 -0400
+@@ -467,7 +467,7 @@
+ 	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+ 
+ 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
+-	if (value) {
++	if (value && pciehp_force) {
+ 		rc = pciehp_enable_slot(t_slot);
+ 		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
+ 			value = 0;
