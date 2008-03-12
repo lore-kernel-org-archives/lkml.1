@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbYCLQ2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYCLQaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752000AbYCLQ2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYCLQ2M
+	id S1752827AbYCLQaI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 12:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYCLQ37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:28:12 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:52963 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbYCLQ2L (ORCPT
+	Wed, 12 Mar 2008 12:29:59 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:4638 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbYCLQ36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:28:11 -0400
-Subject: Re: [patch 6/6] Guest page hinting: s390 support.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       virtualization@lists.osdl.org, akpm@osdl.org, nickpiggin@yahoo.com.au,
-       frankeh@watson.ibm.com, hugh@veritas.com
-In-Reply-To: <47D802A2.1030406@goop.org>
-References: <20080312132132.520833247@de.ibm.com>
-	 <20080312132704.474209626@de.ibm.com>  <47D802A2.1030406@goop.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 12 Mar 2008 17:28:05 +0100
-Message-Id: <1205339285.8851.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 12 Mar 2008 12:29:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rZt5RqF/rHTKGdzO+JsS/ttlu9Wk/0UND3Xwi86ndA/+EFfR22OKB0H0B1eqoHWAxt7o+2Z+QBksFJPMTurAjW8GkzG65OOF/voArvNKexRTuXoSfsCP85T/jLEOSYnE807inHSB+LgFQ1GywxkeAp0/zMN1rIh93YVckqO8atE=
+Message-ID: <19f34abd0803120929j19a043bq711e8a374edbdfe8@mail.gmail.com>
+Date: Wed, 12 Mar 2008 17:29:54 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Frank Munzert" <frankm@linux.vnet.ibm.com>
+Subject: Re: BUG: lock held when returning to user space
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <47D7FAA0.1090802@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47D7FAA0.1090802@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 09:19 -0700, Jeremy Fitzhardinge wrote:
-> Martin Schwidefsky wrote:
-> > The state transitions (a diagram would be nicer but that is too hard
-> > to do in ascii art...):
-> > {Ur,Sr,Vr,Pr}: a resident page will change its block usage state if the
-> >      guest requests it with page_set_{unused,stable,volatile}.
-> > {Uz,Sz,Vz}: a logically zero page will change its block usage state if the
-> >      guest requests it with page_set_{unused,stable,volatile}. The
-> >      guest can't create the Pz state, the state will be Vz instead.
-> > Ur -> Uz: the host system can remove an unused, resident page from memory
-> > Sz -> Sr: on first access a stable, logically zero page will become resident
-> > Sr -> Sp: the host system can swap a stable page to disk
-> > Sp -> Sr: a guest access to a Sp page forces the host to retrieve it
-> > Vr -> Vz: the host can discard a volatile page
-> > Sp -> Uz: a page preserved by the host will be removed if the guest sets 
-> >      the block usage state to unused.
-> > Sp -> Vz: a page preserved by the host will be discarded if the guest sets
-> >      the block usage state to volatile.
-> > Pr -> Sp: the host can move a page from Pr to Sp if it discovers that the
-> >      page is dirty while trying to discard the page. The page content is
-> >      written to the paging device.
-> > Pr -> Vz: the host can discard a Pr page. The Pz state is replaced by the
-> >      Vz state.
-> 
-> I created the attached .dot graph based purely on this description.  It 
-> looks reasonable, but I didn't see how a page enters a Pr state.
+On Wed, Mar 12, 2008 at 4:45 PM, Frank Munzert
+<frankm@linux.vnet.ibm.com> wrote:
+>  we provided a device driver vmur dealing with z/VM virtual unit record
+>  devices (reader, punch, printer). A corresponding user space tool
+>  provides functions similar to the CMS commands RECEIVE, PUNCH, PRINT.
+>  Unit record devices are not meant for concurrent read or write by
+>  multiple users, that's why we need to serialize access. The driver's
+>  open method uses  mutex_trylock or  mutex_lock_interruptible  to  ensure
+>  exclusive access to the device, while its  release method  uses
+>  mutex_unlock.
 
-That is the first block of state transitions: {Ur,Sr,Vr,Pr}
-You can go from any of the four states to any of the remaining three.
+snip.
 
--- 
-blue skies,
-  Martin.
+>  For the vmur device driver it is crucial to have only one process access
+>  a given unit record device node at a given time. So having open hold the
+>  mutex and return to user space is exactly what we want. Is  there any
+>  annotation  to tell lockdep to suppress or bypass this kind of warning?
 
-"Reality continues to ruin my life." - Calvin.
+This sounds like a serious abuse of mutexes.
+
+Wouldn't it be correct to use the mutex to protect a separate variable
+(which indicates whether the device has been open()ed) and nothing
+else? Then there is no need to hold the mutex across the syscalls and
+open() can simply fail if the separate variable is set.
 
 
+Kind regards,
+Vegard Nossum
