@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYCLP11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYCLPk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbYCLP11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 11:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYCLP1U
+	id S1752565AbYCLPk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 11:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYCLPkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 11:27:20 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:38701 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYCLP1T (ORCPT
+	Wed, 12 Mar 2008 11:40:18 -0400
+Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:41639 "HELO
+	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751252AbYCLPkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 11:27:19 -0400
-Date: Wed, 12 Mar 2008 17:27:16 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Patrick McHardy <kaber@trash.net>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 3/8] [NET]: uninline dev_alloc_skb, de-bloats a lot
-In-Reply-To: <Pine.LNX.4.64.0802202135080.32171@kivilampi-30.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0803121711400.24534@kivilampi-30.cs.helsinki.fi>
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
- <Pine.LNX.4.64.0802201651580.26109@fbirervta.pbzchgretzou.qr>
- <47BC54FB.2050508@trash.net> <Pine.LNX.4.64.0802201730240.26109@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0802202135080.32171@kivilampi-30.cs.helsinki.fi>
+	Wed, 12 Mar 2008 11:40:16 -0400
+X-YMail-OSG: 0ioOVj8VM1nBoRfT9IyUndWRwgann.nHXaV6l_jj5B.Bbl5pUm22AniJ3oHOtDuVlg--
+X-RocketYMMF: rancidfat
+Date: Wed, 12 Mar 2008 08:40:15 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [RFC][PATCH -v2] Smack: Integrate with Audit
+To: Stephen Smalley <sds@tycho.nsa.gov>,
+       "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: Casey Schaufler <casey@schaufler-ca.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Paul Moore <paul.moore@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>,
+       Audit-ML <linux-audit@redhat.com>
+In-Reply-To: <1205326375.23866.215.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-652228311-1205335636=:24534"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <746579.84816.qm@web36612.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696243703-652228311-1205335636=:24534
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-On Thu, 21 Feb 2008, Ilpo Järvinen wrote:
-
-> On Wed, 20 Feb 2008, Jan Engelhardt wrote:
 > 
-> > On Feb 20 2008 17:27, Patrick McHardy wrote:
-> >
-> > > __dev_alloc_skb() is also an inline function which performs
-> > > some extra work. Which raises the question - if dev_alloc_skb()
-> >
-> > I'd like to see the results when {__dev_alloc_skb is externed
-> > and dev_alloc_skb remains inlined}.
+> On Wed, 2008-03-12 at 04:44 +0200, Ahmed S. Darwish wrote:
+> > Hi!,
+> > 
+> > Setup the new Audit hooks for Smack. The AUDIT_SUBJ_USER and 
+> > AUDIT_OBJ_USER SELinux flags are recycled to avoid `auditd' 
+> > userspace modifications. Smack only needs auditing on 
+> > a subject/object bases, so those flags were enough.
 > 
-> The results are right under your nose already... ;-)
-> See from the list of the series introduction:
-> 
->   http://marc.info/?l=linux-netdev&m=120351526210711&w=2
-> 
-> IMHO more interesting number (which I currently don't have) is the 
-> _remaining_ benefits of uninlining __dev_alloc_skb after
-> dev_alloc_skb was first uninlined.
+> Only question I have is whether audit folks are ok with reuse of the
+> flags in this manner, and whether the _USER flag is best suited for this
+> purpose if you are going to reuse an existing flag (since Smack label
+> seems more like a SELinux type than a SELinux user).
 
-I've measured this now... Without many debug CONFIGs (in v2.6.25-rc2-mm1), 
-the dev_alloc_skb is much less than 23kB:
+To-mate-o toe-maht-o.
 
-    382 funcs, 157 +, 12335 -, diff: -12178 --- dev_alloc_skb
-    dev_alloc_skb                 |  +37
+There really doesn't seem to be any real reason to create a new
+flag just because the granularity is different. The choice between
+_USER and _TYPE (and _ROLE for that matter) is arbitrary from a
+functional point of view. I say that since Smack has users, but
+not types or roles, _USER makes the most sense.
 
-...and on top of that, I got only this:
-    48 funcs, 111 +, 836 -, diff: -725 --- __dev_alloc_skb
+> Certainly will confuse matters if a user has audit filters on SELinux
+> users in their /etc/audit/audit.rules and then boots a kernel with Smack
+> enabled.
 
-Not that impressive compared with many much worse cases (wasn't a big 
-surprise because there were fewer callsites for the latter).
+Somehow I doubt that will be their biggest concern.
 
-Anyway, would I uninline it (or one some another function that has such 
-two variants that are good candidates for uninlining), should I try to 
-avoid deepening the call-chain by two functions? To me it seems that only 
-way to fool gcc to do that for sure would be using some trick like this:
-Rename __dev_alloc_skb to ___dev_alloc_skb in the header (with appropriate
-don't ever call this due to bloat comment added) and both __dev_alloc_skb 
-and dev_alloc_skb could then be made to call that one in .c file. 
-Otherwise I'm not that sure gcc wouldn't try to be too clever if I just 
-use inline in .c file.
 
--- 
- i.
----696243703-652228311-1205335636=:24534--
+Casey Schaufler
+casey@schaufler-ca.com
