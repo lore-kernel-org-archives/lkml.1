@@ -1,78 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYCLQ7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbYCLRGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbYCLQ7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 12:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbYCLQ7b
+	id S1752522AbYCLRGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYCLRGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 12:59:31 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:63604 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059AbYCLQ7a (ORCPT
+	Wed, 12 Mar 2008 13:06:13 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:52789 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbYCLRGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 12:59:30 -0400
-Subject: Re: [patch 6/6] Guest page hinting: s390 support.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       virtualization@lists.osdl.org, akpm@osdl.org, nickpiggin@yahoo.com.au,
-       frankeh@watson.ibm.com, hugh@veritas.com
-In-Reply-To: <47D8085E.9030701@goop.org>
-References: <20080312132132.520833247@de.ibm.com>
-	 <20080312132704.474209626@de.ibm.com>  <47D802A2.1030406@goop.org>
-	 <1205339285.8851.13.camel@localhost>  <47D8085E.9030701@goop.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 12 Mar 2008 17:59:24 +0100
-Message-Id: <1205341164.8851.44.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 12 Mar 2008 13:06:12 -0400
+Message-ID: <47D80D60.3060006@panasas.com>
+Date: Wed, 12 Mar 2008 19:05:36 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH resend] isd200: Allocate sense_buffer for hacked up scsi_cmnd
+References: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>	 <47D7F5A3.9010004@panasas.com> <1205340884.2941.112.camel@localhost.localdomain>
+In-Reply-To: <1205340884.2941.112.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 09:44 -0700, Jeremy Fitzhardinge wrote:
-> Martin Schwidefsky wrote:
-> > That is the first block of state transitions: {Ur,Sr,Vr,Pr}
-> > You can go from any of the four states to any of the remaining three.
-> >   
+On Wed, Mar 12 2008 at 18:54 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Wed, 2008-03-12 at 17:24 +0200, Boaz Harrosh wrote:
+>> On Wed, Mar 12 2008 at 17:10 +0200, Alan Stern <stern@rowland.harvard.edu> wrote:
+>>> On Wed, 12 Mar 2008, Boaz Harrosh wrote:
+>>>
+>>>> Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
+>>>> own struct scsi_cmnd like here isd200, must also take care of their own
+>>>> sense_buffer.
+>>> Did you run this through checkpatch?
+>>>
+>>> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+>>>
+>>> Alan Stern
+>>>
+>>> --
+>> No I did not, Thanks. Here it is again. 
+>> Again this is for 2.6.25 rc-fixes a NULL dereference bugfix!
+>>  
+>> ---
+>> From: Boaz Harrosh <bharrosh@panasas.com>
+>> Date: Tue, 11 Mar 2008 17:23:06 +0200
+>> Subject: [PATCH] isd200: Allocate sense_buffer for hacked up scsi_cmnd
+>>
+>> Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
+>> own struct scsi_cmnd like here isd200, must also take care of their own
+>> sense_buffer.
+>>
+>> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+>> ---
+>>  drivers/usb/storage/isd200.c |    8 ++++++--
+>>  1 files changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
+>> index 2ae1e86..ac1764b 100644
+>> --- a/drivers/usb/storage/isd200.c
+>> +++ b/drivers/usb/storage/isd200.c
+>> @@ -294,6 +294,7 @@ struct isd200_info {
+>>  	unsigned char MaxLUNs;
+>>  	struct scsi_cmnd srb;
+>>  	struct scatterlist sg;
+>> +	u8 *sense_buffer;
 > 
-> You only mention page_set_{unused,stable,volatile}.  Is 
-> page_set_stable_if_present() the fourth.  And shouldn't that be 
-> "stable_if_clean":
-
-page_set_volatile has a "writable" argument. For writable==0 you get a
-Vx page, for writable==1 you get a Px page.
-
-With stable_if_clean you are refering to stable_if_present? If yes the
-answer is that this operation is used to get a page from Vx/Px back to
-Sx but only if the page has not been discarded. The operation will fail
-if the page state is Vz/Pz. The dirty bit only matters for the hosts
-decision to discard the page, these are the state transitions from Vr/Pr
-to Vz.
-
->      - potential volatile (P): the page has useful content. The host system
->        is allowed to discard the content after it has checked the dirty bit
->        of the page. It has to deliver a discard fault with the absolute
->        address of the page if the guest tries to access it.
->       
+> There's no real need to add this parameter, since all you're doing is
+> assigning it to srb.sense_buffer, there's no need to have an extra
+> pointer for it.
 > 
-> The use of "stable" in the function call and "volatile" in this 
-> description is a bit confusing.  My understanding is that a page in this 
-> state is either stable or volatile depending on whether its dirty, which 
-> makes sense, but it would be good to consistently refer to it in the 
-> same way.
 
-Your understanding is good, but how can I make this less confusing? A Px
-page that is dirty may not be discarded which makes it basically stable.
-The guest state still is potential volatile though as it does not have a
-state of Sx.
+You are right, thanks.
 
--- 
-blue skies,
-  Martin.
+>>  };
+>>  
+>>
+>> @@ -1469,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
+>>  	if (info) {
+>>  		kfree(info->id);
+>>  		kfree(info->RegsBuf);
+>> +		kfree(info->sense_buffer);
+>>  	}
+>>  }
+>>  
+>> @@ -1494,11 +1496,13 @@ static int isd200_init_info(struct us_data *us)
+>>  				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
+>>  		info->RegsBuf = (unsigned char *)
+>>  				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
+>> -		if (!info->id || !info->RegsBuf) {
+>> +		info->sense_buffer = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
+>                                         ^ kzalloc is probably best
+>> +		if (!info->id || !info->RegsBuf || !info->sense_buffer) {
+>>  			isd200_free_info_ptrs(info);
+>>  			kfree(info);
+> 
+> Needs to be a kfree(info->sense_buffer) to avoid leaks if the others
+> couldn't allocate ... it also looks like there are missing
+> kfree(info->id) and (info->RegsBuf) that fix leaks that aren't part of
+> this patch.
 
-"Reality continues to ruin my life." - Calvin.
+No! that's fine. There is no leaks. the call to isd200_free_info_ptrs takes
+care of that.
 
+> 
+>>  			retStatus = ISD200_ERROR;
+>> -		}
+>> +		} else
+>> +			info->srb.sense_buffer = info->sense_buffer;
+>>  	}
+>>  
+>>  	if (retStatus == ISD200_GOOD) {
+> 
+> James
+> 
+> 
+Resend as reply to this mail.
+
+Boaz
 
