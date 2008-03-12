@@ -1,100 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYCLXy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYCLX50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbYCLXy4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYCLXys
+	id S1754757AbYCLX50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYCLX5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:54:48 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47180 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751420AbYCLXyr (ORCPT
+	Wed, 12 Mar 2008 19:57:18 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47744 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751952AbYCLX5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:54:47 -0400
-X-Sasl-enc: 9mUbPAEwjpxnUurt5gO9BEksSQdYLD3OxKnbmDCGZ0dw 1205366085
-Message-ID: <47D86D43.2060108@imap.cc>
-Date: Thu, 13 Mar 2008 00:54:43 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Wed, 12 Mar 2008 19:57:17 -0400
+Date: Wed, 12 Mar 2008 23:57:15 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
+Message-ID: <20080312235715.GA15894@opensource.wolfsonmicro.com>
+Mail-Followup-To: David Brownell <david-b@pacbell.net>,
+	Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Dmitry Baryshkov <dbaryshkov@gmail.com>
+References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <200803120031.59742.david-b@pacbell.net> <20080312130216.GA26583@rakim.wolfsonmicro.main> <200803121452.47600.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-In-Reply-To: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD70819E4BA06696143AEEBA6"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803121452.47600.david-b@pacbell.net>
+X-Cookie: Your love life will be... interesting.
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD70819E4BA06696143AEEBA6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, Mar 12, 2008 at 01:52:46PM -0800, David Brownell wrote:
+> On Wednesday 12 March 2008, Mark Brown wrote:
 
-Am 11.03.2008 09:14 schrieb Andrew Morton:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc=
-5/2.6.25-rc5-mm1/
+> > What do you see as being missing in the externally presented interface?
 
-This still complains during startup:
+> It's not *presented* as a tree of power domains, and it's not clear
+> that's the intended model.  Plus, what Liam said about the names
+> being global, not local/logical.
 
-<6>[    0.063442] Checking 'hlt' instruction... OK.
-<0>[    0.068233] BUG: spinlock bad magic on CPU#0, swapper/0
-<0>[    0.068996]  lock: c2c19380, .magic: 00000000, .owner: swapper/0, .=
-owner_cpu: 0
-<4>[    0.069227] Pid: 0, comm: swapper Not tainted 2.6.25-rc5-mm1-testin=
-g #1
-<4>[    0.069369]  [spin_bug+124/135] spin_bug+0x7c/0x87
-<4>[    0.069563]  [_raw_spin_unlock+25/113] _raw_spin_unlock+0x19/0x71
-<4>[    0.069752]  [_spin_unlock+29/60] _spin_unlock+0x1d/0x3c
-<4>[    0.069941]  [mnt_want_write+98/136] mnt_want_write+0x62/0x88
-<4>[    0.070131]  [sys_mkdirat+134/214] sys_mkdirat+0x86/0xd6
-<4>[    0.070322]  [clean_path+22/74] ? clean_path+0x16/0x4a
-<4>[    0.070558]  [kfree+216/236] ? kfree+0xd8/0xec
-<4>[    0.070793]  [sys_mkdir+16/18] sys_mkdir+0x10/0x12
-<4>[    0.070995]  [do_name+274/435] do_name+0x112/0x1b3
-<4>[    0.071184]  [write_buffer+29/44] write_buffer+0x1d/0x2c
-<4>[    0.071371]  [flush_window+100/179] flush_window+0x64/0xb3
-<4>[    0.071558]  [unpack_to_rootfs+1580/2233] unpack_to_rootfs+0x62c/0x=
-8b9
-<4>[    0.071747]  [populate_rootfs+32/265] populate_rootfs+0x20/0x109
-<4>[    0.071995]  [alternative_instructions+339/344] ? alternative_instr=
-uctions+0x153/0x158
-<4>[    0.072235]  [start_kernel+835/853] start_kernel+0x343/0x355
-<4>[    0.072422]  [i386_start_kernel+8/10] i386_start_kernel+0x8/0xa
-<4>[    0.072610]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-<6>[    0.072808] Unpacking initramfs... done
+Hrm.  I suspect that the documentation which Liam is currently writing
+(together with some actual in-tree users) will help here.
 
-System comes up fine, though. Not sure whom to CC.
-Machine's a dual-core Pentium D running a 32 bit kernel.
-Let me know if you want me to provide more information or test anything.
+> > As far as I can see the main difference between the two APIs on this
+> > front is that the regulator API explicitly separates the interface used
+> > to set up the tree from the interface used by consumers.
 
-HTH
-T.
+> I'd say that differently.  The clock framework *has* no such
+> implementor/setup support ... which has caused problems for
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+Well, the platforms I've looked at do implement a fairly standard
+registration API to set up their clocks, even if it's only used to
+configure things for the particular SoC variant in use and does tend to
+omit things not used on the platform in question.
 
+> many new implementations.  I'm unclear on the status of some
+> recent patches [1] from Dmitry Baryshkov to help address that.
 
---------------enigD70819E4BA06696143AEEBA6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+That looks like it'd help a lot in making the feature set implemented by
+the clock API consistent over platforms.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+> Specifically, it's awkard even to do simple things like binding
+> one of a SOC's programmable clocks onto an off-chip audio codec
+> or video controller; that's got to go through platform_data or
+> something similar.  And plugging in external clock generators ...
+> not portably, no way!
 
-iD8DBQFH2G1DMdB4Whm86/kRAp7VAJ48XEV4rUzh1MIOjrYAzhbLrKw3eACdF5Ll
-ynahkdZWOE+tuFIRM5iIEME=
-=uvHg
------END PGP SIGNATURE-----
+> You seem to be aiming to not recreate those problems, which is good.
 
---------------enigD70819E4BA06696143AEEBA6--
+Right; any regulator API is going to need to cope with connecting
+multiple chips together since that's such a core use case.
+
+> > What might be nicer would be an API that platform code could use to map
+> > regulators to device/name tuples.  The core could then search these when
+> > a client calls regulator_get() (either by maintaining a separate table
+> > or by setting up virtual regulators).
+
+> Right.
+
+We'll try to implement this before we next resubmit.
+
+> > >     Power --> Regulator -+-> Switch-1 -+-> Switch-2 --> [Dev-A]
+> > >                          |             |
+> > >                          |             +-> [Dev-B], [Dev-C]
+> > >                          |
+> > >                          +-> [Dev-D], [Dev-E]
+
+> > I don't see a particular problem fitting this into the structure of
+> > the current API - to me the switches inflexible regulators with no
+> > configurable voltage control of their own.
+
+...
+
+> That maps exactly to the clock tree model.  Not all clocks can
+> support clk_set_rate() or clk_set_parent().  Not all power domains
+> can support a set_voltage() call, etc.
+
+That's the aim, and some of this works already.  For example, regulators
+with no set_voltage() are supported by the core.
+
+> This just suggests a bit of refocusing of your current code,
+> so it'll be more widely applicable.
+
+In API terms I'm not sure it even needs a refocusing - I think the API
+can already support everything you're asking for in this subthread
+except for the addition of an API to allow platforms to map a symbolic
+name and device tuple to an actual regulator.  Some of the cases that
+can be set up will require additional work in the core to support them
+but doing that shouldn't affect anything that doesn't directly deal with
+those cases.
