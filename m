@@ -1,205 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYCLVVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYCLVVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbYCLVVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 17:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYCLVVC
+	id S1755446AbYCLVVt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 17:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYCLVVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 17:21:02 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:37698 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754426AbYCLVU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 17:20:57 -0400
-Date: Wed, 12 Mar 2008 14:20:04 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>, torvalds@osdl.org,
-       stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH,TRIVIAL] Fix default compose table
-	initialization
-Message-ID: <20080312212004.GD4416@sequoia.sous-sol.org>
-References: <20080303012349.GA12338@implementation>
+	Wed, 12 Mar 2008 17:21:40 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:28715 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYCLVVj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 17:21:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uH+ztfwB69/cPv2DlWYolLRu2LydPAq9G2l06mN8KyHih2khRG8l087ljkFxg19b1N2Ld2TK2H+n0w1BX846Qx+6R59N/r5zVA0u6HCEnbTURunPd6vqC4Avto5X2PIHNPh68YD6cNpS3oxZTcEYeVZjbNOo5WIaeoI+J/DdKIU=
+Message-ID: <aa79d98a0803121421gda8354akaa36cee2f225a2b4@mail.gmail.com>
+Date: Thu, 13 Mar 2008 00:21:37 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: parocessor.h - use PAGE_SIZE instead of numeric constant
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47D846CE.1020005@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080303012349.GA12338@implementation>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080312201405.GA9591@cvg> <47D846CE.1020005@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
-> Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
-> 0300...  This fixes the default unicode compose table by using integers
-> instead of character constants.
+Yep, it wold be more elegant, i'll fix it tomorrow. (sorry for
+top-posting, i'm not on my local laptop now)
 
-I think this patch breaks the s390 build, no?
--chris
-
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> 
-> --- linux/drivers/char/defkeymap.c_shipped.orig	2008-03-02 22:25:22.000000000 +0000
-> +++ linux/drivers/char/defkeymap.c_shipped	2008-03-02 22:30:52.000000000 +0000
-> @@ -223,40 +223,40 @@
->  };
->  
->  struct kbdiacruc accent_table[MAX_DIACR] = {
-> -	{'`', 'A', '\300'},	{'`', 'a', '\340'},
-> -	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
-> -	{'^', 'A', '\302'},	{'^', 'a', '\342'},
-> -	{'~', 'A', '\303'},	{'~', 'a', '\343'},
-> -	{'"', 'A', '\304'},	{'"', 'a', '\344'},
-> -	{'O', 'A', '\305'},	{'o', 'a', '\345'},
-> -	{'0', 'A', '\305'},	{'0', 'a', '\345'},
-> -	{'A', 'A', '\305'},	{'a', 'a', '\345'},
-> -	{'A', 'E', '\306'},	{'a', 'e', '\346'},
-> -	{',', 'C', '\307'},	{',', 'c', '\347'},
-> -	{'`', 'E', '\310'},	{'`', 'e', '\350'},
-> -	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
-> -	{'^', 'E', '\312'},	{'^', 'e', '\352'},
-> -	{'"', 'E', '\313'},	{'"', 'e', '\353'},
-> -	{'`', 'I', '\314'},	{'`', 'i', '\354'},
-> -	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
-> -	{'^', 'I', '\316'},	{'^', 'i', '\356'},
-> -	{'"', 'I', '\317'},	{'"', 'i', '\357'},
-> -	{'-', 'D', '\320'},	{'-', 'd', '\360'},
-> -	{'~', 'N', '\321'},	{'~', 'n', '\361'},
-> -	{'`', 'O', '\322'},	{'`', 'o', '\362'},
-> -	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
-> -	{'^', 'O', '\324'},	{'^', 'o', '\364'},
-> -	{'~', 'O', '\325'},	{'~', 'o', '\365'},
-> -	{'"', 'O', '\326'},	{'"', 'o', '\366'},
-> -	{'/', 'O', '\330'},	{'/', 'o', '\370'},
-> -	{'`', 'U', '\331'},	{'`', 'u', '\371'},
-> -	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
-> -	{'^', 'U', '\333'},	{'^', 'u', '\373'},
-> -	{'"', 'U', '\334'},	{'"', 'u', '\374'},
-> -	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
-> -	{'T', 'H', '\336'},	{'t', 'h', '\376'},
-> -	{'s', 's', '\337'},	{'"', 'y', '\377'},
-> -	{'s', 'z', '\337'},	{'i', 'j', '\377'},
-> +	{'`', 'A', 0300},	{'`', 'a', 0340},
-> +	{'\'', 'A', 0301},	{'\'', 'a', 0341},
-> +	{'^', 'A', 0302},	{'^', 'a', 0342},
-> +	{'~', 'A', 0303},	{'~', 'a', 0343},
-> +	{'"', 'A', 0304},	{'"', 'a', 0344},
-> +	{'O', 'A', 0305},	{'o', 'a', 0345},
-> +	{'0', 'A', 0305},	{'0', 'a', 0345},
-> +	{'A', 'A', 0305},	{'a', 'a', 0345},
-> +	{'A', 'E', 0306},	{'a', 'e', 0346},
-> +	{',', 'C', 0307},	{',', 'c', 0347},
-> +	{'`', 'E', 0310},	{'`', 'e', 0350},
-> +	{'\'', 'E', 0311},	{'\'', 'e', 0351},
-> +	{'^', 'E', 0312},	{'^', 'e', 0352},
-> +	{'"', 'E', 0313},	{'"', 'e', 0353},
-> +	{'`', 'I', 0314},	{'`', 'i', 0354},
-> +	{'\'', 'I', 0315},	{'\'', 'i', 0355},
-> +	{'^', 'I', 0316},	{'^', 'i', 0356},
-> +	{'"', 'I', 0317},	{'"', 'i', 0357},
-> +	{'-', 'D', 0320},	{'-', 'd', 0360},
-> +	{'~', 'N', 0321},	{'~', 'n', 0361},
-> +	{'`', 'O', 0322},	{'`', 'o', 0362},
-> +	{'\'', 'O', 0323},	{'\'', 'o', 0363},
-> +	{'^', 'O', 0324},	{'^', 'o', 0364},
-> +	{'~', 'O', 0325},	{'~', 'o', 0365},
-> +	{'"', 'O', 0326},	{'"', 'o', 0366},
-> +	{'/', 'O', 0330},	{'/', 'o', 0370},
-> +	{'`', 'U', 0331},	{'`', 'u', 0371},
-> +	{'\'', 'U', 0332},	{'\'', 'u', 0372},
-> +	{'^', 'U', 0333},	{'^', 'u', 0373},
-> +	{'"', 'U', 0334},	{'"', 'u', 0374},
-> +	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
-> +	{'T', 'H', 0336},	{'t', 'h', 0376},
-> +	{'s', 's', 0337},	{'"', 'y', 0377},
-> +	{'s', 'z', 0337},	{'i', 'j', 0377},
->  };
->  
->  unsigned int accent_table_size = 68;
-> --- linux/drivers/acorn/char/defkeymap-l7200.c.orig	2008-03-02 22:27:34.000000000 +0000
-> +++ linux/drivers/acorn/char/defkeymap-l7200.c	2008-03-02 22:30:36.000000000 +0000
-> @@ -347,40 +347,40 @@
->  };
->  
->  struct kbdiacruc accent_table[MAX_DIACR] = {
-> -	{'`', 'A', '\300'},	{'`', 'a', '\340'},
-> -	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
-> -	{'^', 'A', '\302'},	{'^', 'a', '\342'},
-> -	{'~', 'A', '\303'},	{'~', 'a', '\343'},
-> -	{'"', 'A', '\304'},	{'"', 'a', '\344'},
-> -	{'O', 'A', '\305'},	{'o', 'a', '\345'},
-> -	{'0', 'A', '\305'},	{'0', 'a', '\345'},
-> -	{'A', 'A', '\305'},	{'a', 'a', '\345'},
-> -	{'A', 'E', '\306'},	{'a', 'e', '\346'},
-> -	{',', 'C', '\307'},	{',', 'c', '\347'},
-> -	{'`', 'E', '\310'},	{'`', 'e', '\350'},
-> -	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
-> -	{'^', 'E', '\312'},	{'^', 'e', '\352'},
-> -	{'"', 'E', '\313'},	{'"', 'e', '\353'},
-> -	{'`', 'I', '\314'},	{'`', 'i', '\354'},
-> -	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
-> -	{'^', 'I', '\316'},	{'^', 'i', '\356'},
-> -	{'"', 'I', '\317'},	{'"', 'i', '\357'},
-> -	{'-', 'D', '\320'},	{'-', 'd', '\360'},
-> -	{'~', 'N', '\321'},	{'~', 'n', '\361'},
-> -	{'`', 'O', '\322'},	{'`', 'o', '\362'},
-> -	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
-> -	{'^', 'O', '\324'},	{'^', 'o', '\364'},
-> -	{'~', 'O', '\325'},	{'~', 'o', '\365'},
-> -	{'"', 'O', '\326'},	{'"', 'o', '\366'},
-> -	{'/', 'O', '\330'},	{'/', 'o', '\370'},
-> -	{'`', 'U', '\331'},	{'`', 'u', '\371'},
-> -	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
-> -	{'^', 'U', '\333'},	{'^', 'u', '\373'},
-> -	{'"', 'U', '\334'},	{'"', 'u', '\374'},
-> -	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
-> -	{'T', 'H', '\336'},	{'t', 'h', '\376'},
-> -	{'s', 's', '\337'},	{'"', 'y', '\377'},
-> -	{'s', 'z', '\337'},	{'i', 'j', '\377'},
-> +	{'`', 'A', 0300},	{'`', 'a', 0340},
-> +	{'\'', 'A', 0301},	{'\'', 'a', 0341},
-> +	{'^', 'A', 0302},	{'^', 'a', 0342},
-> +	{'~', 'A', 0303},	{'~', 'a', 0343},
-> +	{'"', 'A', 0304},	{'"', 'a', 0344},
-> +	{'O', 'A', 0305},	{'o', 'a', 0345},
-> +	{'0', 'A', 0305},	{'0', 'a', 0345},
-> +	{'A', 'A', 0305},	{'a', 'a', 0345},
-> +	{'A', 'E', 0306},	{'a', 'e', 0346},
-> +	{',', 'C', 0307},	{',', 'c', 0347},
-> +	{'`', 'E', 0310},	{'`', 'e', 0350},
-> +	{'\'', 'E', 0311},	{'\'', 'e', 0351},
-> +	{'^', 'E', 0312},	{'^', 'e', 0352},
-> +	{'"', 'E', 0313},	{'"', 'e', 0353},
-> +	{'`', 'I', 0314},	{'`', 'i', 0354},
-> +	{'\'', 'I', 0315},	{'\'', 'i', 0355},
-> +	{'^', 'I', 0316},	{'^', 'i', 0356},
-> +	{'"', 'I', 0317},	{'"', 'i', 0357},
-> +	{'-', 'D', 0320},	{'-', 'd', 0360},
-> +	{'~', 'N', 0321},	{'~', 'n', 0361},
-> +	{'`', 'O', 0322},	{'`', 'o', 0362},
-> +	{'\'', 'O', 0323},	{'\'', 'o', 0363},
-> +	{'^', 'O', 0324},	{'^', 'o', 0364},
-> +	{'~', 'O', 0325},	{'~', 'o', 0365},
-> +	{'"', 'O', 0326},	{'"', 'o', 0366},
-> +	{'/', 'O', 0330},	{'/', 'o', 0370},
-> +	{'`', 'U', 0331},	{'`', 'u', 0371},
-> +	{'\'', 'U', 0332},	{'\'', 'u', 0372},
-> +	{'^', 'U', 0333},	{'^', 'u', 0373},
-> +	{'"', 'U', 0334},	{'"', 'u', 0374},
-> +	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
-> +	{'T', 'H', 0336},	{'t', 'h', 0376},
-> +	{'s', 's', 0337},	{'"', 'y', 0377},
-> +	{'s', 'z', 0337},	{'i', 'j', 0377},
->  };
->  
->  unsigned int accent_table_size = 68;
-> --- linux/drivers/s390/char/defkeymap.c.orig	2008-03-02 22:28:27.000000000 +0000
-> +++ linux/drivers/s390/char/defkeymap.c	2008-03-02 22:30:45.000000000 +0000
-> @@ -151,8 +151,8 @@
->  };
->  
->  struct kbdiacruc accent_table[MAX_DIACR] = {
-> -	{'^', 'c', '\003'},	{'^', 'd', '\004'},
-> -	{'^', 'z', '\032'},	{'^', '\012', '\000'},
-> +	{'^', 'c', 0003},	{'^', 'd', 0004},
-> +	{'^', 'z', 0032},	{'^', 0012', 0000},
->  };
->  
->  unsigned int accent_table_size = 4;
+On 3/13/08, H. Peter Anvin <hpa@zytor.com> wrote:
+> Cyrill Gorcunov wrote:
+> > This patch replaces numeric constant with an appropriate macro
+> >
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> >
+> > ---
+> >
+> > Index: linux-2.6.git/include/asm-x86/processor.h
+> > ===================================================================
+> > --- linux-2.6.git.orig/include/asm-x86/processor.h	2008-02-20
+> 19:14:57.000000000 +0300
+> > +++ linux-2.6.git/include/asm-x86/processor.h	2008-03-12
+> 23:10:02.000000000 +0300
+> > @@ -786,7 +786,7 @@ extern unsigned long thread_saved_pc(str
+> >  /*
+> >   * User space process size. 47bits minus one guard page.
+> >   */
+> > -#define TASK_SIZE64	(0x800000000000UL - 4096)
+> > +#define TASK_SIZE64	(0x800000000000UL - PAGE_SIZE)
+> >
+> >  /* This decides where the kernel will search for a free chunk of vm
+> >   * space during mmap's.
+>
+> Although I'd personally prefer ((1UL << 47) - PAGE_SIZE)
+>
+> 	-hpa
+>
