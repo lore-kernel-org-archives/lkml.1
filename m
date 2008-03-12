@@ -1,70 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbYCLRVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYCLRXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752002AbYCLRVE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYCLRUk
+	id S1753277AbYCLRXJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYCLRW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:20:40 -0400
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:45674 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751501AbYCLRUj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:20:39 -0400
-Message-ID: <47D810C9.90309@panasas.com>
-Date: Wed, 12 Mar 2008 19:20:09 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 12 Mar 2008 13:22:57 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50510 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750959AbYCLRW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 13:22:56 -0400
+Date: Wed, 12 Mar 2008 18:22:55 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Do not allow setting of quota limits to too high values
+Message-ID: <20080312172255.GB21395@duck.suse.cz>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH ver3] isd200: Allocate sense_buffer for hacked up scsi_cmnd
-References: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>	 <47D7F5A3.9010004@panasas.com> <1205340884.2941.112.camel@localhost.localdomain> <47D80D60.3060006@panasas.com>
-In-Reply-To: <47D80D60.3060006@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Perepechko <andrew.perepechko@sun.com>
 
-Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
-own struct scsi_cmnd like here isd200, must also take care of their own
-sense_buffer.
+We should check whether quota limits set via Q_SETQUOTA are not exceeding
+limits which quota format is able to handle.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Signed-off-by: Andrew Perepechko <andrew.perepechko@sun.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+
 ---
- drivers/usb/storage/isd200.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+  Andrew, would you please queue it up for inclusion? Thanks.
 
-diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
-index 4f2d143..971d13d 100644
---- a/drivers/usb/storage/isd200.c
-+++ b/drivers/usb/storage/isd200.c
-@@ -1470,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
- 	if (info) {
- 		kfree(info->id);
- 		kfree(info->RegsBuf);
-+		kfree(info->srb.sense_buffer);
- 	}
+ fs/dquot.c            |   22 +++++++++++++++++-----
+ fs/quota_v1.c         |    3 +++
+ fs/quota_v2.c         |    3 +++
+ include/linux/quota.h |    2 ++
+ 4 files changed, 25 insertions(+), 5 deletions(-)
+
+diff --git a/fs/dquot.c b/fs/dquot.c
+index 9c7feb6..f816d06 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -1709,10 +1709,19 @@ int vfs_get_dqblk(struct super_block *sb, int type, qid_t id, struct if_dqblk *d
  }
  
-@@ -1495,7 +1496,9 @@ static int isd200_init_info(struct us_data *us)
- 				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
- 		info->RegsBuf = (unsigned char *)
- 				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
--		if (!info->id || !info->RegsBuf) {
-+		info->srb.sense_buffer =
-+				kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
-+		if (!info->id || !info->RegsBuf || !info->srb.sense_buffer) {
- 			isd200_free_info_ptrs(info);
- 			kfree(info);
- 			retStatus = ISD200_ERROR;
--- 
-1.5.3.3
-
-
+ /* Generic routine for setting common part of quota structure */
+-static void do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
++static int do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
+ {
+ 	struct mem_dqblk *dm = &dquot->dq_dqb;
+ 	int check_blim = 0, check_ilim = 0;
++	struct mem_dqinfo *dqi = &sb_dqopt(dquot->dq_sb)->info[dquot->dq_type];
++
++	if ((di->dqb_valid & QIF_BLIMITS &&
++	     (di->dqb_bhardlimit > dqi->dqi_maxblimit ||
++	      di->dqb_bsoftlimit > dqi->dqi_maxblimit)) ||
++	    (di->dqb_valid & QIF_ILIMITS &&
++	     (di->dqb_ihardlimit > dqi->dqi_maxilimit ||
++	      di->dqb_isoftlimit > dqi->dqi_maxilimit)))
++		return -ERANGE;
+ 
+ 	spin_lock(&dq_data_lock);
+ 	if (di->dqb_valid & QIF_SPACE) {
+@@ -1744,7 +1753,7 @@ static void do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
+ 			clear_bit(DQ_BLKS_B, &dquot->dq_flags);
+ 		}
+ 		else if (!(di->dqb_valid & QIF_BTIME))	/* Set grace only if user hasn't provided his own... */
+-			dm->dqb_btime = get_seconds() + sb_dqopt(dquot->dq_sb)->info[dquot->dq_type].dqi_bgrace;
++			dm->dqb_btime = get_seconds() + dqi->dqi_bgrace;
+ 	}
+ 	if (check_ilim) {
+ 		if (!dm->dqb_isoftlimit || dm->dqb_curinodes < dm->dqb_isoftlimit) {
+@@ -1752,7 +1761,7 @@ static void do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
+ 			clear_bit(DQ_INODES_B, &dquot->dq_flags);
+ 		}
+ 		else if (!(di->dqb_valid & QIF_ITIME))	/* Set grace only if user hasn't provided his own... */
+-			dm->dqb_itime = get_seconds() + sb_dqopt(dquot->dq_sb)->info[dquot->dq_type].dqi_igrace;
++			dm->dqb_itime = get_seconds() + dqi->dqi_igrace;
+ 	}
+ 	if (dm->dqb_bhardlimit || dm->dqb_bsoftlimit || dm->dqb_ihardlimit || dm->dqb_isoftlimit)
+ 		clear_bit(DQ_FAKE_B, &dquot->dq_flags);
+@@ -1760,21 +1769,24 @@ static void do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
+ 		set_bit(DQ_FAKE_B, &dquot->dq_flags);
+ 	spin_unlock(&dq_data_lock);
+ 	mark_dquot_dirty(dquot);
++
++	return 0;
+ }
+ 
+ int vfs_set_dqblk(struct super_block *sb, int type, qid_t id, struct if_dqblk *di)
+ {
+ 	struct dquot *dquot;
++	int rc;
+ 
+ 	mutex_lock(&sb_dqopt(sb)->dqonoff_mutex);
+ 	if (!(dquot = dqget(sb, id, type))) {
+ 		mutex_unlock(&sb_dqopt(sb)->dqonoff_mutex);
+ 		return -ESRCH;
+ 	}
+-	do_set_dqblk(dquot, di);
++	rc = do_set_dqblk(dquot, di);
+ 	dqput(dquot);
+ 	mutex_unlock(&sb_dqopt(sb)->dqonoff_mutex);
+-	return 0;
++	return rc;
+ }
+ 
+ /* Generic routine for getting common part of quota file information */
+diff --git a/fs/quota_v1.c b/fs/quota_v1.c
+index f3841f2..a6cf926 100644
+--- a/fs/quota_v1.c
++++ b/fs/quota_v1.c
+@@ -139,6 +139,9 @@ static int v1_read_file_info(struct super_block *sb, int type)
+ 		goto out;
+ 	}
+ 	ret = 0;
++	/* limits are stored as unsigned 32-bit data */
++	dqopt->info[type].dqi_maxblimit = 0xffffffff;
++	dqopt->info[type].dqi_maxilimit = 0xffffffff;
+ 	dqopt->info[type].dqi_igrace = dqblk.dqb_itime ? dqblk.dqb_itime : MAX_IQ_TIME;
+ 	dqopt->info[type].dqi_bgrace = dqblk.dqb_btime ? dqblk.dqb_btime : MAX_DQ_TIME;
+ out:
+diff --git a/fs/quota_v2.c b/fs/quota_v2.c
+index c519a58..23b647f 100644
+--- a/fs/quota_v2.c
++++ b/fs/quota_v2.c
+@@ -59,6 +59,9 @@ static int v2_read_file_info(struct super_block *sb, int type)
+ 			sb->s_id);
+ 		return -1;
+ 	}
++	/* limits are stored as unsigned 32-bit data */
++	info->dqi_maxblimit = 0xffffffff;
++	info->dqi_maxilimit = 0xffffffff;
+ 	info->dqi_bgrace = le32_to_cpu(dinfo.dqi_bgrace);
+ 	info->dqi_igrace = le32_to_cpu(dinfo.dqi_igrace);
+ 	info->dqi_flags = le32_to_cpu(dinfo.dqi_flags);
+diff --git a/include/linux/quota.h b/include/linux/quota.h
+index 6e0393a..c1cdbb7 100644
+--- a/include/linux/quota.h
++++ b/include/linux/quota.h
+@@ -202,6 +202,8 @@ struct mem_dqinfo {
+ 	unsigned long dqi_flags;
+ 	unsigned int dqi_bgrace;
+ 	unsigned int dqi_igrace;
++	qsize_t dqi_maxblimit;
++	qsize_t dqi_maxilimit;
+ 	union {
+ 		struct v1_mem_dqinfo v1_i;
+ 		struct v2_mem_dqinfo v2_i;
