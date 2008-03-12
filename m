@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYCLRUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbYCLRVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbYCLRUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYCLRUj
+	id S1752002AbYCLRVE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYCLRUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:20:39 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:39249 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbYCLRUi (ORCPT
+	Wed, 12 Mar 2008 13:20:40 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:45674 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbYCLRUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:20:38 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/6] kernel: add clamp(), clamp_t() and clamp_val() macros
-Date: Wed, 12 Mar 2008 18:20:14 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <1205269894.22317.32.camel@brick> <200803121613.09172.mb@bu3sch.de> <1205340866.8603.9.camel@brick>
-In-Reply-To: <1205340866.8603.9.camel@brick>
+	Wed, 12 Mar 2008 13:20:39 -0400
+Message-ID: <47D810C9.90309@panasas.com>
+Date: Wed, 12 Mar 2008 19:20:09 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH ver3] isd200: Allocate sense_buffer for hacked up scsi_cmnd
+References: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>	 <47D7F5A3.9010004@panasas.com> <1205340884.2941.112.camel@localhost.localdomain> <47D80D60.3060006@panasas.com>
+In-Reply-To: <47D80D60.3060006@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803121820.14883.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 17:54:26 Harvey Harrison wrote:
-> On Wed, 2008-03-12 at 16:13 +0100, Michael Buesch wrote:
-> > So why not call it clamp_const()?
-> > One could even use __builtin_constant_p() and make clamp() use
-> > either clamp_const() or clamp_nonconst() from above automagically.
-> > I'd prefer that.
-> 
-> Did you mean something like this?  No more clamp_val, just clamp and
-> clamp_t.  clamp_t forces all the types, clamp looks at the min and max
-> args, and if they are constants, uses the type of val instead.  If not
-> a constant, the strict typechecking is done.
 
-> +#define clamp(val, min, max) ({				\
-> +	typeof(val) __val = (val);			\
-> +							\
-> +	if (__builtin_constant_p(min)) {		\
-> +		typeof(val) __min = (min);		\
-> +		__val = __val < __min ? __min: __val;	\
-> +	} else {					\
-> +		typeof(min) __min = (min);		\
-> +		(void) (&__val == &__min);		\
-> +		__val = __val < __min ? __min: __val;	\
-> +	}						\
-> +							\
-> +	if (__builtin_constant_p(max)) {		\
-> +		typeof(val) __max = (max);		\
-> +		__val > __max ? __max: __val;		\
-> +	} else {					\
-> +		typeof(max) __max = (max);		\
-> +		(void) (&__val == &__max);		\
-> +		__val > __max ? __max: __val;		\
-> +	} })
+Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
+own struct scsi_cmnd like here isd200, must also take care of their own
+sense_buffer.
 
-Yeah, something like that.
-Does returning of the value work over an indentation level, too?
-I dunno this detail of the language.
-But I'd prefer the following for readability anyway:
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/usb/storage/isd200.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-+       if (__builtin_constant_p(max)) {                \
-+               typeof(val) __max = (max);              \
-+               __val = __val > __max ? __max: __val;           \
-+       } else {                                        \
-+               typeof(max) __max = (max);              \
-+               (void) (&__val == &__max);              \
-+               __val = __val > __max ? __max: __val;           \
-+       }
-+	__val; })
-
-Probably you can also only put the pointer check into the constant check:
-
-+#define clamp(val, min, max) ({                \
-+       typeof(val) __val = (val);              \
-+       typeof(min) __min = (min);              \
-+       typeof(max) __max = (max);              \
-+       if (!__builtin_constant_p(min))         \
-+               (void) (&__val == &__min);      \
-+       __val = __val < __min ? __min: __val;   \
-+       if (!__builtin_constant_p(max))         \
-+               (void) (&__val == &__max);      \
-+       __val = __val > __max ? __max: __val;   \
-+       __val; })
-
-But it seems that this evaluates the arguments twice, so my idea turns out
-to be not too good anyway. hm..
-
+diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
+index 4f2d143..971d13d 100644
+--- a/drivers/usb/storage/isd200.c
++++ b/drivers/usb/storage/isd200.c
+@@ -1470,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
+ 	if (info) {
+ 		kfree(info->id);
+ 		kfree(info->RegsBuf);
++		kfree(info->srb.sense_buffer);
+ 	}
+ }
+ 
+@@ -1495,7 +1496,9 @@ static int isd200_init_info(struct us_data *us)
+ 				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
+ 		info->RegsBuf = (unsigned char *)
+ 				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
+-		if (!info->id || !info->RegsBuf) {
++		info->srb.sense_buffer =
++				kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
++		if (!info->id || !info->RegsBuf || !info->srb.sense_buffer) {
+ 			isd200_free_info_ptrs(info);
+ 			kfree(info);
+ 			retStatus = ISD200_ERROR;
 -- 
-Greetings Michael.
+1.5.3.3
+
+
