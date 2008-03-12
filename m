@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYCLTzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYCLUAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbYCLTzA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 15:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYCLTyw
+	id S1753798AbYCLUAy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYCLUAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 15:54:52 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:52483 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbYCLTyv (ORCPT
+	Wed, 12 Mar 2008 16:00:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40868 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752075AbYCLUAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 15:54:51 -0400
-From: Chr <chunkeey@web.de>
-To: Samuel Tardieu <sam@rfc1149.net>
-Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
-Date: Wed, 12 Mar 2008 20:53:12 +0100
-User-Agent: KMail/1.9.9
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Christian Kujau <lists@nerdbynature.de>, David Chinner <dgc@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080309213441.GQ155407@sgi.com> <2008-03-12-19-03-51+trackit+sam@rfc1149.net>
-In-Reply-To: <2008-03-12-19-03-51+trackit+sam@rfc1149.net>
+	Wed, 12 Mar 2008 16:00:45 -0400
+Date: Wed, 12 Mar 2008 12:59:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Zach Brown <zach.brown@oracle.com>, bcrl@kvack.org, linux-aio@kvack.org
+Subject: Re: [PATCH] aio_write should tell userspace about partial writes
+In-Reply-To: <200803120939.59915.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.00.0803121255400.3557@woody.linux-foundation.org>
+References: <200803120939.59915.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803122053.13265.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX1/TTeeWfOjyNlSRcwjuX/CPw1hC24xQ2J3yJDI0
-	TTxGbbCKTcl3REXf5L5gunwauzJOHrEBAlhsFZ4ridXrkjaW2c
-	JyhtH8Iyc=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 19:03:51 Samuel Tardieu wrote:
+
+
+On Wed, 12 Mar 2008, Rusty Russell wrote:
 >
-> David> Oh, dm-crypt. Well, I'd definitely start looking there. XFS has
-> David> a history of exposing dm-crypt bugs, and these hangs appear to
-> David> be I/O congestion/scheduling related and not XFS. Also, we
-> David> haven't changed anything related to plug/unplug of block
-> David> devices in XFS recently, so that also points to some other
-> David> change as well...
->
-me too... 
+> [ Linus, please apply.  This patch was discussed and acked before,
+>   but somehow got lost. ]
 
-http://lkml.org/lkml/2008/3/11/377
-(BTW: I'm still bisecting it... can somebody please confirm that 2.6.24-git17 
-http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.24-git17.bz2
-was the _last_ "good" one?)  
+Rusty, please *look* at your patches.
 
-BTW:
-by pressing "SYSRQ-S (Emerg. Sync)" over and over again can unlock
-some but not all "D" tasks... 
+It's pretty obvious even from just the patch that the patch has already 
+been applied, and that the only reason you think it hasn't is that you use 
+some crap-for-brains SCM model where you apply patches with GNU patch and 
+allow fuzz, so it applied cleanly *again*.
 
-Regards,
-	Chr.
+I assume that it's quilt messing up again.
 
+In particular, this already went in as commit 
+7adfa2ff3efa02a7a9f2632d2d2662d3e5eb5304, and I know for a *fact* that it 
+is in your tree too, since the patch itself clearly has that code double:
+
+>  	    && iocb->ki_nbytes - iocb->ki_left)
+>  		ret = iocb->ki_nbytes - iocb->ki_left;
+
+Lookie above: those two lines are part of the thing that already got 
+applied! If it hadn't been applied, it would look like
+
+        if ((ret == 0) || (iocb->ki_left == 0))
+                ret = iocb->ki_nbytes - iocb->ki_left;
+
+instead.
+
+I *hate* people who "merge" using patches, and then to make it even worse 
+use a non-zero fuzz factor.
+
+		Linus
