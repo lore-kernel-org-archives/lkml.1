@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYCLUCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYCLUCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYCLUCl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbYCLUC2
+	id S1755512AbYCLUCz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYCLUCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:02:28 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:57632
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbYCLUC1 (ORCPT
+	Wed, 12 Mar 2008 16:02:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43821 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752643AbYCLUCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:02:27 -0400
-Message-ID: <47D844B5.2090001@microgate.com>
-Date: Wed, 12 Mar 2008 15:01:41 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 12 Mar 2008 16:02:38 -0400
+Date: Wed, 12 Mar 2008 13:01:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Greg KH <greg@kroah.com>
+Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
+In-Reply-To: <200803112341.42517.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
+References: <200803110014.52985.rjw@sisk.pl> <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org> <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: rupesh.sugathan@gmail.com
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: + n_tty-loss-of-sync-following-a-buffer-overflow.patch added
- to -mm tree
-References: <200803120455.m2C4t4Aw010881@imap1.linux-foundation.org>	 <20080312102729.58956d2c@the-village.bc.nu>	 <47D7F531.2070400@microgate.com>  <1205339539.8873.14.camel@estonia> <1205343590.4094.17.camel@x2.microgate.com>
-In-Reply-To: <1205343590.4094.17.camel@x2.microgate.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Fulghum wrote:
-> What I suggest is the following patch for processing NL
-> in canonical mode.
 
-FYI:
 
-I tested my patch by provoking the bug with
-a contrived pair of programs. Everything works
-as expected. Partially receive lines during buffer
-overflow are truncated. Subsequent lines after the
-ldisc buffer clears are intact, canon_data stays
-consistent with read_flags.
+On Tue, 11 Mar 2008, Rafael J. Wysocki wrote:
 
-*But* to force the bug I had to disable the
-check in flush_to_ldisc() that monitors the
-amount of receive room in the ldisc buffer
-before pushing data to the ldisc. This check
-was introduced in the flip buffer rewrite in 2.6
+> 
+> In http://bugzilla.kernel.org/show_bug.cgi?id=10123 Guennadi says that
+> reverting
+> 
+> commit fd7d1ced29e5beb88c9068801da7a362606d8273
+> Author: Greg Kroah-Hartman <gregkh@suse.de>
+> Date:   Tue May 22 22:47:54 2007 -0400
+> 
+>     PCI: make pci_bus a struct device
+> 
+> fixes the problem for him (this seems to be yet another reboot/poweroff IOW).
 
-So the bug is real, the fix works, but in 2.6.24
-this can never occur as the flip buffer holds data
-until N_TTY is ready to process it.
+Ahh, I thought this was done already, but nope, my PCI pull from Greg 
+didn't contain the revert.
 
-Rupesh is working with 2.4.x which shares the
-same canonical NL processing but has the old
-flip buffer code that shoves data at N_TTY without
-regard for the receive room in N_TTY.
+Greg? I know you must be aware of the problem, because you replied to the 
+email at some point. Wazzup?
 
-I leave it to others to decide if applying the
-patch to 2.6 makes sense.
-
--- 
-Paul Fulghum
-Microgate Systems, Ltd.
+		Linus
