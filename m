@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752152AbYCLTdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYCLTeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752152AbYCLTdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 15:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYCLTdf
+	id S1754085AbYCLTeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 15:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYCLTeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 15:33:35 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:54973 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754849AbYCLTdd (ORCPT
+	Wed, 12 Mar 2008 15:34:08 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44543 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbYCLTeG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 15:33:33 -0400
-Date: Wed, 12 Mar 2008 20:34:05 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: broken access to a USB HID device after suspend
-Message-ID: <20080312193405.GA23209@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Wed, 12 Mar 2008 15:34:06 -0400
+Message-ID: <47D8304C.3090005@keyaccess.nl>
+Date: Wed, 12 Mar 2008 20:34:36 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bob Tracy <rct@frus.com>
+CC: Michael Cree <mcree@orcon.net.nz>, Takashi Iwai <tiwai@suse.de>,
+       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+References: <20080312144021.3FE57DBA2@gherkin.frus.com>
+In-Reply-To: <20080312144021.3FE57DBA2@gherkin.frus.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 12-03-08 15:40, Bob Tracy wrote:
 
-I use a tool called hidmon to control the parameters of my LCD in shell
-scripts. I just had the case where this tool didn't work after suspend
-to RAM. I just got this error message:
+> Well, I built a 2.6.22 kernel last night, and in tests this morning
+> there's no difference relative to the ALSA behavior seen in 2.6.25-rc4.
 
-hid_force_open failed with return code 13
+Okay. If someone is tracking this as a 2.6.25 regresion, it can be stricken 
+of that list.
 
-The kernel log contains lines like this:
+> Since the question came up (or was strongly implied), I took the time to
+> check the status of IRQ 5 in /proc/interrupts, and while it shows up as
+> assigned to the sound card, no interrupts are being seen/processed by
+> the es18xx driver.
 
-usb 1-1.3: usbfs: USBDEVFS_CONTROL failed cmd hidmon rqt 129 rq 6 len 9 ret -110
+That is indeed what it soundeed like, or the first bit at least.
 
-Unplugging and replugging the USB cable of the LCD didn't work.
-However, after a further suspend/resume cycle it works.
+> When I remove the snd-es18xx module and install the snd-sb8 module with
+> the same parameters (other than there's no second DMA channel), the
+> /proc/interrupts counter for IRQ 5 increments as expected when playing
+> sound files.
 
-This is Linux 2.6.25-rc5. The behaviour is not repoducible, though.
-However, I just mention it for the case that this might ring a bell
-somewhere.
+What does cat /proc/config.gz | grep CONFIG_ALPHA_ say? Miuchael, and for 
+you? For some Alpha configs, arch/alpha/kernel/es1888.c is compiled and for 
+some not. I expect for you (Bob) it's compiled in? And Michael?
 
-Regards,
-Tino
+Rene.
