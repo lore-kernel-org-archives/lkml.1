@@ -1,105 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYCLWRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYCLWUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbYCLWRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYCLWRH
+	id S1754666AbYCLWUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYCLWUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:17:07 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:62240 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752137AbYCLWRG (ORCPT
+	Wed, 12 Mar 2008 18:20:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:16989 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbYCLWUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:17:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhcFAP/y10dMQWoK/2dsb2JhbACBWaY1
-Date: Wed, 12 Mar 2008 18:17:03 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] Implement slub fastpath with sequence number
-Message-ID: <20080312221703.GA25625@Krystal>
-References: <20080311093144.GB30220@Krystal> <1205246043.8514.188.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 12 Mar 2008 18:20:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Ar0mXI250pPweI+RrfOhvxZKyQZC0ykl5qYs6j4x6+4Fgco20QG7NQWpZi8i3I1KFl/R2tJAvLqbd2QiTXbJJZYMNEtHHXkWgl5GzRHmvjHjSwYJpwfYYxPZXYx1n/aVI41GljS5rNlslnub4XsizgkZ/Tv85v8+5Qj2cuqxkqs=
+Message-ID: <47D8572C.8090501@gmail.com>
+Date: Wed, 12 Mar 2008 23:20:28 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: York Sun <yorksun@freescale.com>
+CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       galak@kernel.crashing.org
+Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
+References: <12053582234100-git-send-email-yorksun@freescale.com> <12053582231281-git-send-email-yorksun@freescale.com>
+In-Reply-To: <12053582231281-git-send-email-yorksun@freescale.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1205246043.8514.188.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:46:28 up 12 days, 17:57,  8 users,  load average: 0.72, 0.70,
-	0.62
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2008-03-11 at 05:31 -0400, Mathieu Desnoyers wrote:
-> > Here is a new version that works. tested on x86. tweaked the bitmasks
-> > into unions to remove operations from the critical path, but I tried to
-> > keep that clean. It applies on vm.git HEAD.
-> > 
-> > It allows the cmpxchg_local to detect object re-use by keeping a counter in the
-> > freeoffset MSBs.
-> > 
-> > Whenever an object is freed in the cpu slab cache, the counter is incremented.
-> > Whenever the alloc/free slow paths are modifying the offset or freebase, the
-> > sequence counter is also incremented. It is used to make sure we know if
-> > freebase has been modified in an interrupt nested over the fast path.
-> 
-> Is it (remotely) possible that the version will wrap giving the false
-> impression that nothing has changed and thus falsely proceed with a
-> wrong object?
-> 
+On 03/12/2008 10:43 PM, York Sun wrote:
+> +static int fsl_diu_open(struct fb_info *info, int user)
+> +{
+> +	struct mfb_info *mfbi = info->par;
+> +	int res = 0;
+> +
+> +	spin_lock(&diu_lock);
+> +	mfbi->count++;
+> +	if (mfbi->count == 1) {
+> +		DPRINTK("open plane index %d\n", mfbi->index);
+> +		fsl_diu_check_var(&info->var, info);
+> +		fsl_diu_set_par(info);
 
-If we have exactly, on a 32 bits arch, 65536 memory alloc or free in the
-slab we are dealing with done in interrupt and softirqs nested over the
-cmpxchg_local loop, without ever giving the control back to check the
-value, and that after we get the control back the offset within the slab
-is exactly the same, then, yes, it's possible. In that case, we would
-think it's ok to proceed with the object and we would have memory
-corruption (object used twice or free object list corruption).
+Please retest your code (at least) with sleep-inside spinlock debug option. If I 
+see correctly you call GFP_KERNEL allocation somewhere deeper in this function, 
+which might sleep.
 
-Given that the alloc fast path takes about 115 cycles on a 3GHz Pentium
-4 for an alloc/free pair (65536 * 38.33ns = 2.5ms total), having this
-scenario would mean that every other interrupt would not have been
-serviced for 2.5ms. In that case, we would probably have other problems
-to deal with. On 64 bits architectures, with 2^32 bits, we would have to
-wait for about 160 seconds (approx.).
+> +		res = fsl_diu_enable_panel(info);
+> +		if (res < 0)
+> +			mfbi->count--;
+> +	}
+> +
+> +	spin_unlock(&diu_lock);
+> +	return res;
+> +}
 
-This is why I added a check to verify if the sequence number delta is
-bigger than half of the number of bits we have to count it :
+> +static void __exit uninstall_fb(struct fb_info *info)
+> +{
+> +	struct mfb_info *mfbi = info->par;
+> +
+> +	DPRINTK("Entered: uninstall_fb\n");
 
-+#ifdef CONFIG_DEBUG_VM
-+       /*
-+        * Just to be paranoid : warn if we detect that enough free or
-+        * slow paths nested on top of us to get the counter to go
-+        * half-way to overflow. That would be insane to do that much
-+        * allocations/free in interrupt handers, but check it anyway.
-+        */
-+       WARN_ON(result - old > -1UL >> 1);
-+#endif
+You don't need this stuff everywhere (kprobes).
 
-If we ever have a kernel which starts to behave weirdly and *could* be
-unlucky and get nearer to overflow, this check would likely detect it.
-Worse case I have seen so far on my stressed machine was a delta of 3.
+> +	if (!mfbi->registered)
+> +		return;
+> +
+> +	unregister_framebuffer(info);
+> +	unmap_video_memory(info);
+> +	if (&info->cmap)
+> +		fb_dealloc_cmap(&info->cmap);
+> +
+> +	mfbi->registered = 0;
+> +}
+[...]
+> +static int fsl_diu_probe(struct platform_device *pdev)
+> +{
+> +	struct mfb_info *mfbi;
+> +	unsigned long dummy_ad_addr;
+> +	int ret, i, error = 0;
+> +
+> +	DPRINTK("Entered: fsl_diu_probe\n");
+> +
+> +	/* Area descriptor memory pool aligns to 64-bit boundary */
+> +	allocate_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
+> +
+> +	/* Get memory for Gamma Table  - 32-byte aligned memory */
+> +	allocate_buf(&pool.gamma, 768, 32);
+> +
+> +	/* For performance, cursor bitmap buffer aligns to 32-byte boundary */
+> +	allocate_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
+> +
+> +	i = sizeof(fsl_diu_info) / sizeof(struct fb_info);
+> +	dummy_ad = (struct diu_ad *)((u32)pool.ad.vaddr + pool.ad.offset) + i;
+> +	dummy_ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
+> +	dummy_aoi_virt = fsl_diu_alloc(64, &dummy_ad_addr);
+> +	dummy_ad->addr = cpu_to_le32(dummy_ad_addr);
+> +	dummy_ad->pix_fmt = 0x88882317;
+> +	dummy_ad->src_size_g_alpha = cpu_to_le32((4 << 12) | 4);
+> +	dummy_ad->aoi_size = cpu_to_le32((4 << 16) |  2);
+> +	dummy_ad->offset_xyi = 0;
+> +	dummy_ad->offset_xyd = 0;
+> +	dummy_ad->next_ad = 0;
+> +	memset(dummy_aoi_virt, 0x00, 64);
+> +	write_reg(&(dr.diu_reg->desc[0]), dummy_ad->paddr);
+> +	write_reg(&(dr.diu_reg->desc[1]), dummy_ad->paddr);
+> +	write_reg(&(dr.diu_reg->desc[2]), dummy_ad->paddr);
+> +
+> +	for (i = 0; i < sizeof(fsl_diu_info) / sizeof(struct fb_info); i++) {
+> +		fsl_diu_info[i].fix.smem_start = 0;
+> +		mfbi = fsl_diu_info[i].par;
+> +		mfbi->ad = (struct diu_ad *)((u32)pool.ad.vaddr
+> +					+ pool.ad.offset) + i;
+> +		mfbi->ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
+> +		ret = install_fb(&fsl_diu_info[i], pdev);
+> +		if (ret) {
+> +			printk(KERN_ERR "Failed to register framebuffer %d\n",
+> +					i);
+> +			return ret;
 
-> I would really prefer if we defer all this fast path fiddling until we
-> have the cpu_ops in place, this all just makes the code utterly
-> unreadable.
-> 
-> 
+some kind of free here
 
-Even with cpu_ops in place, I think it would be safer to still disable
-preemption in the fastpath. It would make sure a thread is not stopped
-in the middle of the cmpxchg loop, a lot of activity happens, and later
-on the thread is woken up. In this scenario, the 16 bits might not be
-enough to keep track of allocations/frees in the slab.
+> +		}
+> +	}
+[...]
+> +int __init fsl_diu_init(void)
+> +{
+> +	struct device_node *np;
+> +	struct resource r;
+> +	int error;
+> +	DPRINTK("Entered: fsl_diu_init\n");
+> +	np = of_find_compatible_node(NULL, NULL, "fsl-diu");
+> +	if (!np) {
+> +		printk(KERN_ERR "Err: can't find device node 'fsl-diu'\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	of_address_to_resource(np, 0, &r);
+> +	of_node_put(np);
+> +
+> +	DPRINTK("%s, r.start: 0x%08x\n", __func__, r.start);
+> +
+> +	dr.diu_reg = ioremap(r.start, sizeof(struct diu));
 
-Mathieu
+The arch never fails with remapping?
 
+> +
+> +	write_reg(&(dr.diu_reg->diu_mode), 0);		/* disable DIU anyway*/
+> +
+> +	spin_lock_init(&dr.reg_lock);
+> +
+> +
+> +	/*
+> +	 * For kernel boot options (in 'video=xxxfb:<options>' format)
+> +	 */
+> +#ifndef MODULE
+> +	{
+> +		char *option;
+> +
+> +		if (fb_get_options("fslfb", &option))
+> +			return -ENODEV;
+> +		fsl_diu_setup(option);
+> +	}
+> +#endif
+> +	error = platform_driver_register(&fsl_diu_driver);
+> +
+> +	if (!error) {
+> +		error = platform_device_register(&fsl_diu_device);
+> +		if (error) {
+> +			printk(KERN_ERR "Err: "
+> +					"can't register FB device driver!\n");
+> +			platform_driver_unregister(&fsl_diu_driver);
+
+iounmap
+
+> +		}
+> +		printk(KERN_INFO "FSL_DIU_FB: registed FB device driver!\n");
+> +	}
+
+else iounmap
+
+> +
+> +	return error;
+> +}
+[...]
+> diff --git a/drivers/video/fsl-diu-fb.h b/drivers/video/fsl-diu-fb.h
+> new file mode 100644
+> index 0000000..294d0bf
+> --- /dev/null
+> +++ b/drivers/video/fsl-diu-fb.h
+> @@ -0,0 +1,388 @@
+[...]
+> +#ifndef __FSL_DIU_FB_H__
+> +#define __FSL_DIU_FB_H__
+> +
+> +/* FIXME: This should be changed to dev_dbg this will be done as soon as
+> + * we can obtain dev through the dts setup
+
+then use at least pr_debug() here:
+
+> + */
+> +#ifdef DEBUG
+> +#define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __func__, ## args)
+> +#else
+> +#define DPRINTK(fmt, args...)
+> +#endif
+
+regards,
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jiri Slaby
+Faculty of Informatics, Masaryk University
+Suse Labs
