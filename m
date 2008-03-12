@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYCLTeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYCLTgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbYCLTeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 15:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYCLTeI
+	id S1754688AbYCLTgz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 15:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbYCLTgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 15:34:08 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44543 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbYCLTeG (ORCPT
+	Wed, 12 Mar 2008 15:36:47 -0400
+Received: from outbound-mail-19.bluehost.com ([69.89.20.234]:41372 "HELO
+	outbound-mail-19.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751701AbYCLTgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 15:34:06 -0400
-Message-ID: <47D8304C.3090005@keyaccess.nl>
-Date: Wed, 12 Mar 2008 20:34:36 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 12 Mar 2008 15:36:46 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Justin Madru <jdm64@gawab.com>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+Date: Wed, 12 Mar 2008 12:36:43 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <47D828BB.2000702@gawab.com>
+In-Reply-To: <47D828BB.2000702@gawab.com>
 MIME-Version: 1.0
-To: Bob Tracy <rct@frus.com>
-CC: Michael Cree <mcree@orcon.net.nz>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080312144021.3FE57DBA2@gherkin.frus.com>
-In-Reply-To: <20080312144021.3FE57DBA2@gherkin.frus.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200803121236.43267.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-03-08 15:40, Bob Tracy wrote:
+On Wednesday, March 12, 2008 12:02 pm Justin Madru wrote:
+> Hi,
+>
+> I'm not sure, but I think I've found a regression in the latest development
+> kernel (2.6.25-rc5). The problems don't happen when using the distro's
+> 2.6.22 kernel (ubuntu 7.10), or when I was testing 2.6.23 and 2.6.24.
+>
+> These are the problems I've been having:
+>
+> 1) Blank screen: Upon entering graphical mode the screen goes blank
+> (black). It seems to happen when X is probing for the video modes. Pressing
+> ctrl+alt+f1 doesn't do anything, except "refresh" a black screen. The
+> computer still works, and I can log in from GDM, but I just can't see
+> anything on the screen; I have to reboot.
+> The work around is that when the boot splash screen (usplash) is about
+> halfway loaded I switch to the first terminal, and everything is fine (or
+> maybe that's just a coincidence).
+>
+> 2) Wireless errors: Upon connecting to a wireless router I get a flood of
+> kernel messages that don't stop: "kernel: wlan0_rename: RX too short data
+> frame payload".
+> I do successfully connect. No workaround to stop the messages (while still
+> having connection).
+>
+> 3) Flashing Red: When I shutdown, the screen flashes red several times
+> before the shutdown splash screen shows up.
+>
+> #1 and #3 happen at random. Although, It seems to happen more on the first
+> boot up. #2 consistently happens when connecting to my University's
+> wireless; rarely (if ever) on my home router.
+>
+> Relevant sysinfo (Dell Inspiron E1505; Intel T2080 @ 1.73GHz):
+> 0b:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network
+> Connection (rev 02) 00:02.0 VGA compatible controller: Intel Corporation
+> Mobile 945GM/GMS, 943/940GML Express Integrated Graphics Controller (rev
+> 03) 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
+> 943/940GML Express Integrated Graphics Controller (rev 03)
+>
+> Could this be a regression? What can I do to help identify the problem?
+> I've tried to start analyzing the blank screen problem, so let's start
+> there because I've already created a diff log report.
+>
+> For a diff of my system logs for the blank screen problem see (104.61 KB):
+> http://jdserver.homelinux.org/linux/blank_screen_log_diff.txt
 
-> Well, I built a 2.6.22 kernel last night, and in tests this morning
-> there's no difference relative to the ALSA behavior seen in 2.6.25-rc4.
+It's kind of hard to read the context diff (unified diffs are much nicer) but 
+nothing jumps out at me regarding your video config.  Does the blank screen 
+problem occur if you disable usplash altogether and compile out the fb 
+drivers?  The intelfb driver in particular can cause problems sometimes since 
+it supports so few configurations, you might try the vesafb driver too.
 
-Okay. If someone is tracking this as a 2.6.25 regresion, it can be stricken 
-of that list.
-
-> Since the question came up (or was strongly implied), I took the time to
-> check the status of IRQ 5 in /proc/interrupts, and while it shows up as
-> assigned to the sound card, no interrupts are being seen/processed by
-> the es18xx driver.
-
-That is indeed what it soundeed like, or the first bit at least.
-
-> When I remove the snd-es18xx module and install the snd-sb8 module with
-> the same parameters (other than there's no second DMA channel), the
-> /proc/interrupts counter for IRQ 5 increments as expected when playing
-> sound files.
-
-What does cat /proc/config.gz | grep CONFIG_ALPHA_ say? Miuchael, and for 
-you? For some Alpha configs, arch/alpha/kernel/es1888.c is compiled and for 
-some not. I expect for you (Bob) it's compiled in? And Michael?
-
-Rene.
+Jesse
