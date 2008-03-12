@@ -1,530 +1,977 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbYCLMSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbYCLMT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbYCLMSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 08:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYCLMSJ
+	id S1753080AbYCLMT4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 08:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYCLMTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 08:18:09 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:46612 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbYCLMSH (ORCPT
+	Wed, 12 Mar 2008 08:19:49 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3119 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751322AbYCLMTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 08:18:07 -0400
-Message-Id: <20080312121323.959513000@chello.nl>
-References: <20080312120920.929901000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Wed, 12 Mar 2008 13:09:22 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 2/2] lockdep: fix fib_hash softirq inversion
-Content-Disposition: inline; filename=lockdep-fib_hash-softirq-inversion.patch
+	Wed, 12 Mar 2008 08:19:47 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] update checkpatch.pl to version 0.16
+Date: Wed, 12 Mar 2008 12:19:46 -0000
+Message-Id: <1205324386.0@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-=========================================================
-[ INFO: possible irq lock inversion dependency detected ]
-2.6.25-rc4-sched-devel.git #56
----------------------------------------------------------
-swapper/0 just changed the state of lock:
- (&rt_hash_locks[i]){-+..}, at: [<ffffffff804721ac>] rt_intern_hash+0x8c/0x3b0
-but this lock took another, soft-read-irq-unsafe lock in the past:
- (fib_hash_lock){-.-?}
 
-and interrupts could create inverse lock ordering between them.
+This version brings proper quote tracking across lines, and brings the
+handling of comments into the same mechanism ensuring nesting is correctly
+handled.  It brings the usual flurry of fixes for false positives.  It also
+brings a number of new checks.  The most contentious change will likely be
+the checks for NR_CPUS as this throws some new warnings in kernel/sched.c.
 
+Of note:
+ - all new quote tracking across lines
+ - all new comment tracking
+ - new more direct, less ambigious wording for some warnings
+ - recommends mutexes and completions over semaphores
+ - recommends strict_strto* over simple_strto*
+ - report on direct use of NR_CPUS
 
-other info that might help us debug this:
-1 lock held by swapper/0:
- #0:  (rcu_read_lock){..--}, at: [<ffffffff8045a706>] netif_receive_skb+0x76/0x350
+Andy Whitcroft (22):
+      Version: 0.16
+      string quote tracking should cross line boundaries
+      check spacing round -> correctly across newlines
+      checks for linux/ against asm/ include files should be warnings
+      standardise on 'required' and 'prohibited'
+      take the first end of condition when parsing statements
+      values: cope with unbalanced brackets
+      preprocessor #elif is not a function
+      preprocessor #if should not trigger trailing statement checks
+      test: allow us to limit output to a single error
+      recommend real mutexes over semaphores
+      asm checks should mirror those for __asm__
+      warn on semaphores being used in place of completions
+      trailing ; on control structure should ignore do {} while ();
+      recommend strict_strtoX over simple_strtoX
+      redo comment handling as a quote type
+      use of NR_CPUS is normally wrong
+      consistant spacing should only be about spaces
+      if brace check suppression should only apply to the top-levels
+      use tr/// to align spacing for operators
+      move to using four parameter form of substr
+      check and report modifications to include/asm
 
-the first lock's dependencies:
--> (&rt_hash_locks[i]){-+..} ops: 0 {
-   initial-use  at:
-                                       [<ffffffff80275900>] __lock_acquire+0x150/0x1080
-                                       [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                       [<ffffffff804e99a6>] _spin_lock_bh+0x36/0x70
-                                       [<ffffffff804721ac>] rt_intern_hash+0x8c/0x3b0
-                                       [<ffffffff80472acd>] __ip_route_output_key+0x5fd/0xb10
-                                       [<ffffffff80472ffc>] ip_route_output_flow+0x1c/0x70
-                                       [<ffffffff8049b49d>] udp_sendmsg+0x5dd/0x760
-                                       [<ffffffff804a2235>] inet_sendmsg+0x45/0x80
-                                       [<ffffffff8044d677>] sock_sendmsg+0x127/0x140
-                                       [<ffffffff8044e43a>] sys_sendto+0xea/0x120
-                                       [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
-   in-softirq-W at:
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
-   hardirq-on-W at:
-                                       [<ffffffff80275e72>] __lock_acquire+0x6c2/0x1080
-                                       [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                       [<ffffffff804e99a6>] _spin_lock_bh+0x36/0x70
-                                       [<ffffffff804721ac>] rt_intern_hash+0x8c/0x3b0
-                                       [<ffffffff80472acd>] __ip_route_output_key+0x5fd/0xb10
-                                       [<ffffffff80472ffc>] ip_route_output_flow+0x1c/0x70
-                                       [<ffffffff8049b49d>] udp_sendmsg+0x5dd/0x760
-                                       [<ffffffff804a2235>] inet_sendmsg+0x45/0x80
-                                       [<ffffffff8044d677>] sock_sendmsg+0x127/0x140
-                                       [<ffffffff8044e43a>] sys_sendto+0xea/0x120
-                                       [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
- }
- ... key      at: [<ffffffff80b96b14>] __key.37724+0x0/0x8
- -> (&tbl->lock){-+-+} ops: 0 {
-    initial-use  at:
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    in-softirq-W at:
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    hardirq-on-W at:
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    in-softirq-R at:
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    hardirq-on-R at:
-                                         [<ffffffff80275bf0>] __lock_acquire+0x440/0x1080
-                                         [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                         [<ffffffff804e9b59>] _read_lock_bh+0x39/0x70
-                                         [<ffffffff80461a46>] neigh_lookup+0x76/0x150
-                                         [<ffffffff8049c5a2>] arp_bind_neighbour+0x72/0xb0
-                                         [<ffffffff8047223a>] rt_intern_hash+0x11a/0x3b0
-                                         [<ffffffff80472acd>] __ip_route_output_key+0x5fd/0xb10
-                                         [<ffffffff80472ffc>] ip_route_output_flow+0x1c/0x70
-                                         [<ffffffff8049b49d>] udp_sendmsg+0x5dd/0x760
-                                         [<ffffffff804a2235>] inet_sendmsg+0x45/0x80
-                                         [<ffffffff8044d677>] sock_sendmsg+0x127/0x140
-                                         [<ffffffff8044e43a>] sys_sendto+0xea/0x120
-                                         [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-  }
-  ... key      at: [<ffffffff80b967f8>] __key.29558+0x0/0x8
-  -> (base_lock_keys + cpu){++..} ops: 0 {
-     initial-use  at:
-                                           [<ffffffff80275900>] __lock_acquire+0x150/0x1080
-                                           [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                           [<ffffffff804e9d27>] _spin_lock_irqsave+0x47/0x80
-                                           [<ffffffff8025a946>] lock_timer_base+0x36/0x70
-                                           [<ffffffff8025aaab>] __mod_timer+0x3b/0xf0
-                                           [<ffffffff8025adbe>] mod_timer+0x2e/0x50
-                                           [<ffffffff806ccc6b>] con_init+0x26b/0x290
-                                           [<ffffffff806cc0f2>] console_init+0x32/0x50
-                                           [<ffffffff806abbc0>] start_kernel+0x1e0/0x330
-                                           [<ffffffff806ab1b2>] _sinittext+0x1b2/0x200
-                                           [<ffffffffffffffff>] 0xffffffffffffffff
-     in-hardirq-W at:
-                                           [<ffffffffffffffff>] 0xffffffffffffffff
-     in-softirq-W at:
-                                           [<ffffffffffffffff>] 0xffffffffffffffff
-   }
-   ... key      at: [<ffffffff807a7400>] base_lock_keys+0x0/0x40
-  ... acquired at:
-   [<ffffffffffffffff>] 0xffffffffffffffff
-
- ... acquired at:
-   [<ffffffff80276734>] __lock_acquire+0xf84/0x1080
-   [<ffffffff80276895>] lock_acquire+0x65/0x90
-   [<ffffffff804e9b59>] _read_lock_bh+0x39/0x70
-   [<ffffffff80461a46>] neigh_lookup+0x76/0x150
-   [<ffffffff8049c5a2>] arp_bind_neighbour+0x72/0xb0
-   [<ffffffff8047223a>] rt_intern_hash+0x11a/0x3b0
-   [<ffffffff80472acd>] __ip_route_output_key+0x5fd/0xb10
-   [<ffffffff80472ffc>] ip_route_output_flow+0x1c/0x70
-   [<ffffffff8049b49d>] udp_sendmsg+0x5dd/0x760
-   [<ffffffff804a2235>] inet_sendmsg+0x45/0x80
-   [<ffffffff8044d677>] sock_sendmsg+0x127/0x140
-   [<ffffffff8044e43a>] sys_sendto+0xea/0x120
-   [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-   [<ffffffffffffffff>] 0xffffffffffffffff
-
- -> (fib_hash_lock){-.-?} ops: 0 {
-    initial-use  at:
-                                         [<ffffffff80275900>] __lock_acquire+0x150/0x1080
-                                         [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                         [<ffffffff804e9a76>] _write_lock_bh+0x36/0x70
-                                         [<ffffffff804ad443>] fn_hash_insert+0x5a3/0x720
-                                         [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                         [<ffffffff804a8973>] fib_add_ifaddr+0x73/0x170
-                                         [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                         [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                         [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                         [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                         [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                         [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                         [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                         [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                         [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                         [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                         [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                         [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                         [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                         [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    hardirq-on-W at:
-                                         [<ffffffff80275e72>] __lock_acquire+0x6c2/0x1080
-                                         [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                         [<ffffffff804e9a76>] _write_lock_bh+0x36/0x70
-                                         [<ffffffff804ad443>] fn_hash_insert+0x5a3/0x720
-                                         [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                         [<ffffffff804a8973>] fib_add_ifaddr+0x73/0x170
-                                         [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                         [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                         [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                         [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                         [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                         [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                         [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                         [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                         [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                         [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                         [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                         [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                         [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                         [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    in-softirq-R at:
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    softirq-on-R at:
-                                         [<ffffffff80275c1b>] __lock_acquire+0x46b/0x1080
-                                         [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                         [<ffffffff804e9bc4>] _read_lock+0x34/0x70
-                                         [<ffffffff804acdd7>] fn_hash_lookup+0x27/0xf0
-                                         [<ffffffff804a855d>] inet_addr_type+0x6d/0xf0
-                                         [<ffffffff804aada2>] fib_create_info+0x5a2/0xbf0
-                                         [<ffffffff804acf0b>] fn_hash_insert+0x6b/0x720
-                                         [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                         [<ffffffff804a89c8>] fib_add_ifaddr+0xc8/0x170
-                                         [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                         [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                         [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                         [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                         [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                         [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                         [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                         [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                         [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                         [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                         [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                         [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                         [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                         [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-    hardirq-on-R at:
-                                         [<ffffffff80275bf0>] __lock_acquire+0x440/0x1080
-                                         [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                         [<ffffffff804e9bc4>] _read_lock+0x34/0x70
-                                         [<ffffffff804acdd7>] fn_hash_lookup+0x27/0xf0
-                                         [<ffffffff804a855d>] inet_addr_type+0x6d/0xf0
-                                         [<ffffffff804aada2>] fib_create_info+0x5a2/0xbf0
-                                         [<ffffffff804acf0b>] fn_hash_insert+0x6b/0x720
-                                         [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                         [<ffffffff804a89c8>] fib_add_ifaddr+0xc8/0x170
-                                         [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                         [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                         [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                         [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                         [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                         [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                         [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                         [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                         [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                         [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                         [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                         [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                         [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                         [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                         [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                         [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                         [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                         [<ffffffffffffffff>] 0xffffffffffffffff
-  }
-  ... key      at: [<ffffffff806799b8>] fib_hash_lock+0x18/0x40
- ... acquired at:
-   [<ffffffff80276734>] __lock_acquire+0xf84/0x1080
-   [<ffffffff80276895>] lock_acquire+0x65/0x90
-   [<ffffffff804e9bc4>] _read_lock+0x34/0x70
-   [<ffffffff804acdd7>] fn_hash_lookup+0x27/0xf0
-   [<ffffffff804a855d>] inet_addr_type+0x6d/0xf0
-   [<ffffffff8049dcc6>] arp_constructor+0x86/0x280
-   [<ffffffff8046272f>] neigh_create+0x19f/0x5b0
-   [<ffffffff8049c5cf>] arp_bind_neighbour+0x9f/0xb0
-   [<ffffffff8047223a>] rt_intern_hash+0x11a/0x3b0
-   [<ffffffff80472acd>] __ip_route_output_key+0x5fd/0xb10
-   [<ffffffff804947ec>] tcp_v4_connect+0x10c/0x550
-   [<ffffffff804a343a>] inet_stream_connect+0x23a/0x2d0
-   [<ffffffff8044e530>] sys_connect+0xa0/0xc0
-   [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-   [<ffffffffffffffff>] 0xffffffffffffffff
-
-
-the second lock's dependencies:
--> (fib_hash_lock){-.-?} ops: 0 {
-   initial-use  at:
-                                       [<ffffffff80275900>] __lock_acquire+0x150/0x1080
-                                       [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                       [<ffffffff804e9a76>] _write_lock_bh+0x36/0x70
-                                       [<ffffffff804ad443>] fn_hash_insert+0x5a3/0x720
-                                       [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                       [<ffffffff804a8973>] fib_add_ifaddr+0x73/0x170
-                                       [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                       [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                       [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                       [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                       [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                       [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                       [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                       [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                       [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                       [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                       [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                       [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                       [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                       [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
-   hardirq-on-W at:
-                                       [<ffffffff80275e72>] __lock_acquire+0x6c2/0x1080
-                                       [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                       [<ffffffff804e9a76>] _write_lock_bh+0x36/0x70
-                                       [<ffffffff804ad443>] fn_hash_insert+0x5a3/0x720
-                                       [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                       [<ffffffff804a8973>] fib_add_ifaddr+0x73/0x170
-                                       [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                       [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                       [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                       [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                       [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                       [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                       [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                       [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                       [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                       [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                       [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                       [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                       [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                       [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
-   in-softirq-R at:
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
-   softirq-on-R at:
-                                       [<ffffffff80275c1b>] __lock_acquire+0x46b/0x1080
-                                       [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                       [<ffffffff804e9bc4>] _read_lock+0x34/0x70
-                                       [<ffffffff804acdd7>] fn_hash_lookup+0x27/0xf0
-                                       [<ffffffff804a855d>] inet_addr_type+0x6d/0xf0
-                                       [<ffffffff804aada2>] fib_create_info+0x5a2/0xbf0
-                                       [<ffffffff804acf0b>] fn_hash_insert+0x6b/0x720
-                                       [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                       [<ffffffff804a89c8>] fib_add_ifaddr+0xc8/0x170
-                                       [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                       [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                       [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                       [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                       [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                       [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                       [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                       [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                       [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                       [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                       [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                       [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                       [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                       [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
-   hardirq-on-R at:
-                                       [<ffffffff80275bf0>] __lock_acquire+0x440/0x1080
-                                       [<ffffffff80276895>] lock_acquire+0x65/0x90
-                                       [<ffffffff804e9bc4>] _read_lock+0x34/0x70
-                                       [<ffffffff804acdd7>] fn_hash_lookup+0x27/0xf0
-                                       [<ffffffff804a855d>] inet_addr_type+0x6d/0xf0
-                                       [<ffffffff804aada2>] fib_create_info+0x5a2/0xbf0
-                                       [<ffffffff804acf0b>] fn_hash_insert+0x6b/0x720
-                                       [<ffffffff804a88ef>] fib_magic+0x10f/0x120
-                                       [<ffffffff804a89c8>] fib_add_ifaddr+0xc8/0x170
-                                       [<ffffffff804a8b7b>] fib_inetaddr_event+0x4b/0x280
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b998>] __blocking_notifier_call_chain+0x58/0x80
-                                       [<ffffffff8026b9d1>] blocking_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8049fa44>] __inet_insert_ifa+0xd4/0x170
-                                       [<ffffffff8049faed>] inet_insert_ifa+0xd/0x10
-                                       [<ffffffff804a0eff>] inetdev_event+0x3df/0x480
-                                       [<ffffffff804ed193>] notifier_call_chain+0x53/0x80
-                                       [<ffffffff8026b739>] __raw_notifier_call_chain+0x9/0x10
-                                       [<ffffffff8026b751>] raw_notifier_call_chain+0x11/0x20
-                                       [<ffffffff8045b3a6>] call_netdevice_notifiers+0x16/0x20
-                                       [<ffffffff8045ce52>] dev_open+0x82/0x90
-                                       [<ffffffff8045b529>] dev_change_flags+0x99/0x1b0
-                                       [<ffffffff804a171e>] devinet_ioctl+0x5ce/0x780
-                                       [<ffffffff804a205c>] inet_ioctl+0x5c/0x80
-                                       [<ffffffff8044c8b5>] sock_ioctl+0x65/0x250
-                                       [<ffffffff802d5241>] vfs_ioctl+0x31/0x90
-                                       [<ffffffff802d5313>] do_vfs_ioctl+0x73/0x2d0
-                                       [<ffffffff802d55f2>] sys_ioctl+0x82/0xa0
-                                       [<ffffffff8022044b>] system_call_after_swapgs+0x7b/0x80
-                                       [<ffffffffffffffff>] 0xffffffffffffffff
- }
- ... key      at: [<ffffffff806799b8>] fib_hash_lock+0x18/0x40
-
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.25-rc4-sched-devel.git #56
-
-Call Trace:
- <IRQ>  [<ffffffff80273a4c>] print_irq_inversion_bug+0x13c/0x160
- [<ffffffff80274a9d>] check_usage_forwards+0x4d/0x60
- [<ffffffff80274c46>] mark_lock+0x196/0x5e0
- [<ffffffff80275d15>] __lock_acquire+0x565/0x1080
- [<ffffffff80276895>] lock_acquire+0x65/0x90
- [<ffffffff804721ac>] ? rt_intern_hash+0x8c/0x3b0
- [<ffffffff804e99a6>] _spin_lock_bh+0x36/0x70
- [<ffffffff804721ac>] rt_intern_hash+0x8c/0x3b0
- [<ffffffff80473a4e>] ip_route_input+0x8fe/0x1250
- [<ffffffff8027530d>] ? trace_hardirqs_on+0xd/0x10
- [<ffffffff8027530d>] ? trace_hardirqs_on+0xd/0x10
- [<ffffffff804769a8>] ip_rcv+0x518/0x650
- [<ffffffff8045a8f9>] netif_receive_skb+0x269/0x350
- [<ffffffff80405529>] e1000_clean_rx_irq+0x1a9/0x5a0
- [<ffffffff8040072b>] e1000_clean+0x1fb/0x5b0
- [<ffffffff8027268d>] ? trace_hardirqs_off+0xd/0x10
- [<ffffffff8045d18f>] net_rx_action+0xbf/0x180
- [<ffffffff80255c55>] __do_softirq+0x75/0x100
- [<ffffffff8022173c>] call_softirq+0x1c/0x30
- [<ffffffff80223505>] do_softirq+0x65/0xa0
- [<ffffffff80255b67>] irq_exit+0x97/0xa0
- [<ffffffff80223618>] do_IRQ+0xa8/0x130
- [<ffffffff80220a06>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8021ef83>] ? default_idle+0x43/0x80
- [<ffffffff8021ef81>] ? default_idle+0x41/0x80
- [<ffffffff8021ef40>] ? default_idle+0x0/0x80
- [<ffffffff8021f02d>] ? cpu_idle+0x6d/0x120
- [<ffffffff804e3edb>] ? start_secondary+0x31b/0x420
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Eric Dumazet <dada1@cosmosbay.com>
-CC: David S. Miller <davem@davemloft.net>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 ---
- net/ipv4/fib_hash.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-Index: linux-2.6-2/net/ipv4/fib_hash.c
-===================================================================
---- linux-2.6-2.orig/net/ipv4/fib_hash.c
-+++ linux-2.6-2/net/ipv4/fib_hash.c
-@@ -251,7 +251,7 @@ fn_hash_lookup(struct fib_table *tb, con
- 	struct fn_zone *fz;
- 	struct fn_hash *t = (struct fn_hash*)tb->tb_data;
+ scripts/checkpatch.pl |  463 +++++++++++++++++++++++++++++--------------------
+ 1 files changed, 279 insertions(+), 184 deletions(-)
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 2a7cef9..58a9494 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -9,7 +9,7 @@ use strict;
+ my $P = $0;
+ $P =~ s@.*/@@g;
  
--	read_lock(&fib_hash_lock);
-+	read_lock_bh(&fib_hash_lock);
- 	for (fz = t->fn_zone_list; fz; fz = fz->fz_next) {
- 		struct hlist_head *head;
- 		struct hlist_node *node;
-@@ -273,7 +273,7 @@ fn_hash_lookup(struct fib_table *tb, con
- 	}
- 	err = 1;
- out:
--	read_unlock(&fib_hash_lock);
-+	read_unlock_bh(&fib_hash_lock);
- 	return err;
+-my $V = '0.15';
++my $V = '0.16';
+ 
+ use Getopt::Long qw(:config no_auto_abbrev);
+ 
+@@ -18,6 +18,7 @@ my $tree = 1;
+ my $chk_signoff = 1;
+ my $chk_patch = 1;
+ my $tst_type = 0;
++my $tst_only;
+ my $emacs = 0;
+ my $terse = 0;
+ my $file = 0;
+@@ -44,6 +45,7 @@ GetOptions(
+ 
+ 	'debug=s'	=> \%debug,
+ 	'test-type!'	=> \$tst_type,
++	'test-only=s'	=> \$tst_only,
+ ) or exit;
+ 
+ my $exit = 0;
+@@ -263,17 +265,7 @@ sub expand_tabs {
+ 	return $res;
+ }
+ sub copy_spacing {
+-	my ($str) = @_;
+-
+-	my $res = '';
+-	for my $c (split(//, $str)) {
+-		if ($c eq "\t") {
+-			$res .= $c;
+-		} else {
+-			$res .= ' ';
+-		}
+-	}
+-
++	(my $res = shift) =~ tr/\t/ /c;
+ 	return $res;
  }
  
-@@ -295,7 +295,7 @@ fn_hash_select_default(struct fib_table 
- 	last_resort = NULL;
- 	order = -1;
- 
--	read_lock(&fib_hash_lock);
-+	read_lock_bh(&fib_hash_lock);
- 	hlist_for_each_entry(f, node, &fz->fz_hash[0], fn_hash) {
- 		struct fib_alias *fa;
- 
-@@ -343,7 +343,7 @@ fn_hash_select_default(struct fib_table 
- 		fib_result_assign(res, last_resort);
- 	tb->tb_default = last_idx;
- out:
--	read_unlock(&fib_hash_lock);
-+	read_unlock_bh(&fib_hash_lock);
+@@ -290,53 +282,76 @@ sub line_stats {
+ 	return (length($line), length($white));
  }
  
- /* Insert node F to FZ. */
-@@ -753,18 +753,18 @@ static int fn_hash_dump(struct fib_table
- 	struct fn_hash *table = (struct fn_hash*)tb->tb_data;
++my $sanitise_quote = '';
++
++sub sanitise_line_reset {
++	my ($in_comment) = @_;
++
++	if ($in_comment) {
++		$sanitise_quote = '*/';
++	} else {
++		$sanitise_quote = '';
++	}
++}
+ sub sanitise_line {
+ 	my ($line) = @_;
  
- 	s_m = cb->args[2];
--	read_lock(&fib_hash_lock);
-+	read_lock_bh(&fib_hash_lock);
- 	for (fz = table->fn_zone_list, m=0; fz; fz = fz->fz_next, m++) {
- 		if (m < s_m) continue;
- 		if (fn_hash_dump_zone(skb, cb, tb, fz) < 0) {
- 			cb->args[2] = m;
--			read_unlock(&fib_hash_lock);
-+			read_unlock_bh(&fib_hash_lock);
- 			return -1;
+ 	my $res = '';
+ 	my $l = '';
+ 
+-	my $quote = '';
+ 	my $qlen = 0;
++	my $off = 0;
++	my $c;
+ 
+-	foreach my $c (split(//, $line)) {
+-		# The second backslash of a pair is not a "quote".
+-		if ($l eq "\\" && $c eq "\\") {
+-			$c = 'X';
+-		}
+-		if ($l ne "\\" && ($c eq "'" || $c eq '"')) {
+-			if ($quote eq '') {
+-				$quote = $c;
+-				$res .= $c;
+-				$l = $c;
+-				$qlen = 0;
+-				next;
+-			} elsif ($quote eq $c) {
+-				$quote = '';
+-			}
++	# Always copy over the diff marker.
++	$res = substr($line, 0, 1);
++
++	for ($off = 1; $off < length($line); $off++) {
++		$c = substr($line, $off, 1);
++
++		# Comments we are wacking completly including the begin
++		# and end, all to $;.
++		if ($sanitise_quote eq '' && substr($line, $off, 2) eq '/*') {
++			$sanitise_quote = '*/';
++
++			substr($res, $off, 2, "$;$;");
++			$off++;
++			next;
  		}
- 		memset(&cb->args[3], 0,
- 		       sizeof(cb->args) - 3*sizeof(cb->args[0]));
+-		if ($quote eq "'" && $qlen > 1) {
+-			$quote = '';
++		if (substr($line, $off, 2) eq $sanitise_quote) {
++			$sanitise_quote = '';
++			substr($res, $off, 2, "$;$;");
++			$off++;
++			next;
+ 		}
+-		if ($quote && $c ne "\t") {
+-			$res .= "X";
+-			$qlen++;
+-		} else {
+-			$res .= $c;
++
++		# A \ in a string means ignore the next character.
++		if (($sanitise_quote eq "'" || $sanitise_quote eq '"') &&
++		    $c eq "\\") {
++			substr($res, $off, 2, 'XX');
++			$off++;
++			next;
+ 		}
++		# Regular quotes.
++		if ($c eq "'" || $c eq '"') {
++			if ($sanitise_quote eq '') {
++				$sanitise_quote = $c;
+ 
+-		$l = $c;
+-	}
++				substr($res, $off, 1, $c);
++				next;
++			} elsif ($sanitise_quote eq $c) {
++				$sanitise_quote = '';
++			}
++		}
+ 
+-	# Clear out the comments.
+-	while ($res =~ m@(/\*.*?\*/)@g) {
+-		substr($res, $-[1], $+[1] - $-[1]) = $; x ($+[1] - $-[1]);
+-	}
+-	if ($res =~ m@(/\*.*)@) {
+-		substr($res, $-[1], $+[1] - $-[1]) = $; x ($+[1] - $-[1]);
+-	}
+-	if ($res =~ m@^.(.*\*/)@) {
+-		substr($res, $-[1], $+[1] - $-[1]) = $; x ($+[1] - $-[1]);
++		#print "SQ:$sanitise_quote\n";
++		if ($off != 0 && $sanitise_quote eq '*/' && $c ne "\t") {
++			substr($res, $off, 1, $;);
++		} elsif ($off != 0 && $sanitise_quote && $c ne "\t") {
++			substr($res, $off, 1, 'X');
++		} else {
++			substr($res, $off, 1, $c);
++		}
  	}
--	read_unlock(&fib_hash_lock);
-+	read_unlock_bh(&fib_hash_lock);
- 	cb->args[2] = m;
- 	return skb->len;
- }
-@@ -962,7 +962,7 @@ static void *fib_seq_start(struct seq_fi
- 	struct fib_iter_state *iter = seq->private;
- 	void *v = NULL;
  
--	read_lock(&fib_hash_lock);
-+	read_lock_bh(&fib_hash_lock);
- 	if (fib_get_table(iter->p.net, RT_TABLE_MAIN))
- 		v = *pos ? fib_get_idx(seq, *pos - 1) : SEQ_START_TOKEN;
- 	return v;
-@@ -977,7 +977,7 @@ static void *fib_seq_next(struct seq_fil
- static void fib_seq_stop(struct seq_file *seq, void *v)
- 	__releases(fib_hash_lock)
- {
--	read_unlock(&fib_hash_lock);
-+	read_unlock_bh(&fib_hash_lock);
- }
+ 	# The pathname on a #include may be surrounded by '<' and '>'.
+@@ -359,6 +374,7 @@ sub ctx_statement_block {
+ 	my $blk = '';
+ 	my $soff = $off;
+ 	my $coff = $off - 1;
++	my $coff_set = 0;
  
- static unsigned fib_flag_trans(int type, __be32 mask, struct fib_info *fi)
-
---
-
+ 	my $loff = 0;
+ 
+@@ -370,7 +386,7 @@ sub ctx_statement_block {
+ 
+ 	my $remainder;
+ 	while (1) {
+-		#warn "CSB: blk<$blk>\n";
++		#warn "CSB: blk<$blk> remain<$remain>\n";
+ 		# If we are about to drop off the end, pull in more
+ 		# context.
+ 		if ($off >= $len) {
+@@ -393,7 +409,7 @@ sub ctx_statement_block {
+ 		$c = substr($blk, $off, 1);
+ 		$remainder = substr($blk, $off);
+ 
+-		#warn "CSB: c<$c> type<$type> level<$level>\n";
++		#warn "CSB: c<$c> type<$type> level<$level> remainder<$remainder> coff_set<$coff_set>\n";
+ 		# Statement ends at the ';' or a close '}' at the
+ 		# outermost level.
+ 		if ($level == 0 && $c eq ';') {
+@@ -401,10 +417,14 @@ sub ctx_statement_block {
+ 		}
+ 
+ 		# An else is really a conditional as long as its not else if
+-		if ($level == 0 && (!defined($p) || $p =~ /(?:\s|\})/) &&
+-				$remainder =~ /(else)(?:\s|{)/ &&
+-				$remainder !~ /else\s+if\b/) {
+-			$coff = $off + length($1);
++		if ($level == 0 && $coff_set == 0 &&
++				(!defined($p) || $p =~ /(?:\s|\}|\+)/) &&
++				$remainder =~ /^(else)(?:\s|{)/ &&
++				$remainder !~ /^else\s+if\b/) {
++			$coff = $off + length($1) - 1;
++			$coff_set = 1;
++			#warn "CSB: mark coff<$coff> soff<$soff> 1<$1>\n";
++			#warn "[" . substr($blk, $soff, $coff - $soff + 1) . "]\n";
+ 		}
+ 
+ 		if (($type eq '' || $type eq '(') && $c eq '(') {
+@@ -417,6 +437,8 @@ sub ctx_statement_block {
+ 
+ 			if ($level == 0 && $coff < $soff) {
+ 				$coff = $off;
++				$coff_set = 1;
++				#warn "CSB: mark coff<$coff>\n";
+ 			}
+ 		}
+ 		if (($type eq '' || $type eq '{') && $c eq '{') {
+@@ -444,7 +466,7 @@ sub ctx_statement_block {
+ 	#warn "STATEMENT<$statement>\n";
+ 	#warn "CONDITION<$condition>\n";
+ 
+-	#print "off<$off> loff<$loff>\n";
++	#print "coff<$coff> soff<$off> loff<$loff>\n";
+ 
+ 	return ($statement, $condition,
+ 			$line, $remain + 1, $off - $loff + 1, $level);
+@@ -502,7 +524,7 @@ sub ctx_statement_full {
+ 	# Grab the first conditional/block pair.
+ 	($statement, $condition, $linenr, $remain, $off, $level) =
+ 				ctx_statement_block($linenr, $remain, $off);
+-	#print "F: c<$condition> s<$statement>\n";
++	#print "F: c<$condition> s<$statement> remain<$remain>\n";
+ 	push(@chunks, [ $condition, $statement ]);
+ 	if (!($remain > 0 && $condition =~ /^\s*(?:\n[+-])?\s*(?:if|else|do)\b/s)) {
+ 		return ($level, $linenr, @chunks);
+@@ -514,7 +536,7 @@ sub ctx_statement_full {
+ 		($statement, $condition, $linenr, $remain, $off, $level) =
+ 				ctx_statement_block($linenr, $remain, $off);
+ 		#print "C: c<$condition> s<$statement> remain<$remain>\n";
+-		last if (!($remain > 0 && $condition =~ /^\s*(?:\n[+-])?\s*(?:else|do)\b/s));
++		last if (!($remain > 0 && $condition =~ /^(?:\s*\n[+-])*\s*(?:else|do)\b/s));
+ 		#print "C: push\n";
+ 		push(@chunks, [ $condition, $statement ]);
+ 	}
+@@ -668,6 +690,7 @@ sub annotate_values {
+ 	print "$stream\n" if ($dbg_values > 1);
+ 
+ 	while (length($cur)) {
++		@av_paren_type = ('E') if ($#av_paren_type < 0);
+ 		print " <" . join('', @av_paren_type) .
+ 					"> <$type> " if ($dbg_values > 1);
+ 		if ($cur =~ /^(\s+)/o) {
+@@ -804,28 +827,34 @@ sub possible {
+ my $prefix = '';
+ 
+ sub report {
++	if (defined $tst_only && $_[0] !~ /\Q$tst_only\E/) {
++		return 0;
++	}
+ 	my $line = $prefix . $_[0];
+ 
+ 	$line = (split('\n', $line))[0] . "\n" if ($terse);
+ 
+ 	push(our @report, $line);
++
++	return 1;
+ }
+ sub report_dump {
+ 	our @report;
+ }
+ sub ERROR {
+-	report("ERROR: $_[0]\n");
+-	our $clean = 0;
+-	our $cnt_error++;
++	if (report("ERROR: $_[0]\n")) {
++		our $clean = 0;
++		our $cnt_error++;
++	}
+ }
+ sub WARN {
+-	report("WARNING: $_[0]\n");
+-	our $clean = 0;
+-	our $cnt_warn++;
++	if (report("WARNING: $_[0]\n")) {
++		our $clean = 0;
++		our $cnt_warn++;
++	}
+ }
+ sub CHK {
+-	if ($check) {
+-		report("CHECK: $_[0]\n");
++	if ($check && report("CHECK: $_[0]\n")) {
+ 		our $clean = 0;
+ 		our $cnt_chk++;
+ 	}
+@@ -867,30 +896,76 @@ sub process {
+ 	my $prev_values = 'E';
+ 
+ 	# suppression flags
+-	my $suppress_ifbraces = 0;
++	my %suppress_ifbraces;
+ 
+ 	# Pre-scan the patch sanitizing the lines.
+ 	# Pre-scan the patch looking for any __setup documentation.
+ 	#
+ 	my @setup_docs = ();
+ 	my $setup_docs = 0;
++
++	sanitise_line_reset();
+ 	my $line;
+ 	foreach my $rawline (@rawlines) {
+-		# Standardise the strings and chars within the input to
+-		# simplify matching.
+-		$line = sanitise_line($rawline);
+-		push(@lines, $line);
+-
+-		##print "==>$rawline\n";
+-		##print "-->$line\n";
++		$linenr++;
++		$line = $rawline;
+ 
+-		if ($line=~/^\+\+\+\s+(\S+)/) {
++		if ($rawline=~/^\+\+\+\s+(\S+)/) {
+ 			$setup_docs = 0;
+ 			if ($1 =~ m@Documentation/kernel-parameters.txt$@) {
+ 				$setup_docs = 1;
+ 			}
+-			next;
++			#next;
++		}
++		if ($rawline=~/^\@\@ -\d+(?:,\d+)? \+(\d+)(,(\d+))? \@\@/) {
++			$realline=$1-1;
++			if (defined $2) {
++				$realcnt=$3+1;
++			} else {
++				$realcnt=1+1;
++			}
++
++			# Guestimate if this is a continuing comment.  Run
++			# the context looking for a comment "edge".  If this
++			# edge is a close comment then we must be in a comment
++			# at context start.
++			my $edge;
++			for (my $ln = $linenr; $ln < ($linenr + $realcnt); $ln++) {
++				next if ($line =~ /^-/);
++				($edge) = ($rawlines[$ln - 1] =~ m@(/\*|\*/)@);
++				last if (defined $edge);
++			}
++			if (defined $edge && $edge eq '*/') {
++				$in_comment = 1;
++			}
++
++			# Guestimate if this is a continuing comment.  If this
++			# is the start of a diff block and this line starts
++			# ' *' then it is very likely a comment.
++			if (!defined $edge &&
++			    $rawlines[$linenr] =~ m@^.\s* \*(?:\s|$)@)
++			{
++				$in_comment = 1;
++			}
++
++			##print "COMMENT:$in_comment edge<$edge> $rawline\n";
++			sanitise_line_reset($in_comment);
++
++		} elsif ($realcnt) {
++			# Standardise the strings and chars within the input to
++			# simplify matching.
++			$line = sanitise_line($rawline);
+ 		}
++		push(@lines, $line);
++
++		if ($realcnt > 1) {
++			$realcnt-- if ($line =~ /^(?:\+| |$)/);
++		} else {
++			$realcnt = 0;
++		}
++
++		#print "==>$rawline\n";
++		#print "-->$line\n";
+ 
+ 		if ($setup_docs && $line =~ /^\+/) {
+ 			push(@setup_docs, $line);
+@@ -899,23 +974,17 @@ sub process {
+ 
+ 	$prefix = '';
+ 
++	$realcnt = 0;
++	$linenr = 0;
+ 	foreach my $line (@lines) {
+ 		$linenr++;
+ 
+ 		my $rawline = $rawlines[$linenr - 1];
+ 
+-#extract the filename as it passes
+-		if ($line=~/^\+\+\+\s+(\S+)/) {
+-			$realfile=$1;
+-			$realfile =~ s@^[^/]*/@@;
+-			$in_comment = 0;
+-			next;
+-		}
+ #extract the line range in the file after the patch is applied
+ 		if ($line=~/^\@\@ -\d+(?:,\d+)? \+(\d+)(,(\d+))? \@\@/) {
+ 			$is_patch = 1;
+ 			$first_line = $linenr + 1;
+-			$in_comment = 0;
+ 			$realline=$1-1;
+ 			if (defined $2) {
+ 				$realcnt=$3+1;
+@@ -925,50 +994,16 @@ sub process {
+ 			annotate_reset();
+ 			$prev_values = 'E';
+ 
+-			$suppress_ifbraces = $linenr - 1;
++			%suppress_ifbraces = ();
+ 			next;
+-		}
+ 
+ # track the line number as we move through the hunk, note that
+ # new versions of GNU diff omit the leading space on completely
+ # blank context lines so we need to count that too.
+-		if ($line =~ /^( |\+|$)/) {
++		} elsif ($line =~ /^( |\+|$)/) {
+ 			$realline++;
+ 			$realcnt-- if ($realcnt != 0);
+ 
+-			# Guestimate if this is a continuing comment.  Run
+-			# the context looking for a comment "edge".  If this
+-			# edge is a close comment then we must be in a comment
+-			# at context start.
+-			if ($linenr == $first_line) {
+-				my $edge;
+-				for (my $ln = $first_line; $ln < ($linenr + $realcnt); $ln++) {
+-					($edge) = ($rawlines[$ln - 1] =~ m@(/\*|\*/)@);
+-					last if (defined $edge);
+-				}
+-				if (defined $edge && $edge eq '*/') {
+-					$in_comment = 1;
+-				}
+-			}
+-
+-			# Guestimate if this is a continuing comment.  If this
+-			# is the start of a diff block and this line starts
+-			# ' *' then it is very likely a comment.
+-			if ($linenr == $first_line and $rawline =~ m@^.\s* \*(?:\s|$)@) {
+-				$in_comment = 1;
+-			}
+-
+-			# Find the last comment edge on _this_ line.
+-			$comment_edge = 0;
+-			while (($rawline =~ m@(/\*|\*/)@g)) {
+-				if ($1 eq '/*') {
+-					$in_comment = 1;
+-				} else {
+-					$in_comment = 0;
+-				}
+-				$comment_edge = 1;
+-			}
+-
+ 			# Measure the line length and indent.
+ 			($length, $indent) = line_stats($rawline);
+ 
+@@ -977,23 +1012,36 @@ sub process {
+ 			($previndent, $stashindent) = ($stashindent, $indent);
+ 			($prevrawline, $stashrawline) = ($stashrawline, $rawline);
+ 
+-			#warn "ic<$in_comment> ce<$comment_edge> line<$line>\n";
++			#warn "line<$line>\n";
+ 
+ 		} elsif ($realcnt == 1) {
+ 			$realcnt--;
+ 		}
+ 
+ #make up the handle for any error we report on this line
++		$prefix = "$filename:$realline: " if ($emacs && $file);
++		$prefix = "$filename:$linenr: " if ($emacs && !$file);
++
+ 		$here = "#$linenr: " if (!$file);
+ 		$here = "#$realline: " if ($file);
++
++		# extract the filename as it passes
++		if ($line=~/^\+\+\+\s+(\S+)/) {
++			$realfile = $1;
++			$realfile =~ s@^[^/]*/@@;
++
++			if ($realfile =~ m@include/asm/@) {
++				ERROR("do not modify files in include/asm, change architecture specific files in include/asm-<architecture>\n" . "$here$rawline\n");
++			}
++			next;
++		}
++
+ 		$here .= "FILE: $realfile:$realline:" if ($realcnt != 0);
+ 
+ 		my $hereline = "$here\n$rawline\n";
+ 		my $herecurr = "$here\n$rawline\n";
+ 		my $hereprev = "$here\n$prevrawline\n$rawline\n";
+ 
+-		$prefix = "$filename:$realline: " if ($emacs && $file);
+-		$prefix = "$filename:$linenr: " if ($emacs && !$file);
+ 		$cnt_lines++ if ($realcnt != 0);
+ 
+ #check the patch for a signoff:
+@@ -1005,7 +1053,7 @@ sub process {
+ 					$herecurr);
+ 			}
+ 			if ($line =~ /^\s*signed-off-by:\S/i) {
+-				WARN("need space after Signed-off-by:\n" .
++				WARN("space required after Signed-off-by:\n" .
+ 					$herecurr);
+ 			}
+ 		}
+@@ -1072,11 +1120,6 @@ sub process {
+ 			WARN("CVS style keyword markers, these will _not_ be updated\n". $herecurr);
+ 		}
+ 
+-# The rest of our checks refer specifically to C style
+-# only apply those _outside_ comments.  Only skip
+-# lines in the middle of comments.
+-		next if (!$comment_edge && $in_comment);
+-
+ # Check for potential 'bare' types
+ 		if ($realcnt) {
+ 			my ($s, $c) = ctx_statement_block($linenr, $realcnt, 0);
+@@ -1110,7 +1153,7 @@ sub process {
+ 				my ($name_len) = length($1);
+ 
+ 				my $ctx = $s;
+-				substr($ctx, 0, $name_len + 1) = '';
++				substr($ctx, 0, $name_len + 1, '');
+ 				$ctx =~ s/\)[^\)]*$//;
+ 
+ 				for my $arg (split(/\s*,\s*/, $ctx)) {
+@@ -1151,27 +1194,33 @@ sub process {
+ 
+ # if/while/etc brace do not go on next line, unless defining a do while loop,
+ # or if that brace on the next line is for something else
+-		if ($line =~ /\b(?:(if|while|for|switch)\s*\(|do\b|else\b)/ && $line !~ /^.#/) {
++		if ($line =~ /(.*)\b((?:if|while|for|switch)\s*\(|do\b|else\b)/ && $line !~ /^.#/) {
++			my $pre_ctx = "$1$2";
++
+ 			my ($level, @ctx) = ctx_statement_level($linenr, $realcnt, 0);
+ 			my $ctx_ln = $linenr + $#ctx + 1;
+ 			my $ctx_cnt = $realcnt - $#ctx - 1;
+ 			my $ctx = join("\n", @ctx);
+ 
++			##warn "realcnt<$realcnt> ctx_cnt<$ctx_cnt>\n";
++
+ 			# Skip over any removed lines in the context following statement.
+-			while ($ctx_cnt > 0 && $lines[$ctx_ln - 1] =~ /^-/) {
++			while (defined($lines[$ctx_ln - 1]) && $lines[$ctx_ln - 1] =~ /^-/) {
+ 				$ctx_ln++;
+-				$ctx_cnt--;
+ 			}
+-			##warn "line<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>";
++			##warn "pre<$pre_ctx>\nline<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>\n";
+ 
+-			if ($ctx !~ /{\s*/ && $ctx_cnt > 0 && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
+-				ERROR("That open brace { should be on the previous line\n" .
++			if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln -1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
++				ERROR("that open brace { should be on the previous line\n" .
+ 					"$here\n$ctx\n$lines[$ctx_ln - 1]");
+ 			}
+-			if ($level == 0 && $ctx =~ /\)\s*\;\s*$/ && defined $lines[$ctx_ln - 1]) {
++			if ($level == 0 && $pre_ctx !~ /}\s*while\s*\($/ &&
++			    $ctx =~ /\)\s*\;\s*$/ &&
++			    defined $lines[$ctx_ln - 1])
++			{
+ 				my ($nlength, $nindent) = line_stats($lines[$ctx_ln - 1]);
+ 				if ($nindent > $indent) {
+-					WARN("Trailing semicolon indicates no statements, indent implies otherwise\n" .
++					WARN("trailing semicolon indicates no statements, indent implies otherwise\n" .
+ 						"$here\n$ctx\n$lines[$ctx_ln - 1]");
+ 				}
+ 			}
+@@ -1200,7 +1249,7 @@ sub process {
+ # check for initialisation to aggregates open brace on the next line
+ 		if ($prevline =~ /$Declare\s*$Ident\s*=\s*$/ &&
+ 		    $line =~ /^.\s*{/) {
+-			ERROR("That open brace { should be on the previous line\n" . $hereprev);
++			ERROR("that open brace { should be on the previous line\n" . $hereprev);
+ 		}
+ 
+ #
+@@ -1325,22 +1374,31 @@ sub process {
+ # check for spaces between functions and their parentheses.
+ 		while ($line =~ /($Ident)\s+\(/g) {
+ 			my $name = $1;
+-			my $ctx = substr($line, 0, $-[1]);
++			my $ctx_before = substr($line, 0, $-[1]);
++			my $ctx = "$ctx_before$name";
+ 
+ 			# Ignore those directives where spaces _are_ permitted.
+-			if ($name =~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case|__asm__)$/) {
++			if ($name =~ /^(?:
++				if|for|while|switch|return|case|
++				volatile|__volatile__|
++				__attribute__|format|__extension__|
++				asm|__asm__)$/x)
++			{
+ 
+ 			# cpp #define statements have non-optional spaces, ie
+ 			# if there is a space between the name and the open
+ 			# parenthesis it is simply not a parameter group.
+-			} elsif ($ctx =~ /^.\#\s*define\s*$/) {
++			} elsif ($ctx_before =~ /^.\#\s*define\s*$/) {
++
++			# cpp #elif statement condition may start with a (
++			} elsif ($ctx =~ /^.\#\s*elif\s*$/) {
+ 
+ 			# If this whole things ends with a type its most
+ 			# likely a typedef for a function.
+-			} elsif ("$ctx$name" =~ /$Type$/) {
++			} elsif ($ctx =~ /$Type$/) {
+ 
+ 			} else {
+-				WARN("no space between function name and open parenthesis '('\n" . $herecurr);
++				WARN("space prohibited between function name and open parenthesis '('\n" . $herecurr);
+ 			}
+ 		}
+ # Check operator spacing.
+@@ -1359,13 +1417,21 @@ sub process {
+ 			for (my $n = 0; $n < $#elements; $n += 2) {
+ 				$off += length($elements[$n]);
+ 
++				# Pick up the preceeding and succeeding characters.
++				my $ca = substr($opline, 0, $off);
++				my $cc = '';
++				if (length($opline) >= ($off + length($elements[$n + 1]))) {
++					$cc = substr($opline, $off + length($elements[$n + 1]));
++				}
++				my $cb = "$ca$;$cc";
++
+ 				my $a = '';
+ 				$a = 'V' if ($elements[$n] ne '');
+ 				$a = 'W' if ($elements[$n] =~ /\s$/);
+ 				$a = 'C' if ($elements[$n] =~ /$;$/);
+ 				$a = 'B' if ($elements[$n] =~ /(\[|\()$/);
+ 				$a = 'O' if ($elements[$n] eq '');
+-				$a = 'E' if ($elements[$n] eq '' && $n == 0);
++				$a = 'E' if ($ca =~ /^\s*$/);
+ 
+ 				my $op = $elements[$n + 1];
+ 
+@@ -1381,14 +1447,6 @@ sub process {
+ 					$c = 'E';
+ 				}
+ 
+-				# Pick up the preceeding and succeeding characters.
+-				my $ca = substr($opline, 0, $off);
+-				my $cc = '';
+-				if (length($opline) >= ($off + length($elements[$n + 1]))) {
+-					$cc = substr($opline, $off + length($elements[$n + 1]));
+-				}
+-				my $cb = "$ca$;$cc";
+-
+ 				my $ctx = "${a}x${c}";
+ 
+ 				my $at = "(ctx:$ctx)";
+@@ -1424,7 +1482,7 @@ sub process {
+ 				} elsif ($op eq ';') {
+ 					if ($ctx !~ /.x[WEBC]/ &&
+ 					    $cc !~ /^\\/ && $cc !~ /^;/) {
+-						ERROR("need space after that '$op' $at\n" . $hereptr);
++						ERROR("space required after that '$op' $at\n" . $hereptr);
+ 					}
+ 
+ 				# // is a comment
+@@ -1433,13 +1491,13 @@ sub process {
+ 				# -> should have no spaces
+ 				} elsif ($op eq '->') {
+ 					if ($ctx =~ /Wx.|.xW/) {
+-						ERROR("no spaces around that '$op' $at\n" . $hereptr);
++						ERROR("spaces prohibited around that '$op' $at\n" . $hereptr);
+ 					}
+ 
+ 				# , must have a space on the right.
+ 				} elsif ($op eq ',') {
+ 					if ($ctx !~ /.x[WEC]/ && $cc !~ /^}/) {
+-						ERROR("need space after that '$op' $at\n" . $hereptr);
++						ERROR("space required after that '$op' $at\n" . $hereptr);
+ 					}
+ 
+ 				# '*' as part of a type definition -- reported already.
+@@ -1452,21 +1510,26 @@ sub process {
+ 				} elsif ($op eq '!' || $op eq '~' ||
+ 				         ($is_unary && ($op eq '*' || $op eq '-' || $op eq '&'))) {
+ 					if ($ctx !~ /[WEBC]x./ && $ca !~ /(?:\)|!|~|\*|-|\&|\||\+\+|\-\-|\{)$/) {
+-						ERROR("need space before that '$op' $at\n" . $hereptr);
++						ERROR("space required before that '$op' $at\n" . $hereptr);
+ 					}
+ 					if ($ctx =~ /.xW/) {
+-						ERROR("no space after that '$op' $at\n" . $hereptr);
++						ERROR("space prohibited after that '$op' $at\n" . $hereptr);
+ 					}
+ 
+ 				# unary ++ and unary -- are allowed no space on one side.
+ 				} elsif ($op eq '++' or $op eq '--') {
+-					if ($ctx !~ /[WOBC]x[^W]/ && $ctx !~ /[^W]x[WOBEC]/) {
+-						ERROR("need space one side of that '$op' $at\n" . $hereptr);
++					if ($ctx !~ /[WEOBC]x[^W]/ && $ctx !~ /[^W]x[WOBEC]/) {
++						ERROR("space required one side of that '$op' $at\n" . $hereptr);
++					}
++					if ($ctx =~ /Wx[BE]/ ||
++					    ($ctx =~ /Wx./ && $cc =~ /^;/)) {
++						ERROR("space prohibited before that '$op' $at\n" . $hereptr);
+ 					}
+-					if ($ctx =~ /WxB/ || ($ctx =~ /Wx./ && $cc =~ /^;/)) {
+-						ERROR("no space before that '$op' $at\n" . $hereptr);
++					if ($ctx =~ /ExW/) {
++						ERROR("space prohibited after that '$op' $at\n" . $hereptr);
+ 					}
+ 
++
+ 				# << and >> may either have or not have spaces both sides
+ 				} elsif ($op eq '<<' or $op eq '>>' or
+ 					 $op eq '&' or $op eq '^' or $op eq '|' or
+@@ -1474,7 +1537,7 @@ sub process {
+ 					 $op eq '*' or $op eq '/' or
+ 					 $op eq '%')
+ 				{
+-					if ($ctx !~ /VxV|WxW|VxE|WxE|VxO|Cx.|.xC/) {
++					if ($ctx =~ /Wx[^WCE]|[^WCE]xW/) {
+ 						ERROR("need consistent spacing around '$op' $at\n" .
+ 							$hereptr);
+ 					}
+@@ -1484,7 +1547,7 @@ sub process {
+ 					# Ignore email addresses <foo@bar>
+ 					if (!($op eq '<' && $cb =~ /$;\S+\@\S+>/) &&
+ 					    !($op eq '>' && $cb =~ /<\S+\@\S+$;/)) {
+-						ERROR("need spaces around that '$op' $at\n" . $hereptr);
++						ERROR("spaces required around that '$op' $at\n" . $hereptr);
+ 					}
+ 				}
+ 				$off += length($elements[$n + 1]);
+@@ -1514,31 +1577,31 @@ sub process {
+ #need space before brace following if, while, etc
+ 		if (($line =~ /\(.*\){/ && $line !~ /\($Type\){/) ||
+ 		    $line =~ /do{/) {
+-			ERROR("need a space before the open brace '{'\n" . $herecurr);
++			ERROR("space required before the open brace '{'\n" . $herecurr);
+ 		}
+ 
+ # closing brace should have a space following it when it has anything
+ # on the line
+ 		if ($line =~ /}(?!(?:,|;|\)))\S/) {
+-			ERROR("need a space after that close brace '}'\n" . $herecurr);
++			ERROR("space required after that close brace '}'\n" . $herecurr);
+ 		}
+ 
+ # check spacing on square brackets
+ 		if ($line =~ /\[\s/ && $line !~ /\[\s*$/) {
+-			ERROR("no space after that open square bracket '['\n" . $herecurr);
++			ERROR("space prohibited after that open square bracket '['\n" . $herecurr);
+ 		}
+ 		if ($line =~ /\s\]/) {
+-			ERROR("no space before that close square bracket ']'\n" . $herecurr);
++			ERROR("space prohibited before that close square bracket ']'\n" . $herecurr);
+ 		}
+ 
+ # check spacing on paretheses
+ 		if ($line =~ /\(\s/ && $line !~ /\(\s*(?:\\)?$/ &&
+ 		    $line !~ /for\s*\(\s+;/) {
+-			ERROR("no space after that open parenthesis '('\n" . $herecurr);
++			ERROR("space prohibited after that open parenthesis '('\n" . $herecurr);
+ 		}
+ 		if ($line =~ /(\s+)\)/ && $line !~ /^.\s*\)/ &&
+ 		    $line !~ /for\s*\(.*;\s+\)/) {
+-			ERROR("no space before that close parenthesis ')'\n" . $herecurr);
++			ERROR("space prohibited before that close parenthesis ')'\n" . $herecurr);
+ 		}
+ 
+ #goto labels aren't indented, allow a single space however
+@@ -1549,7 +1612,7 @@ sub process {
+ 
+ # Need a space before open parenthesis after if, while etc
+ 		if ($line=~/\b(if|while|for|switch)\(/) {
+-			ERROR("need a space before the open parenthesis '('\n" . $herecurr);
++			ERROR("space required before the open parenthesis '('\n" . $herecurr);
+ 		}
+ 
+ # Check for illegal assignment in if conditional.
+@@ -1562,10 +1625,12 @@ sub process {
+ 
+ 			# Find out what is on the end of the line after the
+ 			# conditional.
+-			substr($s, 0, length($c)) = '';
++			substr($s, 0, length($c), '');
+ 			$s =~ s/\n.*//g;
+ 			$s =~ s/$;//g; 	# Remove any comments
+-			if (length($c) && $s !~ /^\s*({|;|)\s*\\*\s*$/) {
++			if (length($c) && $s !~ /^\s*({|;|)\s*\\*\s*$/ &&
++			    $c !~ /^.\#\s*if/)
++			{
+ 				ERROR("trailing statements should be on next line\n" . $herecurr);
+ 			}
+ 		}
+@@ -1607,7 +1672,7 @@ sub process {
+ 
+ 			# Find out what is on the end of the line after the
+ 			# conditional.
+-			substr($s, 0, length($c)) = '';
++			substr($s, 0, length($c), '');
+ 			$s =~ s/\n.*//g;
+ 
+ 			if ($s =~ /^\s*;/) {
+@@ -1631,7 +1696,7 @@ sub process {
+ 		if ($tree && $rawline =~ m{^.\#\s*include\s*\<asm\/(.*)\.h\>}) {
+ 			my $checkfile = "$root/include/linux/$1.h";
+ 			if (-f $checkfile && $1 ne 'irq.h') {
+-				CHK("Use #include <linux/$1.h> instead of <asm/$1.h>\n" .
++				WARN("Use #include <linux/$1.h> instead of <asm/$1.h>\n" .
+ 					$herecurr);
+ 			}
+ 		}
+@@ -1692,15 +1757,24 @@ sub process {
+ 			if ($#chunks > 0 && $level == 0) {
+ 				my $allowed = 0;
+ 				my $seen = 0;
+-				my $herectx = $here . "\n";;
++				my $herectx = $here . "\n";
+ 				my $ln = $linenr - 1;
+ 				for my $chunk (@chunks) {
+ 					my ($cond, $block) = @{$chunk};
+ 
+-					$herectx .= "$rawlines[$ln]\n[...]\n";
++					# If the condition carries leading newlines, then count those as offsets.
++					my ($whitespace) = ($cond =~ /^((?:\s*\n[+-])*\s*)/s);
++					my $offset = statement_rawlines($whitespace) - 1;
++
++					#print "COND<$cond> whitespace<$whitespace> offset<$offset>\n";
++
++					# We have looked at and allowed this specific line.
++					$suppress_ifbraces{$ln + $offset} = 1;
++
++					$herectx .= "$rawlines[$ln + $offset]\n[...]\n";
+ 					$ln += statement_rawlines($block) - 1;
+ 
+-					substr($block, 0, length($cond)) = '';
++					substr($block, 0, length($cond), '');
+ 
+ 					$seen++ if ($block =~ /^\s*{/);
+ 
+@@ -1721,16 +1795,10 @@ sub process {
+ 				if ($seen && !$allowed) {
+ 					WARN("braces {} are not necessary for any arm of this statement\n" . $herectx);
+ 				}
+-				# Either way we have looked over this whole
+-				# statement and said what needs to be said.
+-				$suppress_ifbraces = $endln;
+ 			}
+ 		}
+-		if ($linenr > $suppress_ifbraces &&
++		if (!defined $suppress_ifbraces{$linenr - 1} &&
+ 					$line =~ /\b(if|while|for|else)\b/) {
+-			my ($level, $endln, @chunks) =
+-				ctx_statement_full($linenr, $realcnt, $-[0]);
+-
+ 			my $allowed = 0;
+ 
+ 			# Check the pre-context.
+@@ -1738,10 +1806,15 @@ sub process {
+ 				#print "APW: ALLOWED: pre<$1>\n";
+ 				$allowed = 1;
+ 			}
++
++			my ($level, $endln, @chunks) =
++				ctx_statement_full($linenr, $realcnt, $-[0]);
++
+ 			# Check the condition.
+ 			my ($cond, $block) = @{$chunks[0]};
++			#print "CHECKING<$linenr> cond<$cond> block<$block>\n";
+ 			if (defined $cond) {
+-				substr($block, 0, length($cond)) = '';
++				substr($block, 0, length($cond), '');
+ 			}
+ 			if (statement_lines($cond) > 1) {
+ 				#print "APW: ALLOWED: cond<$cond>\n";
+@@ -1759,7 +1832,7 @@ sub process {
+ 			if (defined $chunks[1]) {
+ 				my ($cond, $block) = @{$chunks[1]};
+ 				if (defined $cond) {
+-					substr($block, 0, length($cond)) = '';
++					substr($block, 0, length($cond), '');
+ 				}
+ 				if ($block =~ /^\s*\{/) {
+ 					#print "APW: ALLOWED: chunk-1 block<$block>\n";
+@@ -1882,6 +1955,28 @@ sub process {
+ 		if ($line =~ /__FUNCTION__/) {
+ 			WARN("__func__ should be used instead of gcc specific __FUNCTION__\n"  . $herecurr);
+ 		}
++
++# check for semaphores used as mutexes
++		if ($line =~ /\b(DECLARE_MUTEX|init_MUTEX)\s*\(/) {
++			WARN("mutexes are preferred for single holder semaphores\n" . $herecurr);
++		}
++# check for semaphores used as mutexes
++		if ($line =~ /\binit_MUTEX_LOCKED\s*\(/) {
++			WARN("consider using a completion\n" . $herecurr);
++		}
++# recommend strict_strto* over simple_strto*
++		if ($line =~ /\bsimple_(strto.*?)\s*\(/) {
++			WARN("consider using strict_$1 in preference to simple_$1\n" . $herecurr);
++		}
++
++# use of NR_CPUS is usually wrong
++# ignore definitions of NR_CPUS and usage to define arrays as likely right
++		if ($line =~ /\bNR_CPUS\b/ &&
++		    $line !~ /^.#\s*define\s+NR_CPUS\s+/ &&
++		    $line !~ /^.\s*$Declare\s.*\[[^\]]*NR_CPUS[^\]]*\]/)
++		{
++			WARN("usage of NR_CPUS is often wrong - consider using cpu_possible(), num_possible_cpus(), for_each_possible_cpu(), etc\n" . $herecurr);
++		}
+ 	}
+ 
+ 	# If we have no input at all, then there is nothing to report on
