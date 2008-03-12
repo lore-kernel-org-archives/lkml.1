@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYCLUJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbYCLUJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYCLUJN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 16:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbYCLUI7
+	id S1754459AbYCLUJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 16:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYCLUJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 16:08:59 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:18118 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYCLUI6 (ORCPT
+	Wed, 12 Mar 2008 16:09:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:13163 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753284AbYCLUJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 16:08:58 -0400
-X-IronPort-AV: E=McAfee;i="5100,188,5250"; a="1250710"
-Message-ID: <47D83858.4030806@qualcomm.com>
-Date: Wed, 12 Mar 2008 13:08:56 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 12 Mar 2008 16:09:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Sg6jEvUntyRDNxjl+1FfVqP8Z53mszI7bmQ4AwDca53PYjZgca0+rlArnumUpfwkPHl8Mz+kx94vD6ZnV/wkNgLASo+1ZT2ius9CJHo5Q0kYzc/9Xa1oLvbQn0HiiQNpxWXc7VTHDYDMMxJbvO8OwXhvKPyYdb6LFUWe1X/R3Jo=
+Message-ID: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
+Date: Wed, 12 Mar 2008 21:09:04 +0100
+From: "J.C. Pizarro" <jcpiza@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: linux+glibc memory allocator, poor performance
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org
-Subject: Re: boot cgroup questions
-References: <47D73086.2030008@qualcomm.com>	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	<47D7411E.1000009@qualcomm.com>	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	<47D74595.4080100@qualcomm.com>	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>	<20080311235939.1ebee8e3.pj@sgi.com>	<47D81FE1.6030205@qualcomm.com>	<20080312135746.89456f2a.pj@sgi.com>	<47D82AD2.1070108@qualcomm.com> <20080312143253.3dd72c7f.pj@sgi.com>
-In-Reply-To: <20080312143253.3dd72c7f.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Max wrote:
->> I was talking about running on the _cpus_ that belong to the "sets A and B but 
->> not C" and not that a task must belong to more than one cpuset.
-> 
-> This doesn't make sense to me.
-> 
-> If a task is to run on the CPUs in both sets A and B, then it has to be
-> in both those cpusets, which isn't allowed, or in some super set of both
-> A and B (that is, in this example, in the top cpuset), which doesn't
-> restrict the task to just A or B or their union.
-> 
-> I have no idea what distinction you are seeing between what _cpus_ a task
-> can run on, and what cpuset it belongs to.
+On Wed, 12 Mar 2008 19:14:06 +0100, Xose Vazquez Perez wrote:
+> hi,
+>
+> More tests from FreeBSD people <http://people.freebsd.org/~kris/scaling/smp.html>
+>
+> Poor performance with 2.6.24 linux kernel and glibc 2.7 provided by Fedora 8:
+>
+> *Memory allocation performance on FreeBSD and Linux with ebizzy (Mar 2008)*
+> <http://people.freebsd.org/~kris/scaling/ebizzy.html>
+>
+> -thanks-
+>
+> regards,
+> --
+> so much to do, so little time.
 
-Paul, we are in 100% agreement here about the tasks. All I'm saying is that 
-the same exact thing applies to the irqs. Again let me try your example.
+Assume a SMP system that has 8 CPUs. The main problem of requesting
+pages is the BKL (Big Kernel Lock) in this SMP system used for mutual
+exclusion of the shared resource (the memory).
 
-Suppose we have
-	/dev/cpuset/A
-	/dev/cpuset/B
-	/dev/cpuset/C
+To solve this major problem, i propose you freely to allocate 8 local caches
+of (e.g.) 2 MiB each CPU (total 2MiB x 8 CPUs = 16 MiB) acting as
+8 producer buffers for globally many consumer tasks (e.g. >= 20).
 
-Now suppose that for whatever reason I must run task1 on the cpus that belong 
-to sets A and B but not C. The only way to do that with cpusets is
+When the some producer buffer is empty then it does unfrequently BKL to
+allocate another 2 MiB more from the shared resource (the memory).
 
-	/dev/cpuset/X
-         	  |-- A
-	          `-- B
-	/dev/cpuset/C
+In the reverse, it's simple, return back the unused pages to the local buffer
+of the producer, and when this full then to do BKL too to unallocate its half
+to the shared resource (the memory).
 
-i.e. create parent cpuset X and assign task1 into cpuset X.
-Of course if A and B are not cpu_exclusive then X does not have to be their 
-parent.
-
-Makes sense so far ?
-
-Now the same exact thing can be said about the irqs. If I need to assign irq1 
-to the cpus in sets A and B but not C I have to create set X that is the union 
-of A and B, and assign irq1 to the set X.
-
-This is what I meant by "deeper hierarchies" in the earlier emails.
-
-Did I do a better job explaining this time :) ?
-
-Max
-
-
-
-
-
-
+   Sincerely, J.C.Pizarro
