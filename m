@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbYCLIvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbYCLIwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbYCLIvb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 04:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYCLIvX
+	id S1751937AbYCLIwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 04:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYCLIwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 04:51:23 -0400
-Received: from mga09.intel.com ([134.134.136.24]:37348 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbYCLIvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 04:51:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,486,1199692800"; 
-   d="scan'208";a="305544589"
-Subject: Re: 2.6.25-rc4-git3: Reported regressions from 2.6.24
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-In-Reply-To: <200803100132.57160.rjw@sisk.pl>
-References: <200803100132.57160.rjw@sisk.pl>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 12 Mar 2008 16:48:15 +0800
-Message-Id: <1205311695.3215.26.camel@ymzhang>
+	Wed, 12 Mar 2008 04:52:11 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1031 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751770AbYCLIwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 04:52:09 -0400
+Date: Wed, 12 Mar 2008 09:51:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: akpm@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: mm-commits@vger.kernel.org, dilinger@queued.net, adaplas@pol.net,
+       dilinger@debian.org, jordan.crouse@amd.com, rjw@sisk.pl
+Subject: Re: + pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspend-vt-switch.patch added to -mm tree
+Message-ID: <20080312085149.GA3993@ucw.cz>
+References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-10 at 01:32 +0100, Rafael J. Wysocki wrote:
-> [Due to the lack of time for reviewing all of the email threads related to the
-> regressions marked as "unresolved" below, I might have missed some patches
-> fixing them.  If you are involved in debugging/fixing any of them, please let
-> me know if I should update the list.  Thanks!]
+Hi!
+
+> Subject: PM/gxfb: add hook to PM console layer that allows disabling of suspend VT switch
+> From: Andres Salomon <dilinger@queued.net>
 > 
-> This message contains a list of some regressions from 2.6.24 reported since
-> 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
-> of.  If any of them have been fixed already, please let me know.
+> Prior to suspend, we allocate and switch to a new VT; after suspend, we switch
+> back to the original VT.  This can be slow, and is completely unnecessary if
+> the framebuffer we're using can restore video properly.
 > 
-> If you know of any other unresolved regressions from 2.6.24, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
+> This adds a hook that allows drivers to select whether or not to do this vt
+> switch, and changes the gxfb driver to call this hook.  It also adds a module
+> param to gxfb to allow controlling of the vt switch (defaulting to no switch).
 > 
-> 
-> Listed regressions statistics:
-> 
->   Date          Total  Pending  Unresolved
->   ----------------------------------------
->   2008-03-10      138       66          47
->   2008-03-03      115       65          49
->   2008-02-25       90       51          39
->   2008-02-17       61       45          37
-> 
-> 
-> Unresolved regressions
-> ----------------------
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
-> Subject		: 2.6.25-rc1: volanoMark 45% regression
-> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> Date		: 2008-02-13 10:30
-> References	: http://lkml.org/lkml/2008/2/13/128
-> Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> 		  Balbir Singh <balbir@linux.vnet.ibm.com>
-Peter reverted the load balance patch and 2.6.25-rc4 accepted the reverting patch.
+> (Note: I'm not convinced that console_sem is the best way to protect this, but
+> we should probably have some form of locking..)
 
-With kernel 2.6.25-rc5, volanoMark has about 6% regression on my 16-core tigerton. If I apply
-patch http://lkml.org/lkml/2008/2/20/83 which fixes the tbench regression issue, volanoMark
-regression becomes about 4%.
+I guess this is okay for now, but we probably want to make it more
+elaborate in future.
 
-I tried to bisect down which patch caused the last 4%, but found it's very hard. One thing
-is many patches depend on the reverted patches. The other thing is I find the testing result
-isn't stable since 2.6.25-rc1. The result variation might be more than 15% sometimes. I ran the
-testing against the same kernel for many times to get the best result.
+Console switch is there to make sure kernel (not X) owns the graphical
+hardware.
 
-I also tried to tune some sched_XXX parameters under /proc/sys/kernel, but didn't get better result
-than the default configuration.
+That is unneccessary for gxfb since X never owns graphics hardware,
+good. (I do not see why it is optional, then. Do you really want to
+see tty1?)
 
-Above regression exists on the 2.93GHz 16-core tigerton. With the less powerful 2.40GHz 16-core
-tigerton, the regression is less than 1%, but result is not stable and results of many runs might have
-about 15% variation.
+Now, question is what happens with two graphics cards, one of them
+driven by X. Fortunately that is uncommon.
 
-On 8-core stoakley, the regression is about 1%.
+Also, it would be nice to make the logic the other way around. Move vt
+switching to the drivers that need it because X can be expected to own
+the hardware.
 
-Sorry for the late update.
-
--yanmin
-
-
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
