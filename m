@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbYCLBCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbYCLBDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbYCLBCY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 21:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYCLBCO
+	id S1752949AbYCLBDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 21:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYCLBDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 21:02:14 -0400
-Received: from kumera.dghda.com ([80.68.90.171]:2757 "EHLO kumera.dghda.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbYCLBCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 21:02:12 -0400
-From: "Duane Griffin" <duaneg@dghda.com>
-Date: Wed, 12 Mar 2008 01:02:05 +0000
-To: Jan Kara <jack@suse.cz>
-Cc: Duane Griffin <duaneg@dghda.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
-       sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
-Subject: Re: [RFC, PATCH 4/6] jbd: refactor nested journal log recovery
-	loop into separate functions
-Message-ID: <20080312010205.GA14667@dastardly.plus.com>
-References: <a047dfbd7855d5f484ae8a3434f6a073302505be.1204685366.git.duaneg@dghda.com> <8644b32ddec999bbc1da0ac55ad7b66d0b8176de.1204685366.git.duaneg@dghda.com> <20080311143550.GB6544@atrey.karlin.mff.cuni.cz>
+	Tue, 11 Mar 2008 21:03:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:38506 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbYCLBDq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 21:03:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=LWrhVVRlNGty+4kgSumb2joq62IlczSPVdiquhwImlnpbPDORIppA+VOARv/DtsLNGsap9n1AV5u4gci57KlSlLKKwp3JMPcZN1CpO6nP3qmFE7jkJ8LpsGeOcSD/FDxWo8CpRISojsHOmcESZkoi1n0w3UHuWpWBN+NN2DlRsY=
+Date: Wed, 12 Mar 2008 09:09:33 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>,
+       paulmck@linux.vnet.ibm.com
+Subject: [PATCH -mm] do not check condition twice in WARN_ON_SECS
+Message-ID: <20080312010933.GA2957@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080311143550.GB6544@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 03:35:50PM +0100, Jan Kara wrote:
->   Hmm, if I read your patch correctly, previously we aborted journal
-> replay when we found a block with unknown block magic but now we
-> continue replaying. Why have you done such change? And similarly when
-> some error happened when parsing revoke records block...
+Don't check condition twice, change WARN_ON(condition) to WARN_ON(1)
+Thanks Marcin Slusarz <marcin.slusarz@gmail.com> for pointing out
 
-You are right, that was an error on my part. Thanks for your careful
-review. Please find below an incremental patch. I'll roll this into the
-main patch before posting the next version.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-Cheers,
-Duane.
+---
+include/asm-generic/bug.h |    3 ++-
+1 file changed, 2 insertions(+), 1 deletion(-)
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
-
-diff --git a/fs/jbd/recovery.c b/fs/jbd/recovery.c
-index 453c5fe..34db55a 100644
---- a/fs/jbd/recovery.c
-+++ b/fs/jbd/recovery.c
-@@ -673,16 +673,22 @@ static int do_one_pass(journal_t *journal,
- 		case JFS_REVOKE_BLOCK:
- 			/* If we aren't in the REVOKE pass, then we can
- 			 * just skip over this block. */
--			if (pass == PASS_REVOKE) {
--				err = scan_revoke_records(
--					journal, bh, next_commit_ID, info);
-+			if (pass != PASS_REVOKE)
-+				break;
-+
-+			err = scan_revoke_records(journal, bh,
-+						  next_commit_ID, info);
-+			if (err) {
-+				brelse(bh);
-+				goto failed;
- 			}
- 			break;
+diff -upr linux/include/asm-generic/bug.h linux.new/include/asm-generic/bug.h
+--- linux/include/asm-generic/bug.h	2008-03-12 08:45:08.000000000 +0800
++++ linux.new/include/asm-generic/bug.h	2008-03-12 09:04:07.000000000 +0800
+@@ -80,7 +80,8 @@ extern void warn_on_slowpath(const char 
+ 	int __ret_warn_on = !!(condition);			\
+ 	if (unlikely(__ret_warn_on))				\
+ 		if (__ratelimit(secs * HZ, 1))			\
+-			WARN_ON(condition);			\
++			WARN_ON(1);				\
++	unlikely(__ret_warn_on);				\
+ })
  
- 		default:
- 			jbd_debug(3, "Unrecognised magic %d, end of scan.\n",
- 				  blocktype);
--			break;
-+			brelse(bh);
-+			goto done;
- 		}
- 
- 		brelse(bh);
-@@ -695,6 +701,7 @@ static int do_one_pass(journal_t *journal,
- 			goto failed;
- 	}
- 
-+done:
- 	/*
- 	 * We broke out of the log scan loop: either we came to the
- 	 * known end of the log or we found an unexpected block in the
+ #ifdef CONFIG_SMP
