@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbYCLDq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbYCLDtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbYCLDq2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Mar 2008 23:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYCLDqV
+	id S1753399AbYCLDtS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Mar 2008 23:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYCLDtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 23:46:21 -0400
-Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:47384 "HELO
-	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751518AbYCLDqU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 23:46:20 -0400
-X-Greylist: delayed 317 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Mar 2008 23:46:20 EDT
-X-Yahoo-Newman-Id: 264811.25102.bm@omp404.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Th4rmbgDGjv6DtWwaobF4dB72D765COWUe+zIVwYysZ88ef96mHBisCcJdIdQsVy/frdCwGyfXkY7+3Drwu6ISlyQjCLT22FOlMBy2D/zL4psgbmEwE5sXxlUVownsvA186n/0s4OlP6U+4c+y+arLTuLWEmArcLa7hq7PaiDKg=  ;
-X-YMail-OSG: c6CUm8cVM1mI_NTkr9ZUKS47LyWVa5CEYICbmRMbt16TZkck
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] genhd must_check warning fix
-Date: Wed, 12 Mar 2008 14:40:26 +1100
-User-Agent: KMail/1.9.5
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20080312001317.D68A526F991@magilla.localdomain> <47D74D0E.8090308@garzik.org>
-In-Reply-To: <47D74D0E.8090308@garzik.org>
+	Tue, 11 Mar 2008 23:49:07 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:56070 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751478AbYCLDtE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Mar 2008 23:49:04 -0400
+Message-ID: <47D7529C.5070707@linux.vnet.ibm.com>
+Date: Wed, 12 Mar 2008 09:18:44 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803121440.26356.nickpiggin@yahoo.com.au>
+To: Hugh Dickins <hugh@veritas.com>
+CC: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs
+ (v2)
+References: <20080311061836.6664.5072.sendpatchset@localhost.localdomain> <47D63E9D.70500@openvz.org> <47D63FB1.7040502@linux.vnet.ibm.com> <47D6443D.9000904@openvz.org> <47D66865.1080508@linux.vnet.ibm.com> <Pine.LNX.4.64.0803111256110.18261@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0803111256110.18261@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 14:25, Jeff Garzik wrote:
-> Roland McGrath wrote:
-> > Fixes:
-> >
-> > 	block/genhd.c:361: warning: ignoring return value of ‘class_register’,
-> > declared with attribute warn_unused_result
-> >
-> > Signed-off-by: Roland McGrath <roland@redhat.com>
-> > ---
-> >  block/genhd.c |    4 +++-
-> >  1 files changed, 3 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/block/genhd.c b/block/genhd.c
-> > index c44527d..00da521 100644
-> > --- a/block/genhd.c
-> > +++ b/block/genhd.c
-> > @@ -360,7 +360,9 @@ static struct kobject *base_probe(dev_t devt, int
-> > *part, void *data)
-> >
-> >  static int __init genhd_device_init(void)
-> >  {
-> > -	class_register(&block_class);
-> > +	int error = class_register(&block_class);
-> > +	if (unlikely(error))
-> > +		return error;
-> >  	bdev_map = kobj_map_init(base_probe, &block_class_lock);
-> >  	blk_dev_init();
->
-> ACK
->
-> I was silly and simply tuned out this warning, assuming [wrongly] that
-> it was difficult to fix like the fs/partitions.c warning.
->
-> Shows how "helpful" those warnings are...
+Hugh Dickins wrote:
+> On Tue, 11 Mar 2008, Balbir Singh wrote:
+>> On my 64 bit powerpc system (structure size could be different on other systems)
+>>
+>> 1. sizeof page_cgroup is 40 bytes
+>>    which means kmalloc will allocate 64 bytes
+>> 2. With 4K pagesize SLAB with HWCACHE_ALIGN, 59 objects are packed per slab
+>> 3. With SLUB the value is 102 per slab
+> 
+> I expect you got those numbers with 2.6.25-rc4?  Towards the end of -rc5
+> there's a patch from Nick to make SLUB's treatment of HWCACHE_ALIGN the
+> same as SLAB's, so I expect you'd be back to a similar poor density with
+> SLUB too.  (But I'm replying without actually testing it out myself.)
+> 
 
-I don't see why? If the warning wasn't there, then Roland probably
-wouldn't have noticed. So to me it shows that the warning actually
-is helpful (without "") in this case.
+You are right, these numbers are against -rc4 and I do see HWCACHE_ALIGN code
+for SLUB in the latest kernel -git tree
 
+> I think you'd need a strong reason to choose HWCACHE_ALIGN for these.
+> 
+> Consider: the (normal configuration) x86_64 struct page size was 56
+> bytes for a long time (and still is without MEM_RES_CTLR), but we've
+> never inserted padding to make that a round 64 bytes (and they would
+> benefit additionally from some simpler arithmetic, not the case with
+> page_cgroups).  Though it's good to avoid unnecessary sharing and
+> multiple cacheline accesses, it's not so good as to justify almost
+> doubling the size of a very very common structure.  I think.
+> 
+
+Very good point. I suppose an overhead proportional to the memory on the system
+is too much to digest. I think struct page is a good example for page_cgroup to
+follow.
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
