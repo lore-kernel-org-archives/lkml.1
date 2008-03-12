@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYCLRjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYCLRk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbYCLRjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbYCLRjN
+	id S1754816AbYCLRk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYCLRkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:39:13 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:49797 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750968AbYCLRjM (ORCPT
+	Wed, 12 Mar 2008 13:40:14 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38696
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbYCLRkN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:39:12 -0400
-X-Sasl-enc: Jzp3vOPhkKNNGUEty8x/hb4yJ1cSQiVX2UL+GAIOUhHd 1205343550
-Date: Wed, 12 Mar 2008 14:39:08 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080312173908.GA30864@khazad-dum.debian.net>
-References: <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk> <47CDBE11.4010900@gmail.com> <20080312125912.GM17940@kernel.dk> <20080312131737.GA21290@khazad-dum.debian.net> <20080312132419.GN17940@kernel.dk> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080312135521.GE8141@ics.muni.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 12 Mar 2008 13:40:13 -0400
+Subject: Re: + n_tty-loss-of-sync-following-a-buffer-overflow.patch added
+	to -mm tree
+From: Paul Fulghum <paulkf@microgate.com>
+To: rupesh.sugathan@gmail.com
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1205339539.8873.14.camel@estonia>
+References: <200803120455.m2C4t4Aw010881@imap1.linux-foundation.org>
+	 <20080312102729.58956d2c@the-village.bc.nu>
+	 <47D7F531.2070400@microgate.com>  <1205339539.8873.14.camel@estonia>
+Content-Type: text/plain
+Date: Wed, 12 Mar 2008 12:39:50 -0500
+Message-Id: <1205343590.4094.17.camel@x2.microgate.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
-> On Wed, Mar 12, 2008 at 10:35:29AM -0300, Henrique de Moraes Holschuh wrote:
-> > You shouldn't need to do anything other than teach userspace to respond to
-> > them, as they generate the proper KEY_* events.  If you are giving the AML
-> > _OSI(Linux), at least...
-> > 
-> > But maybe looking at the keyboard output in console mode, to make triple
-> > sure the events ARE being sent over the KDC as they should, would be in
-> > order?
-> 
-> so, do I understand correctly that volume keys have been controlled by ACPI
-> and seemed to work independently on SW and now (exactly since when?) are
-> passed complety to the user space as key codes?
+On Wed, 2008-03-12 at 09:32 -0700, Rupesh Sugathan wrote:
+> The max line size from sender is 100 bytes. The read call waits for a
+> maximum of 200 bytes.
 
-Yes, since the first *61 model.  And field-upgradeable firmware revisons
-have a say on how this thing works, since the entire KDC is software in a
-Lenovo ThinkPad (it is just a small part of the EC firmware, that comes with
-the BIOS upgrades).
+OK, I understand what is happening.
 
-I have some long email sitting on my draft folders about how to restore full
-sanity to thinkpad mixer behaviour on Linux, but I have to cool down for a
-few days before I revise it and send it.
+Multiple lines are received while the N_TTY buffer is
+full which increments canon_data multiple time without
+setting multiple bits in read_flags. Essentially the
+same bit in read_flags is set over and over.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+When read_chan starts returning data, canon_data is
+decremented once for each bit in read_flags which
+leaves canon_data > 0 when there is no data to be read.
+
+Even for the case of a single NL when N_TTY buffer is
+full, the read_flag bit is set for tty->read_head when
+that slot already contains data (same as tty->read_tail).
+
+So the current code is wrong for the buffer full case.
+
+What I suggest is the following patch for processing NL
+in canonical mode.
+
+If buffer full and previous character is not NL then
+overwrite that char with NL truncating that line so
+it is not prepended to subsequent data or left waiting
+without a final NL.
+
+If buffer full and previous character is NL (read_flag set)
+then do nothing so canon_data remains in sync with read_flags.
+
+Rupesh, can you try this out please?
+Also, none of this answers why your N_TTY buffer is overflowing
+it simply keeps things sane when it happens.
+
+--- a/drivers/char/n_tty.c	2008-01-24 16:58:37.000000000 -0600
++++ b/drivers/char/n_tty.c	2008-03-12 12:16:06.000000000 -0500
+@@ -839,10 +839,24 @@ send_signal:
+ 
+ 		handle_newline:
+ 			spin_lock_irqsave(&tty->read_lock, flags);
+-			set_bit(tty->read_head, tty->read_flags);
+-			put_tty_queue_nolock(c, tty);
+-			tty->canon_head = tty->read_head;
+-			tty->canon_data++;
++			if (tty->read_cnt == N_TTY_BUF_SIZE) {
++				int prev_head;
++				if (tty->read_head)
++					prev_head = tty->read_head - 1;
++				else
++					prev_head = N_TTY_BUF_SIZE - 1;
++				if (!test_bit(prev_head, tty->read_flags)) {
++					/* overwrite previous non NL char */
++					tty->read_cnt--;
++					tty->read_head = prev_head;
++				}
++			}
++			if (tty->read_cnt < N_TTY_BUF_SIZE) {
++				set_bit(tty->read_head, tty->read_flags);
++				put_tty_queue_nolock(c, tty);
++				tty->canon_head = tty->read_head;
++				tty->canon_data++;
++			}
+ 			spin_unlock_irqrestore(&tty->read_lock, flags);
+ 			kill_fasync(&tty->fasync, SIGIO, POLL_IN);
+ 			if (waitqueue_active(&tty->read_wait))
+
+
