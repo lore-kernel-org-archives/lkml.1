@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYCLOlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYCLOpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbYCLOlk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 10:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYCLOlc
+	id S1753254AbYCLOpT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 10:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYCLOpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 10:41:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:39619 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbYCLOlb (ORCPT
+	Wed, 12 Mar 2008 10:45:07 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:18721 "EHLO
+	outbound7-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751471AbYCLOpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 10:41:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XbKVB8xdMWFpj00EOWzXbXrIQ/cAs5SZ/7Dyal0OCer3MVUchtWV/4ysQR5fGXnVYfXaI3oQWxUj9Bi/FSC9R6dNt1Tns45qZBCm17V/2vRp3MynclOvOX6UYCIKDALy0a9NxmdlMLVEJWO7J6UZ7IP81NPoyTdgNiZAm31oKoA=
-Message-ID: <170fa0d20803120741n1f9f89ban27b18b4b671d48dd@mail.gmail.com>
-Date: Wed, 12 Mar 2008 10:41:30 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Daniel Phillips" <phillips@phunq.net>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Cc: "Willy Tarreau" <w@1wt.eu>, "Chris Friesen" <cfriesen@nortel.com>,
-       "Lars Marowsky-Bree" <lmb@suse.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Grzegorz Kulewski" <kangur@polcom.net>, linux-kernel@vger.kernel.org,
-       nbd-general@lists.sourceforge.net
-In-Reply-To: <200803120117.57644.phillips@phunq.net>
+	Wed, 12 Mar 2008 10:45:05 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0JXMGYF-03-K43-01
+Date: Wed, 12 Mar 2008 08:45:06 -0600
+From: Jordan Crouse <jordan.crouse@amd.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: akpm@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       mm-commits@vger.kernel.org, dilinger@queued.net, adaplas@pol.net,
+       dilinger@debian.org, rjw@sisk.pl
+Subject: Re: +
+	pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspend-vt-switch.patch
+	added to -mm tree
+Message-ID: <20080312144506.GE1018@cosmic.amd.com>
+References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org> <20080312085149.GA3993@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200803092346.17556.phillips@phunq.net>
-	 <200803111256.51267.phillips@phunq.net> <20080311205340.GJ8953@1wt.eu>
-	 <200803120117.57644.phillips@phunq.net>
+In-Reply-To: <20080312085149.GA3993@ucw.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 12 Mar 2008 14:43:51.0832 (UTC) FILETIME=[7D3A6180:01C8844F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/08, Daniel Phillips <phillips@phunq.net> wrote:
-> On Tuesday 11 March 2008 13:53, Willy Tarreau wrote:
->  > BTW, I would say that IMHO nothing here makes RAID impossible to use :-)
->  > Just wire 2 of these beasts to a central server with 10 Gbps NICs and
->  > you have a nice server :-)
->
->
-> Right.  See ddraid.  It is in the pipeline, but everything takes time.
->  We also need to reroll NBD complete with deadlock fixes before I feel
->  good about that.
+On 12/03/08 09:51 +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > Subject: PM/gxfb: add hook to PM console layer that allows disabling of suspend VT switch
+> > From: Andres Salomon <dilinger@queued.net>
+> > 
+> > Prior to suspend, we allocate and switch to a new VT; after suspend, we switch
+> > back to the original VT.  This can be slow, and is completely unnecessary if
+> > the framebuffer we're using can restore video properly.
+> > 
+> > This adds a hook that allows drivers to select whether or not to do this vt
+> > switch, and changes the gxfb driver to call this hook.  It also adds a module
+> > param to gxfb to allow controlling of the vt switch (defaulting to no switch).
+> > 
+> > (Note: I'm not convinced that console_sem is the best way to protect this, but
+> > we should probably have some form of locking..)
+> 
+> I guess this is okay for now, but we probably want to make it more
+> elaborate in future.
+> 
+> Console switch is there to make sure kernel (not X) owns the graphical
+> hardware.
+> 
+> That is unneccessary for gxfb since X never owns graphics hardware,
+> good. (I do not see why it is optional, then. Do you really want to
+> see tty1?)
 
-You've eluded to NBD needing deadlock fixes quite a few times in the
-past.  I've even had some discussions with you on where you see NBD
-lacking (userspace nbd-server doesn't lock memory or set PF_MEMALLOC,
-etc).  But I've lost track of what changes you have in mind for NBD.
-Are you talking about a complete re-write or do you have specific
-patches that will salvage the existing NBD client and/or server?  Has
-this work already been done and you just need to dust it off?
+Its the dream for the lxfb and gxfb to own the graphics hardware
+completely (at least, thats what Jim Gettys keeps pounding in to my
+brain), but we're not quite there yet.  What we have here are 
+framebuffer drivers that are intelligent enough to save and restore the
+state of the graphics engine, which is still a lot better then most other
+drivers.
 
-As an aside, using a kernel with the new per bdi dirty page accounting
-I've not been able to hit any deadlock scenarios with NBD.  Am I not
-trying hard enough?  Or are they now mythical?  If real, do you have a
-reproducible scenario that will cause NBD to deadlock?
+> Now, question is what happens with two graphics cards, one of them
+> driven by X. Fortunately that is uncommon.
 
-I'm not interested in swap over NBD (e.g. network memory reserves?)
-because in practice I've found that the VM doesn't allow non-swap NBD
-use-cases to actually need that "netvm" sophistication... any other
-workload that deadlocks NBD would interesting.
+We would be screwed.  But since the Geode has built in graphics logic,
+it doesn't make much sense to use an external card, so we'll mostly
+avoid this problem.  But even if it happens, we'll have the VT switch
+available in a pinch.
 
-thanks,
-Mike
+> Also, it would be nice to make the logic the other way around. Move vt
+> switching to the drivers that need it because X can be expected to own
+> the hardware.
+
+Conservation of energy.  Its easier to make 3 or 4 drivers opt out of 
+VT switching, rather then hacking 64 other drivers to opt in.  Hopefully
+more people will fix their drivers and make this statement false.. :)
+
+Jordan
+
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
