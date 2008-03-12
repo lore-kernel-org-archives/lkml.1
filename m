@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYCLXHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbYCLXIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYCLXHZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 19:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYCLXHM
+	id S1753717AbYCLXIK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 19:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYCLXH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 19:07:12 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:58076 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751385AbYCLXHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 19:07:11 -0400
-Date: Thu, 13 Mar 2008 00:07:04 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Chr <chunkeey@web.de>
-cc: Samuel Tardieu <sam@rfc1149.net>,
-       device-mapper development <dm-devel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
-In-Reply-To: <200803122053.13265.chunkeey@web.de>
-Message-ID: <alpine.DEB.1.00.0803130003110.5593@sheep.housecafe.de>
-References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080309213441.GQ155407@sgi.com> <2008-03-12-19-03-51+trackit+sam@rfc1149.net> <200803122053.13265.chunkeey@web.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 12 Mar 2008 19:07:57 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:28958 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752139AbYCLXH4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 19:07:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PFBuzGKbVm5dOqnFVS3hPYP1j1O7n6OJs4e1akOBFjLVXkYsIkpWJHSlYq6pUSEsKlTGEiWx7qjFo5vKwv6yZpryyx0IqJI3tvoCCdW7XLjc+aSSP1N6dJVgk3M8+YKgjnVFGJixVWB4ezoIxsj1VzQBU2Ob99QXadEtGmqdEos=  ;
+X-YMail-OSG: T6IYeRQVM1nb4m3hFWFkUP14j7kMYXal_9wRbUp5edzKun31hEQTHISLCOkAJn_cyo8dgy6eXg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 3/3] gpiolib: add __must_check attribute to the gpiochip_add function
+Date: Wed, 12 Mar 2008 15:07:53 -0800
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20080311174129.GC12397@localhost.localdomain> <200803111402.38671.david-b@pacbell.net> <20080312123913.GA13266@localhost.localdomain>
+In-Reply-To: <20080312123913.GA13266@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803121607.54348.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Chr wrote:
-> http://lkml.org/lkml/2008/3/11/377
-> (BTW: I'm still bisecting it... can somebody please confirm that 2.6.24-git17
-> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.24-git17.bz2
-> was the _last_ "good" one?)
+On Wednesday 12 March 2008, Anton Vorontsov wrote:
+> On Tue, Mar 11, 2008 at 01:02:38PM -0800, David Brownell wrote:
+> > On Tuesday 11 March 2008, Anton Vorontsov wrote:
+> > > 
+> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > 
+> > I'm curious why you want to change this.   When it fails, a
+> > KERN_ERR message is emitted ...
+> 
+> Ah, I missed that the gpiochip_add() issuing pr_err(), not pr_debug().
+> 
+> So, please just ignore that patch.
 
-Hm, -git17 locked up hard when trying to access the device mapper
-(just like -rc1), not even sysrq was usable any more. Sadly, 
-nothing was logged to the disks/network. Will try earlier snapshots 
-then. And yes, this resyncing of the md devices after an unclean shutdown 
-is a real pita right now...
+OK ...
 
-Thanks for reporting!
-Christian.
--- 
-BOFH excuse #197:
+> Though, printing errors from the 
+> generic functions is confusing, you never know when your code or the
+> function you call should print the error. And usually generic functions
+> tend to be silent...
 
-I'm sorry a pentium won't do, you need an SGI to connect with us.
+The logic in this case was that I don't really expect platform
+setup code to check this stuff any more than it checks IRQ setup.
+But, as the comment says, if platform setup code goofs, it can
+cause un-bootable systems.  Ergo the pr_err().
+
+It could be argued either way; that's just what I did, way back
+when I noticed the issue.
+
+- Dave
