@@ -1,157 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbYCLIS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbYCLIZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbYCLIS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 04:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYCLISS
+	id S1751899AbYCLIZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 04:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYCLIZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 04:18:18 -0400
-Received: from phunq.net ([64.81.85.152]:51315 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750972AbYCLISO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 04:18:14 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Wed, 12 Mar 2008 00:17:56 -0800
-User-Agent: KMail/1.9.5
-Cc: Chris Friesen <cfriesen@nortel.com>, Lars Marowsky-Bree <lmb@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803111256.51267.phillips@phunq.net> <20080311205340.GJ8953@1wt.eu>
-In-Reply-To: <20080311205340.GJ8953@1wt.eu>
+	Wed, 12 Mar 2008 04:25:46 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:56542 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750800AbYCLIZp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 04:25:45 -0400
+Date: Wed, 12 Mar 2008 13:55:32 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH 03/17] sched: rt-group: full hierarchy support for
+	the rt groups
+Message-ID: <20080312082532.GB3784@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080309170850.256853000@chello.nl> <20080309170926.354453000@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803120117.57644.phillips@phunq.net>
+In-Reply-To: <20080309170926.354453000@chello.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 March 2008 13:53, Willy Tarreau wrote:
-> On Tue, Mar 11, 2008 at 11:56:50AM -0800, Daniel Phillips wrote:
-> > On Tuesday 11 March 2008 10:26, Chris Friesen wrote:
-> > > I have experienced many 2.6 crashes due to software flaws.  Hung 
-> > > processes leading to watchdog timeouts, bad kernel pointers, kernel 
-> > > deadlock, etc.
-> > > 
-> > > When designing for reliable embedded systems it's not enough to handwave 
-> > > away the possibility of software flaws.
-> > 
-> > Indeed.  You fix them.  Which 2.6 kernel version failed for you, what
-> > made it fail, and does the latest version still fail?
+On Sun, Mar 09, 2008 at 06:08:53PM +0100, Peter Zijlstra wrote:
+> Update the -rt bits to support the full hierarchy support started by Dhaval.
 > 
-> Daniel, you're not objective. Simply look at LKML reports. People even
-> report failures with the stable branch, and that's quite expected when
-> more than 5000 patches are merged in two weeks. The question could even
-> be returned to you: what kernel are you using to keep 204 days of uptime
-> doing all that you describe ? Maybe 2.6.16.x would be fine, but even then,
-> a lot of security issues have been fixed since the last 204 days (most of
-> which would require a planned reboot), and also a number of normal bugs,
-> some of which may cause unexpected downtime.
 
-So we have a flock of people arguing that you can't trust Linux.  Well
-maybe there are situations were you can't, but what can you trust?
-Disk firmware?  Bios?  Big maybes everywhere.  In my experience, Linux
-is very reliable.  I think Linus, Andrew and others care an awful lot
-about that and go to considerable lengths to make it true.  Got a list
-of Linux kernel flaws that bring down a system?  Tell me and I will not
-use that version to run a transaction processing system, or I will fix
-them or get them fixed.
+Thanks for the effort. Just a very minor comment. I will try these out
+and give more feedback.
 
-But please do not tell me that Linux is too unreliable to run a
-transaction processing system.  If Linux can't do it, then what can?
-
-By the way, the huge ramdisk that Violin ships runs Linux inside, to
-manage the raided, hotswappable memory modules.  (Even cooler: they
-run Linux on a soft processor implemented on a big FPGA.)  Does anybody
-think that they did not test to make sure Linux does not compromise
-their MTBF in any way?
-
-In practice, for the week I was able to test the box remotely and the
-10 days I had it in my hands, the thing was solid as a rock.  Good
-hardware engineering and a nice kernel I say.
-
-> > If Linux is not reliable then we are doomed and I do not care about
-> > whether my ramback fails because I will just slit my wrists anyway.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/sched.c |   52 ++++++++++++++++++++++++++++++----------------------
+>  1 file changed, 30 insertions(+), 22 deletions(-)
 > 
-> No, I've looked at the violin-memory appliance, and I understand better
-> your goal. Trying to get a secure and reliable generic kernel is a lost
-> game. However, building a very specific kernel for an appliance is often
-> quite achievable, because you know exactly the hardware, usage patterns,
-> etc... which help you stabilize it.
+> Index: linux-2.6-2/kernel/sched.c
+> ===================================================================
+> --- linux-2.6-2.orig/kernel/sched.c
+> +++ linux-2.6-2/kernel/sched.c
+> @@ -7302,10 +7302,12 @@ static void init_tg_cfs_entry(struct tas
+>  #endif
+> 
+>  #ifdef CONFIG_RT_GROUP_SCHED
+> -static void init_tg_rt_entry(struct rq *rq, struct task_group *tg,
+> -		struct rt_rq *rt_rq, struct sched_rt_entity *rt_se,
+> -		int cpu, int add)
+> +static void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
+> +		struct sched_rt_entity *rt_se, int cpu, int add,
+> +		struct sched_rt_entity *parent)
+>  {
+> +	struct rq *rq = cpu_rq(cpu);
+> +
+>  	tg->rt_rq[cpu] = rt_rq;
+>  	init_rt_rq(rt_rq, rq);
+>  	rt_rq->tg = tg;
+> @@ -7318,6 +7320,11 @@ static void init_tg_rt_entry(struct rq *
+>  	if (!rt_se)
+>  		return;
+> 
+> +	if (!parent)
+> +		rt_se->rt_rq = &rq->rt;
+> +	else
+> +		rt_se->rt_rq = parent->my_q;
+> +
+>  	rt_se->rt_rq = &rq->rt;
+>  	rt_se->my_q = rt_rq;
+>  	rt_se->parent = NULL;
+> @@ -7380,8 +7387,7 @@ void __init sched_init(void)
+>  		 * We achieve this by letting init_task_group's tasks sit
+>  		 * directly in rq->cfs (i.e init_task_group->se[] = NULL).
+>  		 */
+> -		init_tg_cfs_entry(&init_task_group, &rq->cfs,
+> -							NULL, i, 1, NULL);
+> +		init_tg_cfs_entry(&init_task_group, &rq->cfs, NULL, i, 1, NULL);
 
-Sure.  Leaving out dodgy stuff like hald, other bits I could mention,
-is probably a good idea.  Scary thing is, thinks like hald are actually
-being run on servers but that is another issue entirely.
+Shouldn't this go in the previous patch?
 
-It wasn't too long ago that NFS client was in the dodgy category, with
-oops, lockups, whathaveyou.  It is pretty solid now, but it takes a
-while for the bad experiences to fade from memory.  On the other hand,
-knfsd has never been the slightest bit of a problem.  Helpful
-suggestion: don't run NFS client on your transaction processing unit.
-It may well be solid, but who needs to find out experimentally?  Might
-as well toss gamin, dbus and udev while you are at it, for a further
-marginal reliability increase.  Oh, and alsa, no offense to the great
-work there, but it just does not belong on a server.  Definitely do
-not boot into X (I know I should not have to say that, but...)
+>  #elif defined CONFIG_USER_SCHED
+>  		/*
+>  		 * In case of task-groups formed thr' the user id of tasks,
+> @@ -7394,7 +7400,7 @@ void __init sched_init(void)
+>  		 * (init_cfs_rq) and having one entity represent this group of
+>  		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
+>  		 */
+> -		init_tg_cfs_entry(rq, &init_task_group,
+> +		init_tg_cfs_entry(&init_task_group,
+>  				&per_cpu(init_cfs_rq, i),
+>  				&per_cpu(init_sched_entity, i), i, 1, NULL);
+> 
 
-> I think people who don't agree with 
-> you are simply thinking about a generic file server. While I would not
-> like my company's NFS exports to rely on such a technology for the same
-> concerns as exposed here, I would love to have such a beast for logs
-> analysis, build farms, or various computations which require more than
-> an average PC's RAM, and would benefit from the data to remain consistent
-> across planned downtime.
+Shouldn't this go in the previous patch? (my mistake, I missed this one in the
+patch I sent out).
 
-I guess I am actually going to run evaluations on some mission critical
-systems using the arrangement described.  I wish I could be more specific
-about it, but I know of critical systems pushing massive data that in
-fact rely on batteries just as I have described.  For completeness, I
-will verify that pulling the UPS plug actually corrupts the data and
-report my findings.  Not by pulling the plug of course, but by asking
-the vendors.
+> @@ -7405,11 +7411,11 @@ void __init sched_init(void)
+>  #ifdef CONFIG_RT_GROUP_SCHED
+>  		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
+>  #ifdef CONFIG_CGROUP_SCHED
+> -		init_tg_rt_entry(rq, &init_task_group, &rq->rt, NULL, i, 1);
+> +		init_tg_rt_entry(&init_task_group, &rq->rt, NULL, i, 1, NULL);
+>  #elif defined CONFIG_USER_SCHED
+> -		init_tg_rt_entry(rq, &init_task_group,
+> +		init_tg_rt_entry(&init_task_group,
+>  				&per_cpu(init_rt_rq, i),
+> -				&per_cpu(init_sched_rt_entity, i), i, 1);
+> +				&per_cpu(init_sched_rt_entity, i), i, 1, NULL);
+>  #endif
+>  #endif
+> 
+> @@ -7613,11 +7619,11 @@ static void free_fair_sched_group(struct
+>  	kfree(tg->se);
+>  }
+> 
+> -static int alloc_fair_sched_group(struct task_group *tg,
+> -					struct task_group *parent)
+> +static
+> +int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
+>  {
+>  	struct cfs_rq *cfs_rq;
+> -	struct sched_entity *se;
+> +	struct sched_entity *se, *parent_se;
+>  	struct rq *rq;
+>  	int i;
+> 
+> @@ -7643,10 +7649,8 @@ static int alloc_fair_sched_group(struct
+>  		if (!se)
+>  			goto err;
+> 
+> -		if (!parent)
+> -			init_tg_cfs_entry(tg, cfs_rq, se, i, 0, NULL);
+> -		else
+> -			init_tg_cfs_entry(tg, cfs_rq, se, i, 0,	parent->se[i]);
+> +		parent_se = parent ? parent->se[i] : NULL;
+> +		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent_se);
+>  	}
+> 
+>  	return 1;
+> @@ -7670,7 +7674,8 @@ static inline void free_fair_sched_group
+>  {
+>  }
+> 
+> -static inline int alloc_fair_sched_group(struct task_group *tg)
+> +static inline
+> +int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
+>  {
+>  	return 1;
+>  }
+> @@ -7702,10 +7707,11 @@ static void free_rt_sched_group(struct t
+>  	kfree(tg->rt_se);
+>  }
+> 
+> -static int alloc_rt_sched_group(struct task_group *tg)
+> +static
+> +int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
+>  {
+>  	struct rt_rq *rt_rq;
+> -	struct sched_rt_entity *rt_se;
+> +	struct sched_rt_entity *rt_se, *parent_se;
+>  	struct rq *rq;
+>  	int i;
+> 
+> @@ -7732,7 +7738,8 @@ static int alloc_rt_sched_group(struct t
+>  		if (!rt_se)
+>  			goto err;
+> 
+> -		init_tg_rt_entry(rq, tg, rt_rq, rt_se, i, 0);
+> +		parent_se = parent ? parent->rt_se[i] : NULL;
+> +		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent_se);
+>  	}
+> 
+>  	return 1;
+> @@ -7756,7 +7763,8 @@ static inline void free_rt_sched_group(s
+>  {
+>  }
+> 
+> -static inline int alloc_rt_sched_group(struct task_group *tg)
+> +static inline
+> +int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
+>  {
+>  	return 1;
+>  }
+> @@ -7792,7 +7800,7 @@ struct task_group *sched_create_group(st
+>  	if (!alloc_fair_sched_group(tg, parent))
+>  		goto err;
+> 
+> -	if (!alloc_rt_sched_group(tg))
+> +	if (!alloc_rt_sched_group(tg, parent))
+>  		goto err;
+> 
+>  	spin_lock_irqsave(&task_group_lock, flags);
+> 
+> --
 
-> If you consider that the risk of a crash is 1/year and that you have to
-> work one day to rebuild everything in case of a crash, it is certainly
-> worth using this technology for many things. But if you consider that
-> your data cannot suffer a loss even at a rate of 1/year, then you have
-> to use something else.
-
-I consider 1/year way too high a failure rate for anything that gets
-onto a server I own, and then there must necessarily be systems in
-place to limit the damage.  For me, that means replication, or perhaps
-synchronously mirroring the whole stack which is technology I do not
-trust yet on Linux, so we don't do that.  Yet.
-
-So here is the tradeoff: do you take the huge performance boost you
-get by plugging in the battery, and put the necessary backup systems
-in place or do you accept a lower performing system that offers higher
-theoretical reliability?  It depends on your application.  My
-immediate application happens to be hacking kernels and taking diffs
-which tends to suck rather badly on Linux.  Ramback will fix that, and
-it will be in place on my workstation right here, I will give my
-report.  (Bummer, I need to reboot because I don't feel like backporting
-to 2.6.20, too bad about that 205 day uptime, but I have to close the
-vmsplice hole anyway.)  So I will have, say, a 3 GB source code
-partition running under ramback and it will act just like spinning
-media because of my UPS, except 25 times faster.
-
-Of course the reason I feel brave about this is, everything useful
-on that partition gets uploaded to the internet sooner rather than
-later.  Nonetheless, having to reinstall everything would cost me
-hours, so I will certainly not do it if I think there is any
-reasonable likelihood I might have to.
-
-> BTW, I would say that IMHO nothing here makes RAID impossible to use :-)
-> Just wire 2 of these beasts to a central server with 10 Gbps NICs and
-> you have a nice server :-)
-
-Right.  See ddraid.  It is in the pipeline, but everything takes time.
-We also need to reroll NBD complete with deadlock fixes before I feel
-good about that.
-
-Regards,
-
-Daniel
+-- 
+regards,
+Dhaval
