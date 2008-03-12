@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYCLWzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYCLWzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYCLWzJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 18:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYCLWyr
+	id S1756056AbYCLWzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 18:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYCLWzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 18:54:47 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:3440 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751501AbYCLWyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 18:54:46 -0400
-Date: Wed, 12 Mar 2008 22:54:16 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: torvalds@osdl.org, stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH, TRIVIAL] Fix default compose table initialization
-Message-ID: <20080312225416.GA4822@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Chris Wright <chrisw@sous-sol.org>, torvalds@osdl.org,
-	stable@kernel.org, linux-kernel@vger.kernel.org
-References: <20080303012349.GA12338@implementation> <20080312212004.GD4416@sequoia.sous-sol.org> <20080312223355.GB4442@implementation> <20080312224742.GE4416@sequoia.sous-sol.org>
+	Wed, 12 Mar 2008 18:55:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44601 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751902AbYCLWzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 18:55:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: pm_register() and pm_send_all()
+Date: Wed, 12 Mar 2008 23:54:26 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>
+References: <20080312150042.96668bcd.akpm@linux-foundation.org>
+In-Reply-To: <20080312150042.96668bcd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080312224742.GE4416@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200803122354.27484.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright, le Wed 12 Mar 2008 15:47:42 -0700, a écrit :
-> * Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
-> > Chris Wright, le Wed 12 Mar 2008 14:20:04 -0700, a écrit :
-> > > * Samuel Thibault (samuel.thibault@ens-lyon.org) wrote:
-> > > > Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
-> > > > 0300...  This fixes the default unicode compose table by using integers
-> > > > instead of character constants.
-> > > 
-> > > I think this patch breaks the s390 build, no?
-> > 
-> > Yes, that was reported and fixed iirc.
+On Wednesday, 12 of March 2008, Andrew Morton wrote:
 > 
-> Care to send that along to stable, otherwise we'll just drop this one
-> from 2.6.24-stable queue.
+> This:
+> 
+> kernel/power/pm.c:203: warning: 'pm_register' is deprecated (declared at kernel/power/pm.c:62)
+> kernel/power/pm.c:203: warning: 'pm_register' is deprecated (declared at kernel/power/pm.c:62)
+> kernel/power/pm.c:204: warning: 'pm_send_all' is deprecated (declared at kernel/power/pm.c:178)
+> kernel/power/pm.c:204: warning: 'pm_send_all' is deprecated (declared at kernel/power/pm.c:178)
+> 
+> is getting a bit boring.  These were marked deprecated at least three years
+> ago.
+> 
+> 
+> pm_register() no longer has any callers and afacit can be removed
+> immediately.
+> 
+> pm_send_all() has just a handful of callers:
+> 
+> arch/x86/kernel/apm_32.c
+> arch/mips/au1000/common/power.c
+> arch/frv/kernel/pm.c
+> 
+> could we please get a bit of a push on this?  How should these
+> pm_send_all() calls be replaced?
 
-Ah, stable@ wasn't in the Cc list of the fix indeed, I've bounced the
-mail.
+Well, I was going to do that some time ago, but I'm not really familiar with
+the old code.  Some assistance would be welcome.
 
-Samuel
+Thanks,
+Rafael
