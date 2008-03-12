@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYCLNUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbYCLNYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbYCLNUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 09:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYCLNTw
+	id S1752676AbYCLNYd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 09:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYCLNYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 09:19:52 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:40252 "EHLO zombie.ncsc.mil"
+	Wed, 12 Mar 2008 09:24:23 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:8979 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbYCLNTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 09:19:51 -0400
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <20080312130904.GB8308@sergelap.austin.ibm.com>
-References: <20080305171304.f686f6de.akpm@linux-foundation.org>
-	 <47D10939.6020806@openvz.org>
-	 <20080307013553.7ed35f91.akpm@linux-foundation.org>
-	 <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com>
-	 <47D16F9B.6050008@openvz.org> <20080307170104.GA24746@kroah.com>
-	 <47D657A3.5080801@openvz.org> <20080311173646.GA26931@kroah.com>
-	 <47D793AB.6070008@openvz.org>
-	 <20080312130904.GB8308@sergelap.austin.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 12 Mar 2008 09:18:32 -0400
-Message-Id: <1205327912.23866.228.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1750982AbYCLNYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 09:24:22 -0400
+Date: Wed, 12 Mar 2008 14:24:19 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alexey Starikovskiy <aystarik@gmail.com>,
+       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080312132419.GN17940@kernel.dk>
+References: <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk> <47CDBE11.4010900@gmail.com> <20080312125912.GM17940@kernel.dk> <20080312131737.GA21290@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080312131737.GA21290@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 12 2008, Henrique de Moraes Holschuh wrote:
+> On Wed, 12 Mar 2008, Jens Axboe wrote:
+> > > >>Please take a look at patches in #10100.
+> > > >
+> > > >Can you be more specific (eg if you want me to test any/all of them, let
+> > > >me know)?
+> > > >  
+> > > Patch from comment #3 is in -mm at the moment, and has good chance to 
+> > > appear in linus tree.
+> > > I am trying to invent something less crufty along the lines of comment 
+> > > #4, but not succeeded yet.
+> > 
+> > Updating and doing what the bugzilla entry suggests, that is reverting
+> > the offending commit. That makes my brightness controls work, but the
+> > volume and mute keys still do not work.
+> 
+> Those are not an ACPI business in your thinkpad anymore.  They go over the
+> KDC, so we're out of the loop.   That means the bug is fixed completely.
 
-On Wed, 2008-03-12 at 08:09 -0500, Serge E. Hallyn wrote:
-> Quoting Pavel Emelyanov (xemul@openvz.org):
-> > Greg KH wrote:
-> > > On Tue, Mar 11, 2008 at 12:57:55PM +0300, Pavel Emelyanov wrote:
-> > >> Besides, I've measured some things - the lat_syscall test for open from 
-> > >> lmbench test suite and the nptl perf test. Here are the results:
-> > >>
-> > >>         sec     nosec
-> > >> open    3.0980s  3.0709s
-> > >> nptl    2.7746s  2.7710s
-> > >>
-> > >> So we have 0.88% loss in open and ~0.15% with nptl. I know, this is not that
-> > >> much, but it is noticeable. Besides, this is only two tests, digging deeper
-> > >> may reveal more.
-> > > 
-> > > I think that is in the noise of sampling if you run that test many more
-> > > times.
-> > 
-> > These numbers are average values of 20 runs of each test. I didn't
-> > provide the measurement accuracy, but the abs(open.sec - open.nosec)
-> > is greater than it.
-> > 
-> > >> Let alone the fact that simply turning the CONFIG_SECURITY to 'y' puts +8Kb 
-> > >> to the vmlinux...
-> > >>
-> > >> I think, I finally agree with you and Al Viro, that the kobj mapper is 
-> > >> not the right place to put the filtering, but taking the above numbers 
-> > >> into account, can we put the "hooks" into the #else /* CONFIG_SECURITY */
-> > >> versions of security_inode_permission/security_file_permission/etc?
-> > > 
-> > > Ask the security module interface maintainers about this, not me :)
-> > 
-> > OK :) Thanks for your time, Greg.
-> > 
-> > So, Serge, since you already have a LSM-based version, maybe you can
-> > change it with the proposed "fix" and send it to LSM maintainers for
-> > review?
-> 
-> To take the point of view of someone who neither wants containers nor
-> LSM but just a fast box,
-> 
-> you're asking me to introduce LSM hooks for the !SECURITY case?  :)
-> 
-> I can give it a shot, but I expect some complaints.  Now at least the
-> _mknod hook shouldn't be a hotpath,  and I suppose I can add yet
-> an #ifdef inside the !SECURITY version of security_inode_permission().
-> I still expect some complaints though.  I'll send something soon.
-
-Not sure I'm following the plot here, but please don't do anything that
-will prohibit the use of containers/namespaces with security modules
-like SELinux/Smack.  Yes, that's a legitimate use case, and there will
-be people who will want to do that - they serve different but
-complementary purposes (containers are _not_ a substitute for MAC).  We
-don't want them to be exclusive of one another.
+KDC? Pressing the buttons used to indicate mute and volume level in
+kmix, now they don't. That is somewhat annoying. If there's a way to get
+that working, please let me know.
 
 -- 
-Stephen Smalley
-National Security Agency
+Jens Axboe
 
