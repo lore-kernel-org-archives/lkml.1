@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYCLR2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYCLRaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbYCLR2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 13:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYCLR21
+	id S1754215AbYCLRaJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 13:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYCLR37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 13:28:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39656 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751840AbYCLR21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 13:28:27 -0400
-Date: Wed, 12 Mar 2008 10:27:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@lst.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: (stupid) can't we "fix" hlist_for_each_entry() ?
-Message-Id: <20080312102730.b34be3c9.akpm@linux-foundation.org>
-In-Reply-To: <1205315331.8514.225.camel@twins>
-References: <20080312081201.GA278@tv-sign.ru>
-	<1205315331.8514.225.camel@twins>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 12 Mar 2008 13:29:59 -0400
+Received: from phunq.net ([64.81.85.152]:45057 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751797AbYCLR36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 13:29:58 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Wed, 12 Mar 2008 09:29:53 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803102050.40567.phillips@phunq.net> <20080312131133.60e99d29@the-village.bc.nu>
+In-Reply-To: <20080312131133.60e99d29@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803121029.54108.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008 10:48:50 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Wed, 2008-03-12 at 11:12 +0300, Oleg Nesterov wrote:
-> > hlist_for_each_entry/hlist_for_each_entry_rcu doesn't actually need 4
-> > arguments, it could be
+On Wednesday 12 March 2008 06:11, Alan Cox wrote:
+> > > Ext3 is only going to help you if the ramdisk writeback respects barriers
+> > > and ordering rules ?
 > > 
-> > #define hlist_for_each_entry_rcu(pos, head, member)		 			\
-> > 	for (pos = hlist_entry((head)->first, typeof(*(pos)), member);			\
-> > 	     rcu_dereference(pos) != hlist_entry(NULL, typeof(*(pos)), member) &&	\
-> > 		({ prefetch((pos)->member.next); 1; });					\
-> > 	     (pos) = hlist_entry((pos)->member.next, typeof(*(pos)), member))
-> > 
-> > Or,
-> > 
-> > #define hlist_for_each_entry_rcu(pos, head, member)		 			\
-> > 	for (pos = (void*)(head)->first;						\
-> > 	     rcu_dereference(pos) && ({ prefetch(((hlist_node*)pos)->next); 1; }) &&	\
-> > 		({ (pos) = hlist_entry((void*)(pos), typeof(*(pos)), member)); 1; });	\
-> > 	     (pos) = (void*)(pos)->member.next)
-> > 
-> > Q: is it worth "fixing" ?
+> > I was alluding to to e2fsck's amazing repair ability, not ext3's journal.
 > 
-> I'm in favour.
+> Oh you mean "pray hard". e2fsck works well with typical disk style
+> failures, it is not robust against random chunks vanishing. I know this
+> as I've worked on and debugged a case where a raid card rebooted silently
+> and threw out the write back cache.
+
+So then you know that people already rely on batteries in critical storage
+applications.  So I do not understand why all the FUD from you.
+
+Particularly about Ext2/Ext3, which does recover well from random damage.
+My experience.
+
+> > Your comment re fs chunk size reveals that I have failed to
+> > communicate the most basic principle of the ramback design: the
+> > backing store is not expected to represent a consistent filesystem
 > 
-> > If yes, what is the "right" way to do this? These macros are spread all over
-> > the kernel...
-> 
-> The usual way would be to prepare a git tree for Linus to pull right
-> after -rc1 I think was the best point, and at the same time supply
-> Andrew with a bunch of patches fixing up the various users in his tree.
+> No I get that. You've ignored the fact I'm suggesting that design choice
+> is dumb.
 
-That, or create new functions with new names, migrate over to them
-piecemeal and later remove the old functions.
+You seem to be calling Linux unreliable.
 
-It's a bit of a problem that there is no alternative name.
-
-eh, send over the jumbopatch after 2.6.25 is released - I'll take care of it.
+Daniel
