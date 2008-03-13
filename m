@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbYCMSRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYCMSXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbYCMSRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 14:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYCMSRJ
+	id S1754866AbYCMSXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 14:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYCMSXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 14:17:09 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47373 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbYCMSRI (ORCPT
+	Thu, 13 Mar 2008 14:23:11 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:44664 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754381AbYCMSXK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 14:17:08 -0400
-Subject: Re: 2.6.25-rc5-mm1 - x86_64 boot problem with git-sched.patch
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Guillaume Chazarain <guichaz@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       mingo@elte.hu, vatsa@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <3d8471ca0803131055w247386e7g9bbea665bf78ca6e@mail.gmail.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <1205345451.23611.6.camel@dyn9047017100.beaverton.ibm.com>
-	 <20080312111509.301c9d24.akpm@linux-foundation.org>
-	 <1205428180.19403.15.camel@dyn9047017100.beaverton.ibm.com>
-	 <1205430028.19403.19.camel@dyn9047017100.beaverton.ibm.com>
-	 <3d8471ca0803131055w247386e7g9bbea665bf78ca6e@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 13 Mar 2008 10:20:09 -0800
-Message-Id: <1205432409.19403.24.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 14:23:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=wy5y9cn/IO1aL5wIe03obDPeK/kaZpfm7y3umUNx+gCI61rK6NI2CJZ1ICU8SzNvlq8/IUZUG/gWU2dbXgLJZTU3WlzjszvikOtwt1qwpz1jAtlTOUllo8jUeFc/MV7edB+IDUHfoWj/MMWoWpHVU5yg4sxDV3NOU37klxxopbk=
+Message-ID: <9f0508c40803131123j1d4568e3ne72f60e661bff95f@mail.gmail.com>
+Date: Thu, 13 Mar 2008 18:23:09 +0000
+From: "=?ISO-8859-1?Q?Andr=E9_C=E9sar_de_S=E1?=" <megatronpt@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Need some info/help.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 18:55 +0100, Guillaume Chazarain wrote:
-> On Thu, Mar 13, 2008 at 6:40 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> >  commit 60befbc1c0b6d141c9c26e61ddd303aedd1e7396
-> >  Author: Guillaume Chazarain <guichaz@yahoo.fr>
-> >  Date:   Mon Mar 10 08:16:41 2008 +0100
-> >
-> >     sched: make sure jiffies is up to date before calling
-> >  __update_rq_clock()
-> 
-> I didn't know this patch could prevent booting, but anyway it should
-> have been removed a long time ago:
-> http://lkml.org/lkml/2008/1/25/408
-> 
-
-I don't know whats happening either, but my debug shows that 
-tick_nohz_update_jiffies() always returns due to following
-check without calling touch_softlockup_watchdog().
-
-        if (!ts->tick_stopped)
-                return;
-
-BTW, I have CONFIG_DETECT_SOFTLOCKUP=y in my config.
+Hello,
 
 
-Thanks,
-Badari        
+I saw this in my /var/log/messages
 
+
+messages:Mar 12 16:57:25 ALC03-SRV10-WEB-BE1 kernel: hda: packet
+command error: status=0x51 { DriveReady SeekComplete Error }
+messages:Mar 12 16:57:25 ALC03-SRV10-WEB-BE1 kernel: hda: packet
+command error: error=0x54
+
+
+Was able to trace the error back to
+/usr/src/linux-2.6.10-2.3.legacy_FC2/include/linux/hdreg.h
+
+
+The '0x54' line says:
+#define SETFEATURES_SET_CACHE   0x54    /* Set Cache segments to SC Reg. Val */
+
+
+Can somebody give me a brief explanation on what exactly is this problem?
+And should I be worried?
+
+
+Thanks in Advance
+-- 
+André César de Sá
