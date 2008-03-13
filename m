@@ -1,100 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYCMJhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbYCMJmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYCMJhW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYCMJhL
+	id S1752097AbYCMJmD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYCMJly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:37:11 -0400
-Received: from mga05.intel.com ([192.55.52.89]:23766 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751919AbYCMJhJ (ORCPT
+	Thu, 13 Mar 2008 05:41:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44735 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbYCMJlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:37:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,493,1199692800"; 
-   d="scan'208";a="533177668"
-Subject: Re: hackbench regression since 2.6.25-rc
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-References: <1205394417.3215.85.camel@ymzhang>
-	 <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 13 Mar 2008 17:28:58 +0800
-Message-Id: <1205400538.3215.148.camel@ymzhang>
+	Thu, 13 Mar 2008 05:41:53 -0400
+Date: Thu, 13 Mar 2008 02:40:19 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       ego@in.ibm.com, hugh@veritas.com, dada1@cosmosbay.com
+Subject: Re: [PATCH 2/2] lockdep: fix fib_hash softirq inversion
+Message-ID: <20080313024019.6ee36721@laptopd505.fenrus.org>
+In-Reply-To: <20080312.230843.114525346.davem@davemloft.net>
+References: <20080312120920.929901000@chello.nl>
+	<20080312121323.959513000@chello.nl>
+	<20080312.230843.114525346.davem@davemloft.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 01:48 -0700, Andrew Morton wrote:
-> On Thu, 13 Mar 2008 15:46:57 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+On Wed, 12 Mar 2008 23:08:43 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
+
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Wed, 12 Mar 2008 13:09:22 +0100
 > 
-> > Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
-> > 40% regression with 2.6.25-rc1, and more than 20% regression with kernel
-> > 2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
+> > =========================================================
+> > [ INFO: possible irq lock inversion dependency detected ]
+> > 2.6.25-rc4-sched-devel.git #56
+> > ---------------------------------------------------------
+> > swapper/0 just changed the state of lock:
+> >  (&rt_hash_locks[i]){-+..}, at: [<ffffffff804721ac>]
+> > rt_intern_hash+0x8c/0x3b0 but this lock took another,
+> > soft-read-irq-unsafe lock in the past: (fib_hash_lock){-.-?}
 > > 
-> > Command to start it.
-> > #hackbench 100 process 2000
-> > I ran it for 3 times and sum the values.
-> > 
-> > I tried to investiagte it by bisect.
-> > Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
-> > Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
-> > 
-> > Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
-> > these 2 tags for many times manually and kernel always paniced.
-> > 
-> > All patches between the 2 tags are on kobject restructure. I guess such restructure
-> > creates more cache miss on the 16-core tigerton.
-> > 
+> > and interrupts could create inverse lock ordering between them.
 > 
-> That's pretty surprising - hackbench spends most of its time in userspace
-> and zeroing out anonymous pages.
-No. vmstat showed hackbench spends almost 100% in sys.
-
->   It shouldn't be fiddling with kobjects
-> much at all.
+> I tried to figure out what lockdep doesn't like here.
 > 
-> Some kernel profiling might be needed here..
-Thanks for your kind reminder. I don't know why I forgot it.
+> Could you show me the specific code path that could cause
+> the lock conflict?
+> 
+> Adding BH disabling to fib_hash_lock will add non-trivial
+> costs to these code paths, so I'd like to avoid this if
+> possible.
 
-2.6.24 oprofile data:
-CPU: Core 2, speed 1602 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 100000
-samples  %        image name               app name                 symbol name
-40200494 43.3899  linux-2.6.24             linux-2.6.24             __slab_alloc
-35338431 38.1421  linux-2.6.24             linux-2.6.24             add_partial_tail
-2993156   3.2306  linux-2.6.24             linux-2.6.24             __slab_free
-1365806   1.4742  linux-2.6.24             linux-2.6.24             sock_alloc_send_skb
-1253820   1.3533  linux-2.6.24             linux-2.6.24             copy_user_generic_string
-1141442   1.2320  linux-2.6.24             linux-2.6.24             unix_stream_recvmsg
-846836    0.9140  linux-2.6.24             linux-2.6.24             unix_stream_sendmsg
-777561    0.8393  linux-2.6.24             linux-2.6.24             kmem_cache_alloc
-587127    0.6337  linux-2.6.24             linux-2.6.24             sock_def_readable
+from what I can see the backtrace is the following:
 
 
 
+Abstracted form of the deadlock:
 
-2.6.25-rc4 oprofile data:
-CPU: Core 2, speed 1602 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 100000
-samples  %        image name               app name                 symbol name
-46746994 43.3801  linux-2.6.25-rc4         linux-2.6.25-rc4         __slab_alloc
-45986635 42.6745  linux-2.6.25-rc4         linux-2.6.25-rc4         add_partial
-2577578   2.3919  linux-2.6.25-rc4         linux-2.6.25-rc4         __slab_free
-1301644   1.2079  linux-2.6.25-rc4         linux-2.6.25-rc4         sock_alloc_send_skb
-1185888   1.1005  linux-2.6.25-rc4         linux-2.6.25-rc4         copy_user_generic_string
-969847    0.9000  linux-2.6.25-rc4         linux-2.6.25-rc4         unix_stream_recvmsg
-806665    0.7486  linux-2.6.25-rc4         linux-2.6.25-rc4         kmem_cache_alloc
-731059    0.6784  linux-2.6.25-rc4         linux-2.6.25-rc4         unix_stream_sendmsg
+There is a lock A that is used in process and irq context
+There is a lock B that is used only in process context
+
+There is a case where, in user context, lock A is taken (irqs off), and then lock B is taken,
+and there a case where lock B is taken without disabling irqs.
+
+This can lead to the following deadlock:
+
+cpu 0                      cpu 1			note
+..                         spin_lock_irq(lockA)
+spin_lock(lockB)           ....
+... interrupt hits ...     .....
+spin_lock_irq(lockA)       .....                        in the irq handler; spins
+...                        spin_lock(lockB)		AB-BA deadlock
 
 
--yanmin
+
+This case:
+
+for this case it's about BH's not strict irqs, but for all intents and purposes that's the same
+
+lock A is rt_intern_hash
+lock B is fib_hash_lock
+
+previously, lockdep has observed that 
+   [<ffffffff804acdd7>] fn_hash_lookup+0x27/0xf0
+   [<ffffffff804a855d>] inet_addr_type+0x6d/0xf0
+   [<ffffffff8049dcc6>] arp_constructor+0x86/0x280
+   [<ffffffff8046272f>] neigh_create+0x19f/0x5b0
+   [<ffffffff8049c5cf>] arp_bind_neighbour+0x9f/0xb0
+   [<ffffffff8047223a>] rt_intern_hash+0x11a/0x3b0
+   [<ffffffff80472acd>] __ip_route_output_key+0x5fd/0xb10
+   [<ffffffff804947ec>] tcp_v4_connect+0x10c/0x550
+   [<ffffffff804a343a>] inet_stream_connect+0x23a/0x2d0
+   [<ffffffff8044e530>] sys_connect+0xa0/0xc0
+this call chain creates the relationship from cpu1 above (but at this point, lockdep doesn't know yet
+that rt_intern_hash lock is ever taken in irq context, so it cannot complain yet)
+
+And now lockdep is observing ip_rcv calling iproute_input calling rt_intern_hash from irq context,
+ [<ffffffff804721ac>] rt_intern_hash+0x8c/0x3b0
+ [<ffffffff80473a4e>] ip_route_input+0x8fe/0x1250
+ [<ffffffff804769a8>] ip_rcv+0x518/0x650
+ [<ffffffff8045a8f9>] netif_receive_skb+0x269/0x350
+ [<ffffffff80405529>] e1000_clean_rx_irq+0x1a9/0x5a0
+ [<ffffffff8040072b>] e1000_clean+0x1fb/0x5b0
+ [<ffffffff8045d18f>] net_rx_action+0xbf/0x180
+ [<ffffffff80255c55>] __do_softirq+0x75/0x100
+ [<ffffffff8022173c>] call_softirq+0x1c/0x30
+ [<ffffffff80223505>] do_softirq+0x65/0xa0
+ [<ffffffff80255b67>] irq_exit+0x97/0xa0
+ [<ffffffff80223618>] do_IRQ+0xa8/0x130
+which creates the irq part of the relationship between lock A and lock B in the
+scenario above, and lockdep complains that the abstracted deadlock scenario from
+above now becomes real.
 
 
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
