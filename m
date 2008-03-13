@@ -1,285 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYCMGQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbYCMGRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbYCMGQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYCMGQF
+	id S1753701AbYCMGRj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 02:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYCMGRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:16:05 -0400
-Received: from mga01.intel.com ([192.55.52.88]:16278 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751796AbYCMGQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:16:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,492,1199692800"; 
-   d="scan'208";a="533108908"
-Subject: Re: + revert-acpi-thermal-fixup.patch added to -mm tree
-From: "Zhang, Rui" <rui.zhang@intel.com>
-To: andrea@qumranet.com
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, clameter@sgi.com,
-       "Brown, Len" <len.brown@intel.com>, npiggin@suse.de, rjw@sisk.pl,
-       "Thomas, Sujith" <sujith.thomas@intel.com>
-In-Reply-To: <1205287338.2240.23.camel@acpi-hp-zz.sh.intel.com>
-References: <200803111750.m2BHoWEs019405@imap1.linux-foundation.org>
-	 <1205287338.2240.23.camel@acpi-hp-zz.sh.intel.com>
-Content-Type: text/plain
-Date: Thu, 13 Mar 2008 14:02:58 +0800
-Message-Id: <1205388178.2240.61.camel@acpi-hp-zz.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+	Thu, 13 Mar 2008 02:17:32 -0400
+Received: from phunq.net ([64.81.85.152]:59490 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751468AbYCMGRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 02:17:31 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: David Newall <davidn@davidnewall.com>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Wed, 12 Mar 2008 22:17:20 -0800
+User-Agent: KMail/1.9.5
+Cc: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803121556.15547.phillips@phunq.net> <47D8BF76.8040105@davidnewall.com>
+In-Reply-To: <47D8BF76.8040105@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803122317.24849.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andrea,
-
-could you please attach the acpidump of your SVM please?
-And it would be really great if you can get the sys log when the system
-hangs.
-
-thanks,
-rui
-
-On Wed, 2008-03-12 at 10:02 +0800, Zhang, Rui wrote:
-> On Wed, 2008-03-12 at 01:50 +0800, akpm@linux-foundation.org wrote:
-> > 
-> > The patch titled
-> >      revert "ACPI: thermal fixup"
-> > has been added to the -mm tree.  Its filename is
-> >      revert-acpi-thermal-fixup.patch
-> > 
-> > Before you just go and hit "reply", please:
-> >    a) Consider who else should be cc'ed
-> >    b) Prefer to cc a suitable mailing list as well
-> >    c) Ideally: find the original patch on the mailing list and do a
-> >       reply-to-all to that, adding suitable additional cc's
-> > 
-> > *** Remember to use Documentation/SubmitChecklist when testing your
-> > code ***
-> > 
-> > See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to
-> > find
-> > out what to do about this
-> > 
-> > The current -mm tree may be found at
-> > http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > ------------------------------------------------------
-> > Subject: revert "ACPI: thermal fixup"
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> > 
-> > Revert
-> > 
-> > commit 653a00c9662304ef72a3eb4e681c91720960e0b4
-> > Author: Zhang Rui <rui.zhang@intel.com>
-> > Date:   Thu Jan 17 15:51:18 2008 +0800
-> > 
-> > Andrea reports
-> > 
-> >   this changeset prevents my SVM test system from booting with
-> >   CONFIG_ACPI_THERMAL=y, so I set CONFIG_ACPI_THERMAL=n for now.
+On Wednesday 12 March 2008 22:45, David Newall wrote:
+> Daniel Phillips wrote:
+> > So you design for the number of nines you need, taking all factors
+> > into account, and you design for the performance you need.  These are
+> > cut and dried calculations.  FUD has no place here.
 > 
-> Andrea,
-> can you attach the acpidump output ?
-> 
-> thanks,
-> rui
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Thomas Sujith <sujith.thomas@intel.com>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Andrea Arcangeli <andrea@qumranet.com>
-> > Cc: Nick Piggin <npiggin@suse.de>
-> > Cc: Christoph Lameter <clameter@sgi.com>
-> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> > 
-> >  drivers/acpi/thermal.c |   42 ++++++++++++++++-----------------------
-> >  1 file changed, 18 insertions(+), 24 deletions(-)
-> > 
-> > diff -puN drivers/acpi/thermal.c~revert-acpi-thermal-fixup
-> > drivers/acpi/thermal.c
-> > --- a/drivers/acpi/thermal.c~revert-acpi-thermal-fixup
-> > +++ a/drivers/acpi/thermal.c
-> > @@ -1018,9 +1018,7 @@ static int acpi_thermal_cooling_device_c
-> >  {
-> >         struct acpi_device *device = cdev->devdata;
-> >         struct acpi_thermal *tz = thermal->devdata;
-> > -       struct acpi_device *dev;
-> > -       acpi_status status;
-> > -       acpi_handle handle;
-> > +       acpi_handle handle = device->handle;
-> >         int i;
-> >         int j;
-> >         int trip = -1;
-> > @@ -1036,13 +1034,12 @@ static int acpi_thermal_cooling_device_c
-> >                 trip++;
-> >                 for (i = 0; i < tz->trips.passive.devices.count;
-> >                     i++) {
-> > -                       handle = tz->trips.passive.devices.handles[i];
-> > -                       status = acpi_bus_get_device(handle, &dev);
-> > -                       if (ACPI_SUCCESS(status) && (dev == device)) {
-> > -                               result = action(thermal, trip, cdev);
-> > -                               if (result)
-> > -                                       goto failed;
-> > -                       }
-> > +                       if (tz->trips.passive.devices.handles[i] !=
-> > +                               handle)
-> > +                               continue;
-> > +                       result = action(thermal, trip, cdev);
-> > +                       if (result)
-> > +                               goto failed;
-> >                 }
-> >         }
-> > 
-> > @@ -1053,24 +1050,21 @@ static int acpi_thermal_cooling_device_c
-> >                 for (j = 0;
-> >                     j < tz->trips.active[i].devices.count;
-> >                     j++) {
-> > -                       handle =
-> > tz->trips.active[i].devices.handles[j];
-> > -                       status = acpi_bus_get_device(handle, &dev);
-> > -                       if (ACPI_SUCCESS(status) && (dev == device)) {
-> > -                               result = action(thermal, trip, cdev);
-> > -                               if (result)
-> > -                                       goto failed;
-> > -                       }
-> > +                       if (tz->trips.active[i].devices.
-> > +                                               handles[j] != handle)
-> > +                               continue;
-> > +                       result = action(thermal, trip, cdev);
-> > +                       if (result)
-> > +                               goto failed;
-> >                 }
-> >         }
-> > 
-> >         for (i = 0; i < tz->devices.count; i++) {
-> > -               handle = tz->devices.handles[i];
-> > -               status = acpi_bus_get_device(handle, &dev);
-> > -               if (ACPI_SUCCESS(status) && (dev == device)) {
-> > -                       result = action(thermal, -1, cdev);
-> > -                       if (result)
-> > -                               goto failed;
-> > -               }
-> > +               if (tz->devices.handles[i] != handle)
-> > +                       continue;
-> > +               result = action(thermal, -1, cdev);
-> > +               if (result)
-> > +                       goto failed;
-> >         }
-> > 
-> >  failed:
-> > _
-> > 
-> > Patches currently in -mm which might be from akpm@linux-foundation.org
-> > are
-> > 
-> > origin.patch
-> > poweroff-workaround.patch
-> > git-x86.patch
-> > arch-x86-kernel-ptracec-fix-defined-but-unused-warnings.patch
-> > git-kgdb-light.patch
-> > git-acpi-fixup.patch
-> > acpi-enable-c3-power-state-on-dell-inspiron-8200.patch
-> > git-alsa.patch
-> > git-alsa-fix-git-conflicts.patch
-> > git-arm-master.patch
-> > cifs-hack-around-biuld-error.patch
-> > git-powerpc-fix-git-rejects.patch
-> > revert-gregkh-driver-video-add-the-go7007-driver.patch
-> > fix-gregkh-driver-net-convert-the-phy_device-file-to-use-bus_find_device_by_name.patch
-> > driver-core-debug-for-bad-dev_attr_show-return-value.patch
-> > git-drm.patch
-> > git-dvb.patch
-> > drivers-media-video-pvrusb2-pvrusb2-sysfsc-fix-printk-warnings.patch
-> > git-hwmon.patch
-> > git-hrt.patch
-> > git-ieee1394.patch
-> > drivers-input-touchscreen-ads7846c-fix-uninitialized-var-warning.patch
-> > maple-add-driver-for-sega-dreamcast-controller.patch
-> > git-kvm.patch
-> > git-leds.patch
-> > git-net.patch
-> > git-net-fix-build-with-config_net=n.patch
-> > update-smc91x-driver-with-arm-versatile-board-info.patch
-> > git-nfsd.patch
-> > git-ocfs2.patch
-> > drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static.patch
-> > git-selinux.patch
-> > git-sh.patch
-> > scsi-aic94xx-cleanups.patch
-> > scsi-chc-fix-shadowed-variable-warnings-checkpatch-fixes.patch
-> > git-block-git-rejects.patch
-> > git-unionfs.patch
-> > git-v9fs.patch
-> > git-watchdog.patch
-> > git-semaphore-git-rejects.patch
-> > revert-acpi-thermal-fixup.patch
-> > remove-sparse-warning-for-mmzoneh-checkpatch-fixes.patch
-> > fix-invalidate_inode_pages2_range-to-not-clear-ret-checkpatch-fixes.patch
-> > vmscan-give-referenced-active-and-unmapped-pages-a-second-trip-around-the-lru.patch
-> > vm-dont-run-touch_buffer-during-buffercache-lookups.patch
-> > capabilities-implement-per-process-securebits-warning-fix.patch
-> > lsm-introduce-inode_getsecid-and-ipc_getsecid-hooks-checkpatch-fixes.patch
-> > lsm-audit-introduce-generic-audit-lsm-hooks-checkpatch-fixes.patch
-> > selinux-use-new-audit-hooks-remove-redundant-exports-checkpatch-fixes.patch
-> > audit-final-renamings-and-cleanup-checkpatch-fixes.patch
-> > make-dev-kmem-a-config-option-fix.patch
-> > misc-phantom-add-compat-ioctl-checkpatch-fixes.patch
-> > kernel-add-clamp-and-clamp_t-macros-checkpatch-fixes.patch
-> > kernel-add-clamp-and-clamp_t-macros-fix.patch
-> > sysrq-add-show-backtrace-on-all-cpus-function-checkpatch-fixes.patch
-> > sysrq-add-show-backtrace-on-all-cpus-function-checkpatch-fixes-cleanup.patch
-> > r-o-bind-mounts-elevate-write-count-for-callers-of-vfs_mkdir-fix.patch
-> > r-o-bind-mounts-elevate-write-count-for-xattr_permission-callers-fix.patch
-> > r-o-bind-mounts-get-write-access-for-vfs_rename-callers-fix.patch
-> > r-o-bind-mounts-check-mnt-instead-of-superblock-directly-fix.patch
-> > r-o-bind-mounts-check-mnt-instead-of-superblock-directly-fix-2.patch
-> > r-o-bind-mounts-get-callers-of-vfs_mknod-create-fix.patch
-> > fs-inodec-use-hlist_for_each_entry-checkpatch-fixes.patch
-> > add-rcu_assign_index-if-ever-needed-fix.patch
-> > uart_get_baud_rate-stop-mangling-termios-fix.patch
-> > oprofile-change-cpu_buffer-from-array-to-per_cpu-variable-checkpatch-fixes.patch
-> > vt-notifier-extension-for-accessibility-checkpatch-fixes.patch
-> > kprobes-prevent-probing-of-preempt_schedule-fix.patch
-> > kprobes-prevent-probing-of-preempt_schedule-checkpatch-fixes.patch
-> > rtc-isl1208-new-style-conversion-and-minor-bug-fixes-checkpatch-fixes.patch
-> > rtc-pcf8563-new-style-conversion-checkpatch-fixes.patch
-> > rtc-pcf8563-new-style-conversion-checkpatch-fixes-fix.patch
-> > rtc-x1205-new-style-conversion-checkpatch-fixes.patch
-> > fb-add-support-for-foreign-endianness-force-it-on.patch
-> > fbcon-replace-mono_col-macro-with-static-inline-fix.patch
-> > fat_valid_media-remove-pointless-test.patch
-> > cgroup-api-files-update-cpusets-to-use-cgroup-structured-file-api-fix.patch
-> > workqueues-shrink-cpu_populated_map-when-cpu-dies-fix.patch
-> > ext4-is-broken.patch
-> > ipc-use-ipc_buildid-directly-from-ipc_addid-cleanup.patch
-> > ipmi-run-to-completion-fixes-checkpatch-fixes.patch
-> > ipmi-style-fixes-in-the-system-interface-code-checkpatch-fixes.patch
-> > elf-fix-shadowed-variables-in-fs-binfmt_elfc.patch
-> > sgi-altix-mmtimer-allow-larger-number-of-timers-per-node-fix.patch
-> > sgi-altix-mmtimer-allow-larger-number-of-timers-per-node-fix-2.patch
-> > epcac-static-functions-and-integer-as-null-pointer-fixes-checkpatch-fixes.patch
-> > keys-add-keyctl-function-to-get-a-security-label-fix.patch
-> > procfs-task-exe-symlink-fix.patch
-> > edd-add-default-mode-config_edd_off=n-override-with-edd=onoff-fix.patch
-> > mm-bdi-export-bdi-attributes-in-sysfs-ia64-fix.patch
-> > basic-braille-screen-reader-support-ppc-fix.patch
-> > reiser4.patch
-> > jens-broke-reiser4patch-added-to-mm-tree.patch
-> > page-owner-tracking-leak-detector.patch
-> > nr_blockdev_pages-in_interrupt-warning.patch
-> > slab-leaks3-default-y.patch
-> > profile-likely-unlikely-macros.patch
-> > profile-likely-unlikely-macros-fix.patch
-> > put_bh-debug.patch
-> > shrink_slab-handle-bad-shrinkers.patch
-> > getblk-handle-2tb-devices.patch
-> > getblk-handle-2tb-devices-fix.patch
-> > undeprecate-pci_find_device.patch
-> > w1-build-fix.patch
-> > 
-> > 
-> > 
+> There's no FUD here.  The problem is that you didn't say that you've
+> designed this for only a few nines.
 
+Right.  6 or 7.
+
+> If you delete fsck from your 
+> rationale, simply saying that you rely on UPS to give you time to flush
+> buffers, you have a much better story.  Certainly, once you've flushed
+> buffers and degraded to write-through mode, you're obviously as reliable
+> as ext2/3.
+
+Fsck was never a part of my rationale.  Only reliability of components
+was and is.  Then people jumped in saying Linux is too unreliable to
+use in a, hmm, storage system.  Or transaction processing system.  Or
+whatever.
+
+Balderdash, I say.
+
+> Your idea seems predicated on throwing large amounts of RAM at the
+> problem.  What I want to know is this: Is it really 25 times faster than
+> ext3 with an equally huge buffer cache?
+
+Yes.
+
+Regards,
+
+Daniel
