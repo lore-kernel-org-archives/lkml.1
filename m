@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYCMXO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYCMXRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYCMXO0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCMXOR
+	id S1756740AbYCMXRu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCMXRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:14:17 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54796 "EHLO
+	Thu, 13 Mar 2008 19:17:41 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39439 "EHLO
 	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752567AbYCMXOQ (ORCPT
+	by vger.kernel.org with ESMTP id S1752203AbYCMXRk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:14:16 -0400
-X-Greylist: delayed 1266 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 19:14:16 EDT
-X-Sasl-enc: gk97yLF/0k0doBLqF5rLio4UMugn31dmCbAqr9zjKg1x 1205448788
-Date: Thu, 13 Mar 2008 19:53:02 -0300
+	Thu, 13 Mar 2008 19:17:40 -0400
+X-Sasl-enc: 7c5kfmKIYJXn1U4Q3gFyopjvGoA6J89P22EPLd0a3Ws9 1205450259
+Date: Thu, 13 Mar 2008 20:17:38 -0300
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, Jens Axboe <jens.axboe@oracle.com>,
        Alexey Starikovskiy <aystarik@gmail.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Len Brown <lenb@kernel.org>
 Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080313225301.GE30864@khazad-dum.debian.net>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net> <20080313120514.GH17940@kernel.dk>
+Message-ID: <20080313231738.GH30864@khazad-dum.debian.net>
+References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080313120514.GH17940@kernel.dk>
+In-Reply-To: <200803121952.42666.arekm@maven.pl>
 X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
 	1CDB 0FE3
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
@@ -35,35 +33,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008, Jens Axboe wrote:
-> > If you want to test thinkpad-acpi functionality, get HAL and X.org out of
-> > the way.  The easiest way is to do it in single user mode.
+On Wed, 12 Mar 2008, Arkadiusz Miskiewicz wrote:
+> > On Wed, Mar 12, 2008 at 10:35:29AM -0300, Henrique de Moraes Holschuh wrote:
+> > > You shouldn't need to do anything other than teach userspace to respond
+> > > to them, as they generate the proper KEY_* events.  If you are giving the
+> > > AML _OSI(Linux), at least...
 > 
-> And lets now get back to reality - the reality that now breaks the
-> previously working setup of lots of users. So you are telling me that in
-> order to get my volume key functionality back I have to get rid of HAL
-> and X?
+> I'm also seeing regression on my thinkpad z60m where with git tree (tested 
+> again with 2 days old git) "thinkvantage" button stopped working (pressing it 
+> was previously seen by some userspace kde which run konsole).
+> 
+> On 2.6.24 presses are seen.
 
-I am telling you to go single user mode to check if the problem is in
-thinkpad-acpi.  Nothing more, nothing less.  AFTER we find out where the
-problem is, we see what should be done about it.
+There were no changes to thinkpad-acpi that should have caused this.  So I
+need more data to find out what is happening.  Might be a problem elsewhere
+in ACPI, or some bug in thinkpad-acpi.
 
-> Lets turn back time a bit. Why was this change made? IOW, what was the
+You DO have /proc/acpi/event, correct?  Please send me the debug output of
+thinkpad-acpi when it is loaded with "debug=0xffff" as a parameter (and for
+extra bonus, please compile it with the verbose debug Kconfig option).
 
-What change?  For all we know, it could be a bug.  And if it is not a bug,
-read the thinkpad-acpi documentation, and complain to me exactly about
-whatever change described in there that is giving you issues.  Or give me a
-bissect culprit.  Or do the testing I asked you to do, and tell me the
-results.
-
-> reason for breaking a working setup for lots of users? It better be a
-> damn good reason, or I would heavily argue for reverting this change so
-> that 2.6.25 actually WORKS as expected for thinkpad users.
-
-I will get pissed very fast, if you keep up with this tone.  I certainly did
-not send in any changes that should cause what you describe on purpose,
-UNLESS you have disabled with the "deprecated" /proc/acpi/event stuff.  In
-which case, it is your problem to get proper userspace.
+Also, send me the output of 
+"grep . /sys/bus/platform/devices/thinkpad_acpi/*"
 
 -- 
   "One disk to rule them all, One disk to find them. One disk to bring
