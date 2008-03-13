@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYCMO7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbYCMPAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbYCMO7v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 10:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYCMO7h
+	id S1756651AbYCMPAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 11:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYCMPAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 10:59:37 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:3791 "EHLO kernel.dk"
+	Thu, 13 Mar 2008 11:00:35 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:3803 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754559AbYCMO7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 10:59:36 -0400
-Date: Thu, 13 Mar 2008 15:59:32 +0100
+	id S1752757AbYCMPAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 11:00:35 -0400
+Date: Thu, 13 Mar 2008 16:00:31 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080313145932.GA17940@kernel.dk>
-References: <20080313120514.GH17940@kernel.dk> <20080313122344.GD27873@ics.muni.cz> <20080313124633.GS17940@kernel.dk> <20080313125503.GE27873@ics.muni.cz> <20080313125933.GT17940@kernel.dk> <20080313130934.GG27873@ics.muni.cz> <20080313131334.GV17940@kernel.dk> <47D93C2C.8040907@gmail.com> <20080313143930.GZ17940@kernel.dk> <47D93F95.50807@gmail.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
+Subject: Re: [PATCH 0/7] IO CPU affinity testing series
+Message-ID: <20080313150031.GB17940@kernel.dk>
+References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com> <47D94035.6080301@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47D93F95.50807@gmail.com>
+In-Reply-To: <47D94035.6080301@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13 2008, Alexey Starikovskiy wrote:
-> Jens Axboe wrote:
-> >On Thu, Mar 13 2008, Alexey Starikovskiy wrote:
-> >  
-> >>Jens Axboe wrote:
-> >>    
-> >>>On Thu, Mar 13 2008, Lukas Hejtmanek wrote:
-> >>> 
-> >>>      
-> >>>>On Thu, Mar 13, 2008 at 01:59:34PM +0100, Jens Axboe wrote:
-> >>>>   
-> >>>>        
-> >>>>>The BIOS isn't that old, probably updated it a couple of months ago.
-> >>>>>     
-> >>>>>          
-> >>>>I use the latest BIOS for my T61 and it just works. At least the event 
-> >>>>is
-> >>>>generated either for acpid or for Xserver.
-> >>>>   
-> >>>>        
-> >>>This is an x60, so there may be other differences there.
-> >>>
-> >>> 
-> >>>      
-> >>There are was some playing with acpi_osi=Linux in this timeframe, known
-> >>to deal with sound buttons too.
-> >>Some of Thinkpads were inserted into the blacklist to need this OSI.
-> >>It might be that your Thinkpad needs it too...
-> >>    
-> >
-> >Please talk to me like I'm an ACPI ignorant - because I am. Where is
-> >this blacklist?
-> >
-> >  
-> drivers/acpi/blacklist.c:485.
-> You probably could set acp_osi=Linux as kernel parameter to check if it 
-> helps.
+On Thu, Mar 13 2008, Alan D. Brunelle wrote:
+> 
+> Your suggestion worked Jens, will do some benchmarking, and try to
+> figure out why on the side...
 
-I booted with acpi_osi=Linux and it has made no difference.
+Good!
+
+> Subject: [PATCH] IA64 boots with direct call of generic init single
+> data
+> 
+> Need to figure out why it needs to be done earlier on ia64.
+
+Sometimes I find that the __init and friends need some include magic to
+actually work, even if it compiles and links just fine. If you could
+pick at it a bit once the benchmark is out of the way, that would be
+great. This is a fine work-around for now.
 
 -- 
 Jens Axboe
