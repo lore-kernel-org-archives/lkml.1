@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbYCMFmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752480AbYCMFp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbYCMFmb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 01:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYCMFmX
+	id S1752480AbYCMFp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 01:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbYCMFpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 01:42:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49065 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751139AbYCMFmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 01:42:22 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18h3eUsyxIhwfPaJUiGvqQRAowz/MbbyxmFb9OHOS
-	LPF1B+pP2pbtUg
-Subject: Re: Keys get stuck
-From: Mike Galbraith <efault@gmx.de>
-To: Hans-Peter Jansen <hpj@urpla.net>
-Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
-       "Fred ." <eldmannen@gmail.com>
-In-Reply-To: <200803122222.05663.hpj@urpla.net>
-References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com>
-	 <47D8091E.6030906@davidnewall.com>
-	 <Pine.LNX.4.64.0803121748140.15209@jikos.suse.cz>
-	 <200803122222.05663.hpj@urpla.net>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 13 Mar 2008 06:42:13 +0100
-Message-Id: <1205386933.4797.22.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+	Thu, 13 Mar 2008 01:45:19 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:59750 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751372AbYCMFpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 01:45:19 -0400
+Message-ID: <47D8BF76.8040105@davidnewall.com>
+Date: Thu, 13 Mar 2008 16:15:26 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Daniel Phillips <phillips@phunq.net>
+CC: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+References: <200803092346.17556.phillips@phunq.net> <200803121029.54108.phillips@phunq.net> <47D81CD9.6000802@nortel.com> <200803121556.15547.phillips@phunq.net>
+In-Reply-To: <200803121556.15547.phillips@phunq.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Daniel Phillips wrote:
+> So you design for the number of nines you need, taking all factors
+> into account, and you design for the performance you need.  These are
+> cut and dried calculations.  FUD has no place here.
+>   
 
-On Wed, 2008-03-12 at 22:22 +0100, Hans-Peter Jansen wrote:
-> Am Mittwoch, 12. März 2008 schrieb Jiri Kosina:
-> > On Thu, 13 Mar 2008, David Newall wrote:
-> > > > The problem is that under heavy load the auto-repeat problem is real;
-> > > > I've seen it as well, and it means that I've started to try to avoid
-> > > > "make -j4" since that's a great way to trigger it.
-> > >
-> > > I'm sure it does suck under heavy load, although I suppose you could
-> > > increase the start time.  But I wonder if that is the problem this
-> > > time?  Modern machines are so damned fast they actually take real
-> > > effort to load.  Actually, "make -j4" doesn't sound particularly heavy.
-> > > There's huge disk i/o in a make.  Plenty of scheduling opportunities.
-> > > Obviously I only know what everybody else here knows; but with so many
-> > > recent posts suggesting a scheduling fault has been introduced, I'm
-> > > expecting it to be that.
-> >
-> > The problem became much more apparent during early -rc phase of 2.6.25
-> > for those people that have CONFIG_GROUP_SCHED turned on. This clearly
-> > shows that X are somehow unhappy with how kernel schedules them, but I
-> > don't have idea how autorepeat is implemented inside X and what could be
-> > the problem right now.
-> 
-> Just for the record, this problem started with openSUSE 10.2 for me, that's 
-> a 2.6.18 thingy. I'm a heavy xterm user, where the autorepeat gets a life 
-> of its own _occasionally_. I'm able to stop it by triggering a autorepeat 
-> manually (typical antidot reaction).
+There's no FUD here.  The problem is that you didn't say that you've
+designed this for only a few nines.  If you delete fsck from your
+rationale, simply saying that you rely on UPS to give you time to flush
+buffers, you have a much better story.  Certainly, once you've flushed
+buffers and degraded to write-through mode, you're obviously as reliable
+as ext2/3.
 
-I've seen these key repeats for years.  All I ever had to do was to make
-X run heavily enough in the presence of another (hefty) load that it
-hits the expired array and thereby takes a serious latency hit.  I
-always considered key repeats under load to be X's quaint way of saying
-"HEEEEELP MEEEE" ;-)
-
-	-Mike
-
+Your idea seems predicated on throwing large amounts of RAM at the
+problem.  What I want to know is this: Is it really 25 times faster than
+ext3 with an equally huge buffer cache?
