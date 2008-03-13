@@ -1,52 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYCMRPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbYCMRX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbYCMRPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbYCMRP0
+	id S1754959AbYCMRX4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYCMRXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:15:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3909 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756856AbYCMRPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:15:25 -0400
-Date: Thu, 13 Mar 2008 18:14:26 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Newall <davidn@davidnewall.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, "Fred ." <eldmannen@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Keys get stuck
-Message-ID: <20080313171425.GA4840@ucw.cz>
-References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com>
+	Thu, 13 Mar 2008 13:23:46 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:35336 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbYCMRXp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 13:23:45 -0400
+Subject: Re: [patch 6/6] Guest page hinting: s390 support.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: akpm@osdl.org, linux-s390@vger.kernel.org, frankeh@watson.ibm.com,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, Anthony Liguori <anthony@codemonkey.ws>,
+       hugh@veritas.com
+In-Reply-To: <47D95EC7.7030204@goop.org>
+References: <20080312132132.520833247@de.ibm.com>
+	 <20080312132704.474209626@de.ibm.com>	<47D802A2.1030406@goop.org>
+	 <1205339285.8851.13.camel@localhost>	<47D8085E.9030701@goop.org>
+	 <1205341164.8851.44.camel@localhost>	<47D81771.5070400@goop.org>
+	 <47D8373C.40105@codemonkey.ws>	<47D840E3.5090902@goop.org>
+	 <47D8436F.9080901@codemonkey.ws>  <47D84CEB.6050300@goop.org>
+	 <1205401508.26537.37.camel@localhost> <47D95134.6030503@goop.org>
+	 <47D953AB.1030901@goop.org> <1205427338.5920.12.camel@localhost>
+	 <47D95EC7.7030204@goop.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 13 Mar 2008 18:23:38 +0100
+Message-Id: <1205429018.5920.38.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D7B428.6010804@davidnewall.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-03-12 21:14:56, David Newall wrote:
-> Jiri Kosina wrote:
-> > Very probably this is due to broken way how X themselves implement 
-> > auto-repeat, instead of using kernel-provided auto-repeat functionality.
+On Thu, 2008-03-13 at 10:05 -0700, Jeremy Fitzhardinge wrote:
+> Martin Schwidefsky wrote:
+> > Vz is the page discarded state. The difference to Uz is slim, both
+> > states will cause a program check on access. Vz generates a discard
+> > fault, Uz generates an addressing exception which is nice for debugging.
+> >   
 > 
-> It should be said that X implements auto-repeat out of necessity.  While
-> the kernel can report key down and up events, its further interpretation
-> of those events is not appropriate.  Many combinations of events are
-> possible, such as keyboard plus mouse, and this precludes the kernel
-> from providing a full interpretation.  It would be wrong for it to even
-> try.  X is the proper place to implement auto-repeat for X.
+> How do you handle these different cases in Linux?  Do you use Vr pages 
+> in the pagecache, and then shoot down the pagecache entry if the host 
+> steals the page?
 
-No.
+The environment where we currently run all this is z/VM as the host and
+Linux as the guest. We have two page tables on s390, a host page table
+and a guest page table. If the host discards a page it simple removes
+the entry for the page in the host page table. If the guest comes along
+and accesses the page the host gets the fault and generates the
+appropriate fault.
 
-hw is proper place to implement autorepeat, and along with some
-buffering, it has chance to work. Kernel is not real-time, and X are
-definitely not real-time, while autorepeat is real-time operation.
+> The Uz access exception presumably just generates a normal oops.
 
-It actually mostly works in ps/2 case. Buffer in hardware means that
-pretty big interrupt delays can be tolerated without problems.
+Yes, the handler for an addressing exception will call die() for a
+kernel check without a fixup.
+
+> (I should probably make time to read the rest of the series.)
+> 
+> >> But given how you've described V-state pages, I really would expect 
+> >> writes to a Vz to work, or alternatively, all writes to V-state pages to 
+> >> be disallowed.  Are there any real uses for a writable Vr page?
+> >>     
+> >
+> > You mean in the section that speaks about the guests states S/U/V/P ?
+> > Always keep in mind that you can access a V/P page only until it gets
+> > discarded. Then the useful content of the page frame is lost and any
+> > read of write to the not Vz page will be answered with a discard fault.
+> >   
+> 
+> Presumably reads from a Vz page also generate a discard fault?
+
+Yes.
+
+> > A Vr page is read-only. If a page gets mapped for writing it needs to
+> > get into the Pr state. This is the hint for the host to look at the
+> > dirty bit before it discards a page.
+> > So yes, there is no use for a writable Vr page.
+> >   
+> 
+> OK, thanks, that clears things up.  I was assuming that Vr was 
+> technically writable but that writes could be discarded at any time (ie, 
+> allowing guests to merrily shoot themselves in the foot ;).  Making it 
+> forced RO is much more sensible.
+
+Well, technically you could write to a Vr page via the kernel address
+space. The thing is that the host can just discard the page although it
+is dirty. The Vr state is used for page cache pages which do not have
+any writable mapping.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
