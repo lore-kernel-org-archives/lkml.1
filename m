@@ -1,107 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYCMHUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbYCMHbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362AbYCMHUD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 03:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYCMHTy
+	id S1752773AbYCMHbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYCMHbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 03:19:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:60687 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbYCMHTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 03:19:53 -0400
-Date: Thu, 13 Mar 2008 08:19:32 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: "Jean-Samuel Chenard" <jsamch@gmail.com>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       grant.likely@secretlab.ca
-Subject: Re: Linux UIO driver cache problem in PowerPC (fix)
-Message-ID: <20080313081932.4edee290@dilbert.local>
-In-Reply-To: <169c03cb0803121222h5fca9cdal5af873cd2a700f4d@mail.gmail.com>
-References: <169c03cb0803121222h5fca9cdal5af873cd2a700f4d@mail.gmail.com>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 03:31:08 -0400
+Received: from main.carme.maven.pl ([193.239.45.138]:38620 "EHLO
+	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYCMHbH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 03:31:07 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Date: Thu, 13 Mar 2008 08:30:47 +0100
+User-Agent: PLD Linux KMail/1.9.9
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net>
+In-Reply-To: <20080312211306.GD30864@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803130830.47709.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wed, 12 Mar 2008 15:22:59 -0400
-schrieb "Jean-Samuel Chenard" <jsamch@gmail.com>:
+On Wednesday 12 of March 2008, Henrique de Moraes Holschuh wrote:
+> On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
+> > On Wed, Mar 12, 2008 at 07:52:41PM +0100, Arkadiusz Miskiewicz wrote:
+> > > I'm also seeing regression on my thinkpad z60m where with git tree
+> > > (tested again with 2 days old git) "thinkvantage" button stopped
+> > > working (pressing it was previously seen by some userspace kde which
+> > > run konsole).
+> > >
+> > > On 2.6.24 presses are seen.
+> >
+> > well, on 2.6.25-rc4, some keys are not reported as input (xev does not
+> > see any key press), some keys are. Is this desired? Or all the keys
+> > (fn+f1-12 + volume + backlight + think vantage) should be reported as
+> > some input event and thus acpid makes no sense any more?
+>
+> xev has to get events from somewhere.  That somewhere happens to be a buggy
+> mess right now (X.org evdev device).  Or it is getting it through some
+> other middleware, like HAL, which can have its own problems.
+>
+> If you want to test thinkpad-acpi functionality, get HAL and X.org out of
+> the way.  The easiest way is to do it in single user mode.
 
-> Hi,
+In my thinkpad z60m case. On 2.6.24 kernels pressing "thinkvantage" key is 
+seen by acpid like this:
 
-Hi Jean-Samuel,
-thanks for your report. Please CC LKML if you find bugs like this. I
-also added Grant Likely (PPC Xilinx Virtex maintainer), as it seems to
-be a platform specific problem.
+Mar 13 08:27:48 tarm acpid: received event "ibm/hotkey HKEY 00000080 00001018"
+Mar 13 08:27:48 tarm acpid: notifying client 4071[126:126]
+Mar 13 08:27:48 tarm acpid: notifying client 4096[0:0]
+Mar 13 08:27:48 tarm acpid: notifying client 4230[0:0]
+Mar 13 08:27:48 tarm acpid: completed event "ibm/hotkey HKEY 00000080 
+00001018"
+(this log was done while X was running + some kde apps).
 
-> 
-> Experimenting with your userspace I/O driver on a Xilinx FPGA (PowerPC
-> 405), I was having problems when reading hardware device registers
-> mapped on my platform using the user-space mmap() call.
-> 
-> After some investigation (looking at the driver/char/mspec.c file), I
-> found that preventing caching of the page in uio_mmap_physical fixed
-> my issues with userspace mmap() reading messed-up values.
+Now under git kernel there is no such event. X has nothing to do with it since 
+I tested without X running, too.
 
-Hm, we already mark the page with VM_IO. That's sufficient on x86 and
-arm. I'm not sure whether this is a bug in PPC memory handling. Why do
-they cache VM_IO pages? 
-
-> 
-> This patch is against your initial commit of the UIO driver in the
-> mainline kernel tree.
-> 
-> ====
-> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-> index 865f32b..36e1123 100644
-> --- a/drivers/uio/uio.c
-> +++ b/drivers/uio/uio.c
-> @@ -22,6 +22,7 @@
->  #include <linux/string.h>
->  #include <linux/kobject.h>
->  #include <linux/uio_driver.h>
-> +#include <asm/pgtable.h>
-> 
->  #define UIO_MAX_DEVICES 255
-> 
-> @@ -447,6 +448,8 @@ static int uio_mmap_physical(struct
-> vm_area_struct *vma)
-> 
->         vma->vm_flags |= VM_IO | VM_RESERVED;
-> 
-> +       vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> +
->         return remap_pfn_range(vma,
->                                vma->vm_start,
->                                idev->info->mem[mi].addr >> PAGE_SHIFT,
-> ====
-> 
-> I am a bit unsure if this will break something in any of your uses of
-> the UIO driver (on other platforms than ppc), but it really fixes
-> things for me.  
-
-It should be OK, but unneccesary on other platforms. I have no
-objections, but I fear in 6 months we'll see a patch removing that
-line again because it's not needed... 
-
-> Let me know if you need more details on what was
-> happening on my platform before I added this statement.
-
-I'd like to hear the opinion of people really involved in PPC memory
-handling.
-
-> 
-> Thanks for the great driver for user-space I/O, it will save me lots
-> of time in my research.
-> 
-> Regards,
-> 
-> Jean-Samuel
-
-Thanks,
-Hans
-
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
