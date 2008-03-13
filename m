@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYCMUg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbYCMUgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbYCMUg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbYCMUgB
+	id S1757550AbYCMUgl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYCMUg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:36:01 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51636 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756937AbYCMUf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:35:59 -0400
-Date: Thu, 13 Mar 2008 13:27:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: Dave Jones <davej@codemonkey.org.uk>, Tilman Schmidt <tilman@imap.cc>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25-rc5-mm1] WARNING: at drivers/base/sys.c:173
-Message-ID: <20080313202712.GB11283@suse.de>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D87238.8080305@imap.cc> <20080313195656.GA32463@codemonkey.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313195656.GA32463@codemonkey.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 13 Mar 2008 16:36:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40651 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757439AbYCMUgZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:36:25 -0400
+Date: Thu, 13 Mar 2008 13:34:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH 1/4] introduce explicit signed/unsigned 64bit divide
+Message-Id: <20080313133459.8d7d870d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0803131546420.1791@scrub.home>
+References: <20080313002235.351414762@linux-m68k.org>
+	<20080313004902.808083566@linux-m68k.org>
+	<Pine.LNX.4.64.0803131110520.9727@vixen.sonytel.be>
+	<Pine.LNX.4.64.0803131546420.1791@scrub.home>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 03:56:56PM -0400, Dave Jones wrote:
-> On Thu, Mar 13, 2008 at 01:15:52AM +0100, Tilman Schmidt wrote:
->  > Am 11.03.2008 09:14 schrieb Andrew Morton:
->  > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
->  > 
->  > Late during boot, this issues the following warning on my Pentium D,
->  > apparently when trying to load an appropriate CPU frequency driver:
->  > 
->  > [   56.759128] ------------[ cut here ]------------
->  > [   56.765058] WARNING: at drivers/base/sys.c:173 sysdev_driver_register+0x34/0xce()
->  > [   56.776027] Modules linked in: acpi_cpufreq(+) speedstep_lib ip6table_filter ip6_tables x_tables ipv6 microcode firmware_class loop osst st sr_mod cdrom pata_acpi bas_gigaset snd_hda_intel gigaset isdn snd_pcm ata_generic<6>ip_tables: (C) 2000-2006 Netfilter Core Team
->  > [   56.785293]  snd_timer aic7xxx slhc snd ohci1394 rtc_cmos ieee1394 shpchp crc_ccitt iTCO_wdt e1000e rtc_core iTCO_vendor_support soundcore scsi_transport_spi watchdog_core pci_hotplug intel_agp button thermal agpgart rtc_lib processor i2c_i801 watchdog_dev parport_pc i2c_core snd_page_alloc parport pata_marvell sg ext3 jbd mbcache linear sd_mod usbhid hid ff_memless ahci libata scsi_mod ehci_hcd uhci_hcd usbcore dm_snapshot dm_mod
->  > [   56.805358] Pid: 2856, comm: modprobe Not tainted 2.6.25-rc5-mm1-testing #1
->  > [   56.810766]  [<c01272e9>] warn_on_slowpath+0x41/0x6d
->  > [   56.820628]  [<c0230065>] ? acpi_ns_lookup+0x2b5/0x497
->  > [   56.830455]  [<c0230e25>] ? acpi_evaluate_object+0x23e/0x249
->  > [   56.840414]  [<c02ff809>] ? mutex_unlock+0x8/0xa
->  > [   56.848380]  [<fa9fec1d>] ? acpi_processor_preregister_performance+0x4e6/0x4f1 [processor]
->  > [   56.858297]  [<c0286438>] ? cpufreq_register_driver+0x42/0xfc
->  > [   56.868263]  [<c026423d>] sysdev_driver_register+0x34/0xce
->  > [   56.877974]  [<c0286476>] cpufreq_register_driver+0x80/0xfc
->  > [   56.887327]  [<facde034>] acpi_cpufreq_init+0x34/0x3a [acpi_cpufreq]
->  > [   56.897290]  [<c014ad7a>] sys_init_module+0x1816/0x1943
->  > [   56.907304]  [<facb5000>] ? icmp_checkentry+0x0/0x14 [ip_tables]
->  > [   56.917255]  [<c0183cd2>] ? sys_read+0x3b/0x60
->  > [   56.925094]  [<c0106aec>] sysenter_past_esp+0x6d/0xc5
->  > [   56.935071]  =======================
->  > [   56.945016] ---[ end trace 9ade9adb26b6da0a ]---
->  > 
->  > Looking back, -rc3-mm1 did that too.
->  > Mainline (-rc3 through -rc5) never did.
->  > Let me know if you need more information.
->  > CCing Dave Jones for cpufreq and Greg KH for sysdev.
+On Thu, 13 Mar 2008 15:59:27 +0100 (CET)
+Roman Zippel <zippel@linux-m68k.org> wrote:
+
+> On Thu, 13 Mar 2008, Geert Uytterhoeven wrote:
 > 
-> Full dmesg please, with CPU_FREQ_DEBUG=y, and boot with cpufreq.debug=7
-> Greg, could that warning be enhanced to print the object->name ?
+> > > +static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
+> >                  ^       ^       ^             ^            ^
+> > 		 s64 div_s64_rem s64           s32          s32
+> 
+> Thanks for noticing.
+> I'm quite sure I fixed this before, as I compiled this also for 
+> 64bit, so I'm not sure how it got back. Anyway, new patch below.
 
-Sure, that would be simple to do.  Will change it now, and should show
-up in the next -mm.
+I think what happened was that [patch 3/4] fixed this up.  Of course,
+that patch doesn't apply on this updated [1/4].  I _could_ just take the
+old [1/4] (I think), but I don't know if that wouild be bisection-friendly.
 
-thanks,
+Anyway, please redo&resend?  Thanks.
 
-greg k-h
+
+
+Please have a think about that code in arch/x86/kvm/i8254.c too.  It is
+painful to see remote subsystems (re)implementing generic infrastructure.
+Can KVM use existing code?  Should we hoist what KVM has done there into
+generic code?  Did it have to use a(nother bleeding) macro?
