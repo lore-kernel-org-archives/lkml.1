@@ -1,46 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbYCMJLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbYCMJML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbYCMJLH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYCMJK4
+	id S1754377AbYCMJML (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYCMJMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:10:56 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:15775 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYCMJKz (ORCPT
+	Thu, 13 Mar 2008 05:12:00 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:18277 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbYCMJL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:10:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=MLJRFZ1MK0/oJWkubUGfFz8bkZCr1Qbf3C9mJFYgNCMWhWjlQsgy33SnHDH7qCuqnXATVQbgSxV2qpca9CS2BhtA2WpX+sh+nDJmjMXgzXIb2sjkcHJMPfobSYR0iFGWo7TbUG3CQETirtDB2DKswVlu+KPQH1dBrkCst4G+cRk=
-Message-ID: <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
-Date: Thu, 13 Mar 2008 11:10:55 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: linux+glibc memory allocator, poor performance
-Cc: "Mike Galbraith" <efault@gmx.de>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "J.C. Pizarro" <jcpiza@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <47D8C813.6020201@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Mar 2008 05:11:58 -0400
+Subject: Re: [patch 4/6] Guest page hinting: writable page table entries.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
+       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
+       hugh@veritas.com
+In-Reply-To: <200803131035.11943.rusty@rustcorp.com.au>
+References: <20080312132132.520833247@de.ibm.com>
+	 <20080312132703.979194690@de.ibm.com>
+	 <200803131035.11943.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 13 Mar 2008 10:11:51 +0100
+Message-Id: <1205399511.26537.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
-	 <20080312211219.GL27894@ZenIV.linux.org.uk>
-	 <47D8C25A.8020708@davidnewall.com>
-	 <1205388732.4797.30.camel@marge.simson.net>
-	 <47D8C813.6020201@davidnewall.com>
-X-Google-Sender-Auth: b4aee74e9f3dc936
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 8:22 AM, David Newall <davidn@davidnewall.com> wrote:
->  Hostility such as that gives this list a bad reputation and drives
->  people away.  One can (and should) tell people that an idea is
->  completely wrong without being rude.
+On Thu, 2008-03-13 at 10:35 +1100, Rusty Russell wrote:
+> On Thursday 13 March 2008 00:21:36 Martin Schwidefsky wrote:
+> > Index: linux-2.6/fs/exec.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/exec.c
+> > +++ linux-2.6/fs/exec.c
+> > @@ -51,6 +51,7 @@
+> >  #include <linux/tsacct_kern.h>
+> >  #include <linux/cn_proc.h>
+> >  #include <linux/audit.h>
+> > +#include <linux/page-states.h>
+> >
+> >  #include <asm/uaccess.h>
+> >  #include <asm/mmu_context.h>
+> 
+> I haven't compile-tested, but this seems unnecessary; it's the only change to 
+> this file.
 
-Hey, why don't we create a linux-sensitive@vger.kernel.org and you
-guys can move your nice and friendly chats over there...?
+True. I removed the include.
+
+> > +/**
+> > + * __page_reset_writable() - clear the PageWritable bit
+> > + *
+> > + * @page: the page
+> > + */
+> > +void __page_reset_writable(struct page *page)
+> > +{
+> > +	preempt_disable();
+> > +	if (!page_test_set_state_change(page)) {
+> > +		ClearPageWritable(page);
+> > +		page_clear_state_change(page);
+> > +	}
+> > +	preempt_enable();
+> > +}
+> > +EXPORT_SYMBOL(__page_reset_writable);
+> 
+> If I understand correctly, you don't bother resetting the writable bit if you 
+> don't get the state_change lock.  Is this best effort, or is there some 
+> correctness issue here?
+
+It is an error on the safe side. If the page writable bit is set then
+the page state has to indicate to the host that the page dirty bit needs
+to be checked. 
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
