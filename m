@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYCMMdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYCMMdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbYCMMdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYCMMcx
+	id S1755840AbYCMMdm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYCMMde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:32:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52321 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752216AbYCMMcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:32:53 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080312150042.96668bcd.akpm@linux-foundation.org>
-References: <20080312150042.96668bcd.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: pm_register() and pm_send_all()
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 13 Mar 2008 12:31:37 +0000
-Message-ID: <21968.1205411497@redhat.com>
+	Thu, 13 Mar 2008 08:33:34 -0400
+Received: from zux006-051-205.adsl.green.ch ([81.6.51.205]:28876 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752448AbYCMMde (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:33:34 -0400
+Date: Thu, 13 Mar 2008 12:10:48 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "David Newall" <davidn@davidnewall.com>, "Mike Galbraith" <efault@gmx.de>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, "J.C. Pizarro" <jcpiza@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: linux+glibc memory allocator, poor performance
+Message-ID: <20080313121048.5b52b28b@the-village.bc.nu>
+In-Reply-To: <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
+References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
+ <20080312211219.GL27894@ZenIV.linux.org.uk>
+ <47D8C25A.8020708@davidnewall.com>
+ <1205388732.4797.30.camel@marge.simson.net>
+ <47D8C813.6020201@davidnewall.com>
+ <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 13 Mar 2008 11:10:55 +0200
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
 
-> pm_send_all() has just a handful of callers:
+> On Thu, Mar 13, 2008 at 8:22 AM, David Newall <davidn@davidnewall.com> wrote:
+> >  Hostility such as that gives this list a bad reputation and drives
+> >  people away.  One can (and should) tell people that an idea is
+> >  completely wrong without being rude.
+> 
+> Hey, why don't we create a linux-sensitive@vger.kernel.org and you
+> guys can move your nice and friendly chats over there...?
 
-What should be done instead of calling pm_send_all()?
-
-David
+I think it would be far better to create linux-flame and send the hostile
+stuff away. In a lot of cultures hostile responses or unfriendly
+responses are taken badly. Politeness is a good thing this list needs
+more of.
