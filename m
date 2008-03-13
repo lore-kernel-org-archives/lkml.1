@@ -1,89 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbYCMHk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbYCMHtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbYCMHk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 03:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYCMHkM
+	id S1752966AbYCMHtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYCMHtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 03:40:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35824 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbYCMHkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 03:40:10 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc5
-Date: Thu, 13 Mar 2008 03:38:05 -0400
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrea Arcangeli <andrea@qumranet.com>
-References: <200803130214.36861.lenb@kernel.org> <20080312234516.bb079cc5.akpm@linux-foundation.org>
-In-Reply-To: <20080312234516.bb079cc5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Mar 2008 03:49:06 -0400
+Received: from mga10.intel.com ([192.55.52.92]:32957 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751372AbYCMHtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 03:49:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,493,1199692800"; 
+   d="scan'208";a="305832323"
+Subject: hackbench regression since 2.6.25-rc
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 13 Mar 2008 15:46:57 +0800
+Message-Id: <1205394417.3215.85.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803130338.05928.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008, Andrew Morton wrote:
-> On Thu, 13 Mar 2008 02:14:36 -0400 Len Brown <lenb@kernel.org> wrote:
-> 
-> > please pull from: 
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> > 
-> > A bunch of small regression fixes, bug fixes, and a couple of minor cleanups.
-> 
-> I hope Rafael knows how to cross-reference the regression fixes against his list?
+Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
+40% regression with 2.6.25-rc1, and more than 20% regression with kernel
+2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
 
-Rafael files them in bugzilla, if they're not already there.
-I close them when the patches hit upstream.
-Simple, huh?
+Command to start it.
+#hackbench 100 process 2000
+I ran it for 3 times and sum the values.
 
-> I'm sitting on five ACPI patches which look like they (or alternatives?) should
-> be in 2.6.25:
-> 
-> 
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/acpi-ec-revert-208c70a45624400fafd7511b96bc426bf01f8f5e.patch
-> 
->   This was too poorly changelogged for me to remember what problem it
->   solves, but it seemed important at the time.
+I tried to investiagte it by bisect.
+Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
+Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
 
-that one is included in this batch, it is bugzilla 10100.
+Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
+these 2 tags for many times manually and kernel always paniced.
 
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/drivers-acpi-asus_acpic-correct-use-of-and.patch
-> 
->   Fix logic error in asus_acpi.c
+All patches between the 2 tags are on kobject restructure. I guess such restructure
+creates more cache miss on the 16-core tigerton.
 
-i'll look at that one.
+Any idea?
 
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/drivers-acpi-asus_acpic-correct-use-of-and.patch
-> 
->   Fix an overrun.
-
-this is the same url as above.
-
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/revert-acpi-thermal-fixup.patch
-> 
->   Hopeully fix a regression which Andrea Arcangeli hit.  Although I'm not sure
->   that he has confirmed that this revert actually works?
-
-We're waiting for Andrea to return the ping on this one.
-
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/acpi-set-flag-dock_undocking-when-triggered-via-sysfs.patch
-> 
->   Fix a system lockup related to undocking.
-
-I'm waiting for Kristen to Ack/Nak that one.
-
-thanks,
--Len
+-yanmin
 
 
