@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYCMXrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbYCMXtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbYCMXrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYCMXrl
+	id S1757738AbYCMXtg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYCMXt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:47:41 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52600 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751743AbYCMXrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:47:40 -0400
-Message-ID: <47D9BA19.8000504@cn.fujitsu.com>
-Date: Fri, 14 Mar 2008 08:34:49 +0900
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 13 Mar 2008 19:49:27 -0400
+Received: from namei.org ([69.55.235.186]:54671 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751631AbYCMXt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 19:49:27 -0400
+Date: Fri, 14 Mar 2008 10:49:10 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+In-Reply-To: <20080313224616.GA9139@sergelap.austin.ibm.com>
+Message-ID: <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au>
+References: <20080313032749.GA13258@sergelap.austin.ibm.com>
+ <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au>
+ <20080313131818.GA9771@sergelap.austin.ibm.com>
+ <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au>
+ <20080313143803.GA11265@sergelap.austin.ibm.com>
+ <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au>
+ <20080313224616.GA9139@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 1/3] res_counter: introduce res_counter_write_u64()
-References: <47D65A27.80605@cn.fujitsu.com> <20080311192117.f7e23636.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080311192117.f7e23636.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 11 Mar 2008 19:08:39 +0900
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
->> This function can be used to assign the value of a resource counter member.
->>
-> Why don't you make this function to do the same work as res_counter_write() ?
-> 
+On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
 
-You mean to deal with write strategy? We don't need that complexity. If it does
-the same work as res_counter_write(), it's just a redundant function. ;)
+> Quoting James Morris (jmorris@namei.org):
+> > On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
+> > 
+> > > True, but while this change simplifies the code a bit, the semantics
+> > > seem more muddled - devcg will be enforcing when CONFIG_CGROUP_DEV=y
+> > > and:
+> > > 
+> > > 	SECURITY=n or
+> > > 	rootplug is enabled
+> > > 	capabilities is enabled
+> > > 	smack is enabled
+> > > 	selinux+capabilities is enabled
+> > 
+> > Well, this is how real systems are going to be deployed.
+> 
+> Sorry, do you mean with capabilities?
 
-But I forgot to take res_counter->lock ...
+Yes.
 
-> Thanks,
-> -Kame
-> 
-> 
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  include/linux/res_counter.h |    9 ++++++---
->>  kernel/res_counter.c        |    9 +++++++++
->>  2 files changed, 15 insertions(+), 3 deletions(-)
->>
->> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
->> index 8cb1ecd..8c23f7f 100644
->> --- a/include/linux/res_counter.h
->> +++ b/include/linux/res_counter.h
->> @@ -41,9 +41,10 @@ struct res_counter {
->>  
->>  /**
->>   * Helpers to interact with userspace
->> - * res_counter_read_u64() - returns the value of the specified member.
->> - * res_counter_read/_write - put/get the specified fields from the
->> - * res_counter struct to/from the user
->> + * res_counter_read_64/_write_u64 - returns/assigns the value of the
->> + *	specified member
->> + * res_counter_read/_write - puts/gets the specified fields from the
->> + *	res_counter struct to/from the user
->>   *
->>   * @counter:     the counter in question
->>   * @member:  the field to work with (see RES_xxx below)
->> @@ -53,6 +54,8 @@ struct res_counter {
->>   */
->>  
->>  u64 res_counter_read_u64(struct res_counter *counter, int member);
->> +void res_counter_write_u64(struct res_counter *counter, int member,
->> +			   unsigned long long val);
->>  
->>  ssize_t res_counter_read(struct res_counter *counter, int member,
->>  		const char __user *buf, size_t nbytes, loff_t *pos,
->> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
->> index 791ff2b..a16b727 100644
->> --- a/kernel/res_counter.c
->> +++ b/kernel/res_counter.c
->> @@ -97,6 +97,15 @@ u64 res_counter_read_u64(struct res_counter *counter, int member)
->>  	return *res_counter_member(counter, member);
->>  }
->>  
->> +void res_counter_write_u64(struct res_counter *counter, int member,
->> +			   unsigned long long val)
->> +{
->> +	unsigned long long *tmp;
->> +
->> +	tmp = res_counter_member(counter, member);
->> +	*tmp = val;
->> +}
->> +
->>  ssize_t res_counter_write(struct res_counter *counter, int member,
->>  		const char __user *userbuf, size_t nbytes, loff_t *pos,
->>  		int (*write_strategy)(char *st_buf, unsigned long long *val))
->> -- 
->> 1.5.4.rc3
->>
->> --
->> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> the body to majordomo@kvack.org.  For more info on Linux MM,
->> see: http://www.linux-mm.org/ .
->> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->>
-> 
-> 
-> 
+All Fedora, RHEL, CentOS etc. ship with SELinux+capabilities.  I can't 
+imagine not enabling them on other kernels.
 
+> > It becomes confusing, IMHO, if you have to change which secondary LSM you 
+> > stack with SELinux to enable a cgroup feature.
+> 
+> So you're saying selinux without capabilities should still be able to
+> use dev_cgroup?  (Just making sure I understand right)
+
+Nope, SELinux always stacks with capabilities, so havng the cgroup hooks 
+in capabilities makes sense (rather than having us change the secondary 
+stacking LSM just to enable a feature).
+
+
+
+
+
+-- 
+James Morris
+<jmorris@namei.org>
