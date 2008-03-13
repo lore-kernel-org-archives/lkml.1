@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYCMRlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYCMRoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbYCMRlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYCMRlI
+	id S1755911AbYCMRoj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYCMRoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:41:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34226 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753943AbYCMRlH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:41:07 -0400
-Subject: Re: BUG: lock held when returning to user space
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Frank Munzert <frankm@linux.vnet.ibm.com>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <1205423029.10894.75.camel@localhost.localdomain>
-References: <47D7FAA0.1090802@linux.vnet.ibm.com>
-	 <Pine.LNX.4.64.0803122236030.7266@twin.jikos.cz>
-	 <1205423029.10894.75.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 13 Mar 2008 18:39:06 +0100
-Message-Id: <1205429946.8514.255.camel@twins>
+	Thu, 13 Mar 2008 13:44:32 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:52303 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753086AbYCMRob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 13:44:31 -0400
+Date: Thu, 13 Mar 2008 18:44:12 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "Len Brown" <lenb@kernel.org>, linux-pm@lists.linux-foundation.org,
+       "Pavel Machek" <pavel@ucw.cz>, "LKML" <linux-kernel@vger.kernel.org>,
+       "Adam Belay" <abelay@novell.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "Lee Revell" <rlrevell@joe-job.com>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080313184412.34d09870@mjolnir.drzeus.cx>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEB33CDD@orsmsx423.amr.corp.intel.com>
+References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080310100008.GA9520@elf.ucw.cz>
+	<20080310134915.45ae7446@mjolnir.drzeus.cx>
+	<200803121511.17389.lenb@kernel.org>
+	<20080313173437.5f00f70e@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEB33CDD@orsmsx423.amr.corp.intel.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 08:43 -0700, Daniel Walker wrote:
-> On Wed, 2008-03-12 at 22:40 +0100, Jiri Kosina wrote:
-> 
-> > No, as it is a real bug if you use mutexes in this way. What happens if 
-> > process that has called open() on your device (and has not closed it yet) 
-> > calls fork()? 
-> > Another breakage scenario -- what if the filedescriptor is sent through 
-> > unix socket to another process? etc.
-> 
-> There's a number of places where a semaphore is used across system
-> calls. 
-> 
-> for instance the usb skeleton, 
-> 	drivers/usb/usb-skeleton.c
-> 
-> Several of the watchdog drivers,
-> 	drivers/watchdog/s3c2410_wdt.c
-> 
-> These need to be removed, but the usage is clearly not compatible with
-> the mutex API ..
-> 
-> If you convert them to atomic counts then you loose the sleeping aspect
-> of the semaphore, which you'd have to add back somehow.
-> 
-> The only API that seems straight forward is using complete's .. Then you
-> get an atomic count and all the sleeping function calls you might want..
-> (include/linux/completion.h) The problem with complete's is that you
-> can't start them out at "1" or "completed" unless you actually run
-> complete() once during initialization (that's kind of ugly) ..
+On Thu, 13 Mar 2008 09:47:30 -0700
+"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
 
-A simple waitqueue would work.
+> 
+> Can you try using /dev/cpu_dma_latency from an user space application.
+> Refer Documentation/pm_qos_interface.txt for usage. With this interface
+> you can change menu governor behavior from userspace, by dynamically
+> allowing it to use C3 or not. I am thinking that something like allowing
+> C3 for few seconds and blocking it for few seconds may help.
+> 
 
+I don't quite follow. Is the theory that you get a window of a few seconds where the system stops making a noise, even as it toggles C3?
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
