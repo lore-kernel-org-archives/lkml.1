@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYCMLdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYCMLsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbYCMLdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 07:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYCMLcx
+	id S1753413AbYCMLsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 07:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYCMLsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 07:32:53 -0400
-Received: from sacred.ru ([62.205.161.221]:34070 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753100AbYCMLcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 07:32:52 -0400
-Message-ID: <47D910BD.2010805@openvz.org>
-Date: Thu, 13 Mar 2008 14:32:13 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 13 Mar 2008 07:48:00 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:17562 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751952AbYCMLr7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 07:47:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mRuWnqrlnqsCvUqXVN+SOFe5MroZHK7rBBtDD6LWtaoFIjcN/iw8xN3zUmYORGOQGAAYtBMsJGRulpq2ZYxMPVLlHR7UxtRpY7UskcuAvmo2ATgKnoqWflt2R8u445ia6NL5fpxnKjj3ONUGkDNMVv9np668CbATCncCvVNrxgo=
+Message-ID: <80b317760803130447u6d1998ecv3fcbc018a37a7247@mail.gmail.com>
+Date: Thu, 13 Mar 2008 12:47:58 +0100
+From: "Richard Genoud" <richard.genoud@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [BUG] PLEXTOR DVDR PX-740A drive not ready for command
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <9ea470500803130255u3dbed41bwd02c16ea79a09152@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Shmem: compilation fix for !NUMA case
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 13 Mar 2008 14:32:14 +0300 (MSK)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47D8F73F.4090501@gmail.com>
+	 <9ea470500803130255u3dbed41bwd02c16ea79a09152@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The shmem_parse_mpol stub's 3rd argument is a pointer on flags:
+> Have you tried a more recent kernel? Your bisection interval is .23 and .24-rc1,
+>  and a lot of code went into ide after that. However, you should try to
+>  avoid 2.6.24
+>  since ide-cd was broken there. I'd go with 2.6.25-rc5, for example.
 
-  CC      mm/shmem.o
-mm/shmem.c: In function ‘shmem_parse_options’:
-mm/shmem.c:2228: warning: passing argument 3 of ‘shmem_parse_mpol’ makes integer from pointer without a cast
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
- mm/shmem.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 281f6c2..e40f56d 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1215,7 +1215,7 @@ static struct page *shmem_alloc_page(gfp_t gfp,
- #else /* !CONFIG_NUMA */
- #ifdef CONFIG_TMPFS
- static inline int shmem_parse_mpol(char *value, unsigned short *policy,
--				unsigned short flags, nodemask_t *policy_nodes)
-+				unsigned short *flags, nodemask_t *policy_nodes)
- {
- 	return 1;
- }
+I did not tried it personnaly, but at least 2 persons on the ubuntu
+bug tracker did.
+The bug is still there.
