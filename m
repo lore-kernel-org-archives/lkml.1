@@ -1,103 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbYCMMNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYCMMS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbYCMMNc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYCMMNZ
+	id S1754039AbYCMMS2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYCMMSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:13:25 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7087 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751798AbYCMMNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:13:25 -0400
-Date: Thu, 13 Mar 2008 13:13:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: [PATCH 0/7] IO CPU affinity testing series
-Message-ID: <20080313121321.GJ17940@kernel.dk>
-References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com> <47D83EF5.6070302@qualcomm.com>
+	Thu, 13 Mar 2008 08:18:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:51752 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbYCMMSU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:18:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=uQ5byvzZhbRxRlpSHxhDBWHlAteYUcKah/34j1adPOSd8+VEq+NeNhVW9DsTYFhl3eGrVKCkj0GMCkWbpF04QoT9WZ3bMvXv6SKAi2r3SUmlc6+RB+YNCI15I2aqRdHhlZak/BLTZ9ByU3Yz8ZL/AKF3ZB5CT6ax9J5K0nZby1s=
+Date: Thu, 13 Mar 2008 09:19:01 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Mike Galbraith <efault@gmx.de>, Jan Knutar <jk-lkml@sci.fi>,
+       linux-kernel@vger.kernel.org, Hans-Peter Jansen <hpj@urpla.net>,
+       David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
+       "Fred ." <eldmannen@gmail.com>
+Subject: Re: Keys get stuck
+Message-ID: <20080313121900.GA4095@localhost.ift.unesp.br>
+Mail-Followup-To: Jiri Kosina <jkosina@suse.cz>,
+	Mike Galbraith <efault@gmx.de>, Jan Knutar <jk-lkml@sci.fi>,
+	linux-kernel@vger.kernel.org, Hans-Peter Jansen <hpj@urpla.net>,
+	David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
+	"Fred ." <eldmannen@gmail.com>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <200803122222.05663.hpj@urpla.net> <1205386933.4797.22.camel@marge.simson.net> <200803131148.22056.jk-lkml@sci.fi> <1205407693.6686.16.camel@marge.simson.net> <20080313120238.GA3860@localhost.ift.unesp.br> <Pine.LNX.4.64.0803131305540.30831@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47D83EF5.6070302@qualcomm.com>
+In-Reply-To: <Pine.LNX.4.64.0803131305540.30831@jikos.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12 2008, Max Krasnyanskiy wrote:
-> Jens Axboe wrote:
-> >Hi,
-> >
-> >Here's a new round of patches to play with io cpu affinity. It can,
-> >as always, also be found in the block git repo. The branch name is
-> >'io-cpu-affinity'.
-> >
-> >The major change since last post is the abandonment of the kthread
-> >approach. It was definitely slower then may 'add IPI to signal remote
-> >block softirq' hack. So I decided to base this on the scalable
-> >smp_call_function_single() that Nick posted. I tweaked it a bit to
-> >make it more suitable for my use and also faster.
-> >
-> >As for functionality, the only change is that I added a bio hint
-> >that the submitter can use to ask for completion on the same CPU
-> >that submitted the IO. Pass in BIO_CPU_AFFINE for that to occur.
-> >
-> >Otherwise the modes are the same as last time:
-> >
-> >- You can set a specific cpumask for queuing IO, and the block layer
-> >  will move submitters to one of those CPUs.
-> >- You can set a specific cpumask for completion of IO, in which case
-> >  the block layer will move the completion to one of those CPUs.
-> >- You can set rq_affinity mode, in which case IOs will always be
-> >  completed on the CPU that submitted them.
-> >
-> >Look in /sys/block/<dev>/queue/ for the three sysfs variables that
-> >modify this behaviour.
-> >
-> >I'd be interested in getting some testing done on this, to see if
-> >it really helps the larger end of the scale. Dave, I know you
-> >have a lot of experience in this area and would appreciate your
-> >input and/or testing. I'm not sure if any of the above modes will
-> >allow you to do what you need for eg XFS - if you want all meta data
-> >IO completed on one (or a set of) CPU(s), then I can add a mode
-> >that will allow you to play with that. Or if something else, give me
-> >some input and we can take it from there!
+On Thu 13.Mar'08 at 13:06:53 +0100, Jiri Kosina wrote:
+> On Thu, 13 Mar 2008, Carlos R. Mafra wrote:
 > 
-> Very cool stuff. I think I can use it for cpu isolation purposes.
-> ie Isolating a cpu from the io activity.
+> > So I would like to ask if swap letting X (and everything else in my 
+> > experience) out of the cpu for extended periods is considered normal 
+> > behaviour, in the sense that nobody is trying to "fix" it (due to it 
+> > being considered impossible to fix)...? Sorry for being off-topic, but I 
+> > run a minimal Window Maker desktop in a P4 3.0 GHz with 512 MB of RAM 
+> > (around 140 MB being used as per 'free'), and trying to load a 380 MB 
+> > text file in xjed editor makes my whole desktop quite unfair... it takes 
+> > tens of seconds to switch desktop, type things in the terminal etc. When 
+> > xjed finishes loading the text file, everything comes back to "fair" 
+> > again.
 > 
-> You may have noticed that I started a bunch of discussion on CPU isolation.
-> One thing that came out of that is the suggestion to use cpusets for 
-> managing this affinity masks. We're still discussing the details, the 
-> general idea is to provide extra flags in the cpusets that enable/disable 
-> various activities
-> on the cpus that belong to the set.
-> 
-> For example in this particular case we'd have something like "cpusets.io" 
-> flag that would indicate whether cpus in the set are allowed to to the IO 
-> or not.
-> In other words:
-> 	/dev/cpuset/io (cpus=0,1,2; io=1)
-> 	/dev/cpuset/no-io (cpus=3,4,5; io=0)
-> 
-> I'm not sure whether this makes sense or not. One advantage is that it's 
-> more dynamic and more flexible. If for example you add cpu to the io cpuset 
-> it will automatically start handling io requests.
+> I propose you start a new thread about this with proper Subject, and CC 
+> the scheduler maintainers.
 
-The code posted here works on the queue level, where as you want this to
-be a global setting. So it'll require a bit of extra stuff to handle
-that case, but the base infrastructure would not care.
+Right. I am sorry!
 
-> btw What did you mean by "to see if it really helps the larger end of the 
-> scale", what problem were you guys trying to solve ? I'm guessing cpu 
-> isolation would probably be an unexpected user of io cpu affinity :).
+But the thing I've learned from:
 
-Nope, I didn't really consider isolation :-)
+http://lkml.org/lkml/2008/2/28/249
 
-It's meant to speed up IO on larger SMP systems by reducing cache line
-contention (or bouncing) by keeping data and/or locks local to a CPU (or
-a set of CPUs).
+makes me _not_ think the scheduler is guilty by itself.
+Although it may appear so when first-looked upon.
 
--- 
-Jens Axboe
+Now I think that the  problem I was facing that day was
+also caused by swapping, which makes everything else
+wait for it to finish.
+
+So I am sorry for going off-topic here, but I couldn't
+resist asking Galbraith about it.
+
+Or I should just start a new thread like this? :-)
+
+Petition for Ingo writing CFSS: Completely Fair Swap Scheduler
+
+
 
