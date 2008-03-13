@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbYCMMXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYCMMYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbYCMMXr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYCMMXf
+	id S1755929AbYCMMYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYCMMYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:23:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:39625 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbYCMMXe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:23:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=acR62VVmxr4fNd0sLViQZ2FwO8SP0x++eyVF7+ikyiLeGh0DtuyBONKgyDZPUnfOhJDHi+WCgDMteUl1B5+CbFbwacw/sICan26U3SXSj9gGf2dPIv26Ew8iEp6zxGJ9KR3gMyeCO0/s7SkwmkPDQWMeltJmEubLm4OwDdfQK3E=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Richard Genoud <richard.genoud@gmail.com>
-Subject: Re: [BUG] PLEXTOR DVDR PX-740A drive not ready for command
-Date: Thu, 13 Mar 2008 13:37:16 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@googlemail.com>
-References: <47D8F73F.4090501@gmail.com>
-In-Reply-To: <47D8F73F.4090501@gmail.com>
+	Thu, 13 Mar 2008 08:24:10 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:38481 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752500AbYCMMYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:24:09 -0400
+Date: Thu, 13 Mar 2008 13:23:44 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080313122344.GD27873@ics.muni.cz>
+References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net> <20080313120514.GH17940@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-Message-Id: <200803131337.17095.bzolnier@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080313120514.GH17940@kernel.dk>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 13 Mar 2008 13:23:44 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Thursday 13 March 2008, Richard Genoud wrote:
-> Hi!
-> On ubuntu bug tracker, there's some bug reports about DVD drives that don't respond anymore.
+On Thu, Mar 13, 2008 at 01:05:14PM +0100, Jens Axboe wrote:
+> And lets now get back to reality - the reality that now breaks the
+> previously working setup of lots of users. So you are telling me that in
+> order to get my volume key functionality back I have to get rid of HAL
+> and X?
 > 
-> The affected drives are:
-> PLEXTOR DVDR PX-740A
-> BENQ DVD DD DW1620
-> PHILIPS DVDR14P
-> SS-SAMSUNG SCR-3232
-> Matsushita SR-8584-B
-> (for now)
-> 
-> the error message is :
-> hda: status error: error=0x00 { }
-> ide: failed opcode was: unknown
-> hda: drive not ready for command
-> hda: status error: status 0x59 { DriveReady SeekComplete DataRequest Error }
+> Lets turn back time a bit. Why was this change made? IOW, what was the
+> reason for breaking a working setup for lots of users? It better be a
+> damn good reason, or I would heavily argue for reverting this change so
+> that 2.6.25 actually WORKS as expected for thinkpad users.
 
-Could we get full dmesg for this particular system/problem?
+so, you are telling that xev does not show keycodes of volume buttons for you,
+right? Because for me, it works. Thinkvantage does not work.
 
-Please also;
-- test 2.6.25-rc5 on _your_ system
-- verify that configuration of hda and hdb devices is correct
-  (master/slave settings)
-
-> more details on the ubuntu bug-tracker:
-> https://bugs.launchpad.net/bugs/179336
-> https://bugs.launchpad.net/bugs/182996
-> https://bugs.launchpad.net/bugs/181561
-
-There is far too much information there (different error messages,
-different host drivers, some systems are using libata...) - please
-open a new bug entry at http://bugzilla.kernel.org so we can start
-"clean" and fully concentrate on fixing this bug.
-
-PS Thanks for bisecting it.
-
-Bart
+-- 
+Luká¹ Hejtmánek
