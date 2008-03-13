@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbYCMXwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYCMXx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510AbYCMXwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYCMXw0
+	id S1757982AbYCMXx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbYCMXxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:52:26 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:6474 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847AbYCMXw0 (ORCPT
+	Thu, 13 Mar 2008 19:53:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:37505 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752964AbYCMXxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:52:26 -0400
+	Thu, 13 Mar 2008 19:53:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=euxb4SFdiYsK6Zwlb4i4ZTTNJzw+4jm5GhMSWq437hIZ4onI7lw3Wgmn9qCBuG59hfLUH9B5D2uAB9SpyutIVjzYy4VlDzVFTmj7bBh5m9M1EEwgj3TFyYQO73ylTnsheF0UWffx+eNzzM4iejAy9JoKrQBmMJ6KTTiKKTleIE4=
-Message-ID: <86802c440803131652sb30c17fu4be905423ba5d9f9@mail.gmail.com>
-Date: Thu, 13 Mar 2008 16:52:25 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86_64: make reserve_bootmem_generic to use new reserve_bootmem
-Cc: "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QNsuhUQy9gIhdPw6c/nN3x3g4JU1/oZZL0E3RWgFNFSFZtM1u31zK9cAjtiLFTUvvPUVe6Ll5q9/kbgjk080GazbPCRwfV4bLBL3VxbMf/q+P8yi55s5r9830qQXkIhrvJOGn1h7zC4+2r7Unz2G5AFFFa2wNC2FWmFjdUGdyZc=
+Message-ID: <9a8748490803131653n7f1c2bd0m12e30d82bf936d03@mail.gmail.com>
+Date: Fri, 14 Mar 2008 00:53:17 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: Re: whose job is it to include various header files?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_13156_26480738.1205452345802"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_13156_26480738.1205452345802
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On 13/03/2008, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
+>
+>   more a philosophy question than anything but, while poking around
+>  the percpu stuff today, i noticed in the header file linux/percpu.h
+>  the opening snippet:
+>
+>   #include <linux/preempt.h>
+>   #include <linux/slab.h> /* For kmalloc() */
+>   #include <linux/smp.h>
+>   #include <linux/string.h> /* For memset() */
+>   #include <linux/cpumask.h>
+>   ...
+>
+>  hmmm, i thought to myself (because that's how i refer to myself), i
+>  wonder why this header file is including headers for kmalloc() and
+>  memset() when this header file makes no reference to those routines.
+>  let's see what happens if i remove them and:
+>
+>   $ make distclean
+>   $ make defconfig    [x86]
+>   $ make
+>
+>  ... chug chug chug ...
+>
+>   CC      arch/x86/kernel/nmi_32.o
+>  arch/x86/kernel/nmi_32.c: In function 'check_nmi_watchdog':
+>  arch/x86/kernel/nmi_32.c:81: error: implicit declaration of function 'kmalloc'
+>  arch/x86/kernel/nmi_32.c:81: error: 'GFP_KERNEL' undeclared (first use in this function)
+>  arch/x86/kernel/nmi_32.c:81: error: (Each undeclared identifier is reported only once
+>  arch/x86/kernel/nmi_32.c:81: error: for each function it appears in.)
+>  arch/x86/kernel/nmi_32.c:81: warning: assignment makes pointer from integer without a cast
+>  arch/x86/kernel/nmi_32.c:118: error: implicit declaration of function 'kfree'
+>  make[1]: *** [arch/x86/kernel/nmi_32.o] Error 1
+>  make: *** [arch/x86/kernel] Error 2
+>  $
+>
+>   ok, now i know.  but that means, of course, that nmi_32.c is
+>  invoking kmalloc() without ever having included the necessary header
+>  file for it -- it's just inheriting that from linux/percpu.h.
+>
+>   doesn't that (sort of) violate the kernel coding style?  if a file
+>  somewhere needs the contents of some header file, isn't it that file's
+>  responsibility to explicitly include it, and not quietly realize it's
+>  getting it from elsewhere?
+>
+I agree with you completely. A file should explicitly include headers
+for the stuff it uses and not rely on implicit includes done
+elsewhere. Cleaning that up is going to touch a lot of files though
+for no real short term gain (there is a long term gain of
+maintainability though), so it's going to be a loveless job :(
 
-
-
-------=_Part_13156_26480738.1205452345802
-Content-Type: text/x-patch; name=numa_64_use_new_reserve_bootmem.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdrz5orj1
-Content-Disposition: attachment;
- filename=numa_64_use_new_reserve_bootmem.patch
-
-W1BBVENIXSB4ODZfNjQ6IG1ha2UgcmVzZXJ2ZV9ib290bWVtX2dlbmVyaWMgdG8gdXNlIG5ldyBy
-ZXNlcnZlX2Jvb3RtZW0KCglbUEFUQ0hdIG1tOiBtYWtlIHJlc2VydmVfYm9vdG1lbSBjYW4gY3Jv
-c3NlZCB0aGUgbm9kZXMKCnByb3ZpZGVzIG5ldyByZXNldmVyX2Jvb3RtZW0sIGxldCByZXNlcnZl
-X2Jvb3RtZW1fZ2VuZXJpYyB1c2UgdGhhdC4KCmFjY3R1YWx5IHJlc2VydmVfYm9vdG1lX2dlbmVy
-aWMgaXMgdXNlZCB0byByZXNlcnZlIGluaXRyYW1kaXNrLgpzbyB3ZSBjYW4gbWFrZSBzdXJlIGV2
-ZW4gYm9vdGxvYWRlciBvciBrZXhlYyBsb2FkIHRoYXQgY3Jvc3MgdGhlIG5vZGVzLCByZXNlcnZl
-X2Jvb3RtZW0Kc3RpbGwgd29ya3MuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtl
-cm5lbEBnbWFpbC5jb20+CgoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9tbS9pbml0XzY0LmMK
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYvbW0vaW5pdF82NC5jCisrKyBs
-aW51eC0yLjYvYXJjaC94ODYvbW0vaW5pdF82NC5jCkBAIC02ODgsNyArNjg4LDcgQEAgdm9pZCBm
-cmVlX2luaXRyZF9tZW0odW5zaWduZWQgbG9uZyBzdGFydAogdm9pZCBfX2luaXQgcmVzZXJ2ZV9i
-b290bWVtX2dlbmVyaWModW5zaWduZWQgbG9uZyBwaHlzLCB1bnNpZ25lZCBsZW4pCiB7CiAjaWZk
-ZWYgQ09ORklHX05VTUEKLQlpbnQgbmlkID0gcGh5c190b19uaWQocGh5cyk7CisJaW50IG5pZCwg
-bmV4dF9uaWQ7CiAjZW5kaWYKIAl1bnNpZ25lZCBsb25nIHBmbiA9IHBoeXMgPj4gUEFHRV9TSElG
-VDsKIApAQCAtNzA3LDEwICs3MDcsMTQgQEAgdm9pZCBfX2luaXQgcmVzZXJ2ZV9ib290bWVtX2dl
-bmVyaWModW5zaQogCiAJLyogU2hvdWxkIGNoZWNrIGhlcmUgYWdhaW5zdCB0aGUgZTgyMCBtYXAg
-dG8gYXZvaWQgZG91YmxlIGZyZWUgKi8KICNpZmRlZiBDT05GSUdfTlVNQQorCW5pZCA9IHBoeXNf
-dG9fbmlkKHBoeXMpOworCW5leHRfbmlkID0gcGh5c190b19uaWQocGh5cyArIGxlbiAtIDEpOwor
-CWlmIChuaWQgPT0gbmV4dF9uaWQpCiAJcmVzZXJ2ZV9ib290bWVtX25vZGUoTk9ERV9EQVRBKG5p
-ZCksIHBoeXMsIGxlbiwgQk9PVE1FTV9ERUZBVUxUKTsKLSNlbHNlCi0JcmVzZXJ2ZV9ib290bWVt
-KHBoeXMsIGxlbiwgQk9PVE1FTV9ERUZBVUxUKTsKKwllbHNlCiAjZW5kaWYKKwlyZXNlcnZlX2Jv
-b3RtZW0ocGh5cywgbGVuLCBCT09UTUVNX0RFRkFVTFQpOworCiAJaWYgKHBoeXMrbGVuIDw9IE1B
-WF9ETUFfUEZOKlBBR0VfU0laRSkgewogCQlkbWFfcmVzZXJ2ZSArPSBsZW4gLyBQQUdFX1NJWkU7
-CiAJCXNldF9kbWFfcmVzZXJ2ZShkbWFfcmVzZXJ2ZSk7Cg==
-------=_Part_13156_26480738.1205452345802--
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
