@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756286AbYCMSCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbYCMSDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756286AbYCMSCq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 14:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYCMSCh
+	id S1756863AbYCMSDS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 14:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbYCMSDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 14:02:37 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:5267 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753363AbYCMSCg (ORCPT
+	Thu, 13 Mar 2008 14:03:05 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47352 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755086AbYCMSDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 14:02:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KhsxEME2qhcXcs+HCwFBG1jM7kAHliffWVJafaI2dl94/vgXUZ8EQF+4UGBYbo5gOjEMIRL7sAKZaTF/Xyz/gbrsvK9eNBGDaOPhP1EnKKr5I0KXEm/7LdhxEY3WHiCAB9UwzJ194gH7KNt1gUFow/w48bQ/r1A+t0o/SiCHUPo=
-Message-ID: <86802c440803131102u79fcc774j440eef4356083b56@mail.gmail.com>
-Date: Thu, 13 Mar 2008 11:02:35 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mel Gorman" <mel@csn.ul.ie>
-Subject: Re: [PATCH] mm: allocate section_map for sparse_init
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andy Whitcroft" <apw@shadowen.org>
-In-Reply-To: <20080313111934.GA12351@csn.ul.ie>
+	Thu, 13 Mar 2008 14:03:03 -0400
+Date: Thu, 13 Mar 2008 19:03:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Fred ." <eldmannen@gmail.com>
+Cc: David Newall <davidn@davidnewall.com>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Keys get stuck
+Message-ID: <20080313180333.GB4949@elf.ucw.cz>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com> <20080313171425.GA4840@ucw.cz> <f188924b0803131056m2aae7625x24bd00136b712076@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440803121051q20023badsf8e6e0571f4bb92e@mail.gmail.com>
-	 <20080313111934.GA12351@csn.ul.ie>
+In-Reply-To: <f188924b0803131056m2aae7625x24bd00136b712076@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 4:19 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On (12/03/08 10:51), Yinghai Lu didst pronounce:
->
->
-> > [PATCH] mm: allocate section_map for sparse_init
->  >
->  > allocate section_map in bootmem instead of using __initdata.
->  >
->  > need to apply it after
->  >         [PATCH] mm: fix boundary checking in free_bootmem_core
->  >         [PATCH] mm: make mem_map allocation continuous.
->  >
->  >
->  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
->  > Index: linux-2.6/mm/sparse.c
->  > ===================================================================
->  > --- linux-2.6.orig/mm/sparse.c
->  > +++ linux-2.6/mm/sparse.c
->  > @@ -285,8 +285,6 @@ struct page __init *sparse_early_mem_map
->  >       return NULL;
->  >  }
->  >
->  > -/* section_map pointer array is 64k */
->  > -static __initdata struct page *section_map[NR_MEM_SECTIONS];
->  >  /*
->  >   * Allocate the accumulated non-linear sections, allocate a mem_map
->  >   * for each and record the physical to section mapping.
->  > @@ -296,6 +294,9 @@ void __init sparse_init(void)
->  >       unsigned long pnum;
->  >       struct page *map;
->  >       unsigned long *usemap;
->  > +     struct page **section_map;
->  > +     int size;
->  > +     int node;
->  >
->  >       /*
->  >        * map is using big page (aka 2M in x86 64 bit)
->  > @@ -305,13 +306,17 @@ void __init sparse_init(void)
->  >        * then in big system, the memmory will have a lot hole...
->  >        * here try to allocate 2M pages continously.
->  >        */
->  > +     size = sizeof(struct page *) * NR_MEM_SECTIONS;
->  > +     section_map = alloc_bootmem(size);
->  > +     if (!section_map)
->  > +             panic("can not allocate section_map\n");
->  > +
->  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  >               if (!present_section_nr(pnum))
->  >                       continue;
->  >               section_map[pnum] = sparse_early_mem_map_alloc(pnum);
->  >       }
->  >
->  > -
->  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  >               if (!present_section_nr(pnum))
->  >                       continue;
->  > @@ -327,6 +332,9 @@ void __init sparse_init(void)
->  >               sparse_init_one_section(__nr_to_section(pnum), pnum, map,
->  >                                                               usemap);
->  >       }
->  > +
->  > +     for_each_online_node(node)
->  > +             free_bootmem_node(NODE_DATA(node), __pa(section_map), size);
->
->  Why are you iterating every online node here instead of just calling
->  free_bootmem(__pa(section_map), size) ?
+On Thu 2008-03-13 18:56:04, Fred . wrote:
+> With so many people suffering from this bug (for a long time), and so
+> many bright people here, why doesn't it get fixed?
 
-free_bootmem will assume use bdata on NODE_DATA(0).
+With so many trolls out here it is hard to get any real work done.
 
-some cases: four nodes system: only have memory installed for node 1,
-and node 3.
-alloc_bootmem will loop to get bootmem from node1, because there is no
-ram node0, and not NODE_DATA(0) ...
+> ...other operating systems don't suffer from this bug...
 
-we may update free_bootmem to loop all bdata or all online nodes to
-call free_bootmem_core...
+X is broken here... feel free to fix it. You could also test
+2.6.25-rc4, perhaps it is fixed there? Disable GROUP_SCHED.
 
-YH
+								Pavel
+
+> On Thu, Mar 13, 2008 at 6:14 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> >
+> > On Wed 2008-03-12 21:14:56, David Newall wrote:
+> >  > Jiri Kosina wrote:
+> >  > > Very probably this is due to broken way how X themselves implement
+> >  > > auto-repeat, instead of using kernel-provided auto-repeat functionality.
+> >  >
+> >  > It should be said that X implements auto-repeat out of necessity.  While
+> >  > the kernel can report key down and up events, its further interpretation
+> >  > of those events is not appropriate.  Many combinations of events are
+> >  > possible, such as keyboard plus mouse, and this precludes the kernel
+> >  > from providing a full interpretation.  It would be wrong for it to even
+> >  > try.  X is the proper place to implement auto-repeat for X.
+> >
+> >  No.
+> >
+> >  hw is proper place to implement autorepeat, and along with some
+> >  buffering, it has chance to work. Kernel is not real-time, and X are
+> >  definitely not real-time, while autorepeat is real-time operation.
+> >
+> >  It actually mostly works in ps/2 case. Buffer in hardware means that
+> >  pretty big interrupt delays can be tolerated without problems.
+> >
+> >  --
+> >  (english) http://www.livejournal.com/~pavelmachek
+> >  (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> >
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
