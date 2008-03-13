@@ -1,36 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYCMPVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYCMP3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYCMPVy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 11:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYCMPVr
+	id S1754207AbYCMP3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 11:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYCMP3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 11:21:47 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:5311 "EHLO relay.sw.ru"
+	Thu, 13 Mar 2008 11:29:36 -0400
+Received: from main.gmane.org ([80.91.229.2]:44977 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752690AbYCMPVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 11:21:46 -0400
-Date: Thu, 13 Mar 2008 18:21:42 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
+	id S1751772AbYCMP3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 11:29:35 -0400
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Subject: Not so fair group scheduling
-Message-ID: <20080313152142.GB3148@localhost.sw.ru>
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Thu, 13 Mar 2008 16:29:01 +0100
+Message-ID: <m3lk4my75u.fsf@ursa.amorsen.dk>
+References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de> <200803111602.53835.phillips@phunq.net> <m3d4q08477.fsf@ursa.amorsen.dk> <20080312133001.1668f40d@the-village.bc.nu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: hd5b9080a.c45-01-12.sta.perspektivbredband.net
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+Cancel-Lock: sha1:ey2lQQuLO6dVzyekPo0SCkCACVQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simple testcase:
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-a) 2 physical CPUs, not HT or something
-b) root gets 1024 cpu_share according to /sys/kernel/uids/0/cpu-chare
-c) user gets 1024 cpu_chare --//--
+> On the contrary - the hard disk cache is managed by the barrier logic in
+> the kernel, and the ordering even on failures is fairly predictable.
 
-root runs 1 busy loop, user runs 2 busy loops
-According to top they got 57% for root, and 66+77% for user. But they
-should have 100%/50+50% division. Am I right?
+Doesn't that require explicitly setting barrier=1 for ext3? Are there
+any distributions which set that by default?
 
-If yes are there any patches to fix this available for testing?
+
+/Benny
+
 
