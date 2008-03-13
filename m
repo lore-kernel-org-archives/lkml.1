@@ -1,87 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYCMXx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYCNABP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbYCMXx1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbYCMXxT
+	id S1757341AbYCNABP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 20:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYCNABD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:53:19 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:37505 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964AbYCMXxS (ORCPT
+	Thu, 13 Mar 2008 20:01:03 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37956 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771AbYCNABC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:53:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QNsuhUQy9gIhdPw6c/nN3x3g4JU1/oZZL0E3RWgFNFSFZtM1u31zK9cAjtiLFTUvvPUVe6Ll5q9/kbgjk080GazbPCRwfV4bLBL3VxbMf/q+P8yi55s5r9830qQXkIhrvJOGn1h7zC4+2r7Unz2G5AFFFa2wNC2FWmFjdUGdyZc=
-Message-ID: <9a8748490803131653n7f1c2bd0m12e30d82bf936d03@mail.gmail.com>
-Date: Fri, 14 Mar 2008 00:53:17 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: whose job is it to include various header files?
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Mar 2008 20:01:02 -0400
+Date: Thu, 13 Mar 2008 16:59:12 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: mingo <mingo@redhat.com>, tglx <tglx@linutronix.de>, hpa <hpa@zytor.com>
+Subject: [PATCH] x86: convert mtrr/generic.c to kernel-doc
+Message-Id: <20080313165912.53d7f01b.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/03/2008, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
->
->   more a philosophy question than anything but, while poking around
->  the percpu stuff today, i noticed in the header file linux/percpu.h
->  the opening snippet:
->
->   #include <linux/preempt.h>
->   #include <linux/slab.h> /* For kmalloc() */
->   #include <linux/smp.h>
->   #include <linux/string.h> /* For memset() */
->   #include <linux/cpumask.h>
->   ...
->
->  hmmm, i thought to myself (because that's how i refer to myself), i
->  wonder why this header file is including headers for kmalloc() and
->  memset() when this header file makes no reference to those routines.
->  let's see what happens if i remove them and:
->
->   $ make distclean
->   $ make defconfig    [x86]
->   $ make
->
->  ... chug chug chug ...
->
->   CC      arch/x86/kernel/nmi_32.o
->  arch/x86/kernel/nmi_32.c: In function 'check_nmi_watchdog':
->  arch/x86/kernel/nmi_32.c:81: error: implicit declaration of function 'kmalloc'
->  arch/x86/kernel/nmi_32.c:81: error: 'GFP_KERNEL' undeclared (first use in this function)
->  arch/x86/kernel/nmi_32.c:81: error: (Each undeclared identifier is reported only once
->  arch/x86/kernel/nmi_32.c:81: error: for each function it appears in.)
->  arch/x86/kernel/nmi_32.c:81: warning: assignment makes pointer from integer without a cast
->  arch/x86/kernel/nmi_32.c:118: error: implicit declaration of function 'kfree'
->  make[1]: *** [arch/x86/kernel/nmi_32.o] Error 1
->  make: *** [arch/x86/kernel] Error 2
->  $
->
->   ok, now i know.  but that means, of course, that nmi_32.c is
->  invoking kmalloc() without ever having included the necessary header
->  file for it -- it's just inheriting that from linux/percpu.h.
->
->   doesn't that (sort of) violate the kernel coding style?  if a file
->  somewhere needs the contents of some header file, isn't it that file's
->  responsibility to explicitly include it, and not quietly realize it's
->  getting it from elsewhere?
->
-I agree with you completely. A file should explicitly include headers
-for the stuff it uses and not rely on implicit includes done
-elsewhere. Cleaning that up is going to touch a lot of files though
-for no real short term gain (there is a long term gain of
-maintainability though), so it's going to be a loveless job :(
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Convert function comment blocks to kernel-doc notation.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |   42 ++++++++++++++-------------
+ 1 file changed, 23 insertions(+), 19 deletions(-)
+
+--- mmotm-2008-0312-2333.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ mmotm-2008-0312-2333/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -176,12 +176,13 @@ static inline void k8_enable_fixed_iorrs
+ }
+ 
+ /**
+- * Checks and updates an fixed-range MTRR if it differs from the value it
+- * should have. If K8 extentions are wanted, update the K8 SYSCFG MSR also.
+- * see AMD publication no. 24593, chapter 7.8.1, page 233 for more information
+- * \param msr MSR address of the MTTR which should be checked and updated
+- * \param changed pointer which indicates whether the MTRR needed to be changed
+- * \param msrwords pointer to the MSR values which the MSR should have
++ * set_fixed_range - checks & updates a fixed-range MTRR if it differs from the value it should have
++ * @msr: MSR address of the MTTR which should be checked and updated
++ * @changed: pointer which indicates whether the MTRR needed to be changed
++ * @msrwords: pointer to the MSR values which the MSR should have
++ *
++ * If K8 extentions are wanted, update the K8 SYSCFG MSR also.
++ * See AMD publication no. 24593, chapter 7.8.1, page 233 for more information.
+  */
+ static void set_fixed_range(int msr, bool *changed, unsigned int *msrwords)
+ {
+@@ -199,12 +200,15 @@ static void set_fixed_range(int msr, boo
+ 	}
+ }
+ 
++/**
++ * generic_get_free_region - Get a free MTRR.
++ * @base: The starting (base) address of the region.
++ * @size: The size (in bytes) of the region.
++ * @replace_reg: mtrr index to be replaced; set to invalid value if none.
++ *
++ * Returns: The index of the region on success, else negative on error.
++ */
+ int generic_get_free_region(unsigned long base, unsigned long size, int replace_reg)
+-/*  [SUMMARY] Get a free MTRR.
+-    <base> The starting (base) address of the region.
+-    <size> The size (in bytes) of the region.
+-    [RETURNS] The index of the region on success, else -1 on error.
+-*/
+ {
+ 	int i, max;
+ 	mtrr_type ltype;
+@@ -249,8 +253,8 @@ static void generic_get_mtrr(unsigned in
+ }
+ 
+ /**
+- * Checks and updates the fixed-range MTRRs if they differ from the saved set
+- * \param frs pointer to fixed-range MTRR values, saved by get_fixed_ranges()
++ * set_fixed_ranges - checks & updates the fixed-range MTRRs if they differ from the saved set
++ * @frs: pointer to fixed-range MTRR values, saved by get_fixed_ranges()
+  */
+ static int set_fixed_ranges(mtrr_type * frs)
+ {
+@@ -294,13 +298,13 @@ static bool set_mtrr_var_ranges(unsigned
+ 
+ static u32 deftype_lo, deftype_hi;
+ 
++/**
++ * set_mtrr_state - Set the MTRR state for this CPU.
++ *
++ * NOTE: The CPU must already be in a safe state for MTRR changes.
++ * RETURNS: 0 if no changes made, else a mask indicating what was changed.
++ */
+ static unsigned long set_mtrr_state(void)
+-/*  [SUMMARY] Set the MTRR state for this CPU.
+-    <state> The MTRR state information to read.
+-    <ctxt> Some relevant CPU context.
+-    [NOTE] The CPU must already be in a safe state for MTRR changes.
+-    [RETURNS] 0 if no changes made, else a mask indication what was changed.
+-*/
+ {
+ 	unsigned int i;
+ 	unsigned long change_mask = 0;
