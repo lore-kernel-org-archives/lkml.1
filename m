@@ -1,59 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbYCMDYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYCMDYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbYCMDYW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 23:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYCMDYN
+	id S1753860AbYCMDYe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 23:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYCMDYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 23:24:13 -0400
-Received: from bay0-omc3-s23.bay0.hotmail.com ([65.54.246.223]:42233 "EHLO
-	bay0-omc3-s23.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751584AbYCMDYM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 23:24:14 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:11052 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYCMDYM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Mar 2008 23:24:12 -0400
-X-Greylist: delayed 432 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Mar 2008 23:24:12 EDT
-Message-ID: <BAY101-W12A3C20A292C4D1841E697C8090@phx.gbl>
-X-Originating-IP: [76.197.169.130]
-From: Adam Turk <bofh1234@hotmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: please fix 2.6.24.3 unifdef-y += if_addrlabel.h problem
-Date: Wed, 12 Mar 2008 23:17:00 -0400
-Importance: Normal
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Date: Wed, 12 Mar 2008 21:24:10 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+       warthog19@eaglescrag.net, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080313032410.GA17561@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+	warthog19@eaglescrag.net, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-acpi@vger.kernel.org
+References: <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de> <20080304230937.GD3694@ldl.fc.hp.com> <47CDF339.3060304@jp.fujitsu.com> <20080305202052.GN3694@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311110403.7db9527c@appleyard> <20080311191406.GB29344@ldl.fc.hp.com> <47D7BF6C.3080306@jp.fujitsu.com>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 13 Mar 2008 03:16:59.0686 (UTC) FILETIME=[B349B460:01C884B8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D7BF6C.3080306@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kenji-san,
 
-Hello,
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Hi Alex-san,
+>
+>> On my machine, it is legal to evaluate S1F0._SUN independent of
+>> S1F0._STA because L001._INI has already been evaluated.
+>> It would be helpful to know what Fujitsu's namespace looks like.
+>> If Fujitsu slot objects contain _STA and _INI, then I agree with
+>> Kenji-san -- I definitely need to check _STA before evaluating
+>> _SUN.
+>
+> Thank you for explanation. Maybe I understood the summary of
+> implementation of HP firmware. But how to use or where to put _INI
+> method in the ACPI namespace never becomes reasonable reason why
+> your driver may ignore _STA before evaluating _SUN.
+>
+>> But in any case, I think both HP and Fujitsu firmware are doing
+>> legal things -- neither firmware is breaking the spec.
+>
+> My understanding of your explanation so far is:
+>
+> - evaluating _SUN without checking _STA doesn't cause problem,
+>  from the view point of HP's implementation.
+> - some IBM machine is doing same as HP
+>
+> I never think those are reasonable reasons why ignoring _STA
+> before evaluating _SUN is legal. Am I missing something?
 
-Can we please get a 2.6.24.4 kernel with the [patch 14/38] NET: Add if_addrlabel.h to sanitized headers patch reverted?  
+I think the piece that I did not explain clearly is that the spec
+does not require checking _STA immediately before _SUN. The spec
+says: 
 
-author	Stephen Hemminger 
-	Fri, 15 Feb 2008 09:31:32 +0000 (01:31 -0800)
-committer	Greg Kroah-Hartman 
-	Tue, 26 Feb 2008 00:18:35 +0000 (16:18 -0800)
-commit	5fb7ba76544d95bfa05199f7394a442de5660be7
-tree	40e96d63be55bab749e3840108595e30c68d402c
-parent	e2a0956c9d1c9eebd51849c58fcbc7477c618a19
+	- you must check _STA before calling _INI
+	- _INI must be called to initialize _SUN
+	- _INI is called once, when the table is loaded
 
-As it stands I can't compile a kernel without removing:
+On HP's implementation, we do obey those rules. We call _INI on
+the PCI bridge during boot, which then initializes the children
+SxFy objects. From that point on, it is legal for us to call
+_SUN.
 
--- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -219,6 +219,7 @@ unifdef-y += i2c-dev.h
- unifdef-y += icmp.h
- unifdef-y += icmpv6.h
- unifdef-y += if_addr.h
--unifdef-y += if_addrlabel.h
- unifdef-y += if_arp.h
- unifdef-y += if_bridge.h
- unifdef-y += if_ec.h
+The other issue is that the spec does not specify the *semantics*
+of _STA. P/IBM firmware engineers think _STA should indicate card
+presence, but Fujitsu firmware engineers think _STA should
+indicate slot presence.
+
+I don't think either firmware team is incorrect -- it is simply
+the case that the specification was not precise enough, to the
+point where separate teams following the same spec came up with
+implementations with different behaviors and different semantics.
+
+I believe that we both have compliant, legal firmware.
+
+>> If one list is shorter than the other, then that should be the
+>> list to put in the kernel, and the default behavior should be
+>> "majority rule".
+>
+> I don't want to consider "majority rule" before I understand why
+> ignoring _STA is legal.
+
+On HP and IBM machines, it *is* legal because we *did* call _STA,
+then _INI, then _SUN. That is one interpretation of the spec.
+
+On Fujitsu machines, the semantics of _STA are different, and it
+is not legal to ignore _STA. That is another interpretation of
+the spec.
+
+Because I think we both have compliant, legal firmware, I think
+the kernel should pick the most maintainable solution for the
+different implementations. In my opinion, writing code for
+"majority rule" and shorter DMI lists is the most maintainable
+solution.
+
+Let us try to find a compromise, ok? Right now, for the machines
+we know about, there are more implementations where _INI lives at
+the bridge level and correctly initialize _SUN, so it's easier to
+follow my original approach.
+
+If we can get this into linux-next and get more exposure on more
+platforms, and we find out that the other interpretation of the
+spec is more popular, then I will very happily ACK your patch,
+and we can have DMI calls to handle HP/IBM machines.
+
+Does that sound fair?
+
+[Let's try and work out an answer here before working on shpchp
+naming issues; I already agree that I need to fix that issue
+before going upstream, but I want to focus here first.]
 
 Thanks,
 
-_________________________________________________________________
-Helping your favorite cause is as easy as instant messaging. You IM, we give.
-http://im.live.com/Messenger/IM/Home/?source=text_hotmail_join
+/ac
+
