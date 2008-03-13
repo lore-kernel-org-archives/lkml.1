@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbYCMOTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYCMOZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbYCMOTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 10:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYCMOTY
+	id S1753925AbYCMOZI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 10:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYCMOY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 10:19:24 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:49758 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbYCMOTX (ORCPT
+	Thu, 13 Mar 2008 10:24:56 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:35593 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbYCMOYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 10:19:23 -0400
-Date: Thu, 13 Mar 2008 14:19:17 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: pm_register() and pm_send_all()
-Message-ID: <20080313141917.GA4117@linux-mips.org>
-References: <20080312150042.96668bcd.akpm@linux-foundation.org> <20080313092813.GA24027@elf.ucw.cz> <20080313122823.GA19415@linux-mips.org>
+	Thu, 13 Mar 2008 10:24:55 -0400
+Message-ID: <47D937A2.9070305@aitel.hist.no>
+Date: Thu, 13 Mar 2008 15:18:10 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313122823.GA19415@linux-mips.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mike Galbraith <efault@gmx.de>, Jan Knutar <jk-lkml@sci.fi>,
+       linux-kernel@vger.kernel.org, Hans-Peter Jansen <hpj@urpla.net>,
+       Jiri Kosina <jkosina@suse.cz>, David Newall <davidn@davidnewall.com>,
+       Theodore Tso <tytso@mit.edu>, "Fred ." <eldmannen@gmail.com>
+Subject: Re: Keys get stuck
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <200803122222.05663.hpj@urpla.net> <1205386933.4797.22.camel@marge.simson.net> <200803131148.22056.jk-lkml@sci.fi> <1205407693.6686.16.camel@marge.simson.net> <20080313120238.GA3860@localhost.ift.unesp.br>
+In-Reply-To: <20080313120238.GA3860@localhost.ift.unesp.br>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 12:28:23PM +0000, Ralf Baechle wrote:
+Carlos R. Mafra wrote:
+> On Thu 13.Mar'08 at 12:28:13 +0100, Mike Galbraith wrote:
+>   
+>> [...]
+>> Swap can definitely keep X off the cpu for extended periods,
+>> [...]
+>>     
+>
+> So I would like to ask if swap letting X (and everything else
+> in my experience) out of the cpu for extended periods is
+> considered normal behaviour, in the sense that nobody is
+> trying to "fix" it (due to it being considered impossible
+> to fix)...?
+>   
+Yes, this is perfectly normal. A heavily swapping machine
+will swap out parts of X.
 
-> Looks correct to me, thus ACK.
-> 
-> Spinning that a little further I wonder how useful the rest of the
-> Alchemy code - which seems to only deal with devices - is.  If at all.
-> I'm going to check with some Alchemy users if that code actually works or
-> can be removed.  I think the latter.  Also there is the APM emulation
-> available which provides similar functionality.
+Now, if X has a need for low-latency for keyboard handling,
+then the X developers can use mlock to lock
+the X keyboard service in memory, and make it a real-time
+(or at least high priority) process too.  This should
+avoid the problem even with extreme swapping and/or
+high cpu load.
 
-So here a patch do cleanup a part.  Probably more to come
+> Sorry for being off-topic, but I run a minimal Window Maker
+> desktop in a P4 3.0 GHz with 512 MB of RAM (around 140 MB
+> being used as per 'free'), and trying to load a 380 MB text
+> file in xjed editor makes my whole desktop quite unfair...
+> it takes tens of seconds to switch desktop, type things in
+> the terminal etc. 
+>
+>   
+Seems ou use too much memory then. If xjed
+wastes memory (by bringing the entire file into memory
+in one go) then you'll get some swapping.
 
-From: Ralf Baechle <ralf@linux-mips.org>
+> When xjed finishes loading the text file, everything comes
+> back to "fair" again.
+>
+> Is there some law in the nature of computers which says
+> that when swapping everything else waits for swap to finish 
+> its business? I hope not :-)
+>   
+No such law, but there are badly implemented software
+around. If xjed is capable of delaying all X events while
+loading the file, for example . . .
 
-[MIPS] Alchey: Crapectomy after removal of pm_send_all calls.
-
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-
- arch/mips/au1000/common/power.c |   20 --------------------
- 1 file changed, 20 deletions(-)
-
-Index: linux-mips/arch/mips/au1000/common/power.c
-===================================================================
---- linux-mips.orig/arch/mips/au1000/common/power.c
-+++ linux-mips/arch/mips/au1000/common/power.c
-@@ -283,18 +283,6 @@ static int pm_do_sleep(ctl_table * ctl, 
- 	return 0;
- }
- 
--static int pm_do_suspend(ctl_table * ctl, int write, struct file *file,
--			 void __user *buffer, size_t * len, loff_t *ppos)
--{
--	if (!write) {
--		*len = 0;
--	} else {
--		suspend_mode = 1;
--	}
--	return 0;
--}
--
--
- static int pm_do_freq(ctl_table * ctl, int write, struct file *file,
- 		      void __user *buffer, size_t * len, loff_t *ppos)
- {
-@@ -408,14 +396,6 @@ static int pm_do_freq(ctl_table * ctl, i
- 
- static struct ctl_table pm_table[] = {
- 	{
--		.ctl_name 	= CTL_UNNUMBERED,
--		.procname	= "suspend",
--		.data		= NULL,
--		.maxlen		= 0,
--		.mode		= 0600,
--		.proc_handler	= &pm_do_suspend
--	},
--	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "sleep",
- 		.data		= NULL,
+Helge Hafting
