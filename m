@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYCMO7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYCMO7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbYCMO7i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 10:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYCMO73
+	id S1756133AbYCMO7v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 10:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYCMO7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 10:59:29 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57835 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752371AbYCMO72 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 10:59:28 -0400
-Date: Thu, 13 Mar 2008 10:59:26 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tino Keitel <tino.keitel@gmx.de>
-cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: broken access to a USB HID device after suspend
-In-Reply-To: <20080312224411.GB2290@dose.home.local>
-Message-ID: <Pine.LNX.4.44L0.0803131049510.4474-100000@iolanthe.rowland.org>
+	Thu, 13 Mar 2008 10:59:37 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:3791 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754559AbYCMO7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 10:59:36 -0400
+Date: Thu, 13 Mar 2008 15:59:32 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080313145932.GA17940@kernel.dk>
+References: <20080313120514.GH17940@kernel.dk> <20080313122344.GD27873@ics.muni.cz> <20080313124633.GS17940@kernel.dk> <20080313125503.GE27873@ics.muni.cz> <20080313125933.GT17940@kernel.dk> <20080313130934.GG27873@ics.muni.cz> <20080313131334.GV17940@kernel.dk> <47D93C2C.8040907@gmail.com> <20080313143930.GZ17940@kernel.dk> <47D93F95.50807@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D93F95.50807@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Tino Keitel wrote:
+On Thu, Mar 13 2008, Alexey Starikovskiy wrote:
+> Jens Axboe wrote:
+> >On Thu, Mar 13 2008, Alexey Starikovskiy wrote:
+> >  
+> >>Jens Axboe wrote:
+> >>    
+> >>>On Thu, Mar 13 2008, Lukas Hejtmanek wrote:
+> >>> 
+> >>>      
+> >>>>On Thu, Mar 13, 2008 at 01:59:34PM +0100, Jens Axboe wrote:
+> >>>>   
+> >>>>        
+> >>>>>The BIOS isn't that old, probably updated it a couple of months ago.
+> >>>>>     
+> >>>>>          
+> >>>>I use the latest BIOS for my T61 and it just works. At least the event 
+> >>>>is
+> >>>>generated either for acpid or for Xserver.
+> >>>>   
+> >>>>        
+> >>>This is an x60, so there may be other differences there.
+> >>>
+> >>> 
+> >>>      
+> >>There are was some playing with acpi_osi=Linux in this timeframe, known
+> >>to deal with sound buttons too.
+> >>Some of Thinkpads were inserted into the blacklist to need this OSI.
+> >>It might be that your Thinkpad needs it too...
+> >>    
+> >
+> >Please talk to me like I'm an ACPI ignorant - because I am. Where is
+> >this blacklist?
+> >
+> >  
+> drivers/acpi/blacklist.c:485.
+> You probably could set acp_osi=Linux as kernel parameter to check if it 
+> helps.
 
-> On Wed, Mar 12, 2008 at 17:44:56 -0400, Alan Stern wrote:
-> 
-> [...]
-> 
-> > Tino, it would help to see a kernel log showing what happened during 
-> > the suspend, resume, and failure of hidmon.  It would help even more if 
-> > you test under a kernel with CONFIG_USB_DEBUG enabled.
-> 
-> A full kernel log is available at http://tikei.de/dmesg
-> 
-> > 
-> > Even if you can't reproduce the problem, do you have the complete 
-> > kernel log from before?
-> > 
-> > Is it possible that this is really a problem with the LCD device, not 
-> > with the kernel?  I ask because if the device was working properly then 
-> > unplugging and replugging the USB cable should do a complete reset.
-> 
-> I did the following:
-> 
-> - suspended the computer
-> 
-> - switched off the LCD
+I booted with acpi_osi=Linux and it has made no difference.
 
-And switched it back on at some point?
-
-> - resumed the computer
-> 
-> - tried to use hidmon, got the error
-> 
-> - unplugged the LCD
-> 
-> - plugged in the LCD
-> 
-> - tried to use hidmon again, got the error again
-> 
-> - suspended the computer
-> 
-> - resumed the computer
-> 
-> - tried to use hidmon again, and it worked
-> 
-> Note that I didn't switch off the LCD during the second suspend, in the
-> case that matters.
-
-Well, this isn't what your log shows.
-
-According to the log, you booted the computer on March 10 and about 12 
-minutes later started getting those -110 errors on the LCD device.  
-Then you suspended the computer with no apparent problem.
-
-Two days later you suspended three more times, and the the LCD monitor
-was disconnected during the third suspend.  When it came back, you
-started getting the errors again.
-
-Next you unplugged and replugged the hub into which the LCD was 
-connected.  Again there was another -110 error.  Finally you suspended 
-and resumed.
-
-To me that makes it look like the LCD's problems have no connection at
-all with suspend/resume.
-
-Alan Stern
+-- 
+Jens Axboe
 
