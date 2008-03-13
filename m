@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYCMMBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbYCMMCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbYCMMBG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYCMMAy
+	id S1754465AbYCMMCG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYCMMBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:00:54 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33807 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751794AbYCMMAx (ORCPT
+	Thu, 13 Mar 2008 08:01:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:20689 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbYCMMBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:00:53 -0400
-Date: Thu, 13 Mar 2008 12:00:51 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
-Message-ID: <20080313120051.GA32729@rakim.wolfsonmicro.main>
-Mail-Followup-To: David Brownell <david-b@pacbell.net>,
-	Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Dmitry Baryshkov <dbaryshkov@gmail.com>
-References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <200803121452.47600.david-b@pacbell.net> <20080312235715.GA15894@opensource.wolfsonmicro.com> <200803122208.49040.david-b@pacbell.net>
+	Thu, 13 Mar 2008 08:01:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=sbzEtFNg4G4lPwe3ZGf+T5MYXMcPdXKbadGPXrBFYcZoKFWV8Xrv/9Awk/2Gd5GRwBndse1xqBXuGgmAQNEveRTDNYDWo92/8ElEUN+lhEeprpLb3N/a+B3H+hXAT7nuhvEfdV/rPdb9I45Z4e4Zx8Uge0MAduH9EVrJUHxbJmM=
+Date: Thu, 13 Mar 2008 09:02:38 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jan Knutar <jk-lkml@sci.fi>, linux-kernel@vger.kernel.org,
+       Hans-Peter Jansen <hpj@urpla.net>, Jiri Kosina <jkosina@suse.cz>,
+       David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
+       "Fred ." <eldmannen@gmail.com>
+Subject: Re: Keys get stuck
+Message-ID: <20080313120238.GA3860@localhost.ift.unesp.br>
+Mail-Followup-To: Mike Galbraith <efault@gmx.de>,
+	Jan Knutar <jk-lkml@sci.fi>, linux-kernel@vger.kernel.org,
+	Hans-Peter Jansen <hpj@urpla.net>, Jiri Kosina <jkosina@suse.cz>,
+	David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
+	"Fred ." <eldmannen@gmail.com>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <200803122222.05663.hpj@urpla.net> <1205386933.4797.22.camel@marge.simson.net> <200803131148.22056.jk-lkml@sci.fi> <1205407693.6686.16.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803122208.49040.david-b@pacbell.net>
-X-Cookie: Uh-oh!!  I'm having TOO MUCH FUN!!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1205407693.6686.16.camel@marge.simson.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 09:08:48PM -0800, David Brownell wrote:
-> On Wednesday 12 March 2008, Mark Brown wrote:
+On Thu 13.Mar'08 at 12:28:13 +0100, Mike Galbraith wrote:
+>[...]
+> Swap can definitely keep X off the cpu for extended periods,
+>[...]
 
-> > Hrm.  I suspect that the documentation which Liam is currently writing
-> > (together with some actual in-tree users) will help here.
+So I would like to ask if swap letting X (and everything else
+in my experience) out of the cpu for extended periods is
+considered normal behaviour, in the sense that nobody is
+trying to "fix" it (due to it being considered impossible
+to fix)...?
 
-> Yes, code is only one part of a balanced architecture.
-> It's pretty weak at conveying any "big picture" issues,
-> especially with only one underlying implementation.  If
-> I can't get that picture without reviewing 100+ KBytes
-> of code, then something critical is missing...
+Sorry for being off-topic, but I run a minimal Window Maker
+desktop in a P4 3.0 GHz with 512 MB of RAM (around 140 MB
+being used as per 'free'), and trying to load a 380 MB text
+file in xjed editor makes my whole desktop quite unfair...
+it takes tens of seconds to switch desktop, type things in
+the terminal etc. 
 
-OK, that's good - from what you were saying it sounded like you had some
-more fundamental objection.  Users are probably at least as important as
-text documentation here since it's them that people tend to look at when
-they need to look at code.  As with a lot of things the core isn't the
-best thing to look at since it has to care about the things that it is
-abstracting away from users.
+When xjed finishes loading the text file, everything comes
+back to "fair" again.
 
-> I've been pushing for clear explanations in part because,
-> well, nobody else has.  I've come across clear needs for
-> basic power switching, to manage sections of both SOCs and
-> boards; and less clear needs for voltage adjustment.  I've
-> been hoping some of the other folk who have looked at these
-> issues would chime in.
+Is there some law in the nature of computers which says
+that when swapping everything else waits for swap to finish 
+its business? I hope not :-)
 
-The ability to adjust voltage is required for devices like MMC and CPU
-frequency control so it needs to be implemented to at least some degree
-and if we do it for everything it reduces the number of special cases to
-handle.  Systems that don't need or want it can disable it by setting an
-exact constraint in the platform code at which point it decays into a
-safety feature.
+
+
+
+
