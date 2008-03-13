@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbYCMWxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbYCMWxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbYCMWxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbYCMWxK
+	id S1758184AbYCMWxd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbYCMWxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:53:10 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:43295 "HELO
+	Thu, 13 Mar 2008 18:53:11 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:43298 "HELO
 	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755886AbYCMWxJ (ORCPT
+	by vger.kernel.org with SMTP id S1756089AbYCMWxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Mar 2008 18:53:09 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=iyn08C1wGcnrizcMtjNkHStjSbbupT17PNAYSwvPX/XfhuKZA7kiEVxwesAKx5kI0TsKmd9Innx/Kh/JJurhrYRIgg1QFrPLBgAVcPJ3t5Fc93Wcw89T4UrMt07HJCC+sAfXMxy+vWiDwOVZvX6kQuJaA/TNsYB/4TepAI1Gk6U=  ;
-X-YMail-OSG: xQkQaFAVM1kY9hPzT7i.PqtIneyl97p59d.4ua_jXKmIooUVlJxZz2aRpz1qhIsVNzPTAUeERg--
+  b=RcVTBW+YRlB+8F2DEyCJelxt3QIzNzbu6QO5m+BO76EngSdYXhVPYZ6XO/2wqpBEdaLqZfPv6SgSECMiwOXTKlcruIotp/uDXNJRUn5DrBABvDI0q2Qj0YeuP+U1QvvKdPeOcfGiYafzM4m1A0CDP4K6td58ByXdPhEaT2xPQiE=  ;
+X-YMail-OSG: gSmNBdcVM1kQ0yvXBqX8QiA21XhVJOH5Umli4c5Y2ucpvGk.IINDs._P7iKz7VV7HKrJn2p4Xw--
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.25-rc5 1/2] gpiolib:  dynamic gpio number allocation
-Date: Thu, 13 Mar 2008 14:49:53 -0800
+Subject: [patch 2.6.25-rc5 2/2] gpiochip_reserve()
+Date: Thu, 13 Mar 2008 14:52:21 -0800
 User-Agent: KMail/1.9.6
 Cc: lkml <linux-kernel@vger.kernel.org>,
        Anton Vorontsov <avorontsov@ru.mvista.com>
@@ -28,118 +28,114 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803131549.54632.david-b@pacbell.net>
+Message-Id: <200803131552.22122.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-If gpio_chip->base is negative during registration, gpiolib performs
-dynamic base allocation. This is useful for devices that aren't always
-present, such as GPIOs on hotplugged devices rather than mainboards.
-(This behavior was previously specified but not implemented.)
-
-To avoid using any numbers that may have been explicitly assigned but
-not yet registered, this dynamic allocation assigns GPIO numbers from
-the biggest number on down, instead of from the smallest on up.
+Add a new function gpiochip_reserve() to reserve ranges of gpios that
+platform code has pre-allocated.  That is, this marks gpio numbers which
+will be claimed by drivers that haven't yet been loaded, and thus are
+not available for dynamic gpio number allocation.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/gpio/gpiolib.c |   52 ++++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 45 insertions(+), 7 deletions(-)
+ drivers/gpio/gpiolib.c     |   51 ++++++++++++++++++++++++++++++++++++++++++---
+ include/asm-generic/gpio.h |    1 
+ 2 files changed, 49 insertions(+), 3 deletions(-)
 
---- g26.orig/drivers/gpio/gpiolib.c	2008-03-13 14:41:52.000000000 -0700
-+++ g26/drivers/gpio/gpiolib.c	2008-03-13 14:51:50.000000000 -0700
-@@ -80,6 +80,33 @@ static inline struct gpio_chip *gpio_to_
- 	return gpio_desc[gpio].chip;
+--- g26.orig/drivers/gpio/gpiolib.c	2008-03-13 14:51:50.000000000 -0700
++++ g26/drivers/gpio/gpiolib.c	2008-03-13 14:56:16.000000000 -0700
+@@ -43,6 +43,7 @@ struct gpio_desc {
+ /* flag symbols are bit numbers */
+ #define FLAG_REQUESTED	0
+ #define FLAG_IS_OUT	1
++#define FLAG_RESERVED	2
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 	const char		*label;
+@@ -88,9 +89,10 @@ static int gpiochip_find_base(int ngpio)
+ 	int base = -ENOSPC;
+ 
+ 	for (i = ARCH_NR_GPIOS - 1; i >= 0 ; i--) {
+-		struct gpio_chip *chip = gpio_desc[i].chip;
++		struct gpio_desc *desc = &gpio_desc[i];
++		struct gpio_chip *chip = desc->chip;
+ 
+-		if (!chip) {
++		if (!chip && !test_bit(FLAG_RESERVED, &desc->flags)) {
+ 			spare++;
+ 			if (spare == ngpio) {
+ 				base = i;
+@@ -98,7 +100,8 @@ static int gpiochip_find_base(int ngpio)
+ 			}
+ 		} else {
+ 			spare = 0;
+-			i -= chip->ngpio - 1;
++			if (chip)
++				i -= chip->ngpio - 1;
+ 		}
+ 	}
+ 
+@@ -108,6 +111,48 @@ static int gpiochip_find_base(int ngpio)
  }
  
-+/* dynamic allocation of GPIOs, e.g. on a hotplugged device */
-+static int gpiochip_find_base(int ngpio)
+ /**
++ * gpiochip_reserve() - reserve range of gpios to use with platform code only
++ * @start: starting gpio number
++ * @ngpio: number of gpios to reserve
++ * Context: platform init, potentially before irqs or kmalloc will work
++ *
++ * Returns a negative errno if any gpio within the range is already reserved
++ * or registered, else returns zero as a success code.  Use this function
++ * to mark a range of gpios as unavailable for dynamic gpio number allocation,
++ * for example because its driver support is not yet loaded.
++ */
++int __init __must_check gpiochip_reserve(int start, int ngpio)
 +{
++	int ret = 0;
++	unsigned long flags;
 +	int i;
-+	int spare = 0;
-+	int base = -ENOSPC;
 +
-+	for (i = ARCH_NR_GPIOS - 1; i >= 0 ; i--) {
-+		struct gpio_chip *chip = gpio_desc[i].chip;
++	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio))
++		return -EINVAL;
 +
-+		if (!chip) {
-+			spare++;
-+			if (spare == ngpio) {
-+				base = i;
-+				break;
-+			}
-+		} else {
-+			spare = 0;
-+			i -= chip->ngpio - 1;
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	for (i = start; i < start + ngpio; i++) {
++		struct gpio_desc *desc = &gpio_desc[i];
++
++		if (desc->chip || test_bit(FLAG_RESERVED, &desc->flags)) {
++			ret = -EBUSY;
++			goto err;
 +		}
++
++		set_bit(FLAG_RESERVED, &desc->flags);
 +	}
 +
-+	if (gpio_is_valid(base))
-+		pr_debug("%s: found new base at %d\n", __func__, base);
-+	return base;
-+}
++	pr_debug("%s: reserved gpios from %d to %d\n",
++		 __func__, start, start + ngpio - 1);
++err:
++	spin_unlock_irqrestore(&gpio_lock, flags);
 +
- /**
++	return ret;
++}
++EXPORT_SYMBOL_GPL(gpiochip_reserve);
++
++/**
   * gpiochip_add() - register a gpio_chip
   * @chip: the chip to register, with chip->base initialized
-@@ -88,38 +115,49 @@ static inline struct gpio_chip *gpio_to_
-  * Returns a negative errno if the chip can't be registered, such as
-  * because the chip->base is invalid or already associated with a
-  * different chip.  Otherwise it returns zero as a success code.
-+ *
-+ * If chip->base is negative, this requests dynamic assignment of
-+ * a range of valid GPIOs.
-  */
- int gpiochip_add(struct gpio_chip *chip)
- {
- 	unsigned long	flags;
- 	int		status = 0;
- 	unsigned	id;
-+	int		base = chip->base;
+  * Context: potentially before irqs or kmalloc will work
+--- g26.orig/include/asm-generic/gpio.h	2008-03-13 14:41:52.000000000 -0700
++++ g26/include/asm-generic/gpio.h	2008-03-13 14:55:10.000000000 -0700
+@@ -74,6 +74,7 @@ struct gpio_chip {
  
--	/* NOTE chip->base negative is reserved to mean a request for
--	 * dynamic allocation.  We don't currently support that.
--	 */
--
--	if (chip->base < 0 || !gpio_is_valid(chip->base  + chip->ngpio)) {
-+	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio))
-+			&& base >= 0) {
- 		status = -EINVAL;
- 		goto fail;
- 	}
+ extern const char *gpiochip_is_requested(struct gpio_chip *chip,
+ 			unsigned offset);
++extern int __init __must_check gpiochip_reserve(int start, int ngpio);
  
- 	spin_lock_irqsave(&gpio_lock, flags);
- 
-+	if (base < 0) {
-+		base = gpiochip_find_base(chip->ngpio);
-+		if (base < 0) {
-+			status = base;
-+			goto fail_unlock;
-+		}
-+		chip->base = base;
-+	}
-+
- 	/* these GPIO numbers must not be managed by another gpio_chip */
--	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
-+	for (id = base; id < base + chip->ngpio; id++) {
- 		if (gpio_desc[id].chip != NULL) {
- 			status = -EBUSY;
- 			break;
- 		}
- 	}
- 	if (status == 0) {
--		for (id = chip->base; id < chip->base + chip->ngpio; id++) {
-+		for (id = base; id < base + chip->ngpio; id++) {
- 			gpio_desc[id].chip = chip;
- 			gpio_desc[id].flags = 0;
- 		}
- 	}
- 
-+fail_unlock:
- 	spin_unlock_irqrestore(&gpio_lock, flags);
- fail:
- 	/* failures here can mean systems won't boot... */
+ /* add/remove chips */
+ extern int gpiochip_add(struct gpio_chip *chip);
