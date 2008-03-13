@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYCMM7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbYCMNBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYCMM7u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYCMM7i
+	id S1755770AbYCMNBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 09:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYCMNBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:59:38 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:3274 "EHLO kernel.dk"
+	Thu, 13 Mar 2008 09:01:31 -0400
+Received: from rtr.ca ([76.10.145.34]:2604 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbYCMM7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:59:37 -0400
-Date: Thu, 13 Mar 2008 13:59:34 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080313125933.GT17940@kernel.dk>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net> <20080313120514.GH17940@kernel.dk> <20080313122344.GD27873@ics.muni.cz> <20080313124633.GS17940@kernel.dk> <20080313125503.GE27873@ics.muni.cz>
+	id S1753345AbYCMNBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 09:01:30 -0400
+Message-ID: <47D925A7.1030706@rtr.ca>
+Date: Thu, 13 Mar 2008 09:01:27 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313125503.GE27873@ics.muni.cz>
+To: "Fred ." <eldmannen@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Keys get stuck
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com>
+In-Reply-To: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13 2008, Lukas Hejtmanek wrote:
-> On Thu, Mar 13, 2008 at 01:46:33PM +0100, Jens Axboe wrote:
-> > They do not generate any events, xev reports nothing. The ThinkVantage
-> > button doesn't generate any events either.
-> 
-> what about BIOS upgrade? I think this really should work.
+My Dell X1 notebook had this problem HUGELY, back in about 2.6.18 or so.
+Under *no* load to speak of, X would lose track of a "key up" event
+and forever be stuck on "key down".
 
-The BIOS isn't that old, probably updated it a couple of months ago.
+I could still use the mouse to start another X session simultaneously,
+and in that alternate X things worked fine.  So it was definitely an
+X server process issue, not a system wide kernel thing.
 
-> Ahh, maybe you are facing EC problems? Are you using just stock vanila
-> kernel or some additional patches?
+And not a GNOME thing -- I use KDE exclusively.
 
-It's stock -git as of this morning, with the
-208c70a45624400fafd7511b96bc426bf01f8f5e commit reverted. And some other
-unrelated patches I'm working on, but nothing that has anything remotely
-to do with this.
+Problem seems to have gone away since I put 2.6.23 onto that machine.
+Newer kernels have broken suspend/resume there, so 2.6.23 is as high
+as that one gets for now.
 
--- 
-Jens Axboe
-
+-ml
