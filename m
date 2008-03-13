@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbYCMOyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYCMOyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431AbYCMOyE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 10:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYCMOxw
+	id S1756542AbYCMOyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 10:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYCMOyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 10:53:52 -0400
-Received: from mail.queued.net ([207.210.101.209]:1289 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752964AbYCMOxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 10:53:51 -0400
-Date: Thu, 13 Mar 2008 10:57:50 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jordan Crouse <jordan.crouse@amd.com>, akpm@linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
-       mm-commits@vger.kernel.org, rjw@sisk.pl
-Subject: Re: +
- pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspen
- d-vt-switch.patch added to -mm tree
-Message-ID: <20080313105750.3e50107a@ephemeral>
-In-Reply-To: <20080313074332.GA19117@elf.ucw.cz>
-References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
-	<20080312085149.GA3993@ucw.cz>
-	<20080312144506.GE1018@cosmic.amd.com>
-	<20080313074332.GA19117@elf.ucw.cz>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 10:54:46 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:5787 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbYCMOyp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 10:54:45 -0400
+Message-ID: <47D94035.6080301@hp.com>
+Date: Thu, 13 Mar 2008 10:54:45 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
+Subject: Re: [PATCH 0/7] IO CPU affinity testing series
+References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 08:43:32 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
 
-[...]
-> > 
-> > > Also, it would be nice to make the logic the other way around. Move vt
-> > > switching to the drivers that need it because X can be expected to own
-> > > the hardware.
-> > 
-> > Conservation of energy.  Its easier to make 3 or 4 drivers opt out of 
-> 
-> Nice euphemism. You did quick hack instead of proper solution, and
-> someone will have to clean it up sooner or later...
-> 								Pavel
-> 
+Your suggestion worked Jens, will do some benchmarking, and try to figure out why on the side...
 
-And I wouldn't be willing to do anything further without approval
-from the fbdevel folks.  No one's stopping you from writing a patch
-if you feel so strongly about it, though.
+Subject: [PATCH] IA64 boots with direct call of generic init single data
+
+Need to figure out why it needs to be done earlier on ia64.
+
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+---
+ arch/ia64/kernel/setup.c |    2 ++
+ arch/ia64/kernel/smp.c   |    7 -------
+ 2 files changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index 4aa9eae..36a0fe5 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -518,6 +518,8 @@ setup_arch (char **cmdline_p)
+ 	acpi_boot_init();
+ #endif
+ 
++	generic_init_call_single_data();
++
+ #ifdef CONFIG_VT
+ 	if (!conswitchp) {
+ # if defined(CONFIG_DUMMY_CONSOLE)
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index d8ee005..04ba9f8 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -113,13 +113,6 @@ stop_this_cpu (void)
+ 
+ DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+ 
+-int __cpuinit init_smp_call(void)
+-{
+-	generic_init_call_single_data();
+-	return 0;
+-}
+-core_initcall(init_smp_call);
+-
+ void
+ cpu_die(void)
+ {
+-- 
+1.5.2.5
+
