@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYCMAF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYCMAGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYCMAF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 20:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYCMAFJ
+	id S1755366AbYCMAGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 20:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYCMAGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 20:05:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43683 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752331AbYCMAFI (ORCPT
+	Wed, 12 Mar 2008 20:06:43 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51479 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbYCMAGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 20:05:08 -0400
-Date: Wed, 12 Mar 2008 17:04:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-Message-Id: <20080312170458.2fd5a490.akpm@linux-foundation.org>
-In-Reply-To: <47D86D43.2060108@imap.cc>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D86D43.2060108@imap.cc>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Mar 2008 20:06:42 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Huang, Ying" <ying.huang@intel.com>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm] kexec jump -v9
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<20080311211004.GA30164@redhat.com>
+	<1205272758.7990.37.camel@nigel-laptop>
+	<1205288074.29875.22.camel@caritas-dev.intel.com>
+	<20080312185356.GD13549@redhat.com>
+Date: Wed, 12 Mar 2008 18:01:16 -0600
+In-Reply-To: <20080312185356.GD13549@redhat.com> (Vivek Goyal's message of
+	"Wed, 12 Mar 2008 14:53:56 -0400")
+Message-ID: <m1myp3xzjn.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 00:54:43 +0100
-Tilman Schmidt <tilman@imap.cc> wrote:
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-> Am 11.03.2008 09:14 schrieb Andrew Morton:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
-> 
-> This still complains during startup:
-> 
-> <6>[    0.063442] Checking 'hlt' instruction... OK.
-> <0>[    0.068233] BUG: spinlock bad magic on CPU#0, swapper/0
-> <0>[    0.068996]  lock: c2c19380, .magic: 00000000, .owner: swapper/0, .owner_cpu: 0
-> <4>[    0.069227] Pid: 0, comm: swapper Not tainted 2.6.25-rc5-mm1-testing #1
-> <4>[    0.069369]  [spin_bug+124/135] spin_bug+0x7c/0x87
-> <4>[    0.069563]  [_raw_spin_unlock+25/113] _raw_spin_unlock+0x19/0x71
-> <4>[    0.069752]  [_spin_unlock+29/60] _spin_unlock+0x1d/0x3c
-> <4>[    0.069941]  [mnt_want_write+98/136] mnt_want_write+0x62/0x88
-> <4>[    0.070131]  [sys_mkdirat+134/214] sys_mkdirat+0x86/0xd6
-> <4>[    0.070322]  [clean_path+22/74] ? clean_path+0x16/0x4a
-> <4>[    0.070558]  [kfree+216/236] ? kfree+0xd8/0xec
-> <4>[    0.070793]  [sys_mkdir+16/18] sys_mkdir+0x10/0x12
-> <4>[    0.070995]  [do_name+274/435] do_name+0x112/0x1b3
-> <4>[    0.071184]  [write_buffer+29/44] write_buffer+0x1d/0x2c
-> <4>[    0.071371]  [flush_window+100/179] flush_window+0x64/0xb3
-> <4>[    0.071558]  [unpack_to_rootfs+1580/2233] unpack_to_rootfs+0x62c/0x8b9
-> <4>[    0.071747]  [populate_rootfs+32/265] populate_rootfs+0x20/0x109
-> <4>[    0.071995]  [alternative_instructions+339/344] ? alternative_instructions+0x153/0x158
-> <4>[    0.072235]  [start_kernel+835/853] start_kernel+0x343/0x355
-> <4>[    0.072422]  [i386_start_kernel+8/10] i386_start_kernel+0x8/0xa
-> <4>[    0.072610]  =======================
-> <6>[    0.072808] Unpacking initramfs... done
-> 
-> System comes up fine, though. Not sure whom to CC.
+> Yes. But this memory gets reserved at loading time and then this memory
+> remains unused for the whole duration (except hibernation).
+>
+> In the example you gave, looks like you are reserving 15MB of memory for
+> second kernel. In practice, we we finding it difficult to boot a regular
+> kernel in 16MB of memory in kdump. We are now reserving 128MB of memory
+> for kdump kernel on x86 arch, otheriwse OOM kill kicks in during init
+> or while core is being copied.
 
-Dave, methinks.
+Sounds like something we may want to fix.  Living at the default kernel
+address may alieviate that problem somewhat.
 
-> Machine's a dual-core Pentium D running a 32 bit kernel.
-> Let me know if you want me to provide more information or test anything.
+> Kexec based hibernation does not look any different than kdump in terms
+> of memory requirements. The only difference seems to be that kdump does
+> the contiguous memory reservation at boot time and kexec based hibernation
+> does the memory reservation at kernel loading time.
+>
+> The only difference I can think of is, kdump will generally run on servers
+> and hibernation will be required on desktops/laptops and run time memory
+> requirements might be little different. I don't have numbers though.
+>
+> At the same time carrying a separate kernel binary just for hibernation
+> purposes does not sound very good.
 
-I thought we already fixed this, actually.  Maybe we just talked about it
-a bit?
+One difference is you only get the memory penalty just before you hibernate,
+instead of continuously.  So potentially you could swap out things to
+make run for the kernel to save you to disk.
+
+> [..]
+>> > 3. Usability.
+>> > 
+>> > Right now, kexec based hibernation looks quite complicated to configure,
+>> > and the user is apparently going to have to remember to boot a different
+>> > kernel or at least a different bootloader entry in order to resume. Not
+>> 
+>> No, the newest implementation need not to boot a different kernel or
+>> different bootloader entry. You just use one bootloader entry, it will
+>> resume if there's an image, booting normally if there's not. You can
+>> look at the newest hibernation example description.
+>> 
+>
+> Following is the step from new method you have given.
+>
+> 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+>    root file system.
+>
+> This mentions that use rootfs.gz as initrd. Without modifying the boot
+> loader entry, how would I switch the initrd dynamically.
+>
+> Looks like it might be a typo. So basically we can just boot back into
+> normal kernel and then a user can load the resumable core file and kexec
+> to it?
+>
+> I think all this functionality can be packed into normal initrd itself
+> to make user interface better.
+>
+> A user can configure the destination for hibernated image at system
+> installation time and initrd will be modified accordingly to save the
+> hibernated image as well to check that user specfied location to find out
+> if a hibernation image is available and needs to be resumed.
+
+Yes.  And we don't need to load any of this until just before hibernation
+time so we should be able to change things right up until the last moment.
+
+Eric
