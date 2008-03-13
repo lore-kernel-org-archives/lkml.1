@@ -1,31 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbYCMUER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYCMUEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbYCMUER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYCMUD6
+	id S1757262AbYCMUEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbYCMUE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:03:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40838 "EHLO
+	Thu, 13 Mar 2008 16:04:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56933 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752940AbYCMUD5 (ORCPT
+	by vger.kernel.org with ESMTP id S1753462AbYCMUEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:03:57 -0400
-Date: Thu, 13 Mar 2008 13:01:12 -0700
+	Thu, 13 Mar 2008 16:04:25 -0400
+Date: Thu, 13 Mar 2008 13:03:55 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James.Bottomley@HansenPartnership.com, stern@rowland.harvard.edu,
-       mdharm-usb@one-eyed-alien.net, svens@stackframe.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH ver3] isd200: Allocate sense_buffer for hacked up
- scsi_cmnd
-Message-Id: <20080313130112.22c0776f.akpm@linux-foundation.org>
-In-Reply-To: <47D810C9.90309@panasas.com>
-References: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>
-	<47D7F5A3.9010004@panasas.com>
-	<1205340884.2941.112.camel@localhost.localdomain>
-	<47D80D60.3060006@panasas.com>
-	<47D810C9.90309@panasas.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Do not allow setting of quota limits to too high values
+Message-Id: <20080313130355.6a84d0c5.akpm@linux-foundation.org>
+In-Reply-To: <20080312172255.GB21395@duck.suse.cz>
+References: <20080312172255.GB21395@duck.suse.cz>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,43 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008 19:20:09 +0200
-Boaz Harrosh <bharrosh@panasas.com> wrote:
 
+> Subject: [PATCH] Do not allow setting of quota limits to too high values
+
+Please put "quota:" at the start of the title to identify the subsystem.  So,
+
+Subject: [PATCH] quota: do not allow setting of quota limits to too high values
+
+would have suited.  Thanks.
+
+On Wed, 12 Mar 2008 18:22:55 +0100
+Jan Kara <jack@suse.cz> wrote:
+
+> From: Andrew Perepechko <andrew.perepechko@sun.com>
 > 
-> Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
-> own struct scsi_cmnd like here isd200, must also take care of their own
-> sense_buffer.
+> We should check whether quota limits set via Q_SETQUOTA are not exceeding
+> limits which quota format is able to handle.
 > 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> Signed-off-by: Andrew Perepechko <andrew.perepechko@sun.com>
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> 
 > ---
->  drivers/usb/storage/isd200.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
-> index 4f2d143..971d13d 100644
-> --- a/drivers/usb/storage/isd200.c
-> +++ b/drivers/usb/storage/isd200.c
-> @@ -1470,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
->  	if (info) {
->  		kfree(info->id);
->  		kfree(info->RegsBuf);
-> +		kfree(info->srb.sense_buffer);
->  	}
->  }
->  
-> @@ -1495,7 +1496,9 @@ static int isd200_init_info(struct us_data *us)
->  				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
->  		info->RegsBuf = (unsigned char *)
->  				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
-> -		if (!info->id || !info->RegsBuf) {
-> +		info->srb.sense_buffer =
-> +				kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
-> +		if (!info->id || !info->RegsBuf || !info->srb.sense_buffer) {
->  			isd200_free_info_ptrs(info);
->  			kfree(info);
->  			retStatus = ISD200_ERROR;
+>   Andrew, would you please queue it up for inclusion? Thanks.
 
-I've thoroughly lost the plot here.  Is this needed in 2.6.25?  If so, why?
-
-Thanks.
+For 2.6.26, I assume?  I am not able to determine the seriousness of this
+problem from the changelog nor from the patch itself.
