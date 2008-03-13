@@ -1,103 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYCMVd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYCMVh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbYCMVd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 17:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYCMVdv
+	id S1757383AbYCMVh0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 17:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYCMVhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 17:33:51 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:42675 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753502AbYCMVdu (ORCPT
+	Thu, 13 Mar 2008 17:37:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55819 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752477AbYCMVhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 17:33:50 -0400
-From: Chr <chunkeey@web.de>
-To: Christian Kujau <lists@nerdbynature.de>,
-       Christian Kujau <lists@nerdbynature.de>
-Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
-Date: Thu, 13 Mar 2008 22:33:47 +0100
-User-Agent: KMail/1.9.9
-Cc: Samuel Tardieu <sam@rfc1149.net>,
-       device-mapper development <dm-devel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <alpine.DEB.1.00.0803130003110.5593@sheep.housecafe.de> <alpine.DEB.1.00.0803131444480.7433@sheep.housecafe.de>
-In-Reply-To: <alpine.DEB.1.00.0803131444480.7433@sheep.housecafe.de>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Mar 2008 17:37:13 -0400
+Date: Thu, 13 Mar 2008 14:35:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: paulus@samba.org, anton@samba.org, mingo@elte.hu, tglx@linutronix.de,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
+Message-Id: <20080313143510.9cfb7ab4.akpm@linux-foundation.org>
+In-Reply-To: <20080313083107.8BDE926F992@magilla.localdomain>
+References: <20080313083107.8BDE926F992@magilla.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200803132233.47516.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX181dsTmq0R2lCUYYrzadQu9vAWLkRfD1VH8NRm+
-	63KR6/SxXJ3twsgnF2DXigykaatjSQe/ogD+WGKngZbKrC8La+
-	T04BqBu/M=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 14:45:39 Christian Kujau wrote:
-> and so does -git8 and -git9...sigh :(
 
-hmm, I can boot any of these -rcX-gitY kernels (but not without some stuck 
-tasks after about a hour or so...)
+Problems.
 
-but back: I tried lockdep and ran into this: (debug blocker)
+> Subject: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
 
-pktcdvd: writer pktcdvd0 mapped to sr0
+This is advertised as a -mm patch but afacit it isn't against -mm.  And it
+doesn't seem to be against mainline either?  At least, the fourth patch
+fails to apply.
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.25-rc5-git3 #2
----------------------------------------------
-scsi_id/8262 is trying to acquire lock:
- (&bdev->bd_mutex){--..}, at: [<ffffffff802a8e51>] do_open+0x7b/0x2c0
+When trying to apply the fourth patch to -mm I hit a reject due to the new
+BTS support in git-x86.  I stopped there because the patch might be invalid
+because of this.
 
-but task is already holding lock:
- (&bdev->bd_mutex){--..}, at: [<ffffffff802a8e51>] do_open+0x7b/0x2c0
+On Thu, 13 Mar 2008 01:31:07 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
 
-other info that might help us debug this:
-2 locks held by scsi_id/8262:
- #0:  (&bdev->bd_mutex){--..}, at: [<ffffffff802a8e51>] do_open+0x7b/0x2c0
- #1:  (&ctl_mutex#2){--..}, at: [<ffffffff88231af2>] pkt_open+0x26/0x516 
-[pktcdvd]
+> 
+> Define the copy_siginfo_from_user32 entry point for powerpc, so
+> that generic CONFIG_COMPAT code can call it.  We already had the
+> code rolled into compat_sys_rt_sigqueueinfo, this just moves it
+> out into the canonical function that other arch's define.
+> 
 
-stack backtrace:
-Pid: 8262, comm: scsi_id Not tainted 2.6.25-rc5-git3 #2
+Even though this appears to be a signal-related patch it is actually
+ptrace-related, yes?
 
-Call Trace:
- [<ffffffff8024ffe4>] __lock_acquire+0x8c9/0xc72
- [<ffffffff804bb23e>] ? __mutex_unlock_slowpath+0xf9/0x105
- [<ffffffff8025079f>] lock_acquire+0x5e/0x77
- [<ffffffff802a8e51>] ? do_open+0x7b/0x2c0
- [<ffffffff804bb336>] mutex_lock_nested+0xe1/0x270
- [<ffffffff802a8e51>] ? do_open+0x7b/0x2c0
- [<ffffffff802a8e51>] do_open+0x7b/0x2c0
- [<ffffffff802a9116>] __blkdev_get+0x80/0x92
- [<ffffffff802a9133>] blkdev_get+0xb/0xd
- [<ffffffff88231b6b>] :pktcdvd:pkt_open+0x9f/0x516
- [<ffffffff802a8e84>] do_open+0xae/0x2c0
- [<ffffffff802a92a4>] ? blkdev_open+0x0/0x6a
- [<ffffffff804bcbab>] ? _spin_unlock+0x26/0x2a
- [<ffffffff802a92a4>] ? blkdev_open+0x0/0x6a
- [<ffffffff802a92db>] blkdev_open+0x37/0x6a
- [<ffffffff80282571>] __dentry_open+0xe6/0x1c0
- [<ffffffff802826e4>] nameidata_to_filp+0x2e/0x40
- [<ffffffff8028272f>] do_filp_open+0x39/0x4b
- [<ffffffff804bcbab>] ? _spin_unlock+0x26/0x2a
- [<ffffffff8028246f>] ? get_unused_fd_flags+0x10d/0x11c
- [<ffffffff80282792>] do_sys_open+0x51/0xd9
- [<ffffffff80282843>] sys_open+0x1b/0x1d
- [<ffffffff8020b22b>] system_call_after_swapgs+0x7b/0x80
+This patch is a prerequisite for "ptrace: compat_ptrace_request siginfo",
+but this patch is independent from that patch (and from all others) and
+hence this patch can be merged on its own into powerpc tree if we wish to go that
+way, yes?  (Although probably it would be better not to do it that way, for
+sanity's sake).
 
-soooo.....?
 
-scsi_id/8262 is trying to acquire lock:
- (&bdev->bd_mutex){--..}, at: [<ffffffff802a8e51>] do_open+0x7b/0x2c0
+Anwyay, please help me out with the dependencies here, and take a look at
+the x86 BTS stuff?
 
-but task is already holding lock:
- (&bdev->bd_mutex){--..}, at: [<ffffffff802a8e51>] do_open+0x7b/0x2c0
+Thanks.
 
-sounds a bit strange? Is this a SMP related problem after all?
-(*disabled pktcddvd for now... to see if still locks)
-
-Regards,
-	Chr...
