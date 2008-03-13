@@ -1,141 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYCMWW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbYCMWWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYCMWW1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYCMWWQ
+	id S1757927AbYCMWWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbYCMWWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:22:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46270 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750814AbYCMWWP (ORCPT
+	Thu, 13 Mar 2008 18:22:40 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:38066 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752667AbYCMWWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:22:15 -0400
-Date: Thu, 13 Mar 2008 15:20:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, kwc@citi.umich.edu, arunsr@cse.iitk.ac.in,
-       dwalsh@redhat.com, linux-security-module@vger.kernel.org,
-       dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] KEYS: Don't generate user and user session keyrings
- unless they're accessed
-Message-Id: <20080313152059.90681241.akpm@linux-foundation.org>
-In-Reply-To: <20080313191437.28959.4396.stgit@warthog.procyon.org.uk>
-References: <20080313191432.28959.52722.stgit@warthog.procyon.org.uk>
-	<20080313191437.28959.4396.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 18:22:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bLtASkbtMnLsoHtTacxKNPqD8Cr++vkK8MhZXQP9FcORYsilQngXoRAAfX3XV+L9xIU6BQx3W0CXqYH4CiHcHTs9VujKPcK++0ZgD/g5l5aGI36BuxUFaJ9V0MC0wmNfvy8+hBbjmYhzAx6Vxjc8PDxbyqU29LsIQ6+SjmZQwzY=
+Message-ID: <86802c440803131522t3d038d39gbe8eb0d38ddcb634@mail.gmail.com>
+Date: Thu, 13 Mar 2008 15:22:39 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH] mm: fix boundary checking in free_bootmem_core
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu,
+       clameter@sgi.com, linux-kernel@vger.kernel.org,
+       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200803132259.47063.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440803111801m20349386l58a108cec13eb5ee@mail.gmail.com>
+	 <86802c440803121811i262b21bdrfb07df52fd27aaae@mail.gmail.com>
+	 <20080312182240.db32c858.akpm@linux-foundation.org>
+	 <200803132259.47063.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 19:14:37 +0000
-David Howells <dhowells@redhat.com> wrote:
-
-> Don't generate the per-UID user and user session keyrings unless they're
-> explicitly accessed.  This solves a problem during a login process whereby
-> set*uid() is called before the SELinux PAM module, resulting in the per-UID
-> keyrings having the wrong security labels.
-> 
-> This also cures the problem of multiple per-UID keyrings sometimes appearing
-> due to PAM modules (including pam_keyinit) setuiding and causing user_structs
-> to come into and go out of existence whilst the session keyring pins the user
-> keyring.  This is achieved by first searching for extant per-UID keyrings before
-> inventing new ones.
-> 
-> The serial bound argument is also dropped from find_keyring_by_name() as it's
-> not currently made use of (setting it to 0 disables the feature).
-> 
-> ..
+On Thu, Mar 13, 2008 at 2:59 PM, Andi Kleen <ak@suse.de> wrote:
+> On Thursday 13 March 2008 02:22:40 Andrew Morton wrote:
+>  > On Wed, 12 Mar 2008 18:11:41 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>  >
+>  > > >  <looks at it>
+>  > > >
+>  > > >  Sorry, but I find the changelog very hard to amke sense of.  I presently
+>  > > >  have:
+>  > > >
+>  > > >
+>  > > >   So call it when numa is enabled, we don't know which node have that
+>  > > >   range.  and make it more robust.
+>  > > >
+>  > > >   Try to trim it to get valid sidx, and eidx.
+>  > > >
+>  > > >  Could you please expand on this?
+>  > >
+>  > > please check following...
+>  > >
+>  >
+>  > Heaps better, thanks ;)  Below is what I now have.
+>  >
+>  > (cc's people)
+>  >
+>  > Guys, could you please review this?  Maybe test it a bit?
+>  >
+>  > Thanks.
+>  >
+>  >
+>  > From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+>  >
+>  > With numa enabled, some callers could have a range o fmemory on one node but
+>  > try to free that on other node.  This can cause some pages to be freed
+>  > wrongly.
 >
-> -/* Initial keyrings */
-> -extern struct key root_user_keyring;
-> -extern struct key root_session_keyring;
+>  Concrete examples?
+>
+>  If that happens it's really just a problem that the bootmem API
+>  is wrong. I was always annoyed by the hardcoded NODE_DATA(0)s in
+>  free_bootmem.
+>
+>  I would suggest if that happens you just fix free_bootmem to search
+>  for the correct node instead of hardcoding 0 and then eliminate
+>  free_bootmem_node() everywhere and replace it with free_bootmem()
+>
+> >
+>  > For example: when we try to allocate 128g boot ram early for gart/swiotlb, and
+>  > free that range later so gart/swiotlb can get some range afterwards.
+>
+>  I'm confused by the example. AFAIK there is no memory freeing in either
+>  gart nor swiotlb. At least there wasn't until very recently.
 
-hm, I didn't realise that the keys code had special knowlege of "root". 
-How does that play alongside the containers stuff?
+For big system when numa=off or disabled, vmemmap will use 3.6g ram
+when you have 256g. if you don't allocate the PMD continuous.
 
-> --- a/kernel/user.c
-> +++ b/kernel/user.c
-> ...
-> +#ifdef CONFIG_KEYS
-> +		new->uid_keyring = new->session_keyring = NULL;
-> +#endif
+then i tried to reserve 64M or 128M RAM before that, and free that
+before gart/switotble try to allloc_bootmem under 4g.
 
-		new->uid_keyring = NULL;
-		new->session_keyring = NULL;
+that patch will make the system without ram on node0 not happy.
+because of free_bootmem is hardcoded to use node0.
 
-would be more conventional.
+>
+>
+>  >
+>  > With this patch, we don't need to care which node holds the range, just loop
+>  > to call free_bootmem_node for all online nodes.
+>  >
+>  > This patch make free_bootmem_core() more robust by trimming the sidx and eidx
+>  > according the ram range that the node has.
+>
+>  I think you should just kill free_bootmem_node() and replace it everywhere
+>  with your improved free_bootmem()
 
-But better would be to teach alloc_uid() about kmem_cache_zalloc() then
-take a chainsaw to it.
+using phys_to_nid()? it seems we only have that on x86_64.
 
-It's sorely tempting to say that initialising an atomic_t with memset(0) is
-OK.  Heck, if it ever becomes not OK then we're screwed anwyay, because
-vast tracts of code assumes that atomic_set(uninitalised_atomic, 0) works
-OK.
-
-
-I'll queue this up:
-
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Use kmem_cache_zalloc(), remove large amounts of initialsiation code and
-ifdeffery.
-
-Note: this assumes that memset(*atomic_t, 0) correctly initialises the
-atomic_t.  This is true for all present archtiectures and if it becomes false
-for a future architecture then we'll need to make large changes all over the
-place anyway.
+also there is assumpation that reserve_bootmem_node, reserver_bootmem
+can not cross the nodes.
+I want to remove that constrient too.
 
 
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/user.c |   18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
-
-diff -puN kernel/user.c~alloc_uid-cleanup kernel/user.c
---- a/kernel/user.c~alloc_uid-cleanup
-+++ a/kernel/user.c
-@@ -356,7 +356,7 @@ void free_uid(struct user_struct *up)
- 		local_irq_restore(flags);
- }
- 
--struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
-+struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
- {
- 	struct hlist_head *hashent = uidhashentry(ns, uid);
- 	struct user_struct *up, *new;
-@@ -371,26 +371,12 @@ struct user_struct * alloc_uid(struct us
- 	spin_unlock_irq(&uidhash_lock);
- 
- 	if (!up) {
--		new = kmem_cache_alloc(uid_cachep, GFP_KERNEL);
-+		new = kmem_cache_zalloc(uid_cachep, GFP_KERNEL);
- 		if (!new)
- 			goto out_unlock;
- 
- 		new->uid = uid;
- 		atomic_set(&new->__count, 1);
--		atomic_set(&new->processes, 0);
--		atomic_set(&new->files, 0);
--		atomic_set(&new->sigpending, 0);
--#ifdef CONFIG_INOTIFY_USER
--		atomic_set(&new->inotify_watches, 0);
--		atomic_set(&new->inotify_devs, 0);
--#endif
--#ifdef CONFIG_POSIX_MQUEUE
--		new->mq_bytes = 0;
--#endif
--		new->locked_shm = 0;
--#ifdef CONFIG_KEYS
--		new->uid_keyring = new->session_keyring = NULL;
--#endif
- 
- 		if (sched_create_user(new) < 0)
- 			goto out_free_user;
-_
-
+YH
