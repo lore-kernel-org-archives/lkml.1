@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbYCMUz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYCMU4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757595AbYCMUz7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYCMUzj
+	id S1757888AbYCMU4e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbYCMUzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:55:39 -0400
-Received: from mx1.suse.de ([195.135.220.2]:56224 "EHLO mx1.suse.de"
+	Thu, 13 Mar 2008 16:55:46 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59849 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757362AbYCMUzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:55:38 -0400
-Subject: patch pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch added to gregkh-2.6 tree
-To: stern@rowland.harvard.edu, akpm@linux-foundation.org, david-b@pacbell.net,
-       greg@kroah.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz, rjw@sisk.pl
+	id S1757439AbYCMUzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:55:44 -0400
+Subject: patch uio-implement-a-uio-interface-for-the-smx-cryptengine.patch added to gregkh-2.6 tree
+To: bn@niasdigital.com, gregkh@suse.de, hjk@linutronix.de, lethal@linux-sh.org,
+       linux-kernel@vger.kernel.org
 From: <gregkh@suse.de>
-Date: Thu, 13 Mar 2008 13:54:53 -0700
-In-Reply-To: <200803120101.48805.rjw@sisk.pl>
-Message-ID: <1205441693174@kroah.org>
+Date: Thu, 13 Mar 2008 13:54:54 -0700
+In-Reply-To: <1205407650.3735.19.camel@moss.renham>
+Message-ID: <12054416941268@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -24,188 +23,245 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-     Subject: PM: make wakeup flags available whenever CONFIG_PM is set
+     Subject: UIO: Implement a UIO interface for the SMX Cryptengine
 
 to my gregkh-2.6 tree.  Its filename is
 
-     pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+     uio-implement-a-uio-interface-for-the-smx-cryptengine.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From rjw@sisk.pl  Thu Mar 13 13:46:04 2008
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Wed, 12 Mar 2008 01:01:47 +0100
-Subject: PM: make wakeup flags available whenever CONFIG_PM is set
-To: Greg KH <greg@kroah.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@linux-foundation.org>, David Brownell <david-b@pacbell.net>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
-Message-ID: <200803120101.48805.rjw@sisk.pl>
-Content-Disposition: inline
+>From bn@niasdigital.com  Thu Mar 13 13:40:45 2008
+From: Ben Nizette <bn@niasdigital.com>
+Date: Thu, 13 Mar 2008 22:27:30 +1100
+Subject: UIO: Implement a UIO interface for the SMX Cryptengine
+To: Hans-Jürgen Koch <hjk@linutronix.de>
+Cc: Paul Mundt <lethal@linux-sh.org>, gregkh <gregkh@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
+Message-ID: <1205407650.3735.19.camel@moss.renham>
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Ben Nizette <bn@niasdigital.com>
 
-The various wakeup flags and their accessor macros in struct
-dev_pm_info should be available whenever CONFIG_PM is enabled, not
-just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
-be configurable for runtime power management.  This patch (as1056)
-fixes the oversight.
+This patch implements a UIO interface for the SMX Cryptengine.
 
-[rjw: rebased the patch on top of the previous two.]
+The Cryptengine found on the Nias Digital SMX board is best suited
+for a UIO interface.  It is not wired in to the cryptographic API
+as the engine handles it's own keys, algorithms, everything.  All
+that we know about is that if there's room in the buffer, you can
+write data to it and when there's data ready, you read it out again.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-CC: David Brownell <david-b@pacbell.net>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+There isn't necessarily even any direct correlation between data
+going in and data coming out again, the engine may consume or
+generate data all on its own.
+
+This driver is for proprietary hardware but we're always told to
+submit the drivers anyway; here you are.  :-)
+
+This is version 4 of this patch and addresses all issues raised by
+Hans-JÃ¼rgen Koch and Paul Mundt in their reviews.  Slightly altered
+is Paul's suggestion to use DRV_NAME and DRV_VERSION as the UIO
+version and name.  While at the moment they are the same, there
+is no reason for them to stay that way.  Nevertheless we now at
+least provide a MODULE_VERSION macro to keep modinfo happy.
+
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
+Signed-off-by: Hans J Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/base/power/main.c  |    2 -
- drivers/base/power/sysfs.c |    2 +
- include/linux/pm.h         |   64 +++++++++++++++++++++++++--------------------
- 3 files changed, 38 insertions(+), 30 deletions(-)
+ MAINTAINERS           |    5 +
+ drivers/uio/Kconfig   |   13 ++++
+ drivers/uio/Makefile  |    1 
+ drivers/uio/uio_smx.c |  140 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 159 insertions(+)
 
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
- /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
- static bool all_sleeping;
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3583,6 +3583,11 @@ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
  
--int (*platform_enable_wakeup)(struct device *dev, int is_on);
--
- /**
-  *	device_pm_add - add a device to the list of active devices
-  *	@dev:	Device to be added to the list
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -6,6 +6,8 @@
- #include <linux/string.h>
- #include "power.h"
- 
-+int (*platform_enable_wakeup)(struct device *dev, int is_on);
++SMX UIO Interface
++P:	Ben Nizette
++M:	bn@niasdigital.com
++S:	Maintained
 +
+ SOFTMAC LAYER (IEEE 802.11)
+ P:	Daniel Drake
+ M:	dsd@gentoo.org
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -26,4 +26,17 @@ config UIO_CIF
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called uio_cif.
  
- /*
-  *	wakeup - Report/change current wakeup option for device
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -183,9 +183,9 @@ typedef struct pm_message {
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned		can_wakeup:1;
-+	unsigned		should_wakeup:1;
- 	bool			sleeping:1;	/* Owned by the PM core */
- #ifdef	CONFIG_PM_SLEEP
--	unsigned		should_wakeup:1;
- 	struct list_head	entry;
- #endif
- };
-@@ -198,11 +198,6 @@ extern void device_resume(void);
- extern int device_suspend(pm_message_t state);
- extern int device_prepare_suspend(pm_message_t state);
- 
--#define device_set_wakeup_enable(dev,val) \
--	((dev)->power.should_wakeup = !!(val))
--#define device_may_wakeup(dev) \
--	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
--
- extern void __suspend_report_result(const char *function, void *fn, int ret);
- 
- #define suspend_report_result(fn, ret)					\
-@@ -210,6 +205,35 @@ extern void __suspend_report_result(cons
- 		__suspend_report_result(__FUNCTION__, fn, ret);		\
- 	} while (0)
- 
-+#else /* !CONFIG_PM_SLEEP */
++config UIO_SMX
++	tristate "SMX cryptengine UIO interface"
++	depends on UIO
++	default n
++	help
++	  Userspace IO interface to the Cryptography engine found on the
++	  Nias Digital SMX boards.  These will be available from Q4 2008
++	  from http://www.niasdigital.com.  The userspace part of this
++	  driver will be released under the GPL at the same time as the
++	  hardware and will be able to be downloaded from the same site.
 +
-+static inline int device_suspend(pm_message_t state)
++	  If you compile this as a module, it will be called uio_smx.
++
+ endif
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -1,2 +1,3 @@
+ obj-$(CONFIG_UIO)	+= uio.o
+ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
++obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+--- /dev/null
++++ b/drivers/uio/uio_smx.c
+@@ -0,0 +1,140 @@
++/*
++ * UIO SMX Cryptengine driver.
++ *
++ * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/uio_driver.h>
++#include <linux/io.h>
++
++#define DRV_NAME "smx-ce"
++#define DRV_VERSION "0.03"
++
++#define SMX_CSR  0x00000000
++#define SMX_EnD  0x00000001
++#define SMX_RUN  0x00000002
++#define SMX_DRDY 0x00000004
++#define SMX_ERR  0x00000008
++
++static irqreturn_t smx_handler(int irq, struct uio_info *dev_info)
 +{
++	void __iomem *csr = dev_info->mem[0].internal_addr + SMX_CSR;
++
++	u32 status = ioread32(csr);
++
++	if (!(status & SMX_DRDY))
++		return IRQ_NONE;
++
++	/* Disable interrupt */
++	iowrite32(status & ~SMX_DRDY, csr);
++	return IRQ_HANDLED;
++}
++
++static int __devinit smx_ce_probe(struct platform_device *dev)
++{
++
++	int ret = -ENODEV;
++	struct uio_info *info;
++	struct resource *regs;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!regs) {
++		dev_err(&dev->dev, "No memory resource specified\n");
++		goto out_free;
++	}
++
++	info->mem[0].addr = regs->start;
++	if (!info->mem[0].addr) {
++		dev_err(&dev->dev, "Invalid memory resource\n");
++		goto out_free;
++	}
++
++	info->mem[0].size = regs->end - regs->start + 1;
++	info->mem[0].internal_addr = ioremap(regs->start, info->mem[0].size);
++
++	if (!info->mem[0].internal_addr) {
++		dev_err(&dev->dev, "Can't remap memory address range\n");
++		goto out_free;
++	}
++
++	info->mem[0].memtype = UIO_MEM_PHYS;
++
++	info->name = "smx-ce";
++	info->version = "0.03";
++
++	info->irq = platform_get_irq(dev, 0);
++	if (info->irq < 0) {
++		ret = info->irq;
++		dev_err(&dev->dev, "No (or invalid) IRQ resource specified\n");
++		goto out_unmap;
++	}
++
++	info->irq_flags = IRQF_SHARED;
++	info->handler = smx_handler;
++
++	platform_set_drvdata(dev, info);
++
++	ret = uio_register_device(&dev->dev, info);
++
++	if (ret)
++		goto out_unmap;
++
++	return 0;
++
++out_unmap:
++	iounmap(info->mem[0].internal_addr);
++out_free:
++	kfree(info);
++
++	return ret;
++}
++
++static int __devexit smx_ce_remove(struct platform_device *dev)
++{
++	struct uio_info *info = platform_get_drvdata(dev);
++
++	uio_unregister_device(info);
++	platform_set_drvdata(dev, NULL);
++	iounmap(info->mem[0].internal_addr);
++
++	kfree(info);
++
 +	return 0;
 +}
 +
-+#define suspend_report_result(fn, ret) 		do {} while (0)
++static struct platform_driver smx_ce_driver = {
++	.probe		= smx_ce_probe,
++	.remove		= __devexit_p(smx_ce_remove),
++	.driver		= {
++		.name	= DRV_NAME,
++		.owner	= THIS_MODULE,
++	},
++};
 +
-+#endif /* !CONFIG_PM_SLEEP */
++static int __init smx_ce_init_module(void)
++{
++	return platform_driver_register(&smx_ce_driver);
++}
++module_init(smx_ce_init_module);
 +
-+#ifdef CONFIG_PM
++static void __exit smx_ce_exit_module(void)
++{
++	platform_driver_unregister(&smx_ce_driver);
++}
++module_exit(smx_ce_exit_module);
 +
-+/* changes to device_may_wakeup take effect on the next pm state change.
-+ * by default, devices should wakeup if they can.
-+ */
-+#define device_can_wakeup(dev) \
-+	((dev)->power.can_wakeup)
-+#define device_init_wakeup(dev,val) \
-+	do { \
-+		device_can_wakeup(dev) = !!(val); \
-+		device_set_wakeup_enable(dev,val); \
-+	} while(0)
-+
-+#define device_set_wakeup_enable(dev,val) \
-+	((dev)->power.should_wakeup = !!(val))
-+#define device_may_wakeup(dev) \
-+	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
-+
- /*
-  * Platform hook to activate device wakeup capability, if that's not already
-  * handled by enable_irq_wake() etc.
-@@ -224,35 +248,19 @@ static inline int call_platform_enable_w
- 	return 0;
- }
- 
--#else /* !CONFIG_PM_SLEEP */
--
--static inline int device_suspend(pm_message_t state)
--{
--	return 0;
--}
--
--#define device_set_wakeup_enable(dev,val)	do{}while(0)
--#define device_may_wakeup(dev)			(0)
-+#else /* !CONFIG_PM */
- 
--#define suspend_report_result(fn, ret) do { } while (0)
-+#define device_can_wakeup(dev)			0
-+#define device_init_wakeup(dev,val)		do {} while (0)
-+#define device_set_wakeup_enable(dev,val)	do {} while (0)
-+#define device_may_wakeup(dev)			0
- 
- static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
- {
- 	return 0;
- }
- 
--#endif /* !CONFIG_PM_SLEEP */
--
--/* changes to device_may_wakeup take effect on the next pm state change.
-- * by default, devices should wakeup if they can.
-- */
--#define device_can_wakeup(dev) \
--	((dev)->power.can_wakeup)
--#define device_init_wakeup(dev,val) \
--	do { \
--		device_can_wakeup(dev) = !!(val); \
--		device_set_wakeup_enable(dev,val); \
--	} while(0)
-+#endif /* !CONFIG_PM */
- 
- /*
-  * Global Power Management flags
++MODULE_LICENSE("GPL v2");
++MODULE_VERSION(DRV_VERSION);
++MODULE_AUTHOR("Ben Nizette <bn@niasdigital.com>");
 
 
-Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
+Patches currently in gregkh-2.6 which might be from bn@niasdigital.com are
 
-usb/usb-convert-usb.h-struct-usb_device-to-kernel-doc.patch
-usb/usb-make-usb_storage_onetouch-available-with-pm.patch
-usb/usb-usb-ohci-sm501-driver-use-the-conventional-convention-for-suspend-and-resume.patch
-usb/usb-reorganize-code-in-hub.c.patch
-usb/usb-ehci-carry-out-port-handover-during-each-root-hub-resume.patch
-usb/usb-new-quirk-flag-to-avoid-set-interface.patch
-usb/drivers-usb-core-devio.c-suppress-warning-with-64k-page_size.patch
-usb/usb-make-usb-persist-work-after-every-system-sleep.patch
-usb/usb-remove-config_usb_persist-setting.patch
-usb/usb-check-serial-number-string-after-device-reset.patch
-usb/usb-enable-usb-persist-by-default.patch
-usb/usb-remove-dev-power.power_state.patch
-driver-core/pm-handle-device-registrations-during-suspend-resume.patch
-driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
-driver-core/driver-core-call-device_pm_add-after-bus_add_device-in-device_add.patch
+driver-core/uio-implement-a-uio-interface-for-the-smx-cryptengine.patch
