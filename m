@@ -1,238 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYCMHOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbYCMHP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYCMHOn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 03:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYCMHN6
+	id S1753407AbYCMHP1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYCMHPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 03:13:58 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:7015 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754388AbYCMHN5 (ORCPT
+	Thu, 13 Mar 2008 03:15:06 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38777 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752602AbYCMHPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 03:13:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=JlkQohaRkaJxcX0RMnVqpOY3xaTcqvyesIvAccepVZXLtH+l1s6s5mUBX8X3iNjYuMy/1ycwAPxF1CvIojKuoJtSv4C4/HnqtBjLenqaemDHA3mK718qkBRu6l/hCqiW84sLHiBmDaqU4N+rvKUvAz9dSGFeDflZkdVCngm12BI=
-Message-ID: <97a0a9ac0803130013g1984a164y94e00c3c11cc8984@mail.gmail.com>
-Date: Thu, 13 Mar 2008 01:13:56 -0600
-From: "Gordon Farquharson" <gordonfarquharson@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] mtd: prevent physmap from causing "request_module: runaway loop modprobe net-pf-1"
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org,
-       "David Woodhouse" <dwmw2@infradead.org>
+	Thu, 13 Mar 2008 03:15:04 -0400
+X-Greylist: delayed 811 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 03:15:04 EDT
+X-Sasl-enc: S5irCk9YOpgxjzd3HA68WeTb29HklbQzm+9yi7bsd+ct 1205391690
+Date: Thu, 13 Mar 2008 16:00:38 +0900 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: [RFC] Re: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
+In-Reply-To: <1204179539.3501.17.camel@raven.themaw.net>
+Message-ID: <Pine.LNX.4.64.0803131408460.4608@raven.themaw.net>
+References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net> 
+ <Pine.LNX.4.64.0802261218230.8490@raven.themaw.net> 
+ <20080227211723.d5d27c09.akpm@linux-foundation.org> <1204179539.3501.17.camel@raven.themaw.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 1:19 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
+On Thu, 28 Feb 2008, Ian Kent wrote:
 
->  Just send the patch, please.  Please retain you original analysis in its
->  covering description.
+> > 
+> > We seem to be passing some string into a misc-device ioctl and getting some
+> > results back.  Be aware that this won't be a terribly popular proposal, so
+> > I'd suggest that you fully describe the problem which it's trying to solve,
+> > and how it solves it, and why the various alternatives (sysfs, netlink,
+> > mount options, etc) were judged unsuitable.
+> 
+> Yes, as I said above.
+> 
+> I don't expect that people that aren't close to the development of
+> autofs will "get" the problem description in the leading post but I will
+> try and expand on it as best I can.
+> 
+> As for the possible alternatives, it sounds like I have some more work
+> to do on that. Mount options can't be used as I described in the lead in
+> post and, as far as my understanding of sysfs goes, I don't think it's
+> appropriate. But, I'm not aware of what the netlink interface may be
+> able to do for me so I will need to check on that.
+> 
 
-On machines that register a physmap flash platform device (e.g. many
-arm machines), parse_mtd_partitions() in drivers/mtd/mtdpart.c can
-cause the following output in the boot log:
+I've attempted an implementation of this using the Generic Netlink 
+interface and I've struck a difficulty. I would like to use current 
+recommended development policy but I'm not sure how far I should go with 
+this in order to avoid using an ioctl implementation so I'm after some 
+advice and suggestions.
 
-request_module: runaway loop modprobe net-pf-1
-modprobe: FATAL: Could not load
-/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+So, onto the description.
+Sorry about the length of the post.
 
-modprobe: FATAL: Could not load
-/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+Autofs user space uses a number of ioctls for mount control.
 
-modprobe: FATAL: Could not load
-/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
-...
+I have a problem that can only be resolved by adding an additional control 
+function that doesn't need to open the autofs mount point path directly 
+to issue ioctl commands. So I decided to re-implement the the control 
+interface, hopefully, in a cleaner way and solve a couple of other 
+problems at the same time (by adding two additional control functions 
+giving a total of three new functions) and improving one of the existing 
+functions.
 
-To illustrate how this can occur, I'll use the example where
-CONFIG_KMOD=y, CONFIG_MTD_PARTITIONS=y, CONFIG_MTD_REDBOOT_PARTS=y,
-and CONFIG_CMDLINE_PARTS is not set. I'll also refer to the following
-code segment which is in drivers/mtd/mtdpart.c:parse_mtd_partitions():
+My initial proposal used a miscellaneous device to route ioctl commands to 
+autofs mounts and the question of why current recommended alternatives 
+were not suitable was asked. The only alternative that may be suitable is 
+the Netlink interface.
 
-	for ( ; ret <= 0 && *types; types++) {
-		parser = get_partition_parser(*types);
-#ifdef CONFIG_KMOD
-		if (!parser && !request_module("%s", *types))
-				parser = get_partition_parser(*types);
-#endif
-		if (!parser) {
-			printk(KERN_NOTICE "%s partition parsing not available\n",
-			       *types);
-			continue;
-		}
-		ret = (*parser->parse_fn)(master, pparts, origin);
-		if (ret > 0) {
-			printk(KERN_NOTICE "%d %s partitions found on MTD device %s\n",
-			       ret, parser->name, master->name);
-		}
-		put_partition_parser(parser);
+I won't go into the details of the new functions now but focus on the 
+difficulty I have found implementing one of the existing functions using 
+the Netlink interface.
 
-I should note that I am assuming (because I don't understand how) that
-request_module() requires net-pf-1 to succeed. This assumption is
-based on my observation of the request_module message
-("request_module: runaway loop modprobe net-pf-1"), and that
-af_unix_init() (net-pf-1 initialization) is called only after the call
-to request_module() in this example.
+There are some restrictions on the scope of the change.
+The scope is only the ioctl interface. I don't want change too many things 
+at once, in particular things that are currently working OK. And I'd like 
+to retain the existing semantic behavior of the interface.
 
-Based on the configuration and assumptions described above, the
-sequence of events that cause the boot log messages above are:
+The function that is a problem is the sending of expire requests. In the 
+current implementation this function is synchronous. An ioctl is used to 
+ask the kernel module (autofs4) to check for mounts that can be expired 
+and, if a candidate is found the module sends a request to the user space 
+daemon asking it to try and umount the select mount after which the daemon 
+sends a success or fail status back to the module which marks the 
+completion of the original ioctl expire request.
 
-1. the first call to get_partition_parser() in parse_mtd_partitions()
-does not find the parser in the the list of registered parsers, i.e.
-get_partition_parser() returns a NULL pointer. In this example, the
-only registered parser in the list is called Redboot;
+The Generic Netlink interface won't allow this because only one concurrent 
+send request can be active for "all" Generic Netlink Families in use, 
+since the socket receive function is bracketed by a single mutex. So I would 
+need to use a workqueue to queue the request but that has it's own set of 
+problems.
 
-2. parse_mtd_partitions() calls request_module() with (in this
-example) the parameter "cmdlinepart";
+A workqueue can have only one active request going at a time but I may 
+have a number of concurrent expires happening at any one time and the 
+request could block for a significant amount of time so I would have to 
+use multiple queues. Also there isn't a one-to-one correspondence 
+between autofs super blocks and the stream of expire requests so the 
+number of needed workqueues isn't known. Hence, a workqueue would need to 
+be created, used and destroyed for every umount request or some other 
+elaborate mechanism developed to re-use workqueues. Ideas?
 
-3. request_module() complains (request_module: runaway loop modprobe
-net-pf-1, etc.) because af_unix_init() has not been called. The boot
-log shows that af_unix_init() is called only after
-parse_mtd_partitions() finishes.
+The next issue is that in order to keep track of multiple in flight 
+requests a separate Netlink socket would need to be opened for every 
+expire request in order to ensure that the Netlink completion reply makes 
+it back to the original requesting thread (Is that actually correct?). Not 
+really such a big problem but it defeats another aim of the 
+re-implementation, which is to reduce the selinux user space exposure to 
+file descriptors that are open but don't yet have close-on-exec flag set 
+when a mount or umount is spawned by the automount daemon. This can 
+obviously be resolved by adding a mutex around the fork/exec code but 
+isn't a popular idea due to added performance overhead.
 
-register_mtd_parser: RedBoot
-physmap platform flash device: 00080000 at f0000000
-Found: ST M29W400DB
-physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
-number of JEDEC chips: 1
-cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-parse_mtd_partitions:
-get_partition_parser: name=cmdlinepart
-get_partition_parser: p->name=RedBoot
-get_partition_parser: p->owner=00000000
-get_partition_parser: ret=00000000
-parse_mtd_partitions: cmdlinepart
-request_module: runaway loop modprobe net-pf-1
-modprobe: FATAL: Could not load
-/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+That's about it for a Generic Netlink solution.
 
-modprobe: FATAL: Could not load
-/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+It looks like it may be possible to avoid the need to use workqueues by 
+adding a new netlink protocol. I didn't notice any mutual exclusion 
+issues in the code but I may not have looked far enough (comments 
+please?). This approach would still have the issue of needing a new socket 
+opened for each expire for the tracking multiple requests and a 
+considerable increase in complexity in the autofs4 module for netlink 
+communication.
 
-modprobe: FATAL: Could not load
-/lib/modules/2.6.25-rc4-iop32x/modules.dep: No such file or directory
+I'm concerned about the effort I would need to devote to make this work  
+and the increase in complexity that may be needed, especially if the 
+implementation is ultimately not satisfactory for inclusion in the kernel.
 
-<--- 47 repeated modprobe messages deleted --->
-parse_mtd_partitions: request_module called
-cmdlinepart partition parsing not available
-get_partition_parser: name=RedBoot
-get_partition_parser: p->name=RedBoot
-get_partition_parser: p->owner=00000000
-get_partition_parser: ret->name=RedBoot
-get_partition_parser: ret=c02b0f8c
-parse_mtd_partitions: RedBoot
-parse_mtd_partitions: request_module called
-Searching for RedBoot partition table in physmap-flash.0 at offset 0x70000
-No RedBoot partition table detected in physmap-flash.0
-parse_mtd_partitions: end of function
-mice: PS/2 mouse device common for all mice
-i2c /dev entries driver
-rtc-rs5c372 0-0032: rs5c372a found, 24hr, driver version 0.5
-rtc-rs5c372 0-0032: rtc core: registered rtc-rs5c372 as rtc0
-iop-adma iop-adma.0: Intel(R) IOP: ( cpy intr )
-iop-adma iop-adma.1: Intel(R) IOP: ( cpy intr )
-NET: Registered protocol family 26
-TCP bic registered
-af_unix_init:
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-XScale DSP coprocessor detected.
-registered taskstats version 1
-rtc-rs5c372 0-0032: setting system clock to 2008-03-11 03:16:46 UTC (1205205406)
-
-The reason parse_mtd_partitions() tries to use cmdlinepart, even
-though it is not a registered parsing scheme when CONFIG_CMDLINE_PARTS
-is not set, is because cmdlinepart is hard coded in
-drivers/mtd/maps/physmap.c:
-
-#ifdef CONFIG_MTD_PARTITIONS
-static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
-#endif
-
-The patch below changes CONFIG_MTD_REDBOOT_PARTS,
-CONFIG_MTD_AFS_PARTS, and CONFIG_MTD_OF_PARTS from tristate to bool,
-and removes the call to request_module() in
-drivers/mtd/mtdpart.c:parse_mtd_partitions(). The changes to the
-definitions of the configuration variables ensure that MTD parsers
-compiled into the kernel are registered before parse_mtd_partitions()
-is called, which negates the need to have parse_mtd_partitions() call
-request_module(), and thereby eliminating the call to request_module()
-before af_unix_init(). The patch also changes the setting of
-CONFIG_MTD_REDBOOT_PARTS in arch/mips/configs/mtx1_defconfig from 'm'
-to 'y'. This defconfig is the only one that set any of the
-partitioning schemes to be compiled as a module.
-
-Signed-off-by: Gordon Farquharson <gordonfarquharson@gmail.com>
-
----
-
-diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
-index fa3aa39..ace51d3 100644
---- a/arch/mips/configs/mtx1_defconfig
-+++ b/arch/mips/configs/mtx1_defconfig
-@@ -743,7 +743,7 @@ CONFIG_MTD=m
- # CONFIG_MTD_DEBUG is not set
- CONFIG_MTD_CONCAT=m
- CONFIG_MTD_PARTITIONS=y
--CONFIG_MTD_REDBOOT_PARTS=m
-+CONFIG_MTD_REDBOOT_PARTS=y
- CONFIG_MTD_REDBOOT_DIRECTORY_BLOCK=-1
- # CONFIG_MTD_REDBOOT_PARTS_UNALLOCATED is not set
- # CONFIG_MTD_REDBOOT_PARTS_READONLY is not set
-diff --git a/drivers/mtd/Kconfig b/drivers/mtd/Kconfig
-index e850334..20b4574 100644
---- a/drivers/mtd/Kconfig
-+++ b/drivers/mtd/Kconfig
-@@ -48,7 +48,7 @@ config MTD_PARTITIONS
- 	  'normal' form of partitioning used on a block device.
-
- config MTD_REDBOOT_PARTS
--	tristate "RedBoot partition table parsing"
-+	bool "RedBoot partition table parsing"
- 	depends on MTD_PARTITIONS
- 	---help---
- 	  RedBoot is a ROM monitor and bootloader which deals with multiple
-@@ -135,7 +135,7 @@ config MTD_CMDLINE_PARTS
- 	  If unsure, say 'N'.
-
- config MTD_AFS_PARTS
--	tristate "ARM Firmware Suite partition parsing"
-+	bool "ARM Firmware Suite partition parsing"
- 	depends on ARM && MTD_PARTITIONS
- 	---help---
- 	  The ARM Firmware Suite allows the user to divide flash devices into
-@@ -151,7 +151,7 @@ config MTD_AFS_PARTS
- 	  'armflash' map driver (CONFIG_MTD_ARMFLASH) does this, for example.
-
- config MTD_OF_PARTS
--	tristate "Flash partition map based on OF description"
-+	bool "Flash partition map based on OF description"
- 	depends on PPC_OF && MTD_PARTITIONS
- 	help
- 	  This provides a partition parsing function which derives
-diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
-index c66902d..a3b3331 100644
---- a/drivers/mtd/mtdpart.c
-+++ b/drivers/mtd/mtdpart.c
-@@ -555,10 +555,6 @@ int parse_mtd_partitions(struct mtd_info *master,
-const char **types,
-
- 	for ( ; ret <= 0 && *types; types++) {
- 		parser = get_partition_parser(*types);
--#ifdef CONFIG_KMOD
--		if (!parser && !request_module("%s", *types))
--				parser = get_partition_parser(*types);
--#endif
- 		if (!parser) {
- 			printk(KERN_NOTICE "%s partition parsing not available\n",
- 			       *types);
-
--- 
-Gordon Farquharson
-GnuPG Key ID: 32D6D676
+Please help!
+Ian
