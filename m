@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYCMPaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYCMPcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbYCMPaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 11:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYCMPaJ
+	id S1755000AbYCMPcy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 11:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYCMPcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 11:30:09 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:34316 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753989AbYCMPaH (ORCPT
+	Thu, 13 Mar 2008 11:32:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38259 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752036AbYCMPcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 11:30:07 -0400
-Date: Thu, 13 Mar 2008 08:27:54 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4 v4] dma: dma_{un}map_{single|sg}_attrs() interface
-Message-Id: <20080313082754.3da94420.randy.dunlap@oracle.com>
-In-Reply-To: <20080313014106.782aa3c7.akpm@linux-foundation.org>
-References: <20080313040022.GJ12370@sgi.com>
-	<20080313014106.782aa3c7.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 13 Mar 2008 11:32:46 -0400
+Date: Thu, 13 Mar 2008 08:32:13 -0700
+From: Greg KH <greg@kroah.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
+	Reported regressions from 2.6.24)
+Message-ID: <20080313153213.GB27723@kroah.com>
+References: <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com> <20080312213826.GA17101@kroah.com> <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org> <20080312225421.GA24449@kroah.com> <alpine.LFD.1.00.0803121604580.3557@woody.linux-foundation.org> <20080313054400.GA17102@kroah.com> <Pine.LNX.4.64.0803131057550.4625@axis700.grange>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803131057550.4625@axis700.grange>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 01:41:06 -0700 Andrew Morton wrote:
-
-> > +#ifdef ARCH_USES_DMA_ATTRS
+On Thu, Mar 13, 2008 at 11:06:10AM +0100, Guennadi Liakhovetski wrote:
+> On Wed, 12 Mar 2008, Greg KH wrote:
 > 
-> There is no precedent for ARCH_USES_*.
+> > On Wed, Mar 12, 2008 at 04:09:17PM -0700, Linus Torvalds wrote:
+> > > 
+> > > 
+> > > On Wed, 12 Mar 2008, Greg KH wrote:
+> > > > 
+> > > > I can't get a box here to produce both of those PCI: messages myself,
+> > > > and neither can Len, so something is really odd here.
+> > 
+> > Ok, stupid me, this was my fault.  I was assuming that pci busses would
+> > never be registered multiple times with the pci core.  Obviously this
+> > isn't true.  The previous patch I proposed was only paying attention to
+> > the PCI devices, and that logic is just fine (it's already protected
+> > when it is attempted to be registered multiple times.)
+> > 
+> > So, the patch below fixes the issue for me, and reboot seems to work as
+> > well.
+> > 
+> > Guennadi, can you test this out on your machine?
 > 
-> There is a little bit of precedent for ARCH_HAVE_*
+> Yes, it fixes all _3_ startup warnings and lets the machine reboot and 
+> power off again. 3 warnings are the 2 reported as a regression from 
+> 2.6.24, and one present also under 2.6.24:
 > 
-> There is lots of precendence for ARCH_HAS_*.
-> 
-> We don't like ARCH_HAS_* anyway ;) What can we do to get rid of this? 
-> Ideally, make it available on all architectures at zero cost to those which
-> don't need it.  If that is impractical (why?) then it is preferable to do
-> this in Kconfig.
+> PCI: Probing PCI hardware
+> sysfs: duplicate filename 'bridge' can not be created
 
-Sam has been pushing HAVE_* and even added that to
-Documentation/kbuild/kconfig-language.txt.
+Yes, I noticed that if you were having this problem, .24 would also be
+complaining to you about creating sysfs links.  I'll make up a .24 patch
+for -stable after this.
 
-> > +/*
-> > + * dma_set_attr - set a specific attribute
-> > + * may be called with a null attrs
-> > + */
+Kay just pointed out that I can use a struct device field instead of
+creating my own in the bus device, so I'll simplify the patch and then
+send it to Linus in a bit.
 
-Use kernel-doc notation?
+Thanks so much for testing quickly and letting me know.
 
-> > +static inline int dma_set_attr(struct dma_attrs *attrs, enum dma_attr attr)
-> > +{
-> > +	if (!attrs)
-> > +		return 0;
-> > +	if (attr < DMA_ATTR_MAX) {
-> > +		attrs->flags |= (1 << attr);
-> > +		return 0;
-> > +	}
-> > +	return -EINVAL;
-> > +}
-> 
-> Is there any non-buggy reason why code would pass an out-of-range attribute
-> into this function?  If not, BUG_ON() would be appropriate treatment.
-> 
-> This function might already be too large to inline, and a BUG_ON() might
-> make it larger.
-> 
-> > +/*
-> > + * dma_get_attr - check for a specific attribute
-> > + * may be called with a null attrs
-> > + */
-
-Ditto.
-
-> > +static inline int dma_get_attr(struct dma_attrs *attrs, enum dma_attr attr)
-> > +{
-> > +	if (!attrs)
-> > +		return 0;
-> > +	if (attr < DMA_ATTR_MAX) {
-> > +		int ret = attrs->flags & (1 << attr);
-> > +		return !!ret;
-> > +	}
-> > +	return -EINVAL;
-> > +}
-
-
----
-~Randy
+greg k-h
