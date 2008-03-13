@@ -1,93 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYCMKGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYCMKHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYCMKGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 06:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYCMKGH
+	id S1755015AbYCMKHW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 06:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYCMKHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 06:06:07 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56578 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752013AbYCMKGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 06:06:06 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/D9IYtJsrDnI2LUheyKDd5qFKXtiA8uh+Ysv0ce6
-	TejEjMHRz7MZ3G
-Date: Thu, 13 Mar 2008 11:06:10 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <greg@kroah.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
- Reported regressions from 2.6.24)
-In-Reply-To: <20080313054400.GA17102@kroah.com>
-Message-ID: <Pine.LNX.4.64.0803131057550.4625@axis700.grange>
-References: <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
- <47D6D61F.4050805@garzik.org> <200803112341.42517.rjw@sisk.pl>
- <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
- <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com>
- <20080312213826.GA17101@kroah.com> <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org>
- <20080312225421.GA24449@kroah.com> <alpine.LFD.1.00.0803121604580.3557@woody.linux-foundation.org>
- <20080313054400.GA17102@kroah.com>
+	Thu, 13 Mar 2008 06:07:10 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:39753 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751293AbYCMKHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 06:07:08 -0400
+Date: Thu, 13 Mar 2008 19:06:55 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: Hans-J?rgen Koch <hjk@linutronix.de>, gregkh <gregkh@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3] UIO: Implement a UIO interface for the SMX Cryptengine
+Message-ID: <20080313100655.GA6705@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Ben Nizette <bn@niasdigital.com>,
+	Hans-J?rgen Koch <hjk@linutronix.de>, gregkh <gregkh@suse.de>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1205400940.3735.15.camel@moss.renham>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1205400940.3735.15.camel@moss.renham>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Greg KH wrote:
+On Thu, Mar 13, 2008 at 08:35:40PM +1100, Ben Nizette wrote:
+> diff --git a/drivers/uio/uio_smx.c b/drivers/uio/uio_smx.c
+> new file mode 100644
+> index 0000000..fda8b8b
+> --- /dev/null
+> +++ b/drivers/uio/uio_smx.c
+> @@ -0,0 +1,118 @@
+> +/*
+> + * UIO SMX Cryptengine driver.
+> + *
+> + * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +
+> +#include <linux/device.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/uio_driver.h>
+> +
+> +#include <asm/io.h>
+> +
+linux/io.h is preferable here.
 
-> On Wed, Mar 12, 2008 at 04:09:17PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Wed, 12 Mar 2008, Greg KH wrote:
-> > > 
-> > > I can't get a box here to produce both of those PCI: messages myself,
-> > > and neither can Len, so something is really odd here.
-> 
-> Ok, stupid me, this was my fault.  I was assuming that pci busses would
-> never be registered multiple times with the pci core.  Obviously this
-> isn't true.  The previous patch I proposed was only paying attention to
-> the PCI devices, and that logic is just fine (it's already protected
-> when it is attempted to be registered multiple times.)
-> 
-> So, the patch below fixes the issue for me, and reboot seems to work as
-> well.
-> 
-> Guennadi, can you test this out on your machine?
+> +static int __devinit smx_ce_probe(struct platform_device *dev)
+> +{
+> +	struct uio_info *info;
+> +	struct resource *regs;
+> +
+> +	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
+> +
+> +	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
+> +	if (!regs)
+> +		goto out_free;
+> +
+> +	info->mem[0].addr = regs->start;
+> +	if (!info->mem[0].addr)
+> +		goto out_free;
+> +
+> +	info->mem[0].size = regs->end - regs->start + 1;
+> +	info->mem[0].internal_addr = ioremap(regs->start, info->mem[0].size);
+> +	if (!info->mem[0].internal_addr)
+> +		goto out_free;
+> +
+> +	info->mem[0].memtype = UIO_MEM_PHYS;
+> +
+> +	info->name = "smx-ce";
+> +	info->version = "0.03";
 
-Yes, it fixes all _3_ startup warnings and lets the machine reboot and 
-power off again. 3 warnings are the 2 reported as a regression from 
-2.6.24, and one present also under 2.6.24:
+You may as well use DRV_NAME and DRV_VERSION, then you can toss that over
+to MODULE_VERSION() if you're so inclined. It's generally nice to keep
+modinfo happy.
 
-PCI: Probing PCI hardware
-sysfs: duplicate filename 'bridge' can not be created
-WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-Pid: 1, comm: swapper Not tainted 2.6.24-hires-nohz #2
- [<c010541a>] show_trace_log_lvl+0x1a/0x30
- [<c0105ed2>] show_trace+0x12/0x20
- [<c010675e>] dump_stack+0x6e/0x80
- [<c01b246d>] sysfs_add_one+0x9d/0xe0
- [<c01b328b>] sysfs_create_link+0x8b/0x130
- [<c01f9f14>] pci_bus_add_devices+0x94/0x120
- [<c03f3920>] pci_legacy_init+0x50/0xf0
- [<c03d95f2>] kernel_init+0x142/0x320
- [<c0104fe3>] kernel_thread_helper+0x7/0x14
- =======================
-pci 0000:00:01.0: Error creating sysfs bridge symlink, continuing...
+> +	info->irq = platform_get_irq(dev, 0);
+> +	info->irq_flags = IRQF_SHARED;
+> +	info->handler = smx_handler;
+> +
+platform_get_irq() can fail, which you don't presently handle (though I
+guess uio_register_device() will error out if you hand off -ENXIO as your
+IRQ anyways, so it's not technically an issue). That's a pretty minor
+issue, though, but might be something you wish to fix up if you are
+planning on using this as an example driver for others.
 
-So, well done! I was going to disturb you with that one after 2.6.25, now 
-I don't have to any more, unless we want it fixed in 2.6.24-stable.
+> +	platform_set_drvdata(dev, info);
+> +
+> +	if (uio_register_device(&dev->dev, info))
+> +		goto out_unmap;
+> +
+> +	return 0;
+> +out_unmap:
+> +	iounmap(info->mem[0].internal_addr);
+> +out_free:
+> +	kfree(info);
+> +
+> +	return -ENODEV;
+> +}
+> +
+Your error paths are also pretty quiet. A dev_err() or so in the few
+failure cases you do have might not be a terrible idea.
 
-> thanks for your patience,
-
-always at your disposal:-)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+uio_register_device() also has quite a few different error cases, so it's
+at least worth preserving the error value and returning that back,
+rather than always returning -ENODEV.
