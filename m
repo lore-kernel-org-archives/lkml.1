@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYCMMGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYCMMHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYCMMGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYCMMGc
+	id S1756083AbYCMMHH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbYCMMGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:06:32 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36288 "EHLO duck.suse.cz"
+	Thu, 13 Mar 2008 08:06:55 -0400
+Received: from styx.suse.cz ([82.119.242.94]:52602 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752524AbYCMMGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:06:31 -0400
-Date: Thu, 13 Mar 2008 13:06:30 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] Remove superfluous DQUOT_OFF() in fs/namespace.c
-Message-ID: <20080313120630.GD12523@duck.suse.cz>
-References: <20080313120344.GB12523@duck.suse.cz>
+	id S1753597AbYCMMGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:06:54 -0400
+Date: Thu, 13 Mar 2008 13:06:53 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+cc: Mike Galbraith <efault@gmx.de>, Jan Knutar <jk-lkml@sci.fi>,
+       linux-kernel@vger.kernel.org, Hans-Peter Jansen <hpj@urpla.net>,
+       David Newall <davidn@davidnewall.com>, Theodore Tso <tytso@mit.edu>,
+       "Fred ." <eldmannen@gmail.com>
+Subject: Re: Keys get stuck
+In-Reply-To: <20080313120238.GA3860@localhost.ift.unesp.br>
+Message-ID: <Pine.LNX.4.64.0803131305540.30831@jikos.suse.cz>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com>
+ <200803122222.05663.hpj@urpla.net> <1205386933.4797.22.camel@marge.simson.net>
+ <200803131148.22056.jk-lkml@sci.fi> <1205407693.6686.16.camel@marge.simson.net>
+ <20080313120238.GA3860@localhost.ift.unesp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313120344.GB12523@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't need to turn quotas off before remounting root ro, because
-do_remount_sb() already handles this.
+On Thu, 13 Mar 2008, Carlos R. Mafra wrote:
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+> So I would like to ask if swap letting X (and everything else in my 
+> experience) out of the cpu for extended periods is considered normal 
+> behaviour, in the sense that nobody is trying to "fix" it (due to it 
+> being considered impossible to fix)...? Sorry for being off-topic, but I 
+> run a minimal Window Maker desktop in a P4 3.0 GHz with 512 MB of RAM 
+> (around 140 MB being used as per 'free'), and trying to load a 380 MB 
+> text file in xjed editor makes my whole desktop quite unfair... it takes 
+> tens of seconds to switch desktop, type things in the terminal etc. When 
+> xjed finishes loading the text file, everything comes back to "fair" 
+> again.
 
----
- namespace.c |    2 --
- 1 file changed, 2 deletions(-)
+I propose you start a new thread about this with proper Subject, and CC 
+the scheduler maintainers.
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 7953c96..b6facef 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -14,7 +14,6 @@
- #include <linux/smp_lock.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
--#include <linux/quotaops.h>
- #include <linux/acct.h>
- #include <linux/capability.h>
- #include <linux/module.h>
-@@ -638,7 +637,6 @@ static int do_umount(struct vfsmount *mnt, int flags)
- 		down_write(&sb->s_umount);
- 		if (!(sb->s_flags & MS_RDONLY)) {
- 			lock_kernel();
--			DQUOT_OFF(sb);
- 			retval = do_remount_sb(sb, MS_RDONLY, NULL, 0);
- 			unlock_kernel();
- 		}
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
