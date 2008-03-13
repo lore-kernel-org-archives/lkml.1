@@ -1,115 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbYCMJZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYCMJ0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbYCMJZJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYCMJYz
+	id S1754028AbYCMJ0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYCMJ0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:24:55 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:22910 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbYCMJYy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:24:54 -0400
-Subject: Re: [patch 1/6] Guest page hinting: core + volatile page cache.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       hugh@veritas.com
-In-Reply-To: <200803131012.23420.rusty@rustcorp.com.au>
-References: <20080312132132.520833247@de.ibm.com>
-	 <20080312132703.132176945@de.ibm.com>
-	 <200803131012.23420.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 13 Mar 2008 10:24:48 +0100
-Message-Id: <1205400288.26537.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 05:26:32 -0400
+Received: from namei.org ([69.55.235.186]:60862 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750783AbYCMJ0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 05:26:31 -0400
+Date: Thu, 13 Mar 2008 20:25:58 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+In-Reply-To: <20080313032749.GA13258@sergelap.austin.ibm.com>
+Message-ID: <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au>
+References: <20080313032749.GA13258@sergelap.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 10:12 +1100, Rusty Russell wrote:
-> On Thursday 13 March 2008 00:21:33 Martin Schwidefsky wrote:
-> > @@ -957,6 +975,19 @@ struct page *follow_page(struct vm_area_
-> >
-> >  	if (flags & FOLL_GET)
-> >  		get_page(page);
-> > +
-> > +	if (flags & FOLL_GET) {
-> > +		/*
-> > +		 * The page is made stable if a reference is acquired.
-> > +		 * If the caller does not get a reference it implies that
-> > +		 * the caller can deal with page faults in case the page
-> > +		 * is swapped out. In this case the caller can deal with
-> > +		 * discard faults as well.
-> > +		 */
-> > +		if (unlikely(!page_make_stable(page)))
-> > +			goto out_discard;
-> > +	}
-> 
-> Dumb comment: seems like this if could be folded into the one above.
+On Wed, 12 Mar 2008, Serge E. Hallyn wrote:
 
-In this patch yes, but a later patch adds a condition:
+> +#ifdef CONFIG_SECURITY
+> +static struct security_operations devcgroup_security_ops = {
+> +	.inode_mknod = 			devcgroup_inode_mknod,
+> +	.inode_permission = 		devcgroup_inode_permission,
+> +
+> +	.ptrace =			cap_ptrace,
+> +	.capget =			cap_capget,
+> +	.capset_check =			cap_capset_check,
+> +	.capset_set =			cap_capset_set,
+> +	.capable =			cap_capable,
+> +	.settime =			cap_settime,
+> +	.netlink_send =			cap_netlink_send,
+> +	.netlink_recv =			cap_netlink_recv,
+> +
+> +	.bprm_apply_creds =		cap_bprm_apply_creds,
+> +	.bprm_set_security =		cap_bprm_set_security,
+> +	.bprm_secureexec =		cap_bprm_secureexec,
+> +
+> +	.inode_setxattr =		cap_inode_setxattr,
+> +	.inode_removexattr =		cap_inode_removexattr,
+> +	.inode_need_killpriv =		cap_inode_need_killpriv,
+> +	.inode_killpriv =		cap_inode_killpriv,
+> +
+> +	.task_kill =			cap_task_kill,
+> +	.task_setscheduler =		cap_task_setscheduler,
+> +	.task_setioprio =		cap_task_setioprio,
+> +	.task_setnice =			cap_task_setnice,
+> +	.task_post_setuid =		cap_task_post_setuid,
+> +	.task_prctl =                   cap_task_prctl,
+> +	.task_reparent_to_init =	cap_task_reparent_to_init,
+> +
+> +	.syslog =                       cap_syslog,
+> +
+> +	.vm_enough_memory =             cap_vm_enough_memory,
+> +};
 
--       if (flags & FOLL_GET) {
-+       if ((flags & FOLL_GET) || (vma->vm_flags & VM_LOCKED)) {
+For lower overall complexity, why not just extend the capability LSM to 
+include the devcgroup_ perms if CONFIG_CGROUP_DEV ?
 
 
-> > + * Attempts to change the state of a page to volatile.
-> > + * If there is something preventing the state change the page stays
-> > + * int its current state.
-> 
-> Typo "int its current state".
 
-Fixed.
-
-> >  		return NULL;
-> >
-> >  	pte = pte_offset_map(pmd, address);
-> > +	ptl = pte_lockptr(mm, pmd);
-> >  	/* Make a quick check before getting the lock */
-> > +#ifndef CONFIG_PAGE_STATES
-> > +	/*
-> > +	 * If the page table lock for this pte is taken we have to
-> > +	 * assume that someone might be mapping the page. To solve
-> > +	 * the race of a page discard vs. mapping the page we have
-> > +	 * to serialize the two operations by taking the lock,
-> > +	 * otherwise we end up with a pte for a page that has been
-> > +	 * removed from page cache by the discard fault handler.
-> > +	 */
-> > +	if (!spin_is_locked(ptl))
-> > +#endif
-> >  	if (!pte_present(*pte)) {
-> >  		pte_unmap(pte);
-> >  		return NULL;
-> >  	}
-> >
-> > -	ptl = pte_lockptr(mm, pmd);
-> >  	spin_lock(ptl);
-> >  	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
-> >  		*ptlp = ptl;
-> 
-> Did you really mean ifndef here?
-
-That is a major nit. This should be an #ifdef. In previous versions the
-complete "if (!pte_present(*pte)) { }" is ifdefed, the later versions
-use the !spin_is_locked condition. Only I forgot to invert the #ifndef.
-Fixed.
-
-> (BTW: I'm just reading through the code, not really understanding it, so
-> this is not a real review).
-
-I take the small review anytime. Already found one major nit.
-
+- James
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+James Morris
+<jmorris@namei.org>
