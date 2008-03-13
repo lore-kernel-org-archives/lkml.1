@@ -1,92 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbYCMBLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYCMBMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbYCMBLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 21:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYCMBLo
+	id S1756177AbYCMBMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 21:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYCMBMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 21:11:44 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:51150 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbYCMBLn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 21:11:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TTEXpzFmV7PJkJ9rsMWoEZZZUUUQ9wPhVZ6VKfCLbKEHMEEjvCuqwi4C628yOuV2SmzXVHs4lXoZMRaznh1dNIjhTUJ1ngIuUeC65RTbq23d8/FHtg1U2bNxY9S96zLuUPb9EPINLf1OFuIgXwUB0RodxpbYpZ92UrG2F25PqWw=
-Message-ID: <86802c440803121811i262b21bdrfb07df52fd27aaae@mail.gmail.com>
-Date: Wed, 12 Mar 2008 18:11:41 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: fix boundary checking in free_bootmem_core
-Cc: mingo@elte.hu, clameter@sgi.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080312163359.7fe0fd80.akpm@linux-foundation.org>
+	Wed, 12 Mar 2008 21:12:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47790 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750875AbYCMBMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 21:12:17 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: fw-ohci: sync AT dma buffer before use
+Date: Wed, 12 Mar 2008 21:11:55 -0400
+User-Agent: KMail/1.9.9
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200803121743.29438.jwilson@redhat.com> <47D8645B.5040305@s5r6.in-berlin.de>
+In-Reply-To: <47D8645B.5040305@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <86802c440803111801m20349386l58a108cec13eb5ee@mail.gmail.com>
-	 <86802c440803121621j3b9ec7e8nf7ae62b894eb85df@mail.gmail.com>
-	 <20080312163359.7fe0fd80.akpm@linux-foundation.org>
+Message-Id: <200803122111.55754.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 4:33 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 12 Mar 2008 16:21:22 -0700
+On Wednesday 12 March 2008 07:16:43 pm Stefan Richter wrote:
+> Jarod Wilson wrote:
+> > At least on my setup, where I could within seconds reliably reproduce a
+> > panic in handle_at_packet() by simply dd'ing from two drives on different
+> > controllers, the panic is gone.
+> >
+> > See http://bugzilla.kernel.org/show_bug.cgi?id=9617
 >
+> Alas the panic from comment #10 is still there, i.e. instant crash when
+> plugging in an LSI based CD-RW (shortly after SCSI inquiry) --- but only
+> if CONFIG_DEBUG_PAGEALLOC=y.
 >
-> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->
->  > On Tue, Mar 11, 2008 at 6:01 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  > > [PATCH] mm: fix boundary checking in free_bootmem_core
->  > >
->  > >  so call it when numa is enabled, we don't know which node have that range.
->  > >  and make it more robust.
->  > >
->  > >  try to trim it to get valid sidx, and eidx.
->  > >
->  > >  Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->  > >
->  >
->  > Ingo,
->  >
->  > this one need to be applied before
->  > [PATCH] x86_64: reserve dma32 early for gart
->  >
->
->  So perhaps we should merge
->  mm-fix-boundary-checking-in-free_bootmem_core.patch into 2.6.25?
-also we can remove some NODE_DATA(0) assumpation on free_bootmem path.
->
->  <looks at it>
->
->  Sorry, but I find the changelog very hard to amke sense of.  I presently
->  have:
->
->
->   So call it when numa is enabled, we don't know which node have that
->   range.  and make it more robust.
->
->   Try to trim it to get valid sidx, and eidx.
->
->  Could you please expand on this?
+> Jarod, did your crashes happen with CONFIG_DEBUG_PAGEALLOC=n?
 
-please check following...
+No, they're with it turned on (and still on w/this change where it doesn't 
+panic). If I run with CONFIG_DEBUG_PAGEALLOC=n, no panic.
 
----
-with numa enabled, some caller could have range on one node but try to
-free that on other node.
-that could cause some pages is freed wrongly.
-For example: when we try to allocate 128g boot ram early for
-gart/swiotlb, and free that range later so gart/swiotlb could get some
-range afterwards. then with this patch, we don't need to care which
-node is the range, just loop to call free_bootmem_node for all online
-nodes.
+> > --- a/drivers/firewire/fw-ohci.c
+> > +++ b/drivers/firewire/fw-ohci.c
+> > @@ -780,6 +780,10 @@ at_context_queue_packet(struct context *ctx, struct
+> > fw_packet *packet)
+> >
+> >  	context_append(ctx, d, z, 4 - z);
+> >
+> > +	/* Sync the DMA buffer up for the device to read from */
+> > +	dma_sync_single_for_device(ohci->card.device, payload_bus,
+> > +				   packet->payload_length, DMA_TO_DEVICE);
+> > +
+> >  	/* If the context isn't already running, start it up. */
+> >  	reg = reg_read(ctx->ohci, CONTROL_SET(ctx->regs));
+> >  	if ((reg & CONTEXT_RUN) == 0)
+>
+> The dma_sync_single_ call should be conditional for
+> packet->payload_length > 0.  You would have noticed that if my patch
+> "firewire: fw-ohci: shut up false compiler warning on PPC32" wouldn't
+> have shadowed the corresponding compiler warning, which would be for
+> real after your patch.  And, as David wrote, the call should come before
+> context_append.
+>
+> However, we actually don't need it at all.
+>
+> The dma_map_single(...) already syncs the payload for the device, and we
+> don't access the payload after that anymore.
 
-this patch make free_bootmem_core more robust by trim the sidx and
-eidx according the ram range that
-node have.
+D'oh, got overzealous reading dma docs, missed the fact that we didn't 
+actually touch it on the host side, so nothing to actually sync...
 
-----
+> So this patch shouldn't do 
+> anything, except that it inserts a call which happens to have barrier
+> characteristics on some platforms.
+
+...but got lucky in that it actually helps this particular setup (x86_64 
+kernel, dual quad-core opteron, 8G RAM, 3 FireWire controllers). Hrm.
+
+> What we rather have to check is:
+>
+>    - Are we really writing into the context program the order that we
+>      need to?  This includes ordering WRT MMIO writes.
+>
+>    - Are we writing the branch address atomically?  (No, we don't enforce
+>      an atomic access at the moment, although it is very likely that the
+>      compiler uses an atomic access.)
+>
+> (We have to expect that the controller reads a descriptor while we write
+> into it.)
+
+More investigative fun for tomorrow...
+
+>    - Is there a use-after-free problem somewhere?
+>
+> (A pattern in the original report and in a crash that you mentioned
+> looked like use of freed memory: "Faulting instruction address:
+> 0x6b6b6b68" in comment #1.)
+
+Seems both of the ones that looked like slab poison were on PowerPC. I'll have 
+to spin up a ppc kernel on the old powerbook and poke around more.
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
