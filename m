@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYCMWki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYCMWmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbYCMWki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbYCMWka
+	id S1757528AbYCMWmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYCMWmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:40:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43010 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752567AbYCMWka (ORCPT
+	Thu, 13 Mar 2008 18:42:00 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:64707 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbYCMWmA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:40:30 -0400
-Date: Thu, 13 Mar 2008 15:38:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: linux-kernel@vger.kernel.org, oleg@tv-sign.ru, roland@redhat.com,
-       mingo@elte.hu, xemul@openvz.org
-Subject: Re: 2.6.25-rc5-mm1: "consolechars" hangs on boot
-Message-Id: <20080313153851.2023980c.akpm@linux-foundation.org>
-In-Reply-To: <47D9A5A2.4000009@free.fr>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D9A5A2.4000009@free.fr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 18:42:00 -0400
+Date: Thu, 13 Mar 2008 23:40:53 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [patch 06/10] cpu topology support for s390.
+Message-ID: <20080313224053.GA5836@osiris.boeblingen.de.ibm.com>
+References: <20080312173155.703966894@de.ibm.com> <20080312173217.505558934@de.ibm.com> <20080312161137.63bdfa67.akpm@linux-foundation.org> <1205411307.26537.64.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1205411307.26537.64.camel@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 23:07:30 +0100
-Laurent Riffard <laurent.riffard@free.fr> wrote:
-
-> Le 11.03.2008 09:14, Andrew Morton a __crit :
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
+On Thu, Mar 13, 2008 at 01:28:27PM +0100, Martin Schwidefsky wrote:
+> On Wed, 2008-03-12 at 16:11 -0700, Andrew Morton wrote:
+> > > +#define CPU_BITS 64
+> > > +
+> > > +struct tl_cpu {
+> > > +	unsigned char reserved[6];
+> > > +	unsigned short origin;
+> > > +	unsigned long mask[CPU_BITS / BITS_PER_LONG];
+> > > +};
 > > 
+> > mask[] will be too small for CPU_BITS=65 ;)
 > 
-> With 2.6.25-rc5-mm1, my system (Ubuntu 7.10/Gutsy) reliably hangs on
-> boot. Sysrq-T shows 12 "consolechars" processes stuck in do_exit call.
+> We could add the +(BITS_PER_LONG - 1) logic but what for? The CPU_BITS
+> is defined right above and it will be increased in steps of 64.
+
+It will always be 64 and won't be increased. For more than 64 cpus "origin"
+in the hardware structure above will be > 0 and each bit in the mask
+would represent cpu "origin + bit number".
+
+> > > +	end = (union tl_entry *)((unsigned long)info + info->length);
+> > 
+> > I'd suggest that you take a look at all the pointer arith games which are
+> > being played in this code and see if it can be done better with a more
+> > appropriate use of the C type system.  Before someone dies.
 > 
-> The bisection said "Sucker is
-> patches/signals-send_signal-factor-out-signal_group_exit-checks.patch"
-> 
-> Actually, it's 2.6.25-rc5-mm1 + add-warn_on_secs-macro-fix-fix.patch,
-> I guess this patch is innocent.
-> 
+> The only thing that I can see that we could do is to get rid of the
+> unions and do the pointer arithmetic with the tl_cpu / tl_container
+> structs by hand. The data stored by ptf is structured in a way that
+> makes it rather hard to write decent C code.
 
-Actually I later dropped
-signals-send_signal-factor-out-signal_group_exit-checks.patch at Oleg's
-request.
-
-But I don't think we did that because it was known to be buggy, so perhaps
-the same bug crept back in in another form..
-
-
+Please leave as is. I did have a few different implementations but they
+all looked even worse than this one. If you read the hardware specs then
+the current code should be rather easily understandable.
+And since the whole documentation is publically availabe in the meantime
+I could even add some comments ;)
