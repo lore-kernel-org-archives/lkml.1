@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbYCMRPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYCMRPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584AbYCMRPT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYCMRPH
+	id S1757054AbYCMRPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbYCMRP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:15:07 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:64686 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753767AbYCMRPF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:15:05 -0400
-Subject: Re: [patch 0/6] Guest page hinting version 6.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       virtualization@lists.osdl.org, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, zach@vmware.com, frankeh@watson.ibm.com,
-       rusty@rustcorp.com.au, jeremy@goop.org, andrea@qumranet.com,
-       clameter@sgi.com, a.p.zijlstra@chello.nl
-In-Reply-To: <Pine.LNX.4.64.0803131627450.17244@blonde.site>
-References: <20080312132132.520833247@de.ibm.com>
-	 <Pine.LNX.4.64.0803131627450.17244@blonde.site>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 13 Mar 2008 18:14:58 +0100
-Message-Id: <1205428498.5920.30.camel@localhost>
+	Thu, 13 Mar 2008 13:15:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3909 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756856AbYCMRPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 13:15:25 -0400
+Date: Thu, 13 Mar 2008 18:14:26 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Newall <davidn@davidnewall.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, "Fred ." <eldmannen@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Keys get stuck
+Message-ID: <20080313171425.GA4840@ucw.cz>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D7B428.6010804@davidnewall.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 16:57 +0000, Hugh Dickins wrote:
-> > The last versions of the patches do not differ much, I consider the code
-> > to be stable. My question now is how to proceed with the code. I sure
-> > would love to see the code going upstream some day but that depends on
-> > the mm developers as the code adds complexity that needs to be supported.
-> > If the general feeling is that the advantages of this approach do not
-> > warrent for the added complexity this will likely be the last time you
-> > will hear about guest page hinting. 
+On Wed 2008-03-12 21:14:56, David Newall wrote:
+> Jiri Kosina wrote:
+> > Very probably this is due to broken way how X themselves implement 
+> > auto-repeat, instead of using kernel-provided auto-repeat functionality.
 > 
-> Oh, that would be such a shame.  Your guest page hinting patches remind
-> me of that childhood thrill, when once a year the circus comes to town ;)
-> 
-> But seriously, I'm ashamed to see my name in the Cc list: it would
-> be very unfair if your patches never made it in, just because I've
-> failed to find the time to wrap my own puny brain around them.
+> It should be said that X implements auto-repeat out of necessity.  While
+> the kernel can report key down and up events, its further interpretation
+> of those events is not appropriate.  Many combinations of events are
+> possible, such as keyboard plus mouse, and this precludes the kernel
+> from providing a full interpretation.  It would be wrong for it to even
+> try.  X is the proper place to implement auto-repeat for X.
 
-It is an effort to get you head around it the first time. It gets
-easiert the more you talk about it :-)
+No.
 
-> It's very encouraging to see Jeremy and Rusty weighing in.  I hope
-> Zach will too, and I've added Andrea: their support would count a lot.
-> You have Nick on the list, good, I've added Christoph and Peter
-> (if you do resend, linux-mm might prove more useful than linux-kernel).
+hw is proper place to implement autorepeat, and along with some
+buffering, it has chance to work. Kernel is not real-time, and X are
+definitely not real-time, while autorepeat is real-time operation.
 
-Grr, did I really forgot to copy linux-mm?!? (..insert you favourite
-four letter word here..). I absolutely intended to copy linux-mm but
-somehow replaced it with linux-s390.
-
-> With support from rival virtualizers,
-> I do think you've a good chance of getting in.
-
-Yes, it would be great if we can find another user for it.
+It actually mostly works in ps/2 case. Buffer in hardware means that
+pretty big interrupt delays can be tolerated without problems.
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
