@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbYCMU2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYCMUcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756427AbYCMU2s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbYCMU2F
+	id S1756545AbYCMUcP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbYCMUcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:28:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36679 "EHLO mx1.redhat.com"
+	Thu, 13 Mar 2008 16:32:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50177 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754849AbYCMU2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:28:03 -0400
-Date: Thu, 13 Mar 2008 16:27:11 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <davidn@davidnewall.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080313162711.3d483e6c@cuia.boston.redhat.com>
-In-Reply-To: <200803131214.40321.phillips@phunq.net>
-References: <200803092346.17556.phillips@phunq.net>
-	<200803122314.18244.phillips@phunq.net>
-	<20080313132211.6af855b3@the-village.bc.nu>
-	<200803131214.40321.phillips@phunq.net>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753094AbYCMUb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:31:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: fix aperture vs. suspend problem
+Date: Thu, 13 Mar 2008 21:31:09 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ak@suse.de, kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080313100531.GA3399@elf.ucw.cz>
+In-Reply-To: <20080313100531.GA3399@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803132131.10848.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 11:14:39 -0800
-Daniel Phillips <phillips@phunq.net> wrote:
+On Thursday, 13 of March 2008, Pavel Machek wrote:
+> 
+> aperture_64.c takes a piece of memory and makes it into iommu
+> window... but such window may not be saved by swsusp -- that leads to
+> oops during suspend.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> Scream is an exaggeration, and FUD only applies to somebody who
-> consistently overlooks the primary proposition in this design: that the
-> battery backed power supply, computer hardware and Linux are reliable
-> enough to entrust your data to them. 
+Acked-by: "Rafael J. Wysocki" <rjw@sisk.pl>
 
-That's a reasonable enough assumption, to anyone who has never dealt
-with software before, or whose data is just not important.
-
-People who have dealt with computers for longer will know that anything
-can fail at any time, and usually does unexpectedly and at bad moments.
-
-Some defensive programming to deal with random failures could make your
-project appealing to a lot more people than it would appeal to in its
-current state.
-
--- 
-All Rights Reversed
+> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+> index 608152a..88747f3 100644
+> --- a/arch/x86/kernel/aperture_64.c
+> +++ b/arch/x86/kernel/aperture_64.c
+> @@ -18,6 +18,7 @@ #include <linux/pci_ids.h>
+>  #include <linux/pci.h>
+>  #include <linux/bitops.h>
+>  #include <linux/ioport.h>
+> +#include <linux/suspend.h>
+>  #include <asm/e820.h>
+>  #include <asm/io.h>
+>  #include <asm/gart.h>
+> @@ -76,6 +77,7 @@ static u32 __init allocate_aperture(void
+>  	printk(KERN_INFO "Mapping aperture over %d KB of RAM @ %lx\n",
+>  			aper_size >> 10, __pa(p));
+>  	insert_aperture_resource((u32)__pa(p), aper_size);
+> +	register_nosave_region((u32)__pa(p) >> PAGE_SHIFT, (u32)__pa(p+aper_size) >> PAGE_SHIFT);
+>  
+>  	return (u32)__pa(p);
+>  }
+> 
