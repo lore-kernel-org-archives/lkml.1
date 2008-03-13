@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYCMLNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYCMLTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbYCMLNT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 07:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYCMLNH
+	id S1754667AbYCMLTt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 07:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYCMLTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 07:13:07 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:37446 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbYCMLNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 07:13:06 -0400
-Date: Thu, 13 Mar 2008 12:13:03 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Avi Kivity <avi@qumranet.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: KVM: Export include/linux/kvm.h only if $ARCH actually
-	supports KVM
-Message-ID: <20080313111303.GA6474@aepfle.de>
-References: <20080210111525.GA28522@aepfle.de> <47B29FB5.40205@qumranet.com> <20080213203450.GB13536@uranus.ravnborg.org> <47B4098C.3060301@qumranet.com>
+	Thu, 13 Mar 2008 07:19:41 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48843 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751044AbYCMLTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 07:19:40 -0400
+Date: Thu, 13 Mar 2008 11:19:35 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <clameter@sgi.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] mm: allocate section_map for sparse_init
+Message-ID: <20080313111934.GA12351@csn.ul.ie>
+References: <86802c440803121051q20023badsf8e6e0571f4bb92e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <47B4098C.3060301@qumranet.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <86802c440803121051q20023badsf8e6e0571f4bb92e@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, Avi Kivity wrote:
+On (12/03/08 10:51), Yinghai Lu didst pronounce:
+> [PATCH] mm: allocate section_map for sparse_init
+> 
+> allocate section_map in bootmem instead of using __initdata.
+> 
+> need to apply it after
+>         [PATCH] mm: fix boundary checking in free_bootmem_core
+>         [PATCH] mm: make mem_map allocation continuous.
+> 
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> Sam Ravnborg wrote:
->> On Wed, Feb 13, 2008 at 09:43:49AM +0200, Avi Kivity wrote:
->>   
->>> Olaf Hering wrote:
->>>     
->>>>> Currently, make headers_check barfs due to <asm/kvm.h>, which 
->>>>> <linux/kvm.h>
->>>>> includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export 
->>>>> kvm.h
->>>>> only if the arch actually supports it.
->>>>>            
->>>> This makes headers_install_all unreliable.
->>>> linux/kvm.h will not be exported, depending on what system the libc
->>>> headers will be generated.       
->>> I see.  Any suggestions besides adding lots of asm-*/kvm.h?
->>>     
->>
->> Do not include asm/kvm.h from linux/kvm.h.
->> And in the few places where it is needed explicit include asm/kvm.h before
->> linux/kvm.h.
->>
->> Alternatively inlcude asm/kvm.h inside #ifdef KERNEL"
->> so only userspace has to do explicit include of asm before linux variant.
->>   
->
-> That's not very nice for userspace, which needs asm/kvm.h for the arch 
-> specific parts of the interface.  I'll add asm-*/kvm.h.
+> Index: linux-2.6/mm/sparse.c
+> ===================================================================
+> --- linux-2.6.orig/mm/sparse.c
+> +++ linux-2.6/mm/sparse.c
+> @@ -285,8 +285,6 @@ struct page __init *sparse_early_mem_map
+>  	return NULL;
+>  }
+>  
+> -/* section_map pointer array is 64k */
+> -static __initdata struct page *section_map[NR_MEM_SECTIONS];
+>  /*
+>   * Allocate the accumulated non-linear sections, allocate a mem_map
+>   * for each and record the physical to section mapping.
+> @@ -296,6 +294,9 @@ void __init sparse_init(void)
+>  	unsigned long pnum;
+>  	struct page *map;
+>  	unsigned long *usemap;
+> +	struct page **section_map;
+> +	int size;
+> +	int node;
+>  
+>  	/*
+>  	 * map is using big page (aka 2M in x86 64 bit)
+> @@ -305,13 +306,17 @@ void __init sparse_init(void)
+>  	 * then in big system, the memmory will have a lot hole...
+>  	 * here try to allocate 2M pages continously.
+>  	 */
+> +	size = sizeof(struct page *) * NR_MEM_SECTIONS;
+> +	section_map = alloc_bootmem(size);
+> +	if (!section_map)
+> +		panic("can not allocate section_map\n");
+> +
+>  	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+>  		if (!present_section_nr(pnum))
+>  			continue;
+>  		section_map[pnum] = sparse_early_mem_map_alloc(pnum);
+>  	}
+>  
+> -
+>  	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+>  		if (!present_section_nr(pnum))
+>  			continue;
+> @@ -327,6 +332,9 @@ void __init sparse_init(void)
+>  		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
+>  								usemap);
+>  	}
+> +
+> +	for_each_online_node(node)
+> +		free_bootmem_node(NODE_DATA(node), __pa(section_map), size);
 
-Can you please revert this change before 2.6.25 is released?
-'make headers_install_all' has to be reliable.
+Why are you iterating every online node here instead of just calling
+free_bootmem(__pa(section_map), size) ?
 
- commit fb56dbb31c4738a3918db81fd24da732ce3b4ae6
- Author: Avi Kivity <avi@qumranet.com>
- Date:   Sun Dec 2 10:50:06 2007 +0200
-
-    KVM: Export include/linux/kvm.h only if $ARCH actually supports KVM
-
-    Currently, make headers_check barfs due to <asm/kvm.h>, which <linux/kvm.h>
-    includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export kvm.h
-    only if the arch actually supports it.
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
 
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
