@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbYCMGxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYCMG46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753142AbYCMGxP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYCMGw6
+	id S1753304AbYCMG46 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 02:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYCMG4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:52:58 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:38130 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbYCMGw5 convert rfc822-to-8bit (ORCPT
+	Thu, 13 Mar 2008 02:56:51 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:60805 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYCMG4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:52:57 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] Fix fsldma.c warning messages when it's compiled underPPC64.
-Date: Thu, 13 Mar 2008 14:52:56 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AED32DBF@zch01exm26.fsl.freescale.net>
-In-Reply-To: <e9c3a7c20803120929l41b9fec8m34db73d6e034461a@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Fix fsldma.c warning messages when it's compiled underPPC64.
-Thread-Index: AciEXlc0lwMHxs1bTLyE6aJvwYSbngAeBBAA
-References: <1205146045-17342-1-git-send-email-wei.zhang@freescale.com> <20080311142247.GA18915@lixom.net> <ABF87B0B6A38C0458E319AC973ED68AECE526A@zch01exm26.fsl.freescale.net> <e9c3a7c20803120929l41b9fec8m34db73d6e034461a@mail.gmail.com>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: "Olof Johansson" <olof@lixom.net>, <sfr@canb.auug.org.au>,
-       <linux-kernel@vger.kernel.org>
+	Thu, 13 Mar 2008 02:56:50 -0400
+From: Zhang Wei <wei.zhang@freescale.com>
+To: dan.j.williams@intel.com
+Cc: linux-kernel@vger.kernel.org, Zhang Wei <wei.zhang@freescale.com>
+Subject: [PATCH] fsldma: Add a completed cookie updated action in DMA finish interrupt.
+Date: Thu, 13 Mar 2008 14:54:20 +0800
+Message-Id: <1205391260-4482-1-git-send-email-wei.zhang@freescale.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 13 Mar 2008 06:56:44.0784 (UTC) FILETIME=[6637FF00:01C884D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Dan, 
+The patch 'fsldma: do not cleanup descriptors in hardirq context'
+(commit 222ccf9ab838a1ca7163969fabd2cddc10403fb5) removed descriptors
+cleanup function to tasklet but the completed cookie do not updated.
+Thus, the DMA controller will get lots of duplicated transfer
+interrupts. Just make a completed cookie update in interrupt handler.
+And keep other cleanup jobs in tasklet function.
 
-I just consider if it could be reused on Freescale's 64bit processor in the future.
-If we don't care this, I can let the driver only depends on PPC32.
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ drivers/dma/fsldma.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 27340a7..449c0ae 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -39,7 +39,7 @@ config INTEL_IOP_ADMA
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 5428f81..7c957c3 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -539,7 +539,6 @@ static void fsl_chan_ld_cleanup(struct fsl_dma_chan *fsl_chan)
  
- config FSL_DMA
-        bool "Freescale MPC85xx/MPC83xx DMA support"
--       depends on PPC
-+       depends on PPC32
-        select DMA_ENGINE
-        ---help---
-          Enable support for the Freescale DMA engine. Now, it support
+ 	spin_lock_irqsave(&fsl_chan->desc_lock, flags);
+ 
+-	fsl_dma_update_completed_cookie(fsl_chan);
+ 	dev_dbg(fsl_chan->dev, "chan completed_cookie = %d\n",
+ 			fsl_chan->completed_cookie);
+ 	list_for_each_entry_safe(desc, _desc, &fsl_chan->ld_queue, node) {
+@@ -710,6 +709,7 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+ 		dev_dbg(fsl_chan->dev, "event: clndar %p, nlndar %p\n",
+ 			(void *)get_cdar(fsl_chan), (void *)get_ndar(fsl_chan));
+ 		stat &= ~FSL_DMA_SR_EOSI;
++		fsl_dma_update_completed_cookie(fsl_chan);
+ 	}
+ 
+ 	/* If it current transfer is the end-of-transfer,
+-- 
+1.5.4
 
-Thanks!
-Wei.
-
-> -----Original Message-----
-> From: dan.j.williams@gmail.com 
-> 
-> On Tue, Mar 11, 2008 at 7:10 PM, Zhang Wei 
-> <Wei.Zhang@freescale.com> wrote:
-> >  The reason is the val will be assigned to SR register, and 
-> SR register
-> >   is a 32-bit only register.
-> 
-> If this is the case then why not disable the driver for PPC_64?
-> 
-> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-> index 27340a7..89db937 100644
-> --- a/drivers/dma/Kconfig
-> +++ b/drivers/dma/Kconfig
-> @@ -40,6 +40,7 @@ config INTEL_IOP_ADMA
->  config FSL_DMA
->         bool "Freescale MPC85xx/MPC83xx DMA support"
->         depends on PPC
-> +       depends on !PPC_64
->         select DMA_ENGINE
->         ---help---
->           Enable support for the Freescale DMA engine. Now, it support
-> 
-> --
-> Dan
-> 
