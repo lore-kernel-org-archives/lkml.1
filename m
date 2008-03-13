@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYCMNFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYCMNKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbYCMNFt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 09:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYCMNFi
+	id S1755596AbYCMNKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 09:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYCMNKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 09:05:38 -0400
-Received: from styx.suse.cz ([82.119.242.94]:35682 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754035AbYCMNFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 09:05:37 -0400
-Date: Thu, 13 Mar 2008 14:05:35 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-list@namesys.com,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Michael Tokarev <mjt@tls.msk.ru>
-Subject: [PATCH 3/4] ext4: Make ext4 handle quotaon on remount
-Message-ID: <20080313130535.GI12523@duck.suse.cz>
-References: <20080313125944.GF12523@duck.suse.cz>
+	Thu, 13 Mar 2008 09:10:10 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:46777 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751703AbYCMNKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 09:10:08 -0400
+Date: Thu, 13 Mar 2008 14:09:34 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080313130934.GG27873@ics.muni.cz>
+References: <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net> <20080313120514.GH17940@kernel.dk> <20080313122344.GD27873@ics.muni.cz> <20080313124633.GS17940@kernel.dk> <20080313125503.GE27873@ics.muni.cz> <20080313125933.GT17940@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20080313125944.GF12523@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080313125933.GT17940@kernel.dk>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 13 Mar 2008 14:09:34 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update ext4 to handle quotaon on remount RW.
+On Thu, Mar 13, 2008 at 01:59:34PM +0100, Jens Axboe wrote:
+> The BIOS isn't that old, probably updated it a couple of months ago.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-
----
- super.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 13383ba..5aaf03c 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -813,7 +813,7 @@ static int ext4_acquire_dquot(struct dquot *dquot);
- static int ext4_release_dquot(struct dquot *dquot);
- static int ext4_mark_dquot_dirty(struct dquot *dquot);
- static int ext4_write_info(struct super_block *sb, int type);
--static int ext4_quota_on(struct super_block *sb, int type, int format_id, char *path);
-+static int ext4_quota_on(struct super_block *sb, int type, int format_id, char *path, int remount);
- static int ext4_quota_on_mount(struct super_block *sb, int type);
- static ssize_t ext4_quota_read(struct super_block *sb, int type, char *data,
- 			       size_t len, loff_t off);
-@@ -1632,7 +1632,7 @@ static void ext4_orphan_cleanup (struct super_block * sb,
- 	/* Turn quotas off */
- 	for (i = 0; i < MAXQUOTAS; i++) {
- 		if (sb_dqopt(sb)->files[i])
--			vfs_quota_off(sb, i);
-+			vfs_quota_off(sb, i, 0);
- 	}
- #endif
- 	sb->s_flags = s_flags; /* Restore MS_RDONLY status */
-@@ -3143,7 +3143,7 @@ static int ext4_quota_on_mount(struct super_block *sb, int type)
-  * Standard function to be called on quota_on
-  */
- static int ext4_quota_on(struct super_block *sb, int type, int format_id,
--			 char *path)
-+			 char *path, int remount)
- {
- 	int err;
- 	struct nameidata nd;
-@@ -3151,9 +3151,9 @@ static int ext4_quota_on(struct super_block *sb, int type, int format_id,
- 	if (!test_opt(sb, QUOTA))
- 		return -EINVAL;
- 	/* Not journalling quota? */
--	if (!EXT4_SB(sb)->s_qf_names[USRQUOTA] &&
--	    !EXT4_SB(sb)->s_qf_names[GRPQUOTA])
--		return vfs_quota_on(sb, type, format_id, path);
-+	if ((!EXT4_SB(sb)->s_qf_names[USRQUOTA] &&
-+	    !EXT4_SB(sb)->s_qf_names[GRPQUOTA]) || remount)
-+		return vfs_quota_on(sb, type, format_id, path, remount);
- 	err = path_lookup(path, LOOKUP_FOLLOW, &nd);
- 	if (err)
- 		return err;
-@@ -3168,7 +3168,7 @@ static int ext4_quota_on(struct super_block *sb, int type, int format_id,
- 			"EXT4-fs: Quota file not on filesystem root. "
- 			"Journalled quota will not work.\n");
- 	path_put(&nd.path);
--	return vfs_quota_on(sb, type, format_id, path);
-+	return vfs_quota_on(sb, type, format_id, path, remount);
- }
+I use the latest BIOS for my T61 and it just works. At least the event is
+generated either for acpid or for Xserver.
  
- /* Read data from quotafile - avoid pagecache and such because we cannot afford
+-- 
+Luká¹ Hejtmánek
