@@ -1,43 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbYCMGvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbYCMGxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbYCMGvR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYCMGvH
+	id S1753142AbYCMGxP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 02:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYCMGw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:51:07 -0400
-Received: from phunq.net ([64.81.85.152]:41127 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751480AbYCMGvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:51:07 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: David Newall <davidn@davidnewall.com>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Wed, 12 Mar 2008 22:50:55 -0800
-User-Agent: KMail/1.9.5
-Cc: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803122317.24849.phillips@phunq.net> <47D8C9E8.6020908@davidnewall.com>
-In-Reply-To: <47D8C9E8.6020908@davidnewall.com>
+	Thu, 13 Mar 2008 02:52:58 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:38130 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYCMGw5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 02:52:57 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803122350.56811.phillips@phunq.net>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] Fix fsldma.c warning messages when it's compiled underPPC64.
+Date: Thu, 13 Mar 2008 14:52:56 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AED32DBF@zch01exm26.fsl.freescale.net>
+In-Reply-To: <e9c3a7c20803120929l41b9fec8m34db73d6e034461a@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Fix fsldma.c warning messages when it's compiled underPPC64.
+Thread-Index: AciEXlc0lwMHxs1bTLyE6aJvwYSbngAeBBAA
+References: <1205146045-17342-1-git-send-email-wei.zhang@freescale.com> <20080311142247.GA18915@lixom.net> <ABF87B0B6A38C0458E319AC973ED68AECE526A@zch01exm26.fsl.freescale.net> <e9c3a7c20803120929l41b9fec8m34db73d6e034461a@mail.gmail.com>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: "Olof Johansson" <olof@lixom.net>, <sfr@canb.auug.org.au>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 23:30, David Newall wrote:
-> Daniel Phillips wrote:
-> >> Your idea seems predicated on throwing large amounts of RAM at the
-> >> problem.  What I want to know is this: Is it really 25 times faster than
-> >> ext3 with an equally huge buffer cache?
-> >
-> > Yes.
+Hi, Dan, 
+
+I just consider if it could be reused on Freescale's 64bit processor in the future.
+If we don't care this, I can let the driver only depends on PPC32.
+
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index 27340a7..449c0ae 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -39,7 +39,7 @@ config INTEL_IOP_ADMA
+ 
+ config FSL_DMA
+        bool "Freescale MPC85xx/MPC83xx DMA support"
+-       depends on PPC
++       depends on PPC32
+        select DMA_ENGINE
+        ---help---
+          Enable support for the Freescale DMA engine. Now, it support
+
+Thanks!
+Wei.
+
+> -----Original Message-----
+> From: dan.j.williams@gmail.com 
 > 
-> Well, that sounds convincing.  Not.  You know this how?
-
-By measuring it.  time untar -xf linux-2.2.26.tar; time sync
-
-Daniel
+> On Tue, Mar 11, 2008 at 7:10 PM, Zhang Wei 
+> <Wei.Zhang@freescale.com> wrote:
+> >  The reason is the val will be assigned to SR register, and 
+> SR register
+> >   is a 32-bit only register.
+> 
+> If this is the case then why not disable the driver for PPC_64?
+> 
+> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+> index 27340a7..89db937 100644
+> --- a/drivers/dma/Kconfig
+> +++ b/drivers/dma/Kconfig
+> @@ -40,6 +40,7 @@ config INTEL_IOP_ADMA
+>  config FSL_DMA
+>         bool "Freescale MPC85xx/MPC83xx DMA support"
+>         depends on PPC
+> +       depends on !PPC_64
+>         select DMA_ENGINE
+>         ---help---
+>           Enable support for the Freescale DMA engine. Now, it support
+> 
+> --
+> Dan
+> 
