@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYCMOyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYCMO7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbYCMOyx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 10:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYCMOyq
+	id S1754559AbYCMO7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 10:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYCMO73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 10:54:46 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:5787 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752399AbYCMOyp (ORCPT
+	Thu, 13 Mar 2008 10:59:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57835 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752371AbYCMO72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 10:54:45 -0400
-Message-ID: <47D94035.6080301@hp.com>
-Date: Thu, 13 Mar 2008 10:54:45 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Thu, 13 Mar 2008 10:59:28 -0400
+Date: Thu, 13 Mar 2008 10:59:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: broken access to a USB HID device after suspend
+In-Reply-To: <20080312224411.GB2290@dose.home.local>
+Message-ID: <Pine.LNX.4.44L0.0803131049510.4474-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: [PATCH 0/7] IO CPU affinity testing series
-References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 12 Mar 2008, Tino Keitel wrote:
 
-Your suggestion worked Jens, will do some benchmarking, and try to figure out why on the side...
+> On Wed, Mar 12, 2008 at 17:44:56 -0400, Alan Stern wrote:
+> 
+> [...]
+> 
+> > Tino, it would help to see a kernel log showing what happened during 
+> > the suspend, resume, and failure of hidmon.  It would help even more if 
+> > you test under a kernel with CONFIG_USB_DEBUG enabled.
+> 
+> A full kernel log is available at http://tikei.de/dmesg
+> 
+> > 
+> > Even if you can't reproduce the problem, do you have the complete 
+> > kernel log from before?
+> > 
+> > Is it possible that this is really a problem with the LCD device, not 
+> > with the kernel?  I ask because if the device was working properly then 
+> > unplugging and replugging the USB cable should do a complete reset.
+> 
+> I did the following:
+> 
+> - suspended the computer
+> 
+> - switched off the LCD
 
-Subject: [PATCH] IA64 boots with direct call of generic init single data
+And switched it back on at some point?
 
-Need to figure out why it needs to be done earlier on ia64.
+> - resumed the computer
+> 
+> - tried to use hidmon, got the error
+> 
+> - unplugged the LCD
+> 
+> - plugged in the LCD
+> 
+> - tried to use hidmon again, got the error again
+> 
+> - suspended the computer
+> 
+> - resumed the computer
+> 
+> - tried to use hidmon again, and it worked
+> 
+> Note that I didn't switch off the LCD during the second suspend, in the
+> case that matters.
 
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
----
- arch/ia64/kernel/setup.c |    2 ++
- arch/ia64/kernel/smp.c   |    7 -------
- 2 files changed, 2 insertions(+), 7 deletions(-)
+Well, this isn't what your log shows.
 
-diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-index 4aa9eae..36a0fe5 100644
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -518,6 +518,8 @@ setup_arch (char **cmdline_p)
- 	acpi_boot_init();
- #endif
- 
-+	generic_init_call_single_data();
-+
- #ifdef CONFIG_VT
- 	if (!conswitchp) {
- # if defined(CONFIG_DUMMY_CONSOLE)
-diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
-index d8ee005..04ba9f8 100644
---- a/arch/ia64/kernel/smp.c
-+++ b/arch/ia64/kernel/smp.c
-@@ -113,13 +113,6 @@ stop_this_cpu (void)
- 
- DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
- 
--int __cpuinit init_smp_call(void)
--{
--	generic_init_call_single_data();
--	return 0;
--}
--core_initcall(init_smp_call);
--
- void
- cpu_die(void)
- {
--- 
-1.5.2.5
+According to the log, you booted the computer on March 10 and about 12 
+minutes later started getting those -110 errors on the LCD device.  
+Then you suspended the computer with no apparent problem.
+
+Two days later you suspended three more times, and the the LCD monitor
+was disconnected during the third suspend.  When it came back, you
+started getting the errors again.
+
+Next you unplugged and replugged the hub into which the LCD was 
+connected.  Again there was another -110 error.  Finally you suspended 
+and resumed.
+
+To me that makes it look like the LCD's problems have no connection at
+all with suspend/resume.
+
+Alan Stern
 
