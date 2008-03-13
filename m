@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYCMU7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYCMVDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbYCMU7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYCMU7p
+	id S1757307AbYCMVDA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 17:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYCMVCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:59:45 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:43725 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753083AbYCMU7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:59:44 -0400
-Date: Thu, 13 Mar 2008 21:59:51 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: nicolas.ferre@atmel.com
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Sedji GAOUAOU <sedji.gaouaou@atmel.com>,
-       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: adjust fifo size for
- at91sam9rl
-Message-ID: <20080313215951.3375a453@siona.local>
-In-Reply-To: <47D5639A.3090609@atmel.com>
-References: <47D5639A.3090609@atmel.com>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 17:02:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50362 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751143AbYCMVCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 17:02:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.25-rc5-git2: Reported regressions from 2.6.24
+Date: Thu, 13 Mar 2008 22:02:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Tino Keitel <tino.keitel@gmx.de>, linux-kernel@vger.kernel.org,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       Linas =?utf-8?q?=C5=BDvirblis?= <0x0007@gmail.com>
+References: <200803120141.51844.rjw@sisk.pl> <200803122328.19285.rjw@sisk.pl> <47D8936B.3020501@garzik.org>
+In-Reply-To: <47D8936B.3020501@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Mar 2008 20:59:11.0046 (UTC) FILETIME=[16237E60:01C8854D]
+Content-Disposition: inline
+Message-Id: <200803132202.07531.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Mar 2008 17:36:42 +0100
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+On Thursday, 13 of March 2008, Jeff Garzik wrote:
+> 
+> The following regression fix is now upstream...
+> 
+> 
+> 
+> Commit:     f9e7d100ddea5cdcea7a02230566f36b0a648c2e
+> 
+>      FIXED_PHY must depend on PHYLIB=y
 
-> -#if defined(CONFIG_ARCH_AT91SAM9263)
-> +#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91SAM9RL)
->  #define ATMEL_LCDC_FIFO_SIZE		2048
->  #else
->  #define ATMEL_LCDC_FIFO_SIZE		512
-
-Hmm. Perhaps it's time to consider moving this parameter to
-platform_data?
-
-Haavard
+Thanks, closed.
