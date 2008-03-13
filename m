@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYCMRZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYCMRck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYCMRZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYCMRZS
+	id S1755467AbYCMRck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYCMRc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:25:18 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42879 "EHLO mx1.suse.de"
+	Thu, 13 Mar 2008 13:32:29 -0400
+Received: from mga11.intel.com ([192.55.52.93]:58289 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbYCMRZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:25:17 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH 1/1] PCI: fix issue with busses registering multiple times in sysfs
-Date: Thu, 13 Mar 2008 10:25:13 -0700
-Message-Id: <1205429113-17641-1-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <20080313172410.GA17045@kroah.com>
-References: <20080313172410.GA17045@kroah.com>
+	id S1752033AbYCMRc2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 13:32:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,495,1199692800"; 
+   d="scan'208";a="533411291"
+Date: Thu, 13 Mar 2008 10:27:57 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Holger Macht <hmacht@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       stable@kernel.org
+Subject: Re: [PATCH] ACPI: Set flag DOCK_UNDOCKING when triggered via sysfs
+Message-ID: <20080313102757.435c9d1a@appleyard>
+In-Reply-To: <20080312104034.GA4371@homac>
+References: <20080312000727.GB4089@homac>
+	<20080311223522.3326b6ee.akpm@linux-foundation.org>
+	<20080312104034.GA4371@homac>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI busses can be registered multiple times, so we need to detect if we
-have registered our bus structure in sysfs already.  If so, don't do it
-again.
+On Wed, 12 Mar 2008 11:40:35 +0100
+Holger Macht <hmacht@suse.de> wrote:
 
-Thanks to Guennadi Liakhovetski <g.liakhovetski@gmx.de> for reporting
-the problem, and to Linus for poking me to get me to believe that it was
-a real problem.
+> On Di 11. Mär - 22:35:22, Andrew Morton wrote:
+> > On Wed, 12 Mar 2008 01:07:27 +0100 Holger Macht <hmacht@suse.de>
+> > wrote:
+> > 
+> > > begin_undock() is only called when triggered via a acpi notify
+> > > handler (pressing the undock button on the dock station), but
+> > > complete_undock() is always called after the eject. So if a
+> > > undock is triggered through a sysfs write, the flag
+> > > DOCK_UNDOCKING has to be set for the dock station, too. Otherwise
+> > > this will freeze the system hard.
+> > > 
+> > 
+> > We prefer not to make systems freeze hard.
+> > 
+> > > ---
+> > > 
+> > > diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+> > > index 307cef6..fa44fb9 100644
+> > > --- a/drivers/acpi/dock.c
+> > > +++ b/drivers/acpi/dock.c
+> > > @@ -710,6 +710,7 @@ static ssize_t write_undock(struct device
+> > > *dev, struct device_attribute *attr, if (!count)
+> > >  		return -EINVAL;
+> > >  
+> > > +	begin_undock(dock_station);
+> > >  	ret = handle_eject_request(dock_station,
+> > > ACPI_NOTIFY_EJECT_REQUEST); return ret ? ret: count;
+> > >  }
+> > 
+> > I assume that this is needed in 2.6.24.x as well?
+> 
+> I tested this, and no, I weren't able to reproduce on 2.6.24.
+> 
+> Moreover, it seems that the freeze is related to some libata issue
+> because it only freezes when a drive is in the dock station.
+> 
+> Nevertheless, I think the patch is correct. Maybe there's a race
+> involved somewhere I'm not aware of. I really like to wait for
+> Kristen to comment before pushing it into more trees.
+> 
+> Thanks,
+> 	Holger
+> 
 
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/pci/bus.c   |    6 +++++-
- include/linux/pci.h |    1 +
- 2 files changed, 6 insertions(+), 1 deletions(-)
+Hum, I'm surprised this caused a freeze - you are sure this fixes your
+problem?  This flag is never checked anywhere in the dock code, and if
+it's not set, it will not matter, it will still do the undock.  The
+flags file is exported to user space via sysfs though, so maybe because
+the flag isn't being set, some user space script is doing something it
+shouldn't?  The patch does seem correct though, so might as well add it.
 
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index 6a9403d..d708358 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -143,14 +143,18 @@ void pci_bus_add_devices(struct pci_bus *bus)
- 			/* register the bus with sysfs as the parent is now
- 			 * properly registered. */
- 			child_bus = dev->subordinate;
-+			if (child_bus->is_added)
-+				continue;
- 			child_bus->dev.parent = child_bus->bridge;
- 			retval = device_register(&child_bus->dev);
- 			if (retval)
- 				dev_err(&dev->dev, "Error registering pci_bus,"
- 					" continuing...\n");
--			else
-+			else {
-+				child_bus->is_added = 1;
- 				retval = device_create_file(&child_bus->dev,
- 							&dev_attr_cpuaffinity);
-+			}
- 			if (retval)
- 				dev_err(&dev->dev, "Error creating cpuaffinity"
- 					" file, continuing...\n");
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 38eff19..9010f54 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -278,6 +278,7 @@ struct pci_bus {
- 	struct device		dev;
- 	struct bin_attribute	*legacy_io; /* legacy I/O for this bus */
- 	struct bin_attribute	*legacy_mem; /* legacy mem */
-+	unsigned int		is_added:1;
- };
- 
- #define pci_bus_b(n)	list_entry(n, struct pci_bus, node)
--- 
-1.5.4.3
+Acked-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+
 
