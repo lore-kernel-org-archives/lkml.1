@@ -1,267 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYCMU4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYCMU7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbYCMU4e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbYCMUzq
+	id S1757082AbYCMU7x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYCMU7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:55:46 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59849 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757439AbYCMUzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:55:44 -0400
-Subject: patch uio-implement-a-uio-interface-for-the-smx-cryptengine.patch added to gregkh-2.6 tree
-To: bn@niasdigital.com, gregkh@suse.de, hjk@linutronix.de, lethal@linux-sh.org,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 13 Mar 2008 13:54:54 -0700
-In-Reply-To: <1205407650.3735.19.camel@moss.renham>
-Message-ID: <12054416941268@kroah.org>
+	Thu, 13 Mar 2008 16:59:45 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:43725 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753083AbYCMU7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:59:44 -0400
+Date: Thu, 13 Mar 2008 21:59:51 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: nicolas.ferre@atmel.com
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Sedji GAOUAOU <sedji.gaouaou@atmel.com>,
+       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Andrew Victor <linux@maxim.org.za>
+Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: adjust fifo size for
+ at91sam9rl
+Message-ID: <20080313215951.3375a453@siona.local>
+In-Reply-To: <47D5639A.3090609@atmel.com>
+References: <47D5639A.3090609@atmel.com>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Mar 2008 20:59:11.0046 (UTC) FILETIME=[16237E60:01C8854D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 10 Mar 2008 17:36:42 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-This is a note to let you know that I've just added the patch titled
+> -#if defined(CONFIG_ARCH_AT91SAM9263)
+> +#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91SAM9RL)
+>  #define ATMEL_LCDC_FIFO_SIZE		2048
+>  #else
+>  #define ATMEL_LCDC_FIFO_SIZE		512
 
-     Subject: UIO: Implement a UIO interface for the SMX Cryptengine
+Hmm. Perhaps it's time to consider moving this parameter to
+platform_data?
 
-to my gregkh-2.6 tree.  Its filename is
-
-     uio-implement-a-uio-interface-for-the-smx-cryptengine.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From bn@niasdigital.com  Thu Mar 13 13:40:45 2008
-From: Ben Nizette <bn@niasdigital.com>
-Date: Thu, 13 Mar 2008 22:27:30 +1100
-Subject: UIO: Implement a UIO interface for the SMX Cryptengine
-To: Hans-Jürgen Koch <hjk@linutronix.de>
-Cc: Paul Mundt <lethal@linux-sh.org>, gregkh <gregkh@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
-Message-ID: <1205407650.3735.19.camel@moss.renham>
-
-From: Ben Nizette <bn@niasdigital.com>
-
-This patch implements a UIO interface for the SMX Cryptengine.
-
-The Cryptengine found on the Nias Digital SMX board is best suited
-for a UIO interface.  It is not wired in to the cryptographic API
-as the engine handles it's own keys, algorithms, everything.  All
-that we know about is that if there's room in the buffer, you can
-write data to it and when there's data ready, you read it out again.
-
-There isn't necessarily even any direct correlation between data
-going in and data coming out again, the engine may consume or
-generate data all on its own.
-
-This driver is for proprietary hardware but we're always told to
-submit the drivers anyway; here you are.  :-)
-
-This is version 4 of this patch and addresses all issues raised by
-Hans-JÃ¼rgen Koch and Paul Mundt in their reviews.  Slightly altered
-is Paul's suggestion to use DRV_NAME and DRV_VERSION as the UIO
-version and name.  While at the moment they are the same, there
-is no reason for them to stay that way.  Nevertheless we now at
-least provide a MODULE_VERSION macro to keep modinfo happy.
-
-Signed-off-by: Ben Nizette <bn@niasdigital.com>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: Hans J Koch <hjk@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- MAINTAINERS           |    5 +
- drivers/uio/Kconfig   |   13 ++++
- drivers/uio/Makefile  |    1 
- drivers/uio/uio_smx.c |  140 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 159 insertions(+)
-
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3583,6 +3583,11 @@ M:	mhoffman@lightlink.com
- L:	lm-sensors@lm-sensors.org
- S:	Maintained
- 
-+SMX UIO Interface
-+P:	Ben Nizette
-+M:	bn@niasdigital.com
-+S:	Maintained
-+
- SOFTMAC LAYER (IEEE 802.11)
- P:	Daniel Drake
- M:	dsd@gentoo.org
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -26,4 +26,17 @@ config UIO_CIF
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called uio_cif.
- 
-+config UIO_SMX
-+	tristate "SMX cryptengine UIO interface"
-+	depends on UIO
-+	default n
-+	help
-+	  Userspace IO interface to the Cryptography engine found on the
-+	  Nias Digital SMX boards.  These will be available from Q4 2008
-+	  from http://www.niasdigital.com.  The userspace part of this
-+	  driver will be released under the GPL at the same time as the
-+	  hardware and will be able to be downloaded from the same site.
-+
-+	  If you compile this as a module, it will be called uio_smx.
-+
- endif
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_UIO)	+= uio.o
- obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
-+obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
---- /dev/null
-+++ b/drivers/uio/uio_smx.c
-@@ -0,0 +1,140 @@
-+/*
-+ * UIO SMX Cryptengine driver.
-+ *
-+ * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/uio_driver.h>
-+#include <linux/io.h>
-+
-+#define DRV_NAME "smx-ce"
-+#define DRV_VERSION "0.03"
-+
-+#define SMX_CSR  0x00000000
-+#define SMX_EnD  0x00000001
-+#define SMX_RUN  0x00000002
-+#define SMX_DRDY 0x00000004
-+#define SMX_ERR  0x00000008
-+
-+static irqreturn_t smx_handler(int irq, struct uio_info *dev_info)
-+{
-+	void __iomem *csr = dev_info->mem[0].internal_addr + SMX_CSR;
-+
-+	u32 status = ioread32(csr);
-+
-+	if (!(status & SMX_DRDY))
-+		return IRQ_NONE;
-+
-+	/* Disable interrupt */
-+	iowrite32(status & ~SMX_DRDY, csr);
-+	return IRQ_HANDLED;
-+}
-+
-+static int __devinit smx_ce_probe(struct platform_device *dev)
-+{
-+
-+	int ret = -ENODEV;
-+	struct uio_info *info;
-+	struct resource *regs;
-+
-+	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (!regs) {
-+		dev_err(&dev->dev, "No memory resource specified\n");
-+		goto out_free;
-+	}
-+
-+	info->mem[0].addr = regs->start;
-+	if (!info->mem[0].addr) {
-+		dev_err(&dev->dev, "Invalid memory resource\n");
-+		goto out_free;
-+	}
-+
-+	info->mem[0].size = regs->end - regs->start + 1;
-+	info->mem[0].internal_addr = ioremap(regs->start, info->mem[0].size);
-+
-+	if (!info->mem[0].internal_addr) {
-+		dev_err(&dev->dev, "Can't remap memory address range\n");
-+		goto out_free;
-+	}
-+
-+	info->mem[0].memtype = UIO_MEM_PHYS;
-+
-+	info->name = "smx-ce";
-+	info->version = "0.03";
-+
-+	info->irq = platform_get_irq(dev, 0);
-+	if (info->irq < 0) {
-+		ret = info->irq;
-+		dev_err(&dev->dev, "No (or invalid) IRQ resource specified\n");
-+		goto out_unmap;
-+	}
-+
-+	info->irq_flags = IRQF_SHARED;
-+	info->handler = smx_handler;
-+
-+	platform_set_drvdata(dev, info);
-+
-+	ret = uio_register_device(&dev->dev, info);
-+
-+	if (ret)
-+		goto out_unmap;
-+
-+	return 0;
-+
-+out_unmap:
-+	iounmap(info->mem[0].internal_addr);
-+out_free:
-+	kfree(info);
-+
-+	return ret;
-+}
-+
-+static int __devexit smx_ce_remove(struct platform_device *dev)
-+{
-+	struct uio_info *info = platform_get_drvdata(dev);
-+
-+	uio_unregister_device(info);
-+	platform_set_drvdata(dev, NULL);
-+	iounmap(info->mem[0].internal_addr);
-+
-+	kfree(info);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver smx_ce_driver = {
-+	.probe		= smx_ce_probe,
-+	.remove		= __devexit_p(smx_ce_remove),
-+	.driver		= {
-+		.name	= DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init smx_ce_init_module(void)
-+{
-+	return platform_driver_register(&smx_ce_driver);
-+}
-+module_init(smx_ce_init_module);
-+
-+static void __exit smx_ce_exit_module(void)
-+{
-+	platform_driver_unregister(&smx_ce_driver);
-+}
-+module_exit(smx_ce_exit_module);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_VERSION(DRV_VERSION);
-+MODULE_AUTHOR("Ben Nizette <bn@niasdigital.com>");
-
-
-Patches currently in gregkh-2.6 which might be from bn@niasdigital.com are
-
-driver-core/uio-implement-a-uio-interface-for-the-smx-cryptengine.patch
+Haavard
