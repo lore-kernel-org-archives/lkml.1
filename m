@@ -1,119 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbYCMWWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYCMWXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757927AbYCMWWv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbYCMWWk
+	id S1758065AbYCMWXd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYCMWXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:22:40 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:38066 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbYCMWWj (ORCPT
+	Thu, 13 Mar 2008 18:23:22 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:17352 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754732AbYCMWXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:22:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bLtASkbtMnLsoHtTacxKNPqD8Cr++vkK8MhZXQP9FcORYsilQngXoRAAfX3XV+L9xIU6BQx3W0CXqYH4CiHcHTs9VujKPcK++0ZgD/g5l5aGI36BuxUFaJ9V0MC0wmNfvy8+hBbjmYhzAx6Vxjc8PDxbyqU29LsIQ6+SjmZQwzY=
-Message-ID: <86802c440803131522t3d038d39gbe8eb0d38ddcb634@mail.gmail.com>
-Date: Thu, 13 Mar 2008 15:22:39 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH] mm: fix boundary checking in free_bootmem_core
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu,
-       clameter@sgi.com, linux-kernel@vger.kernel.org,
-       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200803132259.47063.ak@suse.de>
+	Thu, 13 Mar 2008 18:23:21 -0400
+Message-ID: <47D9A8DF.30809@fr.ibm.com>
+Date: Thu, 13 Mar 2008 23:21:19 +0100
+From: Daniel Lezcano <dlezcano@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440803111801m20349386l58a108cec13eb5ee@mail.gmail.com>
-	 <86802c440803121811i262b21bdrfb07df52fd27aaae@mail.gmail.com>
-	 <20080312182240.db32c858.akpm@linux-foundation.org>
-	 <200803132259.47063.ak@suse.de>
+To: Tilman Schmidt <tilman@imap.cc>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       pekkas@netcore.fi, yoshfuji@linux-ipv6.org
+Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command
+ as non-root
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D98510.60801@imap.cc>
+In-Reply-To: <47D98510.60801@imap.cc>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 2:59 PM, Andi Kleen <ak@suse.de> wrote:
-> On Thursday 13 March 2008 02:22:40 Andrew Morton wrote:
->  > On Wed, 12 Mar 2008 18:11:41 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->  >
->  > > >  <looks at it>
->  > > >
->  > > >  Sorry, but I find the changelog very hard to amke sense of.  I presently
->  > > >  have:
->  > > >
->  > > >
->  > > >   So call it when numa is enabled, we don't know which node have that
->  > > >   range.  and make it more robust.
->  > > >
->  > > >   Try to trim it to get valid sidx, and eidx.
->  > > >
->  > > >  Could you please expand on this?
->  > >
->  > > please check following...
->  > >
->  >
->  > Heaps better, thanks ;)  Below is what I now have.
->  >
->  > (cc's people)
->  >
->  > Guys, could you please review this?  Maybe test it a bit?
->  >
->  > Thanks.
->  >
->  >
->  > From: "Yinghai Lu" <yhlu.kernel@gmail.com>
->  >
->  > With numa enabled, some callers could have a range o fmemory on one node but
->  > try to free that on other node.  This can cause some pages to be freed
->  > wrongly.
->
->  Concrete examples?
->
->  If that happens it's really just a problem that the bootmem API
->  is wrong. I was always annoyed by the hardcoded NODE_DATA(0)s in
->  free_bootmem.
->
->  I would suggest if that happens you just fix free_bootmem to search
->  for the correct node instead of hardcoding 0 and then eliminate
->  free_bootmem_node() everywhere and replace it with free_bootmem()
->
-> >
->  > For example: when we try to allocate 128g boot ram early for gart/swiotlb, and
->  > free that range later so gart/swiotlb can get some range afterwards.
->
->  I'm confused by the example. AFAIK there is no memory freeing in either
->  gart nor swiotlb. At least there wasn't until very recently.
+Tilman Schmidt wrote:
+> Am 11.03.2008 09:14 schrieb Andrew Morton:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
+> 
+> I'm noticing a strange effect with this:
+> 
+> On my openSUSE 10.3 development machine with SUSEs default MTA
+> Postfix installed, I occasionally send a pre-formatted mail by
+> feeding it directly into "/usr/sbin/sendmail -t". If I try that
+> while running a 2.6.25-rc5-mm1 kernel, I get:
+> 
+> ts@xenon:~/kernel> /usr/sbin/sendmail -t < patch-usb-reduce-syslog-clutter-v3
+> postdrop: warning: can't open /proc/net/if_inet6 (Permission denied) - skipping IPv6 configuration
+> postdrop: fatal: parameter inet_interfaces: no local interface found for ::1
+> sendmail: warning: command "/usr/sbin/postdrop -r" exited with status 1
+> sendmail: fatal: ts(1000): unable to execute /usr/sbin/postdrop -r: Success
+> ts@xenon:~/kernel>
+> 
+> and unsurprisingly, the mail is not sent. If I do the same as root,
+> everything works as usual, there is no console output from the
+> sendmail command, and the mail goes out as it should. All other
+> networking applications appear to be running normally.
+> 
+> On a 2.6.25-rc5 (non-mm) kernel I do not need to run the sendmail
+> command as root. It works just as well if I run it as myself.
+> 
+> IPv6 is not in use on that machine. The Ethernet interface has
+> just the link local IPv6 address. Possibly relevant information:
+> 
+> ts@xenon:~> /sbin/ifconfig -a
+> eth0      Protokoll:Ethernet  Hardware Adresse 00:19:D1:03:D8:FF
+>           inet Adresse:192.168.59.102  Bcast:192.168.59.255  Maske:255.255.255.0
+>           inet6 Adresse: fe80::219:d1ff:fe03:d8ff/64 Gültigkeitsbereich:Verbindung
+>           UP BROADCAST NOTRAILERS RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:78 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:145 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 Sendewarteschlangenlänge:100
+>           RX bytes:9547 (9.3 Kb)  TX bytes:17952 (17.5 Kb)
+>           Speicher:92c00000-92c20000
+> 
+> lo        Protokoll:Lokale Schleife
+>           inet Adresse:127.0.0.1  Maske:255.0.0.0
+>           inet6 Adresse: ::1/128 Gültigkeitsbereich:Maschine
+>           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+>           RX packets:2 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:2 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 Sendewarteschlangenlänge:0
+>           RX bytes:100 (100.0 b)  TX bytes:100 (100.0 b)
+> 
+> ts@xenon:~/kernel> ls -l /proc/net/if_inet6
+> -r--r--r-- 1 root root 0 13. Mär 19:26 /proc/net/if_inet6
+> ts@xenon:~> cat /proc/net/if_inet6
+> fe800000000000000219d1fffe03d8ff 02 40 20 80     eth0
+> 00000000000000000000000000000001 01 80 10 80       lo
+> ts@xenon:~> uname -a
+> Linux xenon 2.6.25-rc5-mm1-testing #1 SMP PREEMPT Tue Mar 11 14:34:49 CET 2008 i686 i686 i386 GNU/Linux
+> 
+> As you see, I can cat /proc/net/if_inet6 as regular (non-root) user
+> just fine, even though Postfix complains it cannot access it.
+> The content of /proc/net/if_inet6 is identical if I cat it on
+> kernel 2.6.25-rc5 mainline.
+> 
+> CCing a selection of IPv6 networking related maintainer addresses.
+> If you need more information or want me to test something, let me
+> know.
 
-For big system when numa=off or disabled, vmemmap will use 3.6g ram
-when you have 256g. if you don't allocate the PMD continuous.
+Hi Tilman,
 
-then i tried to reserve 64M or 128M RAM before that, and free that
-before gart/switotble try to allloc_bootmem under 4g.
-
-that patch will make the system without ram on node0 not happy.
-because of free_bootmem is hardcoded to use node0.
-
->
->
->  >
->  > With this patch, we don't need to care which node holds the range, just loop
->  > to call free_bootmem_node for all online nodes.
->  >
->  > This patch make free_bootmem_core() more robust by trimming the sidx and eidx
->  > according the ram range that the node has.
->
->  I think you should just kill free_bootmem_node() and replace it everywhere
->  with your improved free_bootmem()
-
-using phys_to_nid()? it seems we only have that on x86_64.
-
-also there is assumpation that reserve_bootmem_node, reserver_bootmem
-can not cross the nodes.
-I want to remove that constrient too.
-
-
-YH
+Is it possible to have your config file used to compile the kernel ?
