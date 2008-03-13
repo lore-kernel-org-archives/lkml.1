@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYCMKHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYCMKHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbYCMKHj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 06:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYCMKHN
+	id S1755607AbYCMKHv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 06:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYCMKHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 06:07:13 -0400
-Received: from smtp.seznam.cz ([77.75.72.43]:56732 "EHLO smtp.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbYCMKHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 06:07:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=post.cz;
-	h=Received:From:To:Date:MIME-Version:Subject:Message-ID:Priority:X-mailer:Content-type:Content-transfer-encoding:Content-description:X-Smtpd:X-Seznam-User:X-QM-Mark;
-	b=VLDYmlY+ZkOPGPJrX3WNXquY2gQkg/Hylp1Cmfp/ypo1V7rEKSkepEi8te4+lRmwq
-	XATapOg4xUdYiHlarWcYiGybTnKADxOMrNhRX9/MRki4gyrHehvDMQGolFlb/OSrCS2
-	cCwUZXyi78ktAvpahQJQ91b2jMcecDh14UXEpZw=
-From: "Frantisek Rysanek" <Frantisek.Rysanek@post.cz>
-To: linux-kernel@vger.kernel.org
-Date: Thu, 13 Mar 2008 11:14:35 +0100
+	Thu, 13 Mar 2008 06:07:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35957 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754999AbYCMKHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 06:07:22 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+VltI3l4yVQsf2F+44PUY9YMWcy4UVJ+bWFkV560
+	TLdaRaOk6K6b6I
+Date: Thu, 13 Mar 2008 11:07:28 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: pcibios_scanned needs to be set in ACPI? (was Re: 2.6.25-rc5:
+ Reported regressions from 2.6.24)
+In-Reply-To: <86802c440803122324w1de8dee2ud35c20c7a696b6b4@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0803131106140.4625@axis700.grange>
+References: <alpine.LFD.1.00.0803101913340.5896@woody.linux-foundation.org>
+  <200803112341.42517.rjw@sisk.pl>  <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org>
+  <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com> 
+ <20080312213826.GA17101@kroah.com>  <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org>
+  <20080312225421.GA24449@kroah.com>  <alpine.LFD.1.00.0803121604580.3557@woody.linux-foundation.org>
+  <20080313054400.GA17102@kroah.com> <86802c440803122324w1de8dee2ud35c20c7a696b6b4@mail.gmail.com>
 MIME-Version: 1.0
-Subject: Re: block layer / FS question: x86_32bit with LBD, 20 TB RAID volume => funny issues
-Message-ID: <47D90C9B.651.D93E8419@localhost>
-X-mailer: Pegasus Mail for Windows (4.21c)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Smtpd: 1.0.32@12660
-X-Seznam-User: frantisek.rysanek@post.cz
-X-QM-Mark: email-qm2<15391135>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10 Mar 2008 at 10:13, Frantisek.Rysanek@post.cz wrote:
->
-> My testbed server has passed some 5 loops of dd over the weekend.
-> 
-> Thanks for your help :-)
-> 
-> I'm installing a 64bit Fedora to give XFS another try...
-> 
-So I installed Fedora 8 64b, compiled a 64bit 2.6.24.2,
-and XFS mounts without a word of objection :-)
-even with my 32bit user-space on that old CD :-)
+On Wed, 12 Mar 2008, Yinghai Lu wrote:
 
-Interestingly, XFS even survives looped+parallel 
-Bonnie++2 - only when I let it run overnight,
-in the morning the box was stuck with a 
-Machine Check Exception.
-This is a dual Xeon Irwindale at 3 GHz, so far it's always
-been rock-solid under 32bit operating systems.
-Difficult for me to say if the CPU's indeed have a problem
-or if this is some sorta compatibility bug...
-Anyway it's unlikely to be a XFS-related issue.
-I've checked the thermocouple paste on my heatsinks and I'll try 
-again tonight with "nomce"...
+> wonder if
+> 
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=fff07473e243989a2739b9d802d63e051ade7188
+> 
+> helps.
 
-Frank Rysanek
+Firstly, it doesn't apply to -rc4-ish, secondly, no, after applying it 
+manually, it didn't improve anything.
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
