@@ -1,74 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbYCMHbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYCMHde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbYCMHbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 03:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYCMHbI
+	id S1753403AbYCMHde (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYCMHd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 03:31:08 -0400
-Received: from main.carme.maven.pl ([193.239.45.138]:38620 "EHLO
-	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYCMHbH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 03:31:07 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Organization: SelfOrganizing
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Date: Thu, 13 Mar 2008 08:30:47 +0100
-User-Agent: PLD Linux KMail/1.9.9
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net>
-In-Reply-To: <20080312211306.GD30864@khazad-dum.debian.net>
+	Thu, 13 Mar 2008 03:33:26 -0400
+Received: from dwdmx4.dwd.de ([141.38.3.230]:51445 "EHLO dwdmx4.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbYCMHdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 03:33:25 -0400
+Date: Thu, 13 Mar 2008 07:33:16 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, dhaval@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, mingo@elte.hu, Greg KH <gregkh@suse.de>
+Subject: Re: sysfs: duplicate filename '74' can not be created
+In-Reply-To: <Pine.LNX.4.64.0803070750490.22139@diagnostix.dwd.de>
+Message-ID: <Pine.LNX.4.64.0803130724330.6778@diagnostix.dwd.de>
+References: <20080304160940.GC19059@localhost.sw.ru>
+ <Pine.LNX.4.64.0803070719260.22139@diagnostix.dwd.de>
+ <Pine.LNX.4.64.0803070750490.22139@diagnostix.dwd.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803130830.47709.arekm@maven.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 of March 2008, Henrique de Moraes Holschuh wrote:
-> On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
-> > On Wed, Mar 12, 2008 at 07:52:41PM +0100, Arkadiusz Miskiewicz wrote:
-> > > I'm also seeing regression on my thinkpad z60m where with git tree
-> > > (tested again with 2 days old git) "thinkvantage" button stopped
-> > > working (pressing it was previously seen by some userspace kde which
-> > > run konsole).
-> > >
-> > > On 2.6.24 presses are seen.
-> >
-> > well, on 2.6.25-rc4, some keys are not reported as input (xev does not
-> > see any key press), some keys are. Is this desired? Or all the keys
-> > (fn+f1-12 + volume + backlight + think vantage) should be reported as
-> > some input event and thus acpid makes no sense any more?
+On Fri, 7 Mar 2008, Holger Kiehl wrote:
+
+> On Fri, 7 Mar 2008, Holger Kiehl wrote:
 >
-> xev has to get events from somewhere.  That somewhere happens to be a buggy
-> mess right now (X.org evdev device).  Or it is getting it through some
-> other middleware, like HAL, which can have its own problems.
+>> On Tue, 4 Mar 2008, Alexey Dobriyan wrote:
+>> 
+>>> You can try this debugging patch. Post several first consecutive messages.
+>>> [crosses fingers]
+>>> 
+>> Applied the patch and this time it oopsed immediatly. I just got one:
+>>
+>>   Mar  7 07:09:04 helena kernel: general protection fault: 0000 [1] SMP
+>>   Mar  7 07:09:04 helena kernel: CPU 3
+>>   Mar  7 07:09:04 helena kernel: Modules linked in: lm85 hwmon_vid 
+>> i2c_amd756_s4882 bonding nf_conntrack_ftp nf_conntrack_netbios_ns 
+>> ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack xt_tcpudp iptable_filter 
+>> ip_tables x_tables binfmt_misc video output ac floppy nvram ohci_hcd k8temp 
+>> i2c_amd756 i2c_core button usbcore
+>>   Mar  7 07:09:04 helena kernel: Pid: 2983, comm: modprobe Not tainted 
+>> 2.6.24.3-alexey #3
+>>   Mar  7 07:09:04 helena kernel: RIP: 0010:[<ffffffff8027931d>] 
+>> [<ffffffff8027931d>] __kmalloc_node+0x95/0xc9
+>>   Mar  7 07:09:04 helena kernel: RSP: 0018:ffff81017d571de8  EFLAGS: 
+>> 00010046
+>>   Mar  7 07:09:04 helena kernel: RAX: 0000000000000000 RBX: 
+>> 00000000000080d0 RCX: ffffffff8026d2b1
+>>   Mar  7 07:09:04 helena kernel: RDX: ffff007265776f70 RSI: 
+>> 00000000000080d0 RDI: ffffffff80554e38
+>>   Mar  7 07:09:04 helena kernel: RBP: ffff810200026800 R08: 
+>> 00000000005184b0 R09: ffffffff80554e38
+>>   Mar  7 07:09:04 helena kernel: R10: 0000000000000000 R11: 
+>> 0000000000000002 R12: 0000000000000286
+>>   Mar  7 07:09:04 helena kernel: R13: 00000000ffffffff R14: 
+>> 00000000ffffffff R15: 00000000005184b0
+>>   Mar  7 07:09:04 helena kernel: FS:  00002b66d114c6f0(0000) 
+>> GS:ffff81027e30e300(0000) knlGS:0000000000000000
+>>   Mar  7 07:09:04 helena kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 
+>> 000000008005003b
+>>   Mar  7 07:09:04 helena kernel: CR2: 0000003254acc030 CR3: 
+>> 000000017d530000 CR4: 00000000000006e0
+>>   Mar  7 07:09:04 helena kernel: DR0: 0000000000000000 DR1: 
+>> 0000000000000000 DR2: 0000000000000000
+>>   Mar  7 07:09:04 helena kernel: DR3: 0000000000000000 DR6: 
+>> 00000000ffff0ff0 DR7: 0000000000000400
+>>   Mar  7 07:09:04 helena kernel: Process modprobe (pid: 2983, threadinfo 
+>> ffff81017d570000, task ffff81017df3d5c0)
+>>   Mar  7 07:09:04 helena kernel: Stack:  ffff81027d2fb740 ffffc200017e39a8 
+>> ffff81027d2fba00 00000000000000d0
+>>   Mar  7 07:09:04 helena kernel:  ffffc200017e33e8 ffffffff8026d2b1 
+>> 0000000000000163 ffffc200017e39a8
+>>   Mar  7 07:09:04 helena kernel:  0000000000000018 ffffc200017e39a8 
+>> 0000000000000018 ffffc200017e2f80
+>>   Mar  7 07:09:04 helena kernel: Call Trace:
+>>   Mar  7 07:09:04 helena kernel:  [<ffffffff8026d2b1>] 
+>> __vmalloc_area_node+0x71/0x185
+>>   Mar  7 07:09:04 helena kernel:  [<ffffffff80248ec0>] 
+>> sys_init_module+0x94d/0x1872
+>>   Mar  7 07:09:04 helena kernel:  [<ffffffff8020b61e>] 
+>> system_call+0x7e/0x83
+>>   Mar  7 07:09:04 helena kernel:
+>>   Mar  7 07:09:04 helena kernel:
+>>   Mar  7 07:09:04 helena kernel: Code: 48 8b 04 c2 48 89 45 00 41 54 9d 31 
+>> c0 c1 eb 0f 48 85 d2 0f
+>>   Mar  7 07:09:04 helena kernel: RIP  [<ffffffff8027931d>] 
+>> __kmalloc_node+0x95/0xc9
+>>   Mar  7 07:09:04 helena kernel:  RSP <ffff81017d571de8>
+>>   Mar  7 07:09:04 helena kernel: ---[ end trace 82b7eaeeb11c3ab5 ]---
+>> 
+> This could maybe be not what you are looking for. It oopsed immediatly
+> when lm_sensors was started. I have now disabled lm_sensors and am
+> currently running a second test.
 >
-> If you want to test thinkpad-acpi functionality, get HAL and X.org out of
-> the way.  The easiest way is to do it in single user mode.
+So far there have been no further oopses, I have gone back to 2.6.23 since
+this system is now in operational use. The above oops is the only one I was
+able to get, is this of any use?
 
-In my thinkpad z60m case. On 2.6.24 kernels pressing "thinkvantage" key is 
-seen by acpid like this:
+Holger
 
-Mar 13 08:27:48 tarm acpid: received event "ibm/hotkey HKEY 00000080 00001018"
-Mar 13 08:27:48 tarm acpid: notifying client 4071[126:126]
-Mar 13 08:27:48 tarm acpid: notifying client 4096[0:0]
-Mar 13 08:27:48 tarm acpid: notifying client 4230[0:0]
-Mar 13 08:27:48 tarm acpid: completed event "ibm/hotkey HKEY 00000080 
-00001018"
-(this log was done while X was running + some kde apps).
-
-Now under git kernel there is no such event. X has nothing to do with it since 
-I tested without X running, too.
-
--- 
-Arkadiusz Mi¶kiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
