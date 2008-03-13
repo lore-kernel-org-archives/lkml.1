@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYCMRB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYCMRC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYCMRB4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYCMRBs
+	id S1755955AbYCMRC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYCMRCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:01:48 -0400
-Received: from mx28.mail.ru ([194.67.23.67]:11337 "EHLO mx28.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844AbYCMRBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:01:48 -0400
-Message-ID: <47D95C34.3060302@mail.ru>
-Date: Thu, 13 Mar 2008 21:54:12 +0500
-From: Denis Lotarev <lot88@mail.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Bug?Devices:Network:Wi-Fi:Broadcom,Bug?Devices:Audio:Conexant
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Mar 2008 13:02:49 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:24653 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbYCMRCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 13:02:48 -0400
+Date: Thu, 13 Mar 2008 10:02:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       gregkh <greg@kroah.com>
+Subject: Re: linux-next: Tree for March 13 (PCI patch)
+Message-Id: <20080313100235.89cf2508.randy.dunlap@oracle.com>
+In-Reply-To: <20080313173506.2613be02.sfr@canb.auug.org.au>
+References: <20080313173506.2613be02.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello to Linux Kernel Dev from Russian Linux beginner!
-I have 2 big troubles:( My google searching dont have success result.
-I have notebook Hewlett Packard HP530 with Wi-Fi Broadcom (lspci out:
- 10:00.0 Network controller: Broadcom Corporation BCM94311MCG wlan
- mini-PCI (rev 01)) and Conexant HD Audio (lspci out: 00:1b.0 Audio device:
- Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller
- (rev 01)) Im using Linux Slackware 12 (currently updated to current
- 13/04/2008) and latest Linux Kernel (uname -a out: Linux hp_init 2.6.24.3
- #17 Thu Mar 13 09:46:20 YEKT 2008 i686 Intel(R) Celeron(R) M CPU      
-  440  @ 1.86GHz GenuineIntel GNU/Linux) i have recompiled it with turned
- on Intel HD Audio - Conexant HD Audio and Generic HD-Audio codec
- parser) my sound card is detected well (dmesg|grep Intel out:  #0: HDA Intel
- at 0xf0580000 irq 17) Sound works well in internal speakers, but my
- headphones not working from headphone mini-jack. Now, lets talking about
- Broadcom wireless network adapter, its doesnt work too, but interface
- detected (its wlan0). I know that those adapters working with
- firmware (b43-fwcutter), but this chipset (BCM94311MCG) doesn't worked
- with this. I tried much variants with it, but nothing success:(( dmesg
- says about impossibility to load firmware ucode5.fw, but this file yet
- in /lib/firmware/b43/ Im trying to using all versions of broadcom
- drivers, but nothing works. Think, that my information is helpfully to
- developers. If you have some questions to me, I always greatly to answer on
- them. Hope, that dev team fix it or let me know some information how
- to fix those issue. Much thanks from Russian Linux User!
+On Thu, 13 Mar 2008 17:35:06 +1100 Stephen Rothwell wrote:
 
+> Hi all,
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> (tar balls at
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+
+---
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+access.c uses udelay() so needs to #include delay.h.
+
+next-20080313/drivers/pci/access.c:167: error: implicit declaration of function 'udelay'
+make[3]: *** [drivers/pci/access.o] Error 1
+make[2]: *** [drivers/pci] Error 2
+make[1]: *** [drivers] Error 2
+make[1]: *** Waiting for unfinished jobs....
+make: *** [sub-make] Error 2
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/pci/access.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- next-20080313.orig/drivers/pci/access.c
++++ next-20080313/drivers/pci/access.c
+@@ -1,3 +1,4 @@
++#include <linux/delay.h>
+ #include <linux/pci.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
