@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYCMJNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYCMJPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbYCMJNg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYCMJNZ
+	id S1754182AbYCMJPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYCMJP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:13:25 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:7932 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbYCMJNY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:13:24 -0400
-Subject: Re: [patch 3/6] Guest page hinting: mlocked pages.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       hugh@veritas.com
-In-Reply-To: <200803131027.29378.rusty@rustcorp.com.au>
-References: <20080312132132.520833247@de.ibm.com>
-	 <20080312132703.689828503@de.ibm.com>
-	 <200803131027.29378.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 13 Mar 2008 10:13:17 +0100
-Message-Id: <1205399597.26537.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 05:15:27 -0400
+Received: from enyo.dsw2k3.info ([195.71.86.239]:36659 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751656AbYCMJP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 05:15:26 -0400
+Date: Thu, 13 Mar 2008 10:15:11 +0100
+From: Matthias Schniedermeyer <ms@citd.de>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Lars Marowsky-Bree <lmb@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Message-ID: <20080313091511.GA31473@citd.de>
+References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de> <200803111602.53835.phillips@phunq.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803111602.53835.phillips@phunq.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 10:27 +1100, Rusty Russell wrote:
-> On Thursday 13 March 2008 00:21:35 Martin Schwidefsky wrote:
-> > --- linux-2.6.orig/include/linux/fs.h
-> > +++ linux-2.6/include/linux/fs.h
-> > @@ -513,6 +513,9 @@ struct address_space {
-> >  	spinlock_t		private_lock;	/* for use by the address_space */
-> >  	struct list_head	private_list;	/* ditto */
-> >  	struct address_space	*assoc_mapping;	/* ditto */
-> > +#ifdef CONFIG_PAGE_STATES
-> > +	unsigned int		mlocked;	/* set if VM_LOCKED vmas present */
-> > +#endif
-> >  } __attribute__((aligned(sizeof(long))));
-> 
-> Minor nit: I think this would be better under private_lock where it wouldn't 
-> consume any extra space on 64-bit.
+On 11.03.2008 15:02, Daniel Phillips wrote:
 
-Yes, makes sense. I moved the #ifdef.
+> By the way, if you want to fly to the moon you will need a rocket.
+> Streams of liquid hydrogen coursing through gigantic pipes sitting
+> right next to violently burning roman candles are less reliable than
+> bicycle pedals, but only one of these arrangements will get you to the
+> moon on time.  In other words, if you need the speed this is the only
+> game in town, so you better just take care to buy reliable rocket
+> parts.
+
+Or to quote a little SciFi, in this case Captain Hunt from Andromeda:
+Slipstream: it's not the best way to travel faster than light, it's just 
+the only way.[1]
+
+At least that's what first crossed my mind after reading the above. ;-)
+
+
+
+
+[1]: http://en.wikipedia.org/wiki/Slipstream_%28science_fiction%29#Andromeda
+
+
+Bis denn
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Real Programmers consider "what you see is what you get" to be just as 
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated, 
+cryptic, powerful, unforgiving, dangerous.
 
