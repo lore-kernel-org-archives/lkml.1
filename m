@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYCMPcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYCMPgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbYCMPcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 11:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYCMPcr
+	id S1754727AbYCMPgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 11:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYCMPgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 11:32:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38259 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYCMPcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 11:32:46 -0400
-Date: Thu, 13 Mar 2008 08:32:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: pcibios_scanned needs to be set in ACPI?  (was Re: 2.6.25-rc5:
-	Reported regressions from 2.6.24)
-Message-ID: <20080313153213.GB27723@kroah.com>
-References: <200803112341.42517.rjw@sisk.pl> <alpine.LFD.1.00.0803121300160.3557@woody.linux-foundation.org> <20080312203205.GB17187@kroah.com> <20080312212704.GA16836@kroah.com> <20080312213826.GA17101@kroah.com> <alpine.LFD.1.00.0803121521550.3557@woody.linux-foundation.org> <20080312225421.GA24449@kroah.com> <alpine.LFD.1.00.0803121604580.3557@woody.linux-foundation.org> <20080313054400.GA17102@kroah.com> <Pine.LNX.4.64.0803131057550.4625@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803131057550.4625@axis700.grange>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 13 Mar 2008 11:36:01 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:42070 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751969AbYCMPgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 11:36:01 -0400
+X-Greylist: delayed 537 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 11:36:00 EDT
+Date: Thu, 13 Mar 2008 16:35:14 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Sedji GAOUAOU <sedji.gaouaou@atmel.com>,
+       Patrice VILCHEZ <patrice.vilchez@atmel.com>,
+       Andrew Victor <linux@maxim.org.za>
+Subject: Re: [PATCH] atmel_lcdfb: wiring BGR to RGB color mode
+Message-ID: <20080313163514.3615a35d@hskinnemo-gx620.norway.atmel.com>
+In-Reply-To: <47D5450A.40500@atmel.com>
+References: <47D5450A.40500@atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Mar 2008 15:35:14.0890 (UTC) FILETIME=[D54972A0:01C8851F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 11:06:10AM +0100, Guennadi Liakhovetski wrote:
-> On Wed, 12 Mar 2008, Greg KH wrote:
-> 
-> > On Wed, Mar 12, 2008 at 04:09:17PM -0700, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Wed, 12 Mar 2008, Greg KH wrote:
-> > > > 
-> > > > I can't get a box here to produce both of those PCI: messages myself,
-> > > > and neither can Len, so something is really odd here.
-> > 
-> > Ok, stupid me, this was my fault.  I was assuming that pci busses would
-> > never be registered multiple times with the pci core.  Obviously this
-> > isn't true.  The previous patch I proposed was only paying attention to
-> > the PCI devices, and that logic is just fine (it's already protected
-> > when it is attempted to be registered multiple times.)
-> > 
-> > So, the patch below fixes the issue for me, and reboot seems to work as
-> > well.
-> > 
-> > Guennadi, can you test this out on your machine?
-> 
-> Yes, it fixes all _3_ startup warnings and lets the machine reboot and 
-> power off again. 3 warnings are the 2 reported as a regression from 
-> 2.6.24, and one present also under 2.6.24:
-> 
-> PCI: Probing PCI hardware
-> sysfs: duplicate filename 'bridge' can not be created
+On Mon, 10 Mar 2008 15:26:18 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-Yes, I noticed that if you were having this problem, .24 would also be
-complaining to you about creating sysfs links.  I'll make up a .24 patch
-for -stable after this.
+> The legacy atmel LCDC IP uses a non standard color mode,
+> "BGR-555.1" instead "RGB-565". The major part of graphic stacks 
+> for embedded systems uses only "RGB-565". It is possible to swap 
+> LCD IOs instead of doing this bit swapping by software (See 
+> application note AT91SAM9 LCD Controller
+> http://www.atmel.com/dyn/resources/prod_documents/doc6300.pdf)
 
-Kay just pointed out that I can use a struct device field instead of
-creating my own in the bus device, so I'll simplify the patch and then
-send it to Linus in a bit.
+> -		var->red.offset = 0;
+> +		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
+> +			/* RGB:888 mode */
+> +			var->red.offset = 16;
+> +			var->blue.offset = 0;
+> +		} else {
+> +			/* BGR:888 mode */
+> +			var->red.offset = 0;
+> +			var->blue.offset = 16;
+> +		}
 
-Thanks so much for testing quickly and letting me know.
+Does RGB:565 always imply RGB:888 and vice versa?
 
-greg k-h
+If not, I think it would be better with separate flags for the possible
+wirings:
+   * 18-bit BGR-555.1 / 24-bit BGR-888
+   * 16-bit RGB-565
+   * 24-bit RGB-888
+
+Or maybe I misunderstand something?
+
+Haavard
