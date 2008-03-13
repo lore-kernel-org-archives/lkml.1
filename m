@@ -1,42 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYCMLsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYCMMBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbYCMLsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 07:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYCMLsA
+	id S1753826AbYCMMBG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYCMMAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 07:48:00 -0400
-Received: from el-out-1112.google.com ([209.85.162.176]:17562 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751952AbYCMLr7 (ORCPT
+	Thu, 13 Mar 2008 08:00:54 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33807 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751794AbYCMMAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 07:47:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mRuWnqrlnqsCvUqXVN+SOFe5MroZHK7rBBtDD6LWtaoFIjcN/iw8xN3zUmYORGOQGAAYtBMsJGRulpq2ZYxMPVLlHR7UxtRpY7UskcuAvmo2ATgKnoqWflt2R8u445ia6NL5fpxnKjj3ONUGkDNMVv9np668CbATCncCvVNrxgo=
-Message-ID: <80b317760803130447u6d1998ecv3fcbc018a37a7247@mail.gmail.com>
-Date: Thu, 13 Mar 2008 12:47:58 +0100
-From: "Richard Genoud" <richard.genoud@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [BUG] PLEXTOR DVDR PX-740A drive not ready for command
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <9ea470500803130255u3dbed41bwd02c16ea79a09152@mail.gmail.com>
+	Thu, 13 Mar 2008 08:00:53 -0400
+Date: Thu, 13 Mar 2008 12:00:51 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [UPDATED v3][PATCH 1/7] regulator: consumer interface
+Message-ID: <20080313120051.GA32729@rakim.wolfsonmicro.main>
+Mail-Followup-To: David Brownell <david-b@pacbell.net>,
+	Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Dmitry Baryshkov <dbaryshkov@gmail.com>
+References: <1204827056.15360.147.camel@a10323.wolfsonmicro.main> <200803121452.47600.david-b@pacbell.net> <20080312235715.GA15894@opensource.wolfsonmicro.com> <200803122208.49040.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47D8F73F.4090501@gmail.com>
-	 <9ea470500803130255u3dbed41bwd02c16ea79a09152@mail.gmail.com>
+In-Reply-To: <200803122208.49040.david-b@pacbell.net>
+X-Cookie: Uh-oh!!  I'm having TOO MUCH FUN!!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Have you tried a more recent kernel? Your bisection interval is .23 and .24-rc1,
->  and a lot of code went into ide after that. However, you should try to
->  avoid 2.6.24
->  since ide-cd was broken there. I'd go with 2.6.25-rc5, for example.
+On Wed, Mar 12, 2008 at 09:08:48PM -0800, David Brownell wrote:
+> On Wednesday 12 March 2008, Mark Brown wrote:
 
-I did not tried it personnaly, but at least 2 persons on the ubuntu
-bug tracker did.
-The bug is still there.
+> > Hrm.  I suspect that the documentation which Liam is currently writing
+> > (together with some actual in-tree users) will help here.
+
+> Yes, code is only one part of a balanced architecture.
+> It's pretty weak at conveying any "big picture" issues,
+> especially with only one underlying implementation.  If
+> I can't get that picture without reviewing 100+ KBytes
+> of code, then something critical is missing...
+
+OK, that's good - from what you were saying it sounded like you had some
+more fundamental objection.  Users are probably at least as important as
+text documentation here since it's them that people tend to look at when
+they need to look at code.  As with a lot of things the core isn't the
+best thing to look at since it has to care about the things that it is
+abstracting away from users.
+
+> I've been pushing for clear explanations in part because,
+> well, nobody else has.  I've come across clear needs for
+> basic power switching, to manage sections of both SOCs and
+> boards; and less clear needs for voltage adjustment.  I've
+> been hoping some of the other folk who have looked at these
+> issues would chime in.
+
+The ability to adjust voltage is required for devices like MMC and CPU
+frequency control so it needs to be implemented to at least some degree
+and if we do it for everything it reduces the number of special cases to
+handle.  Systems that don't need or want it can disable it by setting an
+exact constraint in the platform code at which point it decays into a
+safety feature.
