@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYCMKNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYCMKOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbYCMKNk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 06:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYCMKLo
+	id S1756018AbYCMKOg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 06:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYCMKLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 06:11:44 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35276 "EHLO
+	Thu, 13 Mar 2008 06:11:47 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35281 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755285AbYCMKLn (ORCPT
+	with ESMTP id S1755320AbYCMKLo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 06:11:43 -0400
-Date: Thu, 13 Mar 2008 10:30:42 +0100
+	Thu, 13 Mar 2008 06:11:44 -0400
+Date: Thu, 13 Mar 2008 11:05:31 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 2/3] Driver core: Call device_pm_add() after
-	bus_add_device() in device_add()
-Message-ID: <20080313093042.GB24027@elf.ucw.cz>
-References: <200803120055.25885.rjw@sisk.pl> <200803120059.39902.rjw@sisk.pl>
+To: ak@suse.de, kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>
+Subject: fix aperture vs. suspend problem
+Message-ID: <20080313100531.GA3399@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803120059.39902.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-03-12 00:59:38, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Include dpm_sysfs_add() into device_pm_add(), in analogy with
-> device_pm_remove(), and modify device_add() to call the latter after
-> bus_add_device(), to avoid situations in which the PM core may
-> attempt to suspend a device the registration of which has not been
-> successful.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACK.
+aperture_64.c takes a piece of memory and makes it into iommu
+window... but such window may not be saved by swsusp -- that leads to
+oops during suspend.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index 608152a..88747f3 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -18,6 +18,7 @@ #include <linux/pci_ids.h>
+ #include <linux/pci.h>
+ #include <linux/bitops.h>
+ #include <linux/ioport.h>
++#include <linux/suspend.h>
+ #include <asm/e820.h>
+ #include <asm/io.h>
+ #include <asm/gart.h>
+@@ -76,6 +77,7 @@ static u32 __init allocate_aperture(void
+ 	printk(KERN_INFO "Mapping aperture over %d KB of RAM @ %lx\n",
+ 			aper_size >> 10, __pa(p));
+ 	insert_aperture_resource((u32)__pa(p), aper_size);
++	register_nosave_region((u32)__pa(p) >> PAGE_SHIFT, (u32)__pa(p+aper_size) >> PAGE_SHIFT);
+ 
+ 	return (u32)__pa(p);
+ }
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
