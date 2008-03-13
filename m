@@ -1,188 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYCMJIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbYCMJLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbYCMJIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCMJIJ
+	id S1754024AbYCMJLH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYCMJK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:08:09 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:26345
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751853AbYCMJIH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:08:07 -0400
-Message-Id: <47D8FD33.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
-Date: Thu, 13 Mar 2008 09:08:51 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [RFC] x86: bitops asm constraint fixes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Mar 2008 05:10:56 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:15775 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbYCMJKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 05:10:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=MLJRFZ1MK0/oJWkubUGfFz8bkZCr1Qbf3C9mJFYgNCMWhWjlQsgy33SnHDH7qCuqnXATVQbgSxV2qpca9CS2BhtA2WpX+sh+nDJmjMXgzXIb2sjkcHJMPfobSYR0iFGWo7TbUG3CQETirtDB2DKswVlu+KPQH1dBrkCst4G+cRk=
+Message-ID: <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
+Date: Thu, 13 Mar 2008 11:10:55 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "David Newall" <davidn@davidnewall.com>
+Subject: Re: linux+glibc memory allocator, poor performance
+Cc: "Mike Galbraith" <efault@gmx.de>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       "J.C. Pizarro" <jcpiza@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <47D8C813.6020201@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
+	 <20080312211219.GL27894@ZenIV.linux.org.uk>
+	 <47D8C25A.8020708@davidnewall.com>
+	 <1205388732.4797.30.camel@marge.simson.net>
+	 <47D8C813.6020201@davidnewall.com>
+X-Google-Sender-Auth: b4aee74e9f3dc936
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This (simplified) piece of code didn't behave as expected due to
-incorrect constraints in some of the bitops functions, when
-X86_FEATURE_xxx is referring to other than the first long:
+On Thu, Mar 13, 2008 at 8:22 AM, David Newall <davidn@davidnewall.com> wrote:
+>  Hostility such as that gives this list a bad reputation and drives
+>  people away.  One can (and should) tell people that an idea is
+>  completely wrong without being rude.
 
-int test(struct cpuinfo_x86 *c) {
-	if (cpu_has(c, X86_FEATURE_xxx))
-		clear_cpu_cap(c, X86_FEATURE_xxx);
-	return cpu_has(c, X86_FEATURE_xxx);
-}
-
-I'd really like understand, though, what the policy of (not) having a
-"memory" clobber in these operations is - currently, this appears to
-be totally inconsistent. Also, many comments of the non-atomic
-functions say those may also be re-ordered - this contradicts the use
-of "asm volatile" in there, which again I'd like to understand.
-
-As much as all of these, using 'int' for the 'nr' parameter and
-'void *' for the 'addr' one is in conflict with
-Documentation/atomic_ops.txt, especially because bt{,c,r,s} indeed
-take the bit index as signed (which hence would really need special
-precaution) and access the full 32 bits (if 'unsigned long' was used
-properly here, 64 bits for x86-64) pointed at, so invalid uses like
-referencing a 'char' array cannot currently be caught.
-
-Finally, the code with and without this patch relies heavily on the
--fno-strict-aliasing compiler switch and I'm not certain this really
-is a good idea.
-
-In the light of all of this I'm sending this as RFC, as fixing the
-above might warrant a much bigger patch...
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
----
- include/asm-x86/bitops.h |   43 ++++++++++++++++++++++++-------------------
- 1 file changed, 24 insertions(+), 19 deletions(-)
-
---- linux-2.6.25-rc5/include/asm-x86/bitops.h	2008-03-10 13:24:33.000000000 +0100
-+++ 2.6.25-rc5-x86-clear-bit/include/asm-x86/bitops.h	2008-03-13 08:45:40.000000000 +0100
-@@ -24,9 +24,12 @@
- /* Technically wrong, but this avoids compilation errors on some gcc
-    versions. */
- #define ADDR "=m" (*(volatile long *) addr)
-+#define BIT_ADDR "=m" (((volatile int *) addr)[nr >> 5])
- #else
- #define ADDR "+m" (*(volatile long *) addr)
-+#define BIT_ADDR "+m" (((volatile int *) addr)[nr >> 5])
- #endif
-+#define BASE_ADDR "m" (*(volatile int *) addr)
- 
- /**
-  * set_bit - Atomically set a bit in memory
-@@ -79,9 +82,8 @@ static inline void __set_bit(int nr, vol
-  */
- static inline void clear_bit(int nr, volatile void *addr)
- {
--	asm volatile(LOCK_PREFIX "btr %1,%0"
--		     : ADDR
--		     : "Ir" (nr));
-+	asm volatile(LOCK_PREFIX "btr %1,%2"
-+		     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
- }
- 
- /*
-@@ -100,7 +102,7 @@ static inline void clear_bit_unlock(unsi
- 
- static inline void __clear_bit(int nr, volatile void *addr)
- {
--	asm volatile("btr %1,%0" : ADDR : "Ir" (nr));
-+	asm volatile("btr %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
- }
- 
- /*
-@@ -135,7 +137,7 @@ static inline void __clear_bit_unlock(un
-  */
- static inline void __change_bit(int nr, volatile void *addr)
- {
--	asm volatile("btc %1,%0" : ADDR : "Ir" (nr));
-+	asm volatile("btc %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
- }
- 
- /**
-@@ -149,8 +151,8 @@ static inline void __change_bit(int nr, 
-  */
- static inline void change_bit(int nr, volatile void *addr)
- {
--	asm volatile(LOCK_PREFIX "btc %1,%0"
--		     : ADDR : "Ir" (nr));
-+	asm volatile(LOCK_PREFIX "btc %1,%2"
-+		     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
- }
- 
- /**
-@@ -198,10 +200,10 @@ static inline int __test_and_set_bit(int
- {
- 	int oldbit;
- 
--	asm("bts %2,%1\n\t"
--	    "sbb %0,%0"
--	    : "=r" (oldbit), ADDR
--	    : "Ir" (nr));
-+	asm volatile("bts %2,%3\n\t"
-+		     "sbb %0,%0"
-+		     : "=r" (oldbit), BIT_ADDR
-+		     : "Ir" (nr), BASE_ADDR);
- 	return oldbit;
- }
- 
-@@ -238,10 +240,10 @@ static inline int __test_and_clear_bit(i
- {
- 	int oldbit;
- 
--	asm volatile("btr %2,%1\n\t"
-+	asm volatile("btr %2,%3\n\t"
- 		     "sbb %0,%0"
--		     : "=r" (oldbit), ADDR
--		     : "Ir" (nr));
-+		     : "=r" (oldbit), BIT_ADDR
-+		     : "Ir" (nr), BASE_ADDR);
- 	return oldbit;
- }
- 
-@@ -250,10 +252,10 @@ static inline int __test_and_change_bit(
- {
- 	int oldbit;
- 
--	asm volatile("btc %2,%1\n\t"
-+	asm volatile("btc %2,%3\n\t"
- 		     "sbb %0,%0"
--		     : "=r" (oldbit), ADDR
--		     : "Ir" (nr) : "memory");
-+		     : "=r" (oldbit), BIT_ADDR
-+		     : "Ir" (nr), BASE_ADDR);
- 
- 	return oldbit;
- }
-@@ -288,10 +290,11 @@ static inline int variable_test_bit(int 
- {
- 	int oldbit;
- 
--	asm volatile("bt %2,%1\n\t"
-+	asm volatile("bt %2,%3\n\t"
- 		     "sbb %0,%0"
- 		     : "=r" (oldbit)
--		     : "m" (*(unsigned long *)addr), "Ir" (nr));
-+		     : "m" (((volatile const int *)addr)[nr >> 5]),
-+		       "Ir" (nr), BASE_ADDR);
- 
- 	return oldbit;
- }
-@@ -310,6 +313,8 @@ static int test_bit(int nr, const volati
- 	 constant_test_bit((nr),(addr)) :	\
- 	 variable_test_bit((nr),(addr)))
- 
-+#undef BASE_ADDR
-+#undef BIT_ADDR
- #undef ADDR
- 
- #ifdef CONFIG_X86_32
-
-
+Hey, why don't we create a linux-sensitive@vger.kernel.org and you
+guys can move your nice and friendly chats over there...?
