@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbYCMXTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbYCMXTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757614AbYCMXTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYCMXTK
+	id S1757722AbYCMXTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757654AbYCMXTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:19:10 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:30183 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751600AbYCMXTJ (ORCPT
+	Thu, 13 Mar 2008 19:19:20 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53386 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757563AbYCMXTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:19:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=q/3rO0dwtDy9g4+O5nZ4eljgZ+/ZVZ6Bdhtg0/xb7qVlsBfwnK8t8mqQXyBeUSEun7E+xE+IZvYnSFwnVa3S7hdPvUNuYnMxjPV6FBvwcdFJRKaE+jyr+rTz3NlPoc9peAmmf34KlBjRAdtcdvPxezxuOBaNjUzzmaXOchDl8QM=  ;
-X-YMail-OSG: a_VHo70VM1m9snhmM4ZTIlQ9QgLlEkjMne_HwzQv89NkVl8QWhaNZJI.ukvzt4mVgddc4qw05Q--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2.6.25-rc5 1/2] gpiolib:  dynamic gpio number allocation
-Date: Thu, 13 Mar 2008 15:18:58 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, avorontsov@ru.mvista.com
-References: <200803131549.54632.david-b@pacbell.net> <20080313160039.b69a5d24.akpm@linux-foundation.org>
-In-Reply-To: <20080313160039.b69a5d24.akpm@linux-foundation.org>
+	Thu, 13 Mar 2008 19:19:18 -0400
+X-Sasl-enc: 2LpEZNywQWiNYaLRktq02j8FMKR7bQ3K+wyy+dmYNkyk 1205448926
+Date: Thu, 13 Mar 2008 19:55:20 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080313225520.GF30864@khazad-dum.debian.net>
+References: <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net> <20080313120514.GH17940@kernel.dk> <20080313122344.GD27873@ics.muni.cz> <20080313124633.GS17940@kernel.dk> <20080313125503.GE27873@ics.muni.cz> <20080313125933.GT17940@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803131618.58516.david-b@pacbell.net>
+In-Reply-To: <20080313125933.GT17940@kernel.dk>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008, Andrew Morton wrote:
+On Thu, 13 Mar 2008, Jens Axboe wrote:
+> On Thu, Mar 13 2008, Lukas Hejtmanek wrote:
+> > On Thu, Mar 13, 2008 at 01:46:33PM +0100, Jens Axboe wrote:
+> > > They do not generate any events, xev reports nothing. The ThinkVantage
+> > > button doesn't generate any events either.
+> > 
+> > what about BIOS upgrade? I think this really should work.
+> 
+> The BIOS isn't that old, probably updated it a couple of months ago.
 
-> hm.  I suppose that if someone want a huge number of GPIOs then we can
-> convert this to a bitmap or an IDR tree easily enough.
+On a T61/X61 Thinkpad, anything but the very latest BIOS is too old.  They
+have been modifying the BIOS in areas that are directly related to Linux
+support.
 
-Actually, I tried IDRs for a while and they broke platforms
-which needed to initialize and use GPIOs early: before kmalloc
-would work.  A real PITA that was -- and slow too.
+> > Ahh, maybe you are facing EC problems? Are you using just stock vanila
+> > kernel or some additional patches?
 
+EC problems anywhere in the entire ACPI subsystem can, and have, caused
+weird thinkpad-acpi issues.
 
-> Shouldn't ARCH_NR_GPIOS be CONFIG_NR_GPIOS?
-
-No more than NR_IRQS is settable via Kconfig.  And for
-rather similar reasons.  :)
-
-- Dave
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
