@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYCMPvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbYCMP4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbYCMPvp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 11:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYCMPvg
+	id S1755354AbYCMP4f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 11:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYCMP42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 11:51:36 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:45905 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYCMPvf (ORCPT
+	Thu, 13 Mar 2008 11:56:28 -0400
+Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:46287 "EHLO
+	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbYCMP41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 11:51:35 -0400
-Message-ID: <47D94D81.5090108@tiscali.nl>
-Date: Thu, 13 Mar 2008 16:51:29 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 13 Mar 2008 11:56:27 -0400
+X-Greylist: delayed 3456 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 11:56:27 EDT
+Message-ID: <47D94129.5030601@gmx.de>
+Date: Thu, 13 Mar 2008 15:58:49 +0100
+From: Ingo van Lil <inguin@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080226 Fedora/2.0.0.12-1.fc8 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: pe1rxq@amsat.org, linux-usb@vger.kernel.org, video4linux-list@redhat.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] logical-bitwise & confusion in se401_init() (was: logical-bitwise
- & confusion in se401_init()?)
-References: <47D47257.9090204@tiscali.nl> <20080313120602.6920a621@gaivota>
-In-Reply-To: <20080313120602.6920a621@gaivota>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix nested switch statements in dummy_hcd.c
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: 0.2 (/)
+X-Spam-Report: --- Start der SpamAssassin 3.2.4 Textanalyse (0.2 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	1.6 TVD_RCVD_IP            TVD_RCVD_IP
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: 67388a68055134b384ea872eafacefb2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> On Mon, 10 Mar 2008 00:27:19 +0100
-> Roel Kluin <12o3l@tiscali.nl> wrote:
-> 
->> drivers/media/video/se401.c:1282:
->>
->> if (!cp[2] && SE401_FORMAT_BAYER) {
->>
->> shouldn't this be 'if (!(cp[2] & SE401_FORMAT_BAYER)) {'
->> drivers/media/video/se401.h:52:
->>
->> #define SE401_FORMAT_BAYER       0x40
-> 
-> I don't have this driver, but this seems to be the proper fix.
----
-logical-bitwise & confusion, SE401_FORMAT_BAYER is defined 0x40
+Hello everybody,
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+this patch fixes a messed up combination of two nested switch statements
+in drivers/usb/gadget/dummy_hcd.c. According to the USB spec (section
+5.8.3) the maximum packet size for bulk endpoints can be 512 for
+high-speed devices and 8, 16, 32 or 64 for full-speed devices. Low-speed
+devices must not have bulk endpoints.
+
+Cheers,
+Ingo
+
+
+Signed-off-by: Ingo van Lil <inguin@gmx.de>
 ---
-diff --git a/drivers/media/video/se401.c b/drivers/media/video/se401.c
-index d5d7d6c..952c9bd 100644
---- a/drivers/media/video/se401.c
-+++ b/drivers/media/video/se401.c
-@@ -1279,7 +1279,7 @@ static int se401_init(struct usb_se401 *se401, int button)
- 	rc=se401_sndctrl(0, se401, SE401_REQ_GET_HEIGHT, 0, cp, sizeof(cp));
- 	se401->cheight=cp[0]+cp[1]*256;
- 
--	if (!cp[2] && SE401_FORMAT_BAYER) {
-+	if (!cp[2] & SE401_FORMAT_BAYER) {
- 		err("Bayer format not supported!");
- 		return 1;
- 	}
+
+--- linux-2.6.23.1/drivers/usb/gadget/dummy_hcd.c.orig	2008-03-13 15:45:35.000000000 +0100
++++ linux-2.6.23.1/drivers/usb/gadget/dummy_hcd.c	2008-03-13 15:45:39.000000000 +0100
+@@ -363,16 +363,14 @@
+  		case USB_SPEED_HIGH:
+  			if (max == 512)
+  				break;
+-			/* conserve return statements */
+-		default:
+-			switch (max) {
+-			case 8: case 16: case 32: case 64:
++			goto done;
++		case USB_SPEED_FULL:
++			if (max == 8 || max == 16 || max == 32 || max == 64)
+  				/* we'll fake any legal size */
+  				break;
+-			default:
+-		case USB_SPEED_LOW:
+-				goto done;
+-			}
++			/* save a return statement */
++		default:
++			goto done;
+  		}
+  		break;
+  	case USB_ENDPOINT_XFER_INT:
