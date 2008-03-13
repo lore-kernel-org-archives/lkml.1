@@ -1,138 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbYCMHP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYCMHUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbYCMHP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 03:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYCMHPG
+	id S1753362AbYCMHUD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYCMHTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 03:15:06 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38777 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752602AbYCMHPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 03:15:04 -0400
-X-Greylist: delayed 811 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 03:15:04 EDT
-X-Sasl-enc: S5irCk9YOpgxjzd3HA68WeTb29HklbQzm+9yi7bsd+ct 1205391690
-Date: Thu, 13 Mar 2008 16:00:38 +0900 (WST)
-From: Ian Kent <raven@themaw.net>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [RFC] Re: [PATCH 4/4] autofs4 - add miscelaneous device for ioctls
-In-Reply-To: <1204179539.3501.17.camel@raven.themaw.net>
-Message-ID: <Pine.LNX.4.64.0803131408460.4608@raven.themaw.net>
-References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net> 
- <Pine.LNX.4.64.0802261218230.8490@raven.themaw.net> 
- <20080227211723.d5d27c09.akpm@linux-foundation.org> <1204179539.3501.17.camel@raven.themaw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Mar 2008 03:19:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:60687 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751480AbYCMHTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 03:19:53 -0400
+Date: Thu, 13 Mar 2008 08:19:32 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: "Jean-Samuel Chenard" <jsamch@gmail.com>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       grant.likely@secretlab.ca
+Subject: Re: Linux UIO driver cache problem in PowerPC (fix)
+Message-ID: <20080313081932.4edee290@dilbert.local>
+In-Reply-To: <169c03cb0803121222h5fca9cdal5af873cd2a700f4d@mail.gmail.com>
+References: <169c03cb0803121222h5fca9cdal5af873cd2a700f4d@mail.gmail.com>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Ian Kent wrote:
+Am Wed, 12 Mar 2008 15:22:59 -0400
+schrieb "Jean-Samuel Chenard" <jsamch@gmail.com>:
 
-> > 
-> > We seem to be passing some string into a misc-device ioctl and getting some
-> > results back.  Be aware that this won't be a terribly popular proposal, so
-> > I'd suggest that you fully describe the problem which it's trying to solve,
-> > and how it solves it, and why the various alternatives (sysfs, netlink,
-> > mount options, etc) were judged unsuitable.
+> Hi,
+
+Hi Jean-Samuel,
+thanks for your report. Please CC LKML if you find bugs like this. I
+also added Grant Likely (PPC Xilinx Virtex maintainer), as it seems to
+be a platform specific problem.
+
 > 
-> Yes, as I said above.
+> Experimenting with your userspace I/O driver on a Xilinx FPGA (PowerPC
+> 405), I was having problems when reading hardware device registers
+> mapped on my platform using the user-space mmap() call.
 > 
-> I don't expect that people that aren't close to the development of
-> autofs will "get" the problem description in the leading post but I will
-> try and expand on it as best I can.
+> After some investigation (looking at the driver/char/mspec.c file), I
+> found that preventing caching of the page in uio_mmap_physical fixed
+> my issues with userspace mmap() reading messed-up values.
+
+Hm, we already mark the page with VM_IO. That's sufficient on x86 and
+arm. I'm not sure whether this is a bug in PPC memory handling. Why do
+they cache VM_IO pages? 
+
 > 
-> As for the possible alternatives, it sounds like I have some more work
-> to do on that. Mount options can't be used as I described in the lead in
-> post and, as far as my understanding of sysfs goes, I don't think it's
-> appropriate. But, I'm not aware of what the netlink interface may be
-> able to do for me so I will need to check on that.
+> This patch is against your initial commit of the UIO driver in the
+> mainline kernel tree.
 > 
+> ====
+> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+> index 865f32b..36e1123 100644
+> --- a/drivers/uio/uio.c
+> +++ b/drivers/uio/uio.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/string.h>
+>  #include <linux/kobject.h>
+>  #include <linux/uio_driver.h>
+> +#include <asm/pgtable.h>
+> 
+>  #define UIO_MAX_DEVICES 255
+> 
+> @@ -447,6 +448,8 @@ static int uio_mmap_physical(struct
+> vm_area_struct *vma)
+> 
+>         vma->vm_flags |= VM_IO | VM_RESERVED;
+> 
+> +       vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+> +
+>         return remap_pfn_range(vma,
+>                                vma->vm_start,
+>                                idev->info->mem[mi].addr >> PAGE_SHIFT,
+> ====
+> 
+> I am a bit unsure if this will break something in any of your uses of
+> the UIO driver (on other platforms than ppc), but it really fixes
+> things for me.  
 
-I've attempted an implementation of this using the Generic Netlink 
-interface and I've struck a difficulty. I would like to use current 
-recommended development policy but I'm not sure how far I should go with 
-this in order to avoid using an ioctl implementation so I'm after some 
-advice and suggestions.
+It should be OK, but unneccesary on other platforms. I have no
+objections, but I fear in 6 months we'll see a patch removing that
+line again because it's not needed... 
 
-So, onto the description.
-Sorry about the length of the post.
+> Let me know if you need more details on what was
+> happening on my platform before I added this statement.
 
-Autofs user space uses a number of ioctls for mount control.
+I'd like to hear the opinion of people really involved in PPC memory
+handling.
 
-I have a problem that can only be resolved by adding an additional control 
-function that doesn't need to open the autofs mount point path directly 
-to issue ioctl commands. So I decided to re-implement the the control 
-interface, hopefully, in a cleaner way and solve a couple of other 
-problems at the same time (by adding two additional control functions 
-giving a total of three new functions) and improving one of the existing 
-functions.
+> 
+> Thanks for the great driver for user-space I/O, it will save me lots
+> of time in my research.
+> 
+> Regards,
+> 
+> Jean-Samuel
 
-My initial proposal used a miscellaneous device to route ioctl commands to 
-autofs mounts and the question of why current recommended alternatives 
-were not suitable was asked. The only alternative that may be suitable is 
-the Netlink interface.
+Thanks,
+Hans
 
-I won't go into the details of the new functions now but focus on the 
-difficulty I have found implementing one of the existing functions using 
-the Netlink interface.
-
-There are some restrictions on the scope of the change.
-The scope is only the ioctl interface. I don't want change too many things 
-at once, in particular things that are currently working OK. And I'd like 
-to retain the existing semantic behavior of the interface.
-
-The function that is a problem is the sending of expire requests. In the 
-current implementation this function is synchronous. An ioctl is used to 
-ask the kernel module (autofs4) to check for mounts that can be expired 
-and, if a candidate is found the module sends a request to the user space 
-daemon asking it to try and umount the select mount after which the daemon 
-sends a success or fail status back to the module which marks the 
-completion of the original ioctl expire request.
-
-The Generic Netlink interface won't allow this because only one concurrent 
-send request can be active for "all" Generic Netlink Families in use, 
-since the socket receive function is bracketed by a single mutex. So I would 
-need to use a workqueue to queue the request but that has it's own set of 
-problems.
-
-A workqueue can have only one active request going at a time but I may 
-have a number of concurrent expires happening at any one time and the 
-request could block for a significant amount of time so I would have to 
-use multiple queues. Also there isn't a one-to-one correspondence 
-between autofs super blocks and the stream of expire requests so the 
-number of needed workqueues isn't known. Hence, a workqueue would need to 
-be created, used and destroyed for every umount request or some other 
-elaborate mechanism developed to re-use workqueues. Ideas?
-
-The next issue is that in order to keep track of multiple in flight 
-requests a separate Netlink socket would need to be opened for every 
-expire request in order to ensure that the Netlink completion reply makes 
-it back to the original requesting thread (Is that actually correct?). Not 
-really such a big problem but it defeats another aim of the 
-re-implementation, which is to reduce the selinux user space exposure to 
-file descriptors that are open but don't yet have close-on-exec flag set 
-when a mount or umount is spawned by the automount daemon. This can 
-obviously be resolved by adding a mutex around the fork/exec code but 
-isn't a popular idea due to added performance overhead.
-
-That's about it for a Generic Netlink solution.
-
-It looks like it may be possible to avoid the need to use workqueues by 
-adding a new netlink protocol. I didn't notice any mutual exclusion 
-issues in the code but I may not have looked far enough (comments 
-please?). This approach would still have the issue of needing a new socket 
-opened for each expire for the tracking multiple requests and a 
-considerable increase in complexity in the autofs4 module for netlink 
-communication.
-
-I'm concerned about the effort I would need to devote to make this work  
-and the increase in complexity that may be needed, especially if the 
-implementation is ultimately not satisfactory for inclusion in the kernel.
-
-Please help!
-Ian
