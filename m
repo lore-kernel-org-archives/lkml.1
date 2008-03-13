@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYCMMgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYCMMj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYCMMgG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYCMMfz
+	id S1754667AbYCMMj4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYCMMjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:35:55 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:46897 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbYCMMfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:35:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=liXuREJDUDWsCpiSa/5obOtFCB5m8CZdLM91SX2LPz0Kuqe7okaAGvXu4x9yqbcDwMOIWomifB33mp0Cnvntq6nCq8hb/lWZRiDTgSMbCsXTwcbJ/beIoQ+hvuj31AQDac6hrzYXtJqjOAHMuY08EJUAcuA6J1CqgKEHdqgn6vk=
-Message-ID: <e9e943910803130535t4c31ea51h6898545557c9ec0c@mail.gmail.com>
-Date: Thu, 13 Mar 2008 12:35:53 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Daniel Phillips" <phillips@phunq.net>
-Subject: Re: [RFC, PATCH 0/6] ext3: do not modify data on-disk when mounting read-only filesystem
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Theodore Tso" <tytso@mit.edu>, sct@redhat.com,
-       akpm@linux-foundation.org, adilger@clusterfs.com
-In-Reply-To: <200803122022.22814.phillips@phunq.net>
+	Thu, 13 Mar 2008 08:39:48 -0400
+Received: from lucidpixels.com ([75.144.35.66]:60954 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752417AbYCMMjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:39:48 -0400
+Date: Thu, 13 Mar 2008 08:39:47 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: Is there a wireless PCI/e card that is supported in the kernel?
+Message-ID: <alpine.DEB.1.00.0803130827490.18866@p34.internal.lan>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1204768754-29655-1-git-send-email-duaneg@dghda.com>
-	 <200803122022.22814.phillips@phunq.net>
-X-Google-Sender-Auth: 319dc5abfeabac6b
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/03/2008, Daniel Phillips <phillips@phunq.net> wrote:
-> Hi Duane,
->
->  Thanks for doing this.  Some perhaps not so obvious fallout from the bad
->  old way of doing things is that ddnap (zumastor) hits an issue in
->  replication.  Since ddsnap allows journal replay on the downstream
->  server and also needs to have an unaltered snapshot to apply deltas
->  against, if we do not take special care, Ext3 will come along and
->  modify the downstream snapshot even when told not to.  Our solution:
->  take two snapshots per replication cycle (pretty cheap) so that one can
->  be clean and the other can be stepped on at will by the journal replay.
->  Ugh.
+In the past, I used ndiswrapper etc but noticed that would freeze up my 
+laptop occasionally..
 
-Ah, good to know, thanks. It looks like you folks are doing some
-interesting things there.
+Obviously for a server machine if you are going to add a wireless card you 
+/probably/ do not want to be using ndiswrapper if it is an important host.
 
->  With your hack, we can eventually drop the double snapshot, provided no
->  other filesystem is similarly badly behaved.
+PCI-e: (D-Link DWA-556)
+http://www.newegg.com/Product/Product.aspx?Item=N82E16833127218
 
-Excellent, I'm really pleased to hear that.
+PCI Cards:
+This one seems to be the most popular one on newegg:
+EDIMAX EW-7128G IEEE 802.11b/g PCI Wireless Card Up to 54Mbps Data Rates 
+64/128-Bit WEP, 802.1x, WPA, AES - Retail
+http://www.newegg.com/Product/ProductReview.aspx?Item=N82E16833315041
+Pros: Ubuntu 7.10 (Gusty Gibbon) picked up this card without any need for 
+additional drivers. It has been running with 85% signal stregnth with the 
+router in the next room.
+But then:
+Cons: Drivers are still under development. The rt2x00 driver is in the 
+2.6.24 kernel, but it's somewhat buggy. Kernels built from the rt2x00 
+devel tree do work significantly better. Regardless of the kernel that I 
+tried, I was unable to put the card into master mode (for creating an 
+access point).
 
->  Re your page translation table: we already have a page translation
->  table, it is called the page cache.  If you could figure out which file
->  (or metadata) each journal block belongs to, you could just load the
->  page table pages back in and presto, done.  No need to replay the
->  journal at all, you are already back to journal+disk = consistent
->  state.
+GIGABYTE GN-WP01GS IEEE 802.11b/g PCI Wireless Adapter Up to 54Mbps Data 
+Rates 64/128 bit WEP, WPA, 802.1x, AES - Retail
+http://www.newegg.com/Product/Product.aspx?Item=N82E16839121008
+Pros: Just dropped it in and it works in 2.6.22-14 Ubuntu Gutsy x86 (just 
+tested WEP though). This was researched before purchase. Ralink open 
+sourced their drivers and the rt61pci driver is part modern kernels. Very 
+good price.
 
-Hmm, interesting. I'll have to have a think about that, thanks.
+D-Link DWL-AG530 IEEE 802.11a/b/g 32-bit PCI Wireless Adapter Up to 
+108Mbps Data Rates 64-, 128-, 152-WEP 802.1x WPA.Wi-Fi Protected Access 
+(64-, 128-WEP with TKIP, MIC, IV Expansion, Shared Key Authentication 
+Supports Advanced Encrypti - Retail
+Good reviews, but nobody mentions Linux.
+http://www.newegg.com/Product/Product.aspx?Item=N82E16833127136
 
->  mapping.  As it stands your solution seems well built, after a quick
->  readthrough.  Nice looking code.  I think you added about 250 lines
->  overall, so tight too.  Thanks again.
+Any comments or success stories of GOOD working cards without the use of 
+ndiswrapper?
 
-Thanks very much, I appreciate it!
-
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Justin.
