@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbYCMGaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYCMGan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbYCMGaB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYCMG3y
+	id S1754121AbYCMGan (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 02:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYCMGad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:29:54 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:59773 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751116AbYCMG3x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:29:53 -0400
-Message-ID: <47D8C9E8.6020908@davidnewall.com>
-Date: Thu, 13 Mar 2008 17:00:00 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
+	Thu, 13 Mar 2008 02:30:33 -0400
+Received: from mail.lang.hm ([64.81.33.126]:59110 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751116AbYCMGac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 02:30:32 -0400
+Date: Wed, 12 Mar 2008 23:32:52 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
 To: Daniel Phillips <phillips@phunq.net>
-CC: Chris Friesen <cfriesen@nortel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
+cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
 Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-References: <200803092346.17556.phillips@phunq.net> <200803121556.15547.phillips@phunq.net> <47D8BF76.8040105@davidnewall.com> <200803122317.24849.phillips@phunq.net>
 In-Reply-To: <200803122317.24849.phillips@phunq.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <alpine.DEB.1.00.0803122327260.3786@asgard.lang.hm>
+References: <200803092346.17556.phillips@phunq.net> <200803121556.15547.phillips@phunq.net> <47D8BF76.8040105@davidnewall.com> <200803122317.24849.phillips@phunq.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips wrote:
+On Wed, 12 Mar 2008, Daniel Phillips wrote:
+
+> On Wednesday 12 March 2008 22:45, David Newall wrote:
+>
 >> Your idea seems predicated on throwing large amounts of RAM at the
 >> problem.  What I want to know is this: Is it really 25 times faster than
 >> ext3 with an equally huge buffer cache?
->>     
 >
 > Yes.
 
-Well, that sounds convincing.  Not.  You know this how?
+this I don't understand. what makes your approach 25x faster?
+
+looking at the comparison of a 500G filesystem with 500G of ram allocated 
+for a buffer cache.
+
+yes, initially it will be a bit slower (until the files get into the 
+buffer cache), and if fsync is disabled all writes will go to the buffer 
+cache (until writeout hits)
+
+I may be able to see room for a few percent difference, but not 2x, let 
+alone 25x.
+
+David Lang
