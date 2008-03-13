@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbYCMWiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYCMWki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758552AbYCMWiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbYCMWiJ
+	id S1758644AbYCMWki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbYCMWka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:38:09 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51587 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756383AbYCMWiI (ORCPT
+	Thu, 13 Mar 2008 18:40:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43010 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752567AbYCMWka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:38:08 -0400
-Date: Thu, 13 Mar 2008 23:38:45 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ak@suse.de, linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
-       len.brown@intel.com, stable@kernel.org
-Subject: Re: fix aperture vs. suspend problem
-Message-ID: <20080313223845.GC8115@elf.ucw.cz>
-References: <20080313100531.GA3399@elf.ucw.cz> <20080313153248.f43bbce3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313153248.f43bbce3.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 13 Mar 2008 18:40:30 -0400
+Date: Thu, 13 Mar 2008 15:38:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: linux-kernel@vger.kernel.org, oleg@tv-sign.ru, roland@redhat.com,
+       mingo@elte.hu, xemul@openvz.org
+Subject: Re: 2.6.25-rc5-mm1: "consolechars" hangs on boot
+Message-Id: <20080313153851.2023980c.akpm@linux-foundation.org>
+In-Reply-To: <47D9A5A2.4000009@free.fr>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	<47D9A5A2.4000009@free.fr>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-03-13 15:32:48, Andrew Morton wrote:
-> On Thu, 13 Mar 2008 11:05:31 +0100
-> Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > 
-> > aperture_64.c takes a piece of memory and makes it into iommu
-> > window... but such window may not be saved by swsusp -- that leads to
-> > oops during suspend.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-> > index 608152a..88747f3 100644
-> > --- a/arch/x86/kernel/aperture_64.c
-> > +++ b/arch/x86/kernel/aperture_64.c
-> > @@ -18,6 +18,7 @@ #include <linux/pci_ids.h>
-> >  #include <linux/pci.h>
-> >  #include <linux/bitops.h>
-> >  #include <linux/ioport.h>
-> > +#include <linux/suspend.h>
-> >  #include <asm/e820.h>
-> >  #include <asm/io.h>
-> >  #include <asm/gart.h>
-> > @@ -76,6 +77,7 @@ static u32 __init allocate_aperture(void
-> >  	printk(KERN_INFO "Mapping aperture over %d KB of RAM @ %lx\n",
-> >  			aper_size >> 10, __pa(p));
-> >  	insert_aperture_resource((u32)__pa(p), aper_size);
-> > +	register_nosave_region((u32)__pa(p) >> PAGE_SHIFT, (u32)__pa(p+aper_size) >> PAGE_SHIFT);
-> >  
-> >  	return (u32)__pa(p);
-> >  }
+On Thu, 13 Mar 2008 23:07:30 +0100
+Laurent Riffard <laurent.riffard@free.fr> wrote:
+
+> Le 11.03.2008 09:14, Andrew Morton a __crit :
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
 > > 
 > 
-> This is also needed in 2.6.24, perhaps earlier?
+> With 2.6.25-rc5-mm1, my system (Ubuntu 7.10/Gutsy) reliably hangs on
+> boot. Sysrq-T shows 12 "consolechars" processes stuck in do_exit call.
+> 
+> The bisection said "Sucker is
+> patches/signals-send_signal-factor-out-signal_group_exit-checks.patch"
+> 
+> Actually, it's 2.6.25-rc5-mm1 + add-warn_on_secs-macro-fix-fix.patch,
+> I guess this patch is innocent.
+> 
 
-It seems to only trigger on >3GB boxes, during swsusp. People are not
-normally suspending those big boxes. I do not think this is worth
-backporting.
+Actually I later dropped
+signals-send_signal-factor-out-signal_group_exit-checks.patch at Oleg's
+request.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+But I don't think we did that because it was known to be buggy, so perhaps
+the same bug crept back in in another form..
+
+
