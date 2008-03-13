@@ -1,75 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYCMQVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbYCMQWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbYCMQVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 12:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYCMQVJ
+	id S1756393AbYCMQWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 12:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYCMQWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 12:21:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:56006 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbYCMQVG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 12:21:06 -0400
-Date: Thu, 13 Mar 2008 09:19:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: hackbench regression since 2.6.25-rc
-Message-Id: <20080313091921.834d2532.randy.dunlap@oracle.com>
-In-Reply-To: <20080313151413.GA14045@suse.de>
-References: <1205394417.3215.85.camel@ymzhang>
-	<20080313151413.GA14045@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 13 Mar 2008 12:22:44 -0400
+Received: from mail.lang.hm ([64.81.33.126]:42132 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbYCMQWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 12:22:43 -0400
+Date: Thu, 13 Mar 2008 09:25:09 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Daniel Phillips <phillips@phunq.net>
+cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+In-Reply-To: <200803130216.03230.phillips@phunq.net>
+Message-ID: <alpine.DEB.1.00.0803130914320.22040@asgard.lang.hm>
+References: <200803092346.17556.phillips@phunq.net> <200803130106.26910.phillips@phunq.net> <alpine.DEB.1.00.0803130133470.22040@asgard.lang.hm> <200803130216.03230.phillips@phunq.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 08:14:13 -0700 Greg KH wrote:
+On Thu, 13 Mar 2008, Daniel Phillips wrote:
 
-> On Thu, Mar 13, 2008 at 03:46:57PM +0800, Zhang, Yanmin wrote:
-> > Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
-> > 40% regression with 2.6.25-rc1, and more than 20% regression with kernel
-> > 2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
-> > 
-> > Command to start it.
-> > #hackbench 100 process 2000
-> > I ran it for 3 times and sum the values.
-> > 
-> > I tried to investiagte it by bisect.
-> > Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
-> > Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
-> > 
-> > Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
-> > these 2 tags for many times manually and kernel always paniced.
-> 
-> Where is the kernel panicing?  The changeset right after the last one
-> above: bc87d2fe7a1190f1c257af8a91fc490b1ee35954, is a change to efivars,
-> are you using that in your .config?
-> 
-> > All patches between the 2 tags are on kobject restructure. I guess such restructure
-> > creates more cache miss on the 16-core tigerton.
-> 
-> Nothing should be creating kobjects on a normal load like this, so a
-> regression seems very odd.  Unless the /sys/kernel/uids/ stuff is
-> triggering this?
-> 
-> Do you have a link to where I can get hackbench (google seems to find
-> lots of reports with it, but not the source itself), so I can test to
-> see if we are accidentally creating kobjects with this load?
+> On Thursday 13 March 2008 01:39, david@lang.hm wrote:
+>>> Feel free.  You use your script, and somebody with a reliable UPS or
+>>> two can use my driver, once it is stabilized of course.  Just don't be
+>>> in business against them if being a few milliseconds slower on the
+>>> uptake means money lost.
+>>
+>> so now you are saying that you are faster then a ramdisk?????
+>
+> No, I am saying that my driver is faster than any script you can write.
+> Your script will not be able to give access to data while the ramdisk
+> is being populated, nor will it be able to save efficiently exactly
+> what is dirty in the ramdisk.  (Explained in my original post if you
+> would like to take a look.)
 
-The version that I see referenced most often (unscientifically :)
-is somewhere under people.redhat.com/mingo/, like so:
-http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+that is not something that makes a difference of a few milliseconds
 
+>> if you have a reliable UPS and are willing to rely on it to save your data
+>> take the identical hardware to what you are planning to use, but instead
+>> of using your driver just create a ramdisk and load it on boot and save
+>> the contents on shutdown.
+>
+> Aha!  You are getting close.  Really, that is all ramback does.  It
+> just handles some very difficult related issues efficiently, in such a
+> way as to minimize any denial of service from complete loss of UPS
+> power.  This is all just about using power management in a new way that
+> gets higher performance.  But your battery power has to be reliable.
+> Just make it so.  It is not difficult these days, or even particularly
+> expensive.
+>
+> I calculated somewhere along the line that it would take something like
+> 17 minutes to populate the big Violin ramdisk initially, and 17 minutes
+> to save it during a loss of line power event, during which UPS power
+> must be not run out before ramback achieves disk sync or you will get
+> file corruption.  (This rule was mentioned in my original post.)
+>
+> All well and could, you can in fact do that with a pretty simple script.
+> But in the initial 17 minutes your application may not read or write
+> the ramdisk data and in the closing 17 minutes it may not write.  That
+> knocks your system down to 4 nines, given one planned shutdown per year.
+> Not good, not good at all.
+>
+> See, ramback is entirely about _not_ getting knocked down to 4 nines.
+> It wants to stay above 6, given system components that satisfy that goal,
+> comprising:
+>
+>  * Linux
+>  * Processor, memory, motherboard etc
+>  * Dual power supplies with independent UPS backup
+>  * Ramback driver
+>
+> My proposition is, you can go out and purchase hardware right now that
+> delivers 6 nines (30 seconds downtime/year) and yes, it will cost you,
+> but if that worries you then set up two (much) cheaper ones and set
+> them up as a failover cluster.  (Helps that the Violin box can connect
+> via PCI-e to two servers at the same time.)
 
----
-~Randy
+you just use a redundant system and you no longer care how long it takes 
+to shutdown or startup a system. if you're running a datacenter that cares 
+about uptime to the point of counting 9's or buying a Violin box you are 
+already going to need redundant machines so that you can perform upgrades.
+
+> I say you can do this reliably.  It boils down to your power supplies.
+> You say it can't be done.  Who is right?
+
+it also takes the faith that you will never have any unplanned shutdowns, 
+since your system will loose massive amounts of data if they happen. 
+nobody who worries about 9's will buy into that argument. you achieve 9's 
+by figuring that things don't always work, and as a result you figure out 
+how to engineer around the failures so that when they happen you stay up. 
+manufacturers have been trying to promise that their boxes are so reliable 
+that they won't go down for decades, and they haven't suceeded yet.
+
+David Lang
