@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYCMWmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYCMWqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbYCMWmQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYCMWmA
+	id S1757560AbYCMWqb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYCMWqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:42:00 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:64707 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbYCMWmA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:42:00 -0400
-Date: Thu, 13 Mar 2008 23:40:53 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [patch 06/10] cpu topology support for s390.
-Message-ID: <20080313224053.GA5836@osiris.boeblingen.de.ibm.com>
-References: <20080312173155.703966894@de.ibm.com> <20080312173217.505558934@de.ibm.com> <20080312161137.63bdfa67.akpm@linux-foundation.org> <1205411307.26537.64.camel@localhost>
+	Thu, 13 Mar 2008 18:46:22 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:52155 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753543AbYCMWqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 18:46:21 -0400
+Date: Thu, 13 Mar 2008 17:46:17 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+Message-ID: <20080313224616.GA9139@sergelap.austin.ibm.com>
+References: <20080313032749.GA13258@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au> <20080313131818.GA9771@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au> <20080313143803.GA11265@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1205411307.26537.64.camel@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 01:28:27PM +0100, Martin Schwidefsky wrote:
-> On Wed, 2008-03-12 at 16:11 -0700, Andrew Morton wrote:
-> > > +#define CPU_BITS 64
-> > > +
-> > > +struct tl_cpu {
-> > > +	unsigned char reserved[6];
-> > > +	unsigned short origin;
-> > > +	unsigned long mask[CPU_BITS / BITS_PER_LONG];
-> > > +};
-> > 
-> > mask[] will be too small for CPU_BITS=65 ;)
+Quoting James Morris (jmorris@namei.org):
+> On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
 > 
-> We could add the +(BITS_PER_LONG - 1) logic but what for? The CPU_BITS
-> is defined right above and it will be increased in steps of 64.
-
-It will always be 64 and won't be increased. For more than 64 cpus "origin"
-in the hardware structure above will be > 0 and each bit in the mask
-would represent cpu "origin + bit number".
-
-> > > +	end = (union tl_entry *)((unsigned long)info + info->length);
+> > True, but while this change simplifies the code a bit, the semantics
+> > seem more muddled - devcg will be enforcing when CONFIG_CGROUP_DEV=y
+> > and:
 > > 
-> > I'd suggest that you take a look at all the pointer arith games which are
-> > being played in this code and see if it can be done better with a more
-> > appropriate use of the C type system.  Before someone dies.
+> > 	SECURITY=n or
+> > 	rootplug is enabled
+> > 	capabilities is enabled
+> > 	smack is enabled
+> > 	selinux+capabilities is enabled
 > 
-> The only thing that I can see that we could do is to get rid of the
-> unions and do the pointer arithmetic with the tl_cpu / tl_container
-> structs by hand. The data stored by ptf is structured in a way that
-> makes it rather hard to write decent C code.
+> Well, this is how real systems are going to be deployed.
 
-Please leave as is. I did have a few different implementations but they
-all looked even worse than this one. If you read the hardware specs then
-the current code should be rather easily understandable.
-And since the whole documentation is publically availabe in the meantime
-I could even add some comments ;)
+Sorry, do you mean with capabilities?
+
+> It becomes confusing, IMHO, if you have to change which secondary LSM you 
+> stack with SELinux to enable a cgroup feature.
+
+So you're saying selinux without capabilities should still be able to
+use dev_cgroup?  (Just making sure I understand right)
+
+-serge
