@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYCMLES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYCMLNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbYCMLES (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 07:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYCMLEK
+	id S1754557AbYCMLNT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 07:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYCMLNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 07:04:10 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:59816 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752013AbYCMLEJ (ORCPT
+	Thu, 13 Mar 2008 07:13:07 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:37446 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbYCMLNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 07:04:09 -0400
-Message-ID: <47D90A31.5090104@davidnewall.com>
-Date: Thu, 13 Mar 2008 21:34:17 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 13 Mar 2008 07:13:06 -0400
+Date: Thu, 13 Mar 2008 12:13:03 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Avi Kivity <avi@qumranet.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: KVM: Export include/linux/kvm.h only if $ARCH actually
+	supports KVM
+Message-ID: <20080313111303.GA6474@aepfle.de>
+References: <20080210111525.GA28522@aepfle.de> <47B29FB5.40205@qumranet.com> <20080213203450.GB13536@uranus.ravnborg.org> <47B4098C.3060301@qumranet.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Mike Galbraith <efault@gmx.de>, Al Viro <viro@zeniv.linux.org.uk>,
-       "J.C. Pizarro" <jcpiza@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: linux+glibc memory allocator, poor performance
-References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>	 <20080312211219.GL27894@ZenIV.linux.org.uk>	 <47D8C25A.8020708@davidnewall.com>	 <1205388732.4797.30.camel@marge.simson.net>	 <47D8C813.6020201@davidnewall.com> <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
-In-Reply-To: <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47B4098C.3060301@qumranet.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On Thu, Mar 13, 2008 at 8:22 AM, David Newall <davidn@davidnewall.com> wrote:
->   
->>  Hostility such as that gives this list a bad reputation and drives
->>  people away.  One can (and should) tell people that an idea is
->>  completely wrong without being rude.
->>     
+On Thu, Feb 14, Avi Kivity wrote:
+
+> Sam Ravnborg wrote:
+>> On Wed, Feb 13, 2008 at 09:43:49AM +0200, Avi Kivity wrote:
+>>   
+>>> Olaf Hering wrote:
+>>>     
+>>>>> Currently, make headers_check barfs due to <asm/kvm.h>, which 
+>>>>> <linux/kvm.h>
+>>>>> includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export 
+>>>>> kvm.h
+>>>>> only if the arch actually supports it.
+>>>>>            
+>>>> This makes headers_install_all unreliable.
+>>>> linux/kvm.h will not be exported, depending on what system the libc
+>>>> headers will be generated.       
+>>> I see.  Any suggestions besides adding lots of asm-*/kvm.h?
+>>>     
+>>
+>> Do not include asm/kvm.h from linux/kvm.h.
+>> And in the few places where it is needed explicit include asm/kvm.h before
+>> linux/kvm.h.
+>>
+>> Alternatively inlcude asm/kvm.h inside #ifdef KERNEL"
+>> so only userspace has to do explicit include of asm before linux variant.
+>>   
 >
-> Hey, why don't we create a linux-sensitive@vger.kernel.org and you
-> guys can move your nice and friendly chats over there...?
->   
+> That's not very nice for userspace, which needs asm/kvm.h for the arch 
+> specific parts of the interface.  I'll add asm-*/kvm.h.
+
+Can you please revert this change before 2.6.25 is released?
+'make headers_install_all' has to be reliable.
+
+ commit fb56dbb31c4738a3918db81fd24da732ce3b4ae6
+ Author: Avi Kivity <avi@qumranet.com>
+ Date:   Sun Dec 2 10:50:06 2007 +0200
+
+    KVM: Export include/linux/kvm.h only if $ARCH actually supports KVM
+
+    Currently, make headers_check barfs due to <asm/kvm.h>, which <linux/kvm.h>
+    includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export kvm.h
+    only if the arch actually supports it.
 
 
-Better create a linux-arseholes@vger.kernel.org, and move the attitude
-there.
