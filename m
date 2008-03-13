@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYCMG7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYCMHC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbYCMG7z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYCMG7r
+	id S1753518AbYCMHC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYCMHCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:59:47 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:14347 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbYCMG7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:59:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=RCPZeDlrLwe60D1VT7zheOkPdLIgUZ7+2qFa6cd3xuQGbrR3JDyX+wNnyENX/78uVUwF/6751YuS2ChvPAxcTMhxH4nsd40tny5gmEF3xfQjBNAMJOpbd5r0dZ2ppze94umQy/h0rD89Ae+ucz/gtp7xCzwua2YWH8feMackZsc=
-Message-ID: <469a066a0803122359y75deba08yfef566d3f378e5ad@mail.gmail.com>
-Date: Thu, 13 Mar 2008 14:59:45 +0800
-From: "Jason Wu" <wenhsuan121@gmail.com>
-To: mingo@redhat.com, vapier.adi@gmail.com
-Subject: [PATCH] fixes the bug : ntfs build failure in linux-2.6.git on no-mmu
-Cc: linux-kernel@vger.kernel.org, wenhsuan121@gmail.com
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_3603_25770761.1205391585904"
+	Thu, 13 Mar 2008 03:02:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:31632 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751333AbYCMHCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 03:02:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,492,1199692800"; 
+   d="scan'208";a="533125005"
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc5
+From: "Zhang, Rui" <rui.zhang@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrea Arcangeli <andrea@qumranet.com>
+In-Reply-To: <20080312234516.bb079cc5.akpm@linux-foundation.org>
+References: <200803130214.36861.lenb@kernel.org>
+	 <20080312234516.bb079cc5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 13 Mar 2008 14:51:45 +0800
+Message-Id: <1205391105.2240.68.camel@acpi-hp-zz.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_3603_25770761.1205391585904
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-This patch fixes the bug : ntfs build failure in linux-2.6.git on no-mmu
+On Wed, 2008-03-12 at 23:45 -0700, Andrew Morton wrote:
+> On Thu, 13 Mar 2008 02:14:36 -0400 Len Brown <lenb@kernel.org> wrote:
+> 
+> > please pull from: 
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> > 
+> > A bunch of small regression fixes, bug fixes, and a couple of minor cleanups.
+> 
+> I hope Rafael knows how to cross-reference the regression fixes against his list?
+> 
+> 
+> 
+> I'm sitting on five ACPI patches which look like they (or alternatives?) should
+> be in 2.6.25:
+> 
+> 
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/acpi-ec-revert-208c70a45624400fafd7511b96bc426bf01f8f5e.patch
+> 
+>   This was too poorly changelogged for me to remember what problem it
+>   solves, but it seemed important at the time.
+> 
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/drivers-acpi-asus_acpic-correct-use-of-and.patch
+> 
+>   Fix logic error in asus_acpi.c
+> 
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/drivers-acpi-asus_acpic-correct-use-of-and.patch
+> 
+>   Fix an overrun.
+> 
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/revert-acpi-thermal-fixup.patch
+> 
+>   Hopeully fix a regression which Andrea Arcangeli hit.  Although I'm not sure
+>   that he has confirmed that this revert actually works?
+Well, the patch looks good, this may be caused by a BIOS problem.
+anyway, I wish to get the response from Andrea so that I can do some
+investigation ASAP.
 
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10164
+thanks,
+rui
 
 
-Signed-off-by: Jason Wu <wenhsuan121@gmail.com>
-
-------=_Part_3603_25770761.1205391585904
-Content-Type: text/plain;
- name=0294-This-patch-fixes-the-bug-of-Bug-Entry-http.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdqz08vh
-Content-Disposition: attachment;
- filename=0294-This-patch-fixes-the-bug-of-Bug-Entry-http.patch
-
-RnJvbSBjN2UzMDUwMDVjODkzY2Q2MDViZTE2YjAxMGFiYzQyZjBiMjhiMjEwIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBKYXNvbiBXdSA8d2VuaHN1YW4xMjFAZ21haWwuY29tPgpEYXRl
-OiBUaHUsIDEzIE1hciAyMDA4IDEyOjE0OjIwICswODAwClN1YmplY3Q6IFtQQVRDSF0gVGhpcyBw
-YXRjaCBmaXhlcyB0aGUgYnVnIG9mIEJ1Zy1FbnRyeSAgICAgICA6IGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMDE2NAoKLS0tCiBpbmNsdWRlL2xpbnV4L21tLmgg
-fCAgICA2ICsrKysrKwogMSBmaWxlcyBjaGFuZ2VkLCA2IGluc2VydGlvbnMoKyksIDAgZGVsZXRp
-b25zKC0pCgpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9tbS5oIGIvaW5jbHVkZS9saW51eC9t
-bS5oCmluZGV4IDNmM2NjZmUuLjJmYTQ1YzQgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvbW0u
-aAorKysgYi9pbmNsdWRlL2xpbnV4L21tLmgKQEAgLTI0Myw2ICsyNDMsMTIgQEAgc3RhdGljIGlu
-bGluZSBpbnQgaXNfdm1hbGxvY19hZGRyKGNvbnN0IHZvaWQgKngpCiAKIAlyZXR1cm4gYWRkciA+
-PSBWTUFMTE9DX1NUQVJUICYmIGFkZHIgPCBWTUFMTE9DX0VORDsKIH0KKyNlbHNlCisvKiBKdXN0
-IHJldHVybiAxIGFsbCB0aGUgdGltZSBmb3Igbm8tTU1VICovCitzdGF0aWMgaW5saW5lIGludCBp
-c192bWFsbG9jX2FkZHIoY29uc3Qgdm9pZCAqeCkKK3sKKwlyZXR1cm4gMTsKK30KICNlbmRpZgog
-CiBzdGF0aWMgaW5saW5lIHN0cnVjdCBwYWdlICpjb21wb3VuZF9oZWFkKHN0cnVjdCBwYWdlICpw
-YWdlKQotLSAKMS41LjQKCg==
-------=_Part_3603_25770761.1205391585904--
