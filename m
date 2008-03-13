@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbYCMNwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYCMNzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbYCMNwa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 09:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYCMNwW
+	id S1755450AbYCMNzs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 09:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYCMNzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 09:52:22 -0400
-Received: from namei.org ([69.55.235.186]:39670 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751907AbYCMNwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 09:52:21 -0400
-Date: Fri, 14 Mar 2008 00:50:51 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
-In-Reply-To: <20080313131818.GA9771@sergelap.austin.ibm.com>
-Message-ID: <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au>
-References: <20080313032749.GA13258@sergelap.austin.ibm.com>
- <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au>
- <20080313131818.GA9771@sergelap.austin.ibm.com>
+	Thu, 13 Mar 2008 09:55:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:56043 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbYCMNzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 09:55:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GOeR1wpDblary6I1Y0cSVv7U9ZYVmy1YcOvu8tE9W/MGF9hULZJ6fmxTqIIG/T58gJFN+wVVVxTZopDQ1Advox6yAX9wkPK76zUSzQ5Hh/05StRc3GrOrB7nQnW7QTNoZijJmOtTXMufJBTAECMmMWX/Is2j4W42BwhG9PcuvWQ=
+Message-ID: <998d0e4a0803130655m747c4a66gd32eb2668f043b4e@mail.gmail.com>
+Date: Thu, 13 Mar 2008 14:55:39 +0100
+From: "J.C. Pizarro" <jcpiza@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux+glibc memory allocator, poor performance
+In-Reply-To: <84144f020803130548o76f80fedm378f82e95c189ce2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
+	 <20080312211219.GL27894@ZenIV.linux.org.uk>
+	 <47D8C25A.8020708@davidnewall.com>
+	 <1205388732.4797.30.camel@marge.simson.net>
+	 <47D8C813.6020201@davidnewall.com>
+	 <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>
+	 <20080313121048.5b52b28b@the-village.bc.nu>
+	 <84144f020803130548o76f80fedm378f82e95c189ce2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
+2008/3/13, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Hi Alan,
+>
+>
+>  On Thu, Mar 13, 2008 at 2:10 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>  >  I think it would be far better to create linux-flame and send the hostile
+>  >  stuff away. In a lot of cultures hostile responses or unfriendly
+>  >  responses are taken badly. Politeness is a good thing this list needs
+>  >  more of.
+>
+>
+> Do you honestly think we should be polite to people trolling on the
+>  LKML? The problem with kill-filing people like J.C. Pizzarro (a known
+>  troll on the GCC mailing list at least) is that other people will
+>  engange in discussing these "proposals" and contribute in generating
+>  noise anyway.
 
-> That does make for a simpler implementation at this point, however if
-> any other such LSMs come along (as Casey seemed to think they would) the
-> end result could end up being horrible spaghetti code of dependencies
-> and interrelated configs.
+I'm not a troll on the GCC mailing list. Some GCC's people is calling me troll.
 
-That can be addressed as the need arises.  A basic tenet of kernel 
-development is to avoid speculative infrastructure.
-
-> But OTOH we went years with no such changes, so that's probably not a
-> particularly practical concern unless someone can cite specific upcoming
-> examples.  So if noone objects I'll try that approach.
-
--- 
-James Morris
-<jmorris@namei.org>
+   J.C.Pizarro
