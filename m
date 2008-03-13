@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYCMTil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYCMTkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYCMTil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 15:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYCMTid
+	id S1756718AbYCMTkA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 15:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYCMTjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 15:38:33 -0400
-Received: from phunq.net ([64.81.85.152]:36389 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752000AbYCMTid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 15:38:33 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: ric@emc.com
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Thu, 13 Mar 2008 11:38:15 -0800
-User-Agent: KMail/1.9.5
-Cc: Lars Marowsky-Bree <lmb@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803131202.48135.phillips@phunq.net> <47D97C9E.303@emc.com>
-In-Reply-To: <47D97C9E.303@emc.com>
+	Thu, 13 Mar 2008 15:39:52 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:59902 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751672AbYCMTjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 15:39:52 -0400
+Message-ID: <47D98311.2040302@davidnewall.com>
+Date: Fri, 14 Mar 2008 06:10:01 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mike Galbraith <efault@gmx.de>,
+       Al Viro <viro@zeniv.linux.org.uk>, "J.C. Pizarro" <jcpiza@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: linux+glibc memory allocator, poor performance
+References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>	 <20080312211219.GL27894@ZenIV.linux.org.uk>	 <47D8C25A.8020708@davidnewall.com>	 <1205388732.4797.30.camel@marge.simson.net>	 <47D8C813.6020201@davidnewall.com>	 <84144f020803130210r1c7e8e11k7aedd3c60e7f5d0a@mail.gmail.com>	 <20080313121048.5b52b28b@the-village.bc.nu> <84144f020803130548o76f80fedm378f82e95c189ce2@mail.gmail.com>
+In-Reply-To: <84144f020803130548o76f80fedm378f82e95c189ce2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803131238.16672.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 12:12, Ric Wheeler wrote:
-> > Right, so Linux has gotten to the point where it competes with purpose-
-> > built embedded software in reliability.  Not quite there, but close
-> > enough for mission-critical.
-> 
-> This is our case, but we have been working for quite a while to enhance 
-> the reliability of the io stack & file systems. It also helps to be very 
-> careful to select hardware components with mature, open source & 
-> natively integrated drivers ;-)
+Pekka Enberg wrote:
+> Hi Alan,
+>
+> On Thu, Mar 13, 2008 at 2:10 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>   
+>>  Politeness is a good thing this list needs more of.
+>>     
+>
+> Do you honestly think we should be polite to people trolling on the
+> LKML?
 
-A word to the wise indeed.  Well I would never suggest that we can rest
-on our laurels as far as Linux reliability in concerned, only that it is
-already very reliable or you certainly would not ship products based on
-it.
-
-Daniel
+I do.  It's obvious.  Rudeness detracts (and reflects poorly on one's
+parents.)  Good manners cost nothing.  I might also point out that it
+was bad manners, not any alleged trolling, which caused this sad
+discussion.  Don't be rude; rather say nothing.
