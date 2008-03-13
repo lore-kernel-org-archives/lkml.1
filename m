@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYCMRC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYCMRER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYCMRC5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYCMRCt
+	id S1756740AbYCMRER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYCMREG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:02:49 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:24653 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753904AbYCMRCs (ORCPT
+	Thu, 13 Mar 2008 13:04:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49247 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751969AbYCMREE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:02:48 -0400
-Date: Thu, 13 Mar 2008 10:02:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       gregkh <greg@kroah.com>
-Subject: Re: linux-next: Tree for March 13 (PCI patch)
-Message-Id: <20080313100235.89cf2508.randy.dunlap@oracle.com>
-In-Reply-To: <20080313173506.2613be02.sfr@canb.auug.org.au>
-References: <20080313173506.2613be02.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Thu, 13 Mar 2008 13:04:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Date: Thu, 13 Mar 2008 18:03:29 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org> <200803122253.07631.rjw@sisk.pl> <m1iqzrxy26.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1iqzrxy26.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200803131803.31120.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 17:35:06 +1100 Stephen Rothwell wrote:
-
-> Hi all,
+On Thursday, 13 of March 2008, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> (tar balls at
-> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+> > Yes, it ought to be possible.
+> >
+> > Ultimately, IMHO, we should put all devices unnecessary for saving the image
+> > (and doing some eye-candy work) into low power states before the image is
+> > created and keep them in low power states until the system is eventually
+> > powered off.
+> 
+> Why?  I guess I don't see why we care what power state the devices are in.
+> Especially since we should be able to quickly save the image.
+> 
+> We need to disconnect the drivers from the hardware yes.  So filesystems
+> still work and applications that do direct hardware access still work
+> and don't need to reopen their connections.
+> 
+> I'm leery of low power states as they don't always work, and bringing
+> low power states seems to confuse hibernation to disk with suspend to
+> ram.
 
----
+>From the ACPI compliance point of view it's better to do it this way.  We need
+to put the devices into low power states anyway before "powering off" the
+system and we won't need to touch them for the second time if we do that
+in advance.
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Still, it would be sufficient if we disconnected the drivers from the hardware
+and thus prevented applications from accessing that hardware.
 
-access.c uses udelay() so needs to #include delay.h.
-
-next-20080313/drivers/pci/access.c:167: error: implicit declaration of function 'udelay'
-make[3]: *** [drivers/pci/access.o] Error 1
-make[2]: *** [drivers/pci] Error 2
-make[1]: *** [drivers] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [sub-make] Error 2
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/pci/access.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- next-20080313.orig/drivers/pci/access.c
-+++ next-20080313/drivers/pci/access.c
-@@ -1,3 +1,4 @@
-+#include <linux/delay.h>
- #include <linux/pci.h>
- #include <linux/module.h>
- #include <linux/sched.h>
+Thanks,
+Rafael
