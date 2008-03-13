@@ -1,114 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYCMXpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYCMXrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbYCMXpv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYCMXpn
+	id S1757561AbYCMXrt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYCMXrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:45:43 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:58995 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbYCMXpm (ORCPT
+	Thu, 13 Mar 2008 19:47:41 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52600 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751743AbYCMXrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:45:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=LCev+nJ6OIAP0sHBzDBvTr8wY9kGjVv1d1uKlo47sIbjjQOHLj77NS5GVgu5Yafhj9bfjnaV7UefXPvbvy2xeDfpW+tON3FZlCIm/ek9Hjmzb+RNmiMzkWoh1uMCKYsatXYlP/mRizr5PcAT6097CyfsZMjxO4vVQup9LAnHkTo=
-Message-ID: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
-Date: Thu, 13 Mar 2008 16:45:42 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>
-Subject: [PATCH] mm: make reserve_bootmem can crossed the nodes
-Cc: "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 13 Mar 2008 19:47:40 -0400
+Message-ID: <47D9BA19.8000504@cn.fujitsu.com>
+Date: Fri, 14 Mar 2008 08:34:49 +0900
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_13142_4822206.1205451942190"
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 1/3] res_counter: introduce res_counter_write_u64()
+References: <47D65A27.80605@cn.fujitsu.com> <20080311192117.f7e23636.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080311192117.f7e23636.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_13142_4822206.1205451942190
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 11 Mar 2008 19:08:39 +0900
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> This function can be used to assign the value of a resource counter member.
+>>
+> Why don't you make this function to do the same work as res_counter_write() ?
+> 
 
+You mean to deal with write strategy? We don't need that complexity. If it does
+the same work as res_counter_write(), it's just a redundant function. ;)
 
+But I forgot to take res_counter->lock ...
 
-------=_Part_13142_4822206.1205451942190
-Content-Type: text/x-patch; name=reserve_bootmem_cross_nodes.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdryzh6o0
-Content-Disposition: attachment; filename=reserve_bootmem_cross_nodes.patch
+> Thanks,
+> -Kame
+> 
+> 
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> ---
+>>  include/linux/res_counter.h |    9 ++++++---
+>>  kernel/res_counter.c        |    9 +++++++++
+>>  2 files changed, 15 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+>> index 8cb1ecd..8c23f7f 100644
+>> --- a/include/linux/res_counter.h
+>> +++ b/include/linux/res_counter.h
+>> @@ -41,9 +41,10 @@ struct res_counter {
+>>  
+>>  /**
+>>   * Helpers to interact with userspace
+>> - * res_counter_read_u64() - returns the value of the specified member.
+>> - * res_counter_read/_write - put/get the specified fields from the
+>> - * res_counter struct to/from the user
+>> + * res_counter_read_64/_write_u64 - returns/assigns the value of the
+>> + *	specified member
+>> + * res_counter_read/_write - puts/gets the specified fields from the
+>> + *	res_counter struct to/from the user
+>>   *
+>>   * @counter:     the counter in question
+>>   * @member:  the field to work with (see RES_xxx below)
+>> @@ -53,6 +54,8 @@ struct res_counter {
+>>   */
+>>  
+>>  u64 res_counter_read_u64(struct res_counter *counter, int member);
+>> +void res_counter_write_u64(struct res_counter *counter, int member,
+>> +			   unsigned long long val);
+>>  
+>>  ssize_t res_counter_read(struct res_counter *counter, int member,
+>>  		const char __user *buf, size_t nbytes, loff_t *pos,
+>> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+>> index 791ff2b..a16b727 100644
+>> --- a/kernel/res_counter.c
+>> +++ b/kernel/res_counter.c
+>> @@ -97,6 +97,15 @@ u64 res_counter_read_u64(struct res_counter *counter, int member)
+>>  	return *res_counter_member(counter, member);
+>>  }
+>>  
+>> +void res_counter_write_u64(struct res_counter *counter, int member,
+>> +			   unsigned long long val)
+>> +{
+>> +	unsigned long long *tmp;
+>> +
+>> +	tmp = res_counter_member(counter, member);
+>> +	*tmp = val;
+>> +}
+>> +
+>>  ssize_t res_counter_write(struct res_counter *counter, int member,
+>>  		const char __user *userbuf, size_t nbytes, loff_t *pos,
+>>  		int (*write_strategy)(char *st_buf, unsigned long long *val))
+>> -- 
+>> 1.5.4.rc3
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>>
+> 
+> 
+> 
 
-W1BBVENIXSBtbTogbWFrZSByZXNlcnZlX2Jvb3RtZW0gY2FuIGNyb3NzZWQgdGhlIG5vZGVzCgpz
-cGxpdCByZXNlcnZlX2Jvb3RtZW1fY29yZSB0byB0d28gZnVuY3Rpb24sIG9uZSBjaGVjayBjb25m
-bGljdHMsIGFuZCBvbmUgc2V0IGJpdHMuCgphbmQgbWFrZSByZXNlcnZlX2Jvb3RtZW0gdG8gbG9v
-cCBiZGF0YV9saXN0IHRvIGNyb3NzIHRoZSBub2Rlcy4KCnVzZXIgY291bGQgYmUgY3Jhc2hrZXJu
-ZWwgYW5kIHJhbWRpc2suLi4sIGluIGNhc2UgdGhlIHJhbmdlIGNyb3NzIHRoZSBub2RlcwoKU2ln
-bmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKSW5kZXg6IGxp
-bnV4LTIuNi9tbS9ib290bWVtLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvbW0vYm9v
-dG1lbS5jCisrKyBsaW51eC0yLjYvbW0vYm9vdG1lbS5jCkBAIC0xMTEsNDQgKzExMSw2OSBAQCBz
-dGF0aWMgdW5zaWduZWQgbG9uZyBfX2luaXQgaW5pdF9ib290bWVtCiAgKiBtaWdodCBiZSB1c2Vk
-IGZvciBib290LXRpbWUgYWxsb2NhdGlvbnMgLSBvciBpdCBtaWdodCBnZXQgYWRkZWQKICAqIHRv
-IHRoZSBmcmVlIHBhZ2UgcG9vbCBsYXRlciBvbi4KICAqLwotc3RhdGljIGludCBfX2luaXQgcmVz
-ZXJ2ZV9ib290bWVtX2NvcmUoYm9vdG1lbV9kYXRhX3QgKmJkYXRhLAorc3RhdGljIGludCBfX2lu
-aXQgY2FuX3Jlc2VydmVfYm9vdG1lbV9jb3JlKGJvb3RtZW1fZGF0YV90ICpiZGF0YSwKIAkJCXVu
-c2lnbmVkIGxvbmcgYWRkciwgdW5zaWduZWQgbG9uZyBzaXplLCBpbnQgZmxhZ3MpCiB7CiAJdW5z
-aWduZWQgbG9uZyBzaWR4LCBlaWR4OwogCXVuc2lnbmVkIGxvbmcgaTsKLQlpbnQgcmV0OworCisJ
-QlVHX09OKCFzaXplKTsKKworCS8qIG91dCBvZiByYW5nZSwgZG9uJ3QgaG9sZCBvdGhlciAqLwor
-CWlmIChhZGRyID49IGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQgJiYgYWRkciA8IGJkYXRhLT5sYXN0
-X3N1Y2Nlc3MpCisJCXJldHVybiAwOwogCiAJLyoKLQkgKiByb3VuZCB1cCwgcGFydGlhbGx5IHJl
-c2VydmVkIHBhZ2VzIGFyZSBjb25zaWRlcmVkCi0JICogZnVsbHkgcmVzZXJ2ZWQuCisJICogUm91
-bmQgdXAgdG8gaW5kZXggdG8gdGhlIHJhbmdlLgogCSAqLworCWlmIChhZGRyID4gYmRhdGEtPm5v
-ZGVfYm9vdF9zdGFydCkKKwkJc2lkeD0gUEZOX0RPV04oYWRkciAtIGJkYXRhLT5ub2RlX2Jvb3Rf
-c3RhcnQpOworCWVsc2UKKwkJc2lkeCA9IDA7CisKKwllaWR4ID0gUEZOX1VQKGFkZHIgKyBzaXpl
-IC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7CisJaWYgKGVpZHggPiBiZGF0YS0+bm9kZV9sb3df
-cGZuIC0gUEZOX0RPV04oYmRhdGEtPm5vZGVfYm9vdF9zdGFydCkpCisJCWVpZHggPSBiZGF0YS0+
-bm9kZV9sb3dfcGZuIC0gUEZOX0RPV04oYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7CisKKwlmb3Ig
-KGkgPSBzaWR4OyBpIDwgZWlkeDsgaSsrKQorCQlpZiAodGVzdF9iaXQoaSwgYmRhdGEtPm5vZGVf
-Ym9vdG1lbV9tYXApKSB7CisJCQlpZiAoZmxhZ3MgJiBCT09UTUVNX0VYQ0xVU0lWRSkKKwkJCQly
-ZXR1cm4gLUVCVVNZOworCQl9CisKKwlyZXR1cm4gMDsKKworfQorc3RhdGljIHZvaWQgX19pbml0
-IHJlc2VydmVfYm9vdG1lbV9jb3JlKGJvb3RtZW1fZGF0YV90ICpiZGF0YSwKKwkJCXVuc2lnbmVk
-IGxvbmcgYWRkciwgdW5zaWduZWQgbG9uZyBzaXplLCBpbnQgZmxhZ3MpCit7CisJdW5zaWduZWQg
-bG9uZyBzaWR4LCBlaWR4OworCXVuc2lnbmVkIGxvbmcgaTsKKwogCUJVR19PTighc2l6ZSk7Ci0J
-QlVHX09OKFBGTl9ET1dOKGFkZHIpID49IGJkYXRhLT5ub2RlX2xvd19wZm4pOwotCUJVR19PTihQ
-Rk5fVVAoYWRkciArIHNpemUpID4gYmRhdGEtPm5vZGVfbG93X3Bmbik7Ci0JQlVHX09OKGFkZHIg
-PCBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKIAotCXNpZHggPSBQRk5fRE9XTihhZGRyIC0gYmRh
-dGEtPm5vZGVfYm9vdF9zdGFydCk7CisJLyogb3V0IG9mIHJhbmdlICovCisJaWYgKGFkZHIgPj0g
-YmRhdGEtPm5vZGVfYm9vdF9zdGFydCAmJiBhZGRyIDwgYmRhdGEtPmxhc3Rfc3VjY2VzcykKKwkJ
-cmV0dXJuOworCisJLyoKKwkgKiBSb3VuZCB1cCB0byBpbmRleCB0byB0aGUgcmFuZ2UuCisJICov
-CisJaWYgKGFkZHIgPiBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KQorCQlzaWR4PSBQRk5fRE9XTihh
-ZGRyIC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7CisJZWxzZQorCQlzaWR4ID0gMDsKKwogCWVp
-ZHggPSBQRk5fVVAoYWRkciArIHNpemUgLSBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKKwlpZiAo
-ZWlkeCA+IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQRk5fRE9XTihiZGF0YS0+bm9kZV9ib290X3N0
-YXJ0KSkKKwkJZWlkeCA9IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQRk5fRE9XTihiZGF0YS0+bm9k
-ZV9ib290X3N0YXJ0KTsKIAogCWZvciAoaSA9IHNpZHg7IGkgPCBlaWR4OyBpKyspCiAJCWlmICh0
-ZXN0X2FuZF9zZXRfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKSkgewogI2lmZGVmIENP
-TkZJR19ERUJVR19CT09UTUVNCiAJCQlwcmludGsoImhtLCBwYWdlICUwOGx4IHJlc2VydmVkIHR3
-aWNlLlxuIiwgaSpQQUdFX1NJWkUpOwogI2VuZGlmCi0JCQlpZiAoZmxhZ3MgJiBCT09UTUVNX0VY
-Q0xVU0lWRSkgewotCQkJCXJldCA9IC1FQlVTWTsKLQkJCQlnb3RvIGVycjsKLQkJCX0KIAkJfQot
-Ci0JcmV0dXJuIDA7Ci0KLWVycjoKLQkvKiB1bnJlc2VydmUgbWVtb3J5IHdlIGFjY2lkZW50YWxs
-eSByZXNlcnZlZCAqLwotCWZvciAoaS0tOyBpID49IHNpZHg7IGktLSkKLQkJY2xlYXJfYml0KGks
-IGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKTsKLQotCXJldHVybiByZXQ7CiB9CiAKIHN0YXRpYyB2
-b2lkIF9faW5pdCBmcmVlX2Jvb3RtZW1fY29yZShib290bWVtX2RhdGFfdCAqYmRhdGEsIHVuc2ln
-bmVkIGxvbmcgYWRkciwKQEAgLTQwNyw2ICs0MzIsMTEgQEAgdW5zaWduZWQgbG9uZyBfX2luaXQg
-aW5pdF9ib290bWVtX25vZGUocAogdm9pZCBfX2luaXQgcmVzZXJ2ZV9ib290bWVtX25vZGUocGdf
-ZGF0YV90ICpwZ2RhdCwgdW5zaWduZWQgbG9uZyBwaHlzYWRkciwKIAkJCQkgdW5zaWduZWQgbG9u
-ZyBzaXplLCBpbnQgZmxhZ3MpCiB7CisJaW50IHJldDsKKworCXJldCA9IGNhbl9yZXNlcnZlX2Jv
-b3RtZW1fY29yZShwZ2RhdC0+YmRhdGEsIHBoeXNhZGRyLCBzaXplLCBmbGFncyk7CisJaWYgKHJl
-dCA8IDApCisJCXJldHVybjsKIAlyZXNlcnZlX2Jvb3RtZW1fY29yZShwZ2RhdC0+YmRhdGEsIHBo
-eXNhZGRyLCBzaXplLCBmbGFncyk7CiB9CiAKQEAgLTQzMiw3ICs0NjIsMTYgQEAgdW5zaWduZWQg
-bG9uZyBfX2luaXQgaW5pdF9ib290bWVtKHVuc2lnbgogaW50IF9faW5pdCByZXNlcnZlX2Jvb3Rt
-ZW0odW5zaWduZWQgbG9uZyBhZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsCiAJCQkgICAgaW50IGZs
-YWdzKQogewotCXJldHVybiByZXNlcnZlX2Jvb3RtZW1fY29yZShOT0RFX0RBVEEoMCktPmJkYXRh
-LCBhZGRyLCBzaXplLCBmbGFncyk7CisJaW50IHJldDsKKwlib290bWVtX2RhdGFfdCAqYmRhdGE7
-CisJbGlzdF9mb3JfZWFjaF9lbnRyeShiZGF0YSwgJmJkYXRhX2xpc3QsIGxpc3QpIHsKKwkJcmV0
-ID0gY2FuX3Jlc2VydmVfYm9vdG1lbV9jb3JlKGJkYXRhLCBhZGRyLCBzaXplLCBmbGFncyk7CisJ
-CWlmIChyZXQgPCAwKQorCQkJcmV0dXJuIHJldDsKKwl9CisJbGlzdF9mb3JfZWFjaF9lbnRyeShi
-ZGF0YSwgJmJkYXRhX2xpc3QsIGxpc3QpCisJCXJlc2VydmVfYm9vdG1lbV9jb3JlKGJkYXRhLCBh
-ZGRyLCBzaXplLCBmbGFncyk7CisJcmV0dXJuIDA7CiB9CiAjZW5kaWYgLyogIUNPTkZJR19IQVZF
-X0FSQ0hfQk9PVE1FTV9OT0RFICovCiAK
-------=_Part_13142_4822206.1205451942190--
