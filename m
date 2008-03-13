@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbYCMW66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYCMXBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757981AbYCMW66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbYCMW6t
+	id S1756897AbYCMXBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYCMXBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:58:49 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:47427 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbYCMW6s (ORCPT
+	Thu, 13 Mar 2008 19:01:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43262 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752194AbYCMXBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:58:48 -0400
-Message-ID: <47D9B19D.5010709@tiscali.nl>
-Date: Thu, 13 Mar 2008 23:58:37 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>, pe1rxq@amsat.org,
-       linux-usb@vger.kernel.org, video4linux-list@redhat.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] logical-bitwise & confusion in se401_init()
-References: <47D47257.9090204@tiscali.nl>	<20080313120602.6920a621@gaivota>	<47D94D81.5090108@tiscali.nl> <20080313173000.5bd1d039@cuia.boston.redhat.com>
-In-Reply-To: <20080313173000.5bd1d039@cuia.boston.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Mar 2008 19:01:02 -0400
+Date: Thu, 13 Mar 2008 16:00:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, avorontsov@ru.mvista.com
+Subject: Re: [patch 2.6.25-rc5 1/2] gpiolib:  dynamic gpio number allocation
+Message-Id: <20080313160039.b69a5d24.akpm@linux-foundation.org>
+In-Reply-To: <200803131549.54632.david-b@pacbell.net>
+References: <200803131549.54632.david-b@pacbell.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Thu, 13 Mar 2008 16:51:29 +0100
-> Roel Kluin <12o3l@tiscali.nl> wrote:
-> 
->> -	if (!cp[2] && SE401_FORMAT_BAYER) {
->> +	if (!cp[2] & SE401_FORMAT_BAYER) {
->>  		err("Bayer format not supported!");
->>  		return 1;
->>  	}
-> 
-> Would it be better to put in some additional parenthesis?
-> 
-> 	if (!(cp[2] & SE401_FORMAT_BAYER)) {
-> 
-yes of course, thanks for catching that.
----
-logical-bitwise & confusion
+On Thu, 13 Mar 2008 14:49:53 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/media/video/se401.c b/drivers/media/video/se401.c
-index d5d7d6c..9e8b521 100644
---- a/drivers/media/video/se401.c
-+++ b/drivers/media/video/se401.c
-@@ -1279,7 +1279,7 @@ static int se401_init(struct usb_se401 *se401, int button)
- 	rc=se401_sndctrl(0, se401, SE401_REQ_GET_HEIGHT, 0, cp, sizeof(cp));
- 	se401->cheight=cp[0]+cp[1]*256;
- 
--	if (!cp[2] && SE401_FORMAT_BAYER) {
-+	if (!(cp[2] & SE401_FORMAT_BAYER)) {
- 		err("Bayer format not supported!");
- 		return 1;
- 	}
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> 
+> If gpio_chip->base is negative during registration, gpiolib performs
+> dynamic base allocation. This is useful for devices that aren't always
+> present, such as GPIOs on hotplugged devices rather than mainboards.
+> (This behavior was previously specified but not implemented.)
+> 
+> To avoid using any numbers that may have been explicitly assigned but
+> not yet registered, this dynamic allocation assigns GPIO numbers from
+> the biggest number on down, instead of from the smallest on up.
+>
+> ..
+>
+> +/* dynamic allocation of GPIOs, e.g. on a hotplugged device */
+> +static int gpiochip_find_base(int ngpio)
+> +{
+> +	int i;
+> +	int spare = 0;
+> +	int base = -ENOSPC;
+> +
+> +	for (i = ARCH_NR_GPIOS - 1; i >= 0 ; i--) {
+> +		struct gpio_chip *chip = gpio_desc[i].chip;
+> +
+> +		if (!chip) {
+> +			spare++;
+> +			if (spare == ngpio) {
+> +				base = i;
+> +				break;
+> +			}
+> +		} else {
+> +			spare = 0;
+> +			i -= chip->ngpio - 1;
+> +		}
+> +	}
+> +
+> +	if (gpio_is_valid(base))
+> +		pr_debug("%s: found new base at %d\n", __func__, base);
+> +	return base;
+> +}
+
+hm.  I suppose that if someone want a huge number of GPIOs then we can
+convert this to a bitmap or an IDR tree easily enough.
+
+Shouldn't ARCH_NR_GPIOS be CONFIG_NR_GPIOS?
+
+
