@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbYCMQrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYCMQzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756682AbYCMQrn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 12:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYCMQr0
+	id S1755570AbYCMQzz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 12:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYCMQzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 12:47:26 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56995 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756078AbYCMQrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 12:47:24 -0400
-Date: Thu, 13 Mar 2008 17:47:23 +0100
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       reiserfs-list@namesys.com, Jan Engelhardt <jengelh@computergmbh.de>,
-       Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: [PATCH 0/4] Automatic quotaon on remount
-Message-ID: <20080313164723.GK12523@duck.suse.cz>
-References: <20080313125944.GF12523@duck.suse.cz> <20080313163734.GA3980@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313163734.GA3980@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 13 Mar 2008 12:55:47 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:21623 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbYCMQzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 12:55:46 -0400
+Subject: Re: [patch 6/6] Guest page hinting: s390 support.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: akpm@osdl.org, linux-s390@vger.kernel.org, frankeh@watson.ibm.com,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, Anthony Liguori <anthony@codemonkey.ws>,
+       hugh@veritas.com
+In-Reply-To: <47D953AB.1030901@goop.org>
+References: <20080312132132.520833247@de.ibm.com>
+	 <20080312132704.474209626@de.ibm.com>	<47D802A2.1030406@goop.org>
+	 <1205339285.8851.13.camel@localhost>	<47D8085E.9030701@goop.org>
+	 <1205341164.8851.44.camel@localhost>	<47D81771.5070400@goop.org>
+	 <47D8373C.40105@codemonkey.ws>	<47D840E3.5090902@goop.org>
+	 <47D8436F.9080901@codemonkey.ws>  <47D84CEB.6050300@goop.org>
+	 <1205401508.26537.37.camel@localhost> <47D95134.6030503@goop.org>
+	 <47D953AB.1030901@goop.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 13 Mar 2008 17:55:38 +0100
+Message-Id: <1205427338.5920.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 13-03-08 12:37:34, Christoph Hellwig wrote:
-> On Thu, Mar 13, 2008 at 01:59:44PM +0100, Jan Kara wrote:
-> >   Hi,
-> > 
-> >   the series of patches below implements automatic enabling of quotas on
-> > remount read-write when filesystem with quotas enabled has previously been
-> > remounted read-only (and thus quotas had to be disabled).
-> >   The patches are split logically, but due to interface changes all four
-> > patches need to be applied together or ext3, ext4 or reiserfs won't
-> > compile.
-> > 
-> > [PATCH 1/4] quota: Quota core changes for quotaon on remount
-> > [PATCH 2/4] ext3: Make ext3 handle quotaon on remount
-> > [PATCH 3/4] ext4: Make ext4 handle quotaon on remount
-> > [PATCH 4/4] reiserfs: Make reiserfs handle quotaon on remount
+On Thu, 2008-03-13 at 09:17 -0700, Jeremy Fitzhardinge wrote:
+> Jeremy Fitzhardinge wrote:
+> > Martin Schwidefsky wrote:
+> >> Vz->Vr cannot happen. This would be a bug in the host.
+> >>   
+> >
+> > Does that mean that Vz is effectively identical to Uz? 
 > 
-> No need to touch jfs?
-  No, since JFS doesn't use quota_on callback and doesn't do journaled
-quotas which require calling vfs_quota_on/off during journal replay. But
-thanks for the suggestion :).
+> Hm, on further thought:
+> 
+> If guests writes to Vz pages are disallowed, then the only way out of Vz 
+> is if the guest sets it to something else (Uz,Sz).  If so, what's the 
+> point of using that state?  Why not make:
+>
+>     Vr -> Uz      host discard
+>     Pr -> Uz      host discard clean
+>     Sp -> Uz      set volatile
+>     Uz -> Uz      set volatile
 
-								Honza
+Vz is the page discarded state. The difference to Uz is slim, both
+states will cause a program check on access. Vz generates a discard
+fault, Uz generates an addressing exception which is nice for debugging.
+But I don't see a reason why an implementation that uses Uz instead of
+Vz shouldn't work.
+
+> But given how you've described V-state pages, I really would expect 
+> writes to a Vz to work, or alternatively, all writes to V-state pages to 
+> be disallowed.  Are there any real uses for a writable Vr page?
+
+You mean in the section that speaks about the guests states S/U/V/P ?
+Always keep in mind that you can access a V/P page only until it gets
+discarded. Then the useful content of the page frame is lost and any
+read of write to the not Vz page will be answered with a discard fault.
+
+A Vr page is read-only. If a page gets mapped for writing it needs to
+get into the Pr state. This is the hint for the host to look at the
+dirty bit before it discards a page.
+So yes, there is no use for a writable Vr page.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
