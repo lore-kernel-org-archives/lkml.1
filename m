@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCMVaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYCMVac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYCMVaA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 17:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbYCMV2I
+	id S1758235AbYCMVac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 17:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbYCMVaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 17:28:08 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51628 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755264AbYCMV1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 17:27:53 -0400
-Message-Id: <20080313212732.390688144@szeredi.hu>
-References: <20080313212641.989467982@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Thu, 13 Mar 2008 22:26:42 +0100
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: viro@zeniv.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 1/6] vfs: mountinfo -mm fix
-Content-Disposition: inline; filename=mountinfo_fix.patch
+	Thu, 13 Mar 2008 17:30:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46110 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757240AbYCMVaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 17:30:11 -0400
+Date: Thu, 13 Mar 2008 17:30:00 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, pe1rxq@amsat.org,
+       linux-usb@vger.kernel.org, video4linux-list@redhat.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] logical-bitwise & confusion in se401_init() (was:
+ logical-bitwise & confusion in se401_init()?)
+Message-ID: <20080313173000.5bd1d039@cuia.boston.redhat.com>
+In-Reply-To: <47D94D81.5090108@tiscali.nl>
+References: <47D47257.9090204@tiscali.nl>
+	<20080313120602.6920a621@gaivota>
+	<47D94D81.5090108@tiscali.nl>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Thu, 13 Mar 2008 16:51:29 +0100
+Roel Kluin <12o3l@tiscali.nl> wrote:
 
-The read-only flag showing got broken by the ro-bind patches going in
-and out of -mm.
+> -	if (!cp[2] && SE401_FORMAT_BAYER) {
+> +	if (!cp[2] & SE401_FORMAT_BAYER) {
+>  		err("Bayer format not supported!");
+>  		return 1;
+>  	}
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/namespace.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Would it be better to put in some additional parenthesis?
 
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2008-03-13 20:45:15.000000000 +0100
-+++ linux/fs/namespace.c	2008-03-13 20:45:49.000000000 +0100
-@@ -789,9 +789,9 @@ static int show_mountinfo(struct seq_fil
- 	seq_dentry(m, mnt->mnt_root, " \t\n\\");
- 	seq_putc(m, ' ');
- 	seq_path(m, &mnt_path, " \t\n\\");
-+	seq_puts(m, mnt->mnt_flags & MNT_READONLY ? " ro" : " rw");
- 	show_mnt_opts(m, mnt);
--	seq_putc(m, ' ');
--	seq_puts(m, __mnt_is_readonly(mnt) ? " ro" : " rw");
-+	seq_puts(m, sb->s_flags & MS_RDONLY ? " ro" : " rw");
- 	show_sb_opts(m, sb);
- 	if (sb->s_op->show_options)
- 		err = sb->s_op->show_options(m, mnt);
+	if (!(cp[2] & SE401_FORMAT_BAYER)) {
 
---
+-- 
+All Rights Reversed
