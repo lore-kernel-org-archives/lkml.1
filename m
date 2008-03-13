@@ -1,132 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYCMSiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYCMSnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYCMSiZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 14:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYCMSiQ
+	id S1755495AbYCMSnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 14:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYCMSnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 14:38:16 -0400
-Received: from lobo.ruivo.org ([66.92.68.119]:44697 "EHLO lobo.ruivo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbYCMSiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 14:38:15 -0400
-X-Greylist: delayed 1938 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 14:38:15 EDT
-Date: Thu, 13 Mar 2008 14:05:39 -0400
-From: Aristeu Rozanski <aris@ruivo.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
-Message-ID: <20080313180538.GC4620@cathedrallabs.org>
+	Thu, 13 Mar 2008 14:43:24 -0400
+Received: from homer.mvista.com ([63.81.120.155]:35439 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752167AbYCMSnX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 14:43:23 -0400
+Message-ID: <47D97617.1020907@ru.mvista.com>
+Date: Thu, 13 Mar 2008 21:44:39 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] ide: constify struct ide_dma_ops
+References: <200803091702.18521.bzolnier@gmail.com>
+In-Reply-To: <200803091702.18521.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes code to handle NMI_IO_APIC enabling/disabling by
-nmi_watchdog proc file.
+Hello.
 
-Signed-off-by: Aristeu Rozanski <aris@ruivo.org>
+Bartlomiej Zolnierkiewicz wrote:
 
----
- arch/x86/kernel/nmi_32.c |   25 +++++++++++++++++++++++++
- arch/x86/kernel/nmi_64.c |   25 +++++++++++++++++++++++++
- 2 files changed, 50 insertions(+)
+> * Export ide_dma_exec_cmd() and __ide_dma_test_irq().
 
---- nmi.orig/arch/x86/kernel/nmi_64.c	2008-03-12 17:02:36.000000000 -0400
-+++ nmi/arch/x86/kernel/nmi_64.c	2008-03-12 17:47:35.000000000 -0400
-@@ -274,6 +274,8 @@ void stop_apic_nmi_watchdog(void *unused
- 		return;
- 	if (nmi_watchdog == NMI_LOCAL_APIC)
- 		lapic_watchdog_stop();
-+	else
-+		__acpi_nmi_disable(NULL);
- 	__get_cpu_var(wd_enabled) = 0;
- 	atomic_dec(&nmi_active);
- }
-@@ -405,6 +407,24 @@ void restart_nmi(void)
- 
- #ifdef CONFIG_SYSCTL
- 
-+static void enable_ioapic_nmi_watchdog_single(void *unused)
-+{
-+	__get_cpu_var(wd_enabled) = 1;
-+	atomic_inc(&nmi_active);
-+	__acpi_nmi_enable(NULL);
-+}
-+
-+static void enable_ioapic_nmi_watchdog(void)
-+{
-+	on_each_cpu(enable_ioapic_nmi_watchdog_single, NULL, 0, 1);
-+	touch_nmi_watchdog();
-+}
-+
-+static void disable_ioapic_nmi_watchdog(void)
-+{
-+	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
-+}
-+
- static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
- {
- 	unsigned char reason = get_nmi_reason();
-@@ -442,6 +462,11 @@ int proc_nmi_enabled(struct ctl_table *t
- 			enable_lapic_nmi_watchdog();
- 		else
- 			disable_lapic_nmi_watchdog();
-+	} else if (nmi_watchdog == NMI_IO_APIC) {
-+		if (nmi_watchdog_enabled)
-+			enable_ioapic_nmi_watchdog();
-+		else
-+			disable_ioapic_nmi_watchdog();
- 	} else {
- 		printk( KERN_WARNING
- 			"NMI watchdog doesn't know what hardware to touch\n");
---- nmi.orig/arch/x86/kernel/nmi_32.c	2008-03-12 15:16:30.000000000 -0400
-+++ nmi/arch/x86/kernel/nmi_32.c	2008-03-12 17:50:55.000000000 -0400
-@@ -270,6 +270,8 @@ void stop_apic_nmi_watchdog(void *unused
- 		return;
- 	if (nmi_watchdog == NMI_LOCAL_APIC)
- 		lapic_watchdog_stop();
-+	else
-+		__acpi_nmi_disable(NULL);
- 	__get_cpu_var(wd_enabled) = 0;
- 	atomic_dec(&nmi_active);
- }
-@@ -390,6 +392,24 @@ __kprobes int nmi_watchdog_tick(struct p
- 
- #ifdef CONFIG_SYSCTL
- 
-+static void enable_ioapic_nmi_watchdog_single(void *unused)
-+{
-+	__get_cpu_var(wd_enabled) = 1;
-+	atomic_inc(&nmi_active);
-+	__acpi_nmi_enable(NULL);
-+}
-+
-+static void enable_ioapic_nmi_watchdog(void)
-+{
-+	on_each_cpu(enable_ioapic_nmi_watchdog_single, NULL, 0, 1);
-+	touch_nmi_watchdog();
-+}
-+
-+static void disable_ioapic_nmi_watchdog(void)
-+{
-+	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
-+}
-+
- static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
- {
- 	unsigned char reason = get_nmi_reason();
-@@ -431,6 +451,11 @@ int proc_nmi_enabled(struct ctl_table *t
- 			enable_lapic_nmi_watchdog();
- 		else
- 			disable_lapic_nmi_watchdog();
-+	} else if (nmi_watchdog == NMI_IO_APIC) {
-+		if (nmi_watchdog_enabled)
-+			enable_ioapic_nmi_watchdog();
-+		else
-+			disable_ioapic_nmi_watchdog();
- 	} else {
- 		printk( KERN_WARNING
- 			"NMI watchdog doesn't know what hardware to touch\n");
+> * Constify struct ide_dma_ops.
+
+> * Always set hwif->dma_ops to &sff_dma_ops in ide_setup_dma()
+>   (it is later overriden by ide_init_port() if needed) and drop
+>   'const struct ide_port_info *d' argument.
+
+> While at it:
+
+> * Rename __ide_dma_test_irq() to __ide_dma_test_irq().
+
+    I'd have expected that you also rename __ide_dma_end() to ide_dma_end()...
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
