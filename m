@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYCMMEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYCMMFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYCMMEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYCMMEM
+	id S1755543AbYCMMFa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYCMMFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:04:12 -0400
-Received: from mx2.suse.de ([195.135.220.15]:39582 "EHLO mx2.suse.de"
+	Thu, 13 Mar 2008 08:05:19 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:15156 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753218AbYCMMEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:04:11 -0400
-Subject: Re: PNP: dynamic pnp resources
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Len Brown <lenb@kernel.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>, linux-acpi@vger.kernel.org,
-       Adam M Belay <abelay@mit.edu>, Zhao Yakui <yakui.zhao@intel.com>,
-       Li Shaohua <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rene Herman <rene.herman@keyaccess.nl>
-In-Reply-To: <200803121345.21297.lenb@kernel.org>
-References: <20080312151452.GA4523@codemonkey.org.uk>
-	 <200803121345.21297.lenb@kernel.org>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 13 Mar 2008 13:04:08 +0100
-Message-Id: <1205409848.29877.358.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	id S1753008AbYCMMFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:05:17 -0400
+Date: Thu, 13 Mar 2008 13:05:14 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080313120514.GH17940@kernel.dk>
+References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080312211306.GD30864@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 13:45 -0400, Len Brown wrote:
-> On Wednesday 12 March 2008, Dave Jones wrote:
-...
-> Thomas worked on a patch to make resource allocation dynamic and do away
-> with these limits.  Unfortunately it was rather large and it wasn't in
-> time for the 2.6.25-rc1 window.
+On Wed, Mar 12 2008, Henrique de Moraes Holschuh wrote:
+> On Wed, 12 Mar 2008, Lukas Hejtmanek wrote:
+> > On Wed, Mar 12, 2008 at 07:52:41PM +0100, Arkadiusz Miskiewicz wrote:
+> > > I'm also seeing regression on my thinkpad z60m where with git tree (tested 
+> > > again with 2 days old git) "thinkvantage" button stopped working (pressing it 
+> > > was previously seen by some userspace kde which run konsole).
+> > > 
+> > > On 2.6.24 presses are seen.
+> > 
+> > well, on 2.6.25-rc4, some keys are not reported as input (xev does not see any
+> > key press), some keys are. Is this desired? Or all the keys (fn+f1-12 + volume
+> > + backlight + think vantage) should be reported as some input event and thus
+> > acpid makes no sense any more?
+> 
+> xev has to get events from somewhere.  That somewhere happens to be a buggy
+> mess right now (X.org evdev device).  Or it is getting it through some other
+> middleware, like HAL, which can have its own problems.
+> 
+> If you want to test thinkpad-acpi functionality, get HAL and X.org out of
+> the way.  The easiest way is to do it in single user mode.
 
-I had the problem that I could not test on isa systems.
-Rene Herman helped here a lot.
-There are still open issues, last state was (comment from Rene):
-------------------------
-No. Please note we're talking about ISAPnP, not PnPBIOS. No BIOS
-involved at all.
+And lets now get back to reality - the reality that now breaks the
+previously working setup of lots of users. So you are telling me that in
+order to get my volume key functionality back I have to get rid of HAL
+and X?
 
-Driver (sound/isa/cs423x/cs4236.c) furthermore does not use anything but
-the PnP layer itself. Start at snd_cs423x_pnpc_detect, which is the
-pnp .probe() method.
+Lets turn back time a bit. Why was this change made? IOW, what was the
+reason for breaking a working setup for lots of users? It better be a
+damn good reason, or I would heavily argue for reverting this change so
+that 2.6.25 actually WORKS as expected for thinkpad users.
 
-I'll look into providing a more extensive answer and/or test whatever
-comes in later.
--------------------------
-I can also look at this, any hints until then are appreciated.
-
-I also expect Bjorn was bound to other bugs and pushing things in a rush
-is not good thing anyway.
-At the end I asked for a macro problem I only had a rather ugly
-solution, didn't get an answer (IIRC I also added a compile bug in my
-suggestions) and things got stuck...
-
-Do you want me to rework the patches, lay out where I see problems and
-give it another try to get this into -mm?
-
-I am bound to work the next days, but it shouldn't be that much work
-after all anymore to summarize things and send something (not sure about
-the ISA things).
-
-Hmm, maybe someone still can give a comment on my last one, it's still valid.
-I want to check every pnp_{port,mem,irq,dma}_{start,end..} whether they are valid.
-
-This macro does not work:
-+#define pnp_port_start(dev,bar)   (pnp_port_valid((dev),(bar)) ? (dev)->res.port_resource[(bar)].start \
-+                                  : pnp_dbg("WARN: Port start %d - [%s] invalid - %s:%d", (bar), (dev->name), __FUNCTION__, __LINE__))
-
-The only solution I see is to use small inline functions, but that would
-blow up include/linux/pnp.h significantly. The idea of the inline
-functions is stated here:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/2/6/743614
-
-The warning can also be omitted (the drivers should have checked for
-valid already - in theory...), but it should at least stay there at the
-beginning to find drivers who do not check for valid before accessing
-pnp_resource_table entries.
-
-
-   Thomas
-
-
+-- 
+Jens Axboe
 
