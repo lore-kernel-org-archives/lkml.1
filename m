@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYCMWsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbYCMWss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbYCMWsf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 18:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYCMWs1
+	id S1758045AbYCMWss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 18:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbYCMWs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 18:48:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34729 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751533AbYCMWs0 (ORCPT
+	Thu, 13 Mar 2008 18:48:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14842 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYCMWs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 18:48:26 -0400
-Date: Thu, 13 Mar 2008 15:47:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, kwc@citi.umich.edu, arunsr@cse.iitk.ac.in,
-       dwalsh@redhat.com, linux-security-module@vger.kernel.org,
-       dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] KEYS: Make the keyring quotas controllable through
- /proc/sys
-Message-Id: <20080313154713.95446f74.akpm@linux-foundation.org>
-In-Reply-To: <20080313191442.28959.28152.stgit@warthog.procyon.org.uk>
-References: <20080313191432.28959.52722.stgit@warthog.procyon.org.uk>
-	<20080313191442.28959.28152.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 13 Mar 2008 18:48:27 -0400
+Date: Thu, 13 Mar 2008 15:46:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: whose job is it to include various header files?
+Message-Id: <20080313154631.ae147130.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain>
+References: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 19:14:42 +0000
-David Howells <dhowells@redhat.com> wrote:
+On Thu, 13 Mar 2008 18:09:12 -0400 (EDT) Robert P. J. Day wrote:
 
-> Make the keyring quotas controllable through /proc/sys files:
 > 
->  (*) /proc/sys/kernel/keys/root_maxkeys
->      /proc/sys/kernel/keys/root_maxbytes
+>   more a philosophy question than anything but, while poking around
+> the percpu stuff today, i noticed in the header file linux/percpu.h
+> the opening snippet:
 > 
->      Maximum number of keys that root may have and the maximum total number of
->      bytes of data that root may have stored in those keys.
+>  #include <linux/preempt.h>
+>  #include <linux/slab.h> /* For kmalloc() */
+>  #include <linux/smp.h>
+>  #include <linux/string.h> /* For memset() */
+>  #include <linux/cpumask.h>
+>  ...
 > 
->  (*) /proc/sys/kernel/keys/maxkeys
->      /proc/sys/kernel/keys/maxbytes
+> hmmm, i thought to myself (because that's how i refer to myself), i
+> wonder why this header file is including headers for kmalloc() and
+> memset() when this header file makes no reference to those routines.
+> let's see what happens if i remove them and:
 > 
->      Maximum number of keys that each non-root user may have and the maximum
->      total number of bytes of data that each of those users may have stored in
->      their keys.
+>   $ make distclean
+>   $ make defconfig    [x86]
+>   $ make
 > 
-> Also increase the quotas as a number of people have been complaining that it's
-> not big enough.  I'm not sure that it's big enough now either, but on the
-> other hand, it can now be set in /etc/sysctl.conf.
+> ... chug chug chug ...
 > 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
+>   CC      arch/x86/kernel/nmi_32.o
+> arch/x86/kernel/nmi_32.c: In function ‘check_nmi_watchdog’:
+> arch/x86/kernel/nmi_32.c:81: error: implicit declaration of function ‘kmalloc’
+> arch/x86/kernel/nmi_32.c:81: error: ‘GFP_KERNEL’ undeclared (first use in this function)
+> arch/x86/kernel/nmi_32.c:81: error: (Each undeclared identifier is reported only once
+> arch/x86/kernel/nmi_32.c:81: error: for each function it appears in.)
+> arch/x86/kernel/nmi_32.c:81: warning: assignment makes pointer from integer without a cast
+> arch/x86/kernel/nmi_32.c:118: error: implicit declaration of function ‘kfree’
+> make[1]: *** [arch/x86/kernel/nmi_32.o] Error 1
+> make: *** [arch/x86/kernel] Error 2
+> $
 > 
->  include/linux/key.h      |    5 +++++
->  kernel/sysctl.c          |    9 +++++++++
->  security/keys/Makefile   |    1 +
->  security/keys/internal.h |   14 ++++++++++----
->  security/keys/key.c      |   23 ++++++++++++++++++-----
->  security/keys/keyctl.c   |   12 +++++++++---
->  security/keys/proc.c     |    9 ++++++---
->  7 files changed, 58 insertions(+), 15 deletions(-)
+>   ok, now i know.  but that means, of course, that nmi_32.c is
+> invoking kmalloc() without ever having included the necessary header
+> file for it -- it's just inheriting that from linux/percpu.h.
+> 
+>   doesn't that (sort of) violate the kernel coding style?  if a file
+> somewhere needs the contents of some header file, isn't it that file's
+> responsibility to explicitly include it, and not quietly realize it's
+> getting it from elsewhere?
 
-Documentation/keys.txt needs an update?
+Yes.
+
+---
+~Randy
