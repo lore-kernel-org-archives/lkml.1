@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbYCMRMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbYCMRPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756476AbYCMRMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYCMRMM
+	id S1756584AbYCMRPT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYCMRPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:12:12 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38132 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753453AbYCMRML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:12:11 -0400
-Date: Thu, 13 Mar 2008 10:12:02 -0700
-From: Greg KH <gregkh@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: hackbench regression since 2.6.25-rc
-Message-ID: <20080313171202.GA5233@suse.de>
-References: <1205394417.3215.85.camel@ymzhang> <20080313151413.GA14045@suse.de> <20080313091921.834d2532.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313091921.834d2532.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 13 Mar 2008 13:15:07 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:64686 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753767AbYCMRPF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 13:15:05 -0400
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Hugh Dickins <hugh@veritas.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, zach@vmware.com, frankeh@watson.ibm.com,
+       rusty@rustcorp.com.au, jeremy@goop.org, andrea@qumranet.com,
+       clameter@sgi.com, a.p.zijlstra@chello.nl
+In-Reply-To: <Pine.LNX.4.64.0803131627450.17244@blonde.site>
+References: <20080312132132.520833247@de.ibm.com>
+	 <Pine.LNX.4.64.0803131627450.17244@blonde.site>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 13 Mar 2008 18:14:58 +0100
+Message-Id: <1205428498.5920.30.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 09:19:21AM -0700, Randy Dunlap wrote:
-> On Thu, 13 Mar 2008 08:14:13 -0700 Greg KH wrote:
+On Thu, 2008-03-13 at 16:57 +0000, Hugh Dickins wrote:
+> > The last versions of the patches do not differ much, I consider the code
+> > to be stable. My question now is how to proceed with the code. I sure
+> > would love to see the code going upstream some day but that depends on
+> > the mm developers as the code adds complexity that needs to be supported.
+> > If the general feeling is that the advantages of this approach do not
+> > warrent for the added complexity this will likely be the last time you
+> > will hear about guest page hinting. 
 > 
-> > On Thu, Mar 13, 2008 at 03:46:57PM +0800, Zhang, Yanmin wrote:
-> > > Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
-> > > 40% regression with 2.6.25-rc1, and more than 20% regression with kernel
-> > > 2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
-> > > 
-> > > Command to start it.
-> > > #hackbench 100 process 2000
-> > > I ran it for 3 times and sum the values.
-> > > 
-> > > I tried to investiagte it by bisect.
-> > > Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
-> > > Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
-> > > 
-> > > Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
-> > > these 2 tags for many times manually and kernel always paniced.
-> > 
-> > Where is the kernel panicing?  The changeset right after the last one
-> > above: bc87d2fe7a1190f1c257af8a91fc490b1ee35954, is a change to efivars,
-> > are you using that in your .config?
-> > 
-> > > All patches between the 2 tags are on kobject restructure. I guess such restructure
-> > > creates more cache miss on the 16-core tigerton.
-> > 
-> > Nothing should be creating kobjects on a normal load like this, so a
-> > regression seems very odd.  Unless the /sys/kernel/uids/ stuff is
-> > triggering this?
-> > 
-> > Do you have a link to where I can get hackbench (google seems to find
-> > lots of reports with it, but not the source itself), so I can test to
-> > see if we are accidentally creating kobjects with this load?
+> Oh, that would be such a shame.  Your guest page hinting patches remind
+> me of that childhood thrill, when once a year the circus comes to town ;)
 > 
-> The version that I see referenced most often (unscientifically :)
-> is somewhere under people.redhat.com/mingo/, like so:
-> http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+> But seriously, I'm ashamed to see my name in the Cc list: it would
+> be very unfair if your patches never made it in, just because I've
+> failed to find the time to wrap my own puny brain around them.
 
-Great, thanks for the link.
+It is an effort to get you head around it the first time. It gets
+easiert the more you talk about it :-)
 
-In using that version, I do not see any kobjects being created at all
-when running the program.  So I don't see how a kobject change could
-have caused any slowdown.
+> It's very encouraging to see Jeremy and Rusty weighing in.  I hope
+> Zach will too, and I've added Andrea: their support would count a lot.
+> You have Nick on the list, good, I've added Christoph and Peter
+> (if you do resend, linux-mm might prove more useful than linux-kernel).
 
-Yanmin, is the above link the version you are using?
+Grr, did I really forgot to copy linux-mm?!? (..insert you favourite
+four letter word here..). I absolutely intended to copy linux-mm but
+somehow replaced it with linux-s390.
 
-Hm, running with "hackbench 100 process 2000" seems to lock up my
-laptop, maybe I shouldn't run 4000 tasks at once on such a memory
-starved machine...
+> With support from rival virtualizers,
+> I do think you've a good chance of getting in.
 
-thanks,
+Yes, it would be great if we can find another user for it.
 
-greg k-h
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
