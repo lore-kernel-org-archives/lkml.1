@@ -1,437 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbYCMU4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbYCMUz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742AbYCMU4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757433AbYCMUzn
+	id S1757595AbYCMUz7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYCMUzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:55:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50320 "EHLO ogre.sisk.pl"
+	Thu, 13 Mar 2008 16:55:39 -0400
+Received: from mx1.suse.de ([195.135.220.2]:56224 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755407AbYCMUzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:55:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: pm_register() and pm_send_all()
-Date: Thu, 13 Mar 2008 21:54:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>
-References: <20080312150042.96668bcd.akpm@linux-foundation.org> <20080313092813.GA24027@elf.ucw.cz>
-In-Reply-To: <20080313092813.GA24027@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803132154.59910.rjw@sisk.pl>
+	id S1757362AbYCMUzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:55:38 -0400
+Subject: patch pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch added to gregkh-2.6 tree
+To: stern@rowland.harvard.edu, akpm@linux-foundation.org, david-b@pacbell.net,
+       greg@kroah.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, pavel@ucw.cz, rjw@sisk.pl
+From: <gregkh@suse.de>
+Date: Thu, 13 Mar 2008 13:54:53 -0700
+In-Reply-To: <200803120101.48805.rjw@sisk.pl>
+Message-ID: <1205441693174@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 13 of March 2008, Pavel Machek wrote:
-> On Wed 2008-03-12 15:00:42, Andrew Morton wrote:
-> > 
-> > This:
-> > 
-> > kernel/power/pm.c:203: warning: 'pm_register' is deprecated (declared at kernel/power/pm.c:62)
-> > kernel/power/pm.c:203: warning: 'pm_register' is deprecated (declared at kernel/power/pm.c:62)
-> > kernel/power/pm.c:204: warning: 'pm_send_all' is deprecated (declared at kernel/power/pm.c:178)
-> > kernel/power/pm.c:204: warning: 'pm_send_all' is deprecated (declared at kernel/power/pm.c:178)
-> > 
-> > is getting a bit boring.  These were marked deprecated at least three years
-> > ago.
-> > 
-> > 
-> > pm_register() no longer has any callers and afacit can be removed
-> > immediately.
-> > 
-> > pm_send_all() has just a handful of callers:
-> > 
-> > arch/x86/kernel/apm_32.c
-> > arch/mips/au1000/common/power.c
-> > arch/frv/kernel/pm.c
-> 
-> AFAICT pm_send_all is a nop when noone uses pm_register...
 
-Apparently on 2.6.24 it's not used anywehere, at least according to LXR.
+This is a note to let you know that I've just added the patch titled
 
-> Hmm.. can we just force CONFIG_PM_LEGACY=n, and see what happens?
+     Subject: PM: make wakeup flags available whenever CONFIG_PM is set
 
-Do you want me to push this patch and the following one from Ralf to Len?
+to my gregkh-2.6 tree.  Its filename is
 
-> Or maybe this is better idea? It may break build somewhere, but it
-> should be easy to fix... (it builds here, i386 and x86-64).
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
-> index c57ce3f..73f3aee 100644
-> --- a/arch/frv/kernel/pm.c
-> +++ b/arch/frv/kernel/pm.c
-> @@ -163,14 +163,11 @@ static int sysctl_pm_do_suspend(ctl_tabl
->  	if ((mode != 1) && (mode != 5))
->  		return -EINVAL;
->  
-> -	retval = pm_send_all(PM_SUSPEND, (void *)3);
-> -
->  	if (retval == 0) {
->  		if (mode == 5)
->  		    retval = pm_do_bus_sleep();
->  		else
->  		    retval = pm_do_suspend();
-> -		pm_send_all(PM_RESUME, (void *)0);
->  	}
->  
->  	return retval;
-> @@ -183,9 +180,6 @@ static int try_set_cmode(int new_cmode)
->  	if (!(clock_cmodes_permitted & (1<<new_cmode)))
->  		return -EINVAL;
->  
-> -	/* tell all the drivers we're suspending */
-> -	pm_send_all(PM_SUSPEND, (void *)3);
-> -
->  	/* now change cmode */
->  	local_irq_disable();
->  	frv_dma_pause_all();
-> @@ -201,8 +195,6 @@ #endif
->  	frv_dma_resume_all();
->  	local_irq_enable();
->  
-> -	/* tell all the drivers we're resuming */
-> -	pm_send_all(PM_RESUME, (void *)0);
->  	return 0;
->  }
->  
-> diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
-> index 54047d6..a9f7f63 100644
-> --- a/arch/mips/au1000/common/power.c
-> +++ b/arch/mips/au1000/common/power.c
-> @@ -258,7 +258,6 @@ #endif
->  static int pm_do_sleep(ctl_table * ctl, int write, struct file *file,
->  		       void __user *buffer, size_t * len, loff_t *ppos)
->  {
-> -	int retval = 0;
->  #ifdef SLEEP_TEST_TIMEOUT
->  #define TMPBUFLEN2 16
->  	char buf[TMPBUFLEN2], *p;
-> @@ -278,33 +277,21 @@ #ifdef SLEEP_TEST_TIMEOUT
->  		p = buf;
->  		sleep_ticks = simple_strtoul(p, &p, 0);
->  #endif
-> -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
-> -
-> -		if (retval)
-> -			return retval;
->  
->  		au_sleep();
-> -		retval = pm_send_all(PM_RESUME, (void *) 0);
->  	}
-> -	return retval;
-> +	return 0;
->  }
->  
->  static int pm_do_suspend(ctl_table * ctl, int write, struct file *file,
->  			 void __user *buffer, size_t * len, loff_t *ppos)
->  {
-> -	int retval = 0;
-> -
->  	if (!write) {
->  		*len = 0;
->  	} else {
-> -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
-> -		if (retval)
-> -			return retval;
->  		suspend_mode = 1;
-> -
-> -		retval = pm_send_all(PM_RESUME, (void *) 0);
->  	}
-> -	return retval;
-> +	return 0;
->  }
->  
->  
-> diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-> index d4438ef..d7e92bf 100644
-> --- a/arch/x86/kernel/apm_32.c
-> +++ b/arch/x86/kernel/apm_32.c
-> @@ -1189,19 +1189,6 @@ static int suspend(int vetoable)
->  	int err;
->  	struct apm_user	*as;
->  
-> -	if (pm_send_all(PM_SUSPEND, (void *)3)) {
-> -		/* Vetoed */
-> -		if (vetoable) {
-> -			if (apm_info.connection_version > 0x100)
-> -				set_system_power_state(APM_STATE_REJECT);
-> -			err = -EBUSY;
-> -			ignore_sys_suspend = 0;
-> -			printk(KERN_WARNING "apm: suspend was vetoed.\n");
-> -			goto out;
-> -		}
-> -		printk(KERN_CRIT "apm: suspend was vetoed, but suspending anyway.\n");
-> -	}
-> -
->  	device_suspend(PMSG_SUSPEND);
->  	local_irq_disable();
->  	device_power_down(PMSG_SUSPEND);
-> @@ -1224,7 +1211,6 @@ static int suspend(int vetoable)
->  	device_power_up();
->  	local_irq_enable();
->  	device_resume();
-> -	pm_send_all(PM_RESUME, (void *)0);
->  	queue_event(APM_NORMAL_RESUME, NULL);
->   out:
->  	spin_lock(&user_list_lock);
-> @@ -1337,7 +1323,6 @@ #endif
->  			if ((event != APM_NORMAL_RESUME)
->  			    || (ignore_normal_resume == 0)) {
->  				device_resume();
-> -				pm_send_all(PM_RESUME, (void *)0);
->  				queue_event(event, NULL);
->  			}
->  			ignore_normal_resume = 0;
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index e2d7b39..d6d8f8b 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -19,16 +19,6 @@ config PM
->  	  will issue the hlt instruction if nothing is to be done, thereby
->  	  sending the processor to sleep and saving power.
->  
-> -config PM_LEGACY
-> -	bool "Legacy Power Management API (DEPRECATED)"
-> -	depends on PM
-> -	default n
-> -	---help---
-> -	   Support for pm_register() and friends.  This old API is obsoleted
-> -	   by the driver model.
-> -
-> -	   If unsure, say N.
-> -
->  config PM_DEBUG
->  	bool "Power Management Debug Support"
->  	depends on PM
-> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> index e5693d6..523abb9 100644
-> --- a/kernel/power/Makefile
-> +++ b/kernel/power/Makefile
-> @@ -4,7 +4,6 @@ EXTRA_CFLAGS	+=	-DDEBUG
->  endif
->  
->  obj-y				:= main.o
-> -obj-$(CONFIG_PM_LEGACY)		+= pm.o
->  obj-$(CONFIG_PM_SLEEP)		+= process.o console.o sleepy.o
->  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
->  
-> diff --git a/kernel/power/pm.c b/kernel/power/pm.c
-> deleted file mode 100644
-> index 60c73fa..0000000
-> --- a/kernel/power/pm.c
-> +++ /dev/null
-> @@ -1,205 +0,0 @@
-> -/*
-> - *  pm.c - Power management interface
-> - *
-> - *  Copyright (C) 2000 Andrew Henroid
-> - *
-> - *  This program is free software; you can redistribute it and/or modify
-> - *  it under the terms of the GNU General Public License as published by
-> - *  the Free Software Foundation; either version 2 of the License, or
-> - *  (at your option) any later version.
-> - *
-> - *  This program is distributed in the hope that it will be useful,
-> - *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> - *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> - *  GNU General Public License for more details.
-> - *
-> - *  You should have received a copy of the GNU General Public License
-> - *  along with this program; if not, write to the Free Software
-> - *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> - */
-> -#include <linux/init.h>
-> -#include <linux/module.h>
-> -#include <linux/spinlock.h>
-> -#include <linux/mm.h>
-> -#include <linux/slab.h>
-> -#include <linux/pm.h>
-> -#include <linux/pm_legacy.h>
-> -#include <linux/interrupt.h>
-> -#include <linux/mutex.h>
-> -
-> -/*
-> - *	Locking notes:
-> - *		pm_devs_lock can be a semaphore providing pm ops are not called
-> - *	from an interrupt handler (already a bad idea so no change here). Each
-> - *	change must be protected so that an unlink of an entry doesn't clash
-> - *	with a pm send - which is permitted to sleep in the current architecture
-> - *
-> - *	Module unloads clashing with pm events now work out safely, the module 
-> - *	unload path will block until the event has been sent. It may well block
-> - *	until a resume but that will be fine.
-> - */
-> - 
-> -static DEFINE_MUTEX(pm_devs_lock);
-> -static LIST_HEAD(pm_devs);
-> -
-> -/**
-> - *	pm_register - register a device with power management
-> - *	@type: device type 
-> - *	@id: device ID
-> - *	@callback: callback function
-> - *
-> - *	Add a device to the list of devices that wish to be notified about
-> - *	power management events. A &pm_dev structure is returned on success,
-> - *	on failure the return is %NULL.
-> - *
-> - *      The callback function will be called in process context and
-> - *      it may sleep.
-> - */
-> - 
-> -struct pm_dev *pm_register(pm_dev_t type,
-> -			   unsigned long id,
-> -			   pm_callback callback)
-> -{
-> -	struct pm_dev *dev = kzalloc(sizeof(struct pm_dev), GFP_KERNEL);
-> -	if (dev) {
-> -		dev->type = type;
-> -		dev->id = id;
-> -		dev->callback = callback;
-> -
-> -		mutex_lock(&pm_devs_lock);
-> -		list_add(&dev->entry, &pm_devs);
-> -		mutex_unlock(&pm_devs_lock);
-> -	}
-> -	return dev;
-> -}
-> -
-> -/**
-> - *	pm_send - send request to a single device
-> - *	@dev: device to send to
-> - *	@rqst: power management request
-> - *	@data: data for the callback
-> - *
-> - *	Issue a power management request to a given device. The 
-> - *	%PM_SUSPEND and %PM_RESUME events are handled specially. The
-> - *	data field must hold the intended next state. No call is made
-> - *	if the state matches.
-> - *
-> - *	BUGS: what stops two power management requests occurring in parallel
-> - *	and conflicting.
-> - *
-> - *	WARNING: Calling pm_send directly is not generally recommended, in
-> - *	particular there is no locking against the pm_dev going away. The
-> - *	caller must maintain all needed locking or have 'inside knowledge'
-> - *	on the safety. Also remember that this function is not locked against
-> - *	pm_unregister. This means that you must handle SMP races on callback
-> - *	execution and unload yourself.
-> - */
-> - 
-> -static int pm_send(struct pm_dev *dev, pm_request_t rqst, void *data)
-> -{
-> -	int status = 0;
-> -	unsigned long prev_state, next_state;
-> -
-> -	if (in_interrupt())
-> -		BUG();
-> -
-> -	switch (rqst) {
-> -	case PM_SUSPEND:
-> -	case PM_RESUME:
-> -		prev_state = dev->state;
-> -		next_state = (unsigned long) data;
-> -		if (prev_state != next_state) {
-> -			if (dev->callback)
-> -				status = (*dev->callback)(dev, rqst, data);
-> -			if (!status) {
-> -				dev->state = next_state;
-> -				dev->prev_state = prev_state;
-> -			}
-> -		}
-> -		else {
-> -			dev->prev_state = prev_state;
-> -		}
-> -		break;
-> -	default:
-> -		if (dev->callback)
-> -			status = (*dev->callback)(dev, rqst, data);
-> -		break;
-> -	}
-> -	return status;
-> -}
-> -
-> -/*
-> - * Undo incomplete request
-> - */
-> -static void pm_undo_all(struct pm_dev *last)
-> -{
-> -	struct list_head *entry = last->entry.prev;
-> -	while (entry != &pm_devs) {
-> -		struct pm_dev *dev = list_entry(entry, struct pm_dev, entry);
-> -		if (dev->state != dev->prev_state) {
-> -			/* previous state was zero (running) resume or
-> -			 * previous state was non-zero (suspended) suspend
-> -			 */
-> -			pm_request_t undo = (dev->prev_state
-> -					     ? PM_SUSPEND:PM_RESUME);
-> -			pm_send(dev, undo, (void*) dev->prev_state);
-> -		}
-> -		entry = entry->prev;
-> -	}
-> -}
-> -
-> -/**
-> - *	pm_send_all - send request to all managed devices
-> - *	@rqst: power management request
-> - *	@data: data for the callback
-> - *
-> - *	Issue a power management request to a all devices. The 
-> - *	%PM_SUSPEND events are handled specially. Any device is 
-> - *	permitted to fail a suspend by returning a non zero (error)
-> - *	value from its callback function. If any device vetoes a 
-> - *	suspend request then all other devices that have suspended 
-> - *	during the processing of this request are restored to their
-> - *	previous state.
-> - *
-> - *	WARNING:  This function takes the pm_devs_lock. The lock is not dropped until
-> - *	the callbacks have completed. This prevents races against pm locking
-> - *	functions, races against module unload pm_unregister code. It does
-> - *	mean however that you must not issue pm_ functions within the callback
-> - *	or you will deadlock and users will hate you.
-> - *
-> - *	Zero is returned on success. If a suspend fails then the status
-> - *	from the device that vetoes the suspend is returned.
-> - *
-> - *	BUGS: what stops two power management requests occurring in parallel
-> - *	and conflicting.
-> - */
-> - 
-> -int pm_send_all(pm_request_t rqst, void *data)
-> -{
-> -	struct list_head *entry;
-> -	
-> -	mutex_lock(&pm_devs_lock);
-> -	entry = pm_devs.next;
-> -	while (entry != &pm_devs) {
-> -		struct pm_dev *dev = list_entry(entry, struct pm_dev, entry);
-> -		if (dev->callback) {
-> -			int status = pm_send(dev, rqst, data);
-> -			if (status) {
-> -				/* return devices to previous state on
-> -				 * failed suspend request
-> -				 */
-> -				if (rqst == PM_SUSPEND)
-> -					pm_undo_all(dev);
-> -				mutex_unlock(&pm_devs_lock);
-> -				return status;
-> -			}
-> -		}
-> -		entry = entry->next;
-> -	}
-> -	mutex_unlock(&pm_devs_lock);
-> -	return 0;
-> -}
-> -
-> -EXPORT_SYMBOL(pm_register);
-> -EXPORT_SYMBOL(pm_send_all);
-> -
+     pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From rjw@sisk.pl  Thu Mar 13 13:46:04 2008
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Wed, 12 Mar 2008 01:01:47 +0100
+Subject: PM: make wakeup flags available whenever CONFIG_PM is set
+To: Greg KH <greg@kroah.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@linux-foundation.org>, David Brownell <david-b@pacbell.net>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+Message-ID: <200803120101.48805.rjw@sisk.pl>
+Content-Disposition: inline
+
+From: Alan Stern <stern@rowland.harvard.edu>
+
+The various wakeup flags and their accessor macros in struct
+dev_pm_info should be available whenever CONFIG_PM is enabled, not
+just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
+be configurable for runtime power management.  This patch (as1056)
+fixes the oversight.
+
+[rjw: rebased the patch on top of the previous two.]
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: David Brownell <david-b@pacbell.net>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/base/power/main.c  |    2 -
+ drivers/base/power/sysfs.c |    2 +
+ include/linux/pm.h         |   64 +++++++++++++++++++++++++--------------------
+ 3 files changed, 38 insertions(+), 30 deletions(-)
+
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
+ /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
+ static bool all_sleeping;
+ 
+-int (*platform_enable_wakeup)(struct device *dev, int is_on);
+-
+ /**
+  *	device_pm_add - add a device to the list of active devices
+  *	@dev:	Device to be added to the list
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -6,6 +6,8 @@
+ #include <linux/string.h>
+ #include "power.h"
+ 
++int (*platform_enable_wakeup)(struct device *dev, int is_on);
++
+ 
+ /*
+  *	wakeup - Report/change current wakeup option for device
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -183,9 +183,9 @@ typedef struct pm_message {
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned		can_wakeup:1;
++	unsigned		should_wakeup:1;
+ 	bool			sleeping:1;	/* Owned by the PM core */
+ #ifdef	CONFIG_PM_SLEEP
+-	unsigned		should_wakeup:1;
+ 	struct list_head	entry;
+ #endif
+ };
+@@ -198,11 +198,6 @@ extern void device_resume(void);
+ extern int device_suspend(pm_message_t state);
+ extern int device_prepare_suspend(pm_message_t state);
+ 
+-#define device_set_wakeup_enable(dev,val) \
+-	((dev)->power.should_wakeup = !!(val))
+-#define device_may_wakeup(dev) \
+-	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
+-
+ extern void __suspend_report_result(const char *function, void *fn, int ret);
+ 
+ #define suspend_report_result(fn, ret)					\
+@@ -210,6 +205,35 @@ extern void __suspend_report_result(cons
+ 		__suspend_report_result(__FUNCTION__, fn, ret);		\
+ 	} while (0)
+ 
++#else /* !CONFIG_PM_SLEEP */
++
++static inline int device_suspend(pm_message_t state)
++{
++	return 0;
++}
++
++#define suspend_report_result(fn, ret) 		do {} while (0)
++
++#endif /* !CONFIG_PM_SLEEP */
++
++#ifdef CONFIG_PM
++
++/* changes to device_may_wakeup take effect on the next pm state change.
++ * by default, devices should wakeup if they can.
++ */
++#define device_can_wakeup(dev) \
++	((dev)->power.can_wakeup)
++#define device_init_wakeup(dev,val) \
++	do { \
++		device_can_wakeup(dev) = !!(val); \
++		device_set_wakeup_enable(dev,val); \
++	} while(0)
++
++#define device_set_wakeup_enable(dev,val) \
++	((dev)->power.should_wakeup = !!(val))
++#define device_may_wakeup(dev) \
++	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
++
+ /*
+  * Platform hook to activate device wakeup capability, if that's not already
+  * handled by enable_irq_wake() etc.
+@@ -224,35 +248,19 @@ static inline int call_platform_enable_w
+ 	return 0;
+ }
+ 
+-#else /* !CONFIG_PM_SLEEP */
+-
+-static inline int device_suspend(pm_message_t state)
+-{
+-	return 0;
+-}
+-
+-#define device_set_wakeup_enable(dev,val)	do{}while(0)
+-#define device_may_wakeup(dev)			(0)
++#else /* !CONFIG_PM */
+ 
+-#define suspend_report_result(fn, ret) do { } while (0)
++#define device_can_wakeup(dev)			0
++#define device_init_wakeup(dev,val)		do {} while (0)
++#define device_set_wakeup_enable(dev,val)	do {} while (0)
++#define device_may_wakeup(dev)			0
+ 
+ static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+ {
+ 	return 0;
+ }
+ 
+-#endif /* !CONFIG_PM_SLEEP */
+-
+-/* changes to device_may_wakeup take effect on the next pm state change.
+- * by default, devices should wakeup if they can.
+- */
+-#define device_can_wakeup(dev) \
+-	((dev)->power.can_wakeup)
+-#define device_init_wakeup(dev,val) \
+-	do { \
+-		device_can_wakeup(dev) = !!(val); \
+-		device_set_wakeup_enable(dev,val); \
+-	} while(0)
++#endif /* !CONFIG_PM */
+ 
+ /*
+  * Global Power Management flags
+
+
+Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
+
+usb/usb-convert-usb.h-struct-usb_device-to-kernel-doc.patch
+usb/usb-make-usb_storage_onetouch-available-with-pm.patch
+usb/usb-usb-ohci-sm501-driver-use-the-conventional-convention-for-suspend-and-resume.patch
+usb/usb-reorganize-code-in-hub.c.patch
+usb/usb-ehci-carry-out-port-handover-during-each-root-hub-resume.patch
+usb/usb-new-quirk-flag-to-avoid-set-interface.patch
+usb/drivers-usb-core-devio.c-suppress-warning-with-64k-page_size.patch
+usb/usb-make-usb-persist-work-after-every-system-sleep.patch
+usb/usb-remove-config_usb_persist-setting.patch
+usb/usb-check-serial-number-string-after-device-reset.patch
+usb/usb-enable-usb-persist-by-default.patch
+usb/usb-remove-dev-power.power_state.patch
+driver-core/pm-handle-device-registrations-during-suspend-resume.patch
+driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+driver-core/driver-core-call-device_pm_add-after-bus_add_device-in-device_add.patch
