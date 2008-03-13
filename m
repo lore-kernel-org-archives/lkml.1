@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbYCMQLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbYCMQMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756599AbYCMQLs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 12:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYCMQL0
+	id S1756135AbYCMQMD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 12:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYCMQL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 13 Mar 2008 12:11:26 -0400
 Received: from newsmtp5.atmel.com ([204.2.163.5]:27732 "EHLO
 	sjogate2.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbYCMQLY (ORCPT
+	with ESMTP id S1752752AbYCMQLZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 12:11:24 -0400
+	Thu, 13 Mar 2008 12:11:25 -0400
 From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 To: kernel@avr32linux.org
 Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
        David Brownell <david-b@pacbell.net>
-Subject: [PATCH 03/10] avr32: Move setup_platform() into chip-specific file
-Date: Thu, 13 Mar 2008 15:39:38 +0100
-Message-Id: <1205419185-26395-4-git-send-email-hskinnemoen@atmel.com>
+Subject: [PATCH 00/10] avr32: Power Management support
+Date: Thu, 13 Mar 2008 15:39:35 +0100
+Message-Id: <1205419185-26395-1-git-send-email-hskinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1205419185-26395-3-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <>
 References: <>
- <1205419185-26395-1-git-send-email-hskinnemoen@atmel.com>
- <1205419185-26395-2-git-send-email-hskinnemoen@atmel.com>
- <1205419185-26395-3-git-send-email-hskinnemoen@atmel.com>
-X-OriginalArrivalTime: 13 Mar 2008 14:39:46.0383 (UTC) FILETIME=[155795F0:01C88518]
+X-OriginalArrivalTime: 13 Mar 2008 14:39:46.0258 (UTC) FILETIME=[15448320:01C88518]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Combine at32_clock_init() and at32_portmux_init() into
-setup_platform() and remove setup_platform() from at32ap.c. No
-functional change since all setup_platform() ever did was call those
-two functions.
+This patch series adds support for "standby" and "mem" power modes on
+the AT32AP700x CPUs.
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- arch/avr32/mach-at32ap/at32ap.c      |    8 --------
- arch/avr32/mach-at32ap/at32ap700x.c  |   18 ++++++++----------
- include/asm-avr32/arch-at32ap/init.h |    4 ----
- 3 files changed, 8 insertions(+), 22 deletions(-)
+I've also included a couple of fixes that should go in through other
+trees in order to ease testing:
+  #1 fixes an oops on suspend and shutdown. Picked from the linux-mtd
+     list.
+  #2 is a quick-n-dirty hack for a build problem when CONFIG_PM=y
+  #7 is a quick-n-dirty suspend/resume implementation for macb which
+     prevents it from waking up the system all the time.
 
-diff --git a/arch/avr32/mach-at32ap/at32ap.c b/arch/avr32/mach-at32ap/at32ap.c
-index 7c4987f..1040bda 100644
---- a/arch/avr32/mach-at32ap/at32ap.c
-+++ b/arch/avr32/mach-at32ap/at32ap.c
-@@ -11,14 +11,6 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- 
--#include <asm/arch/init.h>
--
--void __init setup_platform(void)
--{
--	at32_clock_init();
--	at32_portmux_init();
--}
--
- static int __init pdc_probe(struct platform_device *pdev)
- {
- 	struct clk *pclk, *hclk;
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index 0f24b4f..1af9c1d 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -1935,16 +1935,7 @@ struct clk *at32_clock_list[] = {
- };
- unsigned int at32_nr_clocks = ARRAY_SIZE(at32_clock_list);
- 
--void __init at32_portmux_init(void)
--{
--	at32_init_pio(&pio0_device);
--	at32_init_pio(&pio1_device);
--	at32_init_pio(&pio2_device);
--	at32_init_pio(&pio3_device);
--	at32_init_pio(&pio4_device);
--}
--
--void __init at32_clock_init(void)
-+void __init setup_platform(void)
- {
- 	u32 cpu_mask = 0, hsb_mask = 0, pba_mask = 0, pbb_mask = 0;
- 	int i;
-@@ -1999,4 +1990,11 @@ void __init at32_clock_init(void)
- 	pm_writel(HSB_MASK, hsb_mask);
- 	pm_writel(PBA_MASK, pba_mask);
- 	pm_writel(PBB_MASK, pbb_mask);
-+
-+	/* Initialize the port muxes */
-+	at32_init_pio(&pio0_device);
-+	at32_init_pio(&pio1_device);
-+	at32_init_pio(&pio2_device);
-+	at32_init_pio(&pio3_device);
-+	at32_init_pio(&pio4_device);
- }
-diff --git a/include/asm-avr32/arch-at32ap/init.h b/include/asm-avr32/arch-at32ap/init.h
-index 5e75d85..bc40e3d 100644
---- a/include/asm-avr32/arch-at32ap/init.h
-+++ b/include/asm-avr32/arch-at32ap/init.h
-@@ -13,10 +13,6 @@
- void setup_platform(void);
- void setup_board(void);
- 
--/* Called by setup_platform */
--void at32_clock_init(void);
--void at32_portmux_init(void);
--
- void at32_setup_serial_console(unsigned int usart_id);
- 
- #endif /* __ASM_AVR32_AT32AP_INIT_H__ */
--- 
-1.5.4.3
+This patch series is meant to apply to the avr32-arch branch of the
+avr32 tree. It won't apply to 2.6.24, and even if you fix the
+conflicts it won't work because of Kconfig changes. I've made the
+necessary fixes and pushed it out to
 
+git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git atmel-2.6.24
+
+and the result seems to work fine.
+
+I haven't measured the time it takes to resume the system, but it
+feels instantaneous, at least on the ATNGW100. The delay is more
+noticeable on ATSTK1000 since it needs to power up the LCD panel
+(the ltv350qv panel takes about 100 ms to power up).
+
+Anton Vorontsov (1):
+      mtd: maps/physmap: fix oops in suspend/resume/shutdown ops
+
+Haavard Skinnemoen (9):
+      atmel_serial: Fix build on avr32 with CONFIG_PM enabled
+      avr32: Move setup_platform() into chip-specific file
+      avr32: Rename at32ap.c -> pdc.c
+      avr32: Enable SDRAMC clock at startup
+      avr32: Add simple SRAM allocator
+      macb: Basic suspend/resume support
+      avr32: Define TIF_FREEZE
+      avr32: Add system device for the internal interrupt controller (intc)
+      avr32: Power Management support ("standby" and "mem" modes)
+
+ arch/avr32/Kconfig                         |    6 +
+ arch/avr32/mach-at32ap/Makefile            |    7 +-
+ arch/avr32/mach-at32ap/at32ap700x.c        |   53 +++++-
+ arch/avr32/mach-at32ap/intc.c              |   80 +++++++++-
+ arch/avr32/mach-at32ap/{at32ap.c => pdc.c} |    8 -
+ arch/avr32/mach-at32ap/pm-at32ap700x.S     |  108 ++++++++++++
+ arch/avr32/mach-at32ap/pm.c                |  245 ++++++++++++++++++++++++++++
+ arch/avr32/mach-at32ap/sdramc.h            |   76 +++++++++
+ drivers/mtd/maps/physmap.c                 |   15 +-
+ drivers/net/macb.c                         |   37 ++++
+ drivers/serial/atmel_serial.c              |   11 +-
+ include/asm-avr32/arch-at32ap/init.h       |    4 -
+ include/asm-avr32/arch-at32ap/pm.h         |    3 +
+ include/asm-avr32/arch-at32ap/sram.h       |   30 ++++
+ include/asm-avr32/thread_info.h            |    1 +
+ 15 files changed, 649 insertions(+), 35 deletions(-)
+ rename arch/avr32/mach-at32ap/{at32ap.c => pdc.c} (90%)
+ create mode 100644 arch/avr32/mach-at32ap/pm.c
+ create mode 100644 arch/avr32/mach-at32ap/sdramc.h
+ create mode 100644 include/asm-avr32/arch-at32ap/sram.h
