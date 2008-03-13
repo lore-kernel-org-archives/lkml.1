@@ -1,239 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYCMKL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYCMKLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYCMKL3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 06:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYCMKLV
+	id S1755449AbYCMKLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 06:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYCMKLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 06:11:21 -0400
-Received: from www.tglx.de ([62.245.132.106]:59967 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751656AbYCMKLU convert rfc822-to-8bit (ORCPT
+	Thu, 13 Mar 2008 06:11:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35230 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754851AbYCMKLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 06:11:20 -0400
-Date: Thu, 13 Mar 2008 11:09:03 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: gregkh <gregkh@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v3] UIO: Implement a UIO interface for the SMX
- Cryptengine
-Message-ID: <20080313110903.206f417b@dilbert.local>
-In-Reply-To: <1205400940.3735.15.camel@moss.renham>
-References: <1205400940.3735.15.camel@moss.renham>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Mar 2008 06:11:33 -0400
+Date: Thu, 13 Mar 2008 08:46:21 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Hibernation: Fix mark_nosave_pages()
+Message-ID: <20080313074621.GB19117@elf.ucw.cz>
+References: <200803120034.58615.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803120034.58615.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thu, 13 Mar 2008 20:35:40 +1100
-schrieb Ben Nizette <bn@niasdigital.com>:
-
-Ben,
-sorry, but your code doesn't compile. See below.
-
-Thanks,
-Hans
-
-> This patch implements a UIO interface for the SMX Cryptengine.
+On Wed 2008-03-12 00:34:57, Rafael J. Wysocki wrote:
+> Hi Len,
 > 
-> The Cryptengine found on the Nias Digital SMX board is best suited
-> for a UIO interface.  It is not wired in to the cryptographic API
-> as the engine handles it's own keys, algorithms, everything.  All
-> that we know about is that if there's room in the buffer, you can
-> write data to it and when there's data ready, you read it out again.
+> The following patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=9966 .
 > 
-> There isn't necessarily even any direct correlation between data
-> going in and data coming out again, the engine may consume or
-> generate data all on its own.
+> Although the problem has been there for quite some time (since before 2.6.22,
+> apparently), it would be good to have in 2.6.25, because it may fix booting
+> problems on the affected systems.
 > 
-> This driver is for proprietary hardware but we're always told to
-> submit the drivers anyway; here you are.  :-)
+> Please note that it doesn't modify the code behavior on the systems which are
+> not affected by bug #9966 .
 > 
-> This is version 2 of this patch and addresses all issues raised by
-> Hans-Jürgen Koch and Paul Mundt in their reviews.
+> Thanks,
+> Rafael
 > 
-> Signed-off-by: Ben Nizette <bn@niasdigital.com>
+> 
 > ---
-> Apologies for the confusion around this patch, I didn't mean to give the
-> impression that I'd ignored Paul; I am of course grateful for his review
-> and bug catch.  I received the review just a minute after sending out
-> the last version, made the change locally but didn't immediately resend.
-> I'll know better next time.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 2cdb591..480fd44 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3554,6 +3554,11 @@ M:	mhoffman@lightlink.com
->  L:	lm-sensors@lm-sensors.org
->  S:	Maintained
->  
-> +SMX UIO Interface
-> +P:	Ben Nizette
-> +M:	bn@niasdigital.com
-> +S:	Maintained
-> +
->  SOFTMAC LAYER (IEEE 802.11)
->  P:	Daniel Drake
->  M:	dsd@gentoo.org
-> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> index b778ed7..f57b347 100644
-> --- a/drivers/uio/Kconfig
-> +++ b/drivers/uio/Kconfig
-> @@ -26,4 +26,16 @@ config UIO_CIF
->  	  To compile this driver as a module, choose M here: the module
->  	  will be called uio_cif.
->  
-> +config UIO_SMX
-> +	tristate "SMX cryptengine UIO interface"
-> +	depends on UIO
-> +	default n
-> +	help
-> +	  Userspace IO interface to the Cryptography engine found on the
-> +	  Nias Digital SMX boards.  These will be available from Q4 2008
-> +	  from http://www.niasdigital.com.  The userspace part of this
-> +	  driver will be released under the GPL at the same time as the
-> +	  hardware and will be able to be downloaded from the same site.
-> +
-> +	  If you compile this as a module, it will be called uio_smx.
->  endmenu
-> diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-> index 7fecfb4..18c4566 100644
-> --- a/drivers/uio/Makefile
-> +++ b/drivers/uio/Makefile
-> @@ -1,2 +1,3 @@
->  obj-$(CONFIG_UIO)	+= uio.o
->  obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
-> +obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
-> diff --git a/drivers/uio/uio_smx.c b/drivers/uio/uio_smx.c
-> new file mode 100644
-> index 0000000..fda8b8b
-> --- /dev/null
-> +++ b/drivers/uio/uio_smx.c
-> @@ -0,0 +1,118 @@
-> +/*
-> + * UIO SMX Cryptengine driver.
-> + *
-> + * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/uio_driver.h>
-> +
-> +#include <asm/io.h>
-> +
-> +#define SMX_CSR  0x00000000
-> +#define SMX_EnD  0x00000001
-> +#define SMX_RUN  0x00000002
-> +#define SMX_DRDY 0x00000004
-> +#define SMX_ERR  0x00000008
-> +
-> +static irqreturn_t smx_handler(int irq, struct uio_info *dev_info)
-> +{
-> +	void __iomem *csr = dev_info->mem[0].internal_addr + SMX_CSR;
-> +
-> +	u32 status = ioread32(csr);
-> +
-> +	if (!(csr & SMX_DRDY))
-
-This doesn't compile. 
-
-> +		return IRQ_NONE;
-> +
-> +	/* Disable interrupt */
-> +	iowrite32(status & ~SMX_DRDY, csr);
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int __devinit smx_ce_probe(struct platform_device *dev)
-> +{
-> +	struct uio_info *info;
-> +	struct resource *regs;
-> +
-> +	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
-> +	if (!info)
-> +		return -ENOMEM;
-> +
-> +	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
-> +	if (!regs)
-> +		goto out_free;
-> +
-> +	info->mem[0].addr = regs->start;
-> +	if (!info->mem[0].addr)
-> +		goto out_free;
-> +
-> +	info->mem[0].size = regs->end - regs->start + 1;
-> +	info->mem[0].internal_addr = ioremap(regs->start, info->mem[0].size);
-> +	if (!info->mem[0].internal_addr)
-> +		goto out_free;
-> +
-> +	info->mem[0].memtype = UIO_MEM_PHYS;
-> +
-> +	info->name = "smx-ce";
-> +	info->version = "0.03";
-> +	info->irq = platform_get_irq(dev, 0);
-> +	info->irq_flags = IRQF_SHARED;
-> +	info->handler = smx_handler;
-> +
-> +	platform_set_drvdata(dev, info);
-> +
-> +	if (uio_register_device(&dev->dev, info))
-> +		goto out_unmap;
-> +
-> +	return 0;
-> +out_unmap:
-> +	iounmap(info->mem[0].internal_addr);
-> +out_free:
-> +	kfree(info);
-> +
-> +	return -ENODEV;
-> +}
-> +
-> +static int __devexit smx_ce_remove(struct platform_device *dev)
-> +{
-> +	struct uio_info *info = platform_get_drvdata(dev);
-> +
-> +	uio_unregister_device(info);
-> +	platform_set_drvdata(dev, NULL);
-> +	iounmap(info->mem[0].internal_addr);
-> +
-> +	kfree(info);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver smx_ce_driver = {
-> +	.probe		= smx_ce_probe,
-> +	.remove		= __devexit_p(smx_ce_remove),
-> +	.driver		= {
-> +		.name	= "smx-ce",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +};
-> +
-> +static int __init smx_ce_init_module(void)
-> +{
-> +	return platform_driver_register(&smx_ce_driver);
-> +}
-> +module_init(smx_ce_init_module);
-> +
-> +static void __exit smx_ce_exit_module(void)
-> +{
-> +	platform_driver_unregister(&smx_ce_driver);
-> +}
-> +module_exit(smx_ce_exit_module);
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_AUTHOR("Ben Nizette <bn@niasdigital.com>");
+> There is a problem in the hibernation code that triggers on some NUMA
+> systems on which pfn_valid() returns 'true' for some PFNs that don't
+> belong to any zone.  Namely, there is a BUG_ON() in
+> memory_bm_find_bit() that triggers for PFNs not belonging to any
+> zone and passing the pfn_valid() test.  On the affected systems it
+> triggers when we mark PFNs reported by the platform as not saveable,
+> because the PFNs in question belong to a region mapped directly using
+> iorepam() (i.e. the ACPI data area) and they pass the pfn_valid()
+> test.
 > 
+> Modify memory_bm_find_bit() so that it returns an error if given PFN
+> doesn't belong to any zone instead of crashing the kernel and ignore
+> the result returned by it in mark_nosave_pages(), while marking the
+> "nosave" memory regions.
+> 
+> This doesn't affect the hibernation functionality, as we won't touch
+> the PFNs in question anyway.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+ACK. I hate how it adds more code to swsusp, but I could not find a
+simple way to avoid that.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
