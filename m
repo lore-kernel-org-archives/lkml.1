@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYCMIc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYCMIeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYCMIc5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 04:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYCMIct
+	id S1754021AbYCMIeP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 04:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYCMIeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 04:32:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59607 "EHLO mx1.redhat.com"
+	Thu, 13 Mar 2008 04:34:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59627 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbYCMIcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 04:32:48 -0400
+	id S1750929AbYCMId7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 04:33:59 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -18,143 +18,74 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/linus
-Subject: [PATCH -mm 2/4] ptrace: compat_ptrace_request siginfo
+Subject: [PATCH -mm 3/4] x86_64 ia32 ptrace: use compat_ptrace_request for siginfo
 In-Reply-To: Roland McGrath's message of  Thursday, 13 March 2008 01:31:07 -0700 <20080313083107.8BDE926F992@magilla.localdomain>
 References: <20080313083107.8BDE926F992@magilla.localdomain>
-Message-Id: <20080313083243.E551A26F992@magilla.localdomain>
-Date: Thu, 13 Mar 2008 01:32:43 -0700 (PDT)
+X-Zippy-Says: JAPAN is a WONDERFUL planet -- I wonder if we'll ever reach their
+    level of COMPARATIVE SHOPPING...
+Message-Id: <20080313083350.0A0D426F992@magilla.localdomain>
+Date: Thu, 13 Mar 2008 01:33:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This adds support for PTRACE_GETSIGINFO and PTRACE_SETSIGINFO in
-compat_ptrace_request.  It relies on existing arch definitions for
-copy_siginfo_to_user32 and copy_siginfo_from_user32.
-
-On powerpc, this fixes a longstanding regression of 32-bit ptrace
-calls on 64-bit kernels vs native calls (64-bit calls or 32-bit
-kernels).  This can be seen in a 32-bit call using PTRACE_GETSIGINFO
-to examine e.g. siginfo_t.si_addr from a signal that sets it.
-(This was broken as of 2.6.24 and, I presume, many or all prior versions.)
+This removes the special-case handling for PTRACE_GETSIGINFO
+and PTRACE_SETSIGINFO from x86_64's sys32_ptrace.  The generic
+compat_ptrace_request code handles these.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- kernel/ptrace.c |   48 +++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 35 insertions(+), 13 deletions(-)
+ arch/x86/kernel/ptrace.c |   30 +-----------------------------
+ 1 files changed, 1 insertions(+), 29 deletions(-)
 
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index fdb34e8..67e392e 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -323,9 +323,8 @@ static int ptrace_setoptions(struct task_struct *child, long data)
- 	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 77d9ddd..42305fa 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1184,32 +1184,6 @@ static int genregs32_set(struct task_struct *target,
+ 	return ret;
  }
  
--static int ptrace_getsiginfo(struct task_struct *child, siginfo_t __user * data)
-+static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info)
- {
--	siginfo_t lastinfo;
- 	int error = -ESRCH;
- 
- 	read_lock(&tasklist_lock);
-@@ -333,31 +332,25 @@ static int ptrace_getsiginfo(struct task_struct *child, siginfo_t __user * data)
- 		error = -EINVAL;
- 		spin_lock_irq(&child->sighand->siglock);
- 		if (likely(child->last_siginfo != NULL)) {
--			lastinfo = *child->last_siginfo;
-+			*info = *child->last_siginfo;
- 			error = 0;
- 		}
- 		spin_unlock_irq(&child->sighand->siglock);
- 	}
- 	read_unlock(&tasklist_lock);
--	if (!error)
--		return copy_siginfo_to_user(data, &lastinfo);
- 	return error;
- }
- 
--static int ptrace_setsiginfo(struct task_struct *child, siginfo_t __user * data)
-+static int ptrace_setsiginfo(struct task_struct *child, const siginfo_t *info)
- {
--	siginfo_t newinfo;
- 	int error = -ESRCH;
- 
--	if (copy_from_user(&newinfo, data, sizeof (siginfo_t)))
--		return -EFAULT;
+-static long ptrace32_siginfo(unsigned request, u32 pid, u32 addr, u32 data)
+-{
+-	siginfo_t __user *si = compat_alloc_user_space(sizeof(siginfo_t));
+-	compat_siginfo_t __user *si32 = compat_ptr(data);
+-	siginfo_t ssi;
+-	int ret;
 -
- 	read_lock(&tasklist_lock);
- 	if (likely(child->sighand != NULL)) {
- 		error = -EINVAL;
- 		spin_lock_irq(&child->sighand->siglock);
- 		if (likely(child->last_siginfo != NULL)) {
--			*child->last_siginfo = newinfo;
-+			*child->last_siginfo = *info;
- 			error = 0;
- 		}
- 		spin_unlock_irq(&child->sighand->siglock);
-@@ -424,6 +417,7 @@ int ptrace_request(struct task_struct *child, long request,
- 		   long addr, long data)
+-	if (request == PTRACE_SETSIGINFO) {
+-		memset(&ssi, 0, sizeof(siginfo_t));
+-		ret = copy_siginfo_from_user32(&ssi, si32);
+-		if (ret)
+-			return ret;
+-		if (copy_to_user(si, &ssi, sizeof(siginfo_t)))
+-			return -EFAULT;
+-	}
+-	ret = sys_ptrace(request, pid, addr, (unsigned long)si);
+-	if (ret)
+-		return ret;
+-	if (request == PTRACE_GETSIGINFO) {
+-		if (copy_from_user(&ssi, si, sizeof(siginfo_t)))
+-			return -EFAULT;
+-		ret = copy_siginfo_to_user32(si32, &ssi);
+-	}
+-	return ret;
+-}
+-
+ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
  {
- 	int ret = -EIO;
-+	siginfo_t siginfo;
- 
- 	switch (request) {
- 	case PTRACE_PEEKTEXT:
-@@ -442,12 +436,22 @@ int ptrace_request(struct task_struct *child, long request,
+ 	struct task_struct *child;
+@@ -1255,11 +1229,9 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	case PTRACE_SETFPXREGS:
+ 	case PTRACE_GETFPXREGS:
  	case PTRACE_GETEVENTMSG:
- 		ret = put_user(child->ptrace_message, (unsigned long __user *) data);
- 		break;
-+
- 	case PTRACE_GETSIGINFO:
--		ret = ptrace_getsiginfo(child, (siginfo_t __user *) data);
-+		ret = ptrace_getsiginfo(child, &siginfo);
-+		if (!ret)
-+			ret = copy_siginfo_to_user((siginfo_t __user *) data,
-+						   &siginfo);
- 		break;
-+
+-		break;
+-
  	case PTRACE_SETSIGINFO:
--		ret = ptrace_setsiginfo(child, (siginfo_t __user *) data);
-+		if (copy_from_user(&siginfo, (siginfo_t __user *) data,
-+				   sizeof siginfo))
-+			ret = -EFAULT;
-+		else
-+			ret = ptrace_setsiginfo(child, &siginfo);
- 		break;
-+
- 	case PTRACE_DETACH:	 /* detach a process that was attached. */
- 		ret = ptrace_detach(child, data);
- 		break;
-@@ -616,6 +620,7 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
- {
- 	compat_ulong_t __user *datap = compat_ptr(data);
- 	compat_ulong_t word;
-+	siginfo_t siginfo;
- 	int ret;
- 
- 	switch (request) {
-@@ -638,6 +643,23 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
- 		ret = put_user((compat_ulong_t) child->ptrace_message, datap);
- 		break;
- 
-+	case PTRACE_GETSIGINFO:
-+		ret = ptrace_getsiginfo(child, &siginfo);
-+		if (!ret)
-+			ret = copy_siginfo_to_user32(
-+				(struct compat_siginfo __user *) datap,
-+				&siginfo);
+ 	case PTRACE_GETSIGINFO:
+-		return ptrace32_siginfo(request, pid, addr, data);
 +		break;
-+
-+	case PTRACE_SETSIGINFO:
-+		memset(&siginfo, 0, sizeof siginfo);
-+		if (copy_siginfo_from_user32(
-+			    &siginfo, (struct compat_siginfo __user *) datap))
-+			ret = -EFAULT;
-+		else
-+			ret = ptrace_setsiginfo(child, &siginfo);
-+		break;
-+
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
  	}
+ 
+ 	child = ptrace_get_task_struct(pid);
