@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYCMPoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYCMPrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbYCMPoP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 11:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYCMPn5
+	id S1755512AbYCMPrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 11:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYCMPrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 11:43:57 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:20876 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbYCMPn4 (ORCPT
+	Thu, 13 Mar 2008 11:47:09 -0400
+Received: from newsmtp5.atmel.com ([204.2.163.5]:26879 "EHLO
+	sjogate2.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbYCMPrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 11:43:56 -0400
-Subject: Re: BUG: lock held when returning to user space
-From: Daniel Walker <dwalker@mvista.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Frank Munzert <frankm@linux.vnet.ibm.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0803122236030.7266@twin.jikos.cz>
-References: <47D7FAA0.1090802@linux.vnet.ibm.com>
-	 <Pine.LNX.4.64.0803122236030.7266@twin.jikos.cz>
-Content-Type: text/plain
-Date: Thu, 13 Mar 2008 08:43:49 -0700
-Message-Id: <1205423029.10894.75.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 11:47:08 -0400
+X-Greylist: delayed 2165 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 11:47:07 EDT
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: kernel@avr32linux.org
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Brownell <david-b@pacbell.net>
+Subject: [PATCH 05/10] avr32: Enable SDRAMC clock at startup
+Date: Thu, 13 Mar 2008 15:39:40 +0100
+Message-Id: <1205419185-26395-6-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1205419185-26395-5-git-send-email-hskinnemoen@atmel.com>
+References: <>
+ <1205419185-26395-1-git-send-email-hskinnemoen@atmel.com>
+ <1205419185-26395-2-git-send-email-hskinnemoen@atmel.com>
+ <1205419185-26395-3-git-send-email-hskinnemoen@atmel.com>
+ <1205419185-26395-4-git-send-email-hskinnemoen@atmel.com>
+ <1205419185-26395-5-git-send-email-hskinnemoen@atmel.com>
+X-OriginalArrivalTime: 13 Mar 2008 14:39:46.0446 (UTC) FILETIME=[156132E0:01C88518]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The SDRAM controller needs a clock in order to respond to our
+commands, and suspend doesn't work very well without the SDRAM in
+self-refresh mode.
 
-On Wed, 2008-03-12 at 22:40 +0100, Jiri Kosina wrote:
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ arch/avr32/mach-at32ap/at32ap700x.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-> No, as it is a real bug if you use mutexes in this way. What happens if 
-> process that has called open() on your device (and has not closed it yet) 
-> calls fork()? 
-> Another breakage scenario -- what if the filedescriptor is sent through 
-> unix socket to another process? etc.
-
-There's a number of places where a semaphore is used across system
-calls. 
-
-for instance the usb skeleton, 
-	drivers/usb/usb-skeleton.c
-
-Several of the watchdog drivers,
-	drivers/watchdog/s3c2410_wdt.c
-
-These need to be removed, but the usage is clearly not compatible with
-the mutex API ..
-
-If you convert them to atomic counts then you loose the sleeping aspect
-of the semaphore, which you'd have to add back somehow.
-
-The only API that seems straight forward is using complete's .. Then you
-get an atomic count and all the sleeping function calls you might want..
-(include/linux/completion.h) The problem with complete's is that you
-can't start them out at "1" or "completed" unless you actually run
-complete() once during initialization (that's kind of ugly) ..
-
-Daniel
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index 1af9c1d..ca5ee7a 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -682,6 +682,14 @@ static struct clk hramc_clk = {
+ 	.users		= 1,
+ 	.index		= 3,
+ };
++static struct clk sdramc_clk = {
++	.name		= "sdramc_clk",
++	.parent		= &pbb_clk,
++	.mode		= pbb_clk_mode,
++	.get_rate	= pbb_clk_get_rate,
++	.users		= 1,
++	.index		= 14,
++};
+ 
+ static struct resource smc0_resource[] = {
+ 	PBMEM(0xfff03400),
+@@ -1887,6 +1895,7 @@ struct clk *at32_clock_list[] = {
+ 	&hmatrix_clk,
+ 	&ebi_clk,
+ 	&hramc_clk,
++	&sdramc_clk,
+ 	&smc0_pclk,
+ 	&smc0_mck,
+ 	&pdc_hclk,
+-- 
+1.5.4.3
 
