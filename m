@@ -1,105 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYCMAGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYCMAL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbYCMAGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 20:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYCMAGn
+	id S1754730AbYCMAL6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 20:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYCMALt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 20:06:43 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51479 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbYCMAGm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 20:06:42 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Huang, Ying" <ying.huang@intel.com>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm] kexec jump -v9
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	<20080311211004.GA30164@redhat.com>
-	<1205272758.7990.37.camel@nigel-laptop>
-	<1205288074.29875.22.camel@caritas-dev.intel.com>
-	<20080312185356.GD13549@redhat.com>
-Date: Wed, 12 Mar 2008 18:01:16 -0600
-In-Reply-To: <20080312185356.GD13549@redhat.com> (Vivek Goyal's message of
-	"Wed, 12 Mar 2008 14:53:56 -0400")
-Message-ID: <m1myp3xzjn.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 12 Mar 2008 20:11:49 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51981 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751603AbYCMALs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Mar 2008 20:11:48 -0400
+Date: Thu, 13 Mar 2008 11:10:29 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: York Sun <yorksun@freescale.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
+Message-Id: <20080313111029.55c74396.sfr@canb.auug.org.au>
+In-Reply-To: <12053582231281-git-send-email-yorksun@freescale.com>
+References: <12053582234100-git-send-email-yorksun@freescale.com>
+	<12053582231281-git-send-email-yorksun@freescale.com>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__13_Mar_2008_11_10_29_+1100_on1X=JxsAQNs1mNA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
+--Signature=_Thu__13_Mar_2008_11_10_29_+1100_on1X=JxsAQNs1mNA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Yes. But this memory gets reserved at loading time and then this memory
-> remains unused for the whole duration (except hibernation).
->
-> In the example you gave, looks like you are reserving 15MB of memory for
-> second kernel. In practice, we we finding it difficult to boot a regular
-> kernel in 16MB of memory in kdump. We are now reserving 128MB of memory
-> for kdump kernel on x86 arch, otheriwse OOM kill kicks in during init
-> or while core is being copied.
+Hi York,
 
-Sounds like something we may want to fix.  Living at the default kernel
-address may alieviate that problem somewhat.
+Just a few things from a first pass.
 
-> Kexec based hibernation does not look any different than kdump in terms
-> of memory requirements. The only difference seems to be that kdump does
-> the contiguous memory reservation at boot time and kexec based hibernation
-> does the memory reservation at kernel loading time.
+On Wed, 12 Mar 2008 16:43:42 -0500 York Sun <yorksun@freescale.com> wrote:
 >
-> The only difference I can think of is, kdump will generally run on servers
-> and hibernation will be required on desktops/laptops and run time memory
-> requirements might be little different. I don't have numbers though.
+> +++ b/drivers/video/fsl-diu-fb.c
 >
-> At the same time carrying a separate kernel binary just for hibernation
-> purposes does not sound very good.
+> +#include <asm/of_platform.h>
 
-One difference is you only get the memory penalty just before you hibernate,
-instead of continuously.  So potentially you could swap out things to
-make run for the kernel to save you to disk.
+Please include <linux/of_platform.h> instead.
 
-> [..]
->> > 3. Usability.
->> > 
->> > Right now, kexec based hibernation looks quite complicated to configure,
->> > and the user is apparently going to have to remember to boot a different
->> > kernel or at least a different bootloader entry in order to resume. Not
->> 
->> No, the newest implementation need not to boot a different kernel or
->> different bootloader entry. You just use one bootloader entry, it will
->> resume if there's an image, booting normally if there's not. You can
->> look at the newest hibernation example description.
->> 
+> +/* Align to 64-bit(8-byte), 32-byte, etc. */
+> +static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
+> +{
 >
-> Following is the step from new method you have given.
->
-> 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
->    root file system.
->
-> This mentions that use rootfs.gz as initrd. Without modifying the boot
-> loader entry, how would I switch the initrd dynamically.
->
-> Looks like it might be a typo. So basically we can just boot back into
-> normal kernel and then a user can load the resumable core file and kexec
-> to it?
->
-> I think all this functionality can be packed into normal initrd itself
-> to make user interface better.
->
-> A user can configure the destination for hibernated image at system
-> installation time and initrd will be modified accordingly to save the
-> hibernated image as well to check that user specfied location to find out
-> if a hibernation image is available and needs to be resumed.
+> +	buf->vaddr =3D dma_alloc_coherent(0, ssize,
+> +					(dma_addr_t *) &(buf->paddr),
 
-Yes.  And we don't need to load any of this until just before hibernation
-time so we should be able to change things right up until the last moment.
+This cast is unnecessary as buf->paddr is a dma_addr_t ...
 
-Eric
+> +++ b/drivers/video/fsl-diu-fb.h
+>
+> +static struct fb_videomode __devinitdata fsl_diu_default_mode =3D {
+> +static struct fb_videomode __devinitdata fsl_diu_mode_db[] =3D {
+
+Why are these in the .h file?  They should be in the .c file.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__13_Mar_2008_11_10_29_+1100_on1X=JxsAQNs1mNA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH2HD5TgG2atn1QN8RArSjAJ91lNPhlZm3Z9ZmoceENm9mYY/HUgCeNwaq
+udTkfvbS8CPQjADmFiv6OHM=
+=HYwh
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Mar_2008_11_10_29_+1100_on1X=JxsAQNs1mNA--
