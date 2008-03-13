@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbYCMIGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbYCMI0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753137AbYCMIGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 04:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYCMIGm
+	id S1752305AbYCMI0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 04:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbYCMI0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 04:06:42 -0400
-Received: from phunq.net ([64.81.85.152]:48766 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751246AbYCMIGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 04:06:40 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: david@lang.hm
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Thu, 13 Mar 2008 00:06:26 -0800
-User-Agent: KMail/1.9.5
-Cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803130012.36763.phillips@phunq.net> <alpine.DEB.1.00.0803130046190.3786@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.00.0803130046190.3786@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803130106.26910.phillips@phunq.net>
+	Thu, 13 Mar 2008 04:26:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56180 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783AbYCMI0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 04:26:09 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: user_regset PTRACE_SETREGS regression fix
+X-Fcc: ~/Mail/linus
+X-Zippy-Says: I'm wet!  I'm wild!
+Message-Id: <20080313082535.99DF226F992@magilla.localdomain>
+Date: Thu, 13 Mar 2008 01:25:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 00:55, david@lang.hm wrote:
-> if you are not measuring the time to get from ram to disk (which you are 
-> not doing in your ramback device) syncs are meaningless.
 
-There was a time when punchcards ruled and everybody was nervous about
-storing their data on magnetic media.  I remember it well, you may not.
-But you are repeating that bit of history, there is a proverb in there
-somewhere.
+The PTRACE_SETREGS request was only recently added on powerpc,
+and gdb does not use it.  So it slipped through without getting
+all the testing it should have had.
 
-> > Why am I reminded of old arguments like "if men were meant to fly, God
-> > would have given them wings"?  Please just give me your microsecond
-> > scale transaction processing solution and I will be impressed and
-> > grateful.  Until then... here is mine.  Service with a smile.
-> 
-> if you don't have to worry about unclean shutdowns then your system is not 
-> needed. all you need to do is to create a ramdisk that you populate with 
-> dd at boot time and save to disk with dd at shutdown. problem solved in a 
-> couple lines of shell scripts and no kernel changes needed.
-> 
-> if you want the data to be safe in the face of unclean shutdowns and 
-> crashes, then you need to figure out how to make the image on disk 
-> consistant, and at this point you have basicly said that you don't think 
-> that it's a problem. so we're back to what you can do today with a couple 
-> lines of scripting.
+The user_regset changes had a simple bug in storing to all of
+the 32-bit general registers block on 64-bit kernels.  This bug
+only comes up with PTRACE_SETREGS, not PPC_PTRACE_SETREGS.
+It causes a BUG_ON to hit, so this fix needs to go in ASAP.
 
-Feel free.  You use your script, and somebody with a reliable UPS or
-two can use my driver, once it is stabilized of course.  Just don't be
-in business against them if being a few milliseconds slower on the
-uptake means money lost.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/ptrace.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-Daniel
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 7673e98..2a9fe97 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -530,15 +530,21 @@ static int gpr32_set(struct task_struct *target,
+ 		--count;
+ 	}
+ 
+-	if (kbuf)
++	if (kbuf) {
+ 		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
+ 			regs[pos++] = *k++;
+-	else
++		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
++			++k;
++	} else {
+ 		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
+ 			if (__get_user(reg, u++))
+ 				return -EFAULT;
+ 			regs[pos++] = reg;
+ 		}
++		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
++			if (__get_user(reg, u++))
++				return -EFAULT;
++	}
+ 
+ 	if (count > 0 && pos == PT_TRAP) {
+ 		if (kbuf)
