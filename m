@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYCMAo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbYCMArI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbYCMAo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 20:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbYCMAou
+	id S1753774AbYCMArI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 20:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYCMAq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 20:44:50 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:23362 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbYCMAot (ORCPT
+	Wed, 12 Mar 2008 20:46:56 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:49961 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbYCMAqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 20:44:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GEkvJMuUk/ijz3N0gdEbc6huvd55kCyr2hfKVSXcq2MNFuuyHUm28L7MWOTaZN4IATwLrVoLPdJIQoh+8HN1z35lCYOXJKCHNRIyTXjtz2X5cove7sBBNq/t6EEWKXUnedP/b/Tdo7HkTMpqrDRrFfKNPiBp4Nf0qdIuXC/zv+U=
-Message-ID: <a8e1da0803121744m1ebe0025hc323c699e5f5d9a0@mail.gmail.com>
-Date: Thu, 13 Mar 2008 08:44:48 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [PATCH -mm] do not check condition twice in WARN_ON_SECS
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Marcin Slusarz" <marcin.slusarz@gmail.com>, paulmck@linux.vnet.ibm.com
-In-Reply-To: <87pru0oxyv.fsf@saeurebad.de>
+	Wed, 12 Mar 2008 20:46:55 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5250"; a="1073192"
+Message-ID: <47D8797D.4020307@qualcomm.com>
+Date: Wed, 12 Mar 2008 17:46:53 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Jackson <pj@sgi.com>
+CC: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: boot cgroup questions
+References: <47D73086.2030008@qualcomm.com>	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	<47D7411E.1000009@qualcomm.com>	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	<47D74595.4080100@qualcomm.com>	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>	<20080311235939.1ebee8e3.pj@sgi.com>	<47D81FE1.6030205@qualcomm.com>	<20080312135746.89456f2a.pj@sgi.com>	<47D82AD2.1070108@qualcomm.com>	<20080312143253.3dd72c7f.pj@sgi.com>	<47D83858.4030806@qualcomm.com>	<20080312153712.bc5df7a1.pj@sgi.com>	<47D8593A.6040503@qualcomm.com> <20080312183210.33f3910c.pj@sgi.com>
+In-Reply-To: <20080312183210.33f3910c.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080312010933.GA2957@darkstar.te-china.tietoenator.com>
-	 <87pru0oxyv.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 9:47 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
-> Hi Dave,
->
->
->
->  Dave Young <hidave.darkstar@gmail.com> writes:
->
->  > Don't check condition twice, change WARN_ON(condition) to WARN_ON(1)
->  > Thanks Marcin Slusarz <marcin.slusarz@gmail.com> for pointing out
->  >
->  > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
->  >
->  > ---
->  > include/asm-generic/bug.h |    3 ++-
->  > 1 file changed, 2 insertions(+), 1 deletion(-)
->  >
->  > diff -upr linux/include/asm-generic/bug.h linux.new/include/asm-generic/bug.h
->  > --- linux/include/asm-generic/bug.h   2008-03-12 08:45:08.000000000 +0800
->  > +++ linux.new/include/asm-generic/bug.h       2008-03-12 09:04:07.000000000 +0800
->  > @@ -80,7 +80,8 @@ extern void warn_on_slowpath(const char
->  >       int __ret_warn_on = !!(condition);                      \
->  >       if (unlikely(__ret_warn_on))                            \
->  >               if (__ratelimit(secs * HZ, 1))                  \
->  > -                     WARN_ON(condition);                     \
->  > +                     WARN_ON(1);                             \
->  > +     unlikely(__ret_warn_on);                                \
->  >  })
->
->  What's wrong with:
->
->  #define WARN_ON_SECS(condition, secs) \
->         WARN_ON(condition && __ratelimit(secs * HZ, 1))
+Paul Jackson wrote:
+> Max K wrote:
+>> 1. use simple "irq == pseudo-task" concept and potentially brake some existing 
+>> software. We do have working solution.
+> 
+> Breaking existing software is not what I call working.
+> 
+Ok ok I get it :)
+You know what I meant though. In the other scheme it's not even clear how it'd 
+work in general.
 
-Looks concise.
-Should I update the third time?
+Max
+
+
