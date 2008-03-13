@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbYCMHN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYCMHNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbYCMHN2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 03:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYCMHNM
+	id S1754046AbYCMHNo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 03:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbYCMHNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 03:13:12 -0400
-Received: from phunq.net ([64.81.85.152]:53904 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751139AbYCMHMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 03:12:54 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: david@lang.hm
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Wed, 12 Mar 2008 23:12:35 -0800
-User-Agent: KMail/1.9.5
-Cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803122317.24849.phillips@phunq.net> <alpine.DEB.1.00.0803122327260.3786@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.00.0803122327260.3786@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Mar 2008 03:13:14 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39457 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751141AbYCMHM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 03:12:57 -0400
+Date: Thu, 13 Mar 2008 02:12:53 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: menage@google.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: boot cgroup questions
+Message-Id: <20080313021253.a99fc8d1.pj@sgi.com>
+In-Reply-To: <47D87BE5.4010702@qualcomm.com>
+References: <47D73086.2030008@qualcomm.com>
+	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	<47D7411E.1000009@qualcomm.com>
+	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	<47D74595.4080100@qualcomm.com>
+	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	<20080311235939.1ebee8e3.pj@sgi.com>
+	<47D81FE1.6030205@qualcomm.com>
+	<20080312135746.89456f2a.pj@sgi.com>
+	<47D82AD2.1070108@qualcomm.com>
+	<20080312143253.3dd72c7f.pj@sgi.com>
+	<47D83858.4030806@qualcomm.com>
+	<20080312153712.bc5df7a1.pj@sgi.com>
+	<47D8593A.6040503@qualcomm.com>
+	<20080312183059.6716d630.pj@sgi.com>
+	<47D87BE5.4010702@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803130012.36763.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 23:32, david@lang.hm wrote:
-> looking at the comparison of a 500G filesystem with 500G of ram allocated 
-> for a buffer cache.
-> 
-> yes, initially it will be a bit slower (until the files get into the 
-> buffer cache), and if fsync is disabled all writes will go to the buffer 
-> cache (until writeout hits)
-> 
-> I may be able to see room for a few percent difference, but not 2x, let 
-> alone 25x.
+> How about we add support for sym links to the cgroup fs ?
 
-My test ran 25 times faster because it was write intensive and included
-sync.  It did not however include seeks, which can cause an even bigger
-performance gap.
+Still pollutes the primary cpuset name space ... you have all
+the directories X, X/A, and X/B as well as the symlinks A and B.
 
-The truth is, my system has _more_ cache available for file buffering
-than I used for the ramdisk, and almost every file operation I do
-(typically dozens of tree diffs, hundreds of compiles per day) goes
-_way_ faster on the ram disk.  Really, really a lot faster.  Because
-frankly, Linux is not very good at using its file cache these days.
-Somebody ought to fix that.  (I am busy fixing other things.)
+Symlinks allow for one path that needs to be 'aliased' to another,
+but they are a one-way map; without an exhaustive search of the
+potential namespace, one can't invert them, or determine if they
+can't be inverted.
 
-In other, _real world_ NFS file serving tests, we have seen 20 - 200
-times speedup in serving snapshotted volumes via NFS, using ddsnap
-for snapshots and replication.  While it is true that ddsnap will
-eventually be optimized to improved performance on spinning media,
-I seriously doubt it will ever get closer than a factor of 20 or so,
-with a typical read/write mix.
+Tools have to constantly make heuristic decisions whether to
+default to dereferencing the symlink, or not, and often have to
+provide alternatives for the non-default choice.
 
-But that is just the pragmatic reality of machines everybody has these
-days, let us not get too wrapped up in that.  Think about the Violin
-box.  How are you going to put 504 gigabytes of data in buffer cache?
-Tell me how a transaction processing system is going to run with
-latency measured in microseconds, backed by hard disk, ever?
+They are a pain in the backside even if designed in and expected
+up front.
 
-Really guys, ramdisks are fast.  Admit it, they are really really fast.
-So I provide a way to make them persistent also.  For free, I might
-add.
+If added as critical structure after the fact, something breaks,
+pretty much for sure.
 
-Why am I reminded of old arguments like "if men were meant to fly, God
-would have given them wings"?  Please just give me your microsecond
-scale transaction processing solution and I will be impressed and
-grateful.  Until then... here is mine.  Service with a smile.
+For one minor example, code I've probably buried someplace that
+does "find /dev/cpuset -type d" to find all cpusets would break.
 
-Daniel
+Or the one-line /sbin/cpuset_release_agent script:
+	rmdir /dev/cpuset/$1
+is broken -- fails to clean-up associated symlinks, and can't
+avoid race conditions if it tries to add code to do that.
+
+> Crazy idea.
+
+Agreed ;)
+
+But nice picture ;).
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
