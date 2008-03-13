@@ -1,88 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYCMJQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbYCMJZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbYCMJQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYCMJQU
+	id S1753087AbYCMJZJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYCMJYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:16:20 -0400
-Received: from phunq.net ([64.81.85.152]:36732 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752061AbYCMJQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:16:19 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: david@lang.hm
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Thu, 13 Mar 2008 01:16:02 -0800
-User-Agent: KMail/1.9.5
-Cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803130106.26910.phillips@phunq.net> <alpine.DEB.1.00.0803130133470.22040@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.00.0803130133470.22040@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Mar 2008 05:24:55 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:22910 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbYCMJYy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 05:24:54 -0400
+Subject: Re: [patch 1/6] Guest page hinting: core + volatile page cache.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
+       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
+       hugh@veritas.com
+In-Reply-To: <200803131012.23420.rusty@rustcorp.com.au>
+References: <20080312132132.520833247@de.ibm.com>
+	 <20080312132703.132176945@de.ibm.com>
+	 <200803131012.23420.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 13 Mar 2008 10:24:48 +0100
+Message-Id: <1205400288.26537.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803130216.03230.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 01:39, david@lang.hm wrote:
-> > Feel free.  You use your script, and somebody with a reliable UPS or
-> > two can use my driver, once it is stabilized of course.  Just don't be
-> > in business against them if being a few milliseconds slower on the
-> > uptake means money lost.
+On Thu, 2008-03-13 at 10:12 +1100, Rusty Russell wrote:
+> On Thursday 13 March 2008 00:21:33 Martin Schwidefsky wrote:
+> > @@ -957,6 +975,19 @@ struct page *follow_page(struct vm_area_
+> >
+> >  	if (flags & FOLL_GET)
+> >  		get_page(page);
+> > +
+> > +	if (flags & FOLL_GET) {
+> > +		/*
+> > +		 * The page is made stable if a reference is acquired.
+> > +		 * If the caller does not get a reference it implies that
+> > +		 * the caller can deal with page faults in case the page
+> > +		 * is swapped out. In this case the caller can deal with
+> > +		 * discard faults as well.
+> > +		 */
+> > +		if (unlikely(!page_make_stable(page)))
+> > +			goto out_discard;
+> > +	}
 > 
-> so now you are saying that you are faster then a ramdisk?????
+> Dumb comment: seems like this if could be folded into the one above.
 
-No, I am saying that my driver is faster than any script you can write.
-Your script will not be able to give access to data while the ramdisk
-is being populated, nor will it be able to save efficiently exactly
-what is dirty in the ramdisk.  (Explained in my original post if you
-would like to take a look.)
+In this patch yes, but a later patch adds a condition:
 
-> if you have a reliable UPS and are willing to rely on it to save your data 
-> take the identical hardware to what you are planning to use, but instead 
-> of using your driver just create a ramdisk and load it on boot and save 
-> the contents on shutdown.
+-       if (flags & FOLL_GET) {
++       if ((flags & FOLL_GET) || (vma->vm_flags & VM_LOCKED)) {
 
-Aha!  You are getting close.  Really, that is all ramback does.  It
-just handles some very difficult related issues efficiently, in such a
-way as to minimize any denial of service from complete loss of UPS
-power.  This is all just about using power management in a new way that
-gets higher performance.  But your battery power has to be reliable.
-Just make it so.  It is not difficult these days, or even particularly
-expensive.
 
-I calculated somewhere along the line that it would take something like
-17 minutes to populate the big Violin ramdisk initially, and 17 minutes
-to save it during a loss of line power event, during which UPS power
-must be not run out before ramback achieves disk sync or you will get
-file corruption.  (This rule was mentioned in my original post.)
+> > + * Attempts to change the state of a page to volatile.
+> > + * If there is something preventing the state change the page stays
+> > + * int its current state.
+> 
+> Typo "int its current state".
 
-All well and could, you can in fact do that with a pretty simple script.
-But in the initial 17 minutes your application may not read or write
-the ramdisk data and in the closing 17 minutes it may not write.  That
-knocks your system down to 4 nines, given one planned shutdown per year.
-Not good, not good at all.
+Fixed.
 
-See, ramback is entirely about _not_ getting knocked down to 4 nines.
-It wants to stay above 6, given system components that satisfy that goal,
-comprising:
+> >  		return NULL;
+> >
+> >  	pte = pte_offset_map(pmd, address);
+> > +	ptl = pte_lockptr(mm, pmd);
+> >  	/* Make a quick check before getting the lock */
+> > +#ifndef CONFIG_PAGE_STATES
+> > +	/*
+> > +	 * If the page table lock for this pte is taken we have to
+> > +	 * assume that someone might be mapping the page. To solve
+> > +	 * the race of a page discard vs. mapping the page we have
+> > +	 * to serialize the two operations by taking the lock,
+> > +	 * otherwise we end up with a pte for a page that has been
+> > +	 * removed from page cache by the discard fault handler.
+> > +	 */
+> > +	if (!spin_is_locked(ptl))
+> > +#endif
+> >  	if (!pte_present(*pte)) {
+> >  		pte_unmap(pte);
+> >  		return NULL;
+> >  	}
+> >
+> > -	ptl = pte_lockptr(mm, pmd);
+> >  	spin_lock(ptl);
+> >  	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
+> >  		*ptlp = ptl;
+> 
+> Did you really mean ifndef here?
 
-  * Linux
-  * Processor, memory, motherboard etc
-  * Dual power supplies with independent UPS backup
-  * Ramback driver
+That is a major nit. This should be an #ifdef. In previous versions the
+complete "if (!pte_present(*pte)) { }" is ifdefed, the later versions
+use the !spin_is_locked condition. Only I forgot to invert the #ifndef.
+Fixed.
 
-My proposition is, you can go out and purchase hardware right now that
-delivers 6 nines (30 seconds downtime/year) and yes, it will cost you,
-but if that worries you then set up two (much) cheaper ones and set
-them up as a failover cluster.  (Helps that the Violin box can connect
-via PCI-e to two servers at the same time.)
+> (BTW: I'm just reading through the code, not really understanding it, so
+> this is not a real review).
 
-I say you can do this reliably.  It boils down to your power supplies.
-You say it can't be done.  Who is right?
+I take the small review anytime. Already found one major nit.
 
-Daniel
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
