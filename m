@@ -1,130 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYCMOE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYCMORQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbYCMOE1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 10:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYCMOEP
+	id S1754578AbYCMORQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 10:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYCMORA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 10:04:15 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52796 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbYCMOEO (ORCPT
+	Thu, 13 Mar 2008 10:17:00 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:60360 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbYCMOQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 10:04:14 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 13 Mar 2008 19:33:07 +0530
-Message-Id: <20080313140307.20133.30405.sendpatchset@localhost.localdomain>
-Subject: [PATCH] Move memory controller allocations to their own slabs (v3)
+	Thu, 13 Mar 2008 10:16:59 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 10:16:58 EDT
+Message-ID: <47D93435.1080402@aitel.hist.no>
+Date: Thu, 13 Mar 2008 15:03:33 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc5-mm1 shutdown crash
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+In-Reply-To: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This kernel hangs during shutdown, and that prevents automatic poweroff.
+I have one small patch that improves the iwl3945 wireless driver a little.
+Dell D830 laptop, 64-bit smp
 
 
-Changelog v3
+It looks like this:
+*** Last service has quit. ***
+Your system will now POWER OFF!
+Goodbye
+Bug: unable to handle kernel paging request at ffffffff8020a7ad
+IP: [<ffffffff80211b5a>] text_poke+0xe/0x15
+PGD 203067 PUD 2+7+63 PMD 7f3ba163 PTE 20a161
+Oops: 0003 [1] SMP
+last sysfs file: 
+/sys/devices/LNXSYSTM:00/device:00/ACPI0003:00/power_supply/AC/online
+CPU 0
+Modules linked in: tun pcmcia dock piix iTCO_wdt ata_piix watchdog_core 
+watchdog_dev intel_agp ata_generic hci_usb
 
-1. Remove HWCACHE_ALIGN
+Pid: 7606, comm: initng Not tainted 2.6.25-rc5-mm1
 
-Changelog v2
+RIP: 0010:[<ffffffff80211b5a>] [<ffffffff80211b5a>]text_poke+0xe/0x15
+RSP: 0000:ffff81007e559cb8 EFLAGS: 00010083
 
-1. Remove extra slab for mem_cgroup_per_zone
+(register dump omitted, but I can reproduce anytime if it matters)
+Process initng (pid 7606, threadinfo...)
+call trace:
+alternatives_smp_unlock
+alternatives_smp_switch
+? schedule_timeout
+__cpu_die
+_cpu_down
+disable_nonboot_cpus
+kernel_power_off
+sys_reboot
+? handle_mm_fault
+? __up_read
+? do_page_fault
+? __put_user
+? error_exit
+system_call_after_swapgs
 
-Move the memory controller data structure page_cgroup to its own slab cache.
-It saves space on the system, allocations are not necessarily pushed to order
-of 2 and should provide performance benefits. Users who disable the memory
-controller can also double check that the memory controller is not allocating
-page_cgroup's.
+(rest omitted)
 
-NOTE: Hugh Dickins brought up the issue of whether we want to mark page_cgroup
-as __GFP_MOVABLE or __GFP_RECLAIMABLE. I don't think there is an easy
-answer at the moment. page_cgroup's are associated with user pages,
-they can be reclaimed once the user page has been reclaimed, so it might
-make sense to mark them as __GFP_RECLAIMABLE. For now, I am leaving the
-marking to default values that the slab allocator uses.
+sysrq still works at this point
+sysrq+P gives:
 
-Comments?
+CPU 0:
+Modules linked in (same as before)
+Pid: 0, comm: swapper Tainted: G D 2.6.25-rc5-mm1
+RIP ... acpi_idle_enter
+(register dump omitted)
+acpi_idle_enter_bm
+menu_select
+cpuidle_idle_call
+cpuidle_idle_call
+default_idle
+cpu_idle
+rest_init
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
 
- mm/memcontrol.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+sysrq+O fails to deactivate a mouse, complains that the disk
+may not be spun down properly, prepares for sleep state S5,
+but don't power off. sysrq doesn't work after this.
 
-diff -puN mm/memcontrol.c~memory-controller-move-to-own-slab mm/memcontrol.c
---- linux-2.6.25-rc5/mm/memcontrol.c~memory-controller-move-to-own-slab	2008-03-13 17:19:01.000000000 +0530
-+++ linux-2.6.25-rc5-balbir/mm/memcontrol.c	2008-03-13 17:19:42.000000000 +0530
-@@ -26,6 +26,7 @@
- #include <linux/backing-dev.h>
- #include <linux/bit_spinlock.h>
- #include <linux/rcupdate.h>
-+#include <linux/slab.h>
- #include <linux/swap.h>
- #include <linux/spinlock.h>
- #include <linux/fs.h>
-@@ -35,6 +36,7 @@
- 
- struct cgroup_subsys mem_cgroup_subsys;
- static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
-+static struct kmem_cache *page_cgroup_cache;
- 
- /*
-  * Statistics for memory cgroup.
-@@ -560,7 +562,7 @@ retry:
- 	}
- 	unlock_page_cgroup(page);
- 
--	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
-+	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
- 	if (pc == NULL)
- 		goto err;
- 
-@@ -622,7 +624,7 @@ retry:
- 		 */
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
- 		css_put(&mem->css);
--		kfree(pc);
-+		kmem_cache_free(page_cgroup_cache, pc);
- 		goto retry;
- 	}
- 	page_assign_page_cgroup(page, pc);
-@@ -637,7 +639,7 @@ done:
- 	return 0;
- out:
- 	css_put(&mem->css);
--	kfree(pc);
-+	kmem_cache_free(page_cgroup_cache, pc);
- err:
- 	return -ENOMEM;
- }
-@@ -695,7 +697,7 @@ void mem_cgroup_uncharge_page(struct pag
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
- 		css_put(&mem->css);
- 
--		kfree(pc);
-+		kmem_cache_free(page_cgroup_cache, pc);
- 		return;
- 	}
- 
-@@ -989,6 +991,7 @@ mem_cgroup_create(struct cgroup_subsys *
- 	if (unlikely((cont->parent) == NULL)) {
- 		mem = &init_mem_cgroup;
- 		init_mm.mem_cgroup = mem;
-+		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
- 	} else
- 		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
- 
-_
+Helge Hafting
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
