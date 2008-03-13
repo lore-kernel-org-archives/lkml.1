@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbYCMMoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYCMMqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbYCMMoq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYCMMoi
+	id S1755448AbYCMMqp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYCMMqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:44:38 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:50439 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbYCMMoi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:44:38 -0400
-Date: Thu, 13 Mar 2008 18:14:24 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       heukelum@fastmail.fm
-Subject: Re: [PATCH] x86: Change x86 to use generic find_next_bit
-Message-ID: <20080313124424.GA18774@skywalker>
-References: <20080309200103.GA895@mailshack.com>
+	Thu, 13 Mar 2008 08:46:37 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:6350 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752731AbYCMMqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:46:36 -0400
+Date: Thu, 13 Mar 2008 13:46:33 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080313124633.GS17940@kernel.dk>
+References: <20080225230035.GA14503@khazad-dum.debian.net> <20080312133529.GB21290@khazad-dum.debian.net> <20080312135521.GE8141@ics.muni.cz> <200803121952.42666.arekm@maven.pl> <20080312193637.GA27873@ics.muni.cz> <20080312211306.GD30864@khazad-dum.debian.net> <20080313120514.GH17940@kernel.dk> <20080313122344.GD27873@ics.muni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080309200103.GA895@mailshack.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080313122344.GD27873@ics.muni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 09, 2008 at 09:01:04PM +0100, Alexander van Heukelum wrote:
-> x86: Change x86 to use the generic find_next_bit implementation
+On Thu, Mar 13 2008, Lukas Hejtmanek wrote:
+> On Thu, Mar 13, 2008 at 01:05:14PM +0100, Jens Axboe wrote:
+> > And lets now get back to reality - the reality that now breaks the
+> > previously working setup of lots of users. So you are telling me that in
+> > order to get my volume key functionality back I have to get rid of HAL
+> > and X?
+> > 
+> > Lets turn back time a bit. Why was this change made? IOW, what was the
+> > reason for breaking a working setup for lots of users? It better be a
+> > damn good reason, or I would heavily argue for reverting this change so
+> > that 2.6.25 actually WORKS as expected for thinkpad users.
 > 
-> The versions with inline assembly are in fact slower on the machines I
-> tested them on (in userspace) (Athlon XP 2800+, p4-like Xeon 2.8GHz, AMD
-> Opteron 270). The i386-version needed a fix similar to 06024f21 to avoid
-> crashing the benchmark.
-> 
-> Benchmark using: gcc -fomit-frame-pointer -Os. For each bitmap size 
-> 1...512, for each possible bitmap with one bit set, for each possible 
-> offset: find the position of the first bit starting at offset. If you 
-> follow ;). Times include setup of the bitmap and checking of the 
-> results.
-> 
-> 		Athlon		Xeon		Opteron 32/64bit
-> x86-specific:	0m3.692s	0m2.820s	0m3.196s / 0m2.480s
-> generic:	0m2.622s	0m1.662s	0m2.100s / 0m1.572s
-> 
-> If the bitmap size is not a multiple of BITS_PER_LONG, and no set 
-> (cleared) bit is found, find_next_bit (find_next_zero_bit) returns a 
-> value outside of the range [0,size]. The generic version always returns 
-> exactly size. The generic version also uses unsigned long everywhere, 
-> while the x86 versions use a mishmash of int, unsigned (int), long and 
-> unsigned long.
-> 
+> so, you are telling that xev does not show keycodes of volume buttons
+> for you, right? Because for me, it works. Thinkvantage does not work.
 
-This problem is observed on x86_64 and powerpc also. We need a long
-aligned address for test_bit, set_bit find_bit etc.  In ext4 we have
-to make sure we align the address passed to
+They do not generate any events, xev reports nothing. The ThinkVantage
+button doesn't generate any events either.
 
-ext4_test_bit
-ext4_set_bit
-ext4_find_next_zero_bit
-ext4_find_next_bit
+-- 
+Jens Axboe
 
-fs/ext4/mballoc.c have some examples.
-
--aneesh
