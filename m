@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYCMAQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYCMAix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYCMAQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Mar 2008 20:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbYCMAQS
+	id S1753843AbYCMAix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Mar 2008 20:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYCMAin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Mar 2008 20:16:18 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:45130 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507AbYCMAQR (ORCPT
+	Wed, 12 Mar 2008 20:38:43 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51066 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbYCMAin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Mar 2008 20:16:17 -0400
-Message-ID: <47D87279.7070905@keyaccess.nl>
-Date: Thu, 13 Mar 2008 01:16:57 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 12 Mar 2008 20:38:43 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
+	<200803122253.07631.rjw@sisk.pl>
+Date: Wed, 12 Mar 2008 18:33:21 -0600
+In-Reply-To: <200803122253.07631.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 12 Mar 2008 22:53:06 +0100")
+Message-ID: <m1iqzrxy26.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Dave Jones <davej@codemonkey.org.uk>, linux-acpi@vger.kernel.org,
-       Adam M Belay <abelay@mit.edu>, Zhao Yakui <yakui.zhao@intel.com>,
-       Li Shaohua <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Thomas Renninger <trenn@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PNP: increase the maximum number of resources
-References: <20080312151452.GA4523@codemonkey.org.uk> <200803121345.21297.lenb@kernel.org>
-In-Reply-To: <200803121345.21297.lenb@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-03-08 18:45, Len Brown wrote:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Thomas worked on a patch to make resource allocation dynamic and do away
-> with these limits.  Unfortunately it was rather large and it wasn't in
-> time for the 2.6.25-rc1 window.  So right now we are on a trajectory
-> for 2.6.25 to behave exactly like 2.6.24.
-> Indeed, I don't think that patch made it into the test tree,
-> so unless we revive that patch, it will miss 2.6.26 as well.
+> Yes, it ought to be possible.
+>
+> Ultimately, IMHO, we should put all devices unnecessary for saving the image
+> (and doing some eye-candy work) into low power states before the image is
+> created and keep them in low power states until the system is eventually
+> powered off.
 
-It rather violently broke ISAPnP.
+Why?  I guess I don't see why we care what power state the devices are in.
+Especially since we should be able to quickly save the image.
 
-Rene.
+We need to disconnect the drivers from the hardware yes.  So filesystems
+still work and applications that do direct hardware access still work
+and don't need to reopen their connections.
+
+I'm leery of low power states as they don't always work, and bringing
+low power states seems to confuse hibernation to disk with suspend to
+ram.
+
+> If this is done, the remaining problem is the handling of the devices that we
+> need to save the image.  I believe that will be achievable without using the
+> freezer.
+
+Reasonable.  In general the problem is much easier if we don't store
+the hibernation image in a filesystem or partition that the rest of
+the system is using.  That way we avoid inconsistencies.
+
+Eric
