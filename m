@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbYCMJDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYCMJIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751901AbYCMJDp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 05:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYCMJDi
+	id S1753642AbYCMJIR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 05:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCMJIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 05:03:38 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:26147
+	Thu, 13 Mar 2008 05:08:09 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:26345
 	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751280AbYCMJDh convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1751853AbYCMJIH convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 05:03:37 -0400
-Message-Id: <47D8FC21.76E4.0078.0@novell.com>
+	Thu, 13 Mar 2008 05:08:07 -0400
+Message-Id: <47D8FD33.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
-Date: Thu, 13 Mar 2008 09:04:17 +0000
+Date: Thu, 13 Mar 2008 09:08:51 +0000
 From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix verify_export_symbols()
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [RFC] x86: bitops asm constraint fixes
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -24,72 +25,164 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the newer export flavors were added, it was apparently forgotten
-to add respective code here.
-In order to not double the (source) size of the function, add some
-abstraction to reduce code duplication.
+This (simplified) piece of code didn't behave as expected due to
+incorrect constraints in some of the bitops functions, when
+X86_FEATURE_xxx is referring to other than the first long:
+
+int test(struct cpuinfo_x86 *c) {
+	if (cpu_has(c, X86_FEATURE_xxx))
+		clear_cpu_cap(c, X86_FEATURE_xxx);
+	return cpu_has(c, X86_FEATURE_xxx);
+}
+
+I'd really like understand, though, what the policy of (not) having a
+"memory" clobber in these operations is - currently, this appears to
+be totally inconsistent. Also, many comments of the non-atomic
+functions say those may also be re-ordered - this contradicts the use
+of "asm volatile" in there, which again I'd like to understand.
+
+As much as all of these, using 'int' for the 'nr' parameter and
+'void *' for the 'addr' one is in conflict with
+Documentation/atomic_ops.txt, especially because bt{,c,r,s} indeed
+take the bit index as signed (which hence would really need special
+precaution) and access the full 32 bits (if 'unsigned long' was used
+properly here, 64 bits for x86-64) pointed at, so invalid uses like
+referencing a 'char' array cannot currently be caught.
+
+Finally, the code with and without this patch relies heavily on the
+-fno-strict-aliasing compiler switch and I'm not certain this really
+is a good idea.
+
+In the light of all of this I'm sending this as RFC, as fixing the
+above might warrant a much bigger patch...
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- kernel/module.c |   39 +++++++++++++++++++--------------------
- 1 file changed, 19 insertions(+), 20 deletions(-)
+ include/asm-x86/bitops.h |   43 ++++++++++++++++++++++++-------------------
+ 1 file changed, 24 insertions(+), 19 deletions(-)
 
---- linux-2.6.25-rc5/kernel/module.c	2008-03-10 13:24:35.000000000 +0100
-+++ 2.6.25-rc5-verify-export-symbols/kernel/module.c	2008-03-04 11:23:05.000000000 +0100
-@@ -1383,33 +1383,32 @@ EXPORT_SYMBOL_GPL(__symbol_get);
+--- linux-2.6.25-rc5/include/asm-x86/bitops.h	2008-03-10 13:24:33.000000000 +0100
++++ 2.6.25-rc5-x86-clear-bit/include/asm-x86/bitops.h	2008-03-13 08:45:40.000000000 +0100
+@@ -24,9 +24,12 @@
+ /* Technically wrong, but this avoids compilation errors on some gcc
+    versions. */
+ #define ADDR "=m" (*(volatile long *) addr)
++#define BIT_ADDR "=m" (((volatile int *) addr)[nr >> 5])
+ #else
+ #define ADDR "+m" (*(volatile long *) addr)
++#define BIT_ADDR "+m" (((volatile int *) addr)[nr >> 5])
+ #endif
++#define BASE_ADDR "m" (*(volatile int *) addr)
+ 
+ /**
+  * set_bit - Atomically set a bit in memory
+@@ -79,9 +82,8 @@ static inline void __set_bit(int nr, vol
   */
- static int verify_export_symbols(struct module *mod)
+ static inline void clear_bit(int nr, volatile void *addr)
  {
--	const char *name = NULL;
--	unsigned long i, ret = 0;
-+	const char *name;
-+	unsigned int i;
- 	struct module *owner;
- 	const unsigned long *crc;
- 
--	for (i = 0; i < mod->num_syms; i++)
--		if (!IS_ERR_VALUE(__find_symbol(mod->syms[i].name,
--							&owner, &crc, 1))) {
--			name = mod->syms[i].name;
--			ret = -ENOEXEC;
--			goto dup;
--		}
-+#define VERIFY(syms) \
-+	for (i = 0; i < mod->num_##syms; i++) { \
-+		name = mod->syms[i].name; \
-+		if (!IS_ERR_VALUE(__find_symbol(name, &owner, &crc, 1))) \
-+			goto dup; \
-+	}
- 
--	for (i = 0; i < mod->num_gpl_syms; i++)
--		if (!IS_ERR_VALUE(__find_symbol(mod->gpl_syms[i].name,
--							&owner, &crc, 1))) {
--			name = mod->gpl_syms[i].name;
--			ret = -ENOEXEC;
--			goto dup;
--		}
-+	VERIFY(syms);
-+	VERIFY(gpl_syms);
-+	VERIFY(gpl_future_syms);
-+	VERIFY(unused_syms);
-+	VERIFY(unused_gpl_syms);
-+#undef VERIFY
-+
-+	return 0;
- 
- dup:
--	if (ret)
--		printk(KERN_ERR "%s: exports duplicate symbol %s (owned by %s)\n",
--			mod->name, name, module_name(owner));
-+	printk(KERN_ERR "%s: exports duplicate symbol %s (owned by %s)\n",
-+		mod->name, name, module_name(owner));
- 
--	return ret;
-+	return -ENOEXEC;
+-	asm volatile(LOCK_PREFIX "btr %1,%0"
+-		     : ADDR
+-		     : "Ir" (nr));
++	asm volatile(LOCK_PREFIX "btr %1,%2"
++		     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
  }
  
- /* Change all symbols so that st_value encodes the pointer directly. */
-
+ /*
+@@ -100,7 +102,7 @@ static inline void clear_bit_unlock(unsi
+ 
+ static inline void __clear_bit(int nr, volatile void *addr)
+ {
+-	asm volatile("btr %1,%0" : ADDR : "Ir" (nr));
++	asm volatile("btr %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+ }
+ 
+ /*
+@@ -135,7 +137,7 @@ static inline void __clear_bit_unlock(un
+  */
+ static inline void __change_bit(int nr, volatile void *addr)
+ {
+-	asm volatile("btc %1,%0" : ADDR : "Ir" (nr));
++	asm volatile("btc %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+ }
+ 
+ /**
+@@ -149,8 +151,8 @@ static inline void __change_bit(int nr, 
+  */
+ static inline void change_bit(int nr, volatile void *addr)
+ {
+-	asm volatile(LOCK_PREFIX "btc %1,%0"
+-		     : ADDR : "Ir" (nr));
++	asm volatile(LOCK_PREFIX "btc %1,%2"
++		     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+ }
+ 
+ /**
+@@ -198,10 +200,10 @@ static inline int __test_and_set_bit(int
+ {
+ 	int oldbit;
+ 
+-	asm("bts %2,%1\n\t"
+-	    "sbb %0,%0"
+-	    : "=r" (oldbit), ADDR
+-	    : "Ir" (nr));
++	asm volatile("bts %2,%3\n\t"
++		     "sbb %0,%0"
++		     : "=r" (oldbit), BIT_ADDR
++		     : "Ir" (nr), BASE_ADDR);
+ 	return oldbit;
+ }
+ 
+@@ -238,10 +240,10 @@ static inline int __test_and_clear_bit(i
+ {
+ 	int oldbit;
+ 
+-	asm volatile("btr %2,%1\n\t"
++	asm volatile("btr %2,%3\n\t"
+ 		     "sbb %0,%0"
+-		     : "=r" (oldbit), ADDR
+-		     : "Ir" (nr));
++		     : "=r" (oldbit), BIT_ADDR
++		     : "Ir" (nr), BASE_ADDR);
+ 	return oldbit;
+ }
+ 
+@@ -250,10 +252,10 @@ static inline int __test_and_change_bit(
+ {
+ 	int oldbit;
+ 
+-	asm volatile("btc %2,%1\n\t"
++	asm volatile("btc %2,%3\n\t"
+ 		     "sbb %0,%0"
+-		     : "=r" (oldbit), ADDR
+-		     : "Ir" (nr) : "memory");
++		     : "=r" (oldbit), BIT_ADDR
++		     : "Ir" (nr), BASE_ADDR);
+ 
+ 	return oldbit;
+ }
+@@ -288,10 +290,11 @@ static inline int variable_test_bit(int 
+ {
+ 	int oldbit;
+ 
+-	asm volatile("bt %2,%1\n\t"
++	asm volatile("bt %2,%3\n\t"
+ 		     "sbb %0,%0"
+ 		     : "=r" (oldbit)
+-		     : "m" (*(unsigned long *)addr), "Ir" (nr));
++		     : "m" (((volatile const int *)addr)[nr >> 5]),
++		       "Ir" (nr), BASE_ADDR);
+ 
+ 	return oldbit;
+ }
+@@ -310,6 +313,8 @@ static int test_bit(int nr, const volati
+ 	 constant_test_bit((nr),(addr)) :	\
+ 	 variable_test_bit((nr),(addr)))
+ 
++#undef BASE_ADDR
++#undef BIT_ADDR
+ #undef ADDR
+ 
+ #ifdef CONFIG_X86_32
 
 
