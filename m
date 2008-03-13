@@ -1,231 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYCMUgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYCMUg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbYCMUgH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbYCMUfz
+	id S1755557AbYCMUg0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbYCMUgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:35:55 -0400
-Received: from cnc.isely.net ([64.81.146.143]:37036 "EHLO cnc.isely.net"
+	Thu, 13 Mar 2008 16:36:01 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51636 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753654AbYCMUfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:35:53 -0400
-X-Greylist: delayed 315 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 16:35:53 EDT
-Date: Thu, 13 Mar 2008 15:30:35 -0500 (CDT)
-From: Mike Isely <isely@isely.net>
-Reply-To: Mike Isely <isely@pobox.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: David Airlie <airlied@linux.ie>, Mike Isely at pobox <isely@pobox.com>
-Subject: [PATCH] drm: Fix race that can lockup the kernel
-Message-ID: <Pine.LNX.4.64.0803131515120.1964@cnc.isely.net>
-Mime-Version: 1.0
+	id S1756937AbYCMUf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:35:59 -0400
+Date: Thu, 13 Mar 2008 13:27:12 -0700
+From: Greg KH <gregkh@suse.de>
+To: Dave Jones <davej@codemonkey.org.uk>, Tilman Schmidt <tilman@imap.cc>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.25-rc5-mm1] WARNING: at drivers/base/sys.c:173
+Message-ID: <20080313202712.GB11283@suse.de>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D87238.8080305@imap.cc> <20080313195656.GA32463@codemonkey.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080313195656.GA32463@codemonkey.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 13, 2008 at 03:56:56PM -0400, Dave Jones wrote:
+> On Thu, Mar 13, 2008 at 01:15:52AM +0100, Tilman Schmidt wrote:
+>  > Am 11.03.2008 09:14 schrieb Andrew Morton:
+>  > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc5/2.6.25-rc5-mm1/
+>  > 
+>  > Late during boot, this issues the following warning on my Pentium D,
+>  > apparently when trying to load an appropriate CPU frequency driver:
+>  > 
+>  > [   56.759128] ------------[ cut here ]------------
+>  > [   56.765058] WARNING: at drivers/base/sys.c:173 sysdev_driver_register+0x34/0xce()
+>  > [   56.776027] Modules linked in: acpi_cpufreq(+) speedstep_lib ip6table_filter ip6_tables x_tables ipv6 microcode firmware_class loop osst st sr_mod cdrom pata_acpi bas_gigaset snd_hda_intel gigaset isdn snd_pcm ata_generic<6>ip_tables: (C) 2000-2006 Netfilter Core Team
+>  > [   56.785293]  snd_timer aic7xxx slhc snd ohci1394 rtc_cmos ieee1394 shpchp crc_ccitt iTCO_wdt e1000e rtc_core iTCO_vendor_support soundcore scsi_transport_spi watchdog_core pci_hotplug intel_agp button thermal agpgart rtc_lib processor i2c_i801 watchdog_dev parport_pc i2c_core snd_page_alloc parport pata_marvell sg ext3 jbd mbcache linear sd_mod usbhid hid ff_memless ahci libata scsi_mod ehci_hcd uhci_hcd usbcore dm_snapshot dm_mod
+>  > [   56.805358] Pid: 2856, comm: modprobe Not tainted 2.6.25-rc5-mm1-testing #1
+>  > [   56.810766]  [<c01272e9>] warn_on_slowpath+0x41/0x6d
+>  > [   56.820628]  [<c0230065>] ? acpi_ns_lookup+0x2b5/0x497
+>  > [   56.830455]  [<c0230e25>] ? acpi_evaluate_object+0x23e/0x249
+>  > [   56.840414]  [<c02ff809>] ? mutex_unlock+0x8/0xa
+>  > [   56.848380]  [<fa9fec1d>] ? acpi_processor_preregister_performance+0x4e6/0x4f1 [processor]
+>  > [   56.858297]  [<c0286438>] ? cpufreq_register_driver+0x42/0xfc
+>  > [   56.868263]  [<c026423d>] sysdev_driver_register+0x34/0xce
+>  > [   56.877974]  [<c0286476>] cpufreq_register_driver+0x80/0xfc
+>  > [   56.887327]  [<facde034>] acpi_cpufreq_init+0x34/0x3a [acpi_cpufreq]
+>  > [   56.897290]  [<c014ad7a>] sys_init_module+0x1816/0x1943
+>  > [   56.907304]  [<facb5000>] ? icmp_checkentry+0x0/0x14 [ip_tables]
+>  > [   56.917255]  [<c0183cd2>] ? sys_read+0x3b/0x60
+>  > [   56.925094]  [<c0106aec>] sysenter_past_esp+0x6d/0xc5
+>  > [   56.935071]  =======================
+>  > [   56.945016] ---[ end trace 9ade9adb26b6da0a ]---
+>  > 
+>  > Looking back, -rc3-mm1 did that too.
+>  > Mainline (-rc3 through -rc5) never did.
+>  > Let me know if you need more information.
+>  > CCing Dave Jones for cpufreq and Greg KH for sysdev.
+> 
+> Full dmesg please, with CPU_FREQ_DEBUG=y, and boot with cpufreq.debug=7
+> Greg, could that warning be enhanced to print the object->name ?
 
-The i915_vblank_swap() function schedules an automatic buffer swap
-upon receipt of the vertical sync interrupt.  Such an operation is
-lengthy so it can't be allowed to happen in normal interrupt context,
-thus the DRM implements this by scheduling the work in a kernel
-softirq-scheduled tasklet.  In order for the buffer swap to work
-safely, the DRM's central lock must be taken, via a call to
-drm_lock_take() located in drivers/char/drm/drm_irq.c within the
-function drm_locked_tasklet_func().  The lock-taking logic uses a
-non-interrupt-blocking spinlock to implement the manipulations needed
-to take the lock.  This semantic would be safe if all attempts to use
-the spinlock only happen from process context.  However this buffer
-swap happens from softirq context which is really a form of interrupt
-context.  Thus we have an unsafe situation, in that
-drm_locked_tasklet_func() can block on a spinlock already taken by a
-thread in process context which will never get scheduled again because
-of the blocked softirq tasklet.  This wedges the kernel hard.
+Sure, that would be simple to do.  Will change it now, and should show
+up in the next -mm.
 
-To trigger this bug, run a dual-head cloned mode configuration which
-uses the i915 drm, then execute an opengl application which
-synchronizes buffer swaps against the vertical sync interrupt.  In my
-testing, a lockup always results after running anywhere from 5 minutes
-to an hour and a half.  I believe dual-head is needed to really
-trigger the problem because then the vertical sync interrupt handling
-is no longer predictable (due to being interrupt-sourced from two
-different heads running at different speeds).  This raises the
-probability of the tasklet trying to run while the userspace DRI is
-doing things to the GPU (and manipulating the DRM lock).
+thanks,
 
-The fix is to change the relevant spinlock semantics to be the
-interrupt-blocking form.  After this change I am no longer able to
-trigger the lockup; the longest test run so far was 20 hours (test
-stopped after that point).
-
-Note: I have examined the places where this spinlock is being
-employed; all are reasonably short bounded sequences and should be
-suitable for interrupts being blocked without impacting overall kernel
-interrupt response latency.
-
-Signed-off-by: Mike Isely <isely@pobox.com>
-
----
-
-Additional (non-commit-comment) note: I had opened a report and placed
-a fix in the bug tracker for the DRI developers (found at
-bugzilla.freedesktop.org, bug ID 14937) but so far nobody there seems
-to have noticed it.  Thus this post to LKML and cc: to the maintainer.
-Also, the patch in the bugzilla entry has 2 trivial checkpatch
-warnings; this patch is tweaked slightly to clean that up.
-
- drivers/char/drm/drm_fops.c |    7 ++++--
- drivers/char/drm/drm_lock.c |   35 +++++++++++++++++++---------------
- 2 files changed, 25 insertions(+), 17 deletions(-)
-
-diff -uprN -X linux-2.6.24.3/Documentation/dontdiff linux-2.6.24.3/drivers/char/drm/drm_fops.c linux-2.6.24.3-drm-spinlock-fix/drivers/char/drm/drm_fops.c
---- linux-2.6.24.3/drivers/char/drm/drm_fops.c	2008-02-25 18:20:20.000000000 -0600
-+++ linux-2.6.24.3-drm-spinlock-fix/drivers/char/drm/drm_fops.c	2008-03-13 13:52:49.000000000 -0500
-@@ -326,6 +326,7 @@ int drm_release(struct inode *inode, str
- 	struct drm_file *file_priv = filp->private_data;
- 	struct drm_device *dev = file_priv->head->dev;
- 	int retcode = 0;
-+	unsigned long irqflags;
- 
- 	lock_kernel();
- 
-@@ -357,9 +358,11 @@ int drm_release(struct inode *inode, str
- 			 */
- 
- 			do{
--				spin_lock(&dev->lock.spinlock);
-+				spin_lock_irqsave(&dev->lock.spinlock,
-+						  irqflags);
- 				locked = dev->lock.idle_has_lock;
--				spin_unlock(&dev->lock.spinlock);
-+				spin_unlock_irqrestore(&dev->lock.spinlock,
-+						       irqflags);
- 				if (locked)
- 					break;
- 				schedule();
-diff -uprN -X linux-2.6.24.3/Documentation/dontdiff linux-2.6.24.3/drivers/char/drm/drm_lock.c linux-2.6.24.3-drm-spinlock-fix/drivers/char/drm/drm_lock.c
---- linux-2.6.24.3/drivers/char/drm/drm_lock.c	2008-02-25 18:20:20.000000000 -0600
-+++ linux-2.6.24.3-drm-spinlock-fix/drivers/char/drm/drm_lock.c	2008-03-06 15:23:34.000000000 -0600
-@@ -53,6 +53,7 @@ int drm_lock(struct drm_device *dev, voi
- 	DECLARE_WAITQUEUE(entry, current);
- 	struct drm_lock *lock = data;
- 	int ret = 0;
-+	unsigned long irqflags;
- 
- 	++file_priv->lock_count;
- 
-@@ -71,9 +72,9 @@ int drm_lock(struct drm_device *dev, voi
- 			return -EINVAL;
- 
- 	add_wait_queue(&dev->lock.lock_queue, &entry);
--	spin_lock(&dev->lock.spinlock);
-+	spin_lock_irqsave(&dev->lock.spinlock, irqflags);
- 	dev->lock.user_waiters++;
--	spin_unlock(&dev->lock.spinlock);
-+	spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
- 	for (;;) {
- 		__set_current_state(TASK_INTERRUPTIBLE);
- 		if (!dev->lock.hw_lock) {
-@@ -95,9 +96,9 @@ int drm_lock(struct drm_device *dev, voi
- 			break;
- 		}
- 	}
--	spin_lock(&dev->lock.spinlock);
-+	spin_lock_irqsave(&dev->lock.spinlock, irqflags);
- 	dev->lock.user_waiters--;
--	spin_unlock(&dev->lock.spinlock);
-+	spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
- 	__set_current_state(TASK_RUNNING);
- 	remove_wait_queue(&dev->lock.lock_queue, &entry);
- 
-@@ -198,8 +199,9 @@ int drm_lock_take(struct drm_lock_data *
- {
- 	unsigned int old, new, prev;
- 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
-+	unsigned long irqflags;
- 
--	spin_lock(&lock_data->spinlock);
-+	spin_lock_irqsave(&lock_data->spinlock, irqflags);
- 	do {
- 		old = *lock;
- 		if (old & _DRM_LOCK_HELD)
-@@ -211,7 +213,7 @@ int drm_lock_take(struct drm_lock_data *
- 		}
- 		prev = cmpxchg(lock, old, new);
- 	} while (prev != old);
--	spin_unlock(&lock_data->spinlock);
-+	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
- 
- 	if (_DRM_LOCKING_CONTEXT(old) == context) {
- 		if (old & _DRM_LOCK_HELD) {
-@@ -272,15 +274,16 @@ int drm_lock_free(struct drm_lock_data *
- {
- 	unsigned int old, new, prev;
- 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
-+	unsigned long irqflags;
- 
--	spin_lock(&lock_data->spinlock);
-+	spin_lock_irqsave(&lock_data->spinlock, irqflags);
- 	if (lock_data->kernel_waiters != 0) {
- 		drm_lock_transfer(lock_data, 0);
- 		lock_data->idle_has_lock = 1;
--		spin_unlock(&lock_data->spinlock);
-+		spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
- 		return 1;
- 	}
--	spin_unlock(&lock_data->spinlock);
-+	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
- 
- 	do {
- 		old = *lock;
-@@ -344,19 +347,20 @@ static int drm_notifier(void *priv)
- void drm_idlelock_take(struct drm_lock_data *lock_data)
- {
- 	int ret = 0;
-+	unsigned long irqflags;
- 
--	spin_lock(&lock_data->spinlock);
-+	spin_lock_irqsave(&lock_data->spinlock, irqflags);
- 	lock_data->kernel_waiters++;
- 	if (!lock_data->idle_has_lock) {
- 
--		spin_unlock(&lock_data->spinlock);
-+		spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
- 		ret = drm_lock_take(lock_data, DRM_KERNEL_CONTEXT);
--		spin_lock(&lock_data->spinlock);
-+		spin_lock_irqsave(&lock_data->spinlock, irqflags);
- 
- 		if (ret == 1)
- 			lock_data->idle_has_lock = 1;
- 	}
--	spin_unlock(&lock_data->spinlock);
-+	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
- }
- EXPORT_SYMBOL(drm_idlelock_take);
- 
-@@ -364,8 +368,9 @@ void drm_idlelock_release(struct drm_loc
- {
- 	unsigned int old, prev;
- 	volatile unsigned int *lock = &lock_data->hw_lock->lock;
-+	unsigned long irqflags;
- 
--	spin_lock(&lock_data->spinlock);
-+	spin_lock_irqsave(&lock_data->spinlock, irqflags);
- 	if (--lock_data->kernel_waiters == 0) {
- 		if (lock_data->idle_has_lock) {
- 			do {
-@@ -376,7 +381,7 @@ void drm_idlelock_release(struct drm_loc
- 			lock_data->idle_has_lock = 0;
- 		}
- 	}
--	spin_unlock(&lock_data->spinlock);
-+	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
- }
- EXPORT_SYMBOL(drm_idlelock_release);
- 
- 
--- 
-
-Mike Isely
-isely @ pobox (dot) com
-PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
+greg k-h
