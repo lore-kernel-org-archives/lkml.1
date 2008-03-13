@@ -1,50 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbYCMS1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYCMSiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755832AbYCMS1s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 14:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYCMS1k
+	id S1755337AbYCMSiZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 14:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYCMSiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 14:27:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39526 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753767AbYCMS1k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 14:27:40 -0400
-Date: Thu, 13 Mar 2008 11:26:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: dhowells@redhat.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, ralf@linux-mips.org
-Subject: Re: pm_register() and pm_send_all()
-Message-Id: <20080313112614.cae39f86.akpm@linux-foundation.org>
-In-Reply-To: <20080313180558.GC4949@elf.ucw.cz>
-References: <20080312150042.96668bcd.akpm@linux-foundation.org>
-	<21968.1205411497@redhat.com>
-	<20080313180558.GC4949@elf.ucw.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 14:38:16 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:44697 "EHLO lobo.ruivo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751926AbYCMSiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 14:38:15 -0400
+X-Greylist: delayed 1938 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Mar 2008 14:38:15 EDT
+Date: Thu, 13 Mar 2008 14:05:39 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
+Message-ID: <20080313180538.GC4620@cathedrallabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 19:05:58 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+This patch includes code to handle NMI_IO_APIC enabling/disabling by
+nmi_watchdog proc file.
 
-> On Thu 2008-03-13 12:31:37, David Howells wrote:
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > pm_send_all() has just a handful of callers:
-> > 
-> > What should be done instead of calling pm_send_all()?
-> 
-> pm_send_all is currently nop.
+Signed-off-by: Aristeu Rozanski <aris@ruivo.org>
 
-So we could have deleted pm_send_all() and pm_register() ages ago?  And
-we've all been needlessly staring at those warnings all this time? 
-Grumble.
+---
+ arch/x86/kernel/nmi_32.c |   25 +++++++++++++++++++++++++
+ arch/x86/kernel/nmi_64.c |   25 +++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
 
-Could we please have a volunteer to take care of making these things go
-away asap?
-
+--- nmi.orig/arch/x86/kernel/nmi_64.c	2008-03-12 17:02:36.000000000 -0400
++++ nmi/arch/x86/kernel/nmi_64.c	2008-03-12 17:47:35.000000000 -0400
+@@ -274,6 +274,8 @@ void stop_apic_nmi_watchdog(void *unused
+ 		return;
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+ 		lapic_watchdog_stop();
++	else
++		__acpi_nmi_disable(NULL);
+ 	__get_cpu_var(wd_enabled) = 0;
+ 	atomic_dec(&nmi_active);
+ }
+@@ -405,6 +407,24 @@ void restart_nmi(void)
+ 
+ #ifdef CONFIG_SYSCTL
+ 
++static void enable_ioapic_nmi_watchdog_single(void *unused)
++{
++	__get_cpu_var(wd_enabled) = 1;
++	atomic_inc(&nmi_active);
++	__acpi_nmi_enable(NULL);
++}
++
++static void enable_ioapic_nmi_watchdog(void)
++{
++	on_each_cpu(enable_ioapic_nmi_watchdog_single, NULL, 0, 1);
++	touch_nmi_watchdog();
++}
++
++static void disable_ioapic_nmi_watchdog(void)
++{
++	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
++}
++
+ static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
+ {
+ 	unsigned char reason = get_nmi_reason();
+@@ -442,6 +462,11 @@ int proc_nmi_enabled(struct ctl_table *t
+ 			enable_lapic_nmi_watchdog();
+ 		else
+ 			disable_lapic_nmi_watchdog();
++	} else if (nmi_watchdog == NMI_IO_APIC) {
++		if (nmi_watchdog_enabled)
++			enable_ioapic_nmi_watchdog();
++		else
++			disable_ioapic_nmi_watchdog();
+ 	} else {
+ 		printk( KERN_WARNING
+ 			"NMI watchdog doesn't know what hardware to touch\n");
+--- nmi.orig/arch/x86/kernel/nmi_32.c	2008-03-12 15:16:30.000000000 -0400
++++ nmi/arch/x86/kernel/nmi_32.c	2008-03-12 17:50:55.000000000 -0400
+@@ -270,6 +270,8 @@ void stop_apic_nmi_watchdog(void *unused
+ 		return;
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+ 		lapic_watchdog_stop();
++	else
++		__acpi_nmi_disable(NULL);
+ 	__get_cpu_var(wd_enabled) = 0;
+ 	atomic_dec(&nmi_active);
+ }
+@@ -390,6 +392,24 @@ __kprobes int nmi_watchdog_tick(struct p
+ 
+ #ifdef CONFIG_SYSCTL
+ 
++static void enable_ioapic_nmi_watchdog_single(void *unused)
++{
++	__get_cpu_var(wd_enabled) = 1;
++	atomic_inc(&nmi_active);
++	__acpi_nmi_enable(NULL);
++}
++
++static void enable_ioapic_nmi_watchdog(void)
++{
++	on_each_cpu(enable_ioapic_nmi_watchdog_single, NULL, 0, 1);
++	touch_nmi_watchdog();
++}
++
++static void disable_ioapic_nmi_watchdog(void)
++{
++	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
++}
++
+ static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
+ {
+ 	unsigned char reason = get_nmi_reason();
+@@ -431,6 +451,11 @@ int proc_nmi_enabled(struct ctl_table *t
+ 			enable_lapic_nmi_watchdog();
+ 		else
+ 			disable_lapic_nmi_watchdog();
++	} else if (nmi_watchdog == NMI_IO_APIC) {
++		if (nmi_watchdog_enabled)
++			enable_ioapic_nmi_watchdog();
++		else
++			disable_ioapic_nmi_watchdog();
+ 	} else {
+ 		printk( KERN_WARNING
+ 			"NMI watchdog doesn't know what hardware to touch\n");
