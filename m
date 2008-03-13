@@ -1,95 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbYCMM3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYCMMdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691AbYCMM3D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 08:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbYCMM2f
+	id S1754420AbYCMMdB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 08:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYCMMcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 08:28:35 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:59419 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754676AbYCMM2e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 08:28:34 -0400
-Subject: Re: [patch 06/10] cpu topology support for s390.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
+	Thu, 13 Mar 2008 08:32:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52321 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752216AbYCMMcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 08:32:53 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080312150042.96668bcd.akpm@linux-foundation.org>
+References: <20080312150042.96668bcd.akpm@linux-foundation.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       heiko.carstens@de.ibm.com
-In-Reply-To: <20080312161137.63bdfa67.akpm@linux-foundation.org>
-References: <20080312173155.703966894@de.ibm.com>
-	 <20080312173217.505558934@de.ibm.com>
-	 <20080312161137.63bdfa67.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 13 Mar 2008 13:28:27 +0100
-Message-Id: <1205411307.26537.64.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+Cc: dhowells@redhat.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: pm_register() and pm_send_all()
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 13 Mar 2008 12:31:37 +0000
+Message-ID: <21968.1205411497@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-12 at 16:11 -0700, Andrew Morton wrote:
-> > +#include <asm/delay.h>
-> > +#include <asm/s390_ext.h>
-> > +
-> > +#define CPU_BITS 64
-> > +
-> > +struct tl_cpu {
-> > +	unsigned char reserved[6];
-> > +	unsigned short origin;
-> > +	unsigned long mask[CPU_BITS / BITS_PER_LONG];
-> > +};
-> 
-> mask[] will be too small for CPU_BITS=65 ;)
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-We could add the +(BITS_PER_LONG - 1) logic but what for? The CPU_BITS
-is defined right above and it will be increased in steps of 64.
+> pm_send_all() has just a handful of callers:
 
-> > ...
-> >
-> > +static union tl_entry *next_tle(union tl_entry *tle)
-> > +{
-> > +	if (tle->nl)
-> > +		return (union tl_entry *)((struct tl_container *)tle + 1);
-> > +	else
-> > +		return (union tl_entry *)((struct tl_cpu *)tle + 1);
-> > +}
-> 
-> omg.
+What should be done instead of calling pm_send_all()?
 
-The length of the current tle depends on the type, the next type is
-located behind the current one. Expect for the typecasting and the union
-trick this is what needs to be done.
-
-> > +static void tl_to_cores(struct tl_info *info)
-> > +{
-> > +	union tl_entry *tle, *end;
-> > +	struct core_info *core = &core_info;
-> > +
-> > +	mutex_lock(&smp_cpu_state_mutex);
-> > +	clear_cores();
-> > +	tle = (union tl_entry *)&info->tle;
-> 
-> and this cast was unneeded!
-> 
-> > +	end = (union tl_entry *)((unsigned long)info + info->length);
-> 
-> I'd suggest that you take a look at all the pointer arith games which are
-> being played in this code and see if it can be done better with a more
-> appropriate use of the C type system.  Before someone dies.
-
-The only thing that I can see that we could do is to get rid of the
-unions and do the pointer arithmetic with the tl_cpu / tl_container
-structs by hand. The data stored by ptf is structured in a way that
-makes it rather hard to write decent C code.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+David
