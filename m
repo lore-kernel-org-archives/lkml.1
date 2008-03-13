@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYCMR4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYCMR42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbYCMR4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYCMR4A
+	id S1756875AbYCMR42 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYCMR4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:56:00 -0400
-Received: from theia.rz.uni-saarland.de ([134.96.7.31]:27793 "EHLO
-	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbYCMR4A (ORCPT
+	Thu, 13 Mar 2008 13:56:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:31789 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756176AbYCMR4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:56:00 -0400
-Date: Thu, 13 Mar 2008 18:53:52 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: x86: fix uml with generic find_next_bit for x86
-Message-ID: <20080313175351.GA4711@mailshack.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 13 Mar 2008 13:56:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BM5OA+oQ1zXp6/7GIS+o8rT88FybwlCFeaGO7PuJz+uSHZbewKCwR2+Qu3p2eOHugQDv/k+ZF/j8KDyfjNIbDIMHxyUFVJxwGCq1nWZwIa2LyZr5Ps4i4l4eYBNjypWRkP8vsSiXJgiAtWkUOjIkV8YoxJ9x1I3IX7Y4tdydaXQ=
+Message-ID: <f188924b0803131056m2aae7625x24bd00136b712076@mail.gmail.com>
+Date: Thu, 13 Mar 2008 18:56:04 +0100
+From: "Fred ." <eldmannen@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: Keys get stuck
+Cc: "David Newall" <davidn@davidnewall.com>, "Jiri Kosina" <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080313171425.GA4840@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Thu, 13 Mar 2008 18:55:45 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.26; host: AntiVir1)
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com>
+	 <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz>
+	 <47D7B428.6010804@davidnewall.com> <20080313171425.GA4840@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: fix uml with generic find_next_bit for x86
+With so many people suffering from this bug (for a long time), and so
+many bright people here, why doesn't it get fixed?
 
-This fixes uml breakage I introduced in "change x86 to use
-generic find_next_bit", which is now in x86-testing.
+...other operating systems don't suffer from this bug...
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-
----
-
-Hello Ingo,
-
-My patch "change x86 to use generic find_next_bit" broke
-uml builds. Here is what should be added to that patch
-to get it to work for uml too.
-
-Greetings,
-	Alexander
-
- arch/um/Kconfig.i386   |    4 ++++
- arch/um/Kconfig.x86_64 |    4 ++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/um/Kconfig.i386 b/arch/um/Kconfig.i386
-index 3cd8a04..164d29c 100644
---- a/arch/um/Kconfig.i386
-+++ b/arch/um/Kconfig.i386
-@@ -43,6 +43,10 @@ config ARCH_REUSE_HOST_VSYSCALL_AREA
- 	bool
- 	default y
- 
-+config GENERIC_FIND_NEXT_BIT
-+	bool
-+	default y
-+
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-diff --git a/arch/um/Kconfig.x86_64 b/arch/um/Kconfig.x86_64
-index 6533b34..a29f545 100644
---- a/arch/um/Kconfig.x86_64
-+++ b/arch/um/Kconfig.x86_64
-@@ -31,6 +31,10 @@ config SMP_BROKEN
- 	bool
- 	default y
- 
-+config GENERIC_FIND_NEXT_BIT
-+	bool
-+	default y
-+
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-
+On Thu, Mar 13, 2008 at 6:14 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>
+> On Wed 2008-03-12 21:14:56, David Newall wrote:
+>  > Jiri Kosina wrote:
+>  > > Very probably this is due to broken way how X themselves implement
+>  > > auto-repeat, instead of using kernel-provided auto-repeat functionality.
+>  >
+>  > It should be said that X implements auto-repeat out of necessity.  While
+>  > the kernel can report key down and up events, its further interpretation
+>  > of those events is not appropriate.  Many combinations of events are
+>  > possible, such as keyboard plus mouse, and this precludes the kernel
+>  > from providing a full interpretation.  It would be wrong for it to even
+>  > try.  X is the proper place to implement auto-repeat for X.
+>
+>  No.
+>
+>  hw is proper place to implement autorepeat, and along with some
+>  buffering, it has chance to work. Kernel is not real-time, and X are
+>  definitely not real-time, while autorepeat is real-time operation.
+>
+>  It actually mostly works in ps/2 case. Buffer in hardware means that
+>  pretty big interrupt delays can be tolerated without problems.
+>
+>  --
+>  (english) http://www.livejournal.com/~pavelmachek
+>  (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
