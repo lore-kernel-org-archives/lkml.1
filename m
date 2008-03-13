@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYCMTpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbYCMTsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYCMTpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 15:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYCMTpK
+	id S1756457AbYCMTsJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 15:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYCMTr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 15:45:10 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57713
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbYCMTpJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 15:45:09 -0400
-Date: Thu, 13 Mar 2008 20:45:07 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       virtualization@lists.osdl.org, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
-       jeremy@goop.org, clameter@sgi.com, a.p.zijlstra@chello.nl
-Subject: Re: [patch 0/6] Guest page hinting version 6.
-Message-ID: <20080313194507.GJ7365@v2.random>
-References: <20080312132132.520833247@de.ibm.com> <Pine.LNX.4.64.0803131627450.17244@blonde.site> <1205430307.18433.20.camel@bodhitayantram.eng.vmware.com>
+	Thu, 13 Mar 2008 15:47:56 -0400
+Received: from lixom.net ([66.141.50.11]:60386 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbYCMTr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 15:47:56 -0400
+Date: Thu, 13 Mar 2008 14:54:31 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, linux-kernel@vger.kernel.org,
+       pasemi-linux@ozlabs.org, linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip
+	DMAengine
+Message-ID: <20080313195431.GA1449@lixom.net>
+References: <20080306233900.GA3969@lixom.net> <1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1205430307.18433.20.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 10:45:07AM -0700, Zachary Amsden wrote:
-> What doesn't appear to be useful however, is support for this under
-> VMware.  It can be done, even without the writable pte support (yes,
-> really).  But due to us exploiting optimizations at lower layers, it
-> doesn't appear that it will gain us any performance - and we must
-> already have the complex working set algorithms to support
-> non-paravirtualized guests.
+On Tue, Mar 11, 2008 at 10:04:11AM -0700, Dan Williams wrote:
 
-With non-paravirt all you can do is to swap the guest physical memory
-(mmu notifiers allows linux to do that) or share memory (mmu notifiers
-+ ksm allows linux to do that too). We also have complex working set
-algorithms that we use to finds which parts of the guest physical
-address space are best to swap first: the core linux VM.
+> I notice that the driver does not handle callbacks in its descriptor
+> cleanup path.  This could be ok if your intent is only to support the
+> net_dma style polled operations, but this will not work for the
+> raid-offload async_tx case.  I think the solution is for async_tx to
+> ignore channels without the DMA_INTERRUPT capability.
 
-What paravirt allows us to do (and that's the whole point of the paper
-I guess), is to go one step further than just guest swapping and to
-ask the guest if the page really need to be swapped or if it can be
-freed right away. So this would be an extension of the mmu notifiers
-(this also shows how EMM API is too restrictive, while MMU notifiers
-will allow that extension in the future) to avoid I/O sometime if
-guest tells us it's not necessary to swap through paravirt ops.
+Good point, and correct - I have mostly been testing this with the
+NET_DMA offload. async_tx doesn't make use of just memcpy, does it?
 
-When talking with friends about ballooning I already once suggested to
-auto inflate the balloon with pages in the freelist.
+Also, how is DMA_INTERRUPT supposed to work? I see there's a separate
+"prep_dma_interrupt" function, but that doesn't make sense to me. Don't
+you want the interrupt associated with a specific transaction instead
+of added as a separate (empty) transaction?
 
-Now this paper goes well beyond the pages in the freelist (called
-U/unused in the paper), this also covers cache and mapped-clean cache
-in the guest. That would have been the next step.
+Once I add the descriptor to the ring, I can't change it to set the
+interrupt request bit on it. I suppose I could just add a dummy descriptor
+to the ring, but that doesn't seem quite right either.
 
-Anyway plain ballooning remains useful as rss limiting or numa
-compartments in the linux hypervisor, to provide unfariness to certain
-guests.
+> > +static void pasemi_dma_clean(struct pasemi_dma_chan *chan)
+> > +{
+> > +       int old, new, i;
+> > +       unsigned long flags;
+> > +       struct pasemi_dma_desc *desc;
+> > +       spin_lock_irqsave(&chan->desc_lock, flags);
+> 
+> Is spin_lock_bh() insufficient here?
+> 
+> ...that's all that jumps out at the moment.
 
-I didn't read the patch yet, but I think paravirt knowledge about
-U/unused pages is needed to avoid guest swapping. The cache and mapped
-cache in the guest is a gray area, because linux as hypervisor will be
-extremely efficient at swapping out and swapping in the guest cache
-(host swapping guest cache, may be faster than re-issuing a read-I/O
-to refill the cache by itself, clearly with guest using
-paravirt). Let's say I'm mostly interested about page-hinting for the
-U pages initially.
+Can't do that if it's called both from the polling as well as the IRQ
+context, it'd need to hold off irqs. I.e. once I add the DMA_INTERRUPT
+support it will be needed.
 
-I'm currently busy with other two features and trying to get mmu
-notifier #v9 into mainline which is orders of magnitude more important
-than avoiding a few swapouts sometime (without mmu notifiers
-everything else is irrelevant, including guest page hinting and
-including ballooning too cause madvise(don't need) won't clear sptes
-and invalidate guest tlbs).
+
+-Olof
+
