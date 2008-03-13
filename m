@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbYCMUDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbYCMUER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbYCMUDj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYCMUDc
+	id S1757166AbYCMUER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYCMUD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:03:32 -0400
-Received: from phunq.net ([64.81.85.152]:33931 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752203AbYCMUDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:03:31 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: David Newall <davidn@davidnewall.com>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Thu, 13 Mar 2008 12:03:03 -0800
-User-Agent: KMail/1.9.5
-Cc: david@lang.hm, Chris Friesen <cfriesen@nortel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803131232.07879.phillips@phunq.net> <47D9856E.9010304@davidnewall.com>
-In-Reply-To: <47D9856E.9010304@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Mar 2008 16:03:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40838 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752940AbYCMUD5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 16:03:57 -0400
+Date: Thu, 13 Mar 2008 13:01:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James.Bottomley@HansenPartnership.com, stern@rowland.harvard.edu,
+       mdharm-usb@one-eyed-alien.net, svens@stackframe.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH ver3] isd200: Allocate sense_buffer for hacked up
+ scsi_cmnd
+Message-Id: <20080313130112.22c0776f.akpm@linux-foundation.org>
+In-Reply-To: <47D810C9.90309@panasas.com>
+References: <Pine.LNX.4.44L0.0803121109210.4595-100000@iolanthe.rowland.org>
+	<47D7F5A3.9010004@panasas.com>
+	<1205340884.2941.112.camel@localhost.localdomain>
+	<47D80D60.3060006@panasas.com>
+	<47D810C9.90309@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803131303.04118.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 12:50, David Newall wrote:
-> Daniel Phillips wrote:
-> > The period where you cannot access the data is downtime.  If your script
-> > just does a cp from a disk array to the ram device you cannot just read
-> > from the backing store in that period because you will need to fail over
-> > to the ramdisk at some point, and you cannot just read from the ramdisk
-> > because it is not populated yet.
+On Wed, 12 Mar 2008 19:20:09 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
+
 > 
-> Wouldn't a raid-1 set comprising disk + ramdisk do that with no downtime?
+> Since the separation of sense_buffer from scsi_cmnd, Drivers that hack their
+> own struct scsi_cmnd like here isd200, must also take care of their own
+> sense_buffer.
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  drivers/usb/storage/isd200.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/usb/storage/isd200.c b/drivers/usb/storage/isd200.c
+> index 4f2d143..971d13d 100644
+> --- a/drivers/usb/storage/isd200.c
+> +++ b/drivers/usb/storage/isd200.c
+> @@ -1470,6 +1470,7 @@ static void isd200_free_info_ptrs(void *info_)
+>  	if (info) {
+>  		kfree(info->id);
+>  		kfree(info->RegsBuf);
+> +		kfree(info->srb.sense_buffer);
+>  	}
+>  }
+>  
+> @@ -1495,7 +1496,9 @@ static int isd200_init_info(struct us_data *us)
+>  				kzalloc(sizeof(struct hd_driveid), GFP_KERNEL);
+>  		info->RegsBuf = (unsigned char *)
+>  				kmalloc(sizeof(info->ATARegs), GFP_KERNEL);
+> -		if (!info->id || !info->RegsBuf) {
+> +		info->srb.sense_buffer =
+> +				kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
+> +		if (!info->id || !info->RegsBuf || !info->srb.sense_buffer) {
+>  			isd200_free_info_ptrs(info);
+>  			kfree(info);
+>  			retStatus = ISD200_ERROR;
 
-In raid1, write completion has to wait for write completion on all
-mirror members, so writes run at disk speed.  Reads run at ramdisk
-speed, so your proposal sounds useful, but ramback aims for high
-write performance as well.
+I've thoroughly lost the plot here.  Is this needed in 2.6.25?  If so, why?
 
-Daniel
+Thanks.
