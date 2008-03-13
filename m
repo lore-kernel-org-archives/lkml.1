@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbYCMGM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbYCMGOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbYCMGM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYCMGMV
+	id S1753126AbYCMGOk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 02:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYCMGOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:12:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42582 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751116AbYCMGMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:12:20 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX188/J0ZCXI8NE5FTR5L9RHYJp4oE4+yKA+19PuRzj
-	mHXccKkW4OpsRC
-Subject: Re: linux+glibc memory allocator, poor performance
-From: Mike Galbraith <efault@gmx.de>
+	Thu, 13 Mar 2008 02:14:33 -0400
+Received: from phunq.net ([64.81.85.152]:48704 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751477AbYCMGOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 02:14:32 -0400
+From: Daniel Phillips <phillips@phunq.net>
 To: David Newall <davidn@davidnewall.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, "J.C. Pizarro" <jcpiza@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <47D8C25A.8020708@davidnewall.com>
-References: <998d0e4a0803121309s125dddbao801e53e44296a4d6@mail.gmail.com>
-	 <20080312211219.GL27894@ZenIV.linux.org.uk>
-	 <47D8C25A.8020708@davidnewall.com>
-Content-Type: text/plain
-Date: Thu, 13 Mar 2008 07:12:12 +0100
-Message-Id: <1205388732.4797.30.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Wed, 12 Mar 2008 22:14:16 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803121029.54108.phillips@phunq.net> <47D8BE08.6040800@davidnewall.com>
+In-Reply-To: <47D8BE08.6040800@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+Message-Id: <200803122314.18244.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-03-13 at 16:27 +1030, David Newall wrote:
-> Al Viro wrote:
-> > And then we are told that linux-kernel regulars are mean and insulting...
-> >   
+On Wednesday 12 March 2008 22:39, David Newall wrote:
+> Daniel Phillips wrote:
+> > Particularly about Ext2/Ext3, which does recover well from random damage.
+> > My experience.
 > 
-> You really are being rude and insulting.
+> By "recover well", you must mean "loses massive swabs of data, leaving
+> the system unbootable and with enormous numbers of user files missing." 
+> My experience.
+> 
+> Expecting fsck to cover for missed writes is stupid.
 
-FWIW, I thought it was a well deserved "Al" thump.  (not that my opinion
-or sense of humor matters, but it made me chuckle mightily)
+Whatever it can get off the disk it gets.  It does a good job.  If you
+don't think so, then don't tell me, tell Ted.
 
-	-Mike
-
+Daniel
