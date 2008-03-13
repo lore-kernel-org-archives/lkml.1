@@ -1,104 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbYCMRX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYCMRYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbYCMRX4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 13:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYCMRXq
+	id S1756236AbYCMRYb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 13:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbYCMRYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 13:23:46 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:35336 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbYCMRXp (ORCPT
+	Thu, 13 Mar 2008 13:24:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33709 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751798AbYCMRYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 13:23:45 -0400
-Subject: Re: [patch 6/6] Guest page hinting: s390 support.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: akpm@osdl.org, linux-s390@vger.kernel.org, frankeh@watson.ibm.com,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, Anthony Liguori <anthony@codemonkey.ws>,
-       hugh@veritas.com
-In-Reply-To: <47D95EC7.7030204@goop.org>
-References: <20080312132132.520833247@de.ibm.com>
-	 <20080312132704.474209626@de.ibm.com>	<47D802A2.1030406@goop.org>
-	 <1205339285.8851.13.camel@localhost>	<47D8085E.9030701@goop.org>
-	 <1205341164.8851.44.camel@localhost>	<47D81771.5070400@goop.org>
-	 <47D8373C.40105@codemonkey.ws>	<47D840E3.5090902@goop.org>
-	 <47D8436F.9080901@codemonkey.ws>  <47D84CEB.6050300@goop.org>
-	 <1205401508.26537.37.camel@localhost> <47D95134.6030503@goop.org>
-	 <47D953AB.1030901@goop.org> <1205427338.5920.12.camel@localhost>
-	 <47D95EC7.7030204@goop.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 13 Mar 2008 18:23:38 +0100
-Message-Id: <1205429018.5920.38.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 13:24:19 -0400
+Date: Thu, 13 Mar 2008 10:24:10 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [GIT PATCH] PCI fix for 2.6.25-rc5 git tree
+Message-ID: <20080313172410.GA17045@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 10:05 -0700, Jeremy Fitzhardinge wrote:
-> Martin Schwidefsky wrote:
-> > Vz is the page discarded state. The difference to Uz is slim, both
-> > states will cause a program check on access. Vz generates a discard
-> > fault, Uz generates an addressing exception which is nice for debugging.
-> >   
-> 
-> How do you handle these different cases in Linux?  Do you use Vr pages 
-> in the pagecache, and then shoot down the pagecache entry if the host 
-> steals the page?
+Here is one PCI fix for your 2.6.25-rc5 git tree.
 
-The environment where we currently run all this is z/VM as the host and
-Linux as the guest. We have two page tables on s390, a host page table
-and a guest page table. If the host discards a page it simple removes
-the entry for the page in the host page table. If the guest comes along
-and accesses the page the host gets the fault and generates the
-appropriate fault.
+It fixes the duplicate sysfs entry problem as reported by Guennadi
+Liakhovetski, now the machine can be properly shut down :)
 
-> The Uz access exception presumably just generates a normal oops.
+The problem is also in 2.6.24 and earlier, but there we only get the
+warning of a message saying that a link could not be created.  I'll send
+a patch for -stable after this goes in as it will not directly apply
+there.
 
-Yes, the handler for an addressing exception will call die() for a
-kernel check without a fixup.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6.git/
 
-> (I should probably make time to read the rest of the series.)
-> 
-> >> But given how you've described V-state pages, I really would expect 
-> >> writes to a Vz to work, or alternatively, all writes to V-state pages to 
-> >> be disallowed.  Are there any real uses for a writable Vr page?
-> >>     
-> >
-> > You mean in the section that speaks about the guests states S/U/V/P ?
-> > Always keep in mind that you can access a V/P page only until it gets
-> > discarded. Then the useful content of the page frame is lost and any
-> > read of write to the not Vz page will be answered with a discard fault.
-> >   
-> 
-> Presumably reads from a Vz page also generate a discard fault?
+thanks,
 
-Yes.
+greg k-h
 
-> > A Vr page is read-only. If a page gets mapped for writing it needs to
-> > get into the Pr state. This is the hint for the host to look at the
-> > dirty bit before it discards a page.
-> > So yes, there is no use for a writable Vr page.
-> >   
-> 
-> OK, thanks, that clears things up.  I was assuming that Vr was 
-> technically writable but that writes could be discarded at any time (ie, 
-> allowing guests to merrily shoot themselves in the foot ;).  Making it 
-> forced RO is much more sensible.
 
-Well, technically you could write to a Vr page via the kernel address
-space. The thing is that the host can just discard the page although it
-is dirty. The Vr state is used for page cache pages which do not have
-any writable mapping.
+-------------
 
--- 
-blue skies,
-  Martin.
+ drivers/pci/bus.c   |    6 +++++-
+ include/linux/pci.h |    1 +
+ 2 files changed, 6 insertions(+), 1 deletions(-)
 
-"Reality continues to ruin my life." - Calvin.
+---------------
 
+Greg Kroah-Hartman (1):
+      PCI: fix issue with busses registering multiple times in sysfs
 
