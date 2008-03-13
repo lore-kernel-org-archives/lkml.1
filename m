@@ -1,77 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYCMXBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYCMXGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbYCMXBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 19:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYCMXBD
+	id S1756695AbYCMXGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 19:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYCMXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 19:01:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43262 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752194AbYCMXBC (ORCPT
+	Thu, 13 Mar 2008 19:06:14 -0400
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:58328 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYCMXGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 19:01:02 -0400
-Date: Thu, 13 Mar 2008 16:00:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org, avorontsov@ru.mvista.com
-Subject: Re: [patch 2.6.25-rc5 1/2] gpiolib:  dynamic gpio number allocation
-Message-Id: <20080313160039.b69a5d24.akpm@linux-foundation.org>
-In-Reply-To: <200803131549.54632.david-b@pacbell.net>
-References: <200803131549.54632.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 19:06:14 -0400
+Message-ID: <47D9B35C.9@tiscali.nl>
+Date: Fri, 14 Mar 2008 00:06:04 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: dwalker@mvista.com
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH v1] change likeliness accounting
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 14:49:53 -0800
-David Brownell <david-b@pacbell.net> wrote:
+In the patch below I propose some changes to the likely/unlikely accounting.
+---
+In struct likeliness: store __builtin_return_address in 'caller', rather than
+__FILE__ and __func__, and combine 'type' and 'line' into one 'label'.
 
-> From: Anton Vorontsov <avorontsov@ru.mvista.com>
-> 
-> If gpio_chip->base is negative during registration, gpiolib performs
-> dynamic base allocation. This is useful for devices that aren't always
-> present, such as GPIOs on hotplugged devices rather than mainboards.
-> (This behavior was previously specified but not implemented.)
-> 
-> To avoid using any numbers that may have been explicitly assigned but
-> not yet registered, this dynamic allocation assigns GPIO numbers from
-> the biggest number on down, instead of from the smallest on up.
->
-> ..
->
-> +/* dynamic allocation of GPIOs, e.g. on a hotplugged device */
-> +static int gpiochip_find_base(int ngpio)
-> +{
-> +	int i;
-> +	int spare = 0;
-> +	int base = -ENOSPC;
-> +
-> +	for (i = ARCH_NR_GPIOS - 1; i >= 0 ; i--) {
-> +		struct gpio_chip *chip = gpio_desc[i].chip;
-> +
-> +		if (!chip) {
-> +			spare++;
-> +			if (spare == ngpio) {
-> +				base = i;
-> +				break;
-> +			}
-> +		} else {
-> +			spare = 0;
-> +			i -= chip->ngpio - 1;
-> +		}
-> +	}
-> +
-> +	if (gpio_is_valid(base))
-> +		pr_debug("%s: found new base at %d\n", __func__, base);
-> +	return base;
-> +}
+The __check_likely macro performs some functionality originally in
+do_check_likely(): The first check for LP_UNSEEN bit, the increment of the
+experienced likely-count. do_check_likely() looses its parameter and return
+value. I added a __builtin_expect() to make use of the expectation.
 
-hm.  I suppose that if someone want a huge number of GPIOs then we can
-convert this to a bitmap or an IDR tree easily enough.
+The likely diplay changes: now +/- denotes whether expectation fails in less
+than 0.01% of the tests rather than whether more unexpected than expected were
+encountered. __FILE__ is no longer displayed in output.
 
-Shouldn't ARCH_NR_GPIOS be CONFIG_NR_GPIOS?
+struct seq_operations becomes static and corrects a typo in comment.
 
-
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index d6d9efc..be055de 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -53,27 +53,31 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+ 
+ #if defined(CONFIG_PROFILE_LIKELY) && !(defined(CONFIG_MODULE_UNLOAD) && defined(MODULE))
+ struct likeliness {
+-	const char *func;
+-	char *file;
+-	int line;
+-	int type;
++	unsigned long caller;
++	unsigned int label;
+ 	unsigned int count[2];
+ 	struct likeliness *next;
+ };
+ 
+-extern int do_check_likely(struct likeliness *likeliness, int exp);
++extern void do_check_likely(struct likeliness *likeliness);
+ 
+-#define LP_UNSEEN	4
++#define LP_IS_EXPECTED	1
++#define LP_UNSEEN	2
++#define LP_LINE_SHIFT	2
+ 
+ #define __check_likely(exp, is_likely)					\
+ 	({								\
+ 		static struct likeliness likeliness = {			\
+-			.func = __func__,				\
+-			.file = __FILE__,				\
+-			.line = __LINE__,				\
+-			.type = is_likely | LP_UNSEEN,			\
++			.label = __LINE__ << LP_LINE_SHIFT |		\
++						LP_UNSEEN | is_likely,	\
+ 		};							\
+-		do_check_likely(&likeliness, !!(exp));			\
++									\
++		if (likeliness.label & LP_UNSEEN)			\
++			do_check_likely(&likeliness);			\
++									\
++		__builtin_expect(!!(exp), is_likely) ?                  \
++				likeliness.count[1]++ || 1 :		\
++				likeliness.count[0]++ && 0;		\
+ 	})
+ 
+ /*
+diff --git a/lib/likely_prof.c b/lib/likely_prof.c
+index 5c6d91d..06f2edb 100644
+--- a/lib/likely_prof.c
++++ b/lib/likely_prof.c
+@@ -15,41 +15,34 @@
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/proc_fs.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/bug.h>
+ #include <asm/atomic.h>
+ 
+ static struct likeliness *likeliness_head;
+ 
+-int do_check_likely(struct likeliness *likeliness, int ret)
++void do_check_likely(struct likeliness *likeliness)
+ {
+ 	static unsigned long likely_lock;
+ 
+-	if (ret)
+-		likeliness->count[1]++;
+-	else
+-		likeliness->count[0]++;
+-
+-	if (likeliness->type & LP_UNSEEN) {
+-		/*
+-		 * We don't simple use a spinlock because internally to the
+-		 * spinlock there is a call to unlikely which causes recursion.
+-		 * We opted for this method because we didn't need a preempt/irq
+-		 * disable and it was a bit cleaner then using internal __raw
+-		 * spinlock calls.
+-		 */
+-		if (!test_and_set_bit(0, &likely_lock)) {
+-			if (likeliness->type & LP_UNSEEN) {
+-				likeliness->type &= (~LP_UNSEEN);
+-				likeliness->next = likeliness_head;
+-				likeliness_head = likeliness;
+-			}
+-			smp_mb__before_clear_bit();
+-			clear_bit(0, &likely_lock);
++	/*
++	 * We don't simply use a spinlock because internally to the spinlock
++	 * there is a call to unlikely which causes recursion. We opted for this
++	 * method because we didn't need a preempt/irq disable and it was a bit
++	 * cleaner then using internal __raw spinlock calls.
++	 */
++	if (!test_and_set_bit(0, &likely_lock)) {
++		if (likeliness->label & LP_UNSEEN) {
++			likeliness->label &= (~LP_UNSEEN);
++			likeliness->next = likeliness_head;
++			likeliness_head = likeliness;
++			likeliness->caller = (unsigned long)
++						__builtin_return_address(0);
+ 		}
++		smp_mb__before_clear_bit();
++		clear_bit(0, &likely_lock);
+ 	}
+-
+-	return ret;
+ }
+ EXPORT_SYMBOL(do_check_likely);
+ 
+@@ -86,18 +79,22 @@ static void *lp_seq_next(struct seq_file *out, void *p, loff_t *pos)
+ static int lp_seq_show(struct seq_file *out, void *p)
+ {
+ 	struct likeliness *entry = p;
+-	unsigned int true = entry->count[1];
+-	unsigned int false = entry->count[0];
+-
+-	if (!entry->type) {
+-		if (true > false)
++	char function[KSYM_SYMBOL_LEN];
++	unsigned int pos = entry->count[1];
++	unsigned int neg = entry->count[0];
++
++	/*
++	 * Balanced if the suggestion was false in less than 0.01% of the tests
++	 */
++	if (!(entry->label & LP_IS_EXPECTED)) {
++		if (neg != 0 && (10000 * pos) / (pos + neg) > 1)
+ 			seq_printf(out, "+");
+ 		else
+ 			seq_printf(out, " ");
+ 
+ 		seq_printf(out, "unlikely ");
+ 	} else {
+-		if (true < false)
++		if (pos != 0 && (10000 * neg) / (pos + neg) > 1)
+ 			seq_printf(out, "-");
+ 		else
+ 			seq_printf(out, " ");
+@@ -105,8 +102,9 @@ static int lp_seq_show(struct seq_file *out, void *p)
+ 		seq_printf(out, "likely   ");
+ 	}
+ 
+-	seq_printf(out, "|%9u|%9u\t%s()@:%s@%d\n", true, false,
+-			entry->func, entry->file, entry->line);
++	sprint_symbol(function, entry->caller);
++	seq_printf(out, "|%9u|%9u\t%s()@:%u\n", pos, neg, function,
++					entry->label >> LP_LINE_SHIFT);
+ 
+ 	return 0;
+ }
+@@ -115,7 +113,7 @@ static void lp_seq_stop(struct seq_file *m, void *p)
+ {
+ }
+ 
+-struct seq_operations likely_profiling_ops = {
++static struct seq_operations likely_profiling_ops = {
+ 	.start  = lp_seq_start,
+ 	.next   = lp_seq_next,
+ 	.stop   = lp_seq_stop,
