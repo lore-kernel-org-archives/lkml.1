@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYCMG46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYCMG7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbYCMG46 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 02:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYCMG4v
+	id S1753518AbYCMG7z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 02:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYCMG7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 02:56:51 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:60805 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbYCMG4u (ORCPT
+	Thu, 13 Mar 2008 02:59:47 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:14347 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYCMG7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 02:56:50 -0400
-From: Zhang Wei <wei.zhang@freescale.com>
-To: dan.j.williams@intel.com
-Cc: linux-kernel@vger.kernel.org, Zhang Wei <wei.zhang@freescale.com>
-Subject: [PATCH] fsldma: Add a completed cookie updated action in DMA finish interrupt.
-Date: Thu, 13 Mar 2008 14:54:20 +0800
-Message-Id: <1205391260-4482-1-git-send-email-wei.zhang@freescale.com>
-X-Mailer: git-send-email 1.5.4
-X-OriginalArrivalTime: 13 Mar 2008 06:56:44.0784 (UTC) FILETIME=[6637FF00:01C884D7]
+	Thu, 13 Mar 2008 02:59:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=RCPZeDlrLwe60D1VT7zheOkPdLIgUZ7+2qFa6cd3xuQGbrR3JDyX+wNnyENX/78uVUwF/6751YuS2ChvPAxcTMhxH4nsd40tny5gmEF3xfQjBNAMJOpbd5r0dZ2ppze94umQy/h0rD89Ae+ucz/gtp7xCzwua2YWH8feMackZsc=
+Message-ID: <469a066a0803122359y75deba08yfef566d3f378e5ad@mail.gmail.com>
+Date: Thu, 13 Mar 2008 14:59:45 +0800
+From: "Jason Wu" <wenhsuan121@gmail.com>
+To: mingo@redhat.com, vapier.adi@gmail.com
+Subject: [PATCH] fixes the bug : ntfs build failure in linux-2.6.git on no-mmu
+Cc: linux-kernel@vger.kernel.org, wenhsuan121@gmail.com
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_3603_25770761.1205391585904"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch 'fsldma: do not cleanup descriptors in hardirq context'
-(commit 222ccf9ab838a1ca7163969fabd2cddc10403fb5) removed descriptors
-cleanup function to tasklet but the completed cookie do not updated.
-Thus, the DMA controller will get lots of duplicated transfer
-interrupts. Just make a completed cookie update in interrupt handler.
-And keep other cleanup jobs in tasklet function.
+------=_Part_3603_25770761.1205391585904
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
----
- drivers/dma/fsldma.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+This patch fixes the bug : ntfs build failure in linux-2.6.git on no-mmu
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 5428f81..7c957c3 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -539,7 +539,6 @@ static void fsl_chan_ld_cleanup(struct fsl_dma_chan *fsl_chan)
- 
- 	spin_lock_irqsave(&fsl_chan->desc_lock, flags);
- 
--	fsl_dma_update_completed_cookie(fsl_chan);
- 	dev_dbg(fsl_chan->dev, "chan completed_cookie = %d\n",
- 			fsl_chan->completed_cookie);
- 	list_for_each_entry_safe(desc, _desc, &fsl_chan->ld_queue, node) {
-@@ -710,6 +709,7 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
- 		dev_dbg(fsl_chan->dev, "event: clndar %p, nlndar %p\n",
- 			(void *)get_cdar(fsl_chan), (void *)get_ndar(fsl_chan));
- 		stat &= ~FSL_DMA_SR_EOSI;
-+		fsl_dma_update_completed_cookie(fsl_chan);
- 	}
- 
- 	/* If it current transfer is the end-of-transfer,
--- 
-1.5.4
+Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10164
 
+
+Signed-off-by: Jason Wu <wenhsuan121@gmail.com>
+
+------=_Part_3603_25770761.1205391585904
+Content-Type: text/plain;
+ name=0294-This-patch-fixes-the-bug-of-Bug-Entry-http.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdqz08vh
+Content-Disposition: attachment;
+ filename=0294-This-patch-fixes-the-bug-of-Bug-Entry-http.patch
+
+RnJvbSBjN2UzMDUwMDVjODkzY2Q2MDViZTE2YjAxMGFiYzQyZjBiMjhiMjEwIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBKYXNvbiBXdSA8d2VuaHN1YW4xMjFAZ21haWwuY29tPgpEYXRl
+OiBUaHUsIDEzIE1hciAyMDA4IDEyOjE0OjIwICswODAwClN1YmplY3Q6IFtQQVRDSF0gVGhpcyBw
+YXRjaCBmaXhlcyB0aGUgYnVnIG9mIEJ1Zy1FbnRyeSAgICAgICA6IGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMDE2NAoKLS0tCiBpbmNsdWRlL2xpbnV4L21tLmgg
+fCAgICA2ICsrKysrKwogMSBmaWxlcyBjaGFuZ2VkLCA2IGluc2VydGlvbnMoKyksIDAgZGVsZXRp
+b25zKC0pCgpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9tbS5oIGIvaW5jbHVkZS9saW51eC9t
+bS5oCmluZGV4IDNmM2NjZmUuLjJmYTQ1YzQgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvbW0u
+aAorKysgYi9pbmNsdWRlL2xpbnV4L21tLmgKQEAgLTI0Myw2ICsyNDMsMTIgQEAgc3RhdGljIGlu
+bGluZSBpbnQgaXNfdm1hbGxvY19hZGRyKGNvbnN0IHZvaWQgKngpCiAKIAlyZXR1cm4gYWRkciA+
+PSBWTUFMTE9DX1NUQVJUICYmIGFkZHIgPCBWTUFMTE9DX0VORDsKIH0KKyNlbHNlCisvKiBKdXN0
+IHJldHVybiAxIGFsbCB0aGUgdGltZSBmb3Igbm8tTU1VICovCitzdGF0aWMgaW5saW5lIGludCBp
+c192bWFsbG9jX2FkZHIoY29uc3Qgdm9pZCAqeCkKK3sKKwlyZXR1cm4gMTsKK30KICNlbmRpZgog
+CiBzdGF0aWMgaW5saW5lIHN0cnVjdCBwYWdlICpjb21wb3VuZF9oZWFkKHN0cnVjdCBwYWdlICpw
+YWdlKQotLSAKMS41LjQKCg==
+------=_Part_3603_25770761.1205391585904--
