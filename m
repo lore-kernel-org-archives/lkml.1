@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbYCMUgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYCMUh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757550AbYCMUgl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 16:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYCMUg0
+	id S1757334AbYCMUh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 16:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYCMUhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 16:36:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40651 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757439AbYCMUgZ (ORCPT
+	Thu, 13 Mar 2008 16:37:48 -0400
+Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:42147 "HELO
+	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754532AbYCMUhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 16:36:25 -0400
-Date: Thu, 13 Mar 2008 13:34:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH 1/4] introduce explicit signed/unsigned 64bit divide
-Message-Id: <20080313133459.8d7d870d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0803131546420.1791@scrub.home>
-References: <20080313002235.351414762@linux-m68k.org>
-	<20080313004902.808083566@linux-m68k.org>
-	<Pine.LNX.4.64.0803131110520.9727@vixen.sonytel.be>
-	<Pine.LNX.4.64.0803131546420.1791@scrub.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 16:37:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Q/MZNnLQ1aPIiCHlzUCQBLSfMRtbvyYvkd+B+fDrpvlTIlPWaDbcYL70cFwEJvlGZHlLKjHDUimsBJZm91ggnXLguBlERUNJMIpxBPXuvdZFLvkepBbVbtE/oCS95J/OTPmFh36qdvlxgPtupfRL4/5fjScD6i0RldmgoLbWqEA=  ;
+X-YMail-OSG: n6o7wmAVM1km9iOv3kevYDRL5xZRQicM.pkzHI4Wckc5Hy0M_ActKp6cGg3TScezZMgSXbD3bQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH 02/10] atmel_serial: Fix build on avr32 with CONFIG_PM enabled
+Date: Thu, 13 Mar 2008 12:37:40 -0800
+User-Agent: KMail/1.9.6
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+References: <> <1205419185-26395-2-git-send-email-hskinnemoen@atmel.com> <1205419185-26395-3-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <1205419185-26395-3-git-send-email-hskinnemoen@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803131337.41337.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 15:59:27 +0100 (CET)
-Roman Zippel <zippel@linux-m68k.org> wrote:
+On Thursday 13 March 2008, Haavard Skinnemoen wrote:
+> AVR32 doesn't have at91_suspend_entering_slow_clock(). Just assume the
+> clock will keep running for now.
 
-> On Thu, 13 Mar 2008, Geert Uytterhoeven wrote:
+Well, it should acquire the clk_must_disable() or somesuch... :)
+
+By the way, I noticed a goof in this driver's clock management.
+It should leave the clock off whenever the device isn't open.
+As it is, it wastes power both at runtime and during suspend.
+
+- Dave
+
+
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> ---
+>  drivers/serial/atmel_serial.c |   11 ++++++++++-
+>  1 files changed, 10 insertions(+), 1 deletions(-)
 > 
-> > > +static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
-> >                  ^       ^       ^             ^            ^
-> > 		 s64 div_s64_rem s64           s32          s32
+> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+> index d57bf3e..2efbdf6 100644
+> --- a/drivers/serial/atmel_serial.c
+> +++ b/drivers/serial/atmel_serial.c
+> @@ -1428,6 +1428,15 @@ static struct uart_driver atmel_uart = {
+>  };
+>  
+>  #ifdef CONFIG_PM
+> +static bool atmel_serial_clk_will_stop(void)
+> +{
+> +#ifdef CONFIG_ARCH_AT91
+> +	return at91_suspend_entering_slow_clock();
+> +#else
+> +	return false;
+> +#endif
+> +}
+> +
+>  static int atmel_serial_suspend(struct platform_device *pdev,
+>  				pm_message_t state)
+>  {
+> @@ -1435,7 +1444,7 @@ static int atmel_serial_suspend(struct platform_device *pdev,
+>  	struct atmel_uart_port *atmel_port = to_atmel_uart_port(port);
+>  
+>  	if (device_may_wakeup(&pdev->dev)
+> -	    && !at91_suspend_entering_slow_clock())
+> +	    && !atmel_serial_clk_will_stop())
+>  		enable_irq_wake(port->irq);
+>  	else {
+>  		uart_suspend_port(&atmel_uart, port);
+> -- 
+> 1.5.4.3
 > 
-> Thanks for noticing.
-> I'm quite sure I fixed this before, as I compiled this also for 
-> 64bit, so I'm not sure how it got back. Anyway, new patch below.
-
-I think what happened was that [patch 3/4] fixed this up.  Of course,
-that patch doesn't apply on this updated [1/4].  I _could_ just take the
-old [1/4] (I think), but I don't know if that wouild be bisection-friendly.
-
-Anyway, please redo&resend?  Thanks.
 
 
-
-Please have a think about that code in arch/x86/kvm/i8254.c too.  It is
-painful to see remote subsystems (re)implementing generic infrastructure.
-Can KVM use existing code?  Should we hoist what KVM has done there into
-generic code?  Did it have to use a(nother bleeding) macro?
