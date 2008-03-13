@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbYCMIsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYCMIwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891AbYCMIsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 04:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYCMIsf
+	id S1753337AbYCMIwQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 04:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYCMIwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 04:48:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45100 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750929AbYCMIse (ORCPT
+	Thu, 13 Mar 2008 04:52:04 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51408 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbYCMIwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 04:48:34 -0400
-Date: Thu, 13 Mar 2008 01:48:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: hackbench regression since 2.6.25-rc
-Message-Id: <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-In-Reply-To: <1205394417.3215.85.camel@ymzhang>
-References: <1205394417.3215.85.camel@ymzhang>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 04:52:01 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47D8EA7F.8040703@s5r6.in-berlin.de>
+Date: Thu, 13 Mar 2008 09:49:03 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: Jarod Wilson <jwilson@redhat.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: fw-ohci: sync AT dma buffer before use
+References: <200803121743.29438.jwilson@redhat.com> <47D8645B.5040305@s5r6.in-berlin.de> <200803122111.55754.jwilson@redhat.com>
+In-Reply-To: <200803122111.55754.jwilson@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 15:46:57 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+Jarod Wilson wrote:
+> On Wednesday 12 March 2008 07:16:43 pm Stefan Richter wrote:
+>> Jarod Wilson wrote:
+>>> See http://bugzilla.kernel.org/show_bug.cgi?id=9617
+>> Alas the panic from comment #10 is still there, i.e. instant crash when
+>> plugging in an LSI based CD-RW (shortly after SCSI inquiry) --- but only
+>> if CONFIG_DEBUG_PAGEALLOC=y.
+>>
+>> Jarod, did your crashes happen with CONFIG_DEBUG_PAGEALLOC=n?
+> 
+> No, they're with it turned on (and still on w/this change where it doesn't 
+> panic). If I run with CONFIG_DEBUG_PAGEALLOC=n, no panic.
 
-> Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
-> 40% regression with 2.6.25-rc1, and more than 20% regression with kernel
-> 2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
-> 
-> Command to start it.
-> #hackbench 100 process 2000
-> I ran it for 3 times and sum the values.
-> 
-> I tried to investiagte it by bisect.
-> Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
-> Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
-> 
-> Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
-> these 2 tags for many times manually and kernel always paniced.
-> 
-> All patches between the 2 tags are on kobject restructure. I guess such restructure
-> creates more cache miss on the 16-core tigerton.
-> 
+So then that's like "my" panic.
 
-That's pretty surprising - hackbench spends most of its time in userspace
-and zeroing out anonymous pages.  It shouldn't be fiddling with kobjects
-much at all.
+The other thing that I see here is that it only happens with my two LSI 
+based devices (both CD-RWs), always quickly after SCSI inquiry.
 
-Some kernel profiling might be needed here..
+I shall test with my Prolific based DVD-RW to find out whether it is 
+about some requests that are sent to CD/DVD-RWs or about the split 
+transactions that I get from the LSI bridges.  (See bugzilla.)
+
+>> So this patch shouldn't do 
+>> anything, except that it inserts a call which happens to have barrier
+>> characteristics on some platforms.
+
+...and potentially delays execution.
+
+> ...but got lucky in that it actually helps this particular setup (x86_64 
+> kernel, dual quad-core opteron, 8G RAM, 3 FireWire controllers). Hrm.
+
+Unless you or I spot the real solution earlier, you could also try 
+replacing your dma_sync_ with mb() and with mdelay() respectively to see 
+what aspect of the dma_sync_ is fixing your setup.  Also move the mb() 
+to other interesting places of the involved code.
+-- 
+Stefan Richter
+-=====-==--- --== -==-=
+http://arcgraph.de/sr/
