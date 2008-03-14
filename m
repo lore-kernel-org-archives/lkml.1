@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYCNFUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbYCNFU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbYCNFUl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 01:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbYCNFU1
+	id S1753121AbYCNFU4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 01:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYCNFUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 01:20:27 -0400
+	Fri, 14 Mar 2008 01:20:39 -0400
 Received: from wa-out-1112.google.com ([209.85.146.180]:24244 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756378AbYCNFUY (ORCPT
+	with ESMTP id S1756961AbYCNFUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 01:20:24 -0400
+	Fri, 14 Mar 2008 01:20:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=afsLb8H82jgd84q8B8z+hIdcec2soohYkxL+/BSHaJuc4ccxfBkvvmGoBUB2gyWAE4NCbDoFXGL42CEbY5o5rb94ZbuDv9tPzoblD924OxSHfoNEEHJLwdMcn/PM5tVJXcPNlyBmzAcLpXVLQd1GfhTnf7JYuPyR/NemXA/Z/Nw=
-Subject: [PATCH 03/10] ata: remove FIT() macro
+        b=iY87Mbh3yr0UcAQNDl9mI+QaSBpiEvxKTdSaI9hEEP1ow670CQYzlPqyeUT1mb1OsGHfnKpOI0kzK/+h1TFjfwpvTdVwDbp9hQD0LLRQdsIuNJyg5dSCyljnfacLGzrtVii8MUC3jUkePxHyvTiPwr0kFXCtS3NZ5KoV33UJI8I=
+Subject: [PATCH 04/10] b43: replace limit_value macro with clamp_val
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 13 Mar 2008 22:20:23 -0700
-Message-Id: <1205472023.19712.16.camel@brick>
+Date: Thu, 13 Mar 2008 22:20:35 -0700
+Message-Id: <1205472035.19712.18.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,390 +28,188 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the kernel-provided clamp_val() macro.
-
-FIT was always applied to a member of struct ata_timing (unsigned short)
-and two constants.  clamp_val will not cast to short anymore.
+kernel-provided clamp_val is identical, delete the private
+limit_value helper.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/ata/pata_ali.c     |   10 ++++----
- drivers/ata/pata_amd.c     |   14 ++++++------
- drivers/ata/pata_cypress.c |    8 +++---
- drivers/ata/pata_legacy.c  |   50 ++++++++++++++++++++++----------------------
- drivers/ata/pata_ns87410.c |    6 ++--
- drivers/ata/pata_ns87415.c |    4 +-
- drivers/ata/pata_qdi.c     |   16 +++++++-------
- drivers/ata/pata_via.c     |   14 ++++++------
- drivers/ata/pata_winbond.c |    6 ++--
- include/linux/libata.h     |    2 -
- 10 files changed, 64 insertions(+), 66 deletions(-)
+ drivers/net/wireless/b43/b43.h  |   16 ----------------
+ drivers/net/wireless/b43/lo.c   |    4 ++--
+ drivers/net/wireless/b43/main.c |    8 ++++----
+ drivers/net/wireless/b43/phy.c  |   24 ++++++++++++------------
+ 4 files changed, 18 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/ata/pata_ali.c b/drivers/ata/pata_ali.c
-index 7e68edf..78ee7b1 100644
---- a/drivers/ata/pata_ali.c
-+++ b/drivers/ata/pata_ali.c
-@@ -173,11 +173,11 @@ static void ali_program_modes(struct ata_port *ap, struct ata_device *adev, stru
- 	u8 udma;
+diff --git a/drivers/net/wireless/b43/b43.h b/drivers/net/wireless/b43/b43.h
+index f13346b..2ae3094 100644
+--- a/drivers/net/wireless/b43/b43.h
++++ b/drivers/net/wireless/b43/b43.h
+@@ -843,22 +843,6 @@ static inline bool __b43_warn_on_dummy(bool x) { return x; }
+ # define B43_WARN_ON(x)	__b43_warn_on_dummy(unlikely(!!(x)))
+ #endif
  
- 	if (t != NULL) {
--		t->setup = FIT(t->setup, 1, 8) & 7;
--		t->act8b = FIT(t->act8b, 1, 8) & 7;
--		t->rec8b = FIT(t->rec8b, 1, 16) & 15;
--		t->active = FIT(t->active, 1, 8) & 7;
--		t->recover = FIT(t->recover, 1, 16) & 15;
-+		t->setup = clamp_val(t->setup, 1, 8) & 7;
-+		t->act8b = clamp_val(t->act8b, 1, 8) & 7;
-+		t->rec8b = clamp_val(t->rec8b, 1, 16) & 15;
-+		t->active = clamp_val(t->active, 1, 8) & 7;
-+		t->recover = clamp_val(t->recover, 1, 16) & 15;
- 
- 		pci_write_config_byte(pdev, cas, t->setup);
- 		pci_write_config_byte(pdev, cbt, (t->act8b << 4) | t->rec8b);
-diff --git a/drivers/ata/pata_amd.c b/drivers/ata/pata_amd.c
-index 4b8d9b5..c8145a6 100644
---- a/drivers/ata/pata_amd.c
-+++ b/drivers/ata/pata_amd.c
-@@ -82,32 +82,32 @@ static void timing_setup(struct ata_port *ap, struct ata_device *adev, int offse
- 
- 	/* Configure the address set up timing */
- 	pci_read_config_byte(pdev, offset + 0x0C, &t);
--	t = (t & ~(3 << ((3 - dn) << 1))) | ((FIT(at.setup, 1, 4) - 1) << ((3 - dn) << 1));
-+	t = (t & ~(3 << ((3 - dn) << 1))) | ((clamp_val(at.setup, 1, 4) - 1) << ((3 - dn) << 1));
- 	pci_write_config_byte(pdev, offset + 0x0C , t);
- 
- 	/* Configure the 8bit I/O timing */
- 	pci_write_config_byte(pdev, offset + 0x0E + (1 - (dn >> 1)),
--		((FIT(at.act8b, 1, 16) - 1) << 4) | (FIT(at.rec8b, 1, 16) - 1));
-+		((clamp_val(at.act8b, 1, 16) - 1) << 4) | (clamp_val(at.rec8b, 1, 16) - 1));
- 
- 	/* Drive timing */
- 	pci_write_config_byte(pdev, offset + 0x08 + (3 - dn),
--		((FIT(at.active, 1, 16) - 1) << 4) | (FIT(at.recover, 1, 16) - 1));
-+		((clamp_val(at.active, 1, 16) - 1) << 4) | (clamp_val(at.recover, 1, 16) - 1));
- 
- 	switch (clock) {
- 		case 1:
--		t = at.udma ? (0xc0 | (FIT(at.udma, 2, 5) - 2)) : 0x03;
-+		t = at.udma ? (0xc0 | (clamp_val(at.udma, 2, 5) - 2)) : 0x03;
- 		break;
- 
- 		case 2:
--		t = at.udma ? (0xc0 | amd_cyc2udma[FIT(at.udma, 2, 10)]) : 0x03;
-+		t = at.udma ? (0xc0 | amd_cyc2udma[clamp_val(at.udma, 2, 10)]) : 0x03;
- 		break;
- 
- 		case 3:
--		t = at.udma ? (0xc0 | amd_cyc2udma[FIT(at.udma, 1, 10)]) : 0x03;
-+		t = at.udma ? (0xc0 | amd_cyc2udma[clamp_val(at.udma, 1, 10)]) : 0x03;
- 		break;
- 
- 		case 4:
--		t = at.udma ? (0xc0 | amd_cyc2udma[FIT(at.udma, 1, 15)]) : 0x03;
-+		t = at.udma ? (0xc0 | amd_cyc2udma[clamp_val(at.udma, 1, 15)]) : 0x03;
- 		break;
- 
- 		default:
-diff --git a/drivers/ata/pata_cypress.c b/drivers/ata/pata_cypress.c
-index fc5f9c4..94998eb 100644
---- a/drivers/ata/pata_cypress.c
-+++ b/drivers/ata/pata_cypress.c
-@@ -62,14 +62,14 @@ static void cy82c693_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 		return;
- 	}
- 
--	time_16 = FIT(t.recover, 0, 15) | (FIT(t.active, 0, 15) << 4);
--	time_8 = FIT(t.act8b, 0, 15) | (FIT(t.rec8b, 0, 15) << 4);
-+	time_16 = clamp_val(t.recover, 0, 15) | (clamp_val(t.active, 0, 15) << 4);
-+	time_8 = clamp_val(t.act8b, 0, 15) | (clamp_val(t.rec8b, 0, 15) << 4);
- 
- 	if (adev->devno == 0) {
- 		pci_read_config_dword(pdev, CY82_IDE_ADDRSETUP, &addr);
- 
- 		addr &= ~0x0F;	/* Mask bits */
--		addr |= FIT(t.setup, 0, 15);
-+		addr |= clamp_val(t.setup, 0, 15);
- 
- 		pci_write_config_dword(pdev, CY82_IDE_ADDRSETUP, addr);
- 		pci_write_config_byte(pdev, CY82_IDE_MASTER_IOR, time_16);
-@@ -79,7 +79,7 @@ static void cy82c693_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 		pci_read_config_dword(pdev, CY82_IDE_ADDRSETUP, &addr);
- 
- 		addr &= ~0xF0;	/* Mask bits */
--		addr |= (FIT(t.setup, 0, 15) << 4);
-+		addr |= (clamp_val(t.setup, 0, 15) << 4);
- 
- 		pci_write_config_dword(pdev, CY82_IDE_ADDRSETUP, addr);
- 		pci_write_config_byte(pdev, CY82_IDE_SLAVE_IOR, time_16);
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index 50fe08e..e62d491 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -414,8 +414,8 @@ static void ht6560a_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	/* Get the timing data in cycles. For now play safe at 50Mhz */
- 	ata_timing_compute(adev, adev->pio_mode, &t, 20000, 1000);
- 
--	active = FIT(t.active, 2, 15);
--	recover = FIT(t.recover, 4, 15);
-+	active = clamp_val(t.active, 2, 15);
-+	recover = clamp_val(t.recover, 4, 15);
- 
- 	inb(0x3E6);
- 	inb(0x3E6);
-@@ -470,8 +470,8 @@ static void ht6560b_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	/* Get the timing data in cycles. For now play safe at 50Mhz */
- 	ata_timing_compute(adev, adev->pio_mode, &t, 20000, 1000);
- 
--	active = FIT(t.active, 2, 15);
--	recover = FIT(t.recover, 2, 16);
-+	active = clamp_val(t.active, 2, 15);
-+	recover = clamp_val(t.recover, 2, 16);
- 	recover &= 0x15;
- 
- 	inb(0x3E6);
-@@ -577,9 +577,9 @@ static void opti82c611a_set_piomode(struct ata_port *ap,
- 		ata_timing_merge(&t, &tp, &t, ATA_TIMING_SETUP);
- 	}
- 
--	active = FIT(t.active, 2, 17) - 2;
--	recover = FIT(t.recover, 1, 16) - 1;
--	setup = FIT(t.setup, 1, 4) - 1;
-+	active = clamp_val(t.active, 2, 17) - 2;
-+	recover = clamp_val(t.recover, 1, 16) - 1;
-+	setup = clamp_val(t.setup, 1, 4) - 1;
- 
- 	/* Select the right timing bank for write timing */
- 	rc = ioread8(ap->ioaddr.lbal_addr);
-@@ -678,9 +678,9 @@ static void opti82c46x_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 		ata_timing_merge(&t, &tp, &t, ATA_TIMING_SETUP);
- 	}
- 
--	active = FIT(t.active, 2, 17) - 2;
--	recover = FIT(t.recover, 1, 16) - 1;
--	setup = FIT(t.setup, 1, 4) - 1;
-+	active = clamp_val(t.active, 2, 17) - 2;
-+	recover = clamp_val(t.recover, 1, 16) - 1;
-+	setup = clamp_val(t.setup, 1, 4) - 1;
- 
- 	/* Select the right timing bank for write timing */
- 	rc = ioread8(ap->ioaddr.lbal_addr);
-@@ -782,11 +782,11 @@ static void qdi6500_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
- 	if (ld_qdi->fast) {
--		active = 8 - FIT(t.active, 1, 8);
--		recovery = 18 - FIT(t.recover, 3, 18);
-+		active = 8 - clamp_val(t.active, 1, 8);
-+		recovery = 18 - clamp_val(t.recover, 3, 18);
- 	} else {
--		active = 9 - FIT(t.active, 2, 9);
--		recovery = 15 - FIT(t.recover, 0, 15);
-+		active = 9 - clamp_val(t.active, 2, 9);
-+		recovery = 15 - clamp_val(t.recover, 0, 15);
- 	}
- 	timing = (recovery << 4) | active | 0x08;
- 
-@@ -816,11 +816,11 @@ static void qdi6580dp_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
- 	if (ld_qdi->fast) {
--		active = 8 - FIT(t.active, 1, 8);
--		recovery = 18 - FIT(t.recover, 3, 18);
-+		active = 8 - clamp_val(t.active, 1, 8);
-+		recovery = 18 - clamp_val(t.recover, 3, 18);
- 	} else {
--		active = 9 - FIT(t.active, 2, 9);
--		recovery = 15 - FIT(t.recover, 0, 15);
-+		active = 9 - clamp_val(t.active, 2, 9);
-+		recovery = 15 - clamp_val(t.recover, 0, 15);
- 	}
- 	timing = (recovery << 4) | active | 0x08;
- 
-@@ -853,11 +853,11 @@ static void qdi6580_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
- 	if (ld_qdi->fast) {
--		active = 8 - FIT(t.active, 1, 8);
--		recovery = 18 - FIT(t.recover, 3, 18);
-+		active = 8 - clamp_val(t.active, 1, 8);
-+		recovery = 18 - clamp_val(t.recover, 3, 18);
- 	} else {
--		active = 9 - FIT(t.active, 2, 9);
--		recovery = 15 - FIT(t.recover, 0, 15);
-+		active = 9 - clamp_val(t.active, 2, 9);
-+		recovery = 15 - clamp_val(t.recover, 0, 15);
- 	}
- 	timing = (recovery << 4) | active | 0x08;
- 	ld_qdi->clock[adev->devno] = timing;
-@@ -1050,8 +1050,8 @@ static void winbond_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	else
- 		ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
--	active = (FIT(t.active, 3, 17) - 1) & 0x0F;
--	recovery = (FIT(t.recover, 1, 15) + 1) & 0x0F;
-+	active = (clamp_val(t.active, 3, 17) - 1) & 0x0F;
-+	recovery = (clamp_val(t.recover, 1, 15) + 1) & 0x0F;
- 	timing = (active << 4) | recovery;
- 	winbond_writecfg(ld_winbond->timing, timing, reg);
- 
-@@ -1062,7 +1062,7 @@ static void winbond_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 		reg |= 0x08;	/* FIFO off */
- 	if (!ata_pio_need_iordy(adev))
- 		reg |= 0x02;	/* IORDY off */
--	reg |= (FIT(t.setup, 0, 3) << 6);
-+	reg |= (clamp_val(t.setup, 0, 3) << 6);
- 	winbond_writecfg(ld_winbond->timing, timing + 1, reg);
- }
- 
-diff --git a/drivers/ata/pata_ns87410.c b/drivers/ata/pata_ns87410.c
-index 9fe66fd..2e57957 100644
---- a/drivers/ata/pata_ns87410.c
-+++ b/drivers/ata/pata_ns87410.c
-@@ -105,9 +105,9 @@ static void ns87410_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 		return;
- 	}
- 
--	at.active = FIT(at.active, 2, 16) - 2;
--	at.setup = FIT(at.setup, 1, 4) - 1;
--	at.recover = FIT(at.recover, 1, 12) - 1;
-+	at.active = clamp_val(at.active, 2, 16) - 2;
-+	at.setup = clamp_val(at.setup, 1, 4) - 1;
-+	at.recover = clamp_val(at.recover, 1, 12) - 1;
- 
- 	idetcr = (at.setup << 6) | (recoverbits[at.recover] << 3) | activebits[at.active];
- 
-diff --git a/drivers/ata/pata_ns87415.c b/drivers/ata/pata_ns87415.c
-index d0e2e50..e26ff5c 100644
---- a/drivers/ata/pata_ns87415.c
-+++ b/drivers/ata/pata_ns87415.c
-@@ -66,8 +66,8 @@ static void ns87415_set_mode(struct ata_port *ap, struct ata_device *adev, u8 mo
- 
- 	ata_timing_compute(adev, adev->pio_mode, &t, T, 0);
- 
--	clocking = 17 - FIT(t.active, 2, 17);
--	clocking |= (16 - FIT(t.recover, 1, 16)) << 4;
-+	clocking = 17 - clamp_val(t.active, 2, 17);
-+	clocking |= (16 - clamp_val(t.recover, 1, 16)) << 4;
-  	/* Use the same timing for read and write bytes */
- 	clocking |= (clocking << 8);
- 	pci_write_config_word(dev, timing, clocking);
-diff --git a/drivers/ata/pata_qdi.c b/drivers/ata/pata_qdi.c
-index 9f308ed..9e84930 100644
---- a/drivers/ata/pata_qdi.c
-+++ b/drivers/ata/pata_qdi.c
-@@ -60,11 +60,11 @@ static void qdi6500_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
- 	if (qdi->fast) {
--		active = 8 - FIT(t.active, 1, 8);
--		recovery = 18 - FIT(t.recover, 3, 18);
-+		active = 8 - clamp_val(t.active, 1, 8);
-+		recovery = 18 - clamp_val(t.recover, 3, 18);
- 	} else {
--		active = 9 - FIT(t.active, 2, 9);
--		recovery = 15 - FIT(t.recover, 0, 15);
-+		active = 9 - clamp_val(t.active, 2, 9);
-+		recovery = 15 - clamp_val(t.recover, 0, 15);
- 	}
- 	timing = (recovery << 4) | active | 0x08;
- 
-@@ -84,11 +84,11 @@ static void qdi6580_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
- 	if (qdi->fast) {
--		active = 8 - FIT(t.active, 1, 8);
--		recovery = 18 - FIT(t.recover, 3, 18);
-+		active = 8 - clamp_val(t.active, 1, 8);
-+		recovery = 18 - clamp_val(t.recover, 3, 18);
- 	} else {
--		active = 9 - FIT(t.active, 2, 9);
--		recovery = 15 - FIT(t.recover, 0, 15);
-+		active = 9 - clamp_val(t.active, 2, 9);
-+		recovery = 15 - clamp_val(t.recover, 0, 15);
- 	}
- 	timing = (recovery << 4) | active | 0x08;
- 
-diff --git a/drivers/ata/pata_via.c b/drivers/ata/pata_via.c
-index d119a68..febced6 100644
---- a/drivers/ata/pata_via.c
-+++ b/drivers/ata/pata_via.c
-@@ -271,15 +271,15 @@ static void via_do_set_mode(struct ata_port *ap, struct ata_device *adev, int mo
- 
- 		pci_read_config_byte(pdev, 0x4C, &setup);
- 		setup &= ~(3 << shift);
--		setup |= FIT(t.setup, 1, 4) << shift;	/* 1,4 or 1,4 - 1  FIXME */
-+		setup |= clamp_val(t.setup, 1, 4) << shift;	/* 1,4 or 1,4 - 1  FIXME */
- 		pci_write_config_byte(pdev, 0x4C, setup);
- 	}
- 
- 	/* Load the PIO mode bits */
- 	pci_write_config_byte(pdev, 0x4F - ap->port_no,
--		((FIT(t.act8b, 1, 16) - 1) << 4) | (FIT(t.rec8b, 1, 16) - 1));
-+		((clamp_val(t.act8b, 1, 16) - 1) << 4) | (clamp_val(t.rec8b, 1, 16) - 1));
- 	pci_write_config_byte(pdev, 0x48 + offset,
--		((FIT(t.active, 1, 16) - 1) << 4) | (FIT(t.recover, 1, 16) - 1));
-+		((clamp_val(t.active, 1, 16) - 1) << 4) | (clamp_val(t.recover, 1, 16) - 1));
- 
- 	/* Load the UDMA bits according to type */
- 	switch(udma_type) {
-@@ -287,16 +287,16 @@ static void via_do_set_mode(struct ata_port *ap, struct ata_device *adev, int mo
- 			/* BUG() ? */
- 			/* fall through */
- 		case 33:
--			ut = t.udma ? (0xe0 | (FIT(t.udma, 2, 5) - 2)) : 0x03;
-+			ut = t.udma ? (0xe0 | (clamp_val(t.udma, 2, 5) - 2)) : 0x03;
- 			break;
- 		case 66:
--			ut = t.udma ? (0xe8 | (FIT(t.udma, 2, 9) - 2)) : 0x0f;
-+			ut = t.udma ? (0xe8 | (clamp_val(t.udma, 2, 9) - 2)) : 0x0f;
- 			break;
- 		case 100:
--			ut = t.udma ? (0xe0 | (FIT(t.udma, 2, 9) - 2)) : 0x07;
-+			ut = t.udma ? (0xe0 | (clamp_val(t.udma, 2, 9) - 2)) : 0x07;
- 			break;
- 		case 133:
--			ut = t.udma ? (0xe0 | (FIT(t.udma, 2, 9) - 2)) : 0x07;
-+			ut = t.udma ? (0xe0 | (clamp_val(t.udma, 2, 9) - 2)) : 0x07;
- 			break;
- 	}
- 
-diff --git a/drivers/ata/pata_winbond.c b/drivers/ata/pata_winbond.c
-index 99c92ed..41ffead 100644
---- a/drivers/ata/pata_winbond.c
-+++ b/drivers/ata/pata_winbond.c
-@@ -75,8 +75,8 @@ static void winbond_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	else
- 		ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
- 
--	active = (FIT(t.active, 3, 17) - 1) & 0x0F;
--	recovery = (FIT(t.recover, 1, 15) + 1) & 0x0F;
-+	active = (clamp_val(t.active, 3, 17) - 1) & 0x0F;
-+	recovery = (clamp_val(t.recover, 1, 15) + 1) & 0x0F;
- 	timing = (active << 4) | recovery;
- 	winbond_writecfg(winbond->config, timing, reg);
- 
-@@ -87,7 +87,7 @@ static void winbond_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 		reg |= 0x08;	/* FIFO off */
- 	if (!ata_pio_need_iordy(adev))
- 		reg |= 0x02;	/* IORDY off */
--	reg |= (FIT(t.setup, 0, 3) << 6);
-+	reg |= (clamp_val(t.setup, 0, 3) << 6);
- 	winbond_writecfg(winbond->config, timing + 1, reg);
- }
- 
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index a05f600..d3153d7 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -755,8 +755,6 @@ struct ata_timing {
- 	unsigned short udma;		/* t2CYCTYP/2 */
- };
- 
--#define FIT(v, vmin, vmax)	max_t(short, min_t(short, v, vmax), vmin)
+-/** Limit a value between two limits */
+-#ifdef limit_value
+-# undef limit_value
+-#endif
+-#define limit_value(value, min, max)  \
+-	({						\
+-		typeof(value) __value = (value);	\
+-		typeof(value) __min = (min);		\
+-		typeof(value) __max = (max);		\
+-		if (__value < __min)			\
+-			__value = __min;		\
+-		else if (__value > __max)		\
+-			__value = __max;		\
+-		__value;				\
+-	})
 -
- extern const unsigned long sata_deb_timing_normal[];
- extern const unsigned long sata_deb_timing_hotplug[];
- extern const unsigned long sata_deb_timing_long[];
+ /* Convert an integer to a Q5.2 value */
+ #define INT_TO_Q52(i)	((i) << 2)
+ /* Convert a Q5.2 value to an integer (precision loss!) */
+diff --git a/drivers/net/wireless/b43/lo.c b/drivers/net/wireless/b43/lo.c
+index d890f36..ee8d1b1 100644
+--- a/drivers/net/wireless/b43/lo.c
++++ b/drivers/net/wireless/b43/lo.c
+@@ -366,7 +366,7 @@ static void lo_measure_txctl_values(struct b43_wldev *dev)
+ 		if (lb_gain > 10) {
+ 			radio_pctl_reg = 0;
+ 			pga = abs(10 - lb_gain) / 6;
+-			pga = limit_value(pga, 0, 15);
++			pga = clamp_val(pga, 0, 15);
+ 		} else {
+ 			int cmp_val;
+ 			int tmp;
+@@ -510,7 +510,7 @@ static void lo_measure_gain_values(struct b43_wldev *dev,
+ 			phy->lna_lod_gain = 1;
+ 			trsw_rx_gain -= 8;
+ 		}
+-		trsw_rx_gain = limit_value(trsw_rx_gain, 0, 0x2D);
++		trsw_rx_gain = clamp_val(trsw_rx_gain, 0, 0x2D);
+ 		phy->pga_gain = trsw_rx_gain / 3;
+ 		if (phy->pga_gain >= 5) {
+ 			phy->pga_gain -= 5;
+diff --git a/drivers/net/wireless/b43/main.c b/drivers/net/wireless/b43/main.c
+index 51dfce1..a8d3f86 100644
+--- a/drivers/net/wireless/b43/main.c
++++ b/drivers/net/wireless/b43/main.c
+@@ -1052,10 +1052,10 @@ static void handle_irq_noise(struct b43_wldev *dev)
+ 	/* Get the noise samples. */
+ 	B43_WARN_ON(dev->noisecalc.nr_samples >= 8);
+ 	i = dev->noisecalc.nr_samples;
+-	noise[0] = limit_value(noise[0], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
+-	noise[1] = limit_value(noise[1], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
+-	noise[2] = limit_value(noise[2], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
+-	noise[3] = limit_value(noise[3], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
++	noise[0] = clamp_val(noise[0], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
++	noise[1] = clamp_val(noise[1], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
++	noise[2] = clamp_val(noise[2], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
++	noise[3] = clamp_val(noise[3], 0, ARRAY_SIZE(phy->nrssi_lt) - 1);
+ 	dev->noisecalc.samples[i][0] = phy->nrssi_lt[noise[0]];
+ 	dev->noisecalc.samples[i][1] = phy->nrssi_lt[noise[1]];
+ 	dev->noisecalc.samples[i][2] = phy->nrssi_lt[noise[2]];
+diff --git a/drivers/net/wireless/b43/phy.c b/drivers/net/wireless/b43/phy.c
+index 71507b2..bd8413f 100644
+--- a/drivers/net/wireless/b43/phy.c
++++ b/drivers/net/wireless/b43/phy.c
+@@ -1572,7 +1572,7 @@ static void b43_phy_initg(struct b43_wldev *dev)
+ 		 * the value 0x7FFFFFFF here. I think that is some weird
+ 		 * compiler optimization in the original driver.
+ 		 * Essentially, what we do here is resetting all NRSSI LT
+-		 * entries to -32 (see the limit_value() in nrssi_hw_update())
++		 * entries to -32 (see the clamp_val() in nrssi_hw_update())
+ 		 */
+ 		b43_nrssi_hw_update(dev, 0xFFFF);	//FIXME?
+ 		b43_calc_nrssi_threshold(dev);
+@@ -1634,13 +1634,13 @@ static s8 b43_phy_estimate_power_out(struct b43_wldev *dev, s8 tssi)
+ 	switch (phy->type) {
+ 	case B43_PHYTYPE_A:
+ 		tmp += 0x80;
+-		tmp = limit_value(tmp, 0x00, 0xFF);
++		tmp = clamp_val(tmp, 0x00, 0xFF);
+ 		dbm = phy->tssi2dbm[tmp];
+ 		//TODO: There's a FIXME on the specs
+ 		break;
+ 	case B43_PHYTYPE_B:
+ 	case B43_PHYTYPE_G:
+-		tmp = limit_value(tmp, 0x00, 0x3F);
++		tmp = clamp_val(tmp, 0x00, 0x3F);
+ 		dbm = phy->tssi2dbm[tmp];
+ 		break;
+ 	default:
+@@ -1699,8 +1699,8 @@ void b43_put_attenuation_into_ranges(struct b43_wldev *dev,
+ 		break;
+ 	}
+ 
+-	*_rfatt = limit_value(rfatt, rf_min, rf_max);
+-	*_bbatt = limit_value(bbatt, bb_min, bb_max);
++	*_rfatt = clamp_val(rfatt, rf_min, rf_max);
++	*_bbatt = clamp_val(bbatt, bb_min, bb_max);
+ }
+ 
+ /* http://bcm-specs.sipsolutions.net/RecalculateTransmissionPower */
+@@ -1795,7 +1795,7 @@ void b43_phy_xmitpower(struct b43_wldev *dev)
+ 			/* Get desired power (in Q5.2) */
+ 			desired_pwr = INT_TO_Q52(phy->power_level);
+ 			/* And limit it. max_pwr already is Q5.2 */
+-			desired_pwr = limit_value(desired_pwr, 0, max_pwr);
++			desired_pwr = clamp_val(desired_pwr, 0, max_pwr);
+ 			if (b43_debug(dev, B43_DBG_XMITPOWER)) {
+ 				b43dbg(dev->wl,
+ 				       "Current TX power output: " Q52_FMT
+@@ -1908,7 +1908,7 @@ static inline
+ 		f = q;
+ 		i++;
+ 	} while (delta >= 2);
+-	entry[index] = limit_value(b43_tssi2dbm_ad(m1 * f, 8192), -127, 128);
++	entry[index] = clamp_val(b43_tssi2dbm_ad(m1 * f, 8192), -127, 128);
+ 	return 0;
+ }
+ 
+@@ -2452,7 +2452,7 @@ void b43_nrssi_hw_update(struct b43_wldev *dev, u16 val)
+ 	for (i = 0; i < 64; i++) {
+ 		tmp = b43_nrssi_hw_read(dev, i);
+ 		tmp -= val;
+-		tmp = limit_value(tmp, -32, 31);
++		tmp = clamp_val(tmp, -32, 31);
+ 		b43_nrssi_hw_write(dev, i, tmp);
+ 	}
+ }
+@@ -2469,7 +2469,7 @@ void b43_nrssi_mem_update(struct b43_wldev *dev)
+ 		tmp = (i - delta) * phy->nrssislope;
+ 		tmp /= 0x10000;
+ 		tmp += 0x3A;
+-		tmp = limit_value(tmp, 0, 0x3F);
++		tmp = clamp_val(tmp, 0, 0x3F);
+ 		phy->nrssi_lt[i] = tmp;
+ 	}
+ }
+@@ -2906,7 +2906,7 @@ void b43_calc_nrssi_threshold(struct b43_wldev *dev)
+ 			} else
+ 				threshold = phy->nrssi[1] - 5;
+ 
+-			threshold = limit_value(threshold, 0, 0x3E);
++			threshold = clamp_val(threshold, 0, 0x3E);
+ 			b43_phy_read(dev, 0x0020);	/* dummy read */
+ 			b43_phy_write(dev, 0x0020,
+ 				      (((u16) threshold) << 8) | 0x001C);
+@@ -2957,7 +2957,7 @@ void b43_calc_nrssi_threshold(struct b43_wldev *dev)
+ 			else
+ 				a += 32;
+ 			a = a >> 6;
+-			a = limit_value(a, -31, 31);
++			a = clamp_val(a, -31, 31);
+ 
+ 			b = b * (phy->nrssi[1] - phy->nrssi[0]);
+ 			b += (phy->nrssi[0] << 6);
+@@ -2966,7 +2966,7 @@ void b43_calc_nrssi_threshold(struct b43_wldev *dev)
+ 			else
+ 				b += 32;
+ 			b = b >> 6;
+-			b = limit_value(b, -31, 31);
++			b = clamp_val(b, -31, 31);
+ 
+ 			tmp_u16 = b43_phy_read(dev, 0x048A) & 0xF000;
+ 			tmp_u16 |= ((u32) b & 0x0000003F);
 -- 
 1.5.4.4.653.g7cf1e
 
