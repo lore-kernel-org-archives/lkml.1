@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbYCNFVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYCNFXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbYCNFVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 01:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYCNFVN
+	id S1753342AbYCNFXN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 01:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758526AbYCNFWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 01:21:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:24244 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757853AbYCNFVL (ORCPT
+	Fri, 14 Mar 2008 01:22:00 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:59996 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758527AbYCNFV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 01:21:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=UQDzsHndaw35b83ve7goHj2i+JSHojhIcOAhBLi3AIZXEGS+LeyDficlcTxm+YmwohmkA2tqMP8yzb/9gVqfpn+ghWWU0Oulkb6km3DJ8pMQzvpG4dv29SbPxPYS3EQ8Y2ZDv4Ws7xzo/j98SbLRNsTGJ5YaHeuXpehSQnknG/U=
-Subject: [PATCH 07/10] fuse: use clamp() rather than nested min/max
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 13 Mar 2008 22:21:10 -0700
-Message-Id: <1205472070.19712.24.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 14 Mar 2008 01:21:59 -0400
+Message-ID: <47DA0B78.8010802@davidnewall.com>
+Date: Fri, 14 Mar 2008 15:52:00 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Daniel Phillips <phillips@phunq.net>
+CC: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+References: <200803092346.17556.phillips@phunq.net> <200803131214.40321.phillips@phunq.net> <20080313162711.3d483e6c@cuia.boston.redhat.com> <200803131923.14840.phillips@phunq.net>
+In-Reply-To: <200803131923.14840.phillips@phunq.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clamp() exists for this use.
+I'd like to seem some science.  I'd like to know how much faster it
+really is, and for that proper testing needs to be done.  Since Daniel's
+scheme uses the same amount of RAM as disk, an appropriate test would be
+to pin (at least) that amount of RAM to buffer cache, and then to fill
+the cache with the contents of the disk (i.e. cat /dev/disk >
+/dev/null.)  This sets the stage for tests, which tests should not
+include the sync operation.  I'd like to see actual numbers against such
+a setup versus Daniel's scheme.  Since buffer cache is shared by all
+disks, obviously the test must not access any other drive.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/fuse/file.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index 676b0bc..8c6d51d 100644
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -613,7 +613,7 @@ static int fuse_get_user_pages(struct fuse_req *req, const char __user *buf,
- 
- 	nbytes = min(nbytes, (unsigned) FUSE_MAX_PAGES_PER_REQ << PAGE_SHIFT);
- 	npages = (nbytes + offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
--	npages = min(max(npages, 1), FUSE_MAX_PAGES_PER_REQ);
-+	npages = clamp(npages, 1, FUSE_MAX_PAGES_PER_REQ);
- 	down_read(&current->mm->mmap_sem);
- 	npages = get_user_pages(current, current->mm, user_addr, npages, write,
- 				0, req->pages, NULL);
--- 
-1.5.4.4.653.g7cf1e
-
-
+One thing I will admit: RAM disks are fast.  What I don't know is how
+much work there is to access blocks that are already in the buffer
+cache.  In principle I suppose it should be a little slower, but not
+much.  I'd like to know, though.  I'd do the test myself if I had a
+machine with enough RAM, but I don't.  Daniel (apparently) does...
