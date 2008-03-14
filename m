@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYCNOxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYCNO6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbYCNOxb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYCNOxY
+	id S1756902AbYCNO6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYCNO6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:53:24 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41572 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316AbYCNOxX (ORCPT
+	Fri, 14 Mar 2008 10:58:25 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:33267 "EHLO
+	outbound6-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752399AbYCNO6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:53:23 -0400
-Date: Fri, 14 Mar 2008 23:44:35 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: [PATCH 3/3 (RFC)](memory hotplug) align maps for easy removing
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
-References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080314234205.20DD.E1E9C6FF@jp.fujitsu.com>
+	Fri, 14 Mar 2008 10:58:24 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0JXQ6UM-01-RER-01
+Date: Fri, 14 Mar 2008 15:56:06 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: panic caused by 653a00c9662304ef72a3eb4e681c91720960e0b4
+	(ACPI:thermal fixup)
+Message-ID: <20080314145606.GE22740@alberich.amd.com>
+References: <20080314144559.GD22740@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080314144559.GD22740@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 14 Mar 2008 14:56:01.0311 (UTC) FILETIME=[84DB8AF0:01C885E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Forget about it.
 
-To free memmap and usemap easier, this patch aligns these maps to page size.
+I've just pulled the current Linux tree and it seems to
+contain already a fix for the problem (commit
+c8d16e27a3601d1cbcdfe657eb4ff5e762019e8d).
 
-I know usemap size is too small to align page size.
-It will be waste of area. So, there may be better way than this.
-
-Followings are pros. and cons with other my ideas.
-But I'm not sure which is better way. 
-
-a) Packing many section's usemap on one page. Count how many sections use
-   it in page_count.
-  Pros.
-    - Avoid waisting area.
-  Cons.
-    - This usemap's page will be hard(or impossible) to remove due to
-      dependency.
-      It should be allocated on un-movable zone/node.
-      (I'm not sure it's impact of performance.)
-    - Nodes' structures may have to be packed like usemap???
-
-b) Pack memmap and usemap in one allocation.
-  Pros.
-    - May avoid wasting area if its size is suitable.
-  Cons.
-    - If size is not suitable, it will be same as this patch.
-    - This way is not good for VMEMMAP_SPARSEMEM.
-      At least, it is reverse way against Yinghai-san's fix.
-
-c) This way.
-  Pros.
-    - Very easy to remove.
-  Cons.
-    - Waist of area.
-
-Any other idea is welcome.
+I'll retest ...
 
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
----
- mm/sparse.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-Index: current/mm/sparse.c
-===================================================================
---- current.orig/mm/sparse.c	2008-03-11 20:15:41.000000000 +0900
-+++ current/mm/sparse.c	2008-03-11 20:58:18.000000000 +0900
-@@ -244,7 +244,8 @@
- 	struct mem_section *ms = __nr_to_section(pnum);
- 	int nid = sparse_early_nid(ms);
- 
--	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
-+	usemap = alloc_bootmem_pages_node(NODE_DATA(nid),
-+					  PAGE_ALIGN(usemap_size()));
- 	if (usemap)
- 		return usemap;
- 
-@@ -264,8 +265,8 @@
- 	if (map)
- 		return map;
- 
--	map = alloc_bootmem_node(NODE_DATA(nid),
--			sizeof(struct page) * PAGES_PER_SECTION);
-+	map = alloc_bootmem_pages_node(NODE_DATA(nid),
-+		       PAGE_ALIGN(sizeof(struct page) * PAGES_PER_SECTION));
- 	return map;
- }
- #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
-
--- 
-Yasunori Goto 
+Andreas
 
 
