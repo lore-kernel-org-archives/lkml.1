@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbYCNVJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbYCNVNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbYCNVJm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 17:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbYCNVJd
+	id S1758358AbYCNVNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 17:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYCNVNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 17:09:33 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50606 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754424AbYCNVJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 17:09:33 -0400
-Date: Fri, 14 Mar 2008 14:08:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: hackbench regression since 2.6.25-rc
-In-Reply-To: <1205478861.3215.279.camel@ymzhang>
-Message-ID: <Pine.LNX.4.64.0803141356540.28115@schroedinger.engr.sgi.com>
-References: <1205394417.3215.85.camel@ymzhang>  <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-  <1205400538.3215.148.camel@ymzhang>  <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
-  <1205463842.3215.188.camel@ymzhang>  <Pine.LNX.4.64.0803132328330.24204@schroedinger.engr.sgi.com>
- <1205478861.3215.279.camel@ymzhang>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Mar 2008 17:13:35 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:38734 "EHLO
+	mail-09.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbYCNVNe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 17:13:34 -0400
+X-Greylist: delayed 1695 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Mar 2008 17:13:34 EDT
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au, lenb@kernel.org,
+       dhowells@redhat.com, peterz@infradead.org, mingo@elte.hu,
+       harvey.harrison@gmail.com
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 1/6] Fix quota.h includes
+Date: Fri, 14 Mar 2008 16:44:48 -0400
+Message-Id: <1205527493-5740-1-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <20080314204248.GV613@parisc-linux.org>
+References: <20080314204248.GV613@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008, Zhang, Yanmin wrote:
+quota.h currently relies on asm/semaphore.h (through some chain; it
+doesn't actually include semaphore.h itself) to include wait.h.  As
+well as being bad practice to rely on an implicit include, subsequent
+patches will break this.  While I'm in this file, add atomic.h and
+list.h, and sort the list of includes.
 
-> > Ahhh... Okay those slabs did not change for 2.6.25-rc. Is there
-> > really a difference to 2.6.24?
-> As oprofile shows slub functions spend more than 80% cpu time, I would like
-> to focus on optimizing SLUB before going back to 2.6.24.
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ include/linux/quota.h |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-I thought you wanted to address a regression vs 2.6.24?
-
-> kmalloc-512: No NUMA information available.
-> 
-> Slab Perf Counter       Alloc     Free %Al %Fr
-> --------------------------------------------------
-> Fastpath             55039159  5006829  68   6
-> Slowpath             24975754 75007769  31  93
-> Page Alloc              73840    73779   0   0
-> Add partial                 0 24341085   0  30
-> Remove partial       24267297    73779  30   0
-
-^^^ add partial/remove partial is likely the cause for 
-trouble here. 30% is unacceptably high. The larger allocs will reduce the 
-partial handling overhead. That is likely the effect that we see here.
-
-> Refill 24975738
-
-Duh refills at 50%? We could try to just switch to another slab instead of 
-reusing the existing one. May also affect the add/remove partial 
-situation.
-
-
+diff --git a/include/linux/quota.h b/include/linux/quota.h
+index 6e0393a..eb560d0 100644
+--- a/include/linux/quota.h
++++ b/include/linux/quota.h
+@@ -160,14 +160,18 @@ enum {
+ 
+ 
+ #ifdef __KERNEL__
+-#include <linux/spinlock.h>
+-#include <linux/rwsem.h>
++#include <linux/list.h>
+ #include <linux/mutex.h>
++#include <linux/rwsem.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
+ 
+ #include <linux/dqblk_xfs.h>
+ #include <linux/dqblk_v1.h>
+ #include <linux/dqblk_v2.h>
+ 
++#include <asm/atomic.h>
++
+ extern spinlock_t dq_data_lock;
+ 
+ /* Maximal numbers of writes for quota operation (insert/delete/update)
+-- 
+1.5.4.3
 
