@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYCNNLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYCNNN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbYCNNLv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 09:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYCNNLm
+	id S1756834AbYCNNN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 09:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYCNNNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 09:11:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47394 "EHLO mx1.redhat.com"
+	Fri, 14 Mar 2008 09:13:50 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:36948 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbYCNNLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 09:11:41 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org, hch@lst.de
-cc: dhowells@redhat.com, "Marc Dionne" <marc.c.dionne@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] struct export_operations: adjust comments to match current members
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 14 Mar 2008 13:11:29 +0000
-Message-ID: <22062.1205500289@redhat.com>
+	id S1751865AbYCNNNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 09:13:49 -0400
+Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
+In-Reply-To: <47D8473A.3060806@keyaccess.nl> "from Rene Herman at Mar 12, 2008
+ 10:12:26 pm"
+To: Rene Herman <rene.herman@keyaccess.nl>
+Date: Fri, 14 Mar 2008 08:13:44 -0500 (CDT)
+CC: Bob Tracy <rct@frus.com>, Michael Cree <mcree@orcon.net.nz>,
+       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
+       linux-kernel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>, twhitehe@uwo.ca
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20080314131344.62A59DBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rene Herman wrote:
+> Okay, and applying the attached just makes your sound completely dead in the 
+> water?
+> (patch to remove es1888_init from a Miata build omitted)
 
-From: "Marc Dionne" <marc.c.dionne@gmail.com>
+A quick followup...  Since we're in agreement this isn't a regression,
+I've updated my working source tree to 2.6.25-rc5.  Built the new
+kernel with the patch to omit es1888_init(), and as near as I can tell,
+that function does nothing useful on the Miata platform.  At the very
+least, not having it makes no difference to any of the ALSA drivers I've
+tried: snd-sb8 still works great, and snd-es18xx is still broken in the
+same way originally described at the beginning of this long thread.
 
-The comments in the definition of struct export_operations don't match the
-current members.
+I'll try a build with the old OSS "sb" driver, and if that works ok, we
+may be able to do away with es1888_init() on the Miata.  Tyson -- I
+think you have a Miata if I'm remembering correctly: can you confirm
+these observations?
 
-Add a comment for the 2 new functions and remove 2 comments for unused ones.
-
-Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
-Acked-by: David Howells <dhowells@redhat.com>
----
- include/linux/exportfs.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/exportfs.h b/include/linux/exportfs.h
-index 51d2141..adcbb05 100644
---- a/include/linux/exportfs.h
-+++ b/include/linux/exportfs.h
-@@ -49,11 +49,11 @@ struct fid {
-
- /**
-  * struct export_operations - for nfsd to communicate with file systems
-- * @decode_fh:      decode a file handle fragment and return a &struct dentry
-  * @encode_fh:      encode a file handle fragment from a dentry
-+ * @fh_to_dentry:   find the implied object and get a dentry for it
-+ * @fh_to_parent:   find the implied object's parent and get a dentry for it
-  * @get_name:       find the name for a given inode in a given directory
-  * @get_parent:     find the parent of a given directory
-- * @get_dentry:     find a dentry for the inode given a file handle
-sub-fragment
-  *
-  * See Documentation/filesystems/Exporting for details on how to use
-  * this interface correctly.
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
