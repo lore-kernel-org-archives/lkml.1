@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbYCNVeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbYCNVea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759316AbYCNVeN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 17:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbYCNVde
+	id S1759484AbYCNVea (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 17:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759272AbYCNVeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 17:33:34 -0400
-Received: from mail.tor.primus.ca ([216.254.136.21]:58399 "EHLO
-	mail-07.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756417AbYCNVdd (ORCPT
+	Fri, 14 Mar 2008 17:34:05 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:38825 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759248AbYCNVeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 17:33:33 -0400
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au, lenb@kernel.org,
-       dhowells@redhat.com, peterz@infradead.org, mingo@elte.hu,
-       harvey.harrison@gmail.com
-Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 2/6] Add semaphore.h to kernel_lock.c
-Date: Fri, 14 Mar 2008 16:44:49 -0400
-Message-Id: <1205527493-5740-2-git-send-email-matthew@wil.cx>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1205527493-5740-1-git-send-email-matthew@wil.cx>
-References: <20080314204248.GV613@parisc-linux.org>
- <1205527493-5740-1-git-send-email-matthew@wil.cx>
+	Fri, 14 Mar 2008 17:34:04 -0400
+Date: Fri, 14 Mar 2008 17:34:03 -0400
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jiri Kosina <jkosina@suse.cz>, David Newall <davidn@davidnewall.com>,
+       "Fred ." <eldmannen@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Keys get stuck
+Message-ID: <20080314213403.GF1289@csclub.uwaterloo.ca>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com> <20080313171425.GA4840@ucw.cz> <Pine.LNX.4.64.0803141020380.30831@jikos.suse.cz> <20080314182407.GA6990@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080314182407.GA6990@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel_lock.c uses DECLARE_MUTEX, up() and down() without explicitly
-including asm/semaphore.h.  This is fragile and leaves it vulnerable
-to breakage during header reorganisations.
+On Fri, Mar 14, 2008 at 07:24:08PM +0100, Pavel Machek wrote:
+> Maybe. (Could we get host controller to effectively timestamp usb
+> packets for us?)
+> 
+> ..but that is not a problem here, because X are broken even on ps/2
+> keyboards. USB keyboards may be misdesigned, but they are not responsible
+> for problems we see.
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
- lib/kernel_lock.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I don't own any USB keyboards (yet).  My problems are on PS/2 only.
 
-diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
-index 812dbf0..fbc11a3 100644
---- a/lib/kernel_lock.c
-+++ b/lib/kernel_lock.c
-@@ -8,6 +8,7 @@
- #include <linux/smp_lock.h>
- #include <linux/module.h>
- #include <linux/kallsyms.h>
-+#include <asm/semaphore.h>
- 
- /*
-  * The 'big kernel semaphore'
--- 
-1.5.4.3
-
+--
+Len Sorensen
