@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYCNRF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYCNRGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbYCNRF0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYCNRFQ
+	id S1757994AbYCNRGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYCNRGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:05:16 -0400
-Received: from mexforward.lss.emc.com ([128.222.32.20]:36003 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbYCNRFP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:05:15 -0400
-Message-ID: <47DAB027.3070305@emc.com>
-Date: Fri, 14 Mar 2008 13:04:39 -0400
-From: Ric Wheeler <ric@emc.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 14 Mar 2008 13:06:01 -0400
+Received: from sacred.ru ([62.205.161.221]:35182 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754666AbYCNRGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 13:06:00 -0400
+Message-ID: <47DAB065.6060804@openvz.org>
+Date: Fri, 14 Mar 2008 20:05:41 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <ric@emc.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-References: <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de> <200803111602.53835.phillips@phunq.net> <m3d4q08477.fsf@ursa.amorsen.dk> <20080312133001.1668f40d@the-village.bc.nu> <20080314093019.GA5966@ucw.cz> <47DA5C8D.2020207@emc.com> <m3fxutcz2s.fsf@ursa.amorsen.dk> <20080314125656.GA7412@mit.edu> <47DA9DF8.5010600@emc.com> <20080314164952.GA7767@mit.edu>
-In-Reply-To: <20080314164952.GA7767@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Graf <tgraf@suug.ch>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Audit vs netlink interaction problem
+References: <47DAA660.90401@openvz.org> <20080314163929.GP20815@postel.suug.ch>
+In-Reply-To: <20080314163929.GP20815@postel.suug.ch>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.8.30.53115
-X-PerlMx-Spam: Gauge=, SPAM=0%, Reason='EMC_BODY_PROD_1+ -3, EMC_BODY_PROD_2+ -3, EMC_FROM_0+ -3, __CP_MEDIA_BODY 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
-X-Tablus-Inspected: yes
-X-Tablus-Classifications: public
-X-Tablus-Action: allow
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 20:05:43 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, Mar 14, 2008 at 11:47:04AM -0400, Ric Wheeler wrote:
->> The ingest rate at the time of a power hit makes a huge difference as well 
->> - basically, pulling the power cord when a box is idle is normally not 
->> harmful. Try that when you are really pounding on the disks and you will 
->> see corruptions a plenty without barriers ;-)
-> 
-> Oh, no question.  But the fact that it mostly works when the box is
-> idle means the hard drive firmware is reasonably aggressive about
-> pushing data from the write cache out to the platters when it can.
-> 
->> One note - the barrier hit for apps that use fsync() is just half an order 
->> of magnitude (say 35 files/sec instead of 120 files/sec). If you don't 
->> fsync() each file, the impact is lower still.
+Thomas Graf wrote:
+> * Pavel Emelyanov <xemul@openvz.org> 2008-03-14 19:22
+>> I've found an interesting feature of how audit uses netlink for
+>> communications. Look.
 >>
->> Still expensive, but might be reasonable for home users on a box with 
->> family photos, etc.
+>> The kauditd_thread() calls netlink_unicast() and passes the 
+>> audit_pid to it. The audit_pid, in turn, is received from the 
+>> user space and the tool (I've checked the audit v1.6.9) uses 
+>> getpid() to pass one in the kernel. Besides, this tool doesn't
+>> bind the netlink socket to this id, but simply creates it 
+>> allowing the kernel to auto-bind one.
+>>
+>> That's the preamble.
+>>
+>> The problem is that netlink_autobind() _does_not_ guarantees
+>> that the socket will be auto-binded to the current pid. Instead
+>> it uses the current pid as a hint to start looking for a free
+>> id. So, in case of conflict, the audit messages can be sent
+>> to a wrong socket. This can happen (it's unlikely, but can be)
+>> in case some task opens more than one netlink sockets and then
+>> the audit one starts - in this case the audit's pid can be busy
+>> and its socket will be bound to another id.
 > 
-> It depends on the workload, obviously.  I thought I remember someone
-> on this thread talking about benchmark where they went from ~2000 to
-> ~20 ops/sec once they added fsync().  I'm sure that was an extreme
-> benchmarking workload that isn't at all representative of real-life
-> usage, where you're usually do something else modifying the metadata
-> of many tiny files over and over again.  :-)
+> The audit userspace tool should be fixed, no question. It can continue
 
-I think those were the numbers comparing a ramdisk, s-ata drive and a 
-clariion all doing barriers ;-)
+Oh, this is good.
+I was afraid, that we'd have to stick to this logic...
 
-I just reran some quick tests on a home box with a s-ata drive writing 
-50k files single threaded:
+> to auto bind but must report the correct netlink pid.
 
-barriers off &    fsync: 133 files/sec
-barriers off & no fsync: 2306 files/sec
-barriers on  & no fsync: 2312 files/sec
-barriers on  &    fsync: 22   files/sec
+Hmmm... I'm afraid, that this can break the audit filtering and signal
+auditing. I haven't yet looked deep into it, but it compares the 
+task->tgid with this audit_pid for different purposes. If audit_pid
+changes this code will be broken.
 
-So no slowdown without fsync & a 5x slowdown when you fsync every write.
+That's why I asked David for comments.
 
-Doing the fsync is the only way to make (mostly sure) that all data is 
-on platter, but you can write the files in a batch and then go back and 
-reopen/fsync/close all files afterwards.
+> As a workaround: Assuming that the audit daemon is the only application
+> to issue a AUDIT_SET command to set the status pid, the kernel can
+> compare the netlink source pid of the AUDIT_SET message and compare it
 
-That helps a lot:
+Bu we have no the netlink socket at the moment of setting the pid to
+check this. The audit_reveive_msg() call which does this set is received 
+via another (pre-created global) socket.
 
-barriers on & bulk fsync (in order written)      : 218 files/sec
-barriers on & bulk fsync (reverse order written) : 340 files/sec
+> against the status pid provided. If they differ, issue a warning but
+> use the netlink source pid thus covering the case where the auto bound
+> netlink pid actually differs from the process pid.
 
-All of this was measured with my fs_mark tool (it is also on 
-sourceforge) with variations of the following:
-
-fs_mark -d /home/ric/test -n 10000 -D 20 -N 500
-
-(-S 0 no fsync, -S 1 fsync per file as written, -S 2 bulk reverse order, 
--S 3 bulk in order).
-
-> It's also the case that a home user's fileserver is generally
-> quiscent, which is probably why we aren't hearing lots of stories
-> about home NAS servers (which I bet probably don't enable write
-> barriers) trashing vast amounts of user data.....
-> 
-> 						- Ted
-
-A lot of NAS boxes and storage boxes in general disable all write cache 
-on drives just to be safe. It would be interesting to benchmark the nfs 
-server with and without barriers from a client ;-)
-
-ric
+I though, that proper behavior would be to split audit_pid, used for
+filtering from the audit_nlk_pid used for netlink communications.
