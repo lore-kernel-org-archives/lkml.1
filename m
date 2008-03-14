@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbYCNFmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbYCNFtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755633AbYCNFmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 01:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYCNFmm
+	id S1755904AbYCNFtJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 01:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYCNFsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 01:42:42 -0400
-Received: from phunq.net ([64.81.85.152]:60528 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752023AbYCNFmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 01:42:40 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: David Newall <davidn@davidnewall.com>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Thu, 13 Mar 2008 21:42:20 -0800
-User-Agent: KMail/1.9.5
-Cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803131923.14840.phillips@phunq.net> <47DA0B78.8010802@davidnewall.com>
-In-Reply-To: <47DA0B78.8010802@davidnewall.com>
+	Fri, 14 Mar 2008 01:48:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:11630 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbYCNFsy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 01:48:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=CGJ3yS2fFpSojb/ANNH1DCKB9WnFA3McprpIE28D7x/kpoGOxnVDS58x5G7a3/TbGe/NfvVEHMuSFj2M+z7ngzMLiJIMYhJ/pfojC1SCjnPdNE61acdlIHRQhZ0ELTHbGMvXh9kj4Aho4mJS3sw2M4+gYW+A1kxiJAJ12ueZ99E=
+Date: Fri, 14 Mar 2008 08:47:44 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: whose job is it to include various header files?
+Message-ID: <20080314054744.GA4216@martell.zuzino.mipt.ru>
+References: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain> <9a8748490803131653n7f1c2bd0m12e30d82bf936d03@mail.gmail.com> <Pine.LNX.4.64.0803140227100.14822@fbirervta.pbzchgretzou.qr> <alpine.LFD.1.00.0803132149320.11864@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803132242.21305.phillips@phunq.net>
+In-Reply-To: <alpine.LFD.1.00.0803132149320.11864@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 March 2008 22:22, David Newall wrote:
-> I'd like to seem some science.  I'd like to know how much faster it
-> really is, and for that proper testing needs to be done.  Since Daniel's
-> scheme uses the same amount of RAM as disk, an appropriate test would be
-> to pin (at least) that amount of RAM to buffer cache, and then to fill
-> the cache with the contents of the disk (i.e. cat /dev/disk >
-> /dev/null.)  This sets the stage for tests, which tests should not
-> include the sync operation.  I'd like to see actual numbers against such
-> a setup versus Daniel's scheme.  Since buffer cache is shared by all
-> disks, obviously the test must not access any other drive.
+On Thu, Mar 13, 2008 at 09:53:01PM -0400, Robert P. J. Day wrote:
+> On Fri, 14 Mar 2008, Jan Engelhardt wrote:
+> 
+> >
+> > On Mar 14 2008 00:53, Jesper Juhl wrote:
+> > >I agree with you completely. A file should explicitly include
+> > >headers for the stuff it uses and not rely on implicit includes
+> > >done elsewhere. Cleaning that up is going to touch a lot of files
+> > >though for no real short term gain (there is a long term gain of
+> > >maintainability though), so it's going to be a loveless job :(
+> >
+> > But straightforward. You nuke the complete #include list of a .h/.c
+> > file and "rebuild" it by hand, by looking at the code the .h/.c file
+> > provides/uses and selecting appropriate #includes.
 
-There is a correctable flaw in your experiment: loading the disk into
-buffer cache does not make the cached data available to the page
-cache.  Maybe it should (good summer project there for somebody) but
-for now you need to tar the filesystem to dev/null or similar.  Note
-that, because of poor cross-directory readahead, traversing a disk
-like that will not be as fast as reading it linearly.  On the other
-hand, you will not have to read any free space into cache, which
-ramback does because it does not know what is free space (or care,
-really...)
+Which is generally wrong thing to do because you won't notice that
+moving parts to another header will make list of necessary headers much
+shorter.
 
-Anyway, your investigative attitude is worth gold :-)
+> well, yes, that would certainly do it, but i'm not that ambitious.
+> :-)  actually, what i'm testing now is deleting the two superfluous
+> includes from <linux/percpu.h>:
+> 
+>   #include <linus/slab.h>
 
-> One thing I will admit: RAM disks are fast.  What I don't know is how
-> much work there is to access blocks that are already in the buffer
-> cache.  In principle I suppose it should be a little slower, but not
-> much.  I'd like to know, though.  I'd do the test myself if I had a
-> machine with enough RAM, but I don't.  Daniel (apparently) does...
+This needed for kzalloc().
 
-You are probably OK.  I used a 150 MB ramdisk, of which I used only
-100 MB.  That is why I used a 2.2 kernel for my tests.
+>   #include <linux/string.h>
 
-Daniel
+That looks unnecessary, yes.
+
+> doing "make allyesconfig" on x86, watching where the compile fails,
+> fixing that file, and noticing that errors fall into a fairly small
+> set of localized clumps, so i'll just collect them and submit them.
+> there's actually not that many.
+
+Sir, why on earth do you breed so many patches?
+
+If you're going to delete string.h from percpu.h (which is good idea)
+you a) delete it, and b) fix all compile breakages, and c) submit as one
+patch.
+
+By "all compile" breakages I mean cross-compilation on archs other than
+i386 and on many configs on each of them. If you can't do that, sorry,
+stay far away from headers, especially core.
+
+As for many preparatory patches, a) by itself they're useless -- A is
+still including B and headers are protected against double inclusion,
+b) late in game you can discover that, oops, B is needed in A and all
+those patches were useless, c) submitting as one patch which removes B
+from A means other people can compile-test that you haven't broken their
+usual config, with many small patches scattered over mailing lists they
+won't be able do that. Remember, A is still including B.
+
+I suggest to add headers when there is compilation breakage and remove
+headers when it's safe thing to do.
+
+P.S.: Some common sense is also required when touching header
+      dependencies. gfp.h is not included left and right by drivers,
+      because it comes from slab.h. Some common sense is also required
+      when touching header dependencies.
+
