@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbYCNPCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYCNPFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbYCNPCt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 11:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYCNPCl
+	id S1757268AbYCNPFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 11:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbYCNPFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 11:02:41 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:36766 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbYCNPCk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 11:02:40 -0400
-Date: Fri, 14 Mar 2008 16:02:38 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: broken access to a USB HID device after suspend
-Message-ID: <20080314150238.GB16182@eazy.amigager.de>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org
-References: <20080314071336.GA14550@dose.home.local> <Pine.LNX.4.44L0.0803141020190.4478-100000@iolanthe.rowland.org>
+	Fri, 14 Mar 2008 11:05:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:38832 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbYCNPFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 11:05:43 -0400
+Message-ID: <47DA93D0.4050708@goop.org>
+Date: Fri, 14 Mar 2008 08:03:44 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0803141020190.4478-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Beulich <jbeulich@novell.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: simplify sync_test_bit()
+References: <47DA3DC0.76E4.0078.0@novell.com>
+In-Reply-To: <47DA3DC0.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 10:34:06 -0400, Alan Stern wrote:
+Jan Beulich wrote:
+> There really is no need for a redundant implementation here, just keep
+> the alternative name for allowing consumers to use consistent naming.
+>
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>
+> --- a/include/asm-x86/sync_bitops.h
+> +++ b/include/asm-x86/sync_bitops.h
+> @@ -130,26 +130,7 @@ static inline int sync_test_and_change_b
+>  	return oldbit;
+>  }
+>  
+> -static __always_inline int sync_constant_test_bit(int nr, const volatile unsigned long *addr)
+> -{
+> -	return ((1UL << (nr & 31)) &
+> -		(((const volatile unsigned int *)addr)[nr >> 5])) != 0;
+> -}
+> -
+> -static inline int sync_var_test_bit(int nr, const volatile unsigned long * addr)
+> -{
+> -	int oldbit;
+> -
+> -	__asm__ __volatile__("btl %2,%1\n\tsbbl %0,%0"
+> -			     :"=r" (oldbit)
+> -			     :"m" (ADDR),"Ir" (nr));
+> -	return oldbit;
+> -}
+> -
+> -#define sync_test_bit(nr,addr)			\
+> -	(__builtin_constant_p(nr) ?		\
+> -	 sync_constant_test_bit((nr),(addr)) :	\
+> -	 sync_var_test_bit((nr),(addr)))
+> +#define sync_test_bit test_bit
+Hm,
 
-[...]
+#define sync_test_bit(nr, addr) test_bit(nr, addr)
 
-> When you get these errors, do you exit from the hidmon program and 
-> restart it?  Do the errors still occur after restarting?
+would be better, but seems reasonable to me. Or even an inline for 
+consistency.
 
-Hidmon is a simple commandline application, something like hdparm for
-LCD's. So, yes, I restarted it multiple times.
-
-Regards,
-Tino
+J
