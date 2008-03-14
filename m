@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYCNMiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbYCNM52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYCNMiE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 08:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYCNMhy
+	id S1755091AbYCNM52 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 08:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYCNM5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 08:37:54 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:18217 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbYCNMhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 08:37:53 -0400
-Date: Fri, 14 Mar 2008 13:37:50 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: IO CPU affinity test results
-Message-ID: <20080314123750.GM17940@kernel.dk>
-References: <47DA6C1E.8010000@hp.com> <47DA6E4C.2000803@hp.com>
+	Fri, 14 Mar 2008 08:57:18 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:51596 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752922AbYCNM5S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 08:57:18 -0400
+Date: Fri, 14 Mar 2008 08:56:56 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Benny Amorsen <benny+usenet@amorsen.dk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Message-ID: <20080314125656.GA7412@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Benny Amorsen <benny+usenet@amorsen.dk>,
+	linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de> <200803111602.53835.phillips@phunq.net> <m3d4q08477.fsf@ursa.amorsen.dk> <20080312133001.1668f40d@the-village.bc.nu> <20080314093019.GA5966@ucw.cz> <47DA5C8D.2020207@emc.com> <m3fxutcz2s.fsf@ursa.amorsen.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47DA6E4C.2000803@hp.com>
+In-Reply-To: <m3fxutcz2s.fsf@ursa.amorsen.dk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14 2008, Alan D. Brunelle wrote:
-> Alan D. Brunelle wrote:
-> > Good morning Jens -
-> >
-> > I had two machines running the latest patches hang last night:
-> >
-> > o  2-way AMD64 - I inadvertently left the patched kernel running, and I was moving a ton of data (100+GB) back up over the net to this node. It hard hung (believe it or not) about 99% of the way through. Hard hang, wouldn't respond to anything.
-> >
-> > o  4-way IA64 - I was performing a simple test: [mkfs / mount / untar linux sources / make allnoconfig / make -j 5 / umount] repeatedly switching rq_affinity to 0/1 between each run. After 22 passes it had a hard hang with rq_affinity set to 1.
-> >
-> > Of course, there is no way of knowing if either hang had anything to do with the patches, but it seems a bit ominous as RQ=1 was set in both cases.
-> >
-> > This same test worked fine for 30 passes on a 2-way AMD64 box, with the following results:
-> >
-> > Part  RQ   MIN     AVG     MAX      Dev
-> > ----- --  ------  ------  ------  ------
-> >  mkfs  0  41.656  41.862  42.086   0.141
-> >  mkfs  1  41.618  41.909  42.270   0.192
-> >
-> > untar  0  18.055  19.611  20.906   0.720
-> > untar  1  18.523  19.905  21.988   0.738
-> >
-> >  make  0  50.480  50.991  51.752   0.340
-> >  make  1  49.819  50.442  51.000   0.292
-> >
-> >  comb  0 110.433 112.464 114.176   0.932
-> >  comb  1 110.694 112.256 114.683   0.948
-> >
-> >  psys  0  10.28%  10.91%  11.29%   0.243
-> >  psys  1  10.21%  11.05%  11.80%   0.350
-> >
-> >
-> > All results are in seconds (as measured by Python's time.time()), except for the psys - which was the average of mpstat's %sys column over the life of the whole run. The mkfs part consisted of [mkfs -t ext2 ; sync ; sync], untar [mount; untar linux sources; umount; sync; sync], make [mount; make allnoconfig; make -j 3; umount; sync; sync], and comb is the combined times of the mkfs, untar and make parts.
-> >
-> > So, in a nutshell, we saw slightly better overall performance, but not conclusively, and we saw slightly elevated %system time to accomplish the task.
-> >
-> > On the 4-way, results were much worse: the final data shown before the system hung showed the rq=1 passes taking significantly longer, albeit at lower %system. I'm going to try the runs again, but I have a feeling that the latest "clean" patch based upon Nick's single call mechanism is a step backwards.
-> >
-> > Alan
+On Fri, Mar 14, 2008 at 12:41:31PM +0100, Benny Amorsen wrote:
+> Ric Wheeler <ric@emc.com> writes:
 > 
-> I was able to go back and capture the results after 17 passes on the
-> 4-way IA64 box (before it hung), and with rq=1 it shows a huge
-> increase in time needed to do the combined tests - almost 18% longer,
-> however with a reduction of about 24% less system time.
+> > The only really safe default is to disable the write cache by default
+> > or possibly dynamically disable the write cache when barriers are not
+> > supported by a drive. Both have a severe performance impact and I am
+> > not sure that for most casual users it is a good trade.
 > 
-> Part  RQ   MIN     AVG     MAX      Dev
-> ----- --  ------  ------  ------  ------
->  mkfs  0  18.543  19.055  19.514   0.285
->  mkfs  1  18.730  19.217  19.812   0.316
-> 
-> untar  0  17.119  21.396  43.868   8.025
-> untar  1  16.987  28.155  44.637  10.175
-> 
->  make  0  23.105  23.866  24.487   0.359
->  make  1  24.015  28.384  37.829   3.598
-> 
->  comb  0  59.610  64.317  86.733   7.896
->  comb  1  63.181  75.755  94.079  10.489
-> 
->  psys  0  10.35%  14.16%  16.28%   1.375
->  psys  1   6.89%  10.73%  14.30%   2.368
-> 
-> I'll try to snag some profile data to see what's up.
+> So people ARE running their disks in a mode similar to Ramback.
 
-That definitely looks like a bug. One thing to try would be to drop the
-test for whether to send the IPI or not, and just unconditionally do it.
-For ia64, that would be in
-arch/ia64/kernel/smp.c:__smp_call_function_single(), just change
+Similar, but not as aggressive.  Remember, the size of the write cache
+on the hard drive is relatively small (small number of megabytes), and
+the drive generally is relatively aggressive about getting the data
+out to the platters; it's probably not going to keep unwritten data on
+the platters for minutes or hours at a time, let alone days.  Of
+course, unless you use write barriers or some kind of explicit write
+ordering, it's going to write stuff out in an order which is
+convenient to the hard drive, not necessarily an order convenient to
+the filesystem.
 
-        if (ipi)
-                send_IPI_single(cpu, IPI_CALL_FUNC_SINGLE);
+Also, if the system crashes, you don't lose the data in hard drive's
+write cache, where as the data in Ramback is likely gone.  And Ramback
+is apaprently keeping potentially several gigabytes dirty in memory
+and *not* writing it out very aggressively.  So the exposure is one of
+degree.
 
-to
+In practice, it's interesting that we've had so few people reporting
+massive data loss despite the lack of the use of write barriers.
+Sure, in absolutely critical situations, it's not a good thing; but if
+I had a mail server, where I really wanted to make sure I didn't lose
+any e-mail, having a small UPS which could keep the server going for
+just a few minutes so it could do a controlled shutdown on a power
+failure is probably a better engineering solution from a
+cost/benefit/performance point of view, compared to turning on write
+barriers and taking up to two orders of magnitude worth of performance
+hit.
 
-        send_IPI_single(cpu, IPI_CALL_FUNC_SINGLE);
-
-so that it always gets notified.
-
--- 
-Jens Axboe
-
+						- Ted
