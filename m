@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYCNOv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYCNOxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbYCNOv6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYCNOvu
+	id S1757363AbYCNOxb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYCNOxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:51:50 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:47118 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbYCNOvt (ORCPT
+	Fri, 14 Mar 2008 10:53:24 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41572 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbYCNOxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:51:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=j7aMVdHDG6hdovzZUKHnyC1KP6J1vVSl7S+WKz5+RwNQ8JHwZoRhlySNjo86KuqfgBfxoItAEGWBM8OBZhDFjoWRu52EKlJgYuqOWBiZVUtJZDftJ+TZMpD72KdXv3rC+5UY2uIJPkHI2LeX5b3MSqL6bDXahFBc6SJIi/jXZyo=
-Message-ID: <54b90fdf0803140751m71935a09r9b039ca6eb124f4d@mail.gmail.com>
-Date: Fri, 14 Mar 2008 10:51:43 -0400
-From: Yan <rottled@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22.6 - Discrepancy between running and on-disk kernels
+	Fri, 14 Mar 2008 10:53:23 -0400
+Date: Fri, 14 Mar 2008 23:44:35 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: [PATCH 3/3 (RFC)](memory hotplug) align maps for easy removing
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
+References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080314234205.20DD.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I have been trying to compare the code from the on-disk compressed kernel
-that was booted and the running kernel extracted from /dev/kmem. I extracted
-the kernel's code from the disk image by stripping the head.S and similar
-and gunzipping it, and extracted the kernel from /dev/kmem by reading data
-between _text and _etext symbol offsets.
+To free memmap and usemap easier, this patch aligns these maps to page size.
 
-I then ran both through a disassembler and diff'ed the outputs. Predictably,
-the disassembly was similar, but not identical. Some instructions (e.g. bts)
-had a 'lock' prefix, where as others had a 'nop' in its place.
+I know usemap size is too small to align page size.
+It will be waste of area. So, there may be better way than this.
 
-There were other differences with some instructions like mfence. Everything
-else matched just fine, the differences were mostly in memory-referencing
-instructions.
+Followings are pros. and cons with other my ideas.
+But I'm not sure which is better way. 
 
-My question is, what can be changing the kernel between being on static
-storage and being loaded? Or am I just being fooled into thinking something
-changed it? I'm thinking that it had something to do with mutex locking
-and SMP, but I looked through boot code and tried googling and came up with
-nothing. Another possibility is me interpreting non-instructions as
-instructions.
+a) Packing many section's usemap on one page. Count how many sections use
+   it in page_count.
+  Pros.
+    - Avoid waisting area.
+  Cons.
+    - This usemap's page will be hard(or impossible) to remove due to
+      dependency.
+      It should be allocated on un-movable zone/node.
+      (I'm not sure it's impact of performance.)
+    - Nodes' structures may have to be packed like usemap???
 
-Example:
+b) Pack memmap and usemap in one allocation.
+  Pros.
+    - May avoid wasting area if its size is suitable.
+  Cons.
+    - If size is not suitable, it will be same as this patch.
+    - This way is not good for VMEMMAP_SPARSEMEM.
+      At least, it is reverse way against Yinghai-san's fix.
 
-The following pattern repeats a lot:
+c) This way.
+  Pros.
+    - Very easy to remove.
+  Cons.
+    - Waist of area.
 
-1325c1326,1327
-<     1089: f0 0f b3 04 24          lock btr %eax,(%esp)
+Any other idea is welcome.
+
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
 ---
->     1089: 90                      nop
->     108a: 0f b3 04 24             btr    %eax,(%esp)
+ mm/sparse.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-As well as other changes:
+Index: current/mm/sparse.c
+===================================================================
+--- current.orig/mm/sparse.c	2008-03-11 20:15:41.000000000 +0900
++++ current/mm/sparse.c	2008-03-11 20:58:18.000000000 +0900
+@@ -244,7 +244,8 @@
+ 	struct mem_section *ms = __nr_to_section(pnum);
+ 	int nid = sparse_early_nid(ms);
+ 
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	usemap = alloc_bootmem_pages_node(NODE_DATA(nid),
++					  PAGE_ALIGN(usemap_size()));
+ 	if (usemap)
+ 		return usemap;
+ 
+@@ -264,8 +265,8 @@
+ 	if (map)
+ 		return map;
+ 
+-	map = alloc_bootmem_node(NODE_DATA(nid),
+-			sizeof(struct page) * PAGES_PER_SECTION);
++	map = alloc_bootmem_pages_node(NODE_DATA(nid),
++		       PAGE_ALIGN(sizeof(struct page) * PAGES_PER_SECTION));
+ 	return map;
+ }
+ #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
 
-94383,94384c94832,94835
-<    47bb3: f0 83 04 24 00          lock addl $0x0,(%esp)
-<    47bb8: f0 ff 05 7c 30 80 c0    lock incl 0xc080307c
----
->    47bb3: 0f ae f0                mfence
->    47bb6: 89 f6                   mov    %esi,%esi
->    47bb8: 90                      nop
->    47bb9: ff 05 7c 30 80 c0       incl   0xc080307c
+-- 
+Yasunori Goto 
 
 
-(I'm not subscribed; please cc any responses to me)
-
-Thanks in advance,
-Yan
