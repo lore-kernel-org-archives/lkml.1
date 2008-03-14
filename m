@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbYCNLWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYCNLjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754324AbYCNLWp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 07:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYCNLWg
+	id S1754001AbYCNLjZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 07:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYCNLjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 07:22:36 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33997 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYCNLWf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 07:22:35 -0400
-Date: Fri, 14 Mar 2008 11:16:09 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Fri, 14 Mar 2008 07:39:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54535 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbYCNLjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 07:39:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc5-git3: Reported regressions from 2.6.24
+Date: Fri, 14 Mar 2008 12:38:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Johannes Weiner <hannes@saeurebad.de>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] Move memory controller allocations to their own slabs
- (v3)
-In-Reply-To: <20080314115645.e78b7f5c.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0803141100110.19587@blonde.site>
-References: <20080313140307.20133.30405.sendpatchset@localhost.localdomain>
- <20080314115645.e78b7f5c.kamezawa.hiroyu@jp.fujitsu.com>
+       Natalie Protasevich <protasnb@gmail.com>
+References: <200803140136.38549.rjw@sisk.pl> <87bq5i3xce.fsf@saeurebad.de> <alpine.LFD.1.00.0803131838340.3557@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803131838340.3557@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803141238.03689.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008, KAMEZAWA Hiroyuki wrote:
-> At first, in my understanding,
-> - MOVABLE is for migratable pages. (so, not for kernel objects.)
-> - RECLAIMABLE is for reclaimable kernel objects. (for slab etc..)
+On Friday, 14 of March 2008, Linus Torvalds wrote:
 > 
-> All reclaimable objects are not necessary to be always reclaimable but
-> some amount of RECLAIMABLE objects (not all) should be recraimable easily.
-> For example, some of dentry-cache, inode-cache is reclaimable because *unused*
-> objects are cached.
+> On Fri, 14 Mar 2008, Johannes Weiner wrote:
+> > 
+> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10164
+> > > Subject		: ntfs build failure on no-mmu
+> > > Submitter	: Mike Frysinger <vapier.adi@gmail.com>
+> > > Date		: 2008-03-03 11:05 (11 days old)
+> > > References	: http://lkml.org/lkml/2008/3/1/179
+> > 
+> > I found this: http://lkml.org/lkml/2008/3/13/6
 > 
-> When it comes to page_cgroup, *all* objects has dependency to pages which are
-> assigned to.  And user pages are reclaimable.
-> There is a similar object....the radix tree. radix-tree's node is allocated as
-> RECLAIMABLE object.
-> 
-> So I think it makes sense to changing page_cgroup to be reclaimable.
-> 
-> But final decision should be done by how fragmentation avoidance works.
-> It's good to test "how many hugepages can be allocated dynamically" when we
-> make page_cgroup to be GFP_RECAIMABLE 
+> Fixed slightly differently in mainline by Paul Mindt in commit 
+> 0738c4bb8f2a8bf15178f852494643b0981f578b ("nommu: Provide 
+> is_vmalloc_addr() stub.")
 
-I agree with you on all points.  No need for it to be done in the same
-patch as Balbir's, but yes, __GFP_RECLAIMABLE appears to be appropriate
-for the page_cgroup kmem_cache.
+Thanks, closed.
 
-(I think it's a better fit than for the radix_tree_node cache: though
-the common pagecache usage of the radix_tree implies that its nodes
-are reclaimable, I can't see why radix_tree nodes would intrinsically
-be reclaimable.  If a significant non-reclaimable user of radix-tree
-comes on the scene, I'd expect us to change that assumption.)
-
-Hugh
+Rafael
