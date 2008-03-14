@@ -1,107 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbYCNWin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbYCNWon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbYCNWin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 18:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCNWic
+	id S1757223AbYCNWon (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 18:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYCNWoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 18:38:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58278 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976AbYCNWic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 18:38:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next20080314 build fails with !CONFIG_PM
-Date: Fri, 14 Mar 2008 23:37:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, apw@shadowen.org,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       Greg KH <greg@kroah.com>
-References: <47DA2FD6.3000100@linux.vnet.ibm.com> <20080314150554.1b79a6ed.akpm@linux-foundation.org>
-In-Reply-To: <20080314150554.1b79a6ed.akpm@linux-foundation.org>
+	Fri, 14 Mar 2008 18:44:32 -0400
+Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:34017 "HELO
+	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754135AbYCNWob (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 18:44:31 -0400
+X-YMail-OSG: zSSYilAVM1k6_5zJk7YgcKgAHPvSTv5hKVAYd5T1nV..DVcZsXDLvj52mkkhwBEN5L8cqrslSA--
+X-RocketYMMF: rancidfat
+Date: Fri, 14 Mar 2008 15:44:26 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+To: Stephen Smalley <sds@epoch.ncsc.mil>, "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <1205516516.22912.92.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803142337.12605.rjw@sisk.pl>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <176755.88432.qm@web36612.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 14 of March 2008, Andrew Morton wrote:
-> On Fri, 14 Mar 2008 13:27:10 +0530
-> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
-> > The next-20080314 tree build fails 
-> > 
-> > drivers/serial/serial_core.c: In function `uart_add_one_port':
-> > drivers/serial/serial_core.c:2359: error: invalid lvalue in assignment
-> > make[2]: *** [drivers/serial/serial_core.o] Error 1
-> > 
-> > The config # CONFIG_PM was not set.The code which is causing the 
-> > build failure is 
-> > 
-> > 	device_can_wakeup(tty_dev) = 1;
-> > 
-> > when the CONFIG_PM is set the macro is preprocessed as
-> > 
-> > #define device_can_wakeup(dev) \
-> >         ((dev)->power.can_wakeup)
-> > 
-> > and when not set, it becomes 0 = 1 
-> > 
-> > #define device_can_wakeup(dev)                  0
 
-Kamalesh, thanks for reporting the problem.
+--- Stephen Smalley <sds@epoch.ncsc.mil> wrote:
 
-> Caused by Alan's "PM: make wakeup flags available whenever CONFIG_PM is
-> set" which I assume Len merged.
+> 
+> ... 
+> > I completely disagree.   We have two separate frameworks in the kernel,
+> > one to enforce generic additional security stuff, and one to track
+> > tasks.  When I need a feature which tracks tasks to do some security
+> > tasks, it seems obvious that I would use both, just like to enforce a
+> > certain type of MAC I end up using both netfilter and LSM through
+> > selinux.
+> 
+> Depends on whether you think LSM hooks are like netfilter hooks (i.e.
+> fine for each module to just implement a few here and there, then
+> combine resulting modules), or whether they are about implementing
+> complete security models (ala SELinux or Smack).  As they currently
+> exist, they aren't very well suited to the former - they impose a cost
+> on all hooked operations in order to hook any at all, as has been a
+> concern for your device controller.
 
-It's in the Greg's tree actually.
+I don't intend that Smack be thought of as a complete security model.
+Smack implements Mandatory Access Control, but leaves the privilege
+mechanism (root and/or capabilities) to the whims of others. Similarly
+Smack does not do DAC (unlike SELinux with MCS) although "owned rules"
+has been proposed as an additional feature. I certainly wouldn't
+want every new facility that comes in to require multiple versions
+that depend on the other LSMs involved. It's true that today's LSM is
+optimized for the only LSM that existed a year ago, and that was a
+monolythic security model.
 
-> Sorry, but that code should be dragged out and shot.  Doing this:
+> > > > The fact that all existing LSMs need to invoke exactly the same code is
+> an 
+> > > > indicator that it doesn't belong in LSM.
+> > 
+> > No, that's like saying capabilities don't belong in LSM because all LSMS
+> > need to invoke it the same way.  What it is an indicator of is that
+> > there are (not-quite-)orthogonal pieces of security which users might
+> > want to use together.
 > 
-> > 	device_can_wakeup(tty_dev) = 1;
-> 
-> is just gross and stupid.  It looks daft, it isn't C and it *requires* that
-> device_can_wakeup() be implemented as a macro, which totally busts any
-> concept of abstraction.
-> 
-> 
-> The code previously had quite reasonable accessors:
-> 
->  #define device_set_wakeup_enable(dev,val) \
->         ((dev)->power.should_wakeup = !!(val))
->  #define device_may_wakeup(dev) \
->         (device_can_wakeup(dev) && (dev)->power.should_wakeup)
-> 
-> can we please go back to that scheme?  Please also convert all these
-> magical macros into inlined C functions.  One reason is that this:
-> 
-> +#define device_init_wakeup(dev,val) \
-> +       do { \
-> +               device_can_wakeup(dev) = !!(val); \
-> +               device_set_wakeup_enable(dev,val); \
-> +       } while(0)
-> 
-> is buggy.  It evaluates its arguments multiple times and will cause
-> failures when passed expressions which have side-effects.
-> 
-> Alan, please also pass all future patches through checkpatch - there is no
-> need to be adding trivial coding-style errors in this day and age.
-> 
-> Thanks.
+> Likely not a popular view, but capabilities don't belong in LSM.
 
-Well, Greg please drop the "PM: make wakeup flags available whenever CONFIG_PM
-is set" and Alan please resubmit the patch with the problems pointed out by
-Andrew fixed.
+I share this view, which add credibility to the claim that it's
+not popular. (smiley)
 
-In fact I'd even prefer it to be two patches, one that moves should_wakeup and
-the related macros out of the CONFIG_PM_SLEEP #ifdef, because that's what fixes
-the problem described in the changelog, and one that makes the remaining
-changes with a separate changelog.
+> Look
+> at them:  the capability state is still directly embedded in the
+> relevant kernel data structures, various bits of capability specific
+> logic and interfaces remain in the core kernel,
 
-Thanks,
-Rafael
+It does seem as if a separate Linux Privilege Module framework
+might be a better scheme. It would be very easy to pull out, and
+simple to create the obvious LPMs:
+
+- Traditional root
+  hooks look like "return (euid == 0) ? 0 : -EACCES;"
+- No access check at all
+  hooks look like "return 0;"
+- Root or capabilities
+  hooks look like "return (euid == 0 || capable(xxx)) ? 0 : -EACCES;"
+- Pure capabilities
+  hooks look like "return capable(xxx) ? 0 : -EACCES;"
+
+> they don't present a
+> complete security model (just an auxiliary to some other model like DAC
+> or Smack for privilege purposes), they use only a small subset of the
+> hooks, they force LSM to violate its usual restrictive-only paradigm to
+> support capable(), CONFIG_SECURITY=n still has to invoke the capability
+> functions, and all of the other LSMs do need to call it the same way to
+> keep Linux working as expected for applications and users.
+
+Plus, if SELinux wants to abandon capabilities they can add thier own
+scheme or insist the user use the noop LPM and do whatever they like
+in the LSM. Smack has no intention of mucking with the privilege
+mechanism, and will happily go along with whatever the rest of the
+system wants to use, although the noop LSM seems a bit pointless in
+that case.
+
+> The original promise was that LSM would allow kernels to be built that
+> shed capabilities altogether,
+
+I don't remember that, but it's been a long time so it could be true.
+
+> but in practice no one seems to do that as
+> both users and applications expect them to exist in Linux.  In fact, the
+> possibility of not having capabilities present has caused problems that
+> have led to the dummy module being turned more and more into a clone of
+> the capabilities module (actually managing and testing the capability
+> bits rather than just uid == 0 as originally).
+
+This is why Smack is sticking to MAC rather than trying to be a
+wholistic security policy mechanism. To quote the prophet, "God
+created the world in 7 days, but then, He didn't have an install
+base".
+
+> So I wouldn't point to capabilities as a counter example to James' point
+> - they are actually a supporting example.
+
+In particular, capabilities are not an access control mechanism,
+they are a privilege mechanism. A lot of discussion about LSM has
+centered around the appropriate charactoristics of an LSM, and
+these discussions always assume that the LSM in question is
+exactly an access control mechanism. If we split the LSM into
+a LACM for access control and an LPM for privilege management
+maybe we can eliminate the most contentious issues.
+ 
+Does anyone know why that would be stoopid before I whack out
+patches?
+
+Thank you.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
