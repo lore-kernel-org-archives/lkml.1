@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYCNN37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYCNN3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYCNN37 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 09:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYCNN3e
+	id S1757188AbYCNN3o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 09:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYCNN3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 09:29:34 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:9899 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755257AbYCNN3K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 09:29:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qPrNJHCxcVqpzErjVN80aT/rd5mVObTvosrXnVBRy/gn2ljZuPJcRDEI07Q9IeJPzFnK+DskJF2i2QdQRQLyrDkVt4osMIiBX1RpcrM2G4/v5rEt2TrZJhsn3x3Rw/1TvQFA4l6ayWS+CZBaO629fwp4YPUjT/ToOx99Fq5WBEY=
-Message-ID: <983191750803140629v5a595ecfo39c75b34134d549a@mail.gmail.com>
-Date: Fri, 14 Mar 2008 18:59:01 +0530
-From: "Shard Gupta" <shard.kgp@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: netfilter and iptables help needed
-In-Reply-To: <983191750803140618p354fc09fl7493f6196d965641@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Mar 2008 09:29:33 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:49753 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754448AbYCNN3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 09:29:06 -0400
+Date: Fri, 14 Mar 2008 22:29:32 +0900 (JST)
+Message-Id: <20080314.222932.74752532.anemo@mba.ocn.ne.jp>
+To: haavard.skinnemoen@atmel.com
+Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, avictor.za@gmail.com,
+       tiwai@suse.de
+Subject: Re: [PATCH] at73c213: Fix DMA size at the end of DMA buffer
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080314104445.32f4da40@hskinnemo-gx620.norway.atmel.com>
+References: <20080310.234306.15242180.anemo@mba.ocn.ne.jp>
+	<20080314104445.32f4da40@hskinnemo-gx620.norway.atmel.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <983191750803140618p354fc09fl7493f6196d965641@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello List,
+On Fri, 14 Mar 2008 10:44:45 +0100, Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+> > +		size = runtime->period_size * runtime->channels;
+> > +		if (next_period == runtime->periods - 1)
+> > +			size += (runtime->buffer_size % runtime->period_size)
+> > +				* runtime->channels;
+> 
+> Ow. That looks expensive. Isn't there any way we can force the client
+> to select sane values of buffer_size and period_size?
 
-I am working on Potables and its related kernel modules. I was stuck
-in searching the entries (especially rules) present in the IPTables.
-Kindly, help me view all the rules located in the IPTables either on
-the disk, or if I can view them through a specific function. What are
-the functions that are involved in creation, deletion and updating of
-these rules in the IPTables.
-If I have to change the algorithm logic for packet classification in
-IPTables, then please specify the specific functions for this.
+Well, I suppose it is not _too_ expensive. :)
 
-- Shard Gupta
+> It seems like a reasonable demand that buffer_size is a multiple of
+> period_size, doesn't it?
+
+But actually it can happen.  And I gave up understanding how are these
+parameters determined...  If there were any way the driver can enforce
+that constraint, it would be better fix.
+
+Iwai-san, any comments from alsa guru?
+
+---
+Atsushi Nemoto
