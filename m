@@ -1,43 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbYCNPTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYCNPVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625AbYCNPTm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 11:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYCNPTe
+	id S1757237AbYCNPVU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 11:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYCNPVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 11:19:34 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:44736
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751865AbYCNPTe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 11:19:34 -0400
-Message-Id: <47DAA5C2.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
-Date: Fri, 14 Mar 2008 15:20:18 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: simplify sync_test_bit()
-References: <47DA3DC0.76E4.0078.0@novell.com> <47DA93D0.4050708@goop.org>
-In-Reply-To: <47DA93D0.4050708@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 14 Mar 2008 11:21:09 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60934 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754067AbYCNPVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 11:21:08 -0400
+Message-ID: <47DA97DF.6010008@us.ibm.com>
+Date: Fri, 14 Mar 2008 08:21:03 -0700
+From: David Wilder <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20080131)
+MIME-Version: 1.0
+To: Christof Schmitt <christof.schmitt@de.ibm.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-btrace@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+       wilder@us.ibm.com
+Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
+References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com>
+In-Reply-To: <20080314132238.GA9815@schmichrtp.de.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->#define sync_test_bit(nr, addr) test_bit(nr, addr)
->
->would be better, but seems reasonable to me. Or even an inline for 
->consistency.
+Christof Schmitt wrote:
+> On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
+>> On Fri, Mar 14 2008, Christof Schmitt wrote:
+>>> On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
+>>>> That is indeed a bug, does this work for you?
+>>>>
+>>>> diff --git a/kernel/relay.c b/kernel/relay.c
+>>>> index d080b9d..39d1fa8 100644
+>>>> --- a/kernel/relay.c
+>>>> +++ b/kernel/relay.c
+>>>> @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
+>>>>  			       unsigned int flags,
+>>>>  			       int *nonpad_ret)
+>>>>  {
+>>>> -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
+>>>> +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+>>>>  	struct rchan_buf *rbuf = in->private_data;
+>>>>  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+>>>>  	uint64_t pos = (uint64_t) *ppos;
+>>>> @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
+>>>>  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
+>>>>  	poff = read_start & ~PAGE_MASK;
+>>>>
+>>>> -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
+>>>> +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+>>>> +
+>>>> +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+>>>>  		unsigned int this_len, this_end, private;
+>>>>  		unsigned int cur_pos = read_start + total_len;
+>>> With the patch, i can run dd and 'blktrace -h traceserver' without the
+>>> oops. But the output from blktrace only contains only zeros and no
+>>> usable data for blkparse. Using blktrace to write the data directly to
+>>> disk, without using the blktrace server works. Is there anything i
+>>> should look for to help debugging the problem?
+>> We should probably get Tom in the loop, as he is the relay expert. I'll
+>> make sure the above patch gets into 2.6.25, as it is definitely a bug
+>> that needs fixing.
+> 
+> http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
+> his email address seems to be no longer valid. I copy Dave Wilder
+> here, since he is mentioned as relay maintainer on the web page.
+> 
+> Dave, can you have a look at this? I can easily reproduce the problem
+> on s390 Linux for testing and getting more debug information.
+> 
+> Christof
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-I'm usually intentionally using just the names, without parameters and
-not as inline, in such alias definitions so that in case the name gets used
-as a function pointer (arguably unlikely here) there's not going to be
-any missing definition or duplicate function instantiation. But from a
-functionality point of view, either of the alternatives you suggest is
-of course as good.
-
-Jan
-
+I will take a look at the problem.
+Any thing special about the test you are running I need to know?
