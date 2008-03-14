@@ -1,130 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYCNKeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYCNKnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755344AbYCNKeF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 06:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYCNKdz
+	id S1754893AbYCNKnb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 06:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYCNKnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 06:33:55 -0400
-Received: from www.tglx.de ([62.245.132.106]:32868 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbYCNKdy convert rfc822-to-8bit (ORCPT
+	Fri, 14 Mar 2008 06:43:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:26922 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYCNKnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 06:33:54 -0400
-Date: Fri, 14 Mar 2008 11:33:36 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-Cc: "Jean-Samuel Chenard" <jsamch@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       grant.likely@secretlab.ca, Juergen Beisert <juergen127@kreuzholzen.de>
-Subject: Re: Linux UIO driver cache problem in PowerPC (fix)
-Message-ID: <20080314113336.63af1e7a@bluebox.local>
-In-Reply-To: <20080313081932.4edee290@dilbert.local>
-References: <169c03cb0803121222h5fca9cdal5af873cd2a700f4d@mail.gmail.com>
-	<20080313081932.4edee290@dilbert.local>
-Organization: Linutronix GmbH
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 14 Mar 2008 06:43:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=XG6zTUG9P0Ph9PlGdez0ANIUXMy6o9VBpG52kp/oeJM8qE6N3oT1qYf2p2gNUrHnZWRv8Gk8Ee+6WZII5Sz3dxf44wvAwioLOhx6kB8NtamShlwKJIEX0K882U0s7oWHM6K5MBHQo/nZtBvH95MSfgWkw75V79fSesxTwRWmmdc=
+Date: Fri, 14 Mar 2008 18:49:06 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: wfg@mail.ustc.edu.cn, akpm@linux-foundation.org, jack@suse.cz,
+       chris@linuxinfotag.de
+Subject: [PATCH][BUG 10227] readahead ret value fix
+Message-ID: <20080314104906.GA2898@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thu, 13 Mar 2008 08:19:32 +0100
-schrieb Hans-Jürgen Koch <hjk@linutronix.de>:
+If the page_offset > end_index, the return value should be updated to 0,
+avoiding the redundant read_pages
 
-> Am Wed, 12 Mar 2008 15:22:59 -0400
-> schrieb "Jean-Samuel Chenard" <jsamch@gmail.com>:
-> 
-> > Hi,
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-Hi Jean-Samuel,
-I investigated a bit and found your patch to be correct. I cleaned it
-up a bit and sent it to Greg and LKML. I added you as author and also
-took the freedom to add your Signed-off-by.
+---
+mm/readahead.c |    4 +++-
+1 file changed, 3 insertions(+), 1 deletion(-)
 
-Juergen, Thomas, Grant, if you can confirm this, please add your
-signature as well.
-
-Thanks,
-Hans
-
-> 
-> Hi Jean-Samuel,
-> thanks for your report. Please CC LKML if you find bugs like this. I
-> also added Grant Likely (PPC Xilinx Virtex maintainer), as it seems to
-> be a platform specific problem.
-> 
-> > 
-> > Experimenting with your userspace I/O driver on a Xilinx FPGA
-> > (PowerPC 405), I was having problems when reading hardware device
-> > registers mapped on my platform using the user-space mmap() call.
-> > 
-> > After some investigation (looking at the driver/char/mspec.c file),
-> > I found that preventing caching of the page in uio_mmap_physical
-> > fixed my issues with userspace mmap() reading messed-up values.
-> 
-> Hm, we already mark the page with VM_IO. That's sufficient on x86 and
-> arm. I'm not sure whether this is a bug in PPC memory handling. Why do
-> they cache VM_IO pages? 
-> 
-> > 
-> > This patch is against your initial commit of the UIO driver in the
-> > mainline kernel tree.
-> > 
-> > ====
-> > diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-> > index 865f32b..36e1123 100644
-> > --- a/drivers/uio/uio.c
-> > +++ b/drivers/uio/uio.c
-> > @@ -22,6 +22,7 @@
-> >  #include <linux/string.h>
-> >  #include <linux/kobject.h>
-> >  #include <linux/uio_driver.h>
-> > +#include <asm/pgtable.h>
-> > 
-> >  #define UIO_MAX_DEVICES 255
-> > 
-> > @@ -447,6 +448,8 @@ static int uio_mmap_physical(struct
-> > vm_area_struct *vma)
-> > 
-> >         vma->vm_flags |= VM_IO | VM_RESERVED;
-> > 
-> > +       vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> > +
-> >         return remap_pfn_range(vma,
-> >                                vma->vm_start,
-> >                                idev->info->mem[mi].addr >>
-> > PAGE_SHIFT, ====
-> > 
-> > I am a bit unsure if this will break something in any of your uses
-> > of the UIO driver (on other platforms than ppc), but it really fixes
-> > things for me.  
-> 
-> It should be OK, but unneccesary on other platforms. I have no
-> objections, but I fear in 6 months we'll see a patch removing that
-> line again because it's not needed... 
-> 
-> > Let me know if you need more details on what was
-> > happening on my platform before I added this statement.
-> 
-> I'd like to hear the opinion of people really involved in PPC memory
-> handling.
-> 
-> > 
-> > Thanks for the great driver for user-space I/O, it will save me lots
-> > of time in my research.
-> > 
-> > Regards,
-> > 
-> > Jean-Samuel
-> 
-> Thanks,
-> Hans
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe
-> linux-kernel" in the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff -upr linux/mm/readahead.c linux.new/mm/readahead.c
+--- linux/mm/readahead.c	2008-03-14 18:38:12.000000000 +0800
++++ linux.new/mm/readahead.c	2008-03-14 18:38:58.000000000 +0800
+@@ -144,8 +144,10 @@ __do_page_cache_readahead(struct address
+ 	for (page_idx = 0; page_idx < nr_to_read; page_idx++) {
+ 		pgoff_t page_offset = offset + page_idx;
+ 
+-		if (page_offset > end_index)
++		if (page_offset > end_index) {
++			ret = 0;
+ 			break;
++		}
+ 
+ 		rcu_read_lock();
+ 		page = radix_tree_lookup(&mapping->page_tree, page_offset);
