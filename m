@@ -1,102 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbYCNQ0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYCNQ2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbYCNQ0S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbYCNQ0K
+	id S1757389AbYCNQ2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbYCNQ2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:26:10 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:26656 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754448AbYCNQ0I (ORCPT
+	Fri, 14 Mar 2008 12:28:13 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:27249 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbYCNQ2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:26:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ocb8aYk5gjKP4EI4Fl3dgaQivroSDlFxbc1d3GYqAwOHrP/njn123HQNZdngWrk2CKp2EEYZyRRWISW3sjEkynlglbRMcFpKJbEicr4BDmnFrDfRnUrhFDhT7lFSEed4kVqmE43AaHZadJPa3hdcm3+puEzo7KgrRq+5K2TEkqg=
-Message-ID: <86802c440803140926n2ec2bd2fscf0f3e9a6e2e4d2e@mail.gmail.com>
-Date: Fri, 14 Mar 2008 09:26:07 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH 3/3 (RFC)](memory hotplug) align maps for easy removing
-Cc: "Badari Pulavarty" <pbadari@us.ibm.com>,
-       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, "Andrew Morton" <akpm@osdl.org>
-In-Reply-To: <20080314234205.20DD.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Mar 2008 12:28:12 -0400
+Date: Fri, 14 Mar 2008 17:28:08 +0100
+From: Christof Schmitt <christof.schmitt@de.ibm.com>
+To: David Wilder <dwilder@us.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-btrace@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+       wilder@us.ibm.com
+Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
+Message-ID: <20080314162807.GA4488@schmichrtp.de.ibm.com>
+References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <47DA97DF.6010008@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
-	 <20080314234205.20DD.E1E9C6FF@jp.fujitsu.com>
+In-Reply-To: <47DA97DF.6010008@us.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 7:44 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
->
->  To free memmap and usemap easier, this patch aligns these maps to page size.
->
->  I know usemap size is too small to align page size.
->  It will be waste of area. So, there may be better way than this.
->
->  Followings are pros. and cons with other my ideas.
->  But I'm not sure which is better way.
->
->  a) Packing many section's usemap on one page. Count how many sections use
->    it in page_count.
->   Pros.
->     - Avoid waisting area.
->   Cons.
->     - This usemap's page will be hard(or impossible) to remove due to
->       dependency.
->       It should be allocated on un-movable zone/node.
->       (I'm not sure it's impact of performance.)
->     - Nodes' structures may have to be packed like usemap???
->
->  b) Pack memmap and usemap in one allocation.
->   Pros.
->     - May avoid wasting area if its size is suitable.
->   Cons.
->     - If size is not suitable, it will be same as this patch.
->     - This way is not good for VMEMMAP_SPARSEMEM.
->       At least, it is reverse way against Yinghai-san's fix.
->
->  c) This way.
->   Pros.
->     - Very easy to remove.
->   Cons.
->     - Waist of area.
->
->  Any other idea is welcome.
->
->
->  Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
->
->  ---
->   mm/sparse.c |    7 ++++---
->   1 file changed, 4 insertions(+), 3 deletions(-)
->
->  Index: current/mm/sparse.c
->  ===================================================================
->  --- current.orig/mm/sparse.c    2008-03-11 20:15:41.000000000 +0900
->  +++ current/mm/sparse.c 2008-03-11 20:58:18.000000000 +0900
->  @@ -244,7 +244,8 @@
->         struct mem_section *ms = __nr_to_section(pnum);
->         int nid = sparse_early_nid(ms);
->
->  -       usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
->  +       usemap = alloc_bootmem_pages_node(NODE_DATA(nid),
->  +                                         PAGE_ALIGN(usemap_size()));
+On Fri, Mar 14, 2008 at 08:21:03AM -0700, David Wilder wrote:
+> Christof Schmitt wrote:
+> >On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
+> >>On Fri, Mar 14 2008, Christof Schmitt wrote:
+> >>>On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
+> >>>>That is indeed a bug, does this work for you?
+> >>>>
+> >>>>diff --git a/kernel/relay.c b/kernel/relay.c
+> >>>>index d080b9d..39d1fa8 100644
+> >>>>--- a/kernel/relay.c
+> >>>>+++ b/kernel/relay.c
+> >>>>@@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
+> >>>> 			       unsigned int flags,
+> >>>> 			       int *nonpad_ret)
+> >>>> {
+> >>>>-	unsigned int pidx, poff, total_len, subbuf_pages, ret;
+> >>>>+	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+> >>>> 	struct rchan_buf *rbuf = in->private_data;
+> >>>> 	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+> >>>> 	uint64_t pos = (uint64_t) *ppos;
+> >>>>@@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
+> >>>> 	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
+> >>>> 	poff = read_start & ~PAGE_MASK;
+> >>>>
+> >>>>-	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
+> >>>>+	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+> >>>>+
+> >>>>+	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+> >>>> 		unsigned int this_len, this_end, private;
+> >>>> 		unsigned int cur_pos = read_start + total_len;
+> >>>With the patch, i can run dd and 'blktrace -h traceserver' without the
+> >>>oops. But the output from blktrace only contains only zeros and no
+> >>>usable data for blkparse. Using blktrace to write the data directly to
+> >>>disk, without using the blktrace server works. Is there anything i
+> >>>should look for to help debugging the problem?
+> >>We should probably get Tom in the loop, as he is the relay expert. I'll
+> >>make sure the above patch gets into 2.6.25, as it is definitely a bug
+> >>that needs fixing.
+> >
+> >http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
+> >his email address seems to be no longer valid. I copy Dave Wilder
+> >here, since he is mentioned as relay maintainer on the web page.
+> >
+> >Dave, can you have a look at this? I can easily reproduce the problem
+> >on s390 Linux for testing and getting more debug information.
+> >
+> >Christof
+> >--
+> >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >the body of a message to majordomo@vger.kernel.org
+> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> 
+> I will take a look at the problem.
+> Any thing special about the test you are running I need to know?
 
-if we allocate usemap continuously,
-old way could make different usermap share one page. usermap size is
-only about 24bytes. align to 128bytes ( the SMP cache lines)
+The test is about using the blktrace network feature on a 64 bit s390
+guest on z/VM. I don't know if 64 bit and z/VM are related to the
+problem scenario, it is the only setup i tested. To reproduce, start
+somewhere 'blktrace -l' as a server and issue 
+blktrace -h tracehostname
+dd if=/dev/sda of=/dev/null
+to start blktrace and some I/O load.
 
-sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
-sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
-sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
-sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
-
-
-YH
+Christof
