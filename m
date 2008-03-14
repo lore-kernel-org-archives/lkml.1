@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYCNSkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbYCNSmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYCNSkl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 14:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYCNSke
+	id S1758501AbYCNSmd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 14:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYCNSm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 14:40:34 -0400
-Received: from postel.suug.ch ([194.88.212.233]:54756 "EHLO postel.suug.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751488AbYCNSkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 14:40:33 -0400
-Date: Fri, 14 Mar 2008 19:40:52 +0100
-From: Thomas Graf <tgraf@suug.ch>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Audit vs netlink interaction problem
-Message-ID: <20080314184052.GR20815@postel.suug.ch>
-References: <47DAA660.90401@openvz.org> <20080314163929.GP20815@postel.suug.ch> <47DAB065.6060804@openvz.org> <20080314182927.GQ20815@postel.suug.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080314182927.GQ20815@postel.suug.ch>
+	Fri, 14 Mar 2008 14:42:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48677 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbYCNSmZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 14:42:25 -0400
+Message-ID: <47DAC66D.2000902@zytor.com>
+Date: Fri, 14 Mar 2008 19:39:41 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Jiri Slaby <jirislaby@gmail.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Mark early_printk as asmlinkage
+References: <1205330034-28828-1-git-send-email-jirislaby@gmail.com> <1205330034-28828-2-git-send-email-jirislaby@gmail.com> <47D7E2FB.2020801@zytor.com> <20080314180401.GA6722@ucw.cz>
+In-Reply-To: <20080314180401.GA6722@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thomas Graf <tgraf@suug.ch> 2008-03-14 19:29
-> * Pavel Emelyanov <xemul@openvz.org> 2008-03-14 20:05
-> > Hmmm... I'm afraid, that this can break the audit filtering and signal
-> > auditing. I haven't yet looked deep into it, but it compares the 
-> > task->tgid with this audit_pid for different purposes. If audit_pid
-> > changes this code will be broken.
+Pavel Machek wrote:
+> On Wed 2008-03-12 15:04:43, H. Peter Anvin wrote:
+>> Jiri Slaby wrote:
+>>> It's not explicitly marked as asmlinkage, but invoked 
+>> >from x86_32
+>>> startup code with parameters on stack.
+>>>
+>>> No other architectures define early_printk and none of 
+>>> them are affected
+>>> by this change, since defines asmlinkage as empty token.
+>> NAK.
+>>
+>> The regparm ABI for x86-32 uses parameters on the stack 
+>> when the function is varadic (as it is here), so this is 
+>> unnecessary.
 > 
-> OK, then both pids have to be stored. audit_pid remains as-is but is
-> no longer used as destination netlink pid. A second pid is stored and
-> updated whenever a netlink message is received from userspace.
+> I'd call asmlinkage kind of documentation, then. Not everyone is as
+> good with x86 abi as you are...
+> 
 
-The following patch represents what I mean. Untested!
+Since it's already only used on x86-32 and we no longer support 
+non-regparm x86, I'd like to at least get to the point where x86-32 
+doesn't have any function.  We can retain it for documentation's sake, 
+but even then it's iffy... is "this is callable from assembly" really 
+something arch-invariant.
 
-Index: net-2.6.26/kernel/audit.c
-===================================================================
---- net-2.6.26.orig/kernel/audit.c	2008-03-14 19:31:53.000000000 +0100
-+++ net-2.6.26/kernel/audit.c	2008-03-14 19:38:35.000000000 +0100
-@@ -82,6 +82,9 @@
-  * contains the (non-zero) pid. */
- int		audit_pid;
- 
-+/* Actual netlink pid of the userspace process */
-+static int	audit_nlk_pid;
-+
- /* If audit_rate_limit is non-zero, limit the rate of sending audit records
-  * to that number per second.  This prevents DoS attacks, but results in
-  * audit records being dropped. */
-@@ -347,12 +350,12 @@
- 		skb = skb_dequeue(&audit_skb_queue);
- 		wake_up(&audit_backlog_wait);
- 		if (skb) {
--			if (audit_pid) {
--				int err = netlink_unicast(audit_sock, skb, audit_pid, 0);
-+			if (audit_nlk_pid) {
-+				int err = netlink_unicast(audit_sock, skb, audit_nlk_pid, 0);
- 				if (err < 0) {
- 					BUG_ON(err != -ECONNREFUSED); /* Shoudn't happen */
--					printk(KERN_ERR "audit: *NO* daemon at audit_pid=%d\n", audit_pid);
--					audit_pid = 0;
-+					printk(KERN_ERR "audit: *NO* daemon at audit_nlk_pid=%d\n", audit_nlk_pid);
-+					audit_nlk_pid = 0;
- 				}
- 			} else {
- 				if (printk_ratelimit())
-@@ -623,6 +626,12 @@
- 							sid, 1);
- 
- 			audit_pid = new_pid;
-+
-+			/*
-+			 * Netlink pid is only updated here to avoid overwrites
-+			 * from potential processes only querying the interface.
-+			 */
-+			audit_nlk_pid = NETLINK_CB(skb).pid;
- 		}
- 		if (status_get->mask & AUDIT_STATUS_RATE_LIMIT)
- 			err = audit_set_rate_limit(status_get->rate_limit,
-@@ -1350,7 +1359,7 @@
- 	if (!audit_rate_check()) {
- 		audit_log_lost("rate limit exceeded");
- 	} else {
--		if (audit_pid) {
-+		if (audit_nlk_pid) {
- 			struct nlmsghdr *nlh = nlmsg_hdr(ab->skb);
- 			nlh->nlmsg_len = ab->skb->len - NLMSG_SPACE(0);
- 			skb_queue_tail(&audit_skb_queue, ab->skb);
+	-hpa
