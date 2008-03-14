@@ -1,46 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYCNR0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbYCNR3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbYCNR0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYCNR0M
+	id S1757438AbYCNR3y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYCNR3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:26:12 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:62403 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbYCNR0L (ORCPT
+	Fri, 14 Mar 2008 13:29:44 -0400
+Received: from outbound-mail-02.bluehost.com ([69.89.21.12]:51968 "HELO
+	outbound-mail-02.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754101AbYCNR3k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:26:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vc2nChAaCIhLcQH8XLaapp5MaCRcV8ARJgWcOtIpjxf1rRXo+kQUBHcxlx5i+Zsi+c/wq6QUKRJQLfnhfRMr/qKtng2WVtymprcjc2hSczjQBNaBSeg/w5o9pqdI4lmDTu857AMKl2UPz/DOqXlqEoLbY17fk56os5/nzmN/IjA=
-Message-ID: <751a4f870803141025r2cb6bf88hdee3cf9583d9ad44@mail.gmail.com>
-Date: Fri, 14 Mar 2008 18:25:59 +0100
-From: "Aron Stansvik" <elvstone@gmail.com>
-To: nick.cheng@areca.com.tw
-Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1
-Cc: erich <erich@areca.com.tw>, akpm@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <000901c8781e$1cb6e780$8800a8c0@Nick>
+	Fri, 14 Mar 2008 13:29:40 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Justin Madru <jdm64@gawab.com>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+Date: Fri, 14 Mar 2008 10:29:38 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <47D828BB.2000702@gawab.com> <200803131009.01889.jbarnes@virtuousgeek.org> <47D9FD71.5080909@gawab.com>
+In-Reply-To: <47D9FD71.5080909@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <751a4f870802251451k2f6355d0o110d74cd226f0f84@mail.gmail.com>
-	 <000901c8781e$1cb6e780$8800a8c0@Nick>
+Message-Id: <200803141029.38124.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m2EHMUnq001944
 
-2008/2/26, nickcheng <nick.cheng@areca.com.tw>:> Hi Aron,>  Thanks for your patience.>  If you still got into trouble, please let me know.>  Thank you again,
-I have now tried:
-* Turning on/off NCQ in the Areca RAID.* Turning on/off read-ahead cache in the Areca RAID.* Putting the disks in anti-vibration mounts in 5.25" slots.* Switching SATA cables.* Using legacy ATA power connectors instead of the SATA ones.
-But I still have the problem. The power supply is 650W so there shouldbe plenty of power. There's only two Raptor disks, an Opteron CPU andan nVidia 6600GT in the machine.
-The Raptor two Raptor disks have different firmware on them, couldthat cause any problem?
-Two people who had read my post here on LKML have contacted me one-mail and have the same problem, but they have Seagate and Samsungdisks, and use the 1220 controller.
-The problem is hard to trigger, I've not been able to trigger it withany benchmarking tool, but in ~95% of the cases I can trigger it byjust copying a directory with lots of small files (around 500 MB).
-Anyone else seeing this? I'd really like to get it to work since thisis my only computer :(
-Should I try with XFS or ReiserFS instead of EXT3?
-Regards,Aron
->> -----Original Message----->  From: Aron Stansvik [mailto:elvstone@gmail.com]>> Sent: Tuesday, February 26, 2008 6:52 AM>  To: erich>  Cc: nick.cheng@areca.com.tw; akpm@linux-foundation.org;>  linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org>  Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>>  Hi Erich.>>  2008/2/25, nickcheng <nick.cheng@areca.com.tw>:>  > Hi Aron,>  >  From our field experiences and customers' feedbacks, all of them direct>  to>  >  vibration and power issues.>  >  The vibration could be caused by FANs not only by themselves.>>  Okay. I have a chassi fan that is quite close to the drives, I will>  try disabling it. I've also ordered two Nexus TwinDisk anti vibration>  harddrive mounts with which I'll place the disks in my 5.25" slots>  instead, away from any fans.>>  If this doesn't work, I'm stumped, as I really don't think it's the>  power supply and I don't have the money to buy a new one.>>  >  You mentioned it could be the F/W issue.>  >  If the environment does not meet the prerequisite, FW could not work>  >  correctly.>  >  Actually FW just reacts to the situations not it causes the issue.>>  Of course, I understand this. Just trying to figure this problem out..>>  >  Please check it out!!>>  I'll report back with my findings with moving disk away from fans and>  using anti-vibrations mounts.>>  Thanks for taking your time to reply.>>  Aron>>  >  Thank you,>  >>  >>  >  -----Original Message----->  >  From: Aron Stansvik [mailto:elvstone@gmail.com]>  >  Sent: Sunday, February 24, 2008 1:54 AM>  >  To: nick.cheng@areca.com.tw>  >  Cc: erich; akpm@linux-foundation.org; linux-scsi@vger.kernel.org;>  >  linux-kernel@vger.kernel.org>  >>  > Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >>  >  Hello again Areca and LKML hackers.>  >>  >  2008/2/18, Aron Stansvik <elvstone@gmail.com>:>  >  > Hello Nick.>  >  >>  >  >  Sorry that I'm not answering until now. I've been busy.>  >  >>  >  >  2008/2/13, nickcheng <nick.cheng@areca.com.tw>:>  >  >>  >  > > Hi Aron,>  >  >  >  From our experience and some customers' feedback, your issue could>  be>  >  caused>  >  >  >  by power instability or vibration to your HDs.>  >  >  >  Please check step by step:>  >  >  >  (1).under your original environment, increase the SCSI command>  value,>  >  >  >  default=30, with the shell script, set_scsicmd_timeout(). 90 or 120>  is>  >  >  >  enough.>  >  >  >  (2).if method 1 does not work, find out the vibration source or>  change>  >  the>  >  >  >  power supply>  >  >>  >  >>  >  > I will try to increase that value. I don't think it's vibration; the>  >  >  disks are firmly in place in a very heavy chassi (Silverstone>  >  >  SST-TJ05B-T). And I really don't think there's something wrong with>  >  >  the power supply, it's a pretty new Silverstone ST65ZF 650W. This is>  >  >  my own personal workstation, so I don't just have another power supply>  >  >  to test with :/>  >  >>  >  >  I will report back on my success/failure. Thanks for your answer.>  >>  >  I've now tried with both 90 and 120 for the timeout value, and the>  >  problem still persists. It seems to happen when lots of small writes>  >  are occuring, e.g. when installing something.>  >>  >  I really don't think the disks are vibrating, I don't see how they>  >  could. One more thing I'm going to test is to use the legacy ATA power>  >  connector instead of the SATA power connector. This was what I was>  >  using before when I only had a single drive and no RAID controller.>  >  Maybe my power supply is malfunctioning and not giving enough power on>  >  the SATA power connectors.. but I doubt it.>  >>  >  Is there anything else that could cause this? Have you guys at Areca>  >  tested the ARC-1200 with Raptors in RAID1?>  >>  >  :(>  >>  >  Regards,>  >  Aron>  >>  >  >>  >  >>  >  >  Aron>  >  >>  >  >>  >  >  >  If your still have any questions, please feel free to let me know.>  >  >  >>  >  >  >  P.S. The attached driver source, arcmsr-1.20.00.15-71224, has been>  >  >  >  upstreamed to kernel.org and will be released in kernel 2.6.25. If>  you>  >  like,>  >  >  >  you could update your driver with it.>  >  >  >  It fixes some minor bugs, but these bugs are nothing to do with>  your>  >  issue.>  >  >  >>  >  >  >>  >  >  >  -----Original Message----->  >  >  >  From: erich [mailto:erich@areca.com.tw]>  >  >  >  Sent: Wednesday, February 13, 2008 4:33 PM>  >  >  >  To: (¼s¦w¬ì§Þ)¾G¦uÁ¾>  >  >  >  Subject: Fw: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >  >  >>  >  >  >>  >  >  >>  >  >  >  ----- Original Message ----->  >  >  >  From: "Andrew Morton" <akpm@linux-foundation.org>>  >  >  >  To: "Aron Stansvik" <elvstone@gmail.com>>  >  >  >  Cc: <linux-kernel@vger.kernel.org>; <linux-scsi@vger.kernel.org>;>  >  "erich">  >  >  >  <erich@areca.com.tw>>  >  >  >  Sent: Wednesday, February 13, 2008 4:03 PM>  >  >  >  Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >  >  >>  >  >  >>  >  >  >  >>  >  >  >  > (cc's added)>  >  >  >  >>  >  >  >  > On Mon, 11 Feb 2008 17:44:08 +0100 "Aron Stansvik">  >  <elvstone@gmail.com>>  >  >  >  > wrote:>  >  >  >  >>  >  >  >  >> Hello LKML.>  >  >  >  >>>  >  >  >  >> Under semi-high disk I/O (e.g. installing a compiled KDE), I get>  >  the>  >  >  >  >> following (accompanied by seconds of lock-ups on the machine):>  >  >  >  >>>  >  >  >  >> [ 7727.345183] arcmsr0: abort device command of scsi id = 0 lun>  = 0>  >  >  >  >> [ 7730.348776] arcmsr0:                 scsi id = 0 lun = 0 ccb>  =>  >  >  >  >> '0xdfb461c0' poll command abort successfully>  >  >  >  >> [ 8053.795943] arcmsr0: abort device command of scsi id = 0 lun>  = 0>  >  >  >  >> [ 8056.799528] arcmsr0:                 scsi id = 0 lun = 0 ccb>  =>  >  >  >  >> '0xdfb595e0' poll command abort successfully>  >  >  >  >> [ 8884.592810] arcmsr0: abort device command of scsi id = 0 lun>  = 0>  >  >  >  >> [ 8887.596392] arcmsr0:                 scsi id = 0 lun = 0 ccb>  =>  >  >  >  >> '0xdfb56d80' poll command abort successfully>  >  >  >  >> [ 8917.760216] arcmsr0: abort device command of scsi id = 0 lun>  = 0>  >  >  >  >> [ 8920.763797] arcmsr0:                 scsi id = 0 lun = 0 ccb>  =>  >  >  >  >> '0xdfb472c0' poll command abort successfully>  >  >  >  >> [ 9074.106547] arcmsr0: abort device command of scsi id = 0 lun>  = 0>  >  >  >  >>>  >  >  >  >> This is my setup:>  >  >  >  >>>  >  >  >  >> 1 x MSI K8N Master2-FAR>  >  >  >  >> 1 x Opteron 252>  >  >  >  >> 1 x Areca ARC1200 (sitting in a PCIe x4 socket)>  >  >  >  >> 2 x WD1500ADFD in RAID1>  >  >  >  >>>  >  >  >  >> astan@rubik:~$ uname -a>  >  >  >  >> Linux rubik 2.6.24-7-generic #1 SMP Thu Feb 7 01:29:58 UTC 2008>  >  i686>  >  >  >  >> GNU/Linux>  >  >  >  >> astan@rubik:~$ modinfo arcmsr>  >  >  >  >> filename:>  >  >  >  >> /lib/modules/2.6.24-7-generic/kernel/drivers/scsi/arcmsr/arcmsr.>  ko>  >  >  >  >> version:        Driver Version 1.20.00.15 2007/08/30>  >  >  >  >> license:        Dual BSD/GPL>  >  >  >  >> description:    ARECA (ARC11xx/12xx/13xx/16xx) SATA/SAS RAID>  HOST>  >  Adapter>  >  >  >  >> author:         Erich Chen <support@areca.com.tw>>  >  >  >  >> srcversion:     28EAD6AB49D4491CA04D465>  >  >  >  >> [...]>  >  >  >  >>>  >  >  >  >> I've read some previous posts here on LKML that it could be the>  >  Areca>  >  >  >  >> firmware who doesn't like my WD disks. Anyone know if this is an>  >  IRQ>  >  >  >  >> handling problem in the kernel, or if it's a problem with the>  RAID>  >  >  >  >> controller firmware?>  >  >  >  >>>  >  >  >  >> Erich Chen (of Areca); have you tried the new ARC1200 in RAID1>  >  >  >  >> configuration with Raptor disks on Linux?>  >  >  >  >>>  >  >  >  >> As a side note, I can tell you that I first tried running>  FreeBSD>  >  6.3>  >  >  >  >> (RELENG_6) on this machine, but got random reboots during disk>  I/O>  >  >  >  >> (even with a kernel with KDB debugging turned on). This leads me>  to>  >  >  >  >> believe that it might be a firmware issue, and that Linux just>  >  handles>  >  >  >  >> it more gracefully than FreeBSD.>  >  >  >  >>>  >  >  >  >> Any ideas or advice is appriciated. This is my first post to the>  >  LKML,>  >  >  >  >> so please instruct me if you want more information or if you>  want>  >  me>  >  >  >  >> to take further debugging actions.>  >  >  >  >>>  >  >  >  >> Best regards,>  >  >  >  >> Aron Stansvik>  >  >  >  >>  >  >  >>  >  >  >>  >  >>  >>  >>>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Thursday, March 13, 2008 9:22 pm Justin Madru wrote:
+> Jesse Barnes wrote:
+> > Well, the blank screen is probably due to a pipe programming timing
+> > problem. IGD devices have been getting less & less sensitive to it over
+> > time (830s would hang if you looked at them the wrong way) but it's still
+> > not that hard to mis-program them.
+> >
+> > Can you narrow down the problem at all?  Did it occur just after a kernel
+> > upgrade?  Or did you also upgrade your X driver?  There haven't been any
+> > real changes in intelfb since Oct. when Krzysztof added interlaced mode
+> > support, so it's weird that you're just seeing problems now...
+>
+> Not that I can think of. Other than a custom kernel I use standard
+> Ubuntu 7.10. I was testing out the kernel starting with 2.6.23-rc4 and
+> I've tested each rc, recompiling when a new one came out (except for rc1
+> and rc2, they didn't compile). So, when 2.6.25-rc3 came out I recompiled
+> and came across this error.
+
+It would be interesting if you could get register dumps at a couple of 
+different points, using the intel_reg_dumper tool in 
+git://git.freedesktop.org/git/xorg/driver/xf86-video-intel (in 
+src/reg_dumper).  You'll probably have to modify your boot scripts though.  
+It would be good to get them:
+  - at startup time before the splash screen
+  - sometime while the splash screen is running
+  - after X starts and you see the blank screen
+
+Since I think this is actually an X driver bug, can you file a bug at 
+freedesktop.org and attach the register dumps there?
+
+>
+> I've removed all fb devices and the blank screen _almost_ never happens
+> (also, I _don't_ have to disable the splash screen). There is one
+> _big_exception_ the problem still happens when I'm at my University (and
+> _very_ consistently). There, I have to disable the splash screen, and
+> that ~mostly~ fixes the problem.
+
+What's different between your Uni. environment and your home environment?
+
+> I can't believe it could be related, but when I boot the computer at the
+> Univ. I get a flood of kernel messages  related to the wireless all the
+>
+> time, but still connect:
+>  > kernel: wlan0_rename: RX too short data frame payload
+>
+> _Could_ a wireless problem be related to a graphics's problem? I
+> wouldn't think so? But, it would explain why I get the blank screen
+> mostly when I get the wireless problem. But, then again it could be
+> another problem altogether.
+
+Well, it's possible that the wireless issue is affecting the pipe programming 
+timing enough to expose the bug (stuff like this is usually a problem with 
+either not waiting for a register program to take effect and/or programming 
+the regs in the wrong order).
+
+> > I think the only thing you'll lose is the boot splash screen.
+>
+> I did disable fb correctly right? Because I still have a boot splash
+> screen.
+
+Yeah, looks like it's off.  Ubuntu may be falling back to using the X vesa 
+driver or something though...
+
+Jesse
