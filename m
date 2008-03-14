@@ -1,117 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYCNKG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYCNKRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYCNKG7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 06:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYCNKGu
+	id S1754833AbYCNKRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 06:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbYCNKRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 06:06:50 -0400
-Received: from sacred.ru ([62.205.161.221]:42447 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbYCNKGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 06:06:49 -0400
-Message-ID: <47DA4AE8.4030207@openvz.org>
-Date: Fri, 14 Mar 2008 12:52:40 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] Memcgroup: implement failcounter reset
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 12:52:39 +0300 (MSK)
+	Fri, 14 Mar 2008 06:17:32 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:30294
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752789AbYCNKRb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 06:17:31 -0400
+Message-Id: <47DA5EF1.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
+Date: Fri, 14 Mar 2008 10:18:09 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "FUJITA Tomonori" <tomof@acm.org>
+Cc: <fujita.tomonori@lab.ntt.co.jp>, <akpm@linux-foundation.org>,
+       <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] avoid endless loops in lib/swiotlb.c
+References: <47D8FE4A.76E4.0078.0@novell.com>
+ <20080314182219P.tomof@acm.org>
+In-Reply-To: <20080314182219P.tomof@acm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a very common requirement from people using the
-resource accounting facilities (not only memcgroup but
-also OpenVZ beancounters). They want to put the cgroup in
-an initial state without re-creating it.
+>>> FUJITA Tomonori <tomof@acm.org> 14.03.08 10:35 >>>
+>On Thu, 13 Mar 2008 09:13:30 +0000
+>"Jan Beulich" <jbeulich@novell.com> wrote:
+>
+>> Commit 681cc5cd3efbeafca6386114070e0bfb5012e249 introduced two
+>> possibilities for entering an endless loop in lib/swiotlb.c:
+>> 
+>> - if max_slots is zero (possible if mask is ~0UL)
+>
+>Yeah, max_slots can not be zero. There are no drivers that have such
+>mask. I'm not sure that we will have.
 
-For example after re-configuring a group people want to
-observe how this new configuration fits the group needs
-without saving the previous failcnt value.
+You mean no current, in-tree drivers do this, and you imply the code
+is only used on 64-bits. Since Xen uses this file even for 32-bits, I had
+run into the case, and there's nothing preventing an in-tree driver
+from setting the mask to ~0UL, which would then result in a perhaps
+difficult to debug hang. For that reason, it seems better to me to fix
+this latent bug right away.
 
-Merge two resets into one mem_cgroup_reset() function to
-demonstrate how multiplexing work.
+>...
+>
+>> - if the number of slots requested fits into a swiotlb segment, but is
+>>   too large for the part of a segment which remains after considering
+>>   offset_slots
+>
+>Sorry, I'm not sure what you mean. Can you give me an actual example
+>numbers that leads to that?
 
-Besides, I have plans to move the files, that correspond to
-res_counter to the res_counter.c file and somehow "import" 
-them into controller. I don't know how to make it gracefully
-yet, but merging resets of max_usage and failcnt in one 
-function will be there for sure.
+For one part, it can happen if nslots > max_slots (which is a driver
+error [except for the case above where max_slots erroneously got set
+to zero], but shouldn't lead to a silent hang, especially as it didn't do so
+before).
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+For another part, requesting e.g. a transfer of 128k with a segment
+mask of 128k when the IOTLB isn't aligned to a 128k boundary would
+again lead to a silent hang, as would various cases where the request
+exceeds the segment size (and the segment mask is sufficiently small).
+Neither of these cases got stuck in the old code.
 
----
- include/linux/res_counter.h |    8 ++++++++
- mm/memcontrol.c             |   14 +++++++++++---
- 2 files changed, 19 insertions(+), 3 deletions(-)
+Beyond that, maybe I was too quick in concluding this could happen
+even in less unusual cases - I think I didn't pay close enough attention
+to the fact that offset_slots + index gets masked by max_slots - 1.
+But even then I think the code looks simpler/safer and is smaller with
+the adjusted logic.
 
-diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-index df8085a..3c05d6d 100644
---- a/include/linux/res_counter.h
-+++ b/include/linux/res_counter.h
-@@ -141,4 +141,12 @@ static inline void res_counter_reset_max(struct res_counter *cnt)
- 	spin_unlock_irqrestore(&cnt->lock, flags);
- }
- 
-+static inline void res_counter_reset_failcnt(struct res_counter *cnt)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cnt->lock, flags);
-+	cnt->failcnt = 0;
-+	spin_unlock_irqrestore(&cnt->lock, flags);
-+}
- #endif
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index d3ec3e3..5852b23 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -868,12 +868,19 @@ static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
- 				mem_cgroup_write_strategy);
- }
- 
--static int mem_cgroup_max_reset(struct cgroup *cont, unsigned int event)
-+static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
- {
- 	struct mem_cgroup *mem;
- 
- 	mem = mem_cgroup_from_cont(cont);
--	res_counter_reset_max(&mem->res);
-+	switch (event) {
-+		case RES_MAX_USAGE:
-+			res_counter_reset_max(&mem->res);
-+			break;
-+		case RES_FAILCNT:
-+			res_counter_reset_failcnt(&mem->res);
-+			break;
-+	}
- 	return 0;
- }
- 
-@@ -927,7 +934,7 @@ static struct cftype mem_cgroup_files[] = {
- 	{
- 		.name = "max_usage_in_bytes",
- 		.private = RES_MAX_USAGE,
--		.trigger = mem_cgroup_max_reset,
-+		.trigger = mem_cgroup_reset,
- 		.read_u64 = mem_cgroup_read,
- 	},
- 	{
-@@ -939,6 +946,7 @@ static struct cftype mem_cgroup_files[] = {
- 	{
- 		.name = "failcnt",
- 		.private = RES_FAILCNT,
-+		.trigger = mem_cgroup_reset,
- 		.read_u64 = mem_cgroup_read,
- 	},
- 	{
--- 
-1.5.3.4
+Jan
 
