@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYCNFXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYCNFWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbYCNFXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 01:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYCNFWn
+	id S1758723AbYCNFWv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 01:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbYCNFVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 01:22:43 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47437 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758699AbYCNFWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 01:22:41 -0400
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 14 Mar 2008 16:22:27 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Mar 2008 01:21:50 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:40428 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758344AbYCNFVs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 01:21:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=QobN94UbfUbpPgiPsTx+RLrOeVUtpw6Dzov2G18DYRZ8L33e7mymeqqsJIiSTy0Y5V6dAkTRm2dpse9Q/qPROrkHWFDrrnuRGbDUxvK8LOSC9O8qdb2DxUxrnI2vgU2V98B6/8qzaV1fck+OtFAFPH0Q3Hl6uaYQLFOlhpZ9q3M=
+Subject: [PATCH 10/10] dccp: ccid2.c, ccid3.c use clamp(), clamp_t()
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 13 Mar 2008 22:21:46 -0700
+Message-Id: <1205472107.19712.30.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18394.2963.890847.4606@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-In-Reply-To: message from Peter Zijlstra on Monday March 10
-References: <20080220144610.548202000@chello.nl>
-	<20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	<18371.43950.150842.429997@notabene.brown>
-	<1204023042.6242.271.camel@lappy>
-	<18372.64081.995262.986841@notabene.brown>
-	<1204099113.6242.353.camel@lappy>
-	<1837 <1204626509.6241.39.camel@lappy>
-	<18384.46967.583615.711455@notabene.brown>
-	<1204888675.8514.102.camel@twins>
-	<18388.50188.552322.780524@notabene.brown>
-	<1205140674.8514.152.camel@twins>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday March 10, a.p.zijlstra@chello.nl wrote:
-> > 
-> > Maybe that depends on the exact semantic of PG_emergency ??
-> > I remember you being concerned that PG_emergency never changes between
-> > allocation and freeing, and that wouldn't work well with slub.
-> > My envisioned semantic has it possibly changing quite often.
-> > What it means is:
-> >    The last allocation done from this page was in a low-memory
-> >    condition.
-> 
-> Yes, that works, except that we'd need to iterate all pages and clear
-> PG_emergency - which would imply tracking all these pages etc..
-> 
+Makes the intention of the nested min/max clear.
 
-I don't see why you need to clear PG_emergency at all.
-If the semantic is:
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ net/dccp/ccids/ccid2.c |    2 +-
+ net/dccp/ccids/ccid3.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-> >    The last allocation done from this page was in a low-memory
-> >    condition.
+diff --git a/net/dccp/ccids/ccid2.c b/net/dccp/ccids/ccid2.c
+index b5b52eb..8e95808 100644
+--- a/net/dccp/ccids/ccid2.c
++++ b/net/dccp/ccids/ccid2.c
+@@ -716,7 +716,7 @@ static int ccid2_hc_tx_init(struct ccid *ccid, struct sock *sk)
+ 	 * packets for new connections, following the rules from [RFC3390]".
+ 	 * We need to convert the bytes of RFC3390 into the packets of RFC 4341.
+ 	 */
+-	hctx->ccid2hctx_cwnd = min(4U, max(2U, 4380U / dp->dccps_mss_cache));
++	hctx->ccid2hctx_cwnd = clamp(4380U / dp->dccps_mss_cache, 2U, 4U);
+ 
+ 	/* Make sure that Ack Ratio is enabled and within bounds. */
+ 	max_ratio = DIV_ROUND_UP(hctx->ccid2hctx_cwnd, 2);
+diff --git a/net/dccp/ccids/ccid3.c b/net/dccp/ccids/ccid3.c
+index e76f460..cd61dea 100644
+--- a/net/dccp/ccids/ccid3.c
++++ b/net/dccp/ccids/ccid3.c
+@@ -88,8 +88,8 @@ static void ccid3_hc_tx_set_state(struct sock *sk,
+ static inline u64 rfc3390_initial_rate(struct sock *sk)
+ {
+ 	const struct ccid3_hc_tx_sock *hctx = ccid3_hc_tx_sk(sk);
+-	const __u32 w_init = min_t(__u32, 4 * hctx->ccid3hctx_s,
+-				   max_t(__u32, 2 * hctx->ccid3hctx_s, 4380));
++	const __u32 w_init = clamp_t(__u32, 4380U,
++			2 * hctx->ccid3hctx_s, 4 * hctx->ccid3hctx_s);
+ 
+ 	return scaled_div(w_init << 6, hctx->ccid3hctx_rtt);
+ }
+-- 
+1.5.4.4.653.g7cf1e
 
-Then you only need to (potentially) modify it's value when you
-allocate it, or an element within it.
-
-But if it doesn't fit well in the overall picture, then by all means
-get rid of it.
-
-> 
-> Hmm, right. But for that purpose the names swap_* are a tad misleading.
-> I remember hch mentioning this at some point. What would be a more
-> suitable naming scheme so we can both use it?
-
-One could argue that "swap" is already a misleading term.
-Level 7 Unix used to do swapping.  It would write one process image
-out to swap space, and read a different one in.  Moving whole
-processes at a time was called swapping.
-When this clever idea of only moving pages at a time was introduced (I
-think in 4BSD, but possible in 2BSD and elsewhere) it was called
-"demand paging" or just "paging".
-
-So we don't have a swap partition any more.  We have a paging
-partition.
-
-But everyone calls it 'swap' and we know what it means.  I don't think
-there would be a big cost in keeping the swap_ names but allowing them
-to be used for occasional things other than swap.
-And I suspect you would lose a lot if you tried to use a different
-name that people didn't immediately identify with...
-
-NeilBrown
