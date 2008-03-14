@@ -1,40 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbYCNIms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYCNIn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbYCNIms (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 04:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYCNImg
+	id S1755859AbYCNIn4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 04:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYCNInr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 04:42:36 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:40514 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYCNImf (ORCPT
+	Fri, 14 Mar 2008 04:43:47 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:39440 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbYCNInp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 04:42:35 -0400
-To: drepper@redhat.com
-CC: viro@ZenIV.linux.org.uk, bharata@linux.vnet.ibm.com,
-       libc-alpha@sourceware.org, jblunck@suse.de, ezk@cs.sunysb.edu,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de,
-       cmm@us.ibm.com, haveblue@us.ibm.com
-In-reply-to: <47DA257C.9060409@redhat.com> (message from Ulrich Drepper on
-	Fri, 14 Mar 2008 00:13:00 -0700)
-Subject: Re: [RFC] Union mount readdir support in glibc
-References: <20080311055527.GA7256@in.ibm.com> <47D9F6CC.6010009@redhat.com> <20080314053925.GA10722@ZenIV.linux.org.uk> <47DA257C.9060409@redhat.com>
-Message-Id: <E1Ja5Tf-0003Op-Fi@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 14 Mar 2008 09:41:23 +0100
+	Fri, 14 Mar 2008 04:43:45 -0400
+Date: Fri, 14 Mar 2008 09:43:38 +0100
+From: Christof Schmitt <christof.schmitt@de.ibm.com>
+To: linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: blktrace/relay/s390: Oops in subbuf_splice_actor
+Message-ID: <20080314084337.GA9436@schmichrtp.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Actually, do we really need it other than to 0 and to current position
-> > (i.e. full rewind and a no-op)?
-> 
-> Ever heard of the little function "telldir"?
+When i first setup blktrace on a s390 z/VM guest to trace to another
+system and then put some load on the disk traced, the system oopses in
+subbuf_splice_actor. The setup is as simple as
 
-Actually, telldir/seekdir is already broken for some filesystems (NFS
-comes to mind).  POSIX was really crazy to require a working seekdir
-implementation, and userspace should quickly start _not_ using it.
+# blktrace -h tracehost -d /dev/sda
+# dd if=/dev/sda of=/dev/null
 
-The more new filesystems it doesn't work, the better, IMHO.
+This is the stack trace from the current 2.6.25-rc5, i added
+noinline to subbuf_splice_actor, otherwise it will be inlined:
 
-Miklos
+Unable to handle kernel pointer dereference at virtual kernel address 0000000000000000 
+Oops: 0004 [#1] PREEMPT SMP DEBUG_PAGEALLOC 
+Modules linked in: binfmt_misc vmur 
+CPU: 1 Not tainted 2.6.25-rc5 #10 
+Process blktrace (pid: 2655, task: 000000002bc38238, ksp: 000000002b0d79a8) 
+Krnl PSW : 0704100180000000 00000000000874e2 (subbuf_splice_actor+0x212/0x364) 
+           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:1 PM:0 EA:3 
+Krnl GPRS: 0a00000000000001 000000002b2bb000 0000000000001000 00000000000000c8 
+           0000000000001000 0000000000001000 0000000000000000 0000000000000200 
+           0000000000019000 0000000000000019 0000000000066fd8 000000002b0d79e8 
+           000003e040ed7938 0000000000000000 000000000008749e 000000002b0d79e8 
+Krnl Code: 00000000000874d4: e31050b00004       lg      %r1,176(%r5) 
+           00000000000874da: 1854               lr      %r5,%r4 
+           00000000000874dc: e3cc10000004       lg      %r12,0(%r12,%r1) 
+          >00000000000874e2: e3c320000024       stg    >%r12,0(%r3,%r2) 
+           00000000000874e8: e330b2700014       lgf     %r3,624(%r11) 
+           00000000000874ee: eb330004000d       sllg    %r3,%r3,4 
+           00000000000874f4: e320b2680004       lg      %r2,616(%r11) 
+           00000000000874fa: 1814               lr      %r1,%r4 
+Call Trace: 
+([<000000000008749e>] subbuf_splice_actor+0x1ce/0x364) 
+ [<00000000000876a2>] relay_file_splice_read+0x6e/0xfc 
+ [<00000000000e4f90>] do_splice_to+0x9c/0xb4 
+ [<00000000000e545c>] splice_direct_to_actor+0xd8/0x21c 
+ [<00000000000e55ec>] do_splice_direct+0x4c/0x70 
+ [<00000000000bc2be>] do_sendfile+0x1b6/0x228 
+ [<00000000000bc382>] sys_sendfile64+0x52/0xe4 
+ [<00000000000241c0>] sysc_noemu+0x10/0x16 
+ [<00000200001304da>] 0x200001304da 
+
+Some debug printks show that subbuf_pages in this case is 512 and the
+for loop goes until spd.nr_pages is 25, before hitting the problem. I
+am wondering if the numbers make sense here, since spd.pages has only
+16 pages allocated (with PIPE_BUFFERS). But i did not yet understand
+how much data this loop is supposed to assign.
+
+Does anybody have an idea what is happening here, or how to continue
+debugging this problem?
+
+Christof
