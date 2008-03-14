@@ -1,88 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYCNCwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbYCNCx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYCNCwf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 22:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYCNCw1
+	id S1758275AbYCNCx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 22:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYCNCxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 22:52:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38173 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbYCNCw0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 22:52:26 -0400
-Date: Fri, 14 Mar 2008 11:56:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] Move memory controller allocations to their own slabs
- (v3)
-Message-Id: <20080314115645.e78b7f5c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080313140307.20133.30405.sendpatchset@localhost.localdomain>
-References: <20080313140307.20133.30405.sendpatchset@localhost.localdomain>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 22:53:19 -0400
+Received: from saeurebad.de ([85.214.36.134]:42735 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753022AbYCNCxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 22:53:18 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
+References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
+	<87iqzq40yd.fsf@saeurebad.de>
+	<86802c440803131804w1173b9b5n9d9f2d85c98b8901@mail.gmail.com>
+Date: Fri, 14 Mar 2008 03:50:57 +0100
+In-Reply-To: <86802c440803131804w1173b9b5n9d9f2d85c98b8901@mail.gmail.com>
+	(Yinghai Lu's message of "Thu, 13 Mar 2008 18:04:05 -0700")
+Message-ID: <874pba3tny.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 19:33:07 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Hi,
 
-> 
-> 
-> Changelog v3
-> 
-> 1. Remove HWCACHE_ALIGN
-> 
-> Changelog v2
-> 
-> 1. Remove extra slab for mem_cgroup_per_zone
-> 
-> Move the memory controller data structure page_cgroup to its own slab cache.
-> It saves space on the system, allocations are not necessarily pushed to order
-> of 2 and should provide performance benefits. Users who disable the memory
-> controller can also double check that the memory controller is not allocating
-> page_cgroup's.
-> 
-> NOTE: Hugh Dickins brought up the issue of whether we want to mark page_cgroup
-> as __GFP_MOVABLE or __GFP_RECLAIMABLE. I don't think there is an easy
-> answer at the moment. page_cgroup's are associated with user pages,
-> they can be reclaimed once the user page has been reclaimed, so it might
-> make sense to mark them as __GFP_RECLAIMABLE. For now, I am leaving the
-> marking to default values that the slab allocator uses.
-> 
-> Comments?
-> 
-At first, in my understanding,
-- MOVABLE is for migratable pages. (so, not for kernel objects.)
-- RECLAIMABLE is for reclaimable kernel objects. (for slab etc..)
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-All reclaimable objects are not necessary to be always reclaimable but
-some amount of RECLAIMABLE objects (not all) should be recraimable easily.
-For example, some of dentry-cache, inode-cache is reclaimable because *unused*
-objects are cached.
+> On Thu, Mar 13, 2008 at 5:13 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>> Hi,
+>>
+>>  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>
+>
+>>  >  static void __init free_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+>>  > @@ -407,6 +432,11 @@ unsigned long __init init_bootmem_node(p
+>>  >  void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+>>  >                                unsigned long size, int flags)
+>>  >  {
+>>  > +     int ret;
+>>  > +
+>>  > +     ret = can_reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
+>>  > +     if (ret < 0)
+>>  > +             return;
+>>  >       reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
+>>
+>>  I don't get it.  Sorry.  What is the purpose of
+>>  can_reserve_bootmem_core()?  It does exactly what reserve_bootmem_core
+>>  does besides actually setting the bits.  All the pre-checking you wanted
+>>  to have out of the way is repeated again in reserve_bootmem_core()
+>>  (well, almost all).
+>
+> can_reserve_bootmem_core is check if there is some pages is reserved
+> already with
+>>  > +                     if (flags & BOOTMEM_EXCLUSIVE)
+>>  > +                             return -EBUSY;
+>
+> so it will avoid the restoring later.
 
-When it comes to page_cgroup, *all* objects has dependency to pages which are
-assigned to.  And user pages are reclaimable.
-There is a similar object....the radix tree. radix-tree's node is allocated as
-RECLAIMABLE object.
+Yes, I understood that.  But you skipped the lower part of my email:
 
-So I think it makes sense to changing page_cgroup to be reclaimable.
+Your current state now is _not_ that you have one function that
+prechecks the range and another function that reserves it!  You have
+_two_ functions checking the range and the second reserving it.
 
-But final decision should be done by how fragmentation avoidance works.
-It's good to test "how many hugepages can be allocated dynamically" when we
-make page_cgroup to be GFP_RECAIMABLE 
+Why double-check most of the things?  If you want to have a pre-check
+function, _move_ all the pre-checks into another function, not
+copy-paste them.
 
-Thanks,
--Kame
+And is the condition of trying to reserve a range twice, the second time
+exclusively, so common that it is worth iterating twice over the nodes
+(once for checking, once for reserving) instead of just unwinding the
+reservation if it fails in between?
 
+On something else: is there a bug when a memory range is reserved with
+BOOTMEM_EXCLUSIVE and then again without this flag?  The second call
+does not return an error then.  Is my understanding of
+BOOTMEM_EXCLUSIVE's semantics wrong?
 
+	Hannes
