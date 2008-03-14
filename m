@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbYCNCSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYCNCUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbYCNCSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 22:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYCNCSF
+	id S1757289AbYCNCUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 22:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYCNCUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 22:18:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48504 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751970AbYCNCSD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 22:18:03 -0400
-Date: Thu, 13 Mar 2008 19:17:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org, avorontsov@ru.mvista.com
-Subject: Re: [patch 2.6.25-rc5 1/2] gpiolib:  dynamic gpio number allocation
-Message-Id: <20080313191747.dede60c3.akpm@linux-foundation.org>
-In-Reply-To: <200803131753.58733.david-b@pacbell.net>
-References: <200803131549.54632.david-b@pacbell.net>
-	<200803131618.58516.david-b@pacbell.net>
-	<20080313162803.ab8bfd4c.akpm@linux-foundation.org>
-	<200803131753.58733.david-b@pacbell.net>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 22:20:47 -0400
+Received: from phunq.net ([64.81.85.152]:44634 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752116AbYCNCUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 22:20:46 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Thu, 13 Mar 2008 18:20:20 -0800
+User-Agent: KMail/1.9.5
+Cc: Willy Tarreau <w@1wt.eu>, Chris Friesen <cfriesen@nortel.com>,
+       Lars Marowsky-Bree <lmb@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803120117.57644.phillips@phunq.net> <20080313163431.7b4058ef@cuia.boston.redhat.com>
+In-Reply-To: <20080313163431.7b4058ef@cuia.boston.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803131920.21605.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 16:53:58 -0800 David Brownell <david-b@pacbell.net> wrote:
-
-> On Thursday 13 March 2008, Andrew Morton wrote:
-> > On Thu, 13 Mar 2008 15:18:58 -0800
-> > David Brownell <david-b@pacbell.net> wrote:
-> > 
-> > > On Thursday 13 March 2008, Andrew Morton wrote:
-> > > 
-> > > > hm.  I suppose that if someone want a huge number of GPIOs then we can
-> > > > convert this to a bitmap or an IDR tree easily enough.
-> > > 
-> > > Actually, I tried IDRs for a while and they broke platforms
-> > > which needed to initialize and use GPIOs early: before kmalloc
-> > > would work.  A real PITA that was -- and slow too.
-> > 
-> > If IDRs were slow, that linear search will be glacial.
+On Thursday 13 March 2008 13:34, Rik van Riel wrote:
+> On Wed, 12 Mar 2008 00:17:56 -0800
+> Daniel Phillips <phillips@phunq.net> wrote:
 > 
-> The slowness of IDRs was needing to use them for the
-> routine lookups ... versus the current array index,
-> which costs a fraction of an instruction cycle and
-> doesn't need separate locks.
+> > So we have a flock of people arguing that you can't trust Linux.  Well
+> > maybe there are situations were you can't, but what can you trust?
+> > Disk firmware?  Bios?  Big maybes everywhere.
 > 
-> Or were you implying they should be used for something
-> other than mapping GPIO numbers to controllers/state?
+> The traditional and proven method to constructing a reliable system is
+> to assume that no component can be fully trusted.  This is especially
+> true for new code.
 > 
+> By being paranoid about everything, failures in one component are
+> usually contained well enough that one failure is not catastrophic.
+> 
+> In order for ramback to get appeal with the people who are paranoid
+> about data integrity (probably a vast majority of users), you will
+> need some guarantees about flush order, etc...
 
-For dynamic allocation.  There should be no need for lookups outside
-register/unregister.
+I disagree.  Never mind that it already does provide such guarantees,
+just echo 1 >/proc/driver/ramback/name.  But if you want the full
+performance you need to satisfy your paranoia at a higher level in
+the traditional way: by running two in parallel or whatever.
 
-
-Where did the CONFIG_NR_GPIOS discussion disappear to?
+Daniel 
