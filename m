@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYCNMGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYCNMGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYCNMGV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 08:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYCNMGJ
+	id S1756446AbYCNMGy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 08:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbYCNMGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 08:06:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58298 "EHLO mx1.redhat.com"
+	Fri, 14 Mar 2008 08:06:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58304 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751575AbYCNMGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 08:06:08 -0400
+	id S1753400AbYCNMGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 08:06:13 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] KEYS: Document making the keyring quotas controllable
-	through /proc/sys [try #2]
+Subject: [PATCH 2/2] KEYS: Make key_serial() a function if CONFIG_KEYS=y [try
+	#2]
 To: torvalds@osdl.org, akpm@linux-foundation.org, kwc@citi.umich.edu
 Cc: arunsr@cse.iitk.ac.in, dwalsh@redhat.com,
        linux-security-module@vger.kernel.org, dhowells@redhat.com,
        linux-kernel@vger.kernel.org
-Date: Fri, 14 Mar 2008 12:05:59 +0000
-Message-ID: <20080314120559.19668.88801.stgit@warthog.procyon.org.uk>
+Date: Fri, 14 Mar 2008 12:06:04 +0000
+Message-ID: <20080314120604.19668.14312.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080314120559.19668.88801.stgit@warthog.procyon.org.uk>
+References: <20080314120559.19668.88801.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -30,56 +32,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alter the key management documentation to include information on keyring quota
-controls as added in a previous patch.
+Make key_serial() an inline function rather than a macro if CONFIG_KEYS=y.
+This prevents double evaluation of the key pointer and also provides better
+type checking.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- Documentation/keys.txt |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
+ include/linux/key.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
 
-diff --git a/Documentation/keys.txt b/Documentation/keys.txt
-index be424b0..d5c7a57 100644
---- a/Documentation/keys.txt
-+++ b/Documentation/keys.txt
-@@ -170,7 +170,8 @@ The key service provides a number of features besides keys:
-      amount of description and payload space that can be consumed.
+diff --git a/include/linux/key.h b/include/linux/key.h
+index ad02d9c..c45c962 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -264,7 +264,10 @@ extern int keyring_add_key(struct key *keyring,
  
-      The user can view information on this and other statistics through procfs
--     files.
-+     files.  The root user may also alter the quota limits through sysctl files
-+     (see the section "New procfs files").
+ extern struct key *key_lookup(key_serial_t id);
  
-      Process-specific and thread-specific keyrings are not counted towards a
-      user's quota.
-@@ -329,6 +330,27 @@ about the status of the key service:
- 	<bytes>/<max>		Key size quota
+-#define key_serial(key) ((key) ? (key)->serial : 0)
++static inline key_serial_t key_serial(struct key *key)
++{
++	return key ? key->serial : 0;
++}
  
- 
-+Four new sysctl files have been added also for the purpose of controlling the
-+quota limits on keys:
-+
-+ (*) /proc/sys/kernel/keys/root_maxkeys
-+     /proc/sys/kernel/keys/root_maxbytes
-+
-+     These files hold the maximum number of keys that root may have and the
-+     maximum total number of bytes of data that root may have stored in those
-+     keys.
-+
-+ (*) /proc/sys/kernel/keys/maxkeys
-+     /proc/sys/kernel/keys/maxbytes
-+
-+     These files hold the maximum number of keys that each non-root user may
-+     have and the maximum total number of bytes of data that each of those
-+     users may have stored in their keys.
-+
-+Root may alter these by writing each new limit as a decimal number string to
-+the appropriate file.
-+
-+
- ===============================
- USERSPACE SYSTEM CALL INTERFACE
- ===============================
+ #ifdef CONFIG_SYSCTL
+ extern ctl_table key_sysctls[];
 
