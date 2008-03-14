@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYCNNGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYCNNKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbYCNNGZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 09:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYCNNF6
+	id S1756079AbYCNNKY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 09:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbYCNNKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 09:05:58 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:16910 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754598AbYCNNFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 09:05:55 -0400
-Date: Fri, 14 Mar 2008 14:05:52 +0100
-From: Christof Schmitt <christof.schmitt@de.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
+	Fri, 14 Mar 2008 09:10:12 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10080 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753433AbYCNNKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 09:10:11 -0400
+Date: Fri, 14 Mar 2008 14:10:07 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christof Schmitt <christof.schmitt@de.ibm.com>
 Cc: linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080314130552.GA9352@schmichrtp.de.ibm.com>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk>
-Mime-Version: 1.0
+Message-ID: <20080314131007.GQ17940@kernel.dk>
+References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080314115802.GK17940@kernel.dk>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20080314130552.GA9352@schmichrtp.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> That is indeed a bug, does this work for you?
+On Fri, Mar 14 2008, Christof Schmitt wrote:
+> On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
+> > That is indeed a bug, does this work for you?
+> > 
+> > diff --git a/kernel/relay.c b/kernel/relay.c
+> > index d080b9d..39d1fa8 100644
+> > --- a/kernel/relay.c
+> > +++ b/kernel/relay.c
+> > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
+> >  			       unsigned int flags,
+> >  			       int *nonpad_ret)
+> >  {
+> > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
+> > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+> >  	struct rchan_buf *rbuf = in->private_data;
+> >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+> >  	uint64_t pos = (uint64_t) *ppos;
+> > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
+> >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
+> >  	poff = read_start & ~PAGE_MASK;
+> > 
+> > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
+> > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+> > +
+> > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+> >  		unsigned int this_len, this_end, private;
+> >  		unsigned int cur_pos = read_start + total_len;
 > 
-> diff --git a/kernel/relay.c b/kernel/relay.c
-> index d080b9d..39d1fa8 100644
-> --- a/kernel/relay.c
-> +++ b/kernel/relay.c
-> @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
->  			       unsigned int flags,
->  			       int *nonpad_ret)
->  {
-> -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
->  	struct rchan_buf *rbuf = in->private_data;
->  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
->  	uint64_t pos = (uint64_t) *ppos;
-> @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
->  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
->  	poff = read_start & ~PAGE_MASK;
-> 
-> -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> +
-> +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
->  		unsigned int this_len, this_end, private;
->  		unsigned int cur_pos = read_start + total_len;
+> With the patch, i can run dd and 'blktrace -h traceserver' without the
+> oops. But the output from blktrace only contains only zeros and no
+> usable data for blkparse. Using blktrace to write the data directly to
+> disk, without using the blktrace server works. Is there anything i
+> should look for to help debugging the problem?
 
-With the patch, i can run dd and 'blktrace -h traceserver' without the
-oops. But the output from blktrace only contains only zeros and no
-usable data for blkparse. Using blktrace to write the data directly to
-disk, without using the blktrace server works. Is there anything i
-should look for to help debugging the problem?
+We should probably get Tom in the loop, as he is the relay expert. I'll
+make sure the above patch gets into 2.6.25, as it is definitely a bug
+that needs fixing.
 
-Christof
+-- 
+Jens Axboe
+
