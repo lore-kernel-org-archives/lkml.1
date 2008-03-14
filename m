@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbYCNBvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbYCNBxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756475AbYCNBvl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYCNBvb
+	id S1757322AbYCNBxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYCNBxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:51:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35256 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552AbYCNBva (ORCPT
+	Thu, 13 Mar 2008 21:53:06 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39525 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbYCNBxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:51:30 -0400
-Date: Fri, 14 Mar 2008 10:55:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
-Message-Id: <20080314105529.79921546.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <86802c440803131835u4e506d69l4f116eb49d9ee9b2@mail.gmail.com>
-References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
-	<20080314103431.ff07070c.kamezawa.hiroyu@jp.fujitsu.com>
-	<86802c440803131835u4e506d69l4f116eb49d9ee9b2@mail.gmail.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 21:53:05 -0400
+Date: Thu, 13 Mar 2008 21:53:01 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: whose job is it to include various header files?
+In-Reply-To: <Pine.LNX.4.64.0803140227100.14822@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.1.00.0803132149320.11864@localhost.localdomain>
+References: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain> <9a8748490803131653n7f1c2bd0m12e30d82bf936d03@mail.gmail.com> <Pine.LNX.4.64.0803140227100.14822@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 18:35:51 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+On Fri, 14 Mar 2008, Jan Engelhardt wrote:
 
-> On Thu, Mar 13, 2008 at 6:34 PM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Thu, 13 Mar 2008 16:45:42 -0700
-> >  "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
-> >  > int __init reserve_bootmem(unsigned long addr, unsigned long size,
-> >  >                           int flags)
-> >  >  {
-> >  > -     return reserve_bootmem_core(NODE_DATA(0)->bdata, addr, size, flags);
-> >  > +     int ret;
-> >  > +     bootmem_data_t *bdata;
-> >  > +     list_for_each_entry(bdata, &bdata_list, list) {
-> >  > +             ret = can_reserve_bootmem_core(bdata, addr, size, flags);
-> >  > +             if (ret < 0)
-> >  > +                     return ret;
-> >  > +     }
-> >  > +     list_for_each_entry(bdata, &bdata_list, list)
-> >  > +             reserve_bootmem_core(bdata, addr, size, flags);
-> >  > +     return 0;
-> >  >  }
-> >
-> >  why list_for_each twice ?
-> 
-> first_for_each only check if we can reserve that.
-> second will do the reserve job.
-> 
-Hmm, can a call to reserve_bootmem() return a memory region which spread across
-prural nodes ?
+>
+> On Mar 14 2008 00:53, Jesper Juhl wrote:
+> >I agree with you completely. A file should explicitly include
+> >headers for the stuff it uses and not rely on implicit includes
+> >done elsewhere. Cleaning that up is going to touch a lot of files
+> >though for no real short term gain (there is a long term gain of
+> >maintainability though), so it's going to be a loveless job :(
+>
+> But straightforward. You nuke the complete #include list of a .h/.c
+> file and "rebuild" it by hand, by looking at the code the .h/.c file
+> provides/uses and selecting appropriate #includes.
+
+well, yes, that would certainly do it, but i'm not that ambitious.
+:-)  actually, what i'm testing now is deleting the two superfluous
+includes from <linux/percpu.h>:
+
+  #include <linus/slab.h>
+  #include <linux/string.h>
+
+doing "make allyesconfig" on x86, watching where the compile fails,
+fixing that file, and noticing that errors fall into a fairly small
+set of localized clumps, so i'll just collect them and submit them.
+there's actually not that many.  patches to follow shortly.
+
+rday
+--
 
 
-Thanks,
--Kame 
 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
