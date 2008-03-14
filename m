@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbYCNNWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYCNN3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756357AbYCNNWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 09:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYCNNWo
+	id S1755677AbYCNN3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 09:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYCNN27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 09:22:44 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:32747 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752807AbYCNNWn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 09:22:43 -0400
-Date: Fri, 14 Mar 2008 14:22:39 +0100
-From: Christof Schmitt <christof.schmitt@de.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080314132238.GA9815@schmichrtp.de.ibm.com>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk>
+	Fri, 14 Mar 2008 09:28:59 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:41608 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbYCNN26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 09:28:58 -0400
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+From: Stephen Smalley <sds@epoch.ncsc.mil>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <Xine.LNX.4.64.0803142039460.32184@us.intercode.com.au>
+References: <20080313144142.GB11265@sergelap.austin.ibm.com>
+	 <Xine.LNX.4.64.0803142039460.32184@us.intercode.com.au>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 14 Mar 2008 09:27:28 -0400
+Message-Id: <1205501248.22912.35.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080314131007.GQ17940@kernel.dk>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > > That is indeed a bug, does this work for you?
-> > > 
-> > > diff --git a/kernel/relay.c b/kernel/relay.c
-> > > index d080b9d..39d1fa8 100644
-> > > --- a/kernel/relay.c
-> > > +++ b/kernel/relay.c
-> > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > >  			       unsigned int flags,
-> > >  			       int *nonpad_ret)
-> > >  {
-> > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > >  	struct rchan_buf *rbuf = in->private_data;
-> > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > >  	uint64_t pos = (uint64_t) *ppos;
-> > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > >  	poff = read_start & ~PAGE_MASK;
-> > > 
-> > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > > +
-> > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > >  		unsigned int this_len, this_end, private;
-> > >  		unsigned int cur_pos = read_start + total_len;
-> > 
-> > With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > oops. But the output from blktrace only contains only zeros and no
-> > usable data for blkparse. Using blktrace to write the data directly to
-> > disk, without using the blktrace server works. Is there anything i
-> > should look for to help debugging the problem?
+
+On Fri, 2008-03-14 at 21:17 +1100, James Morris wrote:
+> On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
 > 
-> We should probably get Tom in the loop, as he is the relay expert. I'll
-> make sure the above patch gets into 2.6.25, as it is definitely a bug
-> that needs fixing.
+> > Implement a cgroup using the LSM interface to enforce open and mknod
+> > on device files.
+> 
+> Actually, I'm not sure that the LSM approach in general is best here.
+> 
+> The LSM model is that standard DAC logic lives in the core kernel, and 
+> that extended security logic (e.g. MAC) is called after DAC via hooks.  
+> cgroups has introduced new security logic of its own, which is arguably 
+> "standard DAC" when cgroups is enabled.
+> 
+> I can understand Greg not wanting this security logic in the core kernel, 
+> but it is specific to cgroups (which itself is security model agnostic) 
+> and does not stand alone as a distinct security framework.
+> 
+> The fact that all existing LSMs need to invoke exactly the same code is an 
+> indicator that it doesn't belong in LSM.
+> 
+> Moving this logic into LSM means that instead of the cgroups security 
+> logic being called from one place in the main kernel (where cgroups 
+> lives), it must be called identically from each LSM (none of which are 
+> even aware of cgroups), which I think is pretty obviously the wrong 
+> solution.
+> 
+> This is baggage which comes with cgroups -- please don't push it into LSM 
+> to try and hide that.
 
-http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-his email address seems to be no longer valid. I copy Dave Wilder
-here, since he is mentioned as relay maintainer on the web page.
+I agree with the above, and would further note that I would expect the
+SELinux solution to the problem would be done not by stacking with or
+calling this device whitelist lsm but instead by introducing the ability
+to bind security labels to devices within the kernel (independent of the
+particular device node(s) in the filesystem used to access that device)
+and applying permission checks on those device labels when processes
+attempt to create or access those devices (again independent of the
+particular device node used to access them).  That keeps the policy
+integrated and analyzable and avoids an external dependency.
 
-Dave, can you have a look at this? I can easily reproduce the problem
-on s390 Linux for testing and getting more debug information.
+-- 
+Stephen Smalley
+National Security Agency
 
-Christof
