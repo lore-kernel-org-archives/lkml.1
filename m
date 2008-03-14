@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbYCNL7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYCNMGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756966AbYCNL7X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 07:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYCNL6u
+	id S1755505AbYCNMGV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 08:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYCNMGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 07:58:50 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:37484 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756110AbYCNL6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 07:58:48 -0400
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       mingo@elte.hu, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: fix boundary checking in free_bootmem_core
-References: <86802c440803111801m20349386l58a108cec13eb5ee@mail.gmail.com>
-	<86802c440803121811i262b21bdrfb07df52fd27aaae@mail.gmail.com>
-	<20080312182240.db32c858.akpm@linux-foundation.org>
-	<200803132259.47063.ak@suse.de>
-	<86802c440803131522t3d038d39gbe8eb0d38ddcb634@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 14 Mar 2008 12:58:44 +0100
-In-Reply-To: <86802c440803131522t3d038d39gbe8eb0d38ddcb634@mail.gmail.com>
-Message-ID: <87iqzp5xfv.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 14 Mar 2008 08:06:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58298 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbYCNMGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 08:06:08 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/2] KEYS: Document making the keyring quotas controllable
+	through /proc/sys [try #2]
+To: torvalds@osdl.org, akpm@linux-foundation.org, kwc@citi.umich.edu
+Cc: arunsr@cse.iitk.ac.in, dwalsh@redhat.com,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Fri, 14 Mar 2008 12:05:59 +0000
+Message-ID: <20080314120559.19668.88801.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Mar 2008 11:52:12.0049 (UTC) FILETIME=[D6E7B810:01C885C9]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
-> 
-> then i tried to reserve 64M or 128M RAM before that, and free that
-> before gart/switotble try to allloc_bootmem under 4g.
+Alter the key management documentation to include information on keyring quota
+controls as added in a previous patch.
 
-Sounds like an incredible hack. There are far better ways to do that
-for bootmem allocations. e.g. you can just specify a high enough "goal"
-That is how swiotlb solves a similar problem (at least before my 
-mask allocator rewrite) 
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-> >  with your improved free_bootmem()
-> 
-> using phys_to_nid()? it seems we only have that on x86_64.
+ Documentation/keys.txt |   24 +++++++++++++++++++++++-
+ 1 files changed, 23 insertions(+), 1 deletions(-)
 
-pfn/page_to_nid() is generic afaik.
+
+diff --git a/Documentation/keys.txt b/Documentation/keys.txt
+index be424b0..d5c7a57 100644
+--- a/Documentation/keys.txt
++++ b/Documentation/keys.txt
+@@ -170,7 +170,8 @@ The key service provides a number of features besides keys:
+      amount of description and payload space that can be consumed.
  
-> also there is assumpation that reserve_bootmem_node, reserver_bootmem
-> can not cross the nodes.
-> I want to remove that constrient too.
+      The user can view information on this and other statistics through procfs
+-     files.
++     files.  The root user may also alter the quota limits through sysctl files
++     (see the section "New procfs files").
+ 
+      Process-specific and thread-specific keyrings are not counted towards a
+      user's quota.
+@@ -329,6 +330,27 @@ about the status of the key service:
+ 	<bytes>/<max>		Key size quota
+ 
+ 
++Four new sysctl files have been added also for the purpose of controlling the
++quota limits on keys:
++
++ (*) /proc/sys/kernel/keys/root_maxkeys
++     /proc/sys/kernel/keys/root_maxbytes
++
++     These files hold the maximum number of keys that root may have and the
++     maximum total number of bytes of data that root may have stored in those
++     keys.
++
++ (*) /proc/sys/kernel/keys/maxkeys
++     /proc/sys/kernel/keys/maxbytes
++
++     These files hold the maximum number of keys that each non-root user may
++     have and the maximum total number of bytes of data that each of those
++     users may have stored in their keys.
++
++Root may alter these by writing each new limit as a decimal number string to
++the appropriate file.
++
++
+ ===============================
+ USERSPACE SYSTEM CALL INTERFACE
+ ===============================
 
-Makes sense, but that will be much more work and should be all separated.
-
--Andi
