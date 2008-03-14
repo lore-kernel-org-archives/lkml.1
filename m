@@ -1,162 +1,461 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYCNJgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYCNJhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYCNJgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 05:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbYCNJgL
+	id S1756784AbYCNJhd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 05:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYCNJhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 05:36:11 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:40250 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbYCNJgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 05:36:10 -0400
-Date: Fri, 14 Mar 2008 18:35:30 +0900
-To: jbeulich@novell.com
-Cc: torvalds@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] avoid endless loops in lib/swiotlb.c
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <47D8FE4A.76E4.0078.0@novell.com>
-References: <47D8FE4A.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 14 Mar 2008 05:37:23 -0400
+Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:37775 "EHLO
+	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbYCNJhU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 05:37:20 -0400
+X-Greylist: delayed 2499 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Mar 2008 05:37:19 EDT
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Shen Feng <shen@cn.fujitsu.com>
+In-Reply-To: <47D7A1C1.60504@cn.fujitsu.com>
+Subject: Re: [PATCH] NTFS: update parse_options() with filesystem argument parser
+References: <47D7A1C1.60504@cn.fujitsu.com>
+Message-Id: <9BBF956E-A17C-49FE-A59C-0603A4C05F88@cam.ac.uk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080314182219P.tomof@acm.org>
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Date: Fri, 14 Mar 2008 08:55:25 +0000
+Cc: ntfs-dev <linux-ntfs-dev@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 09:13:30 +0000
-"Jan Beulich" <jbeulich@novell.com> wrote:
+Hi Sheng,
 
-> Commit 681cc5cd3efbeafca6386114070e0bfb5012e249 introduced two
-> possibilities for entering an endless loop in lib/swiotlb.c:
-> 
-> - if max_slots is zero (possible if mask is ~0UL)
+Thanks for your patch but I much prefer the original code!
 
-Yeah, max_slots can not be zero. There are no drivers that have such
-mask. I'm not sure that we will have.
+For a start you added 60 lines of code, that is hardly a cleanup...
 
-I exported a function, iommu_is_span_boundary in lib/iommu-helper.c
-that does the same thing that is_span_boundary does for SPARC and
-PARISC IOMMUs. iommu_is_span_boundary does this checking. I've
-attached a patch to convert swiotlb to use it.
+And I think the standard file system argument parser is ugly.  The  
+NTFS parse is nice and readable by comparison.  (-;
 
-If we need to think about the possibility of handling such mask, I
-think that it would be better to create a helper function to handle
-this in lib/iommu-helper.c since several IOMMUs do the same thing.
+Best regards,
 
+	Anton
 
-> - if the number of slots requested fits into a swiotlb segment, but is
->   too large for the part of a segment which remains after considering
->   offset_slots
+On 12 Mar 2008, at 09:26, Shen Feng wrote:
 
-Sorry, I'm not sure what you mean. Can you give me an actual example
-numbers that leads to that?
+> ntfs driver uses the macros defined by itself to parse the
+> filesystem argument. this makes the code look ugly. change it by
+> using the standard filesystem argument parser.
+>
+> Signed-off-by: Shen Feng <shen@cn.fujitsu.com>
+> ---
+> fs/ntfs/super.c |  340 +++++++++++++++++++++++++++++++ 
+> +-----------------------
+> 1 files changed, 200 insertions(+), 140 deletions(-)
+>
+> diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
+> index 3e76f3b..232cb1a 100644
+> --- a/fs/ntfs/super.c
+> +++ b/fs/ntfs/super.c
+> @@ -31,6 +31,7 @@
+> #include <linux/vfs.h>
+> #include <linux/moduleparam.h>
+> #include <linux/smp_lock.h>
+> +#include <linux/parser.h>
+>
+> #include "sysctl.h"
+> #include "logfile.h"
+> @@ -69,24 +70,91 @@ const option_t on_errors_arr[] = {
+> 	{ 0,			NULL }
+> };
+>
+> -/**
+> - * simple_getbool -
+> - *
+> - * Copied from old ntfs driver (which copied from vfat driver).
+> - */
+> -static int simple_getbool(char *s, bool *setval)
+> +enum {
+> +	Opt_uid, Opt_gid, Opt_umask, Opt_fmask, Opt_dmask,
+> +	Opt_mft_zone_multiplier, Opt_sloppy_no, Opt_sloppy_yes,
+> +	Opt_show_sys_files_no, Opt_show_sys_files_yes,
+> +	Opt_case_sensitive_no, Opt_case_sensitive_yes,
+> +	Opt_disable_sparse_no, Opt_disable_sparse_yes,
+> +	Opt_errors_panic, Opt_errors_remount_ro, Opt_errors_continue,
+> +	Opt_errors_recover, Opt_posix, Opt_show_inodes, Opt_nls,
+> +	Opt_iocharset, Opt_utf8_no, Opt_utf8_yes, Opt_err
+> +};
+> +
+> +static match_table_t tokens = {
+> +	{Opt_uid, "uid=%u"},
+> +	{Opt_gid, "gid=%u"},
+> +	{Opt_umask, "umask=%o"},
+> +	{Opt_fmask, "fmask=%o"},
+> +	{Opt_dmask, "dmask=%o"},
+> +	{Opt_mft_zone_multiplier, "mft_zone_multiplier=%u"},
+> +	{Opt_sloppy_no, "sloppy=0"},
+> +	{Opt_sloppy_no, "sloppy=no"},
+> +	{Opt_sloppy_no, "sloppy=false"},
+> +	{Opt_sloppy_yes, "sloppy=1"},
+> +	{Opt_sloppy_yes, "sloppy=yes"},
+> +	{Opt_sloppy_yes, "sloppy=true"},
+> +	{Opt_show_sys_files_no, "show_sys_files=0"},
+> +	{Opt_show_sys_files_no, "show_sys_files=no"},
+> +	{Opt_show_sys_files_no, "show_sys_files=false"},
+> +	{Opt_show_sys_files_yes, "show_sys_files=1"},
+> +	{Opt_show_sys_files_yes, "show_sys_files=yes"},
+> +	{Opt_show_sys_files_yes, "show_sys_files=true"},
+> +	{Opt_case_sensitive_no, "case_sensitive=0"},
+> +	{Opt_case_sensitive_no, "case_sensitive=no"},
+> +	{Opt_case_sensitive_no, "case_sensitive=false"},
+> +	{Opt_case_sensitive_yes, "case_sensitive=1"},
+> +	{Opt_case_sensitive_yes, "case_sensitive=yes"},
+> +	{Opt_case_sensitive_yes, "case_sensitive=true"},
+> +	{Opt_disable_sparse_no, "disable_sparse=0"},
+> +	{Opt_disable_sparse_no, "disable_sparse=no"},
+> +	{Opt_disable_sparse_no, "disable_sparse=false"},
+> +	{Opt_disable_sparse_yes, "disable_sparse=1"},
+> +	{Opt_disable_sparse_yes, "disable_sparse=yes"},
+> +	{Opt_disable_sparse_yes, "disable_sparse=true"},
+> +	{Opt_errors_panic, "errors=panic"},
+> +	{Opt_errors_remount_ro, "errors=remount-ro"},
+> +	{Opt_errors_continue, "errors=continue"},
+> +	{Opt_errors_recover, "errors=recover"},
+> +	{Opt_posix, "posix=%s"},             /*obsolete*/
+> +	{Opt_show_inodes, "show_inodes=%s"}, /*obsolete*/
+> +	{Opt_nls, "nls=%s"},
+> +	{Opt_iocharset, "iocharset=%s"},     /*Deprecated*/
+> +	{Opt_utf8_no, "utf8=0"},             /*no longer supported*/
+> +	{Opt_utf8_no, "utf8=no"},
+> +	{Opt_utf8_no, "utf8=false"},
+> +	{Opt_utf8_yes, "utf8=1"},
+> +	{Opt_utf8_yes, "utf8=yes"},
+> +	{Opt_utf8_yes, "utf8=true"},
+> +	{Opt_utf8_yes, "utf8"},
+> +	{Opt_err, NULL}
+> +};
+> +
+> + /**
+> +  * load_nls_ntfs - load the nls map
+> +  * @vol:    ntfs volume
+> +  * @nls_name:    nls name
+> +  *
+> +  * Load the nls map which name is @nls_name. If load failed and  
+> the @vol has
+> +  * load the nls map before, use the old nls map.
+> +  */
+> +static struct nls_table *load_nls_ntfs(ntfs_volume *vol, char  
+> *nls_name)
+> {
+> -	if (s) {
+> -		if (!strcmp(s, "1") || !strcmp(s, "yes") || !strcmp(s, "true"))
+> -			*setval = true;
+> -		else if (!strcmp(s, "0") || !strcmp(s, "no") ||
+> -							!strcmp(s, "false"))
+> -			*setval = false;
+> -		else
+> -			return 0;
+> -	} else
+> -		*setval = true;
+> -	return 1;
+> +	struct nls_table *nls_map = NULL, *old_nls = vol->nls_map;
+> +
+> +	nls_map = load_nls(nls_name);
+> +	if (!nls_map) {
+> +		if (!old_nls) {
+> +			ntfs_error(vol->sb, "NLS character set "
+> +				"%s not found.", nls_name);
+> +			return NULL;
+> +		}
+> +	ntfs_error(vol->sb, "NLS character set %s not "
+> +		"found. Using previous one %s.",
+> +		nls_name, old_nls->charset);
+> +	nls_map = old_nls;
+> +	}
+> +	return nls_map;
+> }
+>
+> /**
+> @@ -98,136 +166,137 @@ static int simple_getbool(char *s, bool  
+> *setval)
+>  */
+> static bool parse_options(ntfs_volume *vol, char *opt)
+> {
+> -	char *p, *v, *ov;
+> +	char *p, *v;
+> 	static char *utf8 = "utf8";
+> -	int errors = 0, sloppy = 0;
+> +	int errors = 0, sloppy = 0, mask = -1;
+> 	uid_t uid = (uid_t)-1;
+> 	gid_t gid = (gid_t)-1;
+> 	mode_t fmask = (mode_t)-1, dmask = (mode_t)-1;
+> 	int mft_zone_multiplier = -1, on_errors = -1;
+> 	int show_sys_files = -1, case_sensitive = -1, disable_sparse = -1;
+> -	struct nls_table *nls_map = NULL, *old_nls;
+> -
+> -	/* I am lazy... (-8 */
+> -#define NTFS_GETOPT_WITH_DEFAULT(option, variable, default_value)	\
+> -	if (!strcmp(p, option)) {					\
+> -		if (!v || !*v)						\
+> -			variable = default_value;			\
+> -		else {							\
+> -			variable = simple_strtoul(ov = v, &v, 0);	\
+> -			if (*v)						\
+> -				goto needs_val;				\
+> -		}							\
+> -	}
+> -#define NTFS_GETOPT(option, variable)					\
+> -	if (!strcmp(p, option)) {					\
+> -		if (!v || !*v)						\
+> -			goto needs_arg;					\
+> -		variable = simple_strtoul(ov = v, &v, 0);		\
+> -		if (*v)							\
+> -			goto needs_val;					\
+> -	}
+> -#define NTFS_GETOPT_OCTAL(option, variable)				\
+> -	if (!strcmp(p, option)) {					\
+> -		if (!v || !*v)						\
+> -			goto needs_arg;					\
+> -		variable = simple_strtoul(ov = v, &v, 8);		\
+> -		if (*v)							\
+> -			goto needs_val;					\
+> -	}
+> -#define NTFS_GETOPT_BOOL(option, variable)				\
+> -	if (!strcmp(p, option)) {					\
+> -		bool val;						\
+> -		if (!simple_getbool(v, &val))				\
+> -			goto needs_bool;				\
+> -		variable = val;						\
+> -	}
+> -#define NTFS_GETOPT_OPTIONS_ARRAY(option, variable, opt_array)		\
+> -	if (!strcmp(p, option)) {					\
+> -		int _i;							\
+> -		if (!v || !*v)						\
+> -			goto needs_arg;					\
+> -		ov = v;							\
+> -		if (variable == -1)					\
+> -			variable = 0;					\
+> -		for (_i = 0; opt_array[_i].str && *opt_array[_i].str; _i++) \
+> -			if (!strcmp(opt_array[_i].str, v)) {		\
+> -				variable |= opt_array[_i].val;		\
+> -				break;					\
+> -			}						\
+> -		if (!opt_array[_i].str || !*opt_array[_i].str)		\
+> -			goto needs_val;					\
+> -	}
+> +	struct nls_table *nls_map = NULL;
+> +	substring_t args[MAX_OPT_ARGS];
+> +	int token;
+> +
+> 	if (!opt || !*opt)
+> 		goto no_mount_options;
+> 	ntfs_debug("Entering with mount options string: %s", opt);
+> 	while ((p = strsep(&opt, ","))) {
+> -		if ((v = strchr(p, '=')))
+> -			*v++ = 0;
+> -		NTFS_GETOPT("uid", uid)
+> -		else NTFS_GETOPT("gid", gid)
+> -		else NTFS_GETOPT_OCTAL("umask", fmask = dmask)
+> -		else NTFS_GETOPT_OCTAL("fmask", fmask)
+> -		else NTFS_GETOPT_OCTAL("dmask", dmask)
+> -		else NTFS_GETOPT("mft_zone_multiplier", mft_zone_multiplier)
+> -		else NTFS_GETOPT_WITH_DEFAULT("sloppy", sloppy, true)
+> -		else NTFS_GETOPT_BOOL("show_sys_files", show_sys_files)
+> -		else NTFS_GETOPT_BOOL("case_sensitive", case_sensitive)
+> -		else NTFS_GETOPT_BOOL("disable_sparse", disable_sparse)
+> -		else NTFS_GETOPT_OPTIONS_ARRAY("errors", on_errors,
+> -				on_errors_arr)
+> -		else if (!strcmp(p, "posix") || !strcmp(p, "show_inodes"))
+> +		if (!*p)
+> +			continue;
+> +
+> +		token = match_token(p, tokens, args);
+> +		switch (token) {
+> +		case Opt_uid:
+> +			if (match_int(&args[0], &uid))
+> +				return false;
+> +			break;
+> +		case Opt_gid:
+> +			if (match_int(&args[0], &gid))
+> +				return false;
+> +			break;
+> +		case Opt_umask:
+> +			if (match_octal(&args[0], &mask))
+> +				return false;
+> +			dmask = fmask = (mode_t)mask;
+> +			break;
+> +		case Opt_fmask:
+> +			if (match_octal(&args[0], &mask))
+> +				return false;
+> +			fmask = (mode_t)mask;
+> +			break;
+> +		case Opt_dmask:
+> +			if (match_octal(&args[0], &mask))
+> +				return false;
+> +			dmask = (mode_t)mask;
+> +			break;
+> +		case Opt_mft_zone_multiplier:
+> +			if (match_int(&args[0], &mft_zone_multiplier))
+> +				return false;
+> +			break;
+> +		case Opt_sloppy_no:
+> +			sloppy = false;
+> +			break;
+> +		case Opt_sloppy_yes:
+> +			sloppy = true;
+> +			break;
+> +		case Opt_show_sys_files_no:
+> +			show_sys_files = false;
+> +			break;
+> +		case Opt_show_sys_files_yes:
+> +			show_sys_files = true;
+> +			break;
+> +		case Opt_case_sensitive_no:
+> +			case_sensitive = false;
+> +			break;
+> +		case Opt_case_sensitive_yes:
+> +			case_sensitive = true;
+> +			break;
+> +		case Opt_disable_sparse_no:
+> +			disable_sparse = false;
+> +			break;
+> +		case Opt_disable_sparse_yes:
+> +			disable_sparse = true;
+> +			break;
+> +		case Opt_errors_panic:
+> +			if (on_errors == -1)
+> +				on_errors = ON_ERRORS_PANIC;
+> +			else
+> +				on_errors |= ON_ERRORS_PANIC;
+> +			break;
+> +		case Opt_errors_remount_ro:
+> +			if (on_errors == -1)
+> +				on_errors = ON_ERRORS_REMOUNT_RO;
+> +			else
+> +				on_errors |= ON_ERRORS_REMOUNT_RO;
+> +			break;
+> +		case Opt_errors_continue:
+> +			if (on_errors == -1)
+> +				on_errors = ON_ERRORS_CONTINUE;
+> +			else
+> +				on_errors |= ON_ERRORS_CONTINUE;
+> +			break;
+> +		case Opt_errors_recover:
+> +			if (on_errors == -1)
+> +				on_errors = ON_ERRORS_RECOVER;
+> +			else
+> +				on_errors |= ON_ERRORS_RECOVER;
+> +			break;
+> +		case Opt_posix:
+> +		case Opt_show_inodes:
+> 			ntfs_warning(vol->sb, "Ignoring obsolete option %s.",
+> -					p);
+> -		else if (!strcmp(p, "nls") || !strcmp(p, "iocharset")) {
+> -			if (!strcmp(p, "iocharset"))
+> -				ntfs_warning(vol->sb, "Option iocharset is "
+> -						"deprecated. Please use "
+> -						"option nls=<charsetname> in "
+> -						"the future.");
+> -			if (!v || !*v)
+> -				goto needs_arg;
+> -use_utf8:
+> -			old_nls = nls_map;
+> -			nls_map = load_nls(v);
+> -			if (!nls_map) {
+> -				if (!old_nls) {
+> -					ntfs_error(vol->sb, "NLS character set "
+> -							"%s not found.", v);
+> -					return false;
+> -				}
+> -				ntfs_error(vol->sb, "NLS character set %s not "
+> -						"found. Using previous one %s.",
+> -						v, old_nls->charset);
+> -				nls_map = old_nls;
+> -			} else /* nls_map */ {
+> -				if (old_nls)
+> -					unload_nls(old_nls);
+> -			}
+> -		} else if (!strcmp(p, "utf8")) {
+> -			bool val = false;
+> +				     p);
+> +			break;
+> +		case Opt_iocharset:
+> +			ntfs_warning(vol->sb, "Option iocharset is "
+> +				     "deprecated. Please use "
+> +				     "option nls=<charsetname> in "
+> +				     "the future.");
+> +		case Opt_nls:
+> +			v = match_strdup(&args[0]);
+> +			if (!v)
+> +				return false;
+> +			nls_map = load_nls_ntfs(vol, v);
+> +			kfree(v);
+> +			break;
+> +		case Opt_utf8_yes:
+> +		case Opt_utf8_no:
+> 			ntfs_warning(vol->sb, "Option utf8 is no longer "
+> -				   "supported, using option nls=utf8. Please "
+> -				   "use option nls=utf8 in the future and "
+> -				   "make sure utf8 is compiled either as a "
+> -				   "module or into the kernel.");
+> -			if (!v || !*v)
+> -				val = true;
+> -			else if (!simple_getbool(v, &val))
+> -				goto needs_bool;
+> -			if (val) {
+> -				v = utf8;
+> -				goto use_utf8;
+> -			}
+> -		} else {
+> -			ntfs_error(vol->sb, "Unrecognized mount option %s.", p);
+> +				     "supported, using option nls=utf8. Please "
+> +				     "use option nls=utf8 in the future and "
+> +				     "make sure utf8 is compiled either as a "
+> +				     "module or into the kernel.");
+> +			if (token == Opt_utf8_no)
+> +				break;
+> +			nls_map = load_nls_ntfs(vol, utf8);
+> +			break;
+> +		default: /* Opt_err */
+> +			ntfs_error(vol->sb, "Unrecognized or incorrect "
+> +				   "mount option %s.", p);
+> 			if (errors < INT_MAX)
+> 				errors++;
+> +			break;
+> 		}
+> -#undef NTFS_GETOPT_OPTIONS_ARRAY
+> -#undef NTFS_GETOPT_BOOL
+> -#undef NTFS_GETOPT
+> -#undef NTFS_GETOPT_WITH_DEFAULT
+> 	}
+> no_mount_options:
+> 	if (errors && !sloppy)
+> @@ -319,15 +388,6 @@ no_mount_options:
+> 		}
+> 	}
+> 	return true;
+> -needs_arg:
+> -	ntfs_error(vol->sb, "The %s option requires an argument.", p);
+> -	return false;
+> -needs_bool:
+> -	ntfs_error(vol->sb, "The %s option requires a boolean argument.",  
+> p);
+> -	return false;
+> -needs_val:
+> -	ntfs_error(vol->sb, "Invalid %s option argument: %s", p, ov);
+> -	return false;
+> }
+>
+> #ifdef NTFS_RW
 
+Best regards,
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] SWIOTLB: use iommu_is_span_boundary helper function
-
-iommu_is_span_boundary in lib/iommu-helper.c was exported for PARISC
-IOMMUs (commit 3715863aa142c4f4c5208f5f3e5e9bac06006d2f). SWIOTLB can
-use it.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/ia64/Kconfig |    3 +++
- arch/x86/Kconfig  |    5 ++---
- lib/swiotlb.c     |   19 ++++++-------------
- 3 files changed, 11 insertions(+), 16 deletions(-)
-
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 8fa3faf..a33d7ed 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -46,6 +46,9 @@ config MMU
- config SWIOTLB
-        bool
- 
-+config IOMMU_HELPER
-+       bool
-+
- config GENERIC_LOCKBREAK
- 	bool
- 	default y
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 237fc12..aff96a7 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -477,9 +477,6 @@ config CALGARY_IOMMU_ENABLED_BY_DEFAULT
- 	  Calgary anyway, pass 'iommu=calgary' on the kernel command line.
- 	  If unsure, say Y.
- 
--config IOMMU_HELPER
--	def_bool (CALGARY_IOMMU || GART_IOMMU)
--
- # need this always selected by IOMMU for the VIA workaround
- config SWIOTLB
- 	bool
-@@ -490,6 +487,8 @@ config SWIOTLB
- 	  access 32-bits of memory can be used on systems with more than
- 	  3 GB of memory. If unsure, say Y.
- 
-+config IOMMU_HELPER
-+	def_bool (CALGARY_IOMMU || GART_IOMMU || SWIOTLB)
- 
- config NR_CPUS
- 	int "Maximum number of CPUs (2-255)"
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 4bb5a11..2c6392a 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -31,6 +31,7 @@
- 
- #include <linux/init.h>
- #include <linux/bootmem.h>
-+#include <linux/iommu-helper.h>
- 
- #define OFFSET(val,align) ((unsigned long)	\
- 	                   ( (val) & ( (align) - 1)))
-@@ -282,15 +283,6 @@ address_needs_mapping(struct device *hwdev, dma_addr_t addr)
- 	return (addr & ~mask) != 0;
- }
- 
--static inline unsigned int is_span_boundary(unsigned int index,
--					    unsigned int nslots,
--					    unsigned long offset_slots,
--					    unsigned long max_slots)
--{
--	unsigned long offset = (offset_slots + index) & (max_slots - 1);
--	return offset + nslots > max_slots;
--}
--
- /*
-  * Allocates bounce buffer and returns its kernel virtual address.
-  */
-@@ -334,8 +326,8 @@ map_single(struct device *hwdev, char *buffer, size_t size, int dir)
- 		if (index >= io_tlb_nslabs)
- 			index = 0;
- 
--		while (is_span_boundary(index, nslots, offset_slots,
--					max_slots)) {
-+		while (iommu_is_span_boundary(index, nslots, offset_slots,
-+					      max_slots)) {
- 			index += stride;
- 			if (index >= io_tlb_nslabs)
- 				index = 0;
-@@ -371,8 +363,9 @@ map_single(struct device *hwdev, char *buffer, size_t size, int dir)
- 				index += stride;
- 				if (index >= io_tlb_nslabs)
- 					index = 0;
--			} while (is_span_boundary(index, nslots, offset_slots,
--						  max_slots));
-+			} while (iommu_is_span_boundary(index, nslots,
-+							offset_slots,
-+							max_slots));
- 		} while (index != wrap);
- 
- 		spin_unlock_irqrestore(&io_tlb_lock, flags);
+	Anton
 -- 
-1.5.3.7
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
 
