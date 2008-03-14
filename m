@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYCNBaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbYCNBci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755429AbYCNBaw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYCNBao
+	id S1756190AbYCNBci (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYCNBcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:30:44 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57633 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbYCNBan (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:30:43 -0400
-Date: Fri, 14 Mar 2008 10:34:31 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
-Message-Id: <20080314103431.ff07070c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
-References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Mar 2008 21:32:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51601 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752231AbYCNBca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 21:32:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Date: Fri, 14 Mar 2008 02:31:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org> <200803131803.31120.rjw@sisk.pl> <m1ejaew7dm.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ejaew7dm.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803140231.39282.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 16:45:42 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
-> int __init reserve_bootmem(unsigned long addr, unsigned long size,
->  			    int flags)
->  {
-> -	return reserve_bootmem_core(NODE_DATA(0)->bdata, addr, size, flags);
-> +	int ret;
-> +	bootmem_data_t *bdata;
-> +	list_for_each_entry(bdata, &bdata_list, list) {
-> +		ret = can_reserve_bootmem_core(bdata, addr, size, flags);
-> +		if (ret < 0)
-> +			return ret;
-> +	}
-> +	list_for_each_entry(bdata, &bdata_list, list)
-> +		reserve_bootmem_core(bdata, addr, size, flags);
-> +	return 0;
->  }
+On Friday, 14 of March 2008, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > From the ACPI compliance point of view it's better to do it this way.  We need
+> > to put the devices into low power states anyway before "powering off" the
+> > system and we won't need to touch them for the second time if we do that
+> > in advance.
+> 
+> Interesting.  From a kexec jump where we exit the kernel and then return
+> to it seem all that is required.
+> 
+> I will have to look at the ACPI case.  That seems to be the lynch pin
+> of a couple of arguments for doing strange things: ACPI requires it.
 
-why list_for_each twice ?
+Yes and that's because ACPI regards hibernation as a _sleep_ state, something
+more like S3 (suspend to RAM) than S5 (power off).
+
+In fact even now we're doing things that are strange from the ACPI standpoint.
+For example, we should really execute _PTS once during the entire transition
+and we shouldn't call _WAK after we've created the image.  We're doing that
+now due to some design limitations, but in fact we shouldn't.
+
+> > Still, it would be sufficient if we disconnected the drivers from the hardware
+> > and thus prevented applications from accessing that hardware.
+> 
+> My gut feeling is that except for a handful of drivers we could even
+> get away with simply implementing hot unplug and hot replug.  Disks
+> are the big exception here.
+> 
+> Which suggests to me that it is at least possible that the methods we
+> want for a kexec jump hibernation may be different from an in-kernel
+> hibernation and quite possibly are easier to implement.
+
+I'm not sure about the "easier" part, quite frankly.  Also, with our current
+ordering of code the in-kernel hibernation will need the same callbacks
+as the kexec-based thing.  However, with the in-kernel approach we can
+attempt (in the future) to be more ACPI compliant, so to speak, but with the
+kexec-based approach that won't be possible.
+
+Whether it's a good idea to follow ACPI, as far as hibernation is concerned, is
+a separate question, but IMO we won't be able to answer it without _lots_ of
+testing on vaious BIOS/firmware configurations.  Our experience so far
+indicates that at least some BIOSes expect us to follow ACPI and misbehave
+otherwise, so for those systems there should be an "ACPI way" available.
+[Others just don't work well if we try to follow ACPI and those may be handled
+using the kexec-based approach, but that doesn't mean that we can just ignore
+the ACPI compliance issue, at least for now.]
 
 Thanks,
--Kame
-
+Rafael
