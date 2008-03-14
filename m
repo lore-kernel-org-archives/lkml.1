@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYCNAwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYCNAyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYCNAwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 20:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYCNAwE
+	id S1756199AbYCNAyQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 20:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYCNAyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 20:52:04 -0400
-Received: from mga05.intel.com ([192.55.52.89]:1030 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756071AbYCNAv7 (ORCPT
+	Thu, 13 Mar 2008 20:54:03 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:36183 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751743AbYCNAyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 20:51:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,497,1199692800"; 
-   d="scan'208";a="533632603"
-Subject: Re: hackbench regression since 2.6.25-rc
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080313171202.GA5233@suse.de>
-References: <1205394417.3215.85.camel@ymzhang>
-	 <20080313151413.GA14045@suse.de>
-	 <20080313091921.834d2532.randy.dunlap@oracle.com>
-	 <20080313171202.GA5233@suse.de>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 14 Mar 2008 08:50:19 +0800
-Message-Id: <1205455819.3215.154.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Thu, 13 Mar 2008 20:54:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VZxHrPg95Rh3QZyssXEGIEk7CNVYR9eF7r13t/Nd5LeSSEtvnpfbCvSXza+9pwP1IRZ1F/wrpK4itNVMfC1NShAe88fZ3rseL7P5GbPVgcCHEdzoIqCZofeHInrfwy2ng4g1B1MdwBwkAuTWZpIG8Q00s+pO7exJLrMS9sHptlo=  ;
+X-YMail-OSG: AiacctEVM1m.xBP6wbnDDeYPCp3glVuXQ9.gd4bHACOIsf3UvZzBvZQDMxLKFI5yo7WkVNt7mw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.25-rc5 1/2] gpiolib:  dynamic gpio number allocation
+Date: Thu, 13 Mar 2008 16:53:58 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, avorontsov@ru.mvista.com
+References: <200803131549.54632.david-b@pacbell.net> <200803131618.58516.david-b@pacbell.net> <20080313162803.ab8bfd4c.akpm@linux-foundation.org>
+In-Reply-To: <20080313162803.ab8bfd4c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803131753.58733.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 10:12 -0700, Greg KH wrote:
-> On Thu, Mar 13, 2008 at 09:19:21AM -0700, Randy Dunlap wrote:
-> > On Thu, 13 Mar 2008 08:14:13 -0700 Greg KH wrote:
+On Thursday 13 March 2008, Andrew Morton wrote:
+> On Thu, 13 Mar 2008 15:18:58 -0800
+> David Brownell <david-b@pacbell.net> wrote:
+> 
+> > On Thursday 13 March 2008, Andrew Morton wrote:
 > > 
-> > > On Thu, Mar 13, 2008 at 03:46:57PM +0800, Zhang, Yanmin wrote:
-> > > > Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
-> > > > 40% regression with 2.6.25-rc1, and more than 20% regression with kernel
-> > > > 2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
-> > > > 
-> > > > Command to start it.
-> > > > #hackbench 100 process 2000
-> > > > I ran it for 3 times and sum the values.
-> > > > 
-> > > > I tried to investiagte it by bisect.
-> > > > Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
-> > > > Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
-> > > > 
-> > > > Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
-> > > > these 2 tags for many times manually and kernel always paniced.
-> > > 
-> > > Where is the kernel panicing?  The changeset right after the last one
-> > > above: bc87d2fe7a1190f1c257af8a91fc490b1ee35954, is a change to efivars,
-> > > are you using that in your .config?
-> > > 
-> > > > All patches between the 2 tags are on kobject restructure. I guess such restructure
-> > > > creates more cache miss on the 16-core tigerton.
-> > > 
-> > > Nothing should be creating kobjects on a normal load like this, so a
-> > > regression seems very odd.  Unless the /sys/kernel/uids/ stuff is
-> > > triggering this?
-> > > 
-> > > Do you have a link to where I can get hackbench (google seems to find
-> > > lots of reports with it, but not the source itself), so I can test to
-> > > see if we are accidentally creating kobjects with this load?
+> > > hm.  I suppose that if someone want a huge number of GPIOs then we can
+> > > convert this to a bitmap or an IDR tree easily enough.
 > > 
-> > The version that I see referenced most often (unscientifically :)
-> > is somewhere under people.redhat.com/mingo/, like so:
-> > http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+> > Actually, I tried IDRs for a while and they broke platforms
+> > which needed to initialize and use GPIOs early: before kmalloc
+> > would work.  A real PITA that was -- and slow too.
 > 
-> Great, thanks for the link.
-> 
-> In using that version, I do not see any kobjects being created at all
-> when running the program.  So I don't see how a kobject change could
-> have caused any slowdown.
-> 
-> Yanmin, is the above link the version you are using?
-Yes.
+> If IDRs were slow, that linear search will be glacial.
 
-> 
-> Hm, running with "hackbench 100 process 2000" seems to lock up my
-> laptop, maybe I shouldn't run 4000 tasks at once on such a memory
-> starved machine...
-The issue doesn't exist on my 8-core stoakley and on tulsa. So I don't think
-you could reproduce it on laptop.
+The slowness of IDRs was needing to use them for the
+routine lookups ... versus the current array index,
+which costs a fraction of an instruction cycle and
+doesn't need separate locks.
 
->From the oprofile data, perhaps we need dig into SLUB firstly.
+Or were you implying they should be used for something
+other than mapping GPIO numbers to controllers/state?
 
--yanmin
-
-
+- Dave
