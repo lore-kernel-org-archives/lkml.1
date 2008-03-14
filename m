@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYCNEOC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYCNEPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbYCNEOC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 00:14:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYCNENx
+	id S1755263AbYCNEPT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 00:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbYCNEPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 00:13:53 -0400
-Received: from colo.lackof.org ([198.49.126.79]:57221 "EHLO colo.lackof.org"
+	Fri, 14 Mar 2008 00:15:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42346 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbYCNENx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 00:13:53 -0400
-Date: Thu, 13 Mar 2008 22:13:41 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: akepner@sgi.com
-Cc: Michael Ellerman <michael@ellerman.id.au>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Tony Luck <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Mark Nelson <mdnelson@au1.ibm.com>
-Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
-	interface
-Message-ID: <20080314041341.GC24794@colo.lackof.org>
-References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com> <20080229182504.GA18102@colo.lackof.org> <1204310276.4003.48.camel@localhost.localdomain> <20080305181307.GR17802@sgi.com> <1204783306.14874.37.camel@concordia.ozlabs.ibm.com> <20080312011954.GN12370@sgi.com>
+	id S1750779AbYCNEPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 00:15:05 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Date: Fri, 14 Mar 2008 00:13:58 -0400
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>
+References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org> <20080313081048.GB19808@elf.ucw.cz> <20080313104217.GH2522@one.firstfloor.org>
+In-Reply-To: <20080313104217.GH2522@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080312011954.GN12370@sgi.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200803140013.59146.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 06:19:54PM -0700, akepner@sgi.com wrote:
-> 
-> I have a new proposal for the documentation portion of this 
-> patchset. The code changes essentially amount to 
-> s/DMA_ATTR_SYNC_ON_WRITE/DMA_ATTR_BARRIER/ so thought I'd send 
-> just the doc change for comments now.
-> 
-> The description of the DMA_ATTR_BARRIER is now very short and 
-> generic - no particular architecture is even mentioned. I can add 
-> a sentence or two near the architecture-specific changes in 
-> arch/ia64/sn/pci/pci_dma.c about why the implementation works 
-> on ia64/sn, etc.
+On Thursday 13 March 2008, Andi Kleen wrote:
+> On Thu, Mar 13, 2008 at 09:10:48AM +0100, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > > USB keeps processor out of C3 in many cases.
+> > > > 
+> > > > I figured that was the case. But I did not see any difference in powertop.
+> > > 
+> > > Modern Intel mobile processors have a feature called "C2 popup"
+> > > that allows the processor to retire DMA from C3 without
+> > > breaking into C0.  Instead the processor pops up to C2
+> > > where the cache snoop can allow the DMA to retire --
+> > > then it returns to C3, all transparent to software.
+> > 
+> > Does that mean we should go to C3 on modern intels, even with
+> > busmaster going on, so that cpu can keep going C2..C3..C2 as needed?
 
-Acked-by: Grant Grundler <grundler@parisc-linux.org>
+That decision has already been made for us.
+BM_STS has been made a no-op on recent processors.
+It reports bus activity only for a small sub-set of
+south-bridge devices.  Otherwise it tells us there
+is none and that we should proceed into C3.
 
-One part of me still wants some history in the doc. But I think
-it's better to keep it short and let folks look for implementations
-and make sure they are sufficiently well explained.
+> C3 is still more expensive power wise to enter, so entering C3 just
+> to let it immediately go back to C2 for bus mastering would be likely
+> still a loss over staying at C2.
 
-thanks,
-grant
+The newer the processor, the less exposed we area to this scenario.
 
-> diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
-> index e69de29..a4106ec 100644
-> --- a/Documentation/DMA-attributes.txt
-> +++ b/Documentation/DMA-attributes.txt
-> @@ -0,0 +1,24 @@
-> +			DMA attributes
-> +			==============
-> +
-> +This document describes the semantics of the DMA attributes that are 
-> +defined in linux/dma-attrs.h. 
-> +
-> +DMA_ATTR_BARRIER
-> +----------------
-> +
-> +DMA_ATTR_BARRIER is a barrier attribute for DMA.  DMA to a memory 
-> +region with the DMA_ATTR_BARRIER attribute forces all pending DMA 
-> +writes to complete, and thus provides a mechanism to strictly order 
-> +DMA from a device across all intervening busses and bridges.  This 
-> +barrier is not specific to a particular type of interconnect, it 
-> +applies to the system as a whole, and so its implementation must 
-> +account for the idiosyncracies of the system all the way from the 
-> +DMA device to memory. 
-> +
-> +As an example of a situation where DMA_ATTR_BARRIER would be useful, 
-> +suppose that a device does a DMA write to indicate that data is ready 
-> +and available in memory.  The DMA of the "completion indication" could
-> +race with data DMA.  Mapping the memory used for completion indications 
-> +with DMA_ATTR_BARRIER would prevent the race.
-> +
+cheers,
+-Len
