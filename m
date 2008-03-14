@@ -1,146 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbYCNWon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYCNWrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbYCNWon (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 18:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYCNWoc
+	id S1757944AbYCNWrV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 18:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYCNWrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 18:44:32 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:34017 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754135AbYCNWob (ORCPT
+	Fri, 14 Mar 2008 18:47:08 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:51621 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755322AbYCNWrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 18:44:31 -0400
-X-YMail-OSG: zSSYilAVM1k6_5zJk7YgcKgAHPvSTv5hKVAYd5T1nV..DVcZsXDLvj52mkkhwBEN5L8cqrslSA--
-X-RocketYMMF: rancidfat
-Date: Fri, 14 Mar 2008 15:44:26 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
-To: Stephen Smalley <sds@epoch.ncsc.mil>, "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, Greg KH <greg@kroah.com>,
-       Pavel Emelianov <xemul@openvz.org>
-In-Reply-To: <1205516516.22912.92.camel@moss-spartans.epoch.ncsc.mil>
+	Fri, 14 Mar 2008 18:47:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CqKHI7u2yulZ1svf3kSDN9KFuXDt3ACcahroLJrBLtxKgAzDtadDnW5RxzvE+VDGUwOdPuZdRyEE8zgQ0uD4kz+6aK1LWzqhHaps4E/jidEmT4qEJJjVBckhAp8adckMQcCMMujW8U3m9PC089dxudGqXHgzGLvxC4Fjnfwy3Jo=
+Message-ID: <b647ffbd0803141547s55fa37a1j5af4e50388d3117f@mail.gmail.com>
+Date: Fri, 14 Mar 2008 23:47:05 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATCH] sched: fix race in schedule
+Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       hpj@urpla.net, stable <stable@kernel.org>
+In-Reply-To: <47DABCE0.2070505@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <176755.88432.qm@web36612.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47D57770.50909@ct.jp.nec.com> <1205181256.6241.320.camel@lappy>
+	 <47D5EA9C.1040404@ct.jp.nec.com> <1205224835.8514.183.camel@twins>
+	 <47D6BD0C.6070401@ct.jp.nec.com>
+	 <b647ffbd0803111638sdc92903r7faad3d4b2b6b842@mail.gmail.com>
+	 <1205328457.8514.244.camel@twins>
+	 <b647ffbd0803120748x2bfc8fbctda15ce3df08fcf5b@mail.gmail.com>
+	 <1205333829.8514.249.camel@twins> <47DABCE0.2070505@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 14/03/2008, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+>
+> [ ... ]
+>
+>  >> But maybe there is something esle that would be exposed by the
+>  >> 'rq->curr = rq->idle' manipulation... I can't provide examples right
+>  >> now though (I need to think on it).
+>  >
+>  > I share your concerns, I don't really like it either. Just spewing out
+>  > ideas here - bad ideas it seems :-/
+>  >
+>  > Ingo also suggested moving the balance calls right before
+>  > deactivate_task(), but that gives a whole other set of head-aches.
+>  >
+>
+>
+> Well, what will we do about this issue?
+>  I see you're thinking to fix inconsistency in scheduler, right?
+>  I agree about it.
+>
+>  However, I don't think it's good to remain this issue long time in
+>  the -stable kernel.
+>
+>  Could you please let me know what I can do?
 
---- Stephen Smalley <sds@epoch.ncsc.mil> wrote:
-
-> 
-> ... 
-> > I completely disagree.   We have two separate frameworks in the kernel,
-> > one to enforce generic additional security stuff, and one to track
-> > tasks.  When I need a feature which tracks tasks to do some security
-> > tasks, it seems obvious that I would use both, just like to enforce a
-> > certain type of MAC I end up using both netfilter and LSM through
-> > selinux.
-> 
-> Depends on whether you think LSM hooks are like netfilter hooks (i.e.
-> fine for each module to just implement a few here and there, then
-> combine resulting modules), or whether they are about implementing
-> complete security models (ala SELinux or Smack).  As they currently
-> exist, they aren't very well suited to the former - they impose a cost
-> on all hooked operations in order to hook any at all, as has been a
-> concern for your device controller.
-
-I don't intend that Smack be thought of as a complete security model.
-Smack implements Mandatory Access Control, but leaves the privilege
-mechanism (root and/or capabilities) to the whims of others. Similarly
-Smack does not do DAC (unlike SELinux with MCS) although "owned rules"
-has been proposed as an additional feature. I certainly wouldn't
-want every new facility that comes in to require multiple versions
-that depend on the other LSMs involved. It's true that today's LSM is
-optimized for the only LSM that existed a year ago, and that was a
-monolythic security model.
-
-> > > > The fact that all existing LSMs need to invoke exactly the same code is
-> an 
-> > > > indicator that it doesn't belong in LSM.
-> > 
-> > No, that's like saying capabilities don't belong in LSM because all LSMS
-> > need to invoke it the same way.  What it is an indicator of is that
-> > there are (not-quite-)orthogonal pieces of security which users might
-> > want to use together.
-> 
-> Likely not a popular view, but capabilities don't belong in LSM.
-
-I share this view, which add credibility to the claim that it's
-not popular. (smiley)
-
-> Look
-> at them:  the capability state is still directly embedded in the
-> relevant kernel data structures, various bits of capability specific
-> logic and interfaces remain in the core kernel,
-
-It does seem as if a separate Linux Privilege Module framework
-might be a better scheme. It would be very easy to pull out, and
-simple to create the obvious LPMs:
-
-- Traditional root
-  hooks look like "return (euid == 0) ? 0 : -EACCES;"
-- No access check at all
-  hooks look like "return 0;"
-- Root or capabilities
-  hooks look like "return (euid == 0 || capable(xxx)) ? 0 : -EACCES;"
-- Pure capabilities
-  hooks look like "return capable(xxx) ? 0 : -EACCES;"
-
-> they don't present a
-> complete security model (just an auxiliary to some other model like DAC
-> or Smack for privilege purposes), they use only a small subset of the
-> hooks, they force LSM to violate its usual restrictive-only paradigm to
-> support capable(), CONFIG_SECURITY=n still has to invoke the capability
-> functions, and all of the other LSMs do need to call it the same way to
-> keep Linux working as expected for applications and users.
-
-Plus, if SELinux wants to abandon capabilities they can add thier own
-scheme or insist the user use the noop LPM and do whatever they like
-in the LSM. Smack has no intention of mucking with the privilege
-mechanism, and will happily go along with whatever the rest of the
-system wants to use, although the noop LSM seems a bit pointless in
-that case.
-
-> The original promise was that LSM would allow kernels to be built that
-> shed capabilities altogether,
-
-I don't remember that, but it's been a long time so it could be true.
-
-> but in practice no one seems to do that as
-> both users and applications expect them to exist in Linux.  In fact, the
-> possibility of not having capabilities present has caused problems that
-> have led to the dummy module being turned more and more into a clone of
-> the capabilities module (actually managing and testing the capability
-> bits rather than just uid == 0 as originally).
-
-This is why Smack is sticking to MAC rather than trying to be a
-wholistic security policy mechanism. To quote the prophet, "God
-created the world in 7 days, but then, He didn't have an install
-base".
-
-> So I wouldn't point to capabilities as a counter example to James' point
-> - they are actually a supporting example.
-
-In particular, capabilities are not an access control mechanism,
-they are a privilege mechanism. A lot of discussion about LSM has
-centered around the appropriate charactoristics of an LSM, and
-these discussions always assume that the LSM in question is
-exactly an access control mechanism. If we split the LSM into
-a LACM for access control and an LPM for privilege management
-maybe we can eliminate the most contentious issues.
- 
-Does anyone know why that would be stoopid before I whack out
-patches?
-
-Thank you.
+IMHO, the safest solution for the time being (and esp. for -stable)
+would be to proceed with Hiroshi's patch. It looks safe and it does
+fix a real problem.
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+>
+> Hiroshi Shimamoto
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
