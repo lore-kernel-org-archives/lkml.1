@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYCNHfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYCNHgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYCNHfm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 03:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYCNHfe
+	id S1755382AbYCNHgG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 03:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbYCNHfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 03:35:34 -0400
-Received: from mga10.intel.com ([192.55.52.92]:1212 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751516AbYCNHfe (ORCPT
+	Fri, 14 Mar 2008 03:35:53 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:60080 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753735AbYCNHfw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 03:35:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,499,1199692800"; 
-   d="scan'208";a="306171615"
-Subject: Re: hackbench regression since 2.6.25-rc
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0803132335120.24204@schroedinger.engr.sgi.com>
-References: <1205394417.3215.85.camel@ymzhang>
-	 <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-	 <1205400538.3215.148.camel@ymzhang>
-	 <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
-	 <1205463842.3215.188.camel@ymzhang>  <1205465447.3215.195.camel@ymzhang>
-	 <1205472481.3215.268.camel@ymzhang>
-	 <Pine.LNX.4.64.0803132335120.24204@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 14 Mar 2008 15:29:01 +0800
-Message-Id: <1205479741.3215.293.camel@ymzhang>
+	Fri, 14 Mar 2008 03:35:52 -0400
+Subject: Re: [PATCH 0/2] lockdep vs recursive read locks
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Gautham R Shenoy <ego@in.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0803131124220.17196@blonde.site>
+References: <20080312120920.929901000@chello.nl>
+	 <Pine.LNX.4.64.0803131124220.17196@blonde.site>
+Content-Type: text/plain
+Date: Fri, 14 Mar 2008 08:35:44 +0100
+Message-Id: <1205480145.8514.260.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+X-Mailer: Evolution 2.21.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 23:39 -0700, Christoph Lameter wrote:
-> On Fri, 14 Mar 2008, Zhang, Yanmin wrote:
-> 
-> > On tigerton, if I add "slub_max_order=3 slub_min_objects=16" to kernel 
-> > boot cmdline, the result is improved significantly and it takes just 
-> > 1/10 time of the original testing.
-> 
-> Hmmm... That means the updates to SLUB in mm will fix the regression that 
-> you are seeing because we there can use large orders of slabs and fallback
-> for all slab caches. But I am still interested to get to the details of
-> slub behavior on the 16p.
-> 
-> > So kmalloc-512 is the key.
-> 
-> Yeah in 2.6.26-rc kmalloc-512 has 8 objects per slab. The mm version 
-> increases that with a larger allocation size.
-Would you like to give me a pointer to the patch? Is it one patch, or many patches?
-
-> 
-> > Then, I tested it on stoakley with the same kernel commandline. 
-> > Improvement is about 50%. One important thing is without the boot 
-> > parameter, hackbench on stoakey takes only 1/4 time of the one on 
-> > tigerton. With the boot parameter, hackbench on tigerton is faster than 
-> > the one on stoakely.
+On Thu, 2008-03-13 at 11:25 +0000, Hugh Dickins wrote:
+> On Wed, 12 Mar 2008, Peter Zijlstra wrote:
+> > We seemed to have some lockdep trouble wrt recursive read locks. Today Gautham
+> > asked me some specific questions about it, which led to these patches.
 > > 
-> > Is it possible to initiate slub_min_objects based on possible cpu 
-> > number? I mean, cpu_possible_map(). We could calculate slub_min_objects 
-> > by a formular.
+> > IIRC Hugh ran into something similar a while back. This hopefully fixes it.
 > 
-> Hmmm... Interesting. Lets first get the details for 2.6.25-rc. Then we can 
-> start toying around with the slub version in mm to configure slub in such 
-> a way that we get best results on both machines.
-Boot parameter "slub_max_order=3 slub_min_objects=16" could boost perforamnce
-both on stoakley and on tigerton.
+> Hmm, I don't remember that myself: can you jog my memory?
 
-So should we keep slub_min_objects scalable based on possible cpu number? When a
-machine has more cpu, it means more processes/threads will run on it and it will
-take more time when they compete for the same resources. SLAB is such a typical
-resource.
+Sadly that is about as far as my memory went: 
 
--yanmin
+  Hugh spotted problem that lockdep missed, involves r/w lock.
 
+> What I do remember is that when I fixed madvise(MADV_REMOVE i.e. holepunch)
+> not to hold mmap_sem (at that time down_write but today down_read, though
+> would still be bad) across vmtruncate_range which takes i_mutex (contrast
+> writing from an unfaulted area that takes i_mutex then down_read mmap_sem),
+> Ingo asked me offline if lockdep caught that and it didn't.  Just tried
+> again now, with your patches applied, and madvise_remove restored to its
+> old misbehaviour, and it looks like lockdep still doesn't catch it
+> (but suspect me of pilot error if you find otherwise).
+
+Ah, ok. Yes, the rwsem will not be affected by this change as it was
+specific to recursive readers, which is only allowed by rwlock_t.
+
+I'll try to look into the scenario you described. Would be interesting
+to figure that out.
 
