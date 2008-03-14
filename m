@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbYCNM52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYCNNGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbYCNM52 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 08:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYCNM5S
+	id S1755570AbYCNNGA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 09:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYCNNFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 08:57:18 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:51596 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752922AbYCNM5S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 08:57:18 -0400
-Date: Fri, 14 Mar 2008 08:56:56 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Benny Amorsen <benny+usenet@amorsen.dk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080314125656.GA7412@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Benny Amorsen <benny+usenet@amorsen.dk>,
-	linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de> <200803111602.53835.phillips@phunq.net> <m3d4q08477.fsf@ursa.amorsen.dk> <20080312133001.1668f40d@the-village.bc.nu> <20080314093019.GA5966@ucw.cz> <47DA5C8D.2020207@emc.com> <m3fxutcz2s.fsf@ursa.amorsen.dk>
+	Fri, 14 Mar 2008 09:05:48 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:21178 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753121AbYCNNFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 09:05:48 -0400
+Date: Fri, 14 Mar 2008 14:05:45 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
+Subject: Re: IO CPU affinity test results
+Message-ID: <20080314130545.GO17940@kernel.dk>
+References: <47DA6C1E.8010000@hp.com> <20080314123606.GL17940@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m3fxutcz2s.fsf@ursa.amorsen.dk>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+In-Reply-To: <20080314123606.GL17940@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 12:41:31PM +0100, Benny Amorsen wrote:
-> Ric Wheeler <ric@emc.com> writes:
+On Fri, Mar 14 2008, Jens Axboe wrote:
+> I think that is encouraging, for such a small setup. The make results
+> are particularly nice. The hangs are a bother, I have no good ideas on
+> why the occur. The fact that it happens on both archs indicates that
+> this is perhaps a generic problem, which is good. The code to support
+> this is relatively simple, so it should be possible to go over it with a
+> fine toothed comb and see if anything shows up.
 > 
-> > The only really safe default is to disable the write cache by default
-> > or possibly dynamically disable the write cache when barriers are not
-> > supported by a drive. Both have a severe performance impact and I am
-> > not sure that for most casual users it is a good trade.
-> 
-> So people ARE running their disks in a mode similar to Ramback.
+> You didn't get any watchdog triggers on the serial console, or anything
+> like that?
 
-Similar, but not as aggressive.  Remember, the size of the write cache
-on the hard drive is relatively small (small number of megabytes), and
-the drive generally is relatively aggressive about getting the data
-out to the platters; it's probably not going to keep unwritten data on
-the platters for minutes or hours at a time, let alone days.  Of
-course, unless you use write barriers or some kind of explicit write
-ordering, it's going to write stuff out in an order which is
-convenient to the hard drive, not necessarily an order convenient to
-the filesystem.
+Here's something that may explain it - if interrupts aren't disabled
+when generic_smp_call_function_single() is called, we could deadlock
+on the dst->lock. I think that the IPI invoke will have interrupt
+disabled, but I'm not 100% certain.
 
-Also, if the system crashes, you don't lose the data in hard drive's
-write cache, where as the data in Ramback is likely gone.  And Ramback
-is apaprently keeping potentially several gigabytes dirty in memory
-and *not* writing it out very aggressively.  So the exposure is one of
-degree.
+Can you see if this passes the muster?
 
-In practice, it's interesting that we've had so few people reporting
-massive data loss despite the lack of the use of write barriers.
-Sure, in absolutely critical situations, it's not a good thing; but if
-I had a mail server, where I really wanted to make sure I didn't lose
-any e-mail, having a small UPS which could keep the server going for
-just a few minutes so it could do a controlled shutdown on a power
-failure is probably a better engineering solution from a
-cost/benefit/performance point of view, compared to turning on write
-barriers and taking up to two orders of magnitude worth of performance
-hit.
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 852abd3..65808df 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -24,12 +24,13 @@ void __cpuinit generic_init_call_single_data(void)
+ void generic_smp_call_function_single_interrupt(void)
+ {
+ 	struct call_single_queue *q;
++	unsigned long flags;
+ 	LIST_HEAD(list);
+ 
+ 	q = &__get_cpu_var(call_single_queue);
+-	spin_lock(&q->lock);
++	spin_lock_irqsave(&q->lock);
+ 	list_replace_init(&q->list, &list);
+-	spin_unlock(&q->lock);
++	spin_unlock_irqrestore(&q->lock);
+ 
+ 	while (!list_empty(&list)) {
+ 		struct call_single_data *data;
 
-						- Ted
+-- 
+Jens Axboe
+
