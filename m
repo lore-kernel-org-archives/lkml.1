@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbYCNTmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYCNTnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759431AbYCNTmM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 15:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbYCNTkK
+	id S1760006AbYCNTnl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 15:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759265AbYCNTl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 15:40:10 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:46031 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756244AbYCNTkI (ORCPT
+	Fri, 14 Mar 2008 15:41:29 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:50641 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759258AbYCNTl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 15:40:08 -0400
-Message-ID: <47DAD3BF.3090400@indt.org.br>
-Date: Fri, 14 Mar 2008 15:36:31 -0400
+	Fri, 14 Mar 2008 15:41:27 -0400
+Message-ID: <47DAD3C2.7070407@indt.org.br>
+Date: Fri, 14 Mar 2008 15:36:34 -0400
 From: Carlos Aguiar <carlos.aguiar@indt.org.br>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 09/18] MMC: OMAP: Power functions modified to MMC multislot
- support
+Subject: [PATCH 10/18] MMC: OMAP: General cleanup for MMC multislot support
 X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Mar 2008 19:39:11.0352 (UTC) FILETIME=[13B60F80:01C8860B]
+X-OriginalArrivalTime: 14 Mar 2008 19:39:14.0790 (UTC) FILETIME=[15C2A860:01C8860B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,148 +29,137 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Juha Yrjola <juha.yrjola@solidboot.com>
 
-Modifications at power functions to MMC multislot support. This patch
-also move board-specific code out of MMC OMAP driver.
+General code cleanup, modifications at some dev_* functions and
+other hacks at mmc_omap_irq() for MMC multislot support.
 
 Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
 Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/mmc/host/omap.c |   88 ++++++++++++++++++++---------------------------
- 1 files changed, 37 insertions(+), 51 deletions(-)
+ drivers/mmc/host/omap.c |   46 +++++++++++++++++++++++++++++-----------------
+ 1 files changed, 29 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index 5cd58a8..de508ae 100644
+index de508ae..ae0de17 100644
 --- a/drivers/mmc/host/omap.c
 +++ b/drivers/mmc/host/omap.c
-@@ -983,52 +983,27 @@ static void mmc_omap_request(struct mmc_host *mmc, struct mmc_request *req)
- 	mmc_omap_start_request(host, req);
- }
+@@ -547,11 +547,12 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 	u16 status;
+ 	int end_command;
+ 	int end_transfer;
+-	int transfer_error;
++	int transfer_error, cmd_error;
  
--static void innovator_fpga_socket_power(int on)
-+static void mmc_omap_set_power(struct mmc_omap_slot *slot, int power_on,
-+				int vdd)
- {
--#if defined(CONFIG_MACH_OMAP_INNOVATOR) && defined(CONFIG_ARCH_OMAP15XX)
--	if (on) {
--		fpga_write(fpga_read(OMAP1510_FPGA_POWER) | (1 << 3),
--		     OMAP1510_FPGA_POWER);
--	} else {
--		fpga_write(fpga_read(OMAP1510_FPGA_POWER) & ~(1 << 3),
--		     OMAP1510_FPGA_POWER);
--	}
--#endif
--}
-+	struct mmc_omap_host *host;
+ 	if (host->cmd == NULL && host->data == NULL) {
+ 		status = OMAP_MMC_READ(host, STAT);
+-		dev_info(mmc_dev(host->mmc),"spurious irq 0x%04x\n", status);
++		dev_info(mmc_dev(host->slots[0]->mmc),
++			 "Spurious IRQ 0x%04x\n", status);
+ 		if (status != 0) {
+ 			OMAP_MMC_WRITE(host, STAT, status);
+ 			OMAP_MMC_WRITE(host, IE, 0);
+@@ -562,12 +563,19 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 	end_command = 0;
+ 	end_transfer = 0;
+ 	transfer_error = 0;
++	cmd_error = 0;
  
--/*
-- * Turn the socket power on/off. Innovator uses FPGA, most boards
-- * probably use GPIO.
-- */
--static void mmc_omap_power(struct mmc_omap_host *host, int on)
--{
--	if (on) {
--		if (machine_is_omap_innovator())
--			innovator_fpga_socket_power(1);
--		else if (machine_is_omap_h2())
--			tps65010_set_gpio_out_value(GPIO3, HIGH);
--		else if (machine_is_omap_h3())
--			/* GPIO 4 of TPS65010 sends SD_EN signal */
--			tps65010_set_gpio_out_value(GPIO4, HIGH);
--		else if (cpu_is_omap24xx()) {
--			u16 reg = OMAP_MMC_READ(host, CON);
--			OMAP_MMC_WRITE(host, CON, reg | (1 << 11));
--		} else
--			if (host->power_pin >= 0)
--				omap_set_gpio_dataout(host->power_pin, 1);
--	} else {
--		if (machine_is_omap_innovator())
--			innovator_fpga_socket_power(0);
--		else if (machine_is_omap_h2())
--			tps65010_set_gpio_out_value(GPIO3, LOW);
--		else if (machine_is_omap_h3())
--			tps65010_set_gpio_out_value(GPIO4, LOW);
--		else if (cpu_is_omap24xx()) {
--			u16 reg = OMAP_MMC_READ(host, CON);
--			OMAP_MMC_WRITE(host, CON, reg & ~(1 << 11));
--		} else
--			if (host->power_pin >= 0)
--				omap_set_gpio_dataout(host->power_pin, 0);
-+	host = slot->host;
+ 	while ((status = OMAP_MMC_READ(host, STAT)) != 0) {
++		int cmd;
 +
-+	if (slot->pdata->set_power != NULL)
-+		slot->pdata->set_power(mmc_dev(slot->mmc), slot->id, power_on,
-+					vdd);
-+
-+	if (cpu_is_omap24xx()) {
-+		u16 w;
-+
-+		if (power_on) {
-+			w = OMAP_MMC_READ(host, CON);
-+			OMAP_MMC_WRITE(host, CON, w | (1 << 11));
-+		} else {
-+			w = OMAP_MMC_READ(host, CON);
-+			OMAP_MMC_WRITE(host, CON, w & ~(1 << 11));
-+		}
+ 		OMAP_MMC_WRITE(host, STAT, status);
++		if (host->cmd != NULL)
++			cmd = host->cmd->opcode;
++		else
++			cmd = -1;
+ #ifdef CONFIG_MMC_DEBUG
+ 		dev_dbg(mmc_dev(host->mmc), "MMC IRQ %04x (CMD %d): ",
+-			status, host->cmd != NULL ? host->cmd->opcode : -1);
++			status, cmd);
+ 		mmc_omap_report_irq(status);
+ 		printk("\n");
+ #endif
+@@ -579,12 +587,12 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 				mmc_omap_xfer_data(host, 1);
+ 		}
+ 
+-		if (status & OMAP_MMC_STAT_END_OF_DATA) {
++		if (status & OMAP_MMC_STAT_END_OF_DATA)
+ 			end_transfer = 1;
+-		}
+ 
+ 		if (status & OMAP_MMC_STAT_DATA_TOUT) {
+-			dev_dbg(mmc_dev(host->mmc), "data timeout\n");
++			dev_dbg(mmc_dev(host->mmc), "data timeout (CMD%d)\n",
++				cmd);
+ 			if (host->data) {
+ 				host->data->error = -ETIMEDOUT;
+ 				transfer_error = 1;
+@@ -608,12 +616,14 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 			if (host->cmd) {
+ 				struct mmc_omap_slot *slot =
+ 					host->current_slot;
+-				if (!mmc_omap_cover_is_open(slot))
++				if (slot == NULL ||
++				    !mmc_omap_cover_is_open(slot))
+ 					dev_err(mmc_dev(host->mmc),
+-						"command timeout, CMD %d\n",
+-						host->cmd->opcode);
++						"command timeout (CMD%d)\n",
++						cmd);
+ 				host->cmd->error = -ETIMEDOUT;
+ 				end_command = 1;
++				cmd_error = 1;
+ 			}
+ 		}
+ 
+@@ -621,9 +631,10 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 			if (host->cmd) {
+ 				dev_err(mmc_dev(host->mmc),
+ 					"command CRC error (CMD%d, arg 0x%08x)\n",
+-					host->cmd->opcode, host->cmd->arg);
++					cmd, host->cmd->arg);
+ 				host->cmd->error = -EILSEQ;
+ 				end_command = 1;
++				cmd_error = 1;
+ 			} else
+ 				dev_err(mmc_dev(host->mmc),
+ 					"command CRC error without cmd?\n");
+@@ -632,13 +643,13 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 		if (status & OMAP_MMC_STAT_CARD_ERR) {
+ 			dev_dbg(mmc_dev(host->mmc),
+ 				"ignoring card status error (CMD%d)\n",
+-				host->cmd->opcode);
++				cmd);
+ 			end_command = 1;
+ 		}
+ 
+ 		/*
+ 		 * NOTE: On 1610 the END_OF_CMD may come too early when
+-		 * starting a write 
++		 * starting a write
+ 		 */
+ 		if ((status & OMAP_MMC_STAT_END_OF_CMD) &&
+ 		    (!(status & OMAP_MMC_STAT_A_EMPTY))) {
+@@ -646,13 +657,14 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 		}
  	}
- }
  
-@@ -1067,23 +1042,31 @@ static void mmc_omap_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 	int i, dsor;
- 
- 	dsor = mmc_omap_calc_divisor(mmc, ios);
--	host->bus_mode = ios->bus_mode;
--	host->hw_bus_mode = host->bus_mode;
-+
-+	mmc_omap_select_slot(slot, 0);
-+
-+	if (ios->vdd != slot->vdd)
-+		slot->vdd = ios->vdd;
- 
- 	switch (ios->power_mode) {
- 	case MMC_POWER_OFF:
--		mmc_omap_power(host, 0);
-+		mmc_omap_set_power(slot, 0, ios->vdd);
- 		break;
- 	case MMC_POWER_UP:
- 		/* Cannot touch dsor yet, just power up MMC */
--		mmc_omap_power(host, 1);
--		return;
-+		mmc_omap_set_power(slot, 1, ios->vdd);
-+		goto exit;
- 	case MMC_POWER_ON:
- 		dsor |= 1 << 11;
- 		break;
+-	if (end_command) {
++	if (end_command)
+ 		mmc_omap_cmd_done(host, host->cmd);
++	if (host->data != NULL) {
++		if (transfer_error)
++			mmc_omap_xfer_done(host, host->data);
++		else if (end_transfer)
++			mmc_omap_end_of_data(host, host->data);
  	}
+-	if (transfer_error)
+-		mmc_omap_xfer_done(host, host->data);
+-	else if (end_transfer)
+-		mmc_omap_end_of_data(host, host->data);
  
--	clk_enable(host->fclk);
-+	if (slot->bus_mode != ios->bus_mode) {
-+		if (slot->pdata->set_bus_mode != NULL)
-+			slot->pdata->set_bus_mode(mmc_dev(mmc), slot->id,
-+						  ios->bus_mode);
-+		slot->bus_mode = ios->bus_mode;
-+	}
- 
- 	/* On insanely high arm_per frequencies something sometimes
- 	 * goes somehow out of sync, and the POW bit is not being set,
-@@ -1091,6 +1074,7 @@ static void mmc_omap_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 	 * Writing to the CON register twice seems to do the trick. */
- 	for (i = 0; i < 2; i++)
- 		OMAP_MMC_WRITE(host, CON, dsor);
-+	slot->saved_con = dsor;
- 	if (ios->power_mode == MMC_POWER_ON) {
- 		/* Send clock cycles, poll completion */
- 		OMAP_MMC_WRITE(host, IE, 0);
-@@ -1099,7 +1083,9 @@ static void mmc_omap_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 		while ((OMAP_MMC_READ(host, STAT) & 1) == 0);
- 		OMAP_MMC_WRITE(host, STAT, 1);
- 	}
--	clk_disable(host->fclk);
-+
-+exit:
-+	mmc_omap_release_slot(slot);
+ 	return IRQ_HANDLED;
  }
- 
- static int mmc_omap_get_ro(struct mmc_host *mmc)
 -- 1.5.3.GIT
 
