@@ -1,43 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYCNNSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbYCNNWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbYCNNSa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 09:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYCNNSX
+	id S1756357AbYCNNWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 09:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYCNNWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 09:18:23 -0400
-Received: from verein.lst.de ([213.95.11.210]:40373 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751858AbYCNNSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 09:18:22 -0400
-Date: Fri, 14 Mar 2008 14:17:09 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, hch@lst.de,
-       Marc Dionne <marc.c.dionne@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] struct export_operations: adjust comments to match current members
-Message-ID: <20080314131709.GA9818@lst.de>
-References: <22062.1205500289@redhat.com>
+	Fri, 14 Mar 2008 09:22:44 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:32747 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752807AbYCNNWn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 09:22:43 -0400
+Date: Fri, 14 Mar 2008 14:22:39 +0100
+From: Christof Schmitt <christof.schmitt@de.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org, wilder@us.ibm.com
+Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
+Message-ID: <20080314132238.GA9815@schmichrtp.de.ibm.com>
+References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <22062.1205500289@redhat.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+In-Reply-To: <20080314131007.GQ17940@kernel.dk>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 01:11:29PM +0000, David Howells wrote:
+On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
+> On Fri, Mar 14 2008, Christof Schmitt wrote:
+> > On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
+> > > That is indeed a bug, does this work for you?
+> > > 
+> > > diff --git a/kernel/relay.c b/kernel/relay.c
+> > > index d080b9d..39d1fa8 100644
+> > > --- a/kernel/relay.c
+> > > +++ b/kernel/relay.c
+> > > @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
+> > >  			       unsigned int flags,
+> > >  			       int *nonpad_ret)
+> > >  {
+> > > -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
+> > > +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
+> > >  	struct rchan_buf *rbuf = in->private_data;
+> > >  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
+> > >  	uint64_t pos = (uint64_t) *ppos;
+> > > @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
+> > >  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
+> > >  	poff = read_start & ~PAGE_MASK;
+> > > 
+> > > -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
+> > > +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
+> > > +
+> > > +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
+> > >  		unsigned int this_len, this_end, private;
+> > >  		unsigned int cur_pos = read_start + total_len;
+> > 
+> > With the patch, i can run dd and 'blktrace -h traceserver' without the
+> > oops. But the output from blktrace only contains only zeros and no
+> > usable data for blkparse. Using blktrace to write the data directly to
+> > disk, without using the blktrace server works. Is there anything i
+> > should look for to help debugging the problem?
 > 
-> From: "Marc Dionne" <marc.c.dionne@gmail.com>
-> 
-> The comments in the definition of struct export_operations don't match the
-> current members.
-> 
-> Add a comment for the 2 new functions and remove 2 comments for unused ones.
-> 
-> Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
-> Acked-by: David Howells <dhowells@redhat.com>
+> We should probably get Tom in the loop, as he is the relay expert. I'll
+> make sure the above patch gets into 2.6.25, as it is definitely a bug
+> that needs fixing.
 
-ACK.
+http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
+his email address seems to be no longer valid. I copy Dave Wilder
+here, since he is mentioned as relay maintainer on the web page.
 
+Dave, can you have a look at this? I can easily reproduce the problem
+on s390 Linux for testing and getting more debug information.
+
+Christof
