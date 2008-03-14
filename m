@@ -1,296 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbYCNUD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759921AbYCNUDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758581AbYCNUD0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758539AbYCNUBK
+	id S1759921AbYCNUDl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbYCNUBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:01:10 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:48225 "EHLO scrub.xs4all.nl"
+	Fri, 14 Mar 2008 16:01:11 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:48228 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754134AbYCNUBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755426AbYCNUBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Mar 2008 16:01:01 -0400
-Message-Id: <20080314195737.212526899@linux-m68k.org>
+Message-Id: <20080314195737.035249969@linux-m68k.org>
 References: <20080314184001.695807682@linux-m68k.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Mar 2008 19:40:09 +0100
+Date: Fri, 14 Mar 2008 19:40:06 +0100
 From: zippel@linux-m68k.org
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, johnstul@us.ibm.com
-Subject: [PATCH 8/8] handle leap second via timer
-Content-Disposition: inline; filename=leap_sec
+Subject: [PATCH 5/8] support for TAI
+Content-Disposition: inline; filename=time_tai
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the leap second handling from second_overflow(), which doesn't
-has to check for it every second anymore. With CONFIG_NO_HZ this also
-makes sure the leap second is handled close to the full second.
-Additionally this makes it possible to abort a leap second properly
-by resetting the STA_INS/STA_DEL status bits.
+This adds support for setting the TAI value (International Atomic Time).
+The value is reported back to userspace via timex (as we don't have a
+ntp_gettime() syscall).
 
 Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 
 ---
- include/linux/clocksource.h |    2 
- include/linux/timex.h       |    1 
- kernel/time/ntp.c           |  133 +++++++++++++++++++++++++++++---------------
- kernel/time/timekeeping.c   |    4 -
- 4 files changed, 95 insertions(+), 45 deletions(-)
+ include/linux/compat.h |    3 ++-
+ include/linux/timex.h  |    4 +++-
+ kernel/compat.c        |    3 ++-
+ kernel/time/ntp.c      |    7 +++++++
+ 4 files changed, 14 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/include/linux/timex.h
+Index: linux-2.6-mm/include/linux/compat.h
 ===================================================================
---- linux-2.6.orig/include/linux/timex.h	2008-03-13 10:32:07.000000000 +0100
-+++ linux-2.6/include/linux/timex.h	2008-03-13 10:33:24.000000000 +0100
-@@ -210,6 +210,7 @@ extern long time_esterror;	/* estimated 
+--- linux-2.6-mm.orig/include/linux/compat.h
++++ linux-2.6-mm/include/linux/compat.h
+@@ -65,10 +65,11 @@ struct compat_timex {
+ 	compat_long_t calcnt;
+ 	compat_long_t errcnt;
+ 	compat_long_t stbcnt;
++	compat_int_t tai;
  
- extern long time_adjust;	/* The amount of adjtime left */
- 
-+extern void ntp_init(void);
- extern void ntp_clear(void);
- 
- /**
-Index: linux-2.6/kernel/time/ntp.c
-===================================================================
---- linux-2.6.orig/kernel/time/ntp.c	2008-03-13 10:32:07.000000000 +0100
-+++ linux-2.6/kernel/time/ntp.c	2008-03-13 10:33:24.000000000 +0100
-@@ -16,6 +16,7 @@
- #include <linux/hrtimer.h>
- #include <linux/capability.h>
- #include <linux/math64.h>
-+#include <linux/clocksource.h>
- #include <asm/timex.h>
- 
- /*
-@@ -26,6 +27,8 @@ unsigned long tick_nsec;			/* ACTHZ peri
- u64 tick_length;
- static u64 tick_length_base;
- 
-+static struct hrtimer leap_timer;
-+
- #define MAX_TICKADJ		500		/* microsecs */
- #define MAX_TICKADJ_SCALED	(((u64)(MAX_TICKADJ * NSEC_PER_USEC) << \
- 				  NTP_SCALE_SHIFT) / NTP_INTERVAL_FREQ)
-@@ -120,64 +123,70 @@ void ntp_clear(void)
- }
- 
- /*
-- * this routine handles the overflow of the microsecond field
-- *
-- * The tricky bits of code to handle the accurate clock support
-- * were provided by Dave Mills (Mills@UDEL.EDU) of NTP fame.
-- * They were originally developed for SUN and DEC kernels.
-- * All the kudos should go to Dave for this stuff.
-+ * Leap second processing. If in leap-insert state at the end of the
-+ * day, the system clock is set back one second; if in leap-delete
-+ * state, the system clock is set ahead one second.
-  */
--void second_overflow(void)
-+static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
- {
--	s64 time_adj;
-+	enum hrtimer_restart res = HRTIMER_NORESTART;
- 
--	/* Bump the maxerror field */
--	time_maxerror += MAXFREQ / NSEC_PER_USEC;
--	if (time_maxerror > NTP_PHASE_LIMIT) {
--		time_maxerror = NTP_PHASE_LIMIT;
--		time_status |= STA_UNSYNC;
--	}
-+	write_seqlock_irq(&xtime_lock);
- 
--	/*
--	 * Leap second processing. If in leap-insert state at the end of the
--	 * day, the system clock is set back one second; if in leap-delete
--	 * state, the system clock is set ahead one second. The microtime()
--	 * routine or external clock driver will insure that reported time is
--	 * always monotonic. The ugly divides should be replaced.
--	 */
- 	switch (time_state) {
- 	case TIME_OK:
--		if (time_status & STA_INS)
--			time_state = TIME_INS;
--		else if (time_status & STA_DEL)
--			time_state = TIME_DEL;
- 		break;
- 	case TIME_INS:
--		if (xtime.tv_sec % 86400 == 0) {
--			xtime.tv_sec--;
--			wall_to_monotonic.tv_sec++;
--			time_state = TIME_OOP;
--			printk(KERN_NOTICE "Clock: inserting leap second "
--					"23:59:60 UTC\n");
--		}
-+		xtime.tv_sec--;
-+		wall_to_monotonic.tv_sec++;
-+		time_state = TIME_OOP;
-+		printk(KERN_NOTICE "Clock: "
-+		       "inserting leap second 23:59:60 UTC\n");
-+		leap_timer.expires = ktime_add_ns(leap_timer.expires,
-+						  NSEC_PER_SEC);
-+		res = HRTIMER_RESTART;
- 		break;
- 	case TIME_DEL:
--		if ((xtime.tv_sec + 1) % 86400 == 0) {
--			xtime.tv_sec++;
--			time_tai--;
--			wall_to_monotonic.tv_sec--;
--			time_state = TIME_WAIT;
--			printk(KERN_NOTICE "Clock: deleting leap second "
--					"23:59:59 UTC\n");
--		}
-+		xtime.tv_sec++;
-+		time_tai--;
-+		wall_to_monotonic.tv_sec--;
-+		time_state = TIME_WAIT;
-+		printk(KERN_NOTICE "Clock: "
-+		       "deleting leap second 23:59:59 UTC\n");
- 		break;
- 	case TIME_OOP:
- 		time_tai++;
- 		time_state = TIME_WAIT;
--		break;
-+		/* fall through */
- 	case TIME_WAIT:
- 		if (!(time_status & (STA_INS | STA_DEL)))
- 			time_state = TIME_OK;
-+		break;
-+	}
-+	update_vsyscall(&xtime, clock);
-+
-+	write_sequnlock_irq(&xtime_lock);
-+
-+	return res;
-+}
-+
-+/*
-+ * this routine handles the overflow of the microsecond field
-+ *
-+ * The tricky bits of code to handle the accurate clock support
-+ * were provided by Dave Mills (Mills@UDEL.EDU) of NTP fame.
-+ * They were originally developed for SUN and DEC kernels.
-+ * All the kudos should go to Dave for this stuff.
-+ */
-+void second_overflow(void)
-+{
-+	s64 time_adj;
-+
-+	/* Bump the maxerror field */
-+	time_maxerror += MAXFREQ / NSEC_PER_USEC;
-+	if (time_maxerror > NTP_PHASE_LIMIT) {
-+		time_maxerror = NTP_PHASE_LIMIT;
-+		time_status |= STA_UNSYNC;
- 	}
- 
- 	/*
-@@ -268,7 +277,7 @@ static inline void notify_cmos_timer(voi
- int do_adjtimex(struct timex *txc)
- {
- 	struct timespec ts;
--	long save_adjust;
-+	long save_adjust, sec;
- 	int result;
- 
- 	/* In order to modify anything, you gotta be super-user! */
-@@ -289,6 +298,10 @@ int do_adjtimex(struct timex *txc)
- 		    txc->tick > 1100000/USER_HZ)
- 			return -EINVAL;
- 
-+	if (time_state != TIME_OK && txc->modes & ADJ_STATUS)
-+		hrtimer_cancel(&leap_timer);
-+	getnstimeofday(&ts);
-+
- 	write_seqlock_irq(&xtime_lock);
- 
- 	/* Save for later - semantics of adjtime is to return old value */
-@@ -305,6 +318,34 @@ int do_adjtimex(struct timex *txc)
- 			/* only set allowed bits */
- 			time_status &= STA_RONLY;
- 			time_status |= txc->status & ~STA_RONLY;
-+
-+			switch (time_state) {
-+			case TIME_OK:
-+			start_timer:
-+				sec = ts.tv_sec;
-+				if (time_status & STA_INS) {
-+					time_state = TIME_INS;
-+					sec += 86400 - sec % 86400;
-+					hrtimer_start(&leap_timer, ktime_set(sec, 0), HRTIMER_MODE_ABS);
-+				} else if (time_status & STA_DEL) {
-+					time_state = TIME_DEL;
-+					sec += 86400 - (sec + 1) % 86400;
-+					hrtimer_start(&leap_timer, ktime_set(sec, 0), HRTIMER_MODE_ABS);
-+				}
-+				break;
-+			case TIME_INS:
-+			case TIME_DEL:
-+				time_state = TIME_OK;
-+				goto start_timer;
-+				break;
-+			case TIME_WAIT:
-+				if (!(time_status & (STA_INS | STA_DEL)))
-+					time_state = TIME_OK;
-+				break;
-+			case TIME_OOP:
-+				hrtimer_restart(&leap_timer);
-+				break;
-+			}
- 		}
- 
- 		if (txc->modes & ADJ_NANO)
-@@ -384,7 +425,6 @@ int do_adjtimex(struct timex *txc)
- 	txc->stbcnt	   = 0;
- 	write_sequnlock_irq(&xtime_lock);
- 
--	getnstimeofday(&ts);
- 	txc->time.tv_sec = ts.tv_sec;
- 	txc->time.tv_usec = ts.tv_nsec;
- 	if (!(time_status & STA_NANO))
-@@ -402,3 +442,10 @@ static int __init ntp_tick_adj_setup(cha
- }
- 
- __setup("ntp_tick_adj=", ntp_tick_adj_setup);
-+
-+void __init ntp_init(void)
-+{
-+	ntp_clear();
-+	hrtimer_init(&leap_timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
-+	leap_timer.function = ntp_leap_second;
-+}
-Index: linux-2.6/kernel/time/timekeeping.c
-===================================================================
---- linux-2.6.orig/kernel/time/timekeeping.c	2008-03-13 10:32:07.000000000 +0100
-+++ linux-2.6/kernel/time/timekeeping.c	2008-03-13 10:33:24.000000000 +0100
-@@ -53,7 +53,7 @@ void update_xtime_cache(u64 nsec)
- 	timespec_add_ns(&xtime_cache, nsec);
- }
- 
--static struct clocksource *clock; /* pointer to current clocksource */
-+struct clocksource *clock;
- 
- 
- #ifdef CONFIG_GENERIC_TIME
-@@ -241,7 +241,7 @@ void __init timekeeping_init(void)
- 
- 	write_seqlock_irqsave(&xtime_lock, flags);
- 
--	ntp_clear();
-+	ntp_init();
- 
- 	clock = clocksource_get_next();
- 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
-Index: linux-2.6/include/linux/clocksource.h
-===================================================================
---- linux-2.6.orig/include/linux/clocksource.h	2008-03-10 19:50:33.000000000 +0100
-+++ linux-2.6/include/linux/clocksource.h	2008-03-13 10:33:24.000000000 +0100
-@@ -93,6 +93,8 @@ struct clocksource {
- #endif
+ 	compat_int_t :32; compat_int_t :32; compat_int_t :32; compat_int_t :32;
+ 	compat_int_t :32; compat_int_t :32; compat_int_t :32; compat_int_t :32;
+-	compat_int_t :32; compat_int_t :32; compat_int_t :32; compat_int_t :32;
++	compat_int_t :32; compat_int_t :32; compat_int_t :32;
  };
  
-+extern struct clocksource *clock;	/* current clocksource */
+ #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
+Index: linux-2.6-mm/include/linux/timex.h
+===================================================================
+--- linux-2.6-mm.orig/include/linux/timex.h
++++ linux-2.6-mm/include/linux/timex.h
+@@ -116,9 +116,11 @@ struct timex {
+ 	long errcnt;            /* calibration errors (ro) */
+ 	long stbcnt;            /* stability limit exceeded (ro) */
+ 
++	int tai;		/* TAI offset (ro) */
 +
+ 	int  :32; int  :32; int  :32; int  :32;
+ 	int  :32; int  :32; int  :32; int  :32;
+-	int  :32; int  :32; int  :32; int  :32;
++	int  :32; int  :32; int  :32;
+ };
+ 
  /*
-  * Clock source flags bits::
-  */
+@@ -135,6 +135,7 @@ struct timex {
+ #define ADJ_ESTERROR		0x0008	/* estimated time error */
+ #define ADJ_STATUS		0x0010	/* clock status */
+ #define ADJ_TIMECONST		0x0020	/* pll time constant */
++#define ADJ_TAI			0x0080	/* set TAI offset */
+ #define ADJ_MICRO		0x1000	/* select microsecond resolution */
+ #define ADJ_NANO		0x2000	/* select nanosecond resolution */
+ #define ADJ_TICK		0x4000	/* tick value */
+Index: linux-2.6-mm/kernel/compat.c
+===================================================================
+--- linux-2.6-mm.orig/kernel/compat.c
++++ linux-2.6-mm/kernel/compat.c
+@@ -955,7 +955,8 @@ asmlinkage long compat_sys_adjtimex(stru
+ 			__put_user(txc.jitcnt, &utp->jitcnt) ||
+ 			__put_user(txc.calcnt, &utp->calcnt) ||
+ 			__put_user(txc.errcnt, &utp->errcnt) ||
+-			__put_user(txc.stbcnt, &utp->stbcnt))
++			__put_user(txc.stbcnt, &utp->stbcnt) ||
++			__put_user(txc.tai, &utp->tai))
+ 		ret = -EFAULT;
+ 
+ 	return ret;
+Index: linux-2.6-mm/kernel/time/ntp.c
+===================================================================
+--- linux-2.6-mm.orig/kernel/time/ntp.c
++++ linux-2.6-mm/kernel/time/ntp.c
+@@ -35,6 +35,7 @@ static u64 tick_length, tick_length_base
+ /* TIME_ERROR prevents overwriting the CMOS clock */
+ static int time_state = TIME_OK;	/* clock synchronization status	*/
+ int time_status = STA_UNSYNC;		/* clock status bits		*/
++static long time_tai;			/* TAI offset (s)		*/
+ static s64 time_offset;			/* time adjustment (ns)		*/
+ static long time_constant = 2;		/* pll time constant		*/
+ long time_maxerror = NTP_PHASE_LIMIT;	/* maximum error (us)		*/
+@@ -162,6 +163,7 @@ void second_overflow(void)
+ 	case TIME_DEL:
+ 		if ((xtime.tv_sec + 1) % 86400 == 0) {
+ 			xtime.tv_sec++;
++			time_tai--;
+ 			wall_to_monotonic.tv_sec--;
+ 			time_state = TIME_WAIT;
+ 			printk(KERN_NOTICE "Clock: deleting leap second "
+@@ -169,6 +171,7 @@ void second_overflow(void)
+ 		}
+ 		break;
+ 	case TIME_OOP:
++		time_tai++;
+ 		time_state = TIME_WAIT;
+ 		break;
+ 	case TIME_WAIT:
+@@ -340,6 +343,9 @@ int do_adjtimex(struct timex *txc)
+ 			time_constant = max(time_constant, 0l);
+ 		}
+ 
++		if (txc->modes & ADJ_TAI && txc->constant > 0)
++			time_tai = txc->constant;
++
+ 		if (txc->modes & ADJ_OFFSET) {
+ 			if (txc->modes == ADJ_OFFSET_SINGLESHOT)
+ 				/* adjtime() is independent from ntp_adjtime() */
+@@ -375,6 +381,7 @@ int do_adjtimex(struct timex *txc)
+ 	txc->precision	   = 1;
+ 	txc->tolerance	   = MAXFREQ_SCALED / PPM_SCALE;
+ 	txc->tick	   = tick_usec;
++	txc->tai	   = time_tai;
+ 
+ 	/* PPS is not implemented, so these are zero */
+ 	txc->ppsfreq	   = 0;
 
 -- 
 
