@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbYCNOQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYCNOQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbYCNOQE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYCNOPk
+	id S1758073AbYCNOQb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbYCNOQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:15:40 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:1934 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbYCNOPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:15:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ASzEv1jn+uvVR4xmvLVaP0/6Xiy5CRsIRjW0els6APxtLn6m+6bwRf63UNpZ3QhCd
-	Jt4ju/3I5bXyVV3gEd6yg==
-Message-ID: <6599ad830803140715i5532f02ag6a93f028ab88d57f@mail.gmail.com>
-Date: Fri, 14 Mar 2008 07:15:34 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       "Greg KH" <greg@kroah.com>, "Stephen Smalley" <sds@epoch.ncsc.mil>,
-       "Casey Schaufler" <casey@schaufler-ca.com>,
-       "Pavel Emelianov" <xemul@openvz.org>
-In-Reply-To: <20080314140523.GG8744@sergelap.austin.ibm.com>
+	Fri, 14 Mar 2008 10:16:20 -0400
+Received: from khc.piap.pl ([195.187.100.11]:46206 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753446AbYCNOQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 10:16:19 -0400
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: WAN: new PPP code for generic HDLC
+References: <m3prtzsszg.fsf@maximus.localdomain>
+	<m3lk4nsskh.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0803122032410.14822@fbirervta.pbzchgretzou.qr>
+	<m33aqvsnyg.fsf@maximus.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 14 Mar 2008 15:16:16 +0100
+In-Reply-To: <m33aqvsnyg.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Wed\, 12 Mar 2008 21\:10\:31 +0100")
+Message-ID: <m31w6d4ci7.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080313032749.GA13258@sergelap.austin.ibm.com>
-	 <6599ad830803140216k1a04ce4ej4779bf10ec6ef4f9@mail.gmail.com>
-	 <20080314140523.GG8744@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 7:05 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
->  > >  A task may only be moved to another devcgroup if it is moving to
->  > >  a direct descendent of its current devcgroup.
->  >
->  > What's the rationale for that?
->
->  To prevent it escaping to laxer device permissions, which of course only
->  makes sense if we do what you recommend above :)
->
+Krzysztof Halasa <khc@pm.waw.pl> writes:
 
-That makes it impossible for a root process to enter a child cgroup,
-do something, and then go back to its own cgroup. Why aren't the
-existing cgroup security semantics sufficient?
+> It can't if the hdlc header is 32-bit aligned... however, I can now
+> see the above is buggy, skb->data doesn't point to the protocol
+> field. Unused code paths :-(
 
-Paul
+Actually I was wrong, the code is correct and skb->data points to the
+proto ID.
+
+PATCH v2 is on the way.
+-- 
+Krzysztof Halasa
