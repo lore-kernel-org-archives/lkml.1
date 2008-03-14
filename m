@@ -1,64 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYCNUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbYCNUnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758921AbYCNUnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYCNUmv
+	id S1756341AbYCNUnh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbYCNUm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:42:51 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55290 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758641AbYCNUmu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:42:50 -0400
-Date: Fri, 14 Mar 2008 14:42:48 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-kernel@vger.kernel.org
-Cc: sfr@canb.auug.org.au, lenb@kernel.org, dhowells@redhat.com,
-       peterz@infradead.org, mingo@elte.hu, harvey.harrison@gmail.com
-Subject: Updated generic semaphore patch set
-Message-ID: <20080314204248.GV613@parisc-linux.org>
+	Fri, 14 Mar 2008 16:42:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54941 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758805AbYCNUm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 16:42:58 -0400
+Message-ID: <47DAE2F5.4050900@redhat.com>
+Date: Fri, 14 Mar 2008 16:41:25 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Shaohua Li <shaohua.li@intel.com>, David Miller <davem@davemloft.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH -mm 5/5] kprobes: update document about batch registration
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add the description of batch registration interfaces to
+Documentation/kprobes.txt.
 
-I've pushed out a new version of the semaphore tree.  I'll send the new
-patches as a reply to this mail.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
 
-git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git semaphore-20080314
+ Documentation/kprobes.txt |   51 ++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 47 insertions(+), 4 deletions(-)
 
-Changes:
- - Dropped all the asm/semaphore.h changes.  They're just causing
-   conflicts for linux-next, and while Stephen assures me that fixing
-   them up is trivial and he doesn't mind, I'd rather not burn him out
-   prematurely.  I still intend to push them, but they don't need to be
-   part of linux-next, IMO.
- - Split the addition of down_killable() out of the main patch.  It's
-   logically separate (adding a new interface), and it was sheer
-   laziness to not split it out in the first place.
- - New functionality!  down_timeout().  Just look at the mess in
-   acpi/osl.c where it tries to emulate it.  It's very little extra code
-   to add it to kernel/semaphore.c, so I thought it was a good idea.
- - Simplify the implementation.  Dave Howells said the current algorithm
-   makes his head hurt, and in retrospect, perhaps I was just trying to
-   be too clever.
- - Fix the lockdep bug (thanks to Peter Zijlstra)
- - Remove an unsightly and unnecessary unlikely() (thanks to Harvey Harrison)
- - Fix the down() while interrupts disabled bug (thanks to Ingo Molnar)
-   (I may have posted this one before.  Not sure.)
+Index: 2.6.25-rc5-mm1/Documentation/kprobes.txt
+===================================================================
+--- 2.6.25-rc5-mm1.orig/Documentation/kprobes.txt
++++ 2.6.25-rc5-mm1/Documentation/kprobes.txt
+@@ -37,6 +37,11 @@ registration function such as register_k
+ the probe is to be inserted and what handler is to be called when
+ the probe is hit.
 
-I've tested the end result of this with Dave Howells' synchro-test module
-and not found any problems.
++There are also register_/unregister_*probes() functions for batch
++registration/unregistration of a group of *probes. These functions
++can speed up unregistration process when you have to unregister
++a lot of probes at once.
++
+ The next three subsections explain how the different types of
+ probes work.  They explain certain things that you'll need to
+ know in order to make the best use of Kprobes -- e.g., the
+@@ -190,10 +195,11 @@ code mapping.
+ 4. API Reference
 
-If you prefer, you can also find the patches at
-http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=semaphore-20080314
+ The Kprobes API includes a "register" function and an "unregister"
+-function for each type of probe.  Here are terse, mini-man-page
+-specifications for these functions and the associated probe handlers
+-that you'll write.  See the files in the samples/kprobes/ sub-directory
+-for examples.
++function for each type of probe. The API also includes "register_*probes"
++and "unregister_*probes" functions for (un)registering arrays of probes.
++Here are terse, mini-man-page specifications for these functions and
++the associated probe handlers that you'll write. See the files in the
++samples/kprobes/ sub-directory for examples.
 
+ 4.1 register_kprobe
+
+@@ -319,6 +325,43 @@ void unregister_kretprobe(struct kretpro
+ Removes the specified probe.  The unregister function can be called
+ at any time after the probe has been registered.
+
++NOTE:
++If the functions find an incorrect probe (ex. an unregistered probe),
++they clear the addr field of the probe.
++
++4.5 register_*probes
++
++#include <linux/kprobes.h>
++int register_kprobes(struct kprobe **kps, int num);
++int register_kretprobes(struct kretprobe **rps, int num);
++int register_jprobes(struct jprobe **jps, int num);
++
++Registers each of the num probes in the specified array.  If any
++error occurs during registration, all probes in the array, up to
++the bad probe, are safely unregistered before the register_*probes
++function returns.
++- kps/rps/jps: an array of pointers to *probe data structures
++- num: the number of the array entries.
++
++NOTE:
++You have to allocate(or define) an array of pointers and set all
++of the array entries before using these functions.
++
++4.6 unregister_*probes
++
++#include <linux/kprobes.h>
++void unregister_kprobes(struct kprobe **kps, int num);
++void unregister_kretprobes(struct kretprobe **rps, int num);
++void unregister_jprobes(struct jprobe **jps, int num);
++
++Removes each of the num probes in the specified array at once.
++
++NOTE:
++If the functions find some incorrect probes (ex. unregistered
++probes) in the specified array, they clear the addr field of those
++incorrect probes. However, other probes in the array are
++unregistered correctly.
++
+ 5. Kprobes Features and Limitations
+
+ Kprobes allows multiple probes at the same address.  Currently,
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
+
+
