@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYCNUVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbYCNUWC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYCNUVX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYCNUVN
+	id S1758547AbYCNUWC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:22:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbYCNUVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:21:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:55821 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbYCNUVM (ORCPT
+	Fri, 14 Mar 2008 16:21:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52952 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751739AbYCNUVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:21:12 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Keys get stuck
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Pavel Machek <pavel@ucw.cz>, David Newall <davidn@davidnewall.com>,
-       Jiri Kosina <jkosina@suse.cz>, "Fred ." <eldmannen@gmail.com>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Fri, 14 Mar 2008 21:20:41 +0100
-References: <a6meN-2aj-39@gated-at.bofh.it> <a6wxo-1xY-1@gated-at.bofh.it> <a6wQO-1YG-1@gated-at.bofh.it> <a6Zgb-5Hj-55@gated-at.bofh.it> <a7iiO-2fq-39@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Fri, 14 Mar 2008 16:21:13 -0400
+Date: Fri, 14 Mar 2008 13:20:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+cc: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Eric Piel <eric.piel@tremplin-utc.net>, Len Brown <len.brown@intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
+In-Reply-To: <1205525184.12763.32.camel@nimitz.home.sr71.net>
+Message-ID: <alpine.LFD.1.00.0803141318320.3557@woody.linux-foundation.org>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>  <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>  <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net>
+ <1205525184.12763.32.camel@nimitz.home.sr71.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JaGOQ-0003km-7S@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19Bvlq5qRxRfgEGjoNQ4zYflPz8g4/KrQ3Vv1V
- e1YOcc3zQpm7Vv6XKj2mgJpsnyI2MPI+fdoL2GWf7KgpWX/aas
- rYUA2OUiF72LnU2xSIPrA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
-> On Thu, Mar 13, 2008 at 06:14:26PM +0100, Pavel Machek wrote:
 
->> hw is proper place to implement autorepeat, and along with some
->> buffering, it has chance to work. Kernel is not real-time, and X are
->> definitely not real-time, while autorepeat is real-time operation.
->> 
->> It actually mostly works in ps/2 case. Buffer in hardware means that
->> pretty big interrupt delays can be tolerated without problems.
-> 
-> So does the keyboard events generate something like this then:
-> 
-> KEY_x_DOWN
-> KEY_x_REPEAT
-> KEY_x_UP
-> 
-> If so then X certainly could get all the keyboard information I imagine
-> it needs from the kernel, but otherwise I am not sure how it could.  A
-> repeated series of key down events are not enough since some keys you
-> don't want repeated you just want to know when the key is held down and
-> when it isn't.
 
-You just need a timestamp for each event, and you can get a timestamp for
-each event (as far as I read in this thread). Using the current time while
-processing the event is plain stupid.
+On Fri, 14 Mar 2008, Dave Hansen wrote:
+>
+> For those of you new to this thread, here's the initial report:
+> 
+> 	http://marc.info/?t=120536629300001&r=1&w=2
+> 
+> I'm pretty sure the root cause of this bug is this commit:
+> 
+> 	ACPI: basic initramfs DSDT override support
+> 	71fc47a9adf8ee89e5c96a47222915c5485ac437
 
+Time to just revert that one? It caused some other issues too, iirc. 
+
+Len?
+
+		Linus
