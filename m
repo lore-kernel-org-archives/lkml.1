@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYCNQ2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYCNQdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYCNQ2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbYCNQ2N
+	id S1756511AbYCNQdY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYCNQdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:28:13 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:27249 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbYCNQ2M (ORCPT
+	Fri, 14 Mar 2008 12:33:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54474 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYCNQdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:28:12 -0400
-Date: Fri, 14 Mar 2008 17:28:08 +0100
-From: Christof Schmitt <christof.schmitt@de.ibm.com>
-To: David Wilder <dwilder@us.ibm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-btrace@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080314162807.GA4488@schmichrtp.de.ibm.com>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <47DA97DF.6010008@us.ibm.com>
+	Fri, 14 Mar 2008 12:33:16 -0400
+Date: Fri, 14 Mar 2008 09:31:38 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Yan <rottled@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22.6 - Discrepancy between running and on-disk kernels
+Message-ID: <20080314093138.22861a55@laptopd505.fenrus.org>
+In-Reply-To: <54b90fdf0803140908k44bee3a2gbf4187ae40dad4b3@mail.gmail.com>
+References: <54b90fdf0803140751m71935a09r9b039ca6eb124f4d@mail.gmail.com>
+	<20080314090049.346d7428@laptopd505.fenrus.org>
+	<54b90fdf0803140908k44bee3a2gbf4187ae40dad4b3@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47DA97DF.6010008@us.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 08:21:03AM -0700, David Wilder wrote:
-> Christof Schmitt wrote:
-> >On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> >>On Fri, Mar 14 2008, Christof Schmitt wrote:
-> >>>On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> >>>>That is indeed a bug, does this work for you?
-> >>>>
-> >>>>diff --git a/kernel/relay.c b/kernel/relay.c
-> >>>>index d080b9d..39d1fa8 100644
-> >>>>--- a/kernel/relay.c
-> >>>>+++ b/kernel/relay.c
-> >>>>@@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> >>>> 			       unsigned int flags,
-> >>>> 			       int *nonpad_ret)
-> >>>> {
-> >>>>-	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> >>>>+	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> >>>> 	struct rchan_buf *rbuf = in->private_data;
-> >>>> 	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> >>>> 	uint64_t pos = (uint64_t) *ppos;
-> >>>>@@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> >>>> 	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> >>>> 	poff = read_start & ~PAGE_MASK;
-> >>>>
-> >>>>-	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> >>>>+	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> >>>>+
-> >>>>+	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> >>>> 		unsigned int this_len, this_end, private;
-> >>>> 		unsigned int cur_pos = read_start + total_len;
-> >>>With the patch, i can run dd and 'blktrace -h traceserver' without the
-> >>>oops. But the output from blktrace only contains only zeros and no
-> >>>usable data for blkparse. Using blktrace to write the data directly to
-> >>>disk, without using the blktrace server works. Is there anything i
-> >>>should look for to help debugging the problem?
-> >>We should probably get Tom in the loop, as he is the relay expert. I'll
-> >>make sure the above patch gets into 2.6.25, as it is definitely a bug
-> >>that needs fixing.
-> >
-> >http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> >his email address seems to be no longer valid. I copy Dave Wilder
-> >here, since he is mentioned as relay maintainer on the web page.
-> >
-> >Dave, can you have a look at this? I can easily reproduce the problem
-> >on s390 Linux for testing and getting more debug information.
-> >
-> >Christof
-> >--
-> >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >the body of a message to majordomo@vger.kernel.org
-> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >Please read the FAQ at  http://www.tux.org/lkml/
-> >
+On Fri, 14 Mar 2008 12:08:16 -0400
+Yan <rottled@gmail.com> wrote:
+
+> Can you point me to where in the source that self-patching happens? I
+> tried grep'ing
+> through the source for anything relevant, and came out empty handed.
+
+
+in the apply_alternatives() function
+
 > 
-> I will take a look at the problem.
-> Any thing special about the test you are running I need to know?
+> -yan
+> 
+> On Fri, Mar 14, 2008 at 12:00 PM, Arjan van de Ven
+> <arjan@infradead.org> wrote:
+> > On Fri, 14 Mar 2008 10:51:43 -0400
+> >  Yan <rottled@gmail.com> wrote:
+> >
+> >  > Hello,
+> >  >
+> >  > I have been trying to compare the code from the on-disk
+> >  > compressed kernel that was booted and the running kernel
+> >  > extracted from /dev/kmem. I extracted the kernel's code from the
+> >  > disk image by stripping the head.S and similar and gunzipping
+> >  > it, and extracted the kernel from /dev/kmem by reading data
+> >  > between _text and _etext symbol offsets.
+> >  >
+> >  > I then ran both through a disassembler and diff'ed the outputs.
+> >  > Predictably, the disassembly was similar, but not identical. Some
+> >  > instructions (e.g. bts) had a 'lock' prefix, where as others had
+> >  > a 'nop' in its place.
+> >  >
+> >  > There were other differences with some instructions like mfence.
+> >  > Everything else matched just fine, the differences were mostly in
+> >  > memory-referencing instructions.
+> >  >
+> >  > My question is, what can be changing the kernel between being on
+> >  > static storage and being loaded?
+> >
+> >  the kernel code is self-patching, it gets modified to match your
+> > system during boot time. So you cannot assume that the kernel on
+> > disk and the kernel in memory are identical.
+> >  (Same goes for modules)
+> >
 
-The test is about using the blktrace network feature on a 64 bit s390
-guest on z/VM. I don't know if 64 bit and z/VM are related to the
-problem scenario, it is the only setup i tested. To reproduce, start
-somewhere 'blktrace -l' as a server and issue 
-blktrace -h tracehostname
-dd if=/dev/sda of=/dev/null
-to start blktrace and some I/O load.
 
-Christof
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
