@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYCNPHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYCNPPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbYCNPHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 11:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYCNPHg
+	id S1755989AbYCNPPy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 11:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYCNPPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 11:07:36 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:52992 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753020AbYCNPHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 11:07:35 -0400
-Date: Fri, 14 Mar 2008 16:07:12 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: bharata@linux.vnet.ibm.com, libc-alpha@sourceware.org,
-       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       Christoph Hellwig <hch@lst.de>, Mingming Cao <cmm@us.ibm.com>,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [RFC] Union mount readdir support in glibc
-Message-ID: <20080314150638.GA27730@T61>
-References: <20080311055527.GA7256@in.ibm.com> <47D9F6CC.6010009@redhat.com>
+	Fri, 14 Mar 2008 11:15:44 -0400
+Received: from sacred.ru ([62.205.161.221]:52652 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753316AbYCNPPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 11:15:43 -0400
+Message-ID: <47DA848C.3070901@openvz.org>
+Date: Fri, 14 Mar 2008 16:58:36 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D9F6CC.6010009@redhat.com>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Greg KH <greg@kroah.com>, James Morris <jmorris@namei.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+References: <20080313032749.GA13258@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au> <20080313131818.GA9771@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au> <20080313143803.GA11265@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au> <20080313224616.GA9139@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au> <20080314014121.GA8320@sergelap.austin.ibm.com> <20080314044741.GB18077@kroah.com> <20080314135416.GD8744@sergelap.austin.ibm.com>
+In-Reply-To: <20080314135416.GD8744@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 16:58:41 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, Ulrich Drepper wrote:
+[snip]
 
-> There is very little overhead.  Since we copy using getdents multiple
-> records it is more efficient than implementing readdir in the kernel.
-> This is how efficient normal directory operations must remain.  The only
-> slight inefficiency is that we have to copy the entries after getdents()
-> because the d_type field is not in the place we expect it at userlevel.
->  For this a new interface could help.
-
-BTW, Since some filesystem always give DT_UNKNOWN an additional stat is
-necessary to implement whiteout filtering. I don't want to do that in
-kernel-space if possible ...
-
-> Regarding questions you have: if a directory currently is read and file
-> are added or removed, all bets are off.
+>> My main question was why was that file in the kernel/ directory?
+>> Shouldn't that also be in the security/ directory?
 > 
-> re seeking: you have to support seeking.  There is no way around it.
-> Once again, if any file has been added/removed, all bets are off.  So,
-> why not provide a cookie similar to what is done today?  I think it is
-> not acceptable to require caching the entire directory content at
-> userlevel.  It's bad enough if we have to store the file names for
-> duplicate elimination.
+> I'm using cgroups to track the tasks which should have their device
+> permissions restricted.  Right now cgroups are all under kernel/.
 
-Which basically means tracking of the "space" between dirents and maintaining
-the relative order of entries. Which is a pain. I already tried to solve this
-problem for tmpfs before and it needs a hugh amount of kernel memory for open
-directories. In the end I only know of one situation where it is used: very old
-glibc when running 32bit applications on 64bit kernel.
+No. Memory cgroup is under mm/ :)
 
-Cheers,
-Jan
+>> And to be honest, I didn't really look at it at all other than the
+>> diffstat to make sure you weren't messing with the kobj_map stuff
+>> anymore :)
+>>
+>> thanks,
+>>
+>> greg k-h
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
