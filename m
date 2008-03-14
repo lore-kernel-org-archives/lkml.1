@@ -1,63 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYCNQP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbYCNQQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528AbYCNQP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYCNQPs
+	id S1757449AbYCNQQg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbYCNQQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:15:48 -0400
-Received: from sacred.ru ([62.205.161.221]:56824 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751798AbYCNQPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:15:47 -0400
-Message-ID: <47DA9FC2.7060405@openvz.org>
-Date: Fri, 14 Mar 2008 18:54:42 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Greg KH <greg@kroah.com>, James Morris <jmorris@namei.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@epoch.ncsc.mil>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
-References: <20080313131818.GA9771@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au> <20080313143803.GA11265@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au> <20080313224616.GA9139@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au> <20080314014121.GA8320@sergelap.austin.ibm.com> <20080314044741.GB18077@kroah.com> <20080314135416.GD8744@sergelap.austin.ibm.com> <47DA848C.3070901@openvz.org> <20080314154537.GA6604@sergelap.austin.ibm.com>
-In-Reply-To: <20080314154537.GA6604@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Mar 2008 12:16:23 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34079 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754715AbYCNQPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 12:15:52 -0400
+Date: Fri, 14 Mar 2008 09:14:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Ralph Wuerthner <rwuerthn@de.ibm.com>
+Subject: Re: [patch 2/2] zcrypt: add support for large random numbers
+Message-Id: <20080314091402.fa409ac7.randy.dunlap@oracle.com>
+In-Reply-To: <20080314093046.914555041@de.ibm.com>
+References: <20080314092523.147382820@de.ibm.com>
+	<20080314093046.914555041@de.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 18:54:46 +0300 (MSK)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Pavel Emelyanov (xemul@openvz.org):
->> [snip]
->>
->>>> My main question was why was that file in the kernel/ directory?
->>>> Shouldn't that also be in the security/ directory?
->>> I'm using cgroups to track the tasks which should have their device
->>> permissions restricted.  Right now cgroups are all under kernel/.
->> No. Memory cgroup is under mm/ :)
-> 
-> Ah.
-> 
-> Guess it could all go under security/.  Should it still go there even if
-> we make it not use lsm?
+On Fri, 14 Mar 2008 10:25:25 +0100 Martin Schwidefsky wrote:
 
-Sure it can - security/ is in obj-y regardless of whether the 
-SECURITY itself is on or off :)
-
->>>> And to be honest, I didn't really look at it at all other than the
->>>> diffstat to make sure you weren't messing with the kobj_map stuff
->>>> anymore :)
->>>>
->>>> thanks,
->>>>
->>>> greg k-h
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> This patch allows user space applications to access large amounts of 
+> truly random data. The random data source is the build-in hardware 
+> random number generator on the CEX2C cards.
+> ---
 > 
+>  drivers/crypto/Kconfig              |    1 
+>  drivers/s390/crypto/zcrypt_api.c    |  120 +++++++++++++++++++++
+>  drivers/s390/crypto/zcrypt_api.h    |    8 +
+>  drivers/s390/crypto/zcrypt_pcixcc.c |  199 +++++++++++++++++++++++++++++++++++-
+>  4 files changed, 327 insertions(+), 1 deletion(-)
+> 
+> Index: quilt-2.6/drivers/s390/crypto/zcrypt_api.c
+> ===================================================================
+> --- quilt-2.6.orig/drivers/s390/crypto/zcrypt_api.c
+> +++ quilt-2.6/drivers/s390/crypto/zcrypt_api.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/compat.h>
+>  #include <asm/atomic.h>
+>  #include <asm/uaccess.h>
+> +#include <linux/hw_random.h>
+>  
+>  #include "zcrypt_api.h"
+>  
 
+> @@ -1041,6 +1094,73 @@ out:
+>  	return count;
+>  }
+>  
+> +static int zcrypt_rng_device_count;
+> +static u32 *zcrypt_rng_buffer;
+> +static int zcrypt_rng_buffer_index;
+> +static DEFINE_MUTEX(zcrypt_rng_mutex);
+> +
+> +static int zcrypt_rng_data_read(struct hwrng *rng, u32 *data)
+> +{
+> +	int rc;
+> +
+> +	/**
+> +	 * We don't need locking here because the RNG API guarantees serialized
+> +	 * read method calls.
+> +	 */
+
+Hi,
+Linux kernel uses "/**" to indicate the beginning of kernel-doc
+notation, so when the comment block is not kernel-doc, please don't
+use that /** to begin the comment block.
+(multiple occurrences of this)
+
+> +	if (zcrypt_rng_buffer_index == 0) {
+> +		rc = zcrypt_rng((char *) zcrypt_rng_buffer);
+> +		if (rc < 0)
+> +			return -EIO;
+> +		zcrypt_rng_buffer_index = rc / sizeof *data;
+> +	}
+> +	*data = zcrypt_rng_buffer[--zcrypt_rng_buffer_index];
+> +	return sizeof *data;
+> +}
+> +
+> +static struct hwrng zcrypt_rng_dev = {
+> +	.name		= "zcrypt",
+> +	.data_read	= zcrypt_rng_data_read,
+> +};
+> +
+> +static int zcrypt_rng_device_add(void)
+> +{
+...
+> +}
+
+
+> Index: quilt-2.6/drivers/s390/crypto/zcrypt_pcixcc.c
+> ===================================================================
+> --- quilt-2.6.orig/drivers/s390/crypto/zcrypt_pcixcc.c
+> +++ quilt-2.6/drivers/s390/crypto/zcrypt_pcixcc.c
+> @@ -356,6 +356,55 @@ static int XCRB_msg_to_type6CPRB_msgX(st
+>  }
+>  
+>  /**
+> + * Prepare a type6 CPRB message for random number generation
+> + *
+> + * @ap_dev: AP device pointer
+> + * @ap_msg: pointer to AP message
+> + */
+
+This one is almost kernel-doc.  Just put the function name plus a
+hyphen/dash on the first line and remove the almost-blank line:
+
+/**
+ * rng_type6CPRB_msgX - Prepare a type6 CPRB message for random number generation
+ * @ap_dev: AP device pointer
+ * @ap_msg: pointer to AP message
+ */
+
+
+See Documentation/kernel-doc-nano-HOWTO.txt for more info/details,
+or ask me/lkml.
+
+> +static void rng_type6CPRB_msgX(struct ap_device *ap_dev,
+> +			       struct ap_message *ap_msg,
+> +			       unsigned random_number_length)
+> +{
+
+...
+
+> +}
+> +
+> +/**
+>   * Copy results from a type 86 ICA reply message back to user space.
+>   *
+>   * @zdev: crypto device pointer
+
+> @@ -736,6 +830,42 @@ out_free:
+>  }
+>  
+>  /**
+> + * The request distributor calls this function if it picked the PCIXCC/CEX2C
+> + * device to generate random data.
+> + * @zdev: pointer to zcrypt_device structure that identifies the
+> + *	  PCIXCC/CEX2C device to the request distributor
+> + * @buffer: pointer to a memory page to return random data
+> + */
+> +
+> +static long zcrypt_pcixcc_rng(struct zcrypt_device *zdev,
+> +				    char *buffer)
+> +{
+...
+> +}
+> +
+> +/**
+>   * The crypto operations for a PCIXCC/CEX2C card.
+>   */
+>  static struct zcrypt_ops zcrypt_pcixcc_ops = {
+> @@ -859,6 +996,58 @@ out_free:
+>  }
+>  
+>  /**
+> + * Large random number detection function. Its sends a message to a pcixcc
+> + * card to find out if large random numbers are supported.
+> + * @ap_dev: pointer to the AP device.
+> + *
+> + * Returns 1 if large random numbers are supported, 0 if not and < 0 on error.
+> + */
+> +static int zcrypt_pcixcc_rng_supported(struct ap_device *ap_dev)
+> +{
+...
+> +}
+
+---
+~Randy
