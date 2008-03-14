@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYCNBjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbYCNBk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbYCNBjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYCNBjg
+	id S1757706AbYCNBk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYCNBkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:39:36 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:58616 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbYCNBjf (ORCPT
+	Thu, 13 Mar 2008 21:40:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51703 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753943AbYCNBkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:39:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Usg3ogfIdo6wZYHM2n0A689dIcJxlCoh2Yb5mEFHGMaJv4Tz3e8hHqhv1a1hMxRT0DKDoqE0opdrg8rr+opl1KZcyv/NY1Ph/piFx6EraPpbow6h/0m7oS/zRuKuexRSvzNyhpIUJqn7SIYQqXacMy4cPA7aaDyl8aGvfQqZCl4=
-Message-ID: <86802c440803131839n4f723d14md906a15acb26c3a2@mail.gmail.com>
-Date: Thu, 13 Mar 2008 18:39:34 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: make free_bootmem to loop bdata_list
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu,
-       clameter@sgi.com, linux-kernel@vger.kernel.org,
-       "Andi Kleen" <ak@suse.de>, "Yasunori Goto" <y-goto@jp.fujitsu.com>
-In-Reply-To: <20080314103953.70be95b1.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 13 Mar 2008 21:40:16 -0400
+Date: Thu, 13 Mar 2008 18:39:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5-git3: Reported regressions from 2.6.24
+In-Reply-To: <87bq5i3xce.fsf@saeurebad.de>
+Message-ID: <alpine.LFD.1.00.0803131838340.3557@woody.linux-foundation.org>
+References: <200803140136.38549.rjw@sisk.pl> <87bq5i3xce.fsf@saeurebad.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440803131153m325c9e04h43bfd25b667a5c04@mail.gmail.com>
-	 <20080314103953.70be95b1.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 6:39 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 13 Mar 2008 11:53:31 -0700
->  "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->  > ===================================================================
->  > --- linux-2.6.orig/mm/bootmem.c
->  > +++ linux-2.6/mm/bootmem.c
->  > @@ -427,7 +438,9 @@ int __init reserve_bootmem(unsigned long
->  >
->  >  void __init free_bootmem(unsigned long addr, unsigned long size)
->  >  {
->  > -     free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
->  > +     bootmem_data_t *bdata;
->  > +     list_for_each_entry(bdata, &bdata_list, list)
->  > +             free_bootmem_core(bdata, addr, size);
->  >  }
->
->
->  Just a confirmation.
->  In above loop, boundary check in free_bootmem_core() hits two or more times ?
->  If yes, it's ok.
->  If no, please exit loop at hit.
 
-yes. need that handle range cross node (RAMDISK case that is end
-beyond end_of_ram).
 
-YH
+On Fri, 14 Mar 2008, Johannes Weiner wrote:
+> 
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10164
+> > Subject		: ntfs build failure on no-mmu
+> > Submitter	: Mike Frysinger <vapier.adi@gmail.com>
+> > Date		: 2008-03-03 11:05 (11 days old)
+> > References	: http://lkml.org/lkml/2008/3/1/179
+> 
+> I found this: http://lkml.org/lkml/2008/3/13/6
+
+Fixed slightly differently in mainline by Paul Mindt in commit 
+0738c4bb8f2a8bf15178f852494643b0981f578b ("nommu: Provide 
+is_vmalloc_addr() stub.")
+
+			Linus
