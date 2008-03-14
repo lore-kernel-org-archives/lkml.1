@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbYCNUGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbYCNUHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbYCNUGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYCNUGa
+	id S1760037AbYCNUHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbYCNUGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:06:30 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36374 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754134AbYCNUG2 (ORCPT
+	Fri, 14 Mar 2008 16:06:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49526 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757069AbYCNUGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:06:28 -0400
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Renninger <trenn@suse.de>,
-       Eric Piel <eric.piel@tremplin-utc.net>, Len Brown <len.brown@intel.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org
-In-Reply-To: <1205517802.12763.18.camel@nimitz.home.sr71.net>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>
-	 <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net>
-Content-Type: text/plain
-Date: Fri, 14 Mar 2008 13:06:24 -0700
-Message-Id: <1205525184.12763.32.camel@nimitz.home.sr71.net>
+	Fri, 14 Mar 2008 16:06:52 -0400
+Date: Fri, 14 Mar 2008 13:05:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, hch@lst.de, dhowells@redhat.com,
+       marc.c.dionne@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] struct export_operations: adjust comments to match
+ current members
+Message-Id: <20080314130527.35c595eb.akpm@linux-foundation.org>
+In-Reply-To: <22062.1205500289@redhat.com>
+References: <22062.1205500289@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For those of you new to this thread, here's the initial report:
+On Fri, 14 Mar 2008 13:11:29 +0000
+David Howells <dhowells@redhat.com> wrote:
 
-	http://marc.info/?t=120536629300001&r=1&w=2
+> 
+> From: "Marc Dionne" <marc.c.dionne@gmail.com>
+> 
+> The comments in the definition of struct export_operations don't match the
+> current members.
+> 
+> Add a comment for the 2 new functions and remove 2 comments for unused ones.
+> 
+> Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
+> Acked-by: David Howells <dhowells@redhat.com>
 
-I'm pretty sure the root cause of this bug is this commit:
+I changed this to Signed-off-by:.  You were in the delivery path.
 
-	ACPI: basic initramfs DSDT override support
-	71fc47a9adf8ee89e5c96a47222915c5485ac437
+> ---
+>  include/linux/exportfs.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/exportfs.h b/include/linux/exportfs.h
+> index 51d2141..adcbb05 100644
+> --- a/include/linux/exportfs.h
+> +++ b/include/linux/exportfs.h
+> @@ -49,11 +49,11 @@ struct fid {
+> 
+>  /**
+>   * struct export_operations - for nfsd to communicate with file systems
+> - * @decode_fh:      decode a file handle fragment and return a &struct dentry
+>   * @encode_fh:      encode a file handle fragment from a dentry
+> + * @fh_to_dentry:   find the implied object and get a dentry for it
+> + * @fh_to_parent:   find the implied object's parent and get a dentry for it
+>   * @get_name:       find the name for a given inode in a given directory
+>   * @get_parent:     find the parent of a given directory
+> - * @get_dentry:     find a dentry for the inode given a file handle
+> sub-fragment
 
-Which did this hunk:
-        
-        @@ -648,6 +654,7 @@ asmlinkage void __init start_kernel(void)
-         
-                check_bugs();
-         
-        +       populate_rootfs(); /* For DSDT override from initramfs
-        */
-                acpi_early_init(); /* before LAPIC and SMP init */
-         
-                /* Do the rest non-__init'ed, we're now alive */
-        	rest_init();
-        ...
+Someone is wordwrapping.
 
-Well, the fs initcalls aren't actually done until during rest_init(),
-including initializing my mnt_writer[] spinlocks.  I guess I could
-statically initialize them, but that's not the root of the problem, it's
-just the canary in the coal mine.
-
-I think the populate_rootfs() call is completely bogus and certainly
-can't be done before the initcalls.  But, I don't immediately have any
-better suggestions for you.  Can you delay the ACPI init until after the
-fs initcalls are made?
-
--- Dave
-
+>   *
+>   * See Documentation/filesystems/Exporting for details on how to use
+>   * this interface correctly.
