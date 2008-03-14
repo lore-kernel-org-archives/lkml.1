@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbYCNBsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbYCNBvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757872AbYCNBsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbYCNBrj
+	id S1756475AbYCNBvl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYCNBvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:47:39 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:39287 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755212AbYCNBrg (ORCPT
+	Thu, 13 Mar 2008 21:51:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35256 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552AbYCNBva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:47:36 -0400
-Date: Thu, 13 Mar 2008 21:47:32 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: tglx@linutronix.de, mingo@redhat.com
-Subject: [PATCH] X86: Explicitly include required header files.
-Message-ID: <alpine.LFD.1.00.0803132143200.11821@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 13 Mar 2008 21:51:30 -0400
+Date: Fri, 14 Mar 2008 10:55:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
+Message-Id: <20080314105529.79921546.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <86802c440803131835u4e506d69l4f116eb49d9ee9b2@mail.gmail.com>
+References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
+	<20080314103431.ff07070c.kamezawa.hiroyu@jp.fujitsu.com>
+	<86802c440803131835u4e506d69l4f116eb49d9ee9b2@mail.gmail.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 13 Mar 2008 18:35:51 -0700
+"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 
-After an experimental cleanup of <linux/percpu.h>, these files were
-exposed as invoking kmalloc() without including <linux/slab.h>.
-
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-
----
-
- arch/x86/kernel/nmi_32.c  |    1 +
- arch/x86/kernel/test_nx.c |    2 ++
- 2 files changed, 3 insertions(+)
-
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index 6a0aa70..800b07d 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -22,6 +22,7 @@
- #include <linux/cpumask.h>
- #include <linux/kernel_stat.h>
- #include <linux/kdebug.h>
-+#include <linux/slab.h>
-
- #include <asm/smp.h>
- #include <asm/nmi.h>
-diff --git a/arch/x86/kernel/test_nx.c b/arch/x86/kernel/test_nx.c
-index 10b8a6f..787a5e4 100644
---- a/arch/x86/kernel/test_nx.c
-+++ b/arch/x86/kernel/test_nx.c
-@@ -11,6 +11,8 @@
-  */
- #include <linux/module.h>
- #include <linux/sort.h>
-+#include <linux/slab.h>
-+
- #include <asm/uaccess.h>
- #include <asm/asm.h>
+> On Thu, Mar 13, 2008 at 6:34 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Thu, 13 Mar 2008 16:45:42 -0700
+> >  "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+> >  > int __init reserve_bootmem(unsigned long addr, unsigned long size,
+> >  >                           int flags)
+> >  >  {
+> >  > -     return reserve_bootmem_core(NODE_DATA(0)->bdata, addr, size, flags);
+> >  > +     int ret;
+> >  > +     bootmem_data_t *bdata;
+> >  > +     list_for_each_entry(bdata, &bdata_list, list) {
+> >  > +             ret = can_reserve_bootmem_core(bdata, addr, size, flags);
+> >  > +             if (ret < 0)
+> >  > +                     return ret;
+> >  > +     }
+> >  > +     list_for_each_entry(bdata, &bdata_list, list)
+> >  > +             reserve_bootmem_core(bdata, addr, size, flags);
+> >  > +     return 0;
+> >  >  }
+> >
+> >  why list_for_each twice ?
+> 
+> first_for_each only check if we can reserve that.
+> second will do the reserve job.
+> 
+Hmm, can a call to reserve_bootmem() return a memory region which spread across
+prural nodes ?
 
 
-========================================================================
-Robert P. J. Day Linux Consulting, Training and Annoying Kernel
-Pedantry:
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca
-    Have classroom, will lecture.
+Thanks,
+-Kame 
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
