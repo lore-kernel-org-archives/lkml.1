@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbYCNVgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYCNVjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbYCNVgM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 17:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYCNVf5
+	id S1758518AbYCNVjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 17:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbYCNVjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 17:35:57 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33558 "EHLO e5.ny.us.ibm.com"
+	Fri, 14 Mar 2008 17:39:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:45664 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbYCNVf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 17:35:56 -0400
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Eric Piel <eric.piel@tremplin-utc.net>
-Cc: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org
-In-Reply-To: <47DAE55C.3080506@tremplin-utc.net>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>
-	 <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net>
-	 <1205525184.12763.32.camel@nimitz.home.sr71.net>
-	 <47DAE55C.3080506@tremplin-utc.net>
-Content-Type: text/plain
-Date: Fri, 14 Mar 2008 14:35:51 -0700
-Message-Id: <1205530551.8167.20.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1754730AbYCNVjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 17:39:10 -0400
+Message-ID: <47DAF000.1010802@goop.org>
+Date: Fri, 14 Mar 2008 14:37:04 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Hugh Dickins <hugh@veritas.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
+       andrea@qumranet.com, clameter@sgi.com, a.p.zijlstra@chello.nl,
+       Keir Fraser <keir@xensource.com>, Ian Pratt <ian.pratt@xensource.com>
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+References: <20080312132132.520833247@de.ibm.com>	 <Pine.LNX.4.64.0803131627450.17244@blonde.site> <47D9754B.1030509@goop.org>	 <Pine.LNX.4.64.0803131848080.800@blonde.site>	 <1205438038.14987.1.camel@bodhitayantram.eng.vmware.com>	 <47DAC435.1050105@goop.org> <1205530358.14987.32.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1205530358.14987.32.camel@bodhitayantram.eng.vmware.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-14 at 21:51 +0100, Eric Piel wrote:
-> I'm not sure it would be possible to delay acpi_early_init() until after 
-> the fs initcalls. Maybe Len knows. How about trying the opposite: what 
-> is the barely minimum to initialize so that the rootfs can be populated 
-> and read? Would it be possible to have a kind of 
-> early_mnt_writer_initialize() that would do that?
+Zachary Amsden wrote:
+> It needn't be that hard on s390, I believe you don't need to worry about
+> PTEs becoming asynchronous when stealing a page, since if I understand
+> the hypervisor architecture, there is a per-page mapping level
+> available, allowing you to generate discard faults on access.  It might
+> be possible to use this mapping layer without implementing a full blown
+> hypervisor.  Martin?
+>   
 
-I *can* probably do it earlier, maybe even statically, but I think
-you're missing the point a bit here.  We've just been super lucky so far
-that populate_rootfs() doesn't depend on any other initcalls (or at
-least BUG_ON() because of them).  There may be some more buglets hiding
-around.
+Yes, I don't expect its a problem for s390, but the point is making 
+something workalike enough to make sure there's an evenly distributed 
+number of explosions-in-face when things go wrong.
 
-It'd be a shame to have to have "super_early_fs_initcall()" logic for
-every part of the VFS or any other initcall for that matter that you
-might need.  How do we tell all future VFS hackers that they have to do
-this so that the next guy doesn't break it?  I certainly missed it. :)
+> For x86, at discard time, you would have to manually walk and invalidate
+> any PTEs potentially mapping the discarded page, but there is already
+> this great thing called Xen paravirt-ops which actually does that for
+> completely different reasons (PT page protection).
+>   
 
-We could separate out the initcalls and just have the fs ones run before
-the rest do.  But, I'm not sure what interactions *THAT* might have.
-There are arch-specific initcalls, and I have no idea if the fs init
-code depends on *those*.  That's a lot of code to check.
+Not sure I follow.  Xen pvops pays attention to whether a particular 
+page is being used as part of a pagetable, and changes its permissions 
+accordingly.  But because pagetable pages are strictly kernel-only, we 
+can get away with updating a single kernel-mapping pte which is shared 
+across all processes.  In the guest page hinting case, we need to deal 
+with general pages which can be mapped anywhere, so that really does 
+require a full traversal of the pagetables.   Presumably rmap would be 
+helpful here.
 
-It is nailed when you the patch says:
-
-+       /*
-+        * Never do this at home, only the user-space is allowed to open a file.
-+        * The clean way would be to use the firmware loader. But this code must be run
-+        * before there is any userspace available. So we need a static/init firmware
-+        * infrastructure, which doesn't exist yet...
-+        */
-
-I think requiring FS access this early in the boot processes is just
-broken.  It seems like the author of the patch knew a better way and
-tried to get away with a hack.  I think it backfired. :)
-
--- Dave
-
+    J
