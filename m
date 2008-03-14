@@ -1,277 +1,377 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbYCNUhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbYCNUix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbYCNUhJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbYCNUg5
+	id S1758538AbYCNUix (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYCNUio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:36:57 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40532 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753679AbYCNUg4 (ORCPT
+	Fri, 14 Mar 2008 16:38:44 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:29247 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbYCNUin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:36:56 -0400
-Subject: Re: [PATCH 2/8] NTP4 user space bits update
-From: john stultz <johnstul@us.ibm.com>
-To: zippel@linux-m68k.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080314195736.853114795@linux-m68k.org>
-References: <20080314184001.695807682@linux-m68k.org>
-	 <20080314195736.853114795@linux-m68k.org>
-Content-Type: text/plain
-Date: Fri, 14 Mar 2008 13:36:51 -0700
-Message-Id: <1205527012.6122.17.camel@localhost.localdomain>
+	Fri, 14 Mar 2008 16:38:43 -0400
+Date: Fri, 14 Mar 2008 21:35:26 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] x86: merge the simple bitops and move them to bitops.h
+Message-ID: <20080314203526.GA13959@mailshack.com>
+References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org> <1205523826.7441.1242464129@webmail.messagingengine.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1205523826.7441.1242464129@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Fri, 14 Mar 2008 21:37:47 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.31; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+x86: merge the simple bitops and move them to bitops.h.
 
-On Fri, 2008-03-14 at 19:40 +0100, zippel@linux-m68k.org wrote:
-> plain text document attachment (ntp4_user)
-> This adds a few more things from the ntp nanokernel related to user
-> space. It's now possible to select the resolution used of some values
-> via STA_NANO and the kernel reports in which mode it works (pll/fll).
-> 
-> If some values for adjtimex() are outside the acceptable range, they are
-> now simply normalized instead of letting the syscall fail.
-> I removed MOD_CLKA/MOD_CLKB as the mapping didn't really makes any
-> sense, the kernel doesn't support setting the clock.
-> 
-> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Some of those can be written in such a way that the same
+inline assembly can be used to generate both 32 bit and
+64 bit code.
 
-I've not looked up the new NTP4-ims, but few comments below.
+For ffs and fls, x86_64 unconditionally used the cmov
+instruction and i386 unconditionally used a conditional
+branch over a mov instruction. In the current patch I
+chose to select the version based on the availability
+of the cmov instruction instead. A small detail here is
+that x86_64 did not previously set CONFIG_X86_CMOV=y.
 
-> ---
->  include/linux/timex.h |   12 ++++--
->  kernel/time/ntp.c     |   91 +++++++++++++++++++++++++-------------------------
->  2 files changed, 56 insertions(+), 47 deletions(-)
-> 
-> Index: linux-2.6/include/linux/timex.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/timex.h	2008-03-13 10:42:20.000000000 +0100
-> +++ linux-2.6/include/linux/timex.h	2008-03-13 10:48:59.000000000 +0100
-> @@ -58,6 +58,8 @@
-> 
->  #include <asm/param.h>
-> 
-> +#define NTP_API		4	/* NTP API version */
-> +
->  /*
->   * SHIFT_KG and SHIFT_KF establish the damping of the PLL and are chosen
->   * for a slightly underdamped convergence characteristic. SHIFT_KH
-> @@ -135,6 +137,8 @@ struct timex {
->  #define ADJ_ESTERROR		0x0008	/* estimated time error */
->  #define ADJ_STATUS		0x0010	/* clock status */
->  #define ADJ_TIMECONST		0x0020	/* pll time constant */
-> +#define ADJ_MICRO		0x1000	/* select microsecond resolution */
-> +#define ADJ_NANO		0x2000	/* select nanosecond resolution */
->  #define ADJ_TICK		0x4000	/* tick value */
->  #define ADJ_OFFSET_SINGLESHOT	0x8001	/* old-fashioned adjtime */
->  #define ADJ_OFFSET_SS_READ	0xa001  /* read-only adjtime */
-> @@ -146,8 +150,6 @@ struct timex {
->  #define MOD_ESTERROR	ADJ_ESTERROR
->  #define MOD_STATUS	ADJ_STATUS
->  #define MOD_TIMECONST	ADJ_TIMECONST
-> -#define MOD_CLKB	ADJ_TICK
-> -#define MOD_CLKA	ADJ_OFFSET_SINGLESHOT /* 0x8000 in original */
-> 
-> 
->  /*
-> @@ -169,9 +171,13 @@ struct timex {
->  #define STA_PPSERROR	0x0800	/* PPS signal calibration error (ro) */
-> 
->  #define STA_CLOCKERR	0x1000	/* clock hardware fault (ro) */
-> +#define STA_NANO	0x2000	/* resolution (0 = us, 1 = ns) (ro) */
-> +#define STA_MODE	0x4000	/* mode (0 = PLL, 1 = FLL) (ro) */
-> +#define STA_CLK		0x8000	/* clock source (0 = A, 1 = B) (ro) */
-> 
-> +/* read-only bits */
->  #define STA_RONLY (STA_PPSSIGNAL | STA_PPSJITTER | STA_PPSWANDER | \
-> -    STA_PPSERROR | STA_CLOCKERR) /* read-only bits */
-> +	STA_PPSERROR | STA_CLOCKERR | STA_NANO | STA_MODE | STA_CLK)
-> 
->  /*
->   * Clock states (time_state)
-> Index: linux-2.6/kernel/time/ntp.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/time/ntp.c	2008-03-13 10:42:20.000000000 +0100
-> +++ linux-2.6/kernel/time/ntp.c	2008-03-13 10:47:49.000000000 +0100
-> @@ -65,7 +65,9 @@ static void ntp_update_offset(long offse
->  	if (!(time_status & STA_PLL))
->  		return;
-> 
-> -	time_offset = offset * NSEC_PER_USEC;
-> +	time_offset = offset;
-> +	if (!(time_status & STA_NANO))
-> +		time_offset *= NSEC_PER_USEC;
-> 
->  	/*
->  	 * Scale the phase adjustment and
-> @@ -86,8 +88,11 @@ static void ntp_update_offset(long offse
->  	freq_adj = time_offset * mtemp;
->  	freq_adj = shift_right(freq_adj, time_constant * 2 +
->  			   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
-> -	if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC))
-> +	time_status &= ~STA_MODE;
-> +	if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
->  		freq_adj += div_s64(time_offset << (SHIFT_NSEC - SHIFT_FLL), mtemp);
-> +		time_status |= STA_MODE;
-> +	}
->  	freq_adj += time_freq;
->  	freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
->  	time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
-> @@ -272,6 +277,7 @@ static inline void notify_cmos_timer(voi
->   */
->  int do_adjtimex(struct timex *txc)
->  {
-> +	struct timespec ts;
->  	long save_adjust;
->  	int result;
-> 
-> @@ -282,17 +288,11 @@ int do_adjtimex(struct timex *txc)
->  	/* Now we validate the data before disabling interrupts */
-> 
->  	if ((txc->modes & ADJ_OFFSET_SINGLESHOT) == ADJ_OFFSET_SINGLESHOT) {
-> -	  /* singleshot must not be used with any other mode bits */
-> -		if (txc->modes != ADJ_OFFSET_SINGLESHOT &&
-> -					txc->modes != ADJ_OFFSET_SS_READ)
-> +		/* singleshot must not be used with any other mode bits */
-> +		if (txc->modes & ~ADJ_OFFSET_SS_READ)
->  			return -EINVAL;
+Improved comments for ffs and fls.
 
-This could probably go in the cleanup patch, no?
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
+---
 
->  	}
-> 
-> -	if (txc->modes != ADJ_OFFSET_SINGLESHOT && (txc->modes & ADJ_OFFSET))
-> -	  /* adjustment Offset limited to +- .512 seconds */
-> -		if (txc->offset <= - MAXPHASE || txc->offset >= MAXPHASE )
-> -			return -EINVAL;
-> -
->  	/* if the quartz is off by more than 10% something is VERY wrong ! */
->  	if (txc->modes & ADJ_TICK)
->  		if (txc->tick <  900000/USER_HZ ||
-> @@ -300,51 +300,46 @@ int do_adjtimex(struct timex *txc)
->  			return -EINVAL;
-> 
->  	write_seqlock_irq(&xtime_lock);
-> -	result = time_state;	/* mostly `TIME_OK' */
-> 
->  	/* Save for later - semantics of adjtime is to return old value */
->  	save_adjust = time_adjust;
-> 
-> -#if 0	/* STA_CLOCKERR is never set yet */
-> -	time_status &= ~STA_CLOCKERR;		/* reset STA_CLOCKERR */
-> -#endif
+Hi,
 
-This as well is just cleanup.
+Here is a new version with improved (I hope) comments for
+the functions ffs and fls, suggested by Jeremy. I left
+the explicit use of the -l forms in the inline assembly
+of ffs and fls, because I think it is clearer that way.
 
+Greetings,
+	Alexander
 
->  	/* If there are input parameters, then process them */
->  	if (txc->modes) {
-> -		if (txc->modes & ADJ_STATUS)	/* only set allowed bits */
-> -			time_status = (txc->status & ~STA_RONLY) |
-> -				      (time_status & STA_RONLY);
-> +		if (txc->modes & ADJ_STATUS) {
-> +			if ((time_status & STA_PLL) &&
-> +			    !(txc->status & STA_PLL)) {
-> +				time_state = TIME_OK;
-> +				time_status = STA_UNSYNC;
-> +			}
-> +			/* only set allowed bits */
-> +			time_status &= STA_RONLY;
-> +			time_status |= txc->status & ~STA_RONLY;
-> +		}
-
-More cleanup.
-
-
-> +		if (txc->modes & ADJ_NANO)
-> +			time_status |= STA_NANO;
-> +		if (txc->modes & ADJ_MICRO)
-> +			time_status &= ~STA_NANO;
-> 
->  		if (txc->modes & ADJ_FREQUENCY) {
-> -			if (txc->freq > MAXFREQ || txc->freq < -MAXFREQ) {
-> -				result = -EINVAL;
-> -				goto leave;
-> -			}
-> -			time_freq = ((s64)txc->freq * NSEC_PER_USEC)
-> +			time_freq = min(txc->freq, MAXFREQ);
-> +			time_freq = min(time_freq, -MAXFREQ);
-> +			time_freq = ((s64)time_freq * NSEC_PER_USEC)
->  					>> (SHIFT_USEC - SHIFT_NSEC);
->  		}
-> 
-> -		if (txc->modes & ADJ_MAXERROR) {
-> -			if (txc->maxerror < 0 || txc->maxerror >= NTP_PHASE_LIMIT) {
-> -				result = -EINVAL;
-> -				goto leave;
-> -			}
-> +		if (txc->modes & ADJ_MAXERROR)
->  			time_maxerror = txc->maxerror;
-> -		}
-> -
-> -		if (txc->modes & ADJ_ESTERROR) {
-> -			if (txc->esterror < 0 || txc->esterror >= NTP_PHASE_LIMIT) {
-> -				result = -EINVAL;
-> -				goto leave;
-> -			}
-> +		if (txc->modes & ADJ_ESTERROR)
->  			time_esterror = txc->esterror;
-> -		}
-> 
->  		if (txc->modes & ADJ_TIMECONST) {
-> -			if (txc->constant < 0) {	/* NTP v4 uses values > 6 */
-> -				result = -EINVAL;
-> -				goto leave;
-> -			}
-> -			time_constant = min(txc->constant + 4, (long)MAXTC);
-> +			time_constant = txc->constant;
-> +			if (!(time_status & STA_NANO))
-> +				time_constant += 4;
-> +			time_constant = min(time_constant, (long)MAXTC);
-> +			time_constant = max(time_constant, 0l);
->  		}
-> 
->  		if (txc->modes & ADJ_OFFSET) {
-> @@ -360,16 +355,20 @@ int do_adjtimex(struct timex *txc)
->  		if (txc->modes & (ADJ_TICK|ADJ_FREQUENCY|ADJ_OFFSET))
->  			ntp_update_frequency();
->  	}
-> -leave:
-> +
-> +	result = time_state;	/* mostly `TIME_OK' */
->  	if (time_status & (STA_UNSYNC|STA_CLOCKERR))
->  		result = TIME_ERROR;
-> 
->  	if ((txc->modes == ADJ_OFFSET_SINGLESHOT) ||
->  	    (txc->modes == ADJ_OFFSET_SS_READ))
->  		txc->offset = save_adjust;
-> -	else
-> +	else {
->  		txc->offset = ((long)shift_right(time_offset, SHIFT_UPDATE)) *
-> -	    			NTP_INTERVAL_FREQ / 1000;
-> +	    			NTP_INTERVAL_FREQ;
-> +		if (!(time_status & STA_NANO))
-> +			txc->offset /= NSEC_PER_USEC;
-> +	}
->  	txc->freq	   = (time_freq / NSEC_PER_USEC) <<
->  				(SHIFT_USEC - SHIFT_NSEC);
->  	txc->maxerror	   = time_maxerror;
-> @@ -391,7 +390,11 @@ leave:
->  	txc->stbcnt	   = 0;
->  	write_sequnlock_irq(&xtime_lock);
-> 
-> -	do_gettimeofday(&txc->time);
-> +	getnstimeofday(&ts);
-> +	txc->time.tv_sec = ts.tv_sec;
-> +	txc->time.tv_usec = ts.tv_nsec;
-> +	if (!(time_status & STA_NANO))
-> +		txc->time.tv_usec /= NSEC_PER_USEC;
-
-
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 31e92fb..fb7399b 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -399,7 +399,7 @@ config X86_TSC
+ # generates cmov.
+ config X86_CMOV
+ 	def_bool y
+-	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7)
++	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || X86_64)
+ 
+ config X86_MINIMUM_CPU_FAMILY
+ 	int
+diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
+index 1a23ce1..363a4ff 100644
+--- a/include/asm-x86/bitops.h
++++ b/include/asm-x86/bitops.h
+@@ -66,7 +66,6 @@ static inline void __set_bit(int nr, volatile void *addr)
+ 		     : "Ir" (nr) : "memory");
+ }
+ 
+-
+ /**
+  * clear_bit - Clears a bit in memory
+  * @nr: Bit to clear
+@@ -310,6 +309,104 @@ static int test_bit(int nr, const volatile unsigned long *addr);
+ 	 constant_test_bit((nr),(addr)) :	\
+ 	 variable_test_bit((nr),(addr)))
+ 
++/**
++ * __ffs - find first bit in word.
++ * @word: The word to search
++ *
++ * Undefined if no bit exists, so code should check against 0 first.
++ */
++static inline unsigned long __ffs(unsigned long word)
++{
++	__asm__("bsf %1,%0"
++		:"=r" (word)
++		:"rm" (word));
++	return word;
++}
++
++/**
++ * ffz - find first zero in word.
++ * @word: The word to search
++ *
++ * Undefined if no zero exists, so code should check against ~0UL first.
++ */
++static inline unsigned long ffz(unsigned long word)
++{
++	__asm__("bsf %1,%0"
++		:"=r" (word)
++		:"r" (~word));
++	return word;
++}
++
++/*
++ * __fls: find last bit set.
++ * @word: The word to search
++ *
++ * Undefined if no zero exists, so code should check against ~0UL first.
++ */
++static inline unsigned long __fls(unsigned long word)
++{
++	__asm__("bsr %1,%0"
++		:"=r" (word)
++		:"rm" (word));
++	return word;
++}
++
++#ifdef __KERNEL__
++/**
++ * ffs - find first bit set
++ * @x: the word to search
++ *
++ * This is defined the same way as the libc and compiler builtin ffs
++ * routines, therefore differs in spirit from the other bitops.
++ *
++ * ffs(value) returns 0 if value is 0 or the position of the first
++ * set bit if value is nonzero. The first (least significant) bit
++ * is at position 1.
++ */
++static inline int ffs(int x)
++{
++	int r;
++#ifdef CONFIG_X86_CMOV
++	__asm__("bsfl %1,%0\n\t"
++		"cmovzl %2,%0"
++		: "=r" (r) : "rm" (x), "r" (-1));
++#else
++	__asm__("bsfl %1,%0\n\t"
++		"jnz 1f\n\t"
++		"movl $-1,%0\n"
++		"1:" : "=r" (r) : "rm" (x));
++#endif
++	return r + 1;
++}
++
++/**
++ * fls - find last bit set
++ * @x: the word to search
++ *
++ * This is defined in a similar way as the libc and compiler builtin
++ * ffs, but returns the position of the most significant set bit.
++ *
++ * fls(value) returns 0 if value is 0 or the position of the last
++ * set bit if value is nonzero. The last (most significant) bit is
++ * at position 32.
++ */
++static inline int fls(int x)
++{
++	int r;
++#ifdef CONFIG_X86_CMOV
++	__asm__("bsrl %1,%0\n\t"
++		"cmovzl %2,%0"
++		: "=&r" (r) : "rm" (x), "rm" (-1));
++#else
++	__asm__("bsrl %1,%0\n\t"
++		"jnz 1f\n\t"
++		"movl $-1,%0\n"
++		"1:" : "=r" (r) : "rm" (x));
++#endif
++	return r + 1;
++}
++#endif /* __KERNEL__ */
++
+ #undef ADDR
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/include/asm-x86/bitops_32.h b/include/asm-x86/bitops_32.h
+index 570f0fa..c19fbe9 100644
+--- a/include/asm-x86/bitops_32.h
++++ b/include/asm-x86/bitops_32.h
+@@ -38,20 +38,6 @@ static inline int find_first_zero_bit(const unsigned long *addr, unsigned size)
+ }
+ 
+ /**
+- * __ffs - find first bit in word.
+- * @word: The word to search
+- *
+- * Undefined if no bit exists, so code should check against 0 first.
+- */
+-static inline unsigned long __ffs(unsigned long word)
+-{
+-	__asm__("bsfl %1,%0"
+-		:"=r" (word)
+-		:"rm" (word));
+-	return word;
+-}
+-
+-/**
+  * find_first_bit - find the first set bit in a memory region
+  * @addr: The address to start the search at
+  * @size: The maximum size to search
+@@ -72,60 +58,10 @@ static inline unsigned find_first_bit(const unsigned long *addr, unsigned size)
+ 	return x;
+ }
+ 
+-/**
+- * ffz - find first zero in word.
+- * @word: The word to search
+- *
+- * Undefined if no zero exists, so code should check against ~0UL first.
+- */
+-static inline unsigned long ffz(unsigned long word)
+-{
+-	__asm__("bsfl %1,%0"
+-		:"=r" (word)
+-		:"r" (~word));
+-	return word;
+-}
+-
+ #ifdef __KERNEL__
+ 
+ #include <asm-generic/bitops/sched.h>
+ 
+-/**
+- * ffs - find first bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as
+- * the libc and compiler builtin ffs routines, therefore
+- * differs in spirit from the above ffz() (man ffs).
+- */
+-static inline int ffs(int x)
+-{
+-	int r;
+-
+-	__asm__("bsfl %1,%0\n\t"
+-		"jnz 1f\n\t"
+-		"movl $-1,%0\n"
+-		"1:" : "=r" (r) : "rm" (x));
+-	return r+1;
+-}
+-
+-/**
+- * fls - find last bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as ffs().
+- */
+-static inline int fls(int x)
+-{
+-	int r;
+-
+-	__asm__("bsrl %1,%0\n\t"
+-		"jnz 1f\n\t"
+-		"movl $-1,%0\n"
+-		"1:" : "=r" (r) : "rm" (x));
+-	return r+1;
+-}
+-
+ #include <asm-generic/bitops/hweight.h>
+ 
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-x86/bitops_64.h b/include/asm-x86/bitops_64.h
+index 87e1a17..866ed56 100644
+--- a/include/asm-x86/bitops_64.h
++++ b/include/asm-x86/bitops_64.h
+@@ -35,71 +35,11 @@ static inline void set_bit_string(unsigned long *bitmap, unsigned long i,
+ 	}
+ } 
+ 
+-/**
+- * ffz - find first zero in word.
+- * @word: The word to search
+- *
+- * Undefined if no zero exists, so code should check against ~0UL first.
+- */
+-static inline unsigned long ffz(unsigned long word)
+-{
+-	__asm__("bsfq %1,%0"
+-		:"=r" (word)
+-		:"r" (~word));
+-	return word;
+-}
+-
+-/**
+- * __ffs - find first bit in word.
+- * @word: The word to search
+- *
+- * Undefined if no bit exists, so code should check against 0 first.
+- */
+-static inline unsigned long __ffs(unsigned long word)
+-{
+-	__asm__("bsfq %1,%0"
+-		:"=r" (word)
+-		:"rm" (word));
+-	return word;
+-}
+-
+-/*
+- * __fls: find last bit set.
+- * @word: The word to search
+- *
+- * Undefined if no zero exists, so code should check against ~0UL first.
+- */
+-static inline unsigned long __fls(unsigned long word)
+-{
+-	__asm__("bsrq %1,%0"
+-		:"=r" (word)
+-		:"rm" (word));
+-	return word;
+-}
+-
+ #ifdef __KERNEL__
+ 
+ #include <asm-generic/bitops/sched.h>
+ 
+ /**
+- * ffs - find first bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as
+- * the libc and compiler builtin ffs routines, therefore
+- * differs in spirit from the above ffz (man ffs).
+- */
+-static inline int ffs(int x)
+-{
+-	int r;
+-
+-	__asm__("bsfl %1,%0\n\t"
+-		"cmovzl %2,%0" 
+-		: "=r" (r) : "rm" (x), "r" (-1));
+-	return r+1;
+-}
+-
+-/**
+  * fls64 - find last bit set in 64 bit word
+  * @x: the word to search
+  *
+@@ -112,22 +52,6 @@ static inline int fls64(__u64 x)
+ 	return __fls(x) + 1;
+ }
+ 
+-/**
+- * fls - find last bit set
+- * @x: the word to search
+- *
+- * This is defined the same way as ffs.
+- */
+-static inline int fls(int x)
+-{
+-	int r;
+-
+-	__asm__("bsrl %1,%0\n\t"
+-		"cmovzl %2,%0"
+-		: "=&r" (r) : "rm" (x), "rm" (-1));
+-	return r+1;
+-}
+-
+ #define ARCH_HAS_FAST_MULTIPLIER 1
+ 
+ #include <asm-generic/bitops/hweight.h>
 
