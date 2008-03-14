@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYCNJtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbYCNJ7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbYCNJtA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 05:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYCNJsw
+	id S1755426AbYCNJ7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 05:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYCNJ7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 05:48:52 -0400
-Received: from sacred.ru ([62.205.161.221]:44390 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752057AbYCNJsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 05:48:52 -0400
-Message-ID: <47DA498A.9070702@openvz.org>
-Date: Fri, 14 Mar 2008 12:46:50 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 14 Mar 2008 05:59:05 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:3256 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbYCNJ7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 05:59:04 -0400
+Message-ID: <47DA4C39.2030304@imap.cc>
+Date: Fri, 14 Mar 2008 10:58:17 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] Memcgroup: use triggers in force_empty and max_usage
- files
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 12:46:50 +0300 (MSK)
+To: Zhao Yakui <yakui.zhao@intel.com>
+CC: Dave Jones <davej@codemonkey.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.25-rc5-mm1] WARNING: at drivers/base/sys.c:173
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>	 <47D87238.8080305@imap.cc> <20080313195656.GA32463@codemonkey.org.uk>	 <47D9C04E.3060208@imap.cc> <1205456231.4082.2.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1205456231.4082.2.camel@yakui_zhao.sh.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig0805B2AAF6E7448CC847E1BD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These two files are essentially event callbacks. They do not
-care the string written, but only the fact of writing itself.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0805B2AAF6E7448CC847E1BD
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Fri, 14 Mar 2008 08:57:11 +0800, Zhao Yakui wrote:
+> Please set CONFIG_ACPI_DEBUG and boot the system with the option of
+> "acpi.debug_layer=3D0x01010000 acpi.debug_level=3D0x1f".
 
----
- mm/memcontrol.c |   21 ++++++---------------
- 1 files changed, 6 insertions(+), 15 deletions(-)
+CONFIG_ACPI_DEBUG is already set, but I cannot reboot the machine
+right now. I'll probably get a chance for that in about 12 hours.
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index c27141d..d3ec3e3 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -868,27 +868,18 @@ static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
- 				mem_cgroup_write_strategy);
- }
- 
--static ssize_t mem_cgroup_max_reset(struct cgroup *cont, struct cftype *cft,
--				struct file *file, const char __user *userbuf,
--				size_t nbytes, loff_t *ppos)
-+static int mem_cgroup_max_reset(struct cgroup *cont, unsigned int event)
- {
- 	struct mem_cgroup *mem;
- 
- 	mem = mem_cgroup_from_cont(cont);
- 	res_counter_reset_max(&mem->res);
--	return nbytes;
-+	return 0;
- }
- 
--static ssize_t mem_force_empty_write(struct cgroup *cont,
--				struct cftype *cft, struct file *file,
--				const char __user *userbuf,
--				size_t nbytes, loff_t *ppos)
-+static int mem_force_empty_write(struct cgroup *cont, unsigned int event)
- {
--	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	int ret = mem_cgroup_force_empty(mem);
--	if (!ret)
--		ret = nbytes;
--	return ret;
-+	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont));
- }
- 
- static const struct mem_cgroup_stat_desc {
-@@ -936,7 +927,7 @@ static struct cftype mem_cgroup_files[] = {
- 	{
- 		.name = "max_usage_in_bytes",
- 		.private = RES_MAX_USAGE,
--		.write = mem_cgroup_max_reset,
-+		.trigger = mem_cgroup_max_reset,
- 		.read_u64 = mem_cgroup_read,
- 	},
- 	{
-@@ -952,7 +943,7 @@ static struct cftype mem_cgroup_files[] = {
- 	},
- 	{
- 		.name = "force_empty",
--		.write = mem_force_empty_write,
-+		.trigger = mem_force_empty_write,
- 	},
- 	{
- 		.name = "stat",
--- 
-1.5.3.4
+> It will be great if the acpidump output is attached.
 
+Available now at
+http://gollum.phnxsoft.com/~ts/linux/acpidump.out
+
+HTH
+T.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig0805B2AAF6E7448CC847E1BD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFH2kw5Q3+did9BuFsRAiQfAJ9ktPJAi7bfpWv+cejecN2unJs+VACeLvtV
+LpkxqJ7GwcPKg8Xj5VOaYQE=
+=Cdst
+-----END PGP SIGNATURE-----
+
+--------------enig0805B2AAF6E7448CC847E1BD--
