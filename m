@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbYCNBld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYCNBrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758043AbYCNBld (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYCNBlZ
+	id S1756879AbYCNBrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYCNBrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:41:25 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:44966 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbYCNBlY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:41:24 -0400
-Date: Thu, 13 Mar 2008 20:41:21 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Stephen Smalley <sds@epoch.ncsc.mil>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
-Message-ID: <20080314014121.GA8320@sergelap.austin.ibm.com>
-References: <20080313032749.GA13258@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au> <20080313131818.GA9771@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au> <20080313143803.GA11265@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au> <20080313224616.GA9139@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au>
+	Thu, 13 Mar 2008 21:47:33 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:19208 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751970AbYCNBrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 21:47:32 -0400
+Date: Fri, 14 Mar 2008 10:47:11 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5-git3: Reported regressions from 2.6.24
+Message-ID: <20080314014711.GA14995@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Natalie Protasevich <protasnb@gmail.com>
+References: <200803140136.38549.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200803140136.38549.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting James Morris (jmorris@namei.org):
-> On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
+On Fri, Mar 14, 2008 at 01:36:37AM +0100, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10025
+> Subject		: Current git very broken on the Dreamcast
+> Submitter	: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+> Date		: 2008-02-16 19:38 (27 days old)
+> References	: http://lkml.org/lkml/2008/2/16/196
+> Handled-By	: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+> 		  Magnus Damm <magnus.damm@gmail.com>
 > 
-> > Quoting James Morris (jmorris@namei.org):
-> > > On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
-> > > 
-> > > > True, but while this change simplifies the code a bit, the semantics
-> > > > seem more muddled - devcg will be enforcing when CONFIG_CGROUP_DEV=y
-> > > > and:
-> > > > 
-> > > > 	SECURITY=n or
-> > > > 	rootplug is enabled
-> > > > 	capabilities is enabled
-> > > > 	smack is enabled
-> > > > 	selinux+capabilities is enabled
-> > > 
-> > > Well, this is how real systems are going to be deployed.
-> > 
-> > Sorry, do you mean with capabilities?
-> 
-> Yes.
-> 
-> All Fedora, RHEL, CentOS etc. ship with SELinux+capabilities.  I can't 
-> imagine not enabling them on other kernels.
-> 
-> > > It becomes confusing, IMHO, if you have to change which secondary LSM you 
-> > > stack with SELinux to enable a cgroup feature.
-> > 
-> > So you're saying selinux without capabilities should still be able to
-> > use dev_cgroup?  (Just making sure I understand right)
-> 
-> Nope, SELinux always stacks with capabilities, so havng the cgroup hooks 
-> in capabilities makes sense (rather than having us change the secondary 
-> stacking LSM just to enable a feature).
-
-Oh, ok.
-
-Will let the patch stand until Pavel and Greg comment then.
-
-thanks,
--serge
+I didn't realize this was on the regression list. This was fixed by
+Magnus in 763a495a022ac26afb2940e768e86725c1c7e8c9.
