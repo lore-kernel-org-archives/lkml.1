@@ -1,161 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbYCNVSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbYCNVUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758900AbYCNVSw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 17:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYCNVSo
+	id S1759227AbYCNVUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 17:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbYCNVUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 17:18:44 -0400
-Received: from mga01.intel.com ([192.55.52.88]:10644 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754730AbYCNVSn convert rfc822-to-8bit (ORCPT
+	Fri, 14 Mar 2008 17:20:05 -0400
+Received: from mail.tor.primus.ca ([216.254.136.21]:55585 "EHLO
+	mail-05.primus.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbYCNVUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 17:18:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,502,1199692800"; 
-   d="scan'208";a="534153225"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Date: Fri, 14 Mar 2008 14:15:46 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEB34783@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080314204041.6e376568@mjolnir.drzeus.cx>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Thread-Index: AciGC6lytF72Rgc0Q9+jZSHg6ihoawACpPUg
-References: <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org><20080310100008.GA9520@elf.ucw.cz><20080310134915.45ae7446@mjolnir.drzeus.cx><200803121511.17389.lenb@kernel.org><20080313173437.5f00f70e@mjolnir.drzeus.cx> <20080314204041.6e376568@mjolnir.drzeus.cx>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>, "Len Brown" <lenb@kernel.org>
-Cc: <linux-pm@lists.linux-foundation.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Adam Belay" <abelay@novell.com>,
-       "Andi Kleen" <andi@firstfloor.org>, "Lee Revell" <rlrevell@joe-job.com>
-X-OriginalArrivalTime: 14 Mar 2008 21:13:56.0863 (UTC) FILETIME=[508A30F0:01C88618]
+	Fri, 14 Mar 2008 17:20:03 -0400
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au, lenb@kernel.org,
+       dhowells@redhat.com, peterz@infradead.org, mingo@elte.hu,
+       harvey.harrison@gmail.com
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 5/6] Add down_timeout and change ACPI to use it
+Date: Fri, 14 Mar 2008 16:44:52 -0400
+Message-Id: <1205527493-5740-5-git-send-email-matthew@wil.cx>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1205527493-5740-4-git-send-email-matthew@wil.cx>
+References: <20080314204248.GV613@parisc-linux.org>
+ <1205527493-5740-1-git-send-email-matthew@wil.cx>
+ <1205527493-5740-2-git-send-email-matthew@wil.cx>
+ <1205527493-5740-3-git-send-email-matthew@wil.cx>
+ <1205527493-5740-4-git-send-email-matthew@wil.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ACPI currently emulates a timeout for semaphores with calls to
+down_trylock and sleep.  This produces horrible behaviour in terms of
+fairness and excessive wakeups.  Now that we have a unified semaphore
+implementation, adding a real down_trylock is almost trivial.
+
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ drivers/acpi/osl.c        |   89 +++++++++++----------------------------------
+ include/linux/semaphore.h |    6 +++
+ kernel/semaphore.c        |   42 ++++++++++++++++++----
+ 3 files changed, 62 insertions(+), 75 deletions(-)
+
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 065819b..2adfb6d 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -4,6 +4,8 @@
+  *  Copyright (C) 2000       Andrew Henroid
+  *  Copyright (C) 2001, 2002 Andy Grover <andrew.grover@intel.com>
+  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
++ *  Copyright (c) 2008 Intel Corporation
++ *   Author: Matthew Wilcox <willy@linux.intel.com>
+  *
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  *
+@@ -37,15 +39,18 @@
+ #include <linux/workqueue.h>
+ #include <linux/nmi.h>
+ #include <linux/acpi.h>
+-#include <acpi/acpi.h>
+-#include <asm/io.h>
+-#include <acpi/acpi_bus.h>
+-#include <acpi/processor.h>
+-#include <asm/uaccess.h>
+-
+ #include <linux/efi.h>
+ #include <linux/ioport.h>
+ #include <linux/list.h>
++#include <linux/jiffies.h>
++#include <linux/semaphore.h>
++
++#include <asm/io.h>
++#include <asm/uaccess.h>
++
++#include <acpi/acpi.h>
++#include <acpi/acpi_bus.h>
++#include <acpi/processor.h>
  
+ #define _COMPONENT		ACPI_OS_SERVICES
+ ACPI_MODULE_NAME("osl");
+@@ -848,7 +853,6 @@ acpi_os_create_semaphore(u32 max_units, u32 initial_units, acpi_handle * handle)
+ {
+ 	struct semaphore *sem = NULL;
+ 
+-
+ 	sem = acpi_os_allocate(sizeof(struct semaphore));
+ 	if (!sem)
+ 		return AE_NO_MEMORY;
+@@ -875,12 +879,12 @@ acpi_status acpi_os_delete_semaphore(acpi_handle handle)
+ {
+ 	struct semaphore *sem = (struct semaphore *)handle;
+ 
+-
+ 	if (!sem)
+ 		return AE_BAD_PARAMETER;
+ 
+ 	ACPI_DEBUG_PRINT((ACPI_DB_MUTEX, "Deleting semaphore[%p].\n", handle));
+ 
++	BUG_ON(!list_empty(&sem->wait_list));
+ 	kfree(sem);
+ 	sem = NULL;
+ 
+@@ -888,21 +892,15 @@ acpi_status acpi_os_delete_semaphore(acpi_handle handle)
+ }
+ 
+ /*
+- * TODO: The kernel doesn't have a 'down_timeout' function -- had to
+- * improvise.  The process is to sleep for one scheduler quantum
+- * until the semaphore becomes available.  Downside is that this
+- * may result in starvation for timeout-based waits when there's
+- * lots of semaphore activity.
+- *
+  * TODO: Support for units > 1?
+  */
+ acpi_status acpi_os_wait_semaphore(acpi_handle handle, u32 units, u16 timeout)
+ {
+ 	acpi_status status = AE_OK;
+ 	struct semaphore *sem = (struct semaphore *)handle;
++	long jiffies;
+ 	int ret = 0;
+ 
+-
+ 	if (!sem || (units < 1))
+ 		return AE_BAD_PARAMETER;
+ 
+@@ -912,58 +910,14 @@ acpi_status acpi_os_wait_semaphore(acpi_handle handle, u32 units, u16 timeout)
+ 	ACPI_DEBUG_PRINT((ACPI_DB_MUTEX, "Waiting for semaphore[%p|%d|%d]\n",
+ 			  handle, units, timeout));
+ 
+-	/*
+-	 * This can be called during resume with interrupts off.
+-	 * Like boot-time, we should be single threaded and will
+-	 * always get the lock if we try -- timeout or not.
+-	 * If this doesn't succeed, then we will oops courtesy of
+-	 * might_sleep() in down().
+-	 */
+-	if (!down_trylock(sem))
+-		return AE_OK;
+-
+-	switch (timeout) {
+-		/*
+-		 * No Wait:
+-		 * --------
+-		 * A zero timeout value indicates that we shouldn't wait - just
+-		 * acquire the semaphore if available otherwise return AE_TIME
+-		 * (a.k.a. 'would block').
+-		 */
+-	case 0:
+-		if (down_trylock(sem))
+-			status = AE_TIME;
+-		break;
+-
+-		/*
+-		 * Wait Indefinitely:
+-		 * ------------------
+-		 */
+-	case ACPI_WAIT_FOREVER:
+-		down(sem);
+-		break;
+-
+-		/*
+-		 * Wait w/ Timeout:
+-		 * ----------------
+-		 */
+-	default:
+-		// TODO: A better timeout algorithm?
+-		{
+-			int i = 0;
+-			static const int quantum_ms = 1000 / HZ;
+-
+-			ret = down_trylock(sem);
+-			for (i = timeout; (i > 0 && ret != 0); i -= quantum_ms) {
+-				schedule_timeout_interruptible(1);
+-				ret = down_trylock(sem);
+-			}
+-
+-			if (ret != 0)
+-				status = AE_TIME;
+-		}
+-		break;
+-	}
++	if (timeout == ACPI_WAIT_FOREVER)
++		jiffies = MAX_SCHEDULE_TIMEOUT;
++	else
++		jiffies = msecs_to_jiffies(timeout);
++	
++	ret = down_timeout(sem, jiffies);
++	if (ret)
++		status = AE_TIME;
+ 
+ 	if (ACPI_FAILURE(status)) {
+ 		ACPI_DEBUG_PRINT((ACPI_DB_MUTEX,
+@@ -986,7 +940,6 @@ acpi_status acpi_os_signal_semaphore(acpi_handle handle, u32 units)
+ {
+ 	struct semaphore *sem = (struct semaphore *)handle;
+ 
+-
+ 	if (!sem || (units < 1))
+ 		return AE_BAD_PARAMETER;
+ 
+diff --git a/include/linux/semaphore.h b/include/linux/semaphore.h
+index 88f2a28..a107aeb 100644
+--- a/include/linux/semaphore.h
++++ b/include/linux/semaphore.h
+@@ -75,6 +75,12 @@ extern int __must_check down_killable(struct semaphore *sem);
+ extern int __must_check down_trylock(struct semaphore *sem);
+ 
+ /*
++ * As down(), except this function will return -ETIME if it fails to
++ * acquire the semaphore within the specified number of jiffies.
++ */
++extern int __must_check down_timeout(struct semaphore *sem, long jiffies);
++
++/*
+  * Release the semaphore.  Unlike mutexes, up() may be called from any
+  * context and even by tasks which have never called down().
+  */
+diff --git a/kernel/semaphore.c b/kernel/semaphore.c
+index 2da2aed..5a12a85 100644
+--- a/kernel/semaphore.c
++++ b/kernel/semaphore.c
+@@ -35,6 +35,7 @@
+ static noinline void __down(struct semaphore *sem);
+ static noinline int __down_interruptible(struct semaphore *sem);
+ static noinline int __down_killable(struct semaphore *sem);
++static noinline int __down_timeout(struct semaphore *sem, long jiffies);
+ static noinline void __up(struct semaphore *sem);
+ 
+ void down(struct semaphore *sem)
+@@ -104,6 +105,20 @@ int down_trylock(struct semaphore *sem)
+ }
+ EXPORT_SYMBOL(down_trylock);
+ 
++int down_timeout(struct semaphore *sem, long jiffies)
++{
++	unsigned long flags;
++	int result = 0;
++
++	spin_lock_irqsave(&sem->lock, flags);
++	if (unlikely(sem->count-- <= 0))
++		result = __down_timeout(sem, jiffies);
++	spin_unlock_irqrestore(&sem->lock, flags);
++
++	return result;
++}
++EXPORT_SYMBOL(down_timeout);
++
+ void up(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+@@ -142,10 +157,12 @@ static noinline void __sched __up_down_common(struct semaphore *sem)
+ }
+ 
+ /*
+- * Because this function is inlined, the 'state' parameter will be constant,
+- * and thus optimised away by the compiler.
++ * Because this function is inlined, the 'state' parameter will be
++ * constant, and thus optimised away by the compiler.  Likewise the
++ * 'timeout' parameter for the cases without timeouts.
+  */
+-static inline int __sched __down_common(struct semaphore *sem, long state)
++static inline int __sched __down_common(struct semaphore *sem, long state,
++								long timeout)
+ {
+ 	int result = 0;
+ 	struct task_struct *task = current;
+@@ -160,14 +177,20 @@ static inline int __sched __down_common(struct semaphore *sem, long state)
+ 			goto interrupted;
+ 		if (state == TASK_KILLABLE && fatal_signal_pending(task))
+ 			goto interrupted;
++		if (timeout <= 0)
++			goto timed_out;
+ 		__set_task_state(task, state);
+ 		spin_unlock_irq(&sem->lock);
+-		schedule();
++		timeout = schedule_timeout(timeout);
+ 		spin_lock_irq(&sem->lock);
+ 		if (waiter.up)
+ 			goto woken;
+ 	}
+ 
++ timed_out:
++	list_del(&waiter.list);
++	result = -ETIME;
++	goto woken;
+  interrupted:
+ 	list_del(&waiter.list);
+ 	result = -EINTR;
+@@ -187,17 +210,22 @@ static inline int __sched __down_common(struct semaphore *sem, long state)
+ 
+ static noinline void __sched __down(struct semaphore *sem)
+ {
+-	__down_common(sem, TASK_UNINTERRUPTIBLE);
++	__down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
+ }
+ 
+ static noinline int __sched __down_interruptible(struct semaphore *sem)
+ {
+-	return __down_common(sem, TASK_INTERRUPTIBLE);
++	return __down_common(sem, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
+ }
+ 
+ static noinline int __sched __down_killable(struct semaphore *sem)
+ {
+-	return __down_common(sem, TASK_KILLABLE);
++	return __down_common(sem, TASK_KILLABLE, MAX_SCHEDULE_TIMEOUT);
++}
++
++static noinline int __sched __down_timeout(struct semaphore *sem, long jiffies)
++{
++	return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
+ }
+ 
+ static noinline void __sched __up(struct semaphore *sem)
+-- 
+1.5.4.3
 
->-----Original Message-----
->From: Pierre Ossman [mailto:drzeus-list@drzeus.cx] 
->Sent: Friday, March 14, 2008 12:41 PM
->To: Len Brown; Pallipadi, Venkatesh
->Cc: linux-pm@lists.linux-foundation.org; Pavel Machek; LKML; 
->Adam Belay; Andi Kleen; Lee Revell
->Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
->
->On Thu, 13 Mar 2008 17:34:37 +0100
->Pierre Ossman <drzeus-list@drzeus.cx> wrote:
->
->> On Wed, 12 Mar 2008 15:11:17 -0400
->> Len Brown <lenb@kernel.org> wrote:
->> 
->> > 
->> > You'll see "desc" change if ACPI pulls a _CST change on you.
->> > 
->> 
->> It does not. But my C3 desc looks like this:
->> 
->> state3/desc:ACPI FFH INTEL MWAIT 0x50
->> 
->
->I must have done something wrong. I now see a switch between C6 and C3
->when I play with the AC cord.
->
-
-BIOSes do that on some platforms, exposing deeper C-states on battery.
-
->On that theme, I've tested fiddling with the real C-states. I've added
->a new max_hwcstate that makes ACPI downgrade MWAIT hints. I also made
->some odd discoveries:
->
->C3: More or less completely silent (I haven't tested it in a really
->quiet environment yet).
->C4: Constant noise
->C5: Constant noise
->C6: Intermittent noise
->
->When I say constant, I mean that the noise is not generated as a result
->of switching between modes (to any extent I can see at least). The
->average time spent in C3 (as reported by Powertop) is over 200 ms. So
->that would give a frequency of around 5 Hz, not a consistent tone of
->several kHz.
->
->Here's said patch. Please comment as I hope this can be merged:
->
->diff --git a/arch/x86/kernel/acpi/cstate.c 
->b/arch/x86/kernel/acpi/cstate.c
->index 8ca3557..389ea8b 100644
->--- a/arch/x86/kernel/acpi/cstate.c
->+++ b/arch/x86/kernel/acpi/cstate.c
->@@ -47,6 +47,9 @@ EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
-> 
-> /* The code below handles cstate entry with monitor-mwait 
->pair on Intel*/
-> 
->+static unsigned int max_hwcstate __read_mostly = -1;
->+module_param(max_hwcstate, uint, 0644);
->+
-> struct cstate_entry {
-> 	struct {
-> 		unsigned int eax;
->@@ -80,6 +83,7 @@ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
-> 	unsigned int edx_part;
-> 	unsigned int cstate_type; /* C-state type and not ACPI 
->C-state type */
-> 	unsigned int num_cstate_subtype;
->+	unsigned int hint;
-> 
-> 	if (!cpu_cstate_entry || c->cpuid_level < CPUID_MWAIT_LEAF )
-> 		return -1;
->@@ -100,16 +104,40 @@ int 
->acpi_processor_ffh_cstate_probe(unsigned int cpu,
-> 	cpuid(CPUID_MWAIT_LEAF, &eax, &ebx, &ecx, &edx);
-> 
-> 	/* Check whether this particular cx_type (in CST) is 
->supported or not */
->-	cstate_type = (cx->address >> MWAIT_SUBSTATE_SIZE) + 1;
->-	edx_part = edx >> (cstate_type * MWAIT_SUBSTATE_SIZE);
->-	num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
->+	hint = cx->address;
->+	for (;;) {
->+		/* Compute main C-state */
->+		cstate_type = (hint >> MWAIT_SUBSTATE_SIZE) + 1;
->+
->+		/* Determine number of sub-states for this C-state */
->+		edx_part = edx >> (cstate_type * MWAIT_SUBSTATE_SIZE);
->+		num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
->+
->+		/* Check if it's within constraints, and supported */
->+		if ((cstate_type > max_hwcstate) ||
->+			(num_cstate_subtype <=
->+				(hint & MWAIT_SUBSTATE_MASK))) {
->+			/* Move down a C-state and drop sub-state */
-
-Why go only one C-state down. Why not directly drop to max_hwcstate? We
-don't need to loop through that way.
-
-There are few other concerns which make me feel that the patch will be
-not as simple as this.
-1) BIOS may already be exporting the lower C-states as separate states.
-In which case we just have to ignore this deep C-state and return. I
-mean, on your system if BIOS exports C1, C3 and C6 hardware C-states and
-you give max_hwcstate as C3, then we don't want to have C1, C3 and C3 in
-our list.
-
-2) On same lines the other information in ACPI like (low power of 100
-and higher latency for C6 on your system) corresponds to hardware C6
-state. If we change the hardware C-state here to C3, then continue to
-use latency info from ACPI for hw C6, that may lead to inefficient state
-selection in the governor. Also, ther are assumptions related DMA,
-lapic, TSC etc in upper level ACPI based on "ACPI C-state" and changing
-underlying hardware C-state to C1 for example will change some of those
-behavior.
-
-
-Thanks,
-Venki
