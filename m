@@ -1,141 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYCNVXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757809AbYCNV2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbYCNVXp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 17:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYCNVXh
+	id S1757809AbYCNV2K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 17:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYCNV14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 17:23:37 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:22000 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbYCNVXg (ORCPT
+	Fri, 14 Mar 2008 17:27:56 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:60433 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754328AbYCNV1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 17:23:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CTZJ/FNkRbhIxvRohtF6Fv5fq7TJHKDbApNGrg6IzL0RNfKf6V9E/kuGVPrQmRrjWKsB1ccBMUDderma/Ic7c9STDy/JNMmMo4zOkgB7ofS+WFllY1/iNMm/R4D/+icYN0QNTctG1oZEN7G6EmAa4N3C3bFqPaKYb6eCqNnYvgA=
-Subject: Re: Updated generic semaphore patch set
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au, lenb@kernel.org,
-       dhowells@redhat.com, peterz@infradead.org, mingo@elte.hu
-In-Reply-To: <20080314204248.GV613@parisc-linux.org>
-References: <20080314204248.GV613@parisc-linux.org>
+	Fri, 14 Mar 2008 17:27:55 -0400
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+From: Zachary Amsden <zach@vmware.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
+       andrea@qumranet.com, clameter@sgi.com, a.p.zijlstra@chello.nl,
+       Keir Fraser <keir@xensource.com>, Ian Pratt <ian.pratt@xensource.com>
+In-Reply-To: <47DAC435.1050105@goop.org>
+References: <20080312132132.520833247@de.ibm.com>
+	 <Pine.LNX.4.64.0803131627450.17244@blonde.site> <47D9754B.1030509@goop.org>
+	 <Pine.LNX.4.64.0803131848080.800@blonde.site>
+	 <1205438038.14987.1.camel@bodhitayantram.eng.vmware.com>
+	 <47DAC435.1050105@goop.org>
 Content-Type: text/plain
-Date: Fri, 14 Mar 2008 14:23:33 -0700
-Message-Id: <1205529813.27712.15.camel@brick>
+Date: Fri, 14 Mar 2008 14:32:38 -0700
+Message-Id: <1205530358.14987.32.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH] semaphore: add stubs for kerneldoc to semphore functions
 
-The difference between down/down_trylock/down_interruptable/down_killable
-should be expanded to note the difference/use case, a simple stub is added here.
+On Fri, 2008-03-14 at 11:30 -0700, Jeremy Fitzhardinge wrote:
+> Zachary Amsden wrote:
+> > How about a fake hypervisor, which is really just a random page evictor,
+> > following the rules of CMM?
+> >   
+> 
+> Probably simpler to just have variants of the page_set_* functions which 
+> simulate the worst-possible host action immediately (ie, stealing pages, 
+> logically swapping them, etc).  That wouldn't give you full coverage, 
+> but it would go some way.  An async variant which schedules a change in 
+> a few milliseconds would help too.
+> 
+> I guess that's equivalent to having a special-purpose hypervisor built 
+> into the kernel (hm, sounds familiar...).
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-This applies on top of the last patch I sent, feel free to just use it as
-a base for a fuller version.
+It needn't be that hard on s390, I believe you don't need to worry about
+PTEs becoming asynchronous when stealing a page, since if I understand
+the hypervisor architecture, there is a per-page mapping level
+available, allowing you to generate discard faults on access.  It might
+be possible to use this mapping layer without implementing a full blown
+hypervisor.  Martin?
 
- kernel/semaphore.c |   37 ++++++++++++++++++++++++++++++++++---
- 1 files changed, 34 insertions(+), 3 deletions(-)
+For x86, at discard time, you would have to manually walk and invalidate
+any PTEs potentially mapping the discarded page, but there is already
+this great thing called Xen paravirt-ops which actually does that for
+completely different reasons (PT page protection).
 
-diff --git a/kernel/semaphore.c b/kernel/semaphore.c
-index bae1017..f48ac5e 100644
---- a/kernel/semaphore.c
-+++ b/kernel/semaphore.c
-@@ -98,6 +98,12 @@ static noinline void __sched __up(struct semaphore *sem)
- 	wake_up_process(waiter->task);
- }
- 
-+/**
-+ * down - acquire the semaphore
-+ * @sem: the semaphore to be acquired
-+ *
-+ * This can be called from interrupt context, unlike mutexes.
-+ */
- void down(struct semaphore *sem)
- {
- 	unsigned long flags;
-@@ -111,6 +117,12 @@ void down(struct semaphore *sem)
- }
- EXPORT_SYMBOL(down);
- 
-+/**
-+ * down_killable - try to acquire the semaphore
-+ * @sem: the semaphore to be acquired
-+ *
-+ * This can be called from interrupt context, unlike mutexes.
-+ */
- int down_interruptible(struct semaphore *sem)
- {
- 	unsigned long flags;
-@@ -127,6 +139,12 @@ int down_interruptible(struct semaphore *sem)
- }
- EXPORT_SYMBOL(down_interruptible);
- 
-+/**
-+ * down_killable - try to acquire the semaphore
-+ * @sem: the semaphore to be acquired
-+ *
-+ * This can be called from interrupt context, unlike mutexes.
-+ */
- int down_killable(struct semaphore *sem)
- {
- 	unsigned long flags;
-@@ -147,7 +165,7 @@ EXPORT_SYMBOL(down_killable);
-  * down_trylock - try to acquire the semaphore, without waiting
-  * @sem: the semaphore to be acquired
-  *
-- * Try to acquire the semaphore atomically.  Returns 0 if the mutex has
-+ * Try to acquire the semaphore atomically.  Returns 0 if the semaphore has
-  * been acquired successfully and 1 if it is contended.
-  *
-  * NOTE: This return value is inverted from both spin_trylock and
-@@ -171,7 +189,14 @@ int down_trylock(struct semaphore *sem)
- }
- EXPORT_SYMBOL(down_trylock);
- 
--int down_timeout(struct semaphore *sem, long jiffies)
-+/**
-+ * down_timeout - try to acquire the semaphore within a timeout
-+ * @sem: the semaphore to be acquired
-+ * @timeout: the length to wait before timing out, in jiffies
-+ *
-+ * This can be called from interrupt context, unlike mutexes.
-+ */
-+int down_timeout(struct semaphore *sem, long timeout)
- {
- 	unsigned long flags;
- 	int result = 0;
-@@ -180,13 +205,19 @@ int down_timeout(struct semaphore *sem, long jiffies)
- 	if (likely(sem->count > 0))
- 		sem->count--;
- 	else
--		result = __down_timeout(sem, jiffies);
-+		result = __down_timeout(sem, timeout);
- 	spin_unlock_irqrestore(&sem->lock, flags);
- 
- 	return result;
- }
- EXPORT_SYMBOL(down_timeout);
- 
-+/**
-+ * up - release the semaphore
-+ * @sem: the semaphore to be released
-+ *
-+ * This can be called from interrupt context, unlike mutexes.
-+ */
- void up(struct semaphore *sem)
- {
- 	unsigned long flags;
--- 
-1.5.4.4.684.g0e08
+I think a random exponential distribution for discard would be needed to
+catch all the racey failure modes.
 
-
+Zach
 
