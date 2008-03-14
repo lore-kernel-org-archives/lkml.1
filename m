@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYCNBXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYCNBaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYCNBXX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYCNBXO
+	id S1755429AbYCNBaw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYCNBao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:23:14 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50880 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752133AbYCNBXO (ORCPT
+	Thu, 13 Mar 2008 21:30:44 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57633 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752231AbYCNBan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:23:14 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 14 Mar 2008 02:22:30 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: fw-ohci: use dma_alloc_coherent for ar_buffer
-To: Jarod Wilson <jwilson@redhat.com>
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-In-Reply-To: <47D8679A.10303@s5r6.in-berlin.de>
-Message-ID: <tkrat.d74b3aa2387b0f72@s5r6.in-berlin.de>
-References: <200803121743.27170.jwilson@redhat.com>
- <47D8679A.10303@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Thu, 13 Mar 2008 21:30:43 -0400
+Date: Fri, 14 Mar 2008 10:34:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
+Message-Id: <20080314103431.ff07070c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
+References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Jarod Wilson wrote:
->> Resolves constant buffer failures on my own x86_64 laptop w/4GB of RAM and
->> likely to fix a number of other failures witnessed on x86_64 systems with
->> 4GB of RAM or more.
->> 
->> Signed-off-by: Jarod Wilson <jwilson@redhat.com>
-> 
-> Looks good at first glance.  Alas my PCs aren't affected, so I can only 
-> test it for lack of regressions.
-> 
-> I'm tempted to push this to Linus later this week.
+On Thu, 13 Mar 2008 16:45:42 -0700
+"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+> int __init reserve_bootmem(unsigned long addr, unsigned long size,
+>  			    int flags)
+>  {
+> -	return reserve_bootmem_core(NODE_DATA(0)->bdata, addr, size, flags);
+> +	int ret;
+> +	bootmem_data_t *bdata;
+> +	list_for_each_entry(bdata, &bdata_list, list) {
+> +		ret = can_reserve_bootmem_core(bdata, addr, size, flags);
+> +		if (ret < 0)
+> +			return ret;
+> +	}
+> +	list_for_each_entry(bdata, &bdata_list, list)
+> +		reserve_bootmem_core(bdata, addr, size, flags);
+> +	return 0;
+>  }
 
-I tested it on a 2GB EM64T machine, on PPC32, and i686.  I used the
-latter for stress-tests with SBP-2, DV, and IIDC traffic on two buses
-with 3 devices each, all active at once.
+why list_for_each twice ?
 
-I had one lock-up during the stress-tests which I suspect is the
-handle_at_packet panic, http://bugzilla.kernel.org/show_bug.cgi?id=9617
-which is unrelated to this patch.
-
-I committed your patch to linux1394-2.6.git, whose shortlog and diff
-from origin..for-linus looks now like this:
-
-Jarod Wilson (2):
-      firewire: fw-sbp2: set single-phase retry_limit
-      firewire: fw-ohci: use dma_alloc_coherent for ar_buffer
-
-Stefan Richter (9):
-      firewire: endianess fix
-      firewire: endianess annotations
-      firewire: fw-ohci: PPC PMac platform code
-      firewire: fw-ohci: Apple UniNorth 1st generation support
-      firewire: warn on fatal condition in topology code
-      firewire: update Kconfig help text
-      firewire: fw-sbp2: fix for SYM13FW500 bridge (Datafab disk)
-      ieee1394: sbp2: fix for SYM13FW500 bridge (Datafab disk)
-      firewire: fw-ohci: shut up false compiler warning on PPC32
-
- drivers/firewire/Kconfig          |   50 +++++--------
- drivers/firewire/fw-ohci.c        |  108 +++++++++++++++++++++-------
- drivers/firewire/fw-sbp2.c        |   36 +++++++++-
- drivers/firewire/fw-topology.c    |    3 +-
- drivers/firewire/fw-transaction.c |    2 +-
- drivers/firewire/fw-transaction.h |    6 +-
- drivers/ieee1394/sbp2.c           |    5 ++
- 7 files changed, 143 insertions(+), 67 deletions(-)
-
-I'd like to submit this to Linus later today (Friday).  It all looks
-like a bit too much for such a late -rc phase; but half of fw-ohci's
-diffstat is actually just the added PMac code which has already proven
-itself in ohci1394.
-
-There are also some small new commits to linux1394-2.6.git master, whose
-history is once again somewhat obfuscated by my pulling 'origin' and
-'for-linus' into master, so that vice versa master can be cleanly pulled
-into descendants of Linus' tree.
-
-http://me.in-berlin.de/~s5r6/linux1394/updates/2.6.25-rc5/patches/series
-gives a better picture of what is currently in the pipeline than git log
-would give.
--- 
-Stefan Richter
--=====-==--- --== -===-
-http://arcgraph.de/sr/
+Thanks,
+-Kame
 
