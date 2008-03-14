@@ -1,109 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYCNWBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYCNWHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbYCNWBc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 18:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYCNWBW
+	id S1757383AbYCNWHb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 18:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366AbYCNWHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 18:01:22 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:46501 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753201AbYCNWBV (ORCPT
+	Fri, 14 Mar 2008 18:07:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43181 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754083AbYCNWHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 18:01:21 -0400
-Message-Id: <1205532078.32744.1242485965@webmail.messagingengine.com>
-X-Sasl-Enc: XDXikVeePNSGw0OdryRZ3I3jq72oIuOJXMlgzY+T0uph 1205532078
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "LKML" <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
+	Fri, 14 Mar 2008 18:07:10 -0400
+Date: Fri, 14 Mar 2008 15:05:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, apw@shadowen.org,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>
+Subject: Re: linux-next20080314 build fails with !CONFIG_PM
+Message-Id: <20080314150554.1b79a6ed.akpm@linux-foundation.org>
+In-Reply-To: <47DA2FD6.3000100@linux.vnet.ibm.com>
+References: <47DA2FD6.3000100@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org>
-   <1205523826.7441.1242464129@webmail.messagingengine.com>
-   <20080314195520.GV2522@one.firstfloor.org>
-   <1205530409.27413.1242484373@webmail.messagingengine.com>
-   <20080314214205.GW2522@one.firstfloor.org>
-Subject: Re: [PATCH] x86: merge the simple bitops and move them to bitops.h
-In-Reply-To: <20080314214205.GW2522@one.firstfloor.org>
-Date: Fri, 14 Mar 2008 23:01:18 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008 22:42:05 +0100, "Andi Kleen" <andi@firstfloor.org>
-said:
-> On Fri, Mar 14, 2008 at 10:33:29PM +0100, Alexander van Heukelum wrote:
-> > static inline int fls64(__u64 x)
-> > {
-> >         __u32 h = x >> 32;
-> >         if (h)
-> >                 return fls(h) + 32;
-> >         return fls(x);
-> > }
-> > 
-> > I just wanted to move the 64-bit version to that header, with some
-> > ifdefs to select the right one.
+On Fri, 14 Mar 2008 13:27:10 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+> The next-20080314 tree build fails 
 > 
-> That's still far more than the single 64bit instruction fls64 uses
-
-I agree that it should end up using bsr. It would look like this in
-the end, I guess. Might be familiar.
-
-#if BITS_PER_LONG == 32
-static inline int fls64(__u64 x)
-{
-        __u32 h = x >> 32;
-        if (h)
-                return __fls(h) + 33;
-        return fls(x);
-}
-#else
-static inline int fls64(__u64 x)
-{
-        if (x == 0)
-                return 0;
-        return __fls(x) + 1;
-}
-#endif
-
-> > In fact I just found out that it only had an effect for 64 bit
-> > machines. Still, setting it unconditionally feels wrong.
+> drivers/serial/serial_core.c: In function `uart_add_one_port':
+> drivers/serial/serial_core.c:2359: error: invalid lvalue in assignment
+> make[2]: *** [drivers/serial/serial_core.o] Error 1
 > 
-> I don't think your feeling is correct.
-
-This is the only reason that this define exists. With another
-name it would be fine. HWEIGHT_USE_MULTIPLIER?
-
-> > > > x86_64 has a mysterious inline function set_bit_string, which is
-> > > > only used by pci-calgary_64.c and pci-gart_64.c. Not sure what to
-> > > > do with it.
-> > > 
-> > > It's generic and could really live in linux/bitops.h
-> > 
-> > It could. But it is a trivial (slow?) implementation. Probably fine
+> The config # CONFIG_PM was not set.The code which is causing the 
+> build failure is 
 > 
-> It is this way because the callers in 95+% of all cases only
-> set a single bit. For that case it is not slow.
+> 	device_can_wakeup(tty_dev) = 1;
+> 
+> when the CONFIG_PM is set the macro is preprocessed as
+> 
+> #define device_can_wakeup(dev) \
+>         ((dev)->power.can_wakeup)
+> 
+> and when not set, it becomes 0 = 1 
+> 
+> #define device_can_wakeup(dev)                  0
+> 
 
-And my feeling is that this is exactly the reason why this is
-not a good version for a generic implementation in bitops.h. But
-I don't care much.
+Caused by Alan's "PM: make wakeup flags available whenever CONFIG_PM is
+set" which I assume Len merged.
 
-Greetings,
-    Alexander
 
-> -Andi
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+Sorry, but that code should be dragged out and shot.  Doing this:
 
--- 
-http://www.fastmail.fm - Accessible with your email software
-                          or over the web
+> 	device_can_wakeup(tty_dev) = 1;
 
+is just gross and stupid.  It looks daft, it isn't C and it *requires* that
+device_can_wakeup() be implemented as a macro, which totally busts any
+concept of abstraction.
+
+
+The code previously had quite reasonable accessors:
+
+ #define device_set_wakeup_enable(dev,val) \
+        ((dev)->power.should_wakeup = !!(val))
+ #define device_may_wakeup(dev) \
+        (device_can_wakeup(dev) && (dev)->power.should_wakeup)
+
+can we please go back to that scheme?  Please also convert all these
+magical macros into inlined C functions.  One reason is that this:
+
++#define device_init_wakeup(dev,val) \
++       do { \
++               device_can_wakeup(dev) = !!(val); \
++               device_set_wakeup_enable(dev,val); \
++       } while(0)
+
+is buggy.  It evaluates its arguments multiple times and will cause
+failures when passed expressions which have side-effects.
+
+Alan, please also pass all future patches through checkpatch - there is no
+need to be adding trivial coding-style errors in this day and age.
+
+Thanks.
