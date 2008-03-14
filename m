@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYCNKRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYCNKTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYCNKRm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 06:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbYCNKRc
+	id S1756068AbYCNKTX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 06:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYCNKTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 06:17:32 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:30294
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752789AbYCNKRb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 06:17:31 -0400
-Message-Id: <47DA5EF1.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
-Date: Fri, 14 Mar 2008 10:18:09 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Cc: <fujita.tomonori@lab.ntt.co.jp>, <akpm@linux-foundation.org>,
-       <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] avoid endless loops in lib/swiotlb.c
-References: <47D8FE4A.76E4.0078.0@novell.com>
- <20080314182219P.tomof@acm.org>
-In-Reply-To: <20080314182219P.tomof@acm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 14 Mar 2008 06:19:14 -0400
+Received: from namei.org ([69.55.235.186]:39298 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751790AbYCNKTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 06:19:13 -0400
+Date: Fri, 14 Mar 2008 21:17:12 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+In-Reply-To: <20080313144142.GB11265@sergelap.austin.ibm.com>
+Message-ID: <Xine.LNX.4.64.0803142039460.32184@us.intercode.com.au>
+References: <20080313144142.GB11265@sergelap.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> FUJITA Tomonori <tomof@acm.org> 14.03.08 10:35 >>>
->On Thu, 13 Mar 2008 09:13:30 +0000
->"Jan Beulich" <jbeulich@novell.com> wrote:
->
->> Commit 681cc5cd3efbeafca6386114070e0bfb5012e249 introduced two
->> possibilities for entering an endless loop in lib/swiotlb.c:
->> 
->> - if max_slots is zero (possible if mask is ~0UL)
->
->Yeah, max_slots can not be zero. There are no drivers that have such
->mask. I'm not sure that we will have.
+On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
 
-You mean no current, in-tree drivers do this, and you imply the code
-is only used on 64-bits. Since Xen uses this file even for 32-bits, I had
-run into the case, and there's nothing preventing an in-tree driver
-from setting the mask to ~0UL, which would then result in a perhaps
-difficult to debug hang. For that reason, it seems better to me to fix
-this latent bug right away.
+> Implement a cgroup using the LSM interface to enforce open and mknod
+> on device files.
 
->...
->
->> - if the number of slots requested fits into a swiotlb segment, but is
->>   too large for the part of a segment which remains after considering
->>   offset_slots
->
->Sorry, I'm not sure what you mean. Can you give me an actual example
->numbers that leads to that?
+Actually, I'm not sure that the LSM approach in general is best here.
 
-For one part, it can happen if nslots > max_slots (which is a driver
-error [except for the case above where max_slots erroneously got set
-to zero], but shouldn't lead to a silent hang, especially as it didn't do so
-before).
+The LSM model is that standard DAC logic lives in the core kernel, and 
+that extended security logic (e.g. MAC) is called after DAC via hooks.  
+cgroups has introduced new security logic of its own, which is arguably 
+"standard DAC" when cgroups is enabled.
 
-For another part, requesting e.g. a transfer of 128k with a segment
-mask of 128k when the IOTLB isn't aligned to a 128k boundary would
-again lead to a silent hang, as would various cases where the request
-exceeds the segment size (and the segment mask is sufficiently small).
-Neither of these cases got stuck in the old code.
+I can understand Greg not wanting this security logic in the core kernel, 
+but it is specific to cgroups (which itself is security model agnostic) 
+and does not stand alone as a distinct security framework.
 
-Beyond that, maybe I was too quick in concluding this could happen
-even in less unusual cases - I think I didn't pay close enough attention
-to the fact that offset_slots + index gets masked by max_slots - 1.
-But even then I think the code looks simpler/safer and is smaller with
-the adjusted logic.
+The fact that all existing LSMs need to invoke exactly the same code is an 
+indicator that it doesn't belong in LSM.
 
-Jan
+Moving this logic into LSM means that instead of the cgroups security 
+logic being called from one place in the main kernel (where cgroups 
+lives), it must be called identically from each LSM (none of which are 
+even aware of cgroups), which I think is pretty obviously the wrong 
+solution.
 
+This is baggage which comes with cgroups -- please don't push it into LSM 
+to try and hide that.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
