@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYCNDHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYCNDJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYCNDHI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 23:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYCNDG5
+	id S1756453AbYCNDJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 23:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYCNDJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 23:06:57 -0400
-Received: from mga10.intel.com ([192.55.52.92]:38821 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750783AbYCNDG4 (ORCPT
+	Thu, 13 Mar 2008 23:09:19 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:14545 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYCNDJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 23:06:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,498,1199692800"; 
-   d="scan'208";a="533686660"
-Subject: Re: hackbench regression since 2.6.25-rc
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
-References: <1205394417.3215.85.camel@ymzhang>
-	 <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-	 <1205400538.3215.148.camel@ymzhang>
-	 <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 14 Mar 2008 11:04:02 +0800
-Message-Id: <1205463842.3215.188.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Thu, 13 Mar 2008 23:09:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=f4BqWbokEcnb6A0nt5j08Kd+nDqrTcxdIbkXxdcgQt1u7+nsx7GbyO/CBzvEtAjX9DUyjqVnqGylHOXDeSn6yukTca7VpHSabOCE2CUgUzG+7hx2+6Af/Ow6KvmTX1ieFAHfihf7P9wgLLb4I3rJew+CyXT8jOgYvIGz+rgTn4c=
+Message-ID: <86802c440803132009q40291587i7a9f41c686f0f10b@mail.gmail.com>
+Date: Thu, 13 Mar 2008 20:09:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Johannes Weiner" <hannes@saeurebad.de>
+Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <874pba3tny.fsf@saeurebad.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
+	 <87iqzq40yd.fsf@saeurebad.de>
+	 <86802c440803131804w1173b9b5n9d9f2d85c98b8901@mail.gmail.com>
+	 <874pba3tny.fsf@saeurebad.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-13 at 17:16 -0700, Christoph Lameter wrote:
-> Could you recompile the kernel with slub performance statistics and post 
-> the output of
-> 
-> slabinfo -AD
-Before testing with kernel 2.6.25-rc5:
-Name                   Objects    Alloc     Free   %Fast
-vm_area_struct            2795   135185   132587  93  29
-:0004096                    25   119045   119043  99  98
-:0000064                 12257   119671   107742  98  50
-:0000192                  3312    78563    75370  92  21
-:0000128                  4648    48143    43738  97  53
-dentry                   15217    46675    31527  95  72
-:0000080                 12784    33674    21206  99  97
-:0000016                  4367    25871    23705  99  78
-:0000096                  3001    22591    20084  99  92
-buffer_head               5536    18147    12884  97  42
-anon_vma                  1729    14948    14130  99  73
+On Thu, Mar 13, 2008 at 7:50 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>
+> Hi,
+>
+>  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>
+>  > On Thu, Mar 13, 2008 at 5:13 PM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>  >> Hi,
+>  >>
+>  >>  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>  >>
+>  >
+>  >>  >  static void __init free_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+>  >>  > @@ -407,6 +432,11 @@ unsigned long __init init_bootmem_node(p
+>  >>  >  void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+>  >>  >                                unsigned long size, int flags)
+>  >>  >  {
+>  >>  > +     int ret;
+>  >>  > +
+>  >>  > +     ret = can_reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
+>  >>  > +     if (ret < 0)
+>  >>  > +             return;
+>  >>  >       reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
+>  >>
+>  >>  I don't get it.  Sorry.  What is the purpose of
+>  >>  can_reserve_bootmem_core()?  It does exactly what reserve_bootmem_core
+>  >>  does besides actually setting the bits.  All the pre-checking you wanted
+>  >>  to have out of the way is repeated again in reserve_bootmem_core()
+>  >>  (well, almost all).
+>  >
+>  > can_reserve_bootmem_core is check if there is some pages is reserved
+>  > already with
+>  >>  > +                     if (flags & BOOTMEM_EXCLUSIVE)
+>  >>  > +                             return -EBUSY;
+>  >
+>  > so it will avoid the restoring later.
+>
+>  Yes, I understood that.  But you skipped the lower part of my email:
+>
+>  Your current state now is _not_ that you have one function that
+>  prechecks the range and another function that reserves it!  You have
+>  _two_ functions checking the range and the second reserving it.
 
+Yes
 
-After testing:
-Name                   Objects    Alloc     Free   %Fast
-:0000192                  3428 80093958 80090708  92   8
-:0000512                   374 80016030 80015715  68   7
-vm_area_struct            2875   224524   221868  94  20
-:0000064                 12408   134273   122227  98  47
-:0004096                    24   127397   127395  99  98
-:0000128                  4596    57837    53432  97  48
-dentry                   15659    51402    35824  95  64
-:0000016                  4584    29327    27161  99  76
-:0000080                 12784    33674    21206  99  97
-:0000096                  2998    26264    23757  99  93
+>
+>  Why double-check most of the things?  If you want to have a pre-check
+>  function, _move_ all the pre-checks into another function, not
+>  copy-paste them.
 
+for cross the nodes
 
-So block 192 and 512's and very active and their fast free percentage is low.
+>
+>  And is the condition of trying to reserve a range twice, the second time
+>  exclusively, so common that it is worth iterating twice over the nodes
+>  (once for checking, once for reserving) instead of just unwinding the
+>  reservation if it fails in between?
+>
+>  On something else: is there a bug when a memory range is reserved with
+>  BOOTMEM_EXCLUSIVE and then again without this flag?  The second call
+>  does not return an error then.
 
--yanmin
+Yes. only provide one direction protection.
+so always make sure crash_kernel reserve_bootmem as the last. that is doable.
 
-
+YH
