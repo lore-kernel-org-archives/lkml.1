@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYCNSYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYCNSYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYCNSYV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 14:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYCNSYG
+	id S1758576AbYCNSYf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 14:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758186AbYCNSYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 14:24:06 -0400
-Received: from main.carme.maven.pl ([193.239.45.138]:36370 "EHLO
-	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbYCNSYF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 14:24:05 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Organization: SelfOrganizing
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Date: Fri, 14 Mar 2008 19:23:32 +0100
-User-Agent: PLD Linux KMail/1.9.9
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080225230035.GA14503@khazad-dum.debian.net> <20080313231738.GH30864@khazad-dum.debian.net> <20080314073012.GF17940@kernel.dk>
-In-Reply-To: <20080314073012.GF17940@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	Fri, 14 Mar 2008 14:24:21 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3530 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758068AbYCNSYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 14:24:20 -0400
+Date: Fri, 14 Mar 2008 19:24:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: David Newall <davidn@davidnewall.com>, "Fred ." <eldmannen@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Keys get stuck
+Message-ID: <20080314182407.GA6990@ucw.cz>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com> <20080313171425.GA4840@ucw.cz> <Pine.LNX.4.64.0803141020380.30831@jikos.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803141923.32544.arekm@maven.pl>
+In-Reply-To: <Pine.LNX.4.64.0803141020380.30831@jikos.suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 of March 2008, Jens Axboe wrote:
-> On Thu, Mar 13 2008, Henrique de Moraes Holschuh wrote:
-> > On Wed, 12 Mar 2008, Arkadiusz Miskiewicz wrote:
-> > > > On Wed, Mar 12, 2008 at 10:35:29AM -0300, Henrique de Moraes Holschuh 
-wrote:
-> > > > > You shouldn't need to do anything other than teach userspace to
-> > > > > respond to them, as they generate the proper KEY_* events.  If you
-> > > > > are giving the AML _OSI(Linux), at least...
-> > >
-> > > I'm also seeing regression on my thinkpad z60m where with git tree
-> > > (tested again with 2 days old git) "thinkvantage" button stopped
-> > > working (pressing it was previously seen by some userspace kde which
-> > > run konsole).
-> > >
-> > > On 2.6.24 presses are seen.
-> >
-> > There were no changes to thinkpad-acpi that should have caused this.  So
-> > I need more data to find out what is happening.  Might be a problem
-> > elsewhere in ACPI, or some bug in thinkpad-acpi.
-> >
-> > You DO have /proc/acpi/event, correct?  Please send me the debug output
-> > of thinkpad-acpi when it is loaded with "debug=0xffff" as a parameter
-> > (and for extra bonus, please compile it with the verbose debug Kconfig
-> > option).
->
-> Updated to current kernel (saw it had a bunch of acpi fixes), and it now
-> works correctly! xev sees the events and the mixer sees mute/unmute and
-> volume up+down events.
+On Fri 2008-03-14 10:21:29, Jiri Kosina wrote:
+> On Thu, 13 Mar 2008, Pavel Machek wrote:
+> 
+> > No.
+> > hw is proper place to implement autorepeat, and along with some 
+> > buffering, it has chance to work. Kernel is not real-time, and X are 
+> > definitely not real-time, while autorepeat is real-time operation.
+> > It actually mostly works in ps/2 case. Buffer in hardware means that 
+> > pretty big interrupt delays can be tolerated without problems.
+> 
+> That's true. Unfortunately USB keyboards don't behave this way and there 
+> is nothing we can do about that.
 
-Same here, recent git works fine on z60m.
+Maybe. (Could we get host controller to effectively timestamp usb
+packets for us?)
 
+..but that is not a problem here, because X are broken even on ps/2
+keyboards. USB keyboards may be misdesigned, but they are not responsible
+for problems we see.
+							Pavel
 -- 
-Arkadiusz Mi¶kiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
