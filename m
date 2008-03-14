@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYCNIn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbYCNIul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbYCNIn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 04:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYCNInr
+	id S1754641AbYCNIul (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 04:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYCNIuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 04:43:47 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:39440 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbYCNInp (ORCPT
+	Fri, 14 Mar 2008 04:50:32 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:51909 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbYCNIub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 04:43:45 -0400
-Date: Fri, 14 Mar 2008 09:43:38 +0100
-From: Christof Schmitt <christof.schmitt@de.ibm.com>
-To: linux-btrace@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080314084337.GA9436@schmichrtp.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Fri, 14 Mar 2008 04:50:31 -0400
+From: Zhang Wei <wei.zhang@freescale.com>
+To: dan.j.williams@intel.com
+Cc: linux-kernel@vger.kernel.org, Zhang Wei <wei.zhang@freescale.com>
+Subject: [PATCH] fsldma: Fix the DMA halt when using DMA_INTERRUPT async_tx transfer.
+Date: Fri, 14 Mar 2008 16:47:36 +0800
+Message-Id: <1205484456-28605-1-git-send-email-wei.zhang@freescale.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 14 Mar 2008 08:50:20.0356 (UTC) FILETIME=[6F078040:01C885B0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When i first setup blktrace on a s390 z/VM guest to trace to another
-system and then put some load on the disk traced, the system oopses in
-subbuf_splice_actor. The setup is as simple as
+The DMA_INTERRUPT async_tx is a NULL transfer, thus the BCR(count register)
+is 0. When the transfer started with a byte count of zero, the DMA
+controller will triger a PE(programming error) event and halt, not a normal
+interrupt. I add special codes for PE event and DMA_INTERRUPT
+async_tx testing.
 
-# blktrace -h tracehost -d /dev/sda
-# dd if=/dev/sda of=/dev/null
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ drivers/dma/fsldma.c |   30 ++++++++++++++++++++++++++++++
+ drivers/dma/fsldma.h |    1 +
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-This is the stack trace from the current 2.6.25-rc5, i added
-noinline to subbuf_splice_actor, otherwise it will be inlined:
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 7c957c3..fb6be31 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -123,6 +123,11 @@ static dma_addr_t get_ndar(struct fsl_dma_chan *fsl_chan)
+ 	return DMA_IN(fsl_chan, &fsl_chan->reg_base->ndar, 64);
+ }
+ 
++static u32 get_bcr(struct fsl_dma_chan *fsl_chan)
++{
++	return DMA_IN(fsl_chan, &fsl_chan->reg_base->bcr, 32);
++}
++
+ static int dma_is_idle(struct fsl_dma_chan *fsl_chan)
+ {
+ 	u32 sr = get_sr(fsl_chan);
+@@ -426,6 +431,9 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_interrupt(
+ 	new->async_tx.cookie = -EBUSY;
+ 	new->async_tx.ack = 0;
+ 
++	/* Insert the link descriptor to the LD ring */
++	list_add_tail(&new->node, &new->async_tx.tx_list);
++
+ 	/* Set End-of-link to the last link descriptor of new list*/
+ 	set_ld_eol(fsl_chan, new);
+ 
+@@ -701,6 +709,23 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+ 	if (stat & FSL_DMA_SR_TE)
+ 		dev_err(fsl_chan->dev, "Transfer Error!\n");
+ 
++	/* Programming Error
++	 * The DMA_INTERRUPT async_tx is a NULL transfer, which will
++	 * triger a PE interrupt.
++	 */
++	if (stat & FSL_DMA_SR_PE) {
++		dev_dbg(fsl_chan->dev, "event: Programming Error INT\n");
++		if (get_bcr(fsl_chan) == 0) {
++			/* BCR register is 0, this is a DMA_INTERRUPT async_tx.
++			 * Now, update the completed cookie, and continue the
++			 * next uncompleted transfer.
++			 */
++			fsl_dma_update_completed_cookie(fsl_chan);
++			fsl_chan_xfer_ld_queue(fsl_chan);
++		}
++		stat &= ~FSL_DMA_SR_PE;
++	}
++
+ 	/* If the link descriptor segment transfer finishes,
+ 	 * we will recycle the used descriptor.
+ 	 */
+@@ -841,6 +866,11 @@ static int fsl_dma_self_test(struct fsl_dma_chan *fsl_chan)
+ 	tx3 = fsl_dma_prep_memcpy(chan, dma_dest, dma_src, test_size / 4, 0);
+ 	async_tx_ack(tx3);
+ 
++	/* Interrupt tx test */
++	tx1 = fsl_dma_prep_interrupt(chan);
++	async_tx_ack(tx1);
++	cookie = fsl_dma_tx_submit(tx1);
++
+ 	/* Test exchanging the prepared tx sort */
+ 	cookie = fsl_dma_tx_submit(tx3);
+ 	cookie = fsl_dma_tx_submit(tx2);
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index ba78c42..fddd6ae 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -40,6 +40,7 @@
+ #define FSL_DMA_MR_EOTIE	0x00000080
+ 
+ #define FSL_DMA_SR_CH		0x00000020
++#define FSL_DMA_SR_PE		0x00000010
+ #define FSL_DMA_SR_CB		0x00000004
+ #define FSL_DMA_SR_TE		0x00000080
+ #define FSL_DMA_SR_EOSI		0x00000002
+-- 
+1.5.4
 
-Unable to handle kernel pointer dereference at virtual kernel address 0000000000000000 
-Oops: 0004 [#1] PREEMPT SMP DEBUG_PAGEALLOC 
-Modules linked in: binfmt_misc vmur 
-CPU: 1 Not tainted 2.6.25-rc5 #10 
-Process blktrace (pid: 2655, task: 000000002bc38238, ksp: 000000002b0d79a8) 
-Krnl PSW : 0704100180000000 00000000000874e2 (subbuf_splice_actor+0x212/0x364) 
-           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:1 PM:0 EA:3 
-Krnl GPRS: 0a00000000000001 000000002b2bb000 0000000000001000 00000000000000c8 
-           0000000000001000 0000000000001000 0000000000000000 0000000000000200 
-           0000000000019000 0000000000000019 0000000000066fd8 000000002b0d79e8 
-           000003e040ed7938 0000000000000000 000000000008749e 000000002b0d79e8 
-Krnl Code: 00000000000874d4: e31050b00004       lg      %r1,176(%r5) 
-           00000000000874da: 1854               lr      %r5,%r4 
-           00000000000874dc: e3cc10000004       lg      %r12,0(%r12,%r1) 
-          >00000000000874e2: e3c320000024       stg    >%r12,0(%r3,%r2) 
-           00000000000874e8: e330b2700014       lgf     %r3,624(%r11) 
-           00000000000874ee: eb330004000d       sllg    %r3,%r3,4 
-           00000000000874f4: e320b2680004       lg      %r2,616(%r11) 
-           00000000000874fa: 1814               lr      %r1,%r4 
-Call Trace: 
-([<000000000008749e>] subbuf_splice_actor+0x1ce/0x364) 
- [<00000000000876a2>] relay_file_splice_read+0x6e/0xfc 
- [<00000000000e4f90>] do_splice_to+0x9c/0xb4 
- [<00000000000e545c>] splice_direct_to_actor+0xd8/0x21c 
- [<00000000000e55ec>] do_splice_direct+0x4c/0x70 
- [<00000000000bc2be>] do_sendfile+0x1b6/0x228 
- [<00000000000bc382>] sys_sendfile64+0x52/0xe4 
- [<00000000000241c0>] sysc_noemu+0x10/0x16 
- [<00000200001304da>] 0x200001304da 
-
-Some debug printks show that subbuf_pages in this case is 512 and the
-for loop goes until spd.nr_pages is 25, before hitting the problem. I
-am wondering if the numbers make sense here, since spd.pages has only
-16 pages allocated (with PIPE_BUFFERS). But i did not yet understand
-how much data this loop is supposed to assign.
-
-Does anybody have an idea what is happening here, or how to continue
-debugging this problem?
-
-Christof
