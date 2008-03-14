@@ -1,170 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYCNEIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYCNEOC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbYCNEIY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 00:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYCNEIO
+	id S1754374AbYCNEOC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 00:14:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYCNENx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 00:08:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60999 "EHLO hera.kernel.org"
+	Fri, 14 Mar 2008 00:13:53 -0400
+Received: from colo.lackof.org ([198.49.126.79]:57221 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbYCNEIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 00:08:13 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: ACPI lockdep warning on boot, 2.6.25-rc5
-Date: Fri, 14 Mar 2008 00:07:31 -0400
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <E1JZOGd-00057d-BU@pomaz-ex.szeredi.hu> <200803131614.33386.lenb@kernel.org> <20080314001819.GA32584@linux-os.sc.intel.com>
-In-Reply-To: <20080314001819.GA32584@linux-os.sc.intel.com>
+	id S1750889AbYCNENx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 00:13:53 -0400
+Date: Thu, 13 Mar 2008 22:13:41 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: akepner@sgi.com
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Mark Nelson <mdnelson@au1.ibm.com>
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
+	interface
+Message-ID: <20080314041341.GC24794@colo.lackof.org>
+References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com> <20080229182504.GA18102@colo.lackof.org> <1204310276.4003.48.camel@localhost.localdomain> <20080305181307.GR17802@sgi.com> <1204783306.14874.37.camel@concordia.ozlabs.ibm.com> <20080312011954.GN12370@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803140007.31515.lenb@kernel.org>
+In-Reply-To: <20080312011954.GN12370@sgi.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied to acpi-test
+On Tue, Mar 11, 2008 at 06:19:54PM -0700, akepner@sgi.com wrote:
+> 
+> I have a new proposal for the documentation portion of this 
+> patchset. The code changes essentially amount to 
+> s/DMA_ATTR_SYNC_ON_WRITE/DMA_ATTR_BARRIER/ so thought I'd send 
+> just the doc change for comments now.
+> 
+> The description of the DMA_ATTR_BARRIER is now very short and 
+> generic - no particular architecture is even mentioned. I can add 
+> a sentence or two near the architecture-specific changes in 
+> arch/ia64/sn/pci/pci_dma.c about why the implementation works 
+> on ia64/sn, etc.
+
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
+
+One part of me still wants some history in the doc. But I think
+it's better to keep it short and let folks look for implementations
+and make sure they are sufficiently well explained.
 
 thanks,
--Len
+grant
 
-On Thursday 13 March 2008, Venki Pallipadi wrote:
-> On Thu, Mar 13, 2008 at 04:14:32PM -0400, Len Brown wrote:
-> > On Wednesday 12 March 2008, Rafael J. Wysocki wrote:
-> > > On Wednesday, 12 of March 2008, Miklos Szeredi wrote:
-> > > > I don't know whether this is a problem in reality or not, but it does
-> > > > interfere with debugging the rest of the kernel, since this turns off
-> > > > lockdep at boottime.
-> > > 
-> > > Well, I think Venki should see it (CCed).
-> > > 
-> > > Thanks,
-> > > Rafael
-> > > 
-> > >  
-> > > > [    0.592488] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-> > > > [    0.593038] ------------[ cut here ]------------
-> > > > [    0.593267] WARNING: at kernel/lockdep.c:2035 trace_hardirqs_on+0xa0/0x115()
-> > > > [    0.593596] Modules linked in:
-> > > > [    0.593756] Pid: 0, comm: swapper Not tainted 2.6.25-rc5 #8
-> > > > [    0.594017] 
-> > > > [    0.594017] Call Trace:
-> > > > [    0.594216]  [<ffffffff80231663>] warn_on_slowpath+0x58/0x6b
-> > > > [    0.594495]  [<ffffffff80495966>] ? _spin_unlock_irqrestore+0x38/0x47
-> > > > [    0.594809]  [<ffffffff80329a86>] ? acpi_os_release_lock+0x9/0xb
-> > > > [    0.595103]  [<ffffffff80337840>] ? acpi_set_register+0x161/0x173
-> > > > [    0.595401]  [<ffffffff8034c8d4>] ? acpi_processor_idle+0x1de/0x546
-> > > > [    0.595706]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
-> > > > [    0.595970]  [<ffffffff8024fc0e>] trace_hardirqs_on+0xa0/0x115
-> > > > [    0.596049]  [<ffffffff8034c6f6>] ? acpi_processor_idle+0x0/0x546
-> > > > [    0.596346]  [<ffffffff8034c8d4>] acpi_processor_idle+0x1de/0x546
-> > > > [    0.596642]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
-> > > > [    0.596912]  [<ffffffff8034c6f6>] ? acpi_processor_idle+0x0/0x546
-> > > > [    0.597209]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
-> > > > [    0.597472]  [<ffffffff8020a355>] cpu_idle+0xa7/0xd1
-> > > > [    0.597717]  [<ffffffff80485fa1>] rest_init+0x55/0x57
-> > > > [    0.597957]  [<ffffffff8062fb49>] start_kernel+0x29d/0x2a8
-> > > > [    0.598215]  [<ffffffff8062f1da>] _sinittext+0x1da/0x1e1
-> > > > [    0.598464] 
-> > > > [    0.598546] ---[ end trace 778e504de7e3b1e3 ]---
-> > 
-> > Venki,
-> > 
-> > this reproduces in my t61 using Miklos' config (though i had to increase
-> > the logbuff to catch it)
-> > 
-> > -Len
-> 
-> Below patch should fix this warning. I would say warning is pretty harmless.. 
-> 
-> Thanks,
-> Venki
-> 
-> ---
-> 
-> This avoids the harmless WARNING by lockdep in acpi_processor_idle().
-> 
-> The reason for WARNING is because at the depth of idle handling code,
-> some of the idle handlers disable interrupts, some times, while returning from
-> the idle handler. After return, acpi_processor_idle and few other routines
-> in the file did an unconditional local_irq_enable(). With LOCKDEP, enabling
-> irq when it is alread enabled generates the below WARNING.
-> 
-> > > [    0.593038] ------------[ cut here ]------------
-> > > [    0.593267] WARNING: at kernel/lockdep.c:2035 trace_hardirqs_on+0xa0/0x115()
-> > > [    0.593596] Modules linked in:
-> > > [    0.593756] Pid: 0, comm: swapper Not tainted 2.6.25-rc5 #8
-> > > [    0.594017] 
-> > > [    0.594017] Call Trace:
-> > > [    0.594216]  [<ffffffff80231663>] warn_on_slowpath+0x58/0x6b
-> > > [    0.594495]  [<ffffffff80495966>] ? _spin_unlock_irqrestore+0x38/0x47
-> > > [    0.594809]  [<ffffffff80329a86>] ? acpi_os_release_lock+0x9/0xb
-> > > [    0.595103]  [<ffffffff80337840>] ? acpi_set_register+0x161/0x173
-> > > [    0.595401]  [<ffffffff8034c8d4>] ? acpi_processor_idle+0x1de/0x546
-> > > [    0.595706]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
-> > > [    0.595970]  [<ffffffff8024fc0e>] trace_hardirqs_on+0xa0/0x115
-> > > [    0.596049]  [<ffffffff8034c6f6>] ? acpi_processor_idle+0x0/0x546
-> > > [    0.596346]  [<ffffffff8034c8d4>] acpi_processor_idle+0x1de/0x546
-> > > [    0.596642]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
-> > > [    0.596912]  [<ffffffff8034c6f6>] ? acpi_processor_idle+0x0/0x546
-> > > [    0.597209]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
-> > > [    0.597472]  [<ffffffff8020a355>] cpu_idle+0xa7/0xd1
-> > > [    0.597717]  [<ffffffff80485fa1>] rest_init+0x55/0x57
-> > > [    0.597957]  [<ffffffff8062fb49>] start_kernel+0x29d/0x2a8
-> > > [    0.598215]  [<ffffffff8062f1da>] _sinittext+0x1da/0x1e1
-> > > [    0.598464] 
-> > > [    0.598546] ---[ end trace 778e504de7e3b1e3 ]---
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> 
-> Index: linux-2.6.git/drivers/acpi/processor_idle.c
-> ===================================================================
-> --- linux-2.6.git.orig/drivers/acpi/processor_idle.c	2008-03-12 05:17:12.000000000 -0700
-> +++ linux-2.6.git/drivers/acpi/processor_idle.c	2008-03-13 10:00:47.000000000 -0700
-> @@ -216,8 +216,10 @@
->  	 * test NEED_RESCHED:
->  	 */
->  	smp_mb();
-> -	if (!need_resched())
-> +	if (!need_resched()) {
->  		safe_halt();
-> +		local_irq_disable();
-> +	}
->  	current_thread_info()->status |= TS_POLLING;
->  }
->  
-> @@ -421,7 +423,9 @@
->  		else
->  			acpi_safe_halt();
->  
-> -		local_irq_enable();
-> +		if (irqs_disabled())
-> +			local_irq_enable();
+> diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+> index e69de29..a4106ec 100644
+> --- a/Documentation/DMA-attributes.txt
+> +++ b/Documentation/DMA-attributes.txt
+> @@ -0,0 +1,24 @@
+> +			DMA attributes
+> +			==============
 > +
->  		return;
->  	}
->  
-> @@ -530,7 +534,9 @@
->  		 *       skew otherwise.
->  		 */
->  		sleep_ticks = 0xFFFFFFFF;
-> -		local_irq_enable();
-> +		if (irqs_disabled())
-> +			local_irq_enable();
+> +This document describes the semantics of the DMA attributes that are 
+> +defined in linux/dma-attrs.h. 
 > +
->  		break;
->  
->  	case ACPI_STATE_C2:
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
-
+> +DMA_ATTR_BARRIER
+> +----------------
+> +
+> +DMA_ATTR_BARRIER is a barrier attribute for DMA.  DMA to a memory 
+> +region with the DMA_ATTR_BARRIER attribute forces all pending DMA 
+> +writes to complete, and thus provides a mechanism to strictly order 
+> +DMA from a device across all intervening busses and bridges.  This 
+> +barrier is not specific to a particular type of interconnect, it 
+> +applies to the system as a whole, and so its implementation must 
+> +account for the idiosyncracies of the system all the way from the 
+> +DMA device to memory. 
+> +
+> +As an example of a situation where DMA_ATTR_BARRIER would be useful, 
+> +suppose that a device does a DMA write to indicate that data is ready 
+> +and available in memory.  The DMA of the "completion indication" could
+> +race with data DMA.  Mapping the memory used for completion indications 
+> +with DMA_ATTR_BARRIER would prevent the race.
+> +
