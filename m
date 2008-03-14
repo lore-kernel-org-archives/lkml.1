@@ -1,151 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbYCNOBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbYCNOEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbYCNOBc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYCNOBX
+	id S1756544AbYCNOEb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYCNOEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:01:23 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:44084 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbYCNOBW (ORCPT
+	Fri, 14 Mar 2008 10:04:23 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:1936 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbYCNOEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:01:22 -0400
+	Fri, 14 Mar 2008 10:04:22 -0400
+Message-ID: <47DA85E0.2080501@hp.com>
+Date: Fri, 14 Mar 2008 10:04:16 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18394.34045.414717.427277@stoffel.org>
-Date: Fri, 14 Mar 2008 10:00:29 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-In-Reply-To: <200803131923.14840.phillips@phunq.net>
-References: <200803092346.17556.phillips@phunq.net>
-	<200803131214.40321.phillips@phunq.net>
-	<20080313162711.3d483e6c@cuia.boston.redhat.com>
-	<200803131923.14840.phillips@phunq.net>
-X-Mailer: VM 8.0.9 under Emacs 22.1.1 (i486-pc-linux-gnu)
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Stacking bio support - patch 1/4 for 2.6.23.17 (stable)
+References: <200803110352.41479.phillips@phunq.net> <47DA84B7.1000409@hp.com>
+In-Reply-To: <47DA84B7.1000409@hp.com>
+Content-Type: multipart/mixed;
+ boundary="------------080509010107060608090700"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Daniel" == Daniel Phillips <phillips@phunq.net> writes:
+This is a multi-part message in MIME format.
+--------------080509010107060608090700
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Daniel> On Thursday 13 March 2008 13:27, Rik van Riel wrote:
->> On Thu, 13 Mar 2008 11:14:39 -0800
->> Daniel Phillips <phillips@phunq.net> wrote:
->> 
->> > Scream is an exaggeration, and FUD only applies to somebody who
->> > consistently overlooks the primary proposition in this design: that the
->> > battery backed power supply, computer hardware and Linux are reliable
->> > enough to entrust your data to them. 
->> 
->> That's a reasonable enough assumption, to anyone who has never dealt
->> with software before, or whose data is just not important.
->> 
->> People who have dealt with computers for longer will know that anything
->> can fail at any time, and usually does unexpectedly and at bad moments.
->> 
->> Some defensive programming to deal with random failures could make your
->> project appealing to a lot more people than it would appeal to in its
->> current state.
+
+
+--------------080509010107060608090700
+Content-Type: text/x-patch;
+ name="0001-BIO-single-alloc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-BIO-single-alloc.patch"
+
+>From 7a91a074d4442d37ec43830c58ac94d39d17bd3d Mon Sep 17 00:00:00 2001
+From: Alan D. Brunelle <alan.brunelle@hp.com>
+Date: Fri, 14 Mar 2008 07:52:09 -0400
+Subject: [PATCH] BIO single alloc
+
+
+---
+ drivers/md/dm.c |   76 ++++++++++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 58 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index fac09d5..02173df 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -491,11 +491,9 @@ static void dec_pending(struct dm_io *io, int error)
+ 	}
+ }
  
-Daniel> In its current state it has bugs and so should appeal only to
-Daniel> programmers who like to work with cutting edge stuff.
+-static int clone_endio(struct bio *bio, unsigned int done, int error)
++static int dm_endio(struct bio *bio, unsigned int done, int error, struct dm_target_io *tio)
+ {
+ 	int r = 0;
+-	struct dm_target_io *tio = bio->bi_private;
+-	struct mapped_device *md = tio->io->md;
+ 	dm_endio_fn endio = tio->ti->type->end_io;
+ 
+ 	if (bio->bi_size)
+@@ -522,17 +520,28 @@ static int clone_endio(struct bio *bio, unsigned int done, int error)
+ 	}
+ 
+ 	dec_pending(tio->io, error);
++	return r;
++}
+ 
++static int clone_endio(struct bio *bio, unsigned int done, int error)
++{
++	struct dm_target_io *tio = bio->bi_private;
++	struct mapped_device *md = tio->io->md;
++	int r = dm_endio(bio, done, error, tio);
+ 	/*
+ 	 * Store md for cleanup instead of tio which is about to get freed.
+ 	 */
+ 	bio->bi_private = md->bs;
+-
+ 	bio_put(bio);
+ 	free_tio(md, tio);
+ 	return r;
+ }
+ 
++static int dm_endio_pop(struct bio *bio, unsigned int done, int error)
++{
++	return dm_endio(bio, done, error, bio_pop(bio));
++}
++
+ static sector_t max_io_len(struct mapped_device *md,
+ 			   sector_t sector, struct dm_target *ti)
+ {
+@@ -553,8 +562,7 @@ static sector_t max_io_len(struct mapped_device *md,
+ 	return len;
+ }
+ 
+-static void __map_bio(struct dm_target *ti, struct bio *clone,
+-		      struct dm_target_io *tio)
++static void __map_bio(struct dm_target *ti, struct bio *clone, struct dm_target_io *tio)
+ {
+ 	int r;
+ 	sector_t sector;
+@@ -600,6 +608,37 @@ static void __map_bio(struct dm_target *ti, struct bio *clone,
+ 	}
+ }
+ 
++static void dm_map(struct bio *bio, struct dm_target *ti, struct dm_target_io *tio)
++{
++	int r;
++	sector_t sector;
++
++	/*
++	 * Map the bio.  If r == 0 we don't need to do
++	 * anything, the target has assumed ownership of
++	 * this io.
++	 */
++	atomic_inc(&tio->io->io_count);
++	sector = bio->bi_sector;
++	r = ti->type->map(ti, bio, &tio->info);
++	if (r == DM_MAPIO_REMAPPED) {
++		/* the bio has been remapped so dispatch it */
++
++		blk_add_trace_remap(bdev_get_queue(bio->bi_bdev), bio,
++				    tio->io->bio->bi_bdev->bd_dev,
++				    bio->bi_sector, sector);
++
++		generic_make_request(bio);
++	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
++		/* error the io and bail out, or requeue it if needed */
++		bio_pop(bio);
++		dec_pending(tio->io, r);
++	} else if (r) {
++		DMWARN("unimplemented target map return value: %d", r);
++		BUG();
++	}
++}
++
+ struct clone_info {
+ 	struct mapped_device *md;
+ 	struct dm_table *map;
+@@ -676,23 +715,18 @@ static int __clone_and_map(struct clone_info *ci)
+ 
+ 	max = max_io_len(ci->md, ci->sector, ti);
+ 
+-	/*
+-	 * Allocate a target io object.
+-	 */
+-	tio = alloc_tio(ci->md);
+-	tio->io = ci->io;
+-	tio->ti = ti;
+-	memset(&tio->info, 0, sizeof(tio->info));
+-
+ 	if (ci->sector_count <= max) {
+ 		/*
+ 		 * Optimise for the simple case where we can do all of
+ 		 * the remaining io with a single clone.
+ 		 */
+-		clone = clone_bio(bio, ci->sector, ci->idx,
+-				  bio->bi_vcnt - ci->idx, ci->sector_count,
+-				  ci->md->bs);
+-		__map_bio(ti, clone, tio);
++		tio = bio_push(bio, sizeof(*tio), dm_endio_pop);
++		*tio = (typeof(*tio)){ .io = ci->io, .ti = ti };
++		bio->bi_sector = ci->sector;
++		bio->bi_idx = ci->idx;
++		bio->bi_size = to_bytes(ci->sector_count);
++		bio->bi_flags &= ~(1 << BIO_SEG_VALID);
++		dm_map(bio, ti, tio);
+ 		ci->sector_count = 0;
+ 
+ 	} else if (to_sector(bio->bi_io_vec[ci->idx].bv_len) <= max) {
+@@ -704,6 +738,9 @@ static int __clone_and_map(struct clone_info *ci)
+ 		sector_t remaining = max;
+ 		sector_t bv_len;
+ 
++		tio = alloc_tio(ci->md);
++		*tio = (typeof(*tio)){ .io = ci->io, .ti = ti };
++
+ 		for (i = ci->idx; remaining && (i < bio->bi_vcnt); i++) {
+ 			bv_len = to_sector(bio->bi_io_vec[i].bv_len);
+ 
+@@ -730,6 +767,9 @@ static int __clone_and_map(struct clone_info *ci)
+ 		sector_t remaining = to_sector(bv->bv_len);
+ 		unsigned int offset = 0;
+ 
++		tio = alloc_tio(ci->md);
++		*tio = (typeof(*tio)){ .io = ci->io, .ti = ti };
++
+ 		do {
+ 			if (offset) {
+ 				ti = dm_table_find_target(ci->map, ci->sector);
+-- 
+1.5.2.5
 
-As a prof SysAdmin and long time lurker, I feel I can chime in here a
-bit.  No one is arguing that your code isn't neat, or have a feature
-which would be nice to have.  They are arguing that your failure mode
-(when, not if, it fails for some reason) is horrible.  
 
-Who remembers the NFS PrestoServer NFS accelerator cards?  You could
-buy this PCI (or was it TurboChannel back then?) card for your DEC
-Alphas.  It came with 4Mb of battery backed RAM so that NFS writes
-could be ack'd before being written to disk.  We had just completed
-moving all the user home directories to this system that week, say
-around 4gb of data?  Remember, this was around 94 sometime at a
-University.  We were also using Advfs on DEC OSF/1, probably v1.2,
-maybe v1.3. 
-
-Anyway, I came into work thursday night to pickup something I had
-forgotten before I took a three day weekend.  The operator on duty
-asked me to look at the server since it had crashed and wasn't coming
-up properly.
-
-I ended up staying there until 9am the next morning working on it.
-Turned out to be both user and hardware error.  We had forgotten to
-remove the piece of plastic to enable to battery on the card, but the
-circuits on the card lied and said battery voltage was fine no matter
-what the battery really was.  
-
-So the system crashed.  4Mb of data from the filesystem when bye-bye.
-Can you say oops?   What a total pain to diagnose.  But even on a log
-structured filesystem, having 4Mb of data just get wiped out was
-enough to destroy all the filesystem.
-
-We ended up rolling back to the original server and junking the week
-of changes that users had made, and restoring chunks for users as they
-requested it.  Luckily, it was early in the semester and not alot of
-stuff had gotten done yet.  
-
-Now do you see why people are a bit hesitant of this software and it's
-useage model?  While you might get great performance numbers, just one
-crash and the need to restore data from tape (or I'll even give you
-that you're doing D2D backups) or other media will destroy your uptime
-and overall performance.  
-
-Daniel> So long as you keep insisting it has to have some kind of slow
-Daniel> transactional sync to disk in order to be reliable enough for
-Daniel> enterprise use, I have to leave you in my FUD filter.  Did you
-Daniel> read Ric's post where he mentions the UPS in some EMS
-Daniel> products?  Ask yourself, what is the UPS for?  Then ask
-Daniel> yourself if EMC makes billions of dollars selling those things
-Daniel> to enterprise clients.
-
-You cannot compare the design of Ramback to an EMC solution because
-you depend on Joe User's random UPS being properly sized, configured,
-maintained, etc.  
-
-EMC does all that integration work themselves.  And they size the UPS
-to *only* support their needs, and they *know* those needs down to a
-T, so they can make a more certain statement of reliability.  But I
-bet even they have been burned.  
-
-Think belt and suspenders.  Be paranoid.  
-
-Now, if you could wire up RamBack to work with an addon PCI(*) NVRAM
-board of some sort, then I'd possibly be interested in running it,
-because then I only have to depend on the battery on the NVRAM board
-working right, and that's a simpler set of constraints to confirm.  
-
-Again, as a professional SysAdmin, I could *never* justify using
-RamBack in my business because the potential downsides do NOT justify
-the speedup.  
-
-Sure, saving my engineers time by getting them faster disks, more
-disk space, bigger RAM and more CPUs is justifiable in a heartbeat.
-But I also pay for NetApp NFS fileservers and their reliability and
-resilienciecy when they *do* crash.  And crash they do, even though
-they are not a general use OS.  
-
-quoting some number of '9's reliability is all fine and dandy, but my
-users will be happy if my file server crashed once a month but came
-back up working in two minutes.  With Ramback, if the system crashes,
-how long will it take for a system to come back up and be useable?
-
-So reliability isn't just about the components, it's about the
-service.  And a bunch of really short outages doesn't kill me like one
-huge outage does, even if I've been getting killer filesystem
-performance before and after the outage.  
-
-I admit, my work is compute bound, but when users have jobs running
-for days and sometimes weeks... downtime, esp downtime with horrible
-consequences, isn't acceptable.  But downtime that let's them get back
-up and working quickly is more acceptable.  
-
-This is the point people are trying to make Daniel, that the
-consequences of a single RamBack system failure aren't trivial.
-
-Thanks,
-John
+--------------080509010107060608090700--
