@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYCNQXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbYCNQ0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbYCNQXV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYCNQXH
+	id S1757134AbYCNQ0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbYCNQ0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:23:07 -0400
-Received: from sacred.ru ([62.205.161.221]:59805 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbYCNQXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:23:04 -0400
-Message-ID: <47DAA660.90401@openvz.org>
-Date: Fri, 14 Mar 2008 19:22:56 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 14 Mar 2008 12:26:10 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:26656 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754448AbYCNQ0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 12:26:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ocb8aYk5gjKP4EI4Fl3dgaQivroSDlFxbc1d3GYqAwOHrP/njn123HQNZdngWrk2CKp2EEYZyRRWISW3sjEkynlglbRMcFpKJbEicr4BDmnFrDfRnUrhFDhT7lFSEed4kVqmE43AaHZadJPa3hdcm3+puEzo7KgrRq+5K2TEkqg=
+Message-ID: <86802c440803140926n2ec2bd2fscf0f3e9a6e2e4d2e@mail.gmail.com>
+Date: Fri, 14 Mar 2008 09:26:07 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Yasunori Goto" <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH 3/3 (RFC)](memory hotplug) align maps for easy removing
+Cc: "Badari Pulavarty" <pbadari@us.ibm.com>,
+       "Linux Kernel ML" <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <20080314234205.20DD.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Audit vs netlink interaction problem
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 19:22:57 +0300 (MSK)
+Content-Disposition: inline
+References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
+	 <20080314234205.20DD.E1E9C6FF@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, David!
+On Fri, Mar 14, 2008 at 7:44 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+>
+>  To free memmap and usemap easier, this patch aligns these maps to page size.
+>
+>  I know usemap size is too small to align page size.
+>  It will be waste of area. So, there may be better way than this.
+>
+>  Followings are pros. and cons with other my ideas.
+>  But I'm not sure which is better way.
+>
+>  a) Packing many section's usemap on one page. Count how many sections use
+>    it in page_count.
+>   Pros.
+>     - Avoid waisting area.
+>   Cons.
+>     - This usemap's page will be hard(or impossible) to remove due to
+>       dependency.
+>       It should be allocated on un-movable zone/node.
+>       (I'm not sure it's impact of performance.)
+>     - Nodes' structures may have to be packed like usemap???
+>
+>  b) Pack memmap and usemap in one allocation.
+>   Pros.
+>     - May avoid wasting area if its size is suitable.
+>   Cons.
+>     - If size is not suitable, it will be same as this patch.
+>     - This way is not good for VMEMMAP_SPARSEMEM.
+>       At least, it is reverse way against Yinghai-san's fix.
+>
+>  c) This way.
+>   Pros.
+>     - Very easy to remove.
+>   Cons.
+>     - Waist of area.
+>
+>  Any other idea is welcome.
+>
+>
+>  Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+>
+>  ---
+>   mm/sparse.c |    7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
+>
+>  Index: current/mm/sparse.c
+>  ===================================================================
+>  --- current.orig/mm/sparse.c    2008-03-11 20:15:41.000000000 +0900
+>  +++ current/mm/sparse.c 2008-03-11 20:58:18.000000000 +0900
+>  @@ -244,7 +244,8 @@
+>         struct mem_section *ms = __nr_to_section(pnum);
+>         int nid = sparse_early_nid(ms);
+>
+>  -       usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+>  +       usemap = alloc_bootmem_pages_node(NODE_DATA(nid),
+>  +                                         PAGE_ALIGN(usemap_size()));
 
-I've found an interesting feature of how audit uses netlink for
-communications. Look.
+if we allocate usemap continuously,
+old way could make different usermap share one page. usermap size is
+only about 24bytes. align to 128bytes ( the SMP cache lines)
 
-The kauditd_thread() calls netlink_unicast() and passes the 
-audit_pid to it. The audit_pid, in turn, is received from the 
-user space and the tool (I've checked the audit v1.6.9) uses 
-getpid() to pass one in the kernel. Besides, this tool doesn't
-bind the netlink socket to this id, but simply creates it 
-allowing the kernel to auto-bind one.
+sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
+sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
+sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
+sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
 
-That's the preamble.
 
-The problem is that netlink_autobind() _does_not_ guarantees
-that the socket will be auto-binded to the current pid. Instead
-it uses the current pid as a hint to start looking for a free
-id. So, in case of conflict, the audit messages can be sent
-to a wrong socket. This can happen (it's unlikely, but can be)
-in case some task opens more than one netlink sockets and then
-the audit one starts - in this case the audit's pid can be busy
-and its socket will be bound to another id.
-
-The reason I raised this problem is that I'm now working on pid 
-and network namespaces and found, that this problem doesn't
-allow to resolve the following issue gracefully.
-
-The task_struct->tgid field, which is currently used in netlink
-for auto-binding, is going to be deprecated. Thus I have to make 
-netlink auto-binding play another rules when selecting a pid, 
-but this will break the audit work for sure, since it implicitly 
-relies, that the netlink socket will be bound to the current 
-task pid.
-
-What do you think about it?
-
-Thanks,
-Pavel
+YH
