@@ -1,196 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbYCNTma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbYCNTmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbYCNTma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 15:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYCNTlE
+	id S1759686AbYCNTmp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 15:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbYCNTlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 15:41:04 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:46085 "EHLO
+	Fri, 14 Mar 2008 15:41:22 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:46107 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759178AbYCNTlC (ORCPT
+	with ESMTP id S1759228AbYCNTlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 15:41:02 -0400
-Message-ID: <47DAD3C6.5080900@indt.org.br>
-Date: Fri, 14 Mar 2008 15:36:38 -0400
+	Fri, 14 Mar 2008 15:41:20 -0400
+Message-ID: <47DAD3C9.5070501@indt.org.br>
+Date: Fri, 14 Mar 2008 15:36:41 -0400
 From: Carlos Aguiar <carlos.aguiar@indt.org.br>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 11/18] MMC: OMAP: Abort stuck commands
+Subject: [PATCH 12/18] MMC: OMAP: Using setup_timer instead of init_timer
 X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Mar 2008 19:39:18.0368 (UTC) FILETIME=[17E49E00:01C8860B]
+X-OriginalArrivalTime: 14 Mar 2008 19:39:21.0540 (UTC) FILETIME=[19C8A040:01C8860B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+From: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
 
-When a card is removed while it is being accessed, a command can get stuck so
-that no timeout or end of command interrupt ever occurs. The command getting
-stuck is almost always CDM12, but also the other commands can get stuck. Catch
-a stuck command with a timer and try sending the initiliazation stream until
-the controller starts running again and responds with the end of command
-status.
+Using setup_timer() instead of init_timer() on omap.c file.
 
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/mmc/host/omap.c |   93 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 83 insertions(+), 10 deletions(-)
+ drivers/mmc/host/omap.c |   14 ++++----------
+ 1 files changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index ae0de17..f9cbda3 100644
+index f9cbda3..e6bf5e7 100644
 --- a/drivers/mmc/host/omap.c
 +++ b/drivers/mmc/host/omap.c
-@@ -134,6 +134,9 @@ struct mmc_omap_host {
- 	unsigned char		bus_mode;
- 	unsigned char		hw_bus_mode;
+@@ -1245,9 +1245,8 @@ static int __init mmc_omap_new_slot(struct mmc_omap_host *host, int id)
+ 			goto err_remove_slot_name;
  
-+	struct work_struct	cmd_abort;
-+	struct timer_list	cmd_timer;
-+
- 	unsigned int		sg_len;
- 	int			sg_idx;
- 	u16 *			buffer;
-@@ -314,6 +317,8 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd)
- 	if (host->data && !(host->data->flags & MMC_DATA_WRITE))
- 		cmdreg |= 1 << 15;
- 
-+	mod_timer(&host->cmd_timer, jiffies + HZ/2);
-+
- 	OMAP_MMC_WRITE(host, CTO, 200);
- 	OMAP_MMC_WRITE(host, ARGL, cmd->arg & 0xffff);
- 	OMAP_MMC_WRITE(host, ARGH, cmd->arg >> 16);
-@@ -373,9 +378,37 @@ mmc_omap_xfer_done(struct mmc_omap_host *host, struct mmc_data *data)
- }
- 
- static void
-+mmc_omap_send_abort(struct mmc_omap_host *host)
-+{
-+	struct mmc_omap_slot *slot = host->current_slot;
-+	unsigned int restarts, passes, timeout;
-+	u16 stat = 0;
-+
-+	/* Sending abort takes 80 clocks. Have some extra and round up */
-+	timeout = (120*1000000 + slot->fclk_freq - 1)/slot->fclk_freq;
-+	restarts = 0;
-+	while (restarts < 10000) {
-+		OMAP_MMC_WRITE(host, STAT, 0xFFFF);
-+		OMAP_MMC_WRITE(host, CMD, (3 << 12) | (1 << 7));
-+
-+		passes = 0;
-+		while (passes < timeout) {
-+			stat = OMAP_MMC_READ(host, STAT);
-+			if (stat & OMAP_MMC_STAT_END_OF_CMD)
-+				goto out;
-+			udelay(1);
-+			passes++;
-+		}
-+
-+		restarts++;
-+	}
-+out:
-+	OMAP_MMC_WRITE(host, STAT, stat);
-+}
-+
-+static void
- mmc_omap_abort_xfer(struct mmc_omap_host *host, struct mmc_data *data)
- {
--	int loops;
- 	u16 ie;
- 
- 	if (host->dma_in_use)
-@@ -386,16 +419,8 @@ mmc_omap_abort_xfer(struct mmc_omap_host *host, struct mmc_data *data)
- 
- 	ie = OMAP_MMC_READ(host, IE);
- 	OMAP_MMC_WRITE(host, IE, 0);
--	OMAP_MMC_WRITE(host, CMD, 1 << 7);
--	loops = 0;
--	while (!(OMAP_MMC_READ(host, STAT) & OMAP_MMC_STAT_END_OF_CMD)) {
--		udelay(1);
--		loops++;
--		if (loops == 100000)
--			break;
--	}
--	OMAP_MMC_WRITE(host, STAT, OMAP_MMC_STAT_END_OF_CMD);
- 	OMAP_MMC_WRITE(host, IE, ie);
-+	mmc_omap_send_abort(host);
- }
- 
- static void
-@@ -451,6 +476,8 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
- {
- 	host->cmd = NULL;
- 
-+	del_timer(&host->cmd_timer);
-+
- 	if (cmd->flags & MMC_RSP_PRESENT) {
- 		if (cmd->flags & MMC_RSP_136) {
- 			/* response type 2 */
-@@ -486,6 +513,47 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
- 	}
- }
- 
-+/*
-+ * Abort stuck command. Can occur when card is removed while it is being
-+ * read.
-+ */
-+static void mmc_omap_abort_command(struct work_struct *work)
-+{
-+	struct mmc_omap_host *host = container_of(work, struct mmc_omap_host,
-+						  cmd_abort);
-+	u16 ie;
-+
-+	ie = OMAP_MMC_READ(host, IE);
-+	OMAP_MMC_WRITE(host, IE, 0);
-+
-+	if (!host->cmd) {
-+		OMAP_MMC_WRITE(host, IE, ie);
-+		return;
-+	}
-+
-+	dev_dbg(mmc_dev(host->mmc), "Aborting stuck command CMD%d\n",
-+		host->cmd->opcode);
-+
-+	if (host->data && host->dma_in_use)
-+		mmc_omap_release_dma(host, host->data, 1);
-+
-+	host->data = NULL;
-+	host->sg_len = 0;
-+
-+	mmc_omap_send_abort(host);
-+	host->cmd->error = -ETIMEDOUT;
-+	mmc_omap_cmd_done(host, host->cmd);
-+	OMAP_MMC_WRITE(host, IE, ie);
-+}
-+
-+static void
-+mmc_omap_cmd_timer(unsigned long data)
-+{
-+	struct mmc_omap_host *host = (struct mmc_omap_host *) data;
-+
-+	schedule_work(&host->cmd_abort);
-+}
-+
- /* PIO only */
- static void
- mmc_omap_sg_to_buf(struct mmc_omap_host *host)
-@@ -1255,6 +1323,11 @@ static int __init mmc_omap_probe(struct platform_device *pdev)
- 		goto err_free_mem_region;
+ 		INIT_WORK(&slot->switch_work, mmc_omap_cover_handler);
+-		init_timer(&slot->switch_timer);
+-		slot->switch_timer.function = mmc_omap_switch_timer;
+-		slot->switch_timer.data = (unsigned long) slot;
++		setup_timer(&slot->switch_timer, mmc_omap_switch_timer,
++			    (unsigned long) slot);
+ 		schedule_work(&slot->switch_work);
  	}
  
-+	INIT_WORK(&host->cmd_abort, mmc_omap_abort_command);
-+	init_timer(&host->cmd_timer);
-+	host->cmd_timer.function = mmc_omap_cmd_timer;
-+	host->cmd_timer.data = (unsigned long) host;
-+
+@@ -1324,18 +1323,13 @@ static int __init mmc_omap_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	INIT_WORK(&host->cmd_abort, mmc_omap_abort_command);
+-	init_timer(&host->cmd_timer);
+-	host->cmd_timer.function = mmc_omap_cmd_timer;
+-	host->cmd_timer.data = (unsigned long) host;
++	setup_timer(&host->cmd_timer, mmc_omap_cmd_timer, (unsigned long) host);
+ 
  	spin_lock_init(&host->dma_lock);
- 	init_timer(&host->dma_timer);
+-	init_timer(&host->dma_timer);
++	setup_timer(&host->dma_timer, mmc_omap_dma_timer, (unsigned long) host);
  	spin_lock_init(&host->slot_lock);
+ 	init_waitqueue_head(&host->slot_wq);
+ 
+-	host->dma_timer.function = mmc_omap_dma_timer;
+-	host->dma_timer.data = (unsigned long) host;
+-
+ 	host->pdata = pdata;
+ 	host->dev = &pdev->dev;
+ 	platform_set_drvdata(pdev, host);
 -- 1.5.3.GIT
 
