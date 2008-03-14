@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbYCNOeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYCNOfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbYCNOeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCNOeI
+	id S1757410AbYCNOfr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCNOfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:34:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:60534 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752284AbYCNOeH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:34:07 -0400
-Date: Fri, 14 Mar 2008 10:34:06 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tino Keitel <tino.keitel@gmx.de>
-cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: broken access to a USB HID device after suspend
-In-Reply-To: <20080314071336.GA14550@dose.home.local>
-Message-ID: <Pine.LNX.4.44L0.0803141020190.4478-100000@iolanthe.rowland.org>
+	Fri, 14 Mar 2008 10:35:37 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40615 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754007AbYCNOfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 10:35:36 -0400
+Date: Fri, 14 Mar 2008 09:35:34 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+Message-ID: <20080314143534.GD9741@sergelap.austin.ibm.com>
+References: <20080313032749.GA13258@sergelap.austin.ibm.com> <6599ad830803140216k1a04ce4ej4779bf10ec6ef4f9@mail.gmail.com> <20080314140523.GG8744@sergelap.austin.ibm.com> <6599ad830803140715i5532f02ag6a93f028ab88d57f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830803140715i5532f02ag6a93f028ab88d57f@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008, Tino Keitel wrote:
-
-> On Thu, Mar 13, 2008 at 14:59:48 -0400, Alan Stern wrote:
-> 
-> [...]
-> 
-> > > Well, it seems to be "fixed" by a suspend/resume cycle. Do you have
-> > > a
-> > > hint how I could try to fix it without suspend/resume, to test if
-> > > it is
-> > > really the LCD's fault?
+Quoting Paul Menage (menage@google.com):
+> On Fri, Mar 14, 2008 at 7:05 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> >  > >  A task may only be moved to another devcgroup if it is moving to
+> >  > >  a direct descendent of its current devcgroup.
+> >  >
+> >  > What's the rationale for that?
 > >
-> > Testing has to come before fixing -- you can't fix the problem if you
-> > don't know which component is at fault.  For all we know, the
-> > hardware
-> > could be fine and the problem could lie in your application.
+> >  To prevent it escaping to laxer device permissions, which of course only
+> >  makes sense if we do what you recommend above :)
+> >
 > 
-> I meant a method other than suspend/resume to fix the broken behaviour,
-> so that we get an indication where the problem exactly is.
+> That makes it impossible for a root process to enter a child cgroup,
+> do something, and then go back to its own cgroup.
 
-There's the blunt-force method: Buy a new LCD device.  That's not 
-entirely a joke; the information you have provided so far indicate a
-fairly high probability that your device is broken.  (Although a new 
-device might also be broken in exactly the same way...)
+Yes, but it can fire off a child in the child cgroup to do something,
+and go on on its own cgroup when the child finishes.
 
-> > All I can think of for testing is to use usbmon to record the data
-> > transfers when those -110 errors come up.
-> 
-> Well, I still don't have USB_DEBUG or usbmon enabled, but I just got
-> that error again. I pulled the power plug from the LCD and replugged
-> it, without success. Then I did a suspend/resume cycle, and it worked.
+> Why aren't the
+> existing cgroup security semantics sufficient?
 
-I was going to suggest that something might be going wrong with the
-data toggles.  But if that were the problem then cycling the power on
-the device would definitely have fixed it.
+Because the point of this is to provide some restrictions to otherwise
+privileged users, and cgroups only provides dac-based permissions.
 
-When you get these errors, do you exit from the hidmon program and 
-restart it?  Do the errors still occur after restarting?
+But that doesn't mean that I'm not doing too much.  I could just add a
+CAP_SYS_ADMIN or CAP_CONT_OVERRIDE+CAP_SYS_ADMIN check, and not restrict
+which cgroups a task can move to.  Does that sound good?
 
-My earlier suggestions remain: Use CONFIG_USB_DEBUG and usbmon.  
-However without knowing what requests the device will accept and what 
-its responses ought to be, it will be very difficult to debug this
-problem.
-
-Alan Stern
-
+-serge
