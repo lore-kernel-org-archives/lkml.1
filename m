@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYCNATV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbYCNAUC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbYCNATV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 20:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYCNATK
+	id S1759076AbYCNAUC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 20:20:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYCNATw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 20:19:10 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:52693 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755031AbYCNATJ (ORCPT
+	Thu, 13 Mar 2008 20:19:52 -0400
+Received: from qb-out-0506.google.com ([72.14.204.237]:25005 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755375AbYCNATv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 20:19:09 -0400
-Message-Id: <200803140015.m2E0Fgn8004015@www262.sakura.ne.jp>
-Subject: Re: fix for boot-time mnt_want_write() bug
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Al Viro <viro@parcelfarce.linux.theplanet.co.uk>
+	Thu, 13 Mar 2008 20:19:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k8XH4DzGY/8thEpmgyVjqVBcxz3X21uUpmfDyTdsW5LJWyKfkBV7mcvXTeUC6dN6pFx8FXQRzxTCmx4wJcPjNHeIcRbEX7PEnAGG6BrhheOkoK4N6X8FhB36K8iEPQOc2etm/PtPKq8HiKVoUsnLEwuvcJAp6SM5gg47uTLyOVg=
+Message-ID: <9810cff90803131719p1c2c749eq7cdf9758840e9028@mail.gmail.com>
+Date: Thu, 13 Mar 2008 17:19:49 -0700
+From: "Bill Huey (hui)" <bill.huey@gmail.com>
+To: "Gregory Haskins" <ghaskins@novell.com>, mingo@elte.hu
+Subject: Re: [PATCH RT 6/6] lockstat measurement extensions
+Cc: a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kevin@hilman.org, cminyard@mvista.com, dsingleton@mvista.com,
+       dwalker@mvista.com, npiggin@suse.de, dsaxena@plexity.net, ak@suse.de,
+       pavel@ucw.cz, acme@redhat.com, gregkh@suse.de, sdietrich@novell.com,
+       pmorreale@novell.com, mkohari@novell.com
+In-Reply-To: <9810cff90803131718ge958e9fo9ae3f43b57f7654c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 14 Mar 2008 09:15:42 +0900
-References: <200803120137.m2C1bffL037440@www262.sakura.ne.jp> <1205291010.9828.60.camel@nimitz.home.sr71.net> <20080311202212.9fe1e5c1.akpm@linux-foundation.org> <1205313918.8514.215.camel@twins> <20080312165218.GB613@parisc-linux.org> <200803130021.m2D0LlFm005300@www262.sakura.ne.jp> <1205440916.4971.58.camel@nimitz.home.sr71.net>
-In-Reply-To: <1205440916.4971.58.camel@nimitz.home.sr71.net>
+Content-Disposition: inline
+References: <9810cff90803131703t3626d83fq727b04242f407c13@mail.gmail.com>
+	 <9810cff90803131707v4fb3197fv396b8a5e8ae32b4d@mail.gmail.com>
+	 <9810cff90803131709m3a5b1e5ep2bfe566b3c3bdb66@mail.gmail.com>
+	 <9810cff90803131712l2777d1dex8c25f508369c48e7@mail.gmail.com>
+	 <9810cff90803131715h1a93c9a1q86f480cf398d4dfb@mail.gmail.com>
+	 <9810cff90803131718ge958e9fo9ae3f43b57f7654c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Last one. Spin checking against the rtmutex->owner's run queue to
+determine if an adaptive spin or not is useful.
 
-The patch solved mnt_want_write() bug in my environment.
-
-Thank you.
+bill
