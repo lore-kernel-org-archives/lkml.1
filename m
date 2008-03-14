@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYCNOFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYCNOF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbYCNOFr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbYCNOF3
+	id S1758149AbYCNOF7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757987AbYCNOFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:05:29 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49398 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757548AbYCNOF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:05:28 -0400
-Date: Fri, 14 Mar 2008 09:05:23 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Stephen Smalley <sds@epoch.ncsc.mil>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
-Message-ID: <20080314140523.GG8744@sergelap.austin.ibm.com>
-References: <20080313032749.GA13258@sergelap.austin.ibm.com> <6599ad830803140216k1a04ce4ej4779bf10ec6ef4f9@mail.gmail.com>
+	Fri, 14 Mar 2008 10:05:46 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:46907 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757980AbYCNOFp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 10:05:45 -0400
+Message-ID: <47DA8636.5020002@hp.com>
+Date: Fri, 14 Mar 2008 10:05:42 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830803140216k1a04ce4ej4779bf10ec6ef4f9@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Stacking bio support - patch 4/4 for 2.6.23.17 (stable)
+References: <200803110352.41479.phillips@phunq.net> <47DA84B7.1000409@hp.com>
+In-Reply-To: <47DA84B7.1000409@hp.com>
+Content-Type: multipart/mixed;
+ boundary="------------050100020002040606090801"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On Wed, Mar 12, 2008 at 8:27 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> >
-> >  While composing this with the ns_cgroup may seem logical, it is not
-> >  the right thing to do, because updates to /cg/cg1/devcg.deny are
-> >  not reflected in /cg/cg1/cg2/devcg.allow.
-> 
-> Maybe you should follow up the tree to ensure that all parent groups
-> have access to the device too? Or alternatively, cache the results of
-> this lookup whenever permissions for a device change?
+This is a multi-part message in MIME format.
+--------------050100020002040606090801
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Yes, I considered that.  Alternatively additions to a parent cgroup's
-.deny could be propagated to all its descendents (but not additions to
-the .allow).
 
-I've noted this as something to add to the next version.
 
-> >  A task may only be moved to another devcgroup if it is moving to
-> >  a direct descendent of its current devcgroup.
-> 
-> What's the rationale for that?
+--------------050100020002040606090801
+Content-Type: text/x-patch;
+ name="0004-Fixed-compilation-bugs.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0004-Fixed-compilation-bugs.patch"
 
-To prevent it escaping to laxer device permissions, which of course only
-makes sense if we do what you recommend above :)
+>From 278ee2744eddfe67743ed3967bec3f9b773d9015 Mon Sep 17 00:00:00 2001
+From: Alan D. Brunelle <alan.brunelle@hp.com>
+Date: Fri, 14 Mar 2008 09:46:33 -0400
+Subject: [PATCH] Fixed compilation bugs
 
-> >  CAP_NS_OVERRIDE is defined as the capability needed to cross namespaces.
-> >  A task needs both CAP_NS_OVERRIDE and CAP_SYS_ADMIN to create a new
-> >  devcgroup, update a devcgroup's access, or move a task to a new
-> >  devcgroup.
-> 
-> But this isn't necessarily crossing namespaces. It could be used for
-> device control in the same namespace (e.g. allowing a job to access a
-> raw disk for its data storage rather than going through the
-> filesystem).
 
-Yeah it should be renamed.  I want to use the same cap which we would
-use for user namespaces though.  CAP_NS_CONT(ainer)?  Even though there
-really is no such thing as a 'container'.  But that would tie together
-any such privileges for cgroups and namespaces.
+---
+ drivers/md/raid1.c |    4 ++--
+ drivers/md/raid5.c |    6 +++---
+ fs/bio.c           |    2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-thanks,
--serge
+diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
+index 63ffaaf..ce6b576 100644
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -910,7 +910,7 @@ static int make_request(struct request_queue *q, struct bio * bio)
+ 
+ 		mbio->bi_sector	= r1_bio->sector + conf->mirrors[i].rdev->data_offset;
+ 		mbio->bi_bdev = conf->mirrors[i].rdev->bdev;
+-		bio_set_endio(mbio, raid1_end_write_request;)
++		bio_set_endio(mbio, raid1_end_write_request);
+ 		mbio->bi_rw = WRITE | do_barriers | do_sync;
+ 		mbio->bi_private = r1_bio;
+ 
+@@ -1240,7 +1240,7 @@ static void sync_request_write(mddev_t *mddev, r1bio_t *r1_bio)
+ 			}
+ 		r1_bio->read_disk = primary;
+ 		for (i=0; i<mddev->raid_disks; i++)
+-			if (bio_set_endio(r1_bio->bios[i], end_sync_read)) {
++			if (bio_get_endio(r1_bio->bios[i]) == end_sync_read) {
+ 				int j;
+ 				int vcnt = r1_bio->sectors >> (PAGE_SHIFT- 9);
+ 				struct bio *pbio = r1_bio->bios[primary];
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 9fe55db..f83feb8 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -3608,13 +3608,13 @@ static int make_request(struct request_queue *q, struct bio * bi)
+ 	spin_unlock_irq(&conf->device_lock);
+ 	if (remaining == 0) {
+ 		int bytes = bi->bi_size;
++		bio_end_io_t *endio = bio_get_endio(bi);
+ 
+ 		if ( rw == WRITE )
+ 			md_write_end(mddev);
+ 		bi->bi_size = 0;
+-		(bio_get_endio(bi))((bi, bytes,
+-			      test_bit(BIO_UPTODATE, &bi->bi_flags)
+-			        ? 0 : -EIO);
++		endio(bi, bytes,
++			test_bit(BIO_UPTODATE, &bi->bi_flags) ? 0 : -EIO);
+ 	}
+ 	return 0;
+ }
+diff --git a/fs/bio.c b/fs/bio.c
+index d57f0f3..0ecd345 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -199,7 +199,7 @@ void bio_init(struct bio *bio)
+ 	bio->bi_hw_back_size = 0;
+ 	bio->bi_size = 0;
+ 	bio->bi_max_vecs = 0;
+-	bio->bi_end_io = NULL;
++	bio_set_endio(bio, NULL);
+ 	atomic_set(&bio->bi_cnt, 1);
+ 	bio->bi_private = NULL;
+ }
+-- 
+1.5.2.5
+
+
+--------------050100020002040606090801--
