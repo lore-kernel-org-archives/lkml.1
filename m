@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbYCNBk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbYCNBld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbYCNBk1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYCNBkR
+	id S1758043AbYCNBld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYCNBlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:40:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51703 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753943AbYCNBkQ (ORCPT
+	Thu, 13 Mar 2008 21:41:25 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:44966 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752694AbYCNBlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:40:16 -0400
-Date: Thu, 13 Mar 2008 18:39:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc5-git3: Reported regressions from 2.6.24
-In-Reply-To: <87bq5i3xce.fsf@saeurebad.de>
-Message-ID: <alpine.LFD.1.00.0803131838340.3557@woody.linux-foundation.org>
-References: <200803140136.38549.rjw@sisk.pl> <87bq5i3xce.fsf@saeurebad.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 13 Mar 2008 21:41:24 -0400
+Date: Thu, 13 Mar 2008 20:41:21 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+Message-ID: <20080314014121.GA8320@sergelap.austin.ibm.com>
+References: <20080313032749.GA13258@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803132022530.6358@us.intercode.com.au> <20080313131818.GA9771@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au> <20080313143803.GA11265@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au> <20080313224616.GA9139@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 14 Mar 2008, Johannes Weiner wrote:
+Quoting James Morris (jmorris@namei.org):
+> On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
 > 
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> > Quoting James Morris (jmorris@namei.org):
+> > > On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
+> > > 
+> > > > True, but while this change simplifies the code a bit, the semantics
+> > > > seem more muddled - devcg will be enforcing when CONFIG_CGROUP_DEV=y
+> > > > and:
+> > > > 
+> > > > 	SECURITY=n or
+> > > > 	rootplug is enabled
+> > > > 	capabilities is enabled
+> > > > 	smack is enabled
+> > > > 	selinux+capabilities is enabled
+> > > 
+> > > Well, this is how real systems are going to be deployed.
+> > 
+> > Sorry, do you mean with capabilities?
 > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10164
-> > Subject		: ntfs build failure on no-mmu
-> > Submitter	: Mike Frysinger <vapier.adi@gmail.com>
-> > Date		: 2008-03-03 11:05 (11 days old)
-> > References	: http://lkml.org/lkml/2008/3/1/179
+> Yes.
 > 
-> I found this: http://lkml.org/lkml/2008/3/13/6
+> All Fedora, RHEL, CentOS etc. ship with SELinux+capabilities.  I can't 
+> imagine not enabling them on other kernels.
+> 
+> > > It becomes confusing, IMHO, if you have to change which secondary LSM you 
+> > > stack with SELinux to enable a cgroup feature.
+> > 
+> > So you're saying selinux without capabilities should still be able to
+> > use dev_cgroup?  (Just making sure I understand right)
+> 
+> Nope, SELinux always stacks with capabilities, so havng the cgroup hooks 
+> in capabilities makes sense (rather than having us change the secondary 
+> stacking LSM just to enable a feature).
 
-Fixed slightly differently in mainline by Paul Mindt in commit 
-0738c4bb8f2a8bf15178f852494643b0981f578b ("nommu: Provide 
-is_vmalloc_addr() stub.")
+Oh, ok.
 
-			Linus
+Will let the patch stand until Pavel and Greg comment then.
+
+thanks,
+-serge
