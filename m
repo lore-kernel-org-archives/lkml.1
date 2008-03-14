@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbYCNUm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYCNUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758772AbYCNUm4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbYCNUmr
+	id S1758921AbYCNUnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYCNUmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:42:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54936 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754379AbYCNUmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:42:46 -0400
-Message-ID: <47DAE2C4.2060303@redhat.com>
-Date: Fri, 14 Mar 2008 16:40:36 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 14 Mar 2008 16:42:51 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55290 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758641AbYCNUmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 16:42:50 -0400
+Date: Fri, 14 Mar 2008 14:42:48 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: linux-kernel@vger.kernel.org
+Cc: sfr@canb.auug.org.au, lenb@kernel.org, dhowells@redhat.com,
+       peterz@infradead.org, mingo@elte.hu, harvey.harrison@gmail.com
+Subject: Updated generic semaphore patch set
+Message-ID: <20080314204248.GV613@parisc-linux.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Shaohua Li <shaohua.li@intel.com>, David Miller <davem@davemloft.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: [PATCH -mm 1/5] list.h: add list_singleton
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add list_singleton to check a list has just one entry.
 
-list_singleton is useful to check whether a list_head which
-have been temporarily allocated for listing objects can be
-released or not.
+I've pushed out a new version of the semaphore tree.  I'll send the new
+patches as a reply to this mail.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
- include/linux/list.h |    9 +++++++++
- 1 file changed, 9 insertions(+)
+git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git semaphore-20080314
 
-Index: 2.6.25-rc5-mm1/include/linux/list.h
-===================================================================
---- 2.6.25-rc5-mm1.orig/include/linux/list.h
-+++ 2.6.25-rc5-mm1/include/linux/list.h
-@@ -211,6 +211,15 @@ static inline int list_empty_careful(con
- 	return (next == head) && (next == head->prev);
- }
+Changes:
+ - Dropped all the asm/semaphore.h changes.  They're just causing
+   conflicts for linux-next, and while Stephen assures me that fixing
+   them up is trivial and he doesn't mind, I'd rather not burn him out
+   prematurely.  I still intend to push them, but they don't need to be
+   part of linux-next, IMO.
+ - Split the addition of down_killable() out of the main patch.  It's
+   logically separate (adding a new interface), and it was sheer
+   laziness to not split it out in the first place.
+ - New functionality!  down_timeout().  Just look at the mess in
+   acpi/osl.c where it tries to emulate it.  It's very little extra code
+   to add it to kernel/semaphore.c, so I thought it was a good idea.
+ - Simplify the implementation.  Dave Howells said the current algorithm
+   makes his head hurt, and in retrospect, perhaps I was just trying to
+   be too clever.
+ - Fix the lockdep bug (thanks to Peter Zijlstra)
+ - Remove an unsightly and unnecessary unlikely() (thanks to Harvey Harrison)
+ - Fix the down() while interrupts disabled bug (thanks to Ingo Molnar)
+   (I may have posted this one before.  Not sure.)
 
-+/**
-+ * list_singleton - tests whether a list has just one entry.
-+ * @head: the list to test.
-+ */
-+static inline int list_singleton(const struct list_head *head)
-+{
-+	return !list_empty(head) && (head->next == head->prev);
-+}
-+
- static inline void __list_splice(struct list_head *list,
- 				 struct list_head *head)
- {
+I've tested the end result of this with Dave Howells' synchro-test module
+and not found any problems.
+
+If you prefer, you can also find the patches at
+http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=semaphore-20080314
+
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
-
-
-
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
