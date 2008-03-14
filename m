@@ -1,58 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbYCNR5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYCNR7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758129AbYCNR5Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbYCNR5P
+	id S1757994AbYCNR7S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYCNR7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:57:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53096 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754954AbYCNR5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:57:14 -0400
-Message-ID: <47DABBAF.4040005@redhat.com>
-Date: Fri, 14 Mar 2008 13:53:51 -0400
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+	Fri, 14 Mar 2008 13:59:07 -0400
+Received: from homer.mvista.com ([63.81.120.158]:46144 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbYCNR7F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 13:59:05 -0400
+Message-ID: <47DABCE0.2070505@ct.jp.nec.com>
+Date: Fri, 14 Mar 2008 10:58:56 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: drepper@redhat.com, viro@ZenIV.linux.org.uk, bharata@linux.vnet.ibm.com,
-       libc-alpha@sourceware.org, jblunck@suse.de, ezk@cs.sunysb.edu,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de,
-       cmm@us.ibm.com, haveblue@us.ibm.com
-Subject: Re: [RFC] Union mount readdir support in glibc
-References: <20080311055527.GA7256@in.ibm.com> <47D9F6CC.6010009@redhat.com> <20080314053925.GA10722@ZenIV.linux.org.uk> <47DA257C.9060409@redhat.com> <E1Ja5Tf-0003Op-Fi@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1Ja5Tf-0003Op-Fi@pomaz-ex.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       hpj@urpla.net, stable <stable@kernel.org>
+Subject: Re: [PATCH] sched: fix race in schedule
+References: <47D57770.50909@ct.jp.nec.com> <1205174197.8514.159.camel@twins>	 <47D593A5.5060906@ct.jp.nec.com> <1205181256.6241.320.camel@lappy>	 <47D5EA9C.1040404@ct.jp.nec.com> <1205224835.8514.183.camel@twins>	 <47D6BD0C.6070401@ct.jp.nec.com>	 <b647ffbd0803111638sdc92903r7faad3d4b2b6b842@mail.gmail.com>	 <1205328457.8514.244.camel@twins>	 <b647ffbd0803120748x2bfc8fbctda15ce3df08fcf5b@mail.gmail.com> <1205333829.8514.249.camel@twins>
+In-Reply-To: <1205333829.8514.249.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->>> Actually, do we really need it other than to 0 and to current position
->>> (i.e. full rewind and a no-op)?
->>>       
->> Ever heard of the little function "telldir"?
->>     
->
-> Actually, telldir/seekdir is already broken for some filesystems (NFS
-> comes to mind).  POSIX was really crazy to require a working seekdir
-> implementation, and userspace should quickly start _not_ using it.
->
->   
+Peter Zijlstra wrote:
+> On Wed, 2008-03-12 at 15:48 +0100, Dmitry Adamushko wrote:
+>> On 12/03/2008, Peter Zijlstra <peterz@infradead.org> wrote:
+>>> [ ... ]
+>>>
+>>>  > >  Before begin, I can tell that se->on_rq is changed at enqueue_task() or
+>>>  > >  dequeue_task() in sched.c.
+>>>  > >
+>>>  > >  Here is the flow to panic which I got;
+>>>  > >
+>>>  > >    CPU0                               CPU1
+>>>  > >     |                              schedule()
+>>>  > >     |                              ->deactivate_task()
+>>>  > >
+>>>  > >     |                              -->dequeue_task()
+>>>  > >     |                                  * on_rq=0
+>>>  > >     |                              ->put_prev_task_fair()
+>>>  > >
+>>>  > >     |                              ->idle_balance()
+>>>  > >     |                              -->load_balance_newidle()
+>>>  > >
+>>>  > > (a wakeup function)                    |
+>>>  > >
+>>>  > >     |                              --->double_lock_balance()
+>>>  > >     *get lock                          *rel lock
+>>>  > >
+>>>  > >     * wake up target is CPU1's curr    |
+>>>  > >  ->enqueue_task()                      |
+>>>  > >     * on_rq=1                          |
+>>>  > >  ->rt_mutex_setprio()                  |
+>>>  > >     * on_rq=1, ruuning=1               |
+>>>  > >  -->dequeue_task()!!                   |
+>>>  > >  -->put_prev_task_fair()!!             |
+>>>  >
+>>>  > humm... this one should have caused the problem.
+>>>  >
+>>>  > ->put_prev_task() has been previously done in schedule() so we get 2
+>>>  > consequent ->put_prev_task() without set_curr_task/pick_next_task()
+>>>  > being called in between
+>>>  > [ as a result, __enqueue_entitty() is called twice for CPU1's curr and
+>>>  > that definitely corrupts an rb-tree ]
+>>>  >
+>>>  > your initial patch doesn't have this problem. humm... logically-wise,
+>>>  > it looks like a change of the 'current' which can be expressed by a
+>>>  > pair :
+>>>  >
+>>>  > (1) put_prev_task() + (2) pick_next_task() or set_curr_task()
+>>>  > (both end up calling set_next_entity())
+>>>  >
+>>>  > has to be 'atomic' wrt the rq->lock.
+>>>  >
+>>>  > For schedule() that also involves a change of rq->curr.
+>>>
+>>>
+>>> Right, this seems to 'rely' on rq->curr lagging behind put_prev_task().
+>>>  So by doing something like:
+>>>
+>>>
+>>>  ---
+>>>  diff --git a/kernel/sched.c b/kernel/sched.c
+>>>
+>>> index a0c79e9..62d796f 100644
+>>>
+>>> --- a/kernel/sched.c
+>>>  +++ b/kernel/sched.c
+>>>
+>>> @@ -4061,6 +4061,8 @@ need_resched_nonpreemptible:
+>>>                 }
+>>>                 switch_count = &prev->nvcsw;
+>>>         }
+>>>
+>>> +       prev->sched_class->put_prev_task(rq, prev);
+>>>
+>>> +       rq->curr = rq->idle;
+>>>
+>>>
+>>>   #ifdef CONFIG_SMP
+>>>         if (prev->sched_class->pre_schedule)
+>>>
+>>> @@ -4070,14 +4072,13 @@ need_resched_nonpreemptible:
+>>>
+>>>         if (unlikely(!rq->nr_running))
+>>>                 idle_balance(cpu, rq);
+>>>
+>>>  -       prev->sched_class->put_prev_task(rq, prev);
+>>>         next = pick_next_task(rq, prev);
+>>>
+>>> +       rq->curr = next;
+>>>
+>>>
+>>>         sched_info_switch(prev, next);
+>>>
+>>>
+>>>         if (likely(prev != next)) {
+>>>                 rq->nr_switches++;
+>>>  -               rq->curr = next;
+>>>                 ++*switch_count;
+>>>
+>>>                 context_switch(rq, prev, next); /* unlocks the rq */
+>>>  ---
+>> hum, I'm quite suspicious about this approach... mainly, due to the
+>> fact that I think your next assumption is wrong:
+>> (unless we specify 'running' wrt to whom)
+>>
+>>>  We would avoid being considered running while we're not.
+>>>
+>> the fact is that we are (i.e. 'prev') actually running on a cpu until
+>> some point in context_switch().
+>>
+>> At the very least, the load balancer has to exactly know who is the
+>> 'current' on other cpus to treat such tasks differently.
+>>
+>> With this patch, the load balancer can be confused/broken by the fact
+>> that 'prev' is considered for migration as a "not-on-rq and
+>> not-running" task [ from another cpu at the moment when either
+>> pre_schedule() or idle_balance() drop a rq->lock of prev's cpu ].
+>>
+>> well, the version of task_current() for __ARCH_WANT_UNLOCKED_CTXSW
+>> would fix it if used by default.
+>>
+>> But maybe there is something esle that would be exposed by the
+>> 'rq->curr = rq->idle' manipulation... I can't provide examples right
+>> now though (I need to think on it).
+> 
+> I share your concerns, I don't really like it either. Just spewing out
+> ideas here - bad ideas it seems :-/
+> 
+> Ingo also suggested moving the balance calls right before
+> deactivate_task(), but that gives a whole other set of head-aches.
+> 
 
-What makes you think that telldir/seekdir don't work for NFS?  The over the
-wire protocols clearly take values which could be retrieved and stored via
-those interfaces.
+Well, what will we do about this issue?
+I see you're thinking to fix inconsistency in scheduler, right?
+I agree about it.
 
-       ps
+However, I don't think it's good to remain this issue long time in
+the -stable kernel.
 
-> The more new filesystems it doesn't work, the better, IMHO.
->
-> Miklos
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->   
+Could you please let me know what I can do?
 
+thanks,
+Hiroshi Shimamoto
