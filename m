@@ -1,37 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbYCNCi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbYCNCmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756963AbYCNCi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 22:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYCNCit
+	id S1757254AbYCNCmI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 22:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYCNCl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 22:38:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45369 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583AbYCNCis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 22:38:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080313154713.95446f74.akpm@linux-foundation.org>
-References: <20080313154713.95446f74.akpm@linux-foundation.org> <20080313191432.28959.52722.stgit@warthog.procyon.org.uk> <20080313191442.28959.28152.stgit@warthog.procyon.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, torvalds@linux-foundation.org, kwc@citi.umich.edu,
-       arunsr@cse.iitk.ac.in, dwalsh@redhat.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] KEYS: Make the keyring quotas controllable through /proc/sys
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 14 Mar 2008 02:30:46 +0000
-Message-ID: <4258.1205461846@redhat.com>
+	Thu, 13 Mar 2008 22:41:56 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:41622 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYCNCl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 22:41:56 -0400
+Date: Thu, 13 Mar 2008 22:41:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Greg KH <greg@kroah.com>
+Subject: [PATCH] SYSFS:  Explicitly include required header file slab.h.
+Message-ID: <alpine.LFD.1.00.0803132238310.30403@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Documentation/keys.txt needs an update?
+After an experimental deletion of the unnecessary inclusion of
+<linux/slab.h> from the header file <linux/percpu.h>, the following
+files under fs/sysfs were exposed as needing to explicitly include
+<linux/slab.h>.
 
-Good point.  The keyutils package too.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-David
+---
+
+ fs/sysfs/dir.c  |    1 +
+ fs/sysfs/file.c |    2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 4948d9b..a1c3a1f 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -20,6 +20,7 @@
+ #include <linux/idr.h>
+ #include <linux/completion.h>
+ #include <linux/mutex.h>
++#include <linux/slab.h>
+ #include "sysfs.h"
+
+ DEFINE_MUTEX(sysfs_mutex);
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index a271c87..253f8f5 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -16,6 +16,8 @@
+ #include <linux/poll.h>
+ #include <linux/list.h>
+ #include <linux/mutex.h>
++#include <linux/slab.h>
++
+ #include <asm/uaccess.h>
+
+ #include "sysfs.h"
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
