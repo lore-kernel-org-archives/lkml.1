@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYCNICX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbYCNIDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYCNICX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 04:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYCNICC
+	id S1755904AbYCNIDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 04:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYCNIDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 04:02:02 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:52304 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbYCNICB (ORCPT
+	Fri, 14 Mar 2008 04:03:39 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43085 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbYCNIDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 04:02:01 -0400
-Date: Fri, 14 Mar 2008 04:01:52 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: whose job is it to include various header files?
-In-Reply-To: <20080314054744.GA4216@martell.zuzino.mipt.ru>
-Message-ID: <alpine.LFD.1.00.0803140359560.31711@localhost.localdomain>
-References: <alpine.LFD.1.00.0803131802020.20317@localhost.localdomain> <9a8748490803131653n7f1c2bd0m12e30d82bf936d03@mail.gmail.com> <Pine.LNX.4.64.0803140227100.14822@fbirervta.pbzchgretzou.qr> <alpine.LFD.1.00.0803132149320.11864@localhost.localdomain>
- <20080314054744.GA4216@martell.zuzino.mipt.ru>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 14 Mar 2008 04:03:38 -0400
+Date: Fri, 14 Mar 2008 09:04:15 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, ralf@linux-mips.org
+Subject: Re: pm_register() and pm_send_all()
+Message-ID: <20080314080415.GC9465@elf.ucw.cz>
+References: <20080312150042.96668bcd.akpm@linux-foundation.org> <21968.1205411497@redhat.com> <20080313180558.GC4949@elf.ucw.cz> <20080313112614.cae39f86.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080313112614.cae39f86.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008, Alexey Dobriyan wrote:
+On Thu 2008-03-13 11:26:14, Andrew Morton wrote:
+> On Thu, 13 Mar 2008 19:05:58 +0100
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > On Thu 2008-03-13 12:31:37, David Howells wrote:
+> > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > pm_send_all() has just a handful of callers:
+> > > 
+> > > What should be done instead of calling pm_send_all()?
+> > 
+> > pm_send_all is currently nop.
+> 
+> So we could have deleted pm_send_all() and pm_register() ages ago?  And
+> we've all been needlessly staring at those warnings all this time? 
+> Grumble.
 
-> On Thu, Mar 13, 2008 at 09:53:01PM -0400, Robert P. J. Day wrote:
-
-> > includes from <linux/percpu.h>:
-> >
-> >   #include <linux/slab.h>
->
-> This needed for kzalloc().
-
-oh, &%^^%*(&^), you're right.  i looked at the comment, where it said
-it needed that include for "kmalloc", grepped, didn't see kmalloc so
-thought that include was unnecessary.  i didn't even notice the
-"kzalloc".  my bad, profuse apologies.  argh.
-
-rday
---
-
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+we could have deleted pm_send_all when users of pm_register were gone,
+yes.... just nobody noticed :-(.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
