@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbYCNWXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbYCNWin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757571AbYCNWXj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 18:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYCNWX2
+	id S1757367AbYCNWin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 18:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCNWic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 18:23:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53045 "EHLO mx1.redhat.com"
+	Fri, 14 Mar 2008 18:38:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58278 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbYCNWX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 18:23:27 -0400
-Message-ID: <47DAFAA2.20302@redhat.com>
-Date: Fri, 14 Mar 2008 18:22:26 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
+	id S1753976AbYCNWic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 18:38:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: ananth@in.ibm.com, jkenisto@us.ibm.com, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com, prasanna@in.ibm.com, shaohua.li@intel.com,
-       davem@davemloft.net, fche@redhat.com
-Subject: Re: [PATCH -mm 1/5] list.h: add list_singleton
-References: <47DAE2C4.2060303@redhat.com> <20080314140007.a7b495d7.akpm@linux-foundation.org>
-In-Reply-To: <20080314140007.a7b495d7.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: linux-next20080314 build fails with !CONFIG_PM
+Date: Fri, 14 Mar 2008 23:37:11 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, apw@shadowen.org,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       Greg KH <greg@kroah.com>
+References: <47DA2FD6.3000100@linux.vnet.ibm.com> <20080314150554.1b79a6ed.akpm@linux-foundation.org>
+In-Reply-To: <20080314150554.1b79a6ed.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803142337.12605.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> If your usage pattern is:
+On Friday, 14 of March 2008, Andrew Morton wrote:
+> On Fri, 14 Mar 2008 13:27:10 +0530
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 > 
-> struct foo {
-> 	...
-> 	struct list_head bar_list;	/* A list of `struct bar's */
-> };
-> 
-> struct bar {
-> 	struct list_head list;		/* Attached to foo.bar_list */
-> 	...
-> };
-> 
-> then yes, list_singleton() makes sense.
-> 
-> But in other usage patterns it does not:
-> 
-> struct foo {
-> 	struct bar *bar_list;
-> 	...
-> };
-> 
-> struct bar {
-> 	struct list_head list;		/* All the other bars go here */
-> 	...
-> };
-> 
-> In the second case, emptiness is signified by foo.bar_list==NULL.  And in
-> this case, code which does
-> 
-> 	if (foo->bar_list && list_singleton(&foo->bar_list->list))
-> 
-> will fail if there is a single item on the list!
-> 
-> The second usage pattern is uncommon and list_empty() also returns
-> misleading answers when list_heads are used this way.
+> > The next-20080314 tree build fails 
+> > 
+> > drivers/serial/serial_core.c: In function `uart_add_one_port':
+> > drivers/serial/serial_core.c:2359: error: invalid lvalue in assignment
+> > make[2]: *** [drivers/serial/serial_core.o] Error 1
+> > 
+> > The config # CONFIG_PM was not set.The code which is causing the 
+> > build failure is 
+> > 
+> > 	device_can_wakeup(tty_dev) = 1;
+> > 
+> > when the CONFIG_PM is set the macro is preprocessed as
+> > 
+> > #define device_can_wakeup(dev) \
+> >         ((dev)->power.can_wakeup)
+> > 
+> > and when not set, it becomes 0 = 1 
+> > 
+> > #define device_can_wakeup(dev)                  0
 
-I agreed. I assume that list_singleton() is used like as list_empty().
+Kamalesh, thanks for reporting the problem.
 
+> Caused by Alan's "PM: make wakeup flags available whenever CONFIG_PM is
+> set" which I assume Len merged.
 
-> So I guess we can proceed with your list_singleton(), but I'd just like to
-> flag this possible confusion, see what people think..
+It's in the Greg's tree actually.
 
-Thank you,
+> Sorry, but that code should be dragged out and shot.  Doing this:
+> 
+> > 	device_can_wakeup(tty_dev) = 1;
+> 
+> is just gross and stupid.  It looks daft, it isn't C and it *requires* that
+> device_can_wakeup() be implemented as a macro, which totally busts any
+> concept of abstraction.
+> 
+> 
+> The code previously had quite reasonable accessors:
+> 
+>  #define device_set_wakeup_enable(dev,val) \
+>         ((dev)->power.should_wakeup = !!(val))
+>  #define device_may_wakeup(dev) \
+>         (device_can_wakeup(dev) && (dev)->power.should_wakeup)
+> 
+> can we please go back to that scheme?  Please also convert all these
+> magical macros into inlined C functions.  One reason is that this:
+> 
+> +#define device_init_wakeup(dev,val) \
+> +       do { \
+> +               device_can_wakeup(dev) = !!(val); \
+> +               device_set_wakeup_enable(dev,val); \
+> +       } while(0)
+> 
+> is buggy.  It evaluates its arguments multiple times and will cause
+> failures when passed expressions which have side-effects.
+> 
+> Alan, please also pass all future patches through checkpatch - there is no
+> need to be adding trivial coding-style errors in this day and age.
+> 
+> Thanks.
 
--- 
-Masami Hiramatsu
+Well, Greg please drop the "PM: make wakeup flags available whenever CONFIG_PM
+is set" and Alan please resubmit the patch with the problems pointed out by
+Andrew fixed.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+In fact I'd even prefer it to be two patches, one that moves should_wakeup and
+the related macros out of the CONFIG_PM_SLEEP #ifdef, because that's what fixes
+the problem described in the changelog, and one that makes the remaining
+changes with a separate changelog.
 
-e-mail: mhiramat@redhat.com
-
+Thanks,
+Rafael
