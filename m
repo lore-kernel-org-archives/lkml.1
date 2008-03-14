@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYCNCv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYCNCwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbYCNCv3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 22:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYCNCvV
+	id S1758110AbYCNCwf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 22:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYCNCw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 22:51:21 -0400
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:26151 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751859AbYCNCvU (ORCPT
+	Thu, 13 Mar 2008 22:52:27 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38173 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbYCNCw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 22:51:20 -0400
-X-YMail-OSG: OHu2JHkVM1lc8SbuwrlAV408ZNxBFD5o5Edfn6qaNOocmd3EiZJFuaajdm.3nld47A--
-X-RocketYMMF: rancidfat
-Date: Thu, 13 Mar 2008 19:51:19 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
-To: James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Pavel Emelianov <xemul@openvz.org>
-In-Reply-To: <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au>
-MIME-Version: 1.0
+	Thu, 13 Mar 2008 22:52:26 -0400
+Date: Fri, 14 Mar 2008 11:56:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs
+ (v3)
+Message-Id: <20080314115645.e78b7f5c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080313140307.20133.30405.sendpatchset@localhost.localdomain>
+References: <20080313140307.20133.30405.sendpatchset@localhost.localdomain>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <910788.93851.qm@web36609.mail.mud.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 13 Mar 2008 19:33:07 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
---- James Morris <jmorris@namei.org> wrote:
-
-> On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
 > 
-> > Quoting James Morris (jmorris@namei.org):
-> > > On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
-> > > 
-> > > > True, but while this change simplifies the code a bit, the semantics
-> > > > seem more muddled - devcg will be enforcing when CONFIG_CGROUP_DEV=y
-> > > > and:
-> > > > 
-> > > > 	SECURITY=n or
-> > > > 	rootplug is enabled
-> > > > 	capabilities is enabled
-> > > > 	smack is enabled
-> > > > 	selinux+capabilities is enabled
-> > > 
-> > > Well, this is how real systems are going to be deployed.
-> > 
-> > Sorry, do you mean with capabilities?
 > 
-> Yes.
+> Changelog v3
 > 
-> All Fedora, RHEL, CentOS etc. ship with SELinux+capabilities.  I can't 
-> imagine not enabling them on other kernels.
+> 1. Remove HWCACHE_ALIGN
 > 
-> > > It becomes confusing, IMHO, if you have to change which secondary LSM you
+> Changelog v2
 > 
-> > > stack with SELinux to enable a cgroup feature.
-> > 
-> > So you're saying selinux without capabilities should still be able to
-> > use dev_cgroup?  (Just making sure I understand right)
+> 1. Remove extra slab for mem_cgroup_per_zone
 > 
-> Nope, SELinux always stacks with capabilities, so havng the cgroup hooks 
-> in capabilities makes sense (rather than having us change the secondary 
-> stacking LSM just to enable a feature).
+> Move the memory controller data structure page_cgroup to its own slab cache.
+> It saves space on the system, allocations are not necessarily pushed to order
+> of 2 and should provide performance benefits. Users who disable the memory
+> controller can also double check that the memory controller is not allocating
+> page_cgroup's.
+> 
+> NOTE: Hugh Dickins brought up the issue of whether we want to mark page_cgroup
+> as __GFP_MOVABLE or __GFP_RECLAIMABLE. I don't think there is an easy
+> answer at the moment. page_cgroup's are associated with user pages,
+> they can be reclaimed once the user page has been reclaimed, so it might
+> make sense to mark them as __GFP_RECLAIMABLE. For now, I am leaving the
+> marking to default values that the slab allocator uses.
+> 
+> Comments?
+> 
+At first, in my understanding,
+- MOVABLE is for migratable pages. (so, not for kernel objects.)
+- RECLAIMABLE is for reclaimable kernel objects. (for slab etc..)
 
-That's what I was getting at. When the next feature comes along
-are we going to stuff it into capabilities, too? Maybe we'll
-cram it into audit or CIPSO instead, but how long can this go on?
-Eventually we need a mechanism that allows more or less general
-mix-and-match, maybe with a few rules like "don't mix plaids and
-stripes" to keep things sane or these lesser facilities have no
-chance. Seems like we're still making LSM too hard to use.
+All reclaimable objects are not necessary to be always reclaimable but
+some amount of RECLAIMABLE objects (not all) should be recraimable easily.
+For example, some of dentry-cache, inode-cache is reclaimable because *unused*
+objects are cached.
 
-Unless I take an aggressive approach to adding them to Smack.
-Hmm, might be a way to make a buck or two that way.
-(Only kidding)(Well, mostly only kidding)
+When it comes to page_cgroup, *all* objects has dependency to pages which are
+assigned to.  And user pages are reclaimable.
+There is a similar object....the radix tree. radix-tree's node is allocated as
+RECLAIMABLE object.
 
-And yes, I understand that there are still those about who
-don't like LSM in any form, much less in a useful one.
+So I think it makes sense to changing page_cgroup to be reclaimable.
+
+But final decision should be done by how fragmentation avoidance works.
+It's good to test "how many hugepages can be allocated dynamically" when we
+make page_cgroup to be GFP_RECAIMABLE 
+
+Thanks,
+-Kame
 
 
-Casey Schaufler
-casey@schaufler-ca.com
