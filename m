@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCNTHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYCNT2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYCNTHa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 15:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYCNTHV
+	id S1755995AbYCNT2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 15:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYCNT22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 15:07:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57321 "EHLO ogre.sisk.pl"
+	Fri, 14 Mar 2008 15:28:28 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56447 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbYCNTHT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 15:07:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.25-rc5-git2: Reported regressions from 2.6.24
-Date: Fri, 14 Mar 2008 20:06:34 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <200803120141.51844.rjw@sisk.pl> <20080314184245.GA7151@ucw.cz>
-In-Reply-To: <20080314184245.GA7151@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803142006.35771.rjw@sisk.pl>
+	id S1751501AbYCNT21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 15:28:27 -0400
+Subject: Re: [patch 0/6] vfs: mountinfo update
+From: Ram Pai <linuxram@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <E1Ja56h-0003MU-Ok@pomaz-ex.szeredi.hu>
+References: <20080313212641.989467982@szeredi.hu>
+	 <20080313155315.6eb9942e.akpm@linux-foundation.org>
+	 <E1Ja56h-0003MU-Ok@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Fri, 14 Mar 2008 12:29:08 -0700
+Message-Id: <1205522948.2890.17.camel@ram.us.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 14 of March 2008, Pavel Machek wrote:
-> On Wed 2008-03-12 01:41:51, Rafael J. Wysocki wrote:
-> > [Again, some entries have been closed since yesterday and there's been some
-> > regressions-related activity in general, so below is yet another update.
-> > It contains a new feature too: the "approximate age" of each regression
-> > report.]
+On Fri, 2008-03-14 at 09:17 +0100, Miklos Szeredi wrote:
+> > diffstat for all seven patches is:
 > > 
-> > This message contains a list of some regressions from 2.6.24 reported since
-> > 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
-> > of.  If any of them have been fixed already, please let me know.
+> >  Documentation/filesystems/proc.txt |   35 +++++
+> >  fs/dcache.c                        |  101 +++++++++++---
+> >  fs/namespace.c                     |  182 ++++++++++++++++++++++-----
+> >  fs/pnode.c                         |  131 ++++++++++++++++++-
+> >  fs/pnode.h                         |   15 +-
+> >  fs/proc/base.c                     |  121 +++++++++--------
+> >  fs/seq_file.c                      |   92 +++++++++++--
+> >  include/linux/dcache.h             |    5 
+> >  include/linux/mnt_namespace.h      |   12 +
+> >  include/linux/mount.h              |    2 
+> >  include/linux/seq_file.h           |    7 +
+> >  11 files changed, 559 insertions(+), 144 deletions(-)
 > > 
-> > If you know of any other unresolved regressions from 2.6.24, please let me know
-> > either and I'll add them to the list.  Also, please let me know if any of the
-> > entries below are invalid.
+> > that's a mountain of tricksy new core-kernel code just for some /proc file.
 > > 
-> > 
-> > Listed regressions statistics:
-> > 
-> >   Date          Total  Pending  Unresolved
-> >   ----------------------------------------
-> >   2008-03-12      143       51          41
-> >   2008-03-11      141       58          43
-> >   2008-03-10      138       66          47
-> >   2008-03-03      115       65          49
-> >   2008-02-25       90       51          39
-> >   2008-02-17       61       45          37
-> > 
-> > 
-> > Unresolved regressions
-> > ----------------------
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9954
-> > Subject		: iwl3945: not only it periodically dies, it also BUG()s
-> > Submitter	: Pavel Machek <pavel@ucw.cz>
-> > Date		: 2008-02-05 22:44 (37 days old)
-> > References	: http://lkml.org/lkml/2008/2/5/453
-> > Handled-By	: Chatre, Reinette <reinette.chatre@intel.com>
+> > Is this all really justifiable?
 > 
-> I only seen the BUG() once. iwl3945 seems to work slightly better, big
-> part of problem was CGROUP_SCHED... All problems with iwl are not
-> solved, but it probably works as well as it did in 2.6.24 now...
+> This is an approximate order of added features from most complex to
+> least complex:
+> 
+>  1) basic info about mount propagation
+>  2) root of the mount (source directory of bind)
+>  3) disambiguating reachable mounts from unreachable (/proc/mounts
+>     under chroot is a mess, and people are afraid to fix it:
+>     http://lkml.org/lkml/2007/4/17/271)
+>  4) showing "dominating group" which intersects with current namespace/root
+>  5) allocating ID's from IDR pools instead of ever increasing 64bit counters
+>  6) showing ID of mount and parent mount
+>  7) st_dev of mount
+> 
+> 1, 2, 3 and 6 we definitely want.  Al wants 4.  I think 5 is useful
+> for readability, but not absolutely necessary.
+> 
+> All in all, I think there's very little that we can do, without
+> throwing out the baby with the bathwater.
+> 
+> Also compare this with the number of lines and mind boggling
+> complexity added for the mount propagation stuff, which is still very
+> little used years after it's introduction.  Possibly because some of
+> the infrastructure is still missing from kernel as well as userspace
+> to make it all really useful.  And I think this patch set goes towards
+> getting that infrastructure in place.
 
-Thanks for the update, I've closed the bug.
+The inability to see the propagation tree was one major block towards
+the use of sharedsubtree. Patch (1) fills up that gap and hence
+absolutely needed. I view the remaining patches as patches directly
+or indirectly supporting (1). 
 
-Rafael
+As far as the 'mind boggling complex code' I believe the container folks
+use it or at-least plan to use it. I know one our software groups
+actively leveraging this functionality. 
+
+RP
+
+
+> 
+> Possibly mount propagation will remain on the fringe for ever, in
+> which case a big chunk of this patch set (1 and 4) also end up being
+> useless.  The worst that can happen is that we end up adding some
+> #ifdef CONFIG_MOUNT_PROPAGATION clutter to namespace.c.
+> 
+> Miklos
+
