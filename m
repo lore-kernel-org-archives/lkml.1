@@ -1,81 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYCNRGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbYCNRHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbYCNRGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYCNRGB
+	id S1758234AbYCNRHL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYCNRG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:06:01 -0400
-Received: from sacred.ru ([62.205.161.221]:35182 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754666AbYCNRGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:06:00 -0400
-Message-ID: <47DAB065.6060804@openvz.org>
-Date: Fri, 14 Mar 2008 20:05:41 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Thomas Graf <tgraf@suug.ch>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Audit vs netlink interaction problem
-References: <47DAA660.90401@openvz.org> <20080314163929.GP20815@postel.suug.ch>
-In-Reply-To: <20080314163929.GP20815@postel.suug.ch>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Mar 2008 13:06:59 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:17574 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbYCNRG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 13:06:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=xqwJojDb6ztmmGnw0nRHhN28ENiY9Hvprmi1+sQgZGACrUwZ1ewe9Jj4D0ZYq/jrR9WfnJS/7RjwHwmqN0Q5tMIXq6/ZXDiHDxb+mxGyE2H5nxDMXy8SJ6PPQcQTl6/M/m8R143331dToRy7bP7V50vuZo5piSTXIWw1X5sIXRI=
+Subject: Re: [PATCH 01/10] Add macros similar to min/max/min_t/max_t.
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47DAAC9E.1060001@oracle.com>
+References: <1205471926.19712.12.camel@brick>
+	 <20080314093451.cd3e644c.randy.dunlap@oracle.com>
+	 <1205513171.27712.1.camel@brick>  <47DAAC9E.1060001@oracle.com>
+Content-Type: text/plain
+Date: Fri, 14 Mar 2008 10:06:48 -0700
+Message-Id: <1205514408.27712.5.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 20:05:43 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Graf wrote:
-> * Pavel Emelyanov <xemul@openvz.org> 2008-03-14 19:22
->> I've found an interesting feature of how audit uses netlink for
->> communications. Look.
->>
->> The kauditd_thread() calls netlink_unicast() and passes the 
->> audit_pid to it. The audit_pid, in turn, is received from the 
->> user space and the tool (I've checked the audit v1.6.9) uses 
->> getpid() to pass one in the kernel. Besides, this tool doesn't
->> bind the netlink socket to this id, but simply creates it 
->> allowing the kernel to auto-bind one.
->>
->> That's the preamble.
->>
->> The problem is that netlink_autobind() _does_not_ guarantees
->> that the socket will be auto-binded to the current pid. Instead
->> it uses the current pid as a hint to start looking for a free
->> id. So, in case of conflict, the audit messages can be sent
->> to a wrong socket. This can happen (it's unlikely, but can be)
->> in case some task opens more than one netlink sockets and then
->> the audit one starts - in this case the audit's pid can be busy
->> and its socket will be bound to another id.
+On Fri, 2008-03-14 at 09:49 -0700, Randy Dunlap wrote:
+> Harvey Harrison wrote:
+> > On Fri, 2008-03-14 at 09:34 -0700, Randy Dunlap wrote:
+> >> On Thu, 13 Mar 2008 22:18:45 -0700 Harvey Harrison wrote:
+> > 
+> >> Where is some blurb/comment about what "clamp" means/does?
+> >> min/max are well understood, but clamp?  Is that a shop tool?
+> >> I think I have a few out in my garage.
+> > Sure, I'll do that..does kernel-doc actually work for macros?
 > 
-> The audit userspace tool should be fixed, no question. It can continue
+> Yes, it does.
+> 
 
-Oh, this is good.
-I was afraid, that we'd have to stick to this logic...
+OK, here's what I've come up with:
 
-> to auto bind but must report the correct netlink pid.
+/**
+ * clamp - return a value clamped to a given range with strict typechecking
+ * @val: current value
+ * @min: minimum allowable value
+ * @max: maximum allowable value
+ *
+ * This macro does strict typechecking of min/max to make sure they of the
+ * same type as val.  See the unnecessary pointer comparisons.
+ */
+#define clamp(val, min, max) ({			\
+	typeof(val) __val = (val);		\
+	typeof(min) __min = (min);		\
+	typeof(max) __max = (max);		\
+	(void) (&__val == &__min);		\
+	(void) (&__val == &__max);		\
+	__val = __val < __min ? __min: __val;	\
+	__val > __max ? __max: __val; })
 
-Hmmm... I'm afraid, that this can break the audit filtering and signal
-auditing. I haven't yet looked deep into it, but it compares the 
-task->tgid with this audit_pid for different purposes. If audit_pid
-changes this code will be broken.
+/**
+ * clamp_t - return a value clamped to a given range using a given type
+ * @type: the type of variable to use
+ * @val: current value
+ * @min: minimum allowable value
+ * @max: maximum allowable value
+ *
+ * This macro does no typechecking and uses temporary variables of type
+ * 'type' to make all the comparisons.
+ */
+#define clamp_t(type, val, min, max) ({		\
+	type __val = (val);			\
+	type __min = (min);			\
+	type __max = (max);			\
+	__val = __val < __min ? __min: __val;	\
+	__val > __max ? __max: __val; })
 
-That's why I asked David for comments.
+/**
+ * clamp_val - return a value clamped to a given range using val's type
+ * @val: current value
+ * @min: minimum allowable value
+ * @max: maximum allowable value
+ *
+ * This macro does no typechecking and uses temporary variables of whatever
+ * type the input argument 'val' is.  This is useful when val is an unisgned
+ * type and min and max are literals that will otherwise be assigned a signed
+ * integer type.
+ */
+#define clamp_val(val, min, max) ({		\
+	typeof(val) __val = (val);		\
+	typeof(val) __min = (min);		\
+	typeof(val) __max = (max);		\
+	__val = __val < __min ? __min: __val;	\
+	__val > __max ? __max: __val; })
 
-> As a workaround: Assuming that the audit daemon is the only application
-> to issue a AUDIT_SET command to set the status pid, the kernel can
-> compare the netlink source pid of the AUDIT_SET message and compare it
+Comments?  Please let me know if I got the kerneldoc format right.
 
-Bu we have no the netlink socket at the moment of setting the pid to
-check this. The audit_reveive_msg() call which does this set is received 
-via another (pre-created global) socket.
+Harvey
 
-> against the status pid provided. If they differ, issue a warning but
-> use the netlink source pid thus covering the case where the auto bound
-> netlink pid actually differs from the process pid.
-
-I though, that proper behavior would be to split audit_pid, used for
-filtering from the audit_nlk_pid used for netlink communications.
