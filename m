@@ -1,237 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYCNOtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYCNOv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbYCNOtK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 10:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbYCNOs6
+	id S1756620AbYCNOv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 10:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYCNOvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 10:48:58 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39462 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753433AbYCNOs5 (ORCPT
+	Fri, 14 Mar 2008 10:51:50 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:47118 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbYCNOvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 10:48:57 -0400
-Date: Fri, 14 Mar 2008 23:38:46 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: [PATCH 1/3 (RFC)](memory hotplug) remember section_nr and node id for removing
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
-References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080314233638.20D9.E1E9C6FF@jp.fujitsu.com>
+	Fri, 14 Mar 2008 10:51:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=j7aMVdHDG6hdovzZUKHnyC1KP6J1vVSl7S+WKz5+RwNQ8JHwZoRhlySNjo86KuqfgBfxoItAEGWBM8OBZhDFjoWRu52EKlJgYuqOWBiZVUtJZDftJ+TZMpD72KdXv3rC+5UY2uIJPkHI2LeX5b3MSqL6bDXahFBc6SJIi/jXZyo=
+Message-ID: <54b90fdf0803140751m71935a09r9b039ca6eb124f4d@mail.gmail.com>
+Date: Fri, 14 Mar 2008 10:51:43 -0400
+From: Yan <rottled@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.22.6 - Discrepancy between running and on-disk kernels
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-This is to register information to be able to remove section's or node's
-structures.
+I have been trying to compare the code from the on-disk compressed kernel
+that was booted and the running kernel extracted from /dev/kmem. I extracted
+the kernel's code from the disk image by stripping the head.S and similar
+and gunzipping it, and extracted the kernel from /dev/kmem by reading data
+between _text and _etext symbol offsets.
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+I then ran both through a disassembler and diff'ed the outputs. Predictably,
+the disassembly was similar, but not identical. Some instructions (e.g. bts)
+had a 'lock' prefix, where as others had a 'nop' in its place.
 
- include/linux/memory_hotplug.h |   10 ++++
- include/linux/mmzone.h         |    1 
- mm/bootmem.c                   |    1 
- mm/memory_hotplug.c            |   97 ++++++++++++++++++++++++++++++++++++++++-
- mm/sparse.c                    |    3 -
- 5 files changed, 109 insertions(+), 3 deletions(-)
+There were other differences with some instructions like mfence. Everything
+else matched just fine, the differences were mostly in memory-referencing
+instructions.
 
-Index: current/mm/bootmem.c
-===================================================================
---- current.orig/mm/bootmem.c	2008-03-10 16:42:54.000000000 +0900
-+++ current/mm/bootmem.c	2008-03-10 22:24:46.000000000 +0900
-@@ -401,6 +401,7 @@
- 
- unsigned long __init free_all_bootmem_node(pg_data_t *pgdat)
- {
-+	register_page_bootmem_info_node(pgdat);
- 	return free_all_bootmem_core(pgdat);
- }
- 
-Index: current/include/linux/memory_hotplug.h
-===================================================================
---- current.orig/include/linux/memory_hotplug.h	2008-03-10 16:42:54.000000000 +0900
-+++ current/include/linux/memory_hotplug.h	2008-03-10 16:42:57.000000000 +0900
-@@ -11,6 +11,11 @@
- struct mem_section;
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
-+
-+#define SECTION_MAGIC		0xfffffffe
-+#define NODE_INFO_MAGIC		0xfffffffd
-+#define SECTION_INFO		0
-+#define NODE_INFO 		1
- /*
-  * pgdat resizing functions
-  */
-@@ -145,6 +150,9 @@
- #endif /* CONFIG_NUMA */
- #endif /* CONFIG_HAVE_ARCH_NODEDATA_EXTENSION */
- 
-+extern void register_page_bootmem_info_node(struct pglist_data *pgdat);
-+extern void clear_page_bootmem_info(struct page *page);
-+
- #else /* ! CONFIG_MEMORY_HOTPLUG */
- /*
-  * Stub functions for when hotplug is off
-@@ -192,5 +200,7 @@
- extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
- 								int nr_pages);
- extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
-+extern struct page *sparse_decode_mem_map(unsigned long coded_mem_map,
-+					  unsigned long pnum);
- 
- #endif /* __LINUX_MEMORY_HOTPLUG_H */
-Index: current/include/linux/mmzone.h
-===================================================================
---- current.orig/include/linux/mmzone.h	2008-03-10 16:42:54.000000000 +0900
-+++ current/include/linux/mmzone.h	2008-03-10 16:42:57.000000000 +0900
-@@ -938,6 +938,7 @@
- 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
- }
- extern int __section_nr(struct mem_section* ms);
-+extern unsigned long usemap_size(void);
- 
- /*
-  * We use the lower bits of the mem_map pointer to store
-Index: current/mm/memory_hotplug.c
-===================================================================
---- current.orig/mm/memory_hotplug.c	2008-03-10 16:42:54.000000000 +0900
-+++ current/mm/memory_hotplug.c	2008-03-10 22:22:25.000000000 +0900
-@@ -59,8 +59,103 @@
- 	return;
- }
- 
--
- #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-+static void set_page_bootmem_info(unsigned long info,  struct page *page,
-+				  unsigned long flag)
-+{
-+
-+	if (flag == SECTION_INFO)
-+		atomic_set(&page->_mapcount, SECTION_MAGIC);
-+	else
-+		atomic_set(&page->_mapcount, NODE_INFO_MAGIC);
-+
-+	SetPagePrivate(page);
-+	set_page_private(page, info);
-+
-+}
-+
-+void clear_page_bootmem_info(struct page *page)
-+{
-+	int magic;
-+
-+	magic = atomic_read(&page->_mapcount);
-+	if (magic != SECTION_MAGIC && magic != NODE_INFO_MAGIC)
-+		BUG();
-+
-+	ClearPagePrivate(page);
-+	set_page_private(page, 0);
-+	reset_page_mapcount(page);
-+}
-+
-+void register_page_bootmem_info_section(unsigned long start_pfn)
-+{
-+	unsigned long *usemap, mapsize, section_nr, i;
-+	struct page *page, *memmap;
-+
-+	if (!pfn_valid(start_pfn))
-+		return;
-+
-+	section_nr = pfn_to_section_nr(start_pfn);
-+
-+	memmap = pfn_to_page(start_pfn); /* memmap for the section */
-+
-+	/*
-+	 * Get page for the memmap's phys address
-+	 * XXX: need more consideration for sparse_vmemmap...
-+	 */
-+	page = virt_to_page(memmap);
-+	mapsize = sizeof(struct page) * PAGES_PER_SECTION;
-+	mapsize = PAGE_ALIGN(mapsize) >> PAGE_SHIFT;
-+
-+	/* remember memmap's page */
-+	for (i = 0; i < mapsize; i++, page++)
-+		set_page_bootmem_info(section_nr, page, SECTION_INFO);
-+
-+	usemap = __nr_to_section(section_nr)->pageblock_flags;
-+	page = virt_to_page(usemap);
-+
-+	mapsize = PAGE_ALIGN(usemap_size()) >> PAGE_SHIFT;
-+
-+	for (i = 0; i < mapsize; i++, page++)
-+		set_page_bootmem_info(section_nr, page, SECTION_INFO);
-+
-+}
-+
-+void register_page_bootmem_info_node(struct pglist_data *pgdat)
-+{
-+	unsigned long i, pfn, end_pfn, nr_pages;
-+	int node = pgdat->node_id;
-+	struct page *page;
-+	struct zone *zone;
-+
-+	nr_pages = PAGE_ALIGN(sizeof(struct pglist_data)) >> PAGE_SHIFT;
-+	page = virt_to_page(pgdat);
-+
-+	for (i = 0; i < nr_pages; i++, page++)
-+		set_page_bootmem_info(node, page, NODE_INFO);
-+
-+	zone = &pgdat->node_zones[0];
-+	for (; zone < pgdat->node_zones + MAX_NR_ZONES - 1; zone++) {
-+		if (zone->wait_table) {
-+			nr_pages = zone->wait_table_hash_nr_entries
-+				* sizeof(wait_queue_head_t);
-+			nr_pages = PAGE_ALIGN(nr_pages) >> PAGE_SHIFT;
-+			page = virt_to_page(zone->wait_table);
-+
-+			for (i = 0; i < nr_pages; i++, page++)
-+				set_page_bootmem_info(node, page, NODE_INFO);
-+		}
-+	}
-+
-+	pfn = pgdat->node_start_pfn;
-+	end_pfn = pfn + pgdat->node_spanned_pages;
-+
-+	/* register_section info */
-+	for (; pfn < end_pfn; pfn += PAGES_PER_SECTION)
-+		register_page_bootmem_info_section(pfn);
-+
-+}
-+
- static int __add_zone(struct zone *zone, unsigned long phys_start_pfn)
- {
- 	struct pglist_data *pgdat = zone->zone_pgdat;
-Index: current/mm/sparse.c
-===================================================================
---- current.orig/mm/sparse.c	2008-03-10 16:42:54.000000000 +0900
-+++ current/mm/sparse.c	2008-03-10 22:24:46.000000000 +0900
-@@ -200,7 +200,6 @@
- /*
-  * Decode mem_map from the coded memmap
-  */
--static
- struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
- {
- 	/* mask off the extra low bits of information */
-@@ -223,7 +222,7 @@
- 	return 1;
- }
- 
--static unsigned long usemap_size(void)
-+unsigned long usemap_size(void)
- {
- 	unsigned long size_bytes;
- 	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
+My question is, what can be changing the kernel between being on static
+storage and being loaded? Or am I just being fooled into thinking something
+changed it? I'm thinking that it had something to do with mutex locking
+and SMP, but I looked through boot code and tried googling and came up with
+nothing. Another possibility is me interpreting non-instructions as
+instructions.
 
--- 
-Yasunori Goto 
+Example:
+
+The following pattern repeats a lot:
+
+1325c1326,1327
+<     1089: f0 0f b3 04 24          lock btr %eax,(%esp)
+---
+>     1089: 90                      nop
+>     108a: 0f b3 04 24             btr    %eax,(%esp)
+
+As well as other changes:
+
+94383,94384c94832,94835
+<    47bb3: f0 83 04 24 00          lock addl $0x0,(%esp)
+<    47bb8: f0 ff 05 7c 30 80 c0    lock incl 0xc080307c
+---
+>    47bb3: 0f ae f0                mfence
+>    47bb6: 89 f6                   mov    %esi,%esi
+>    47bb8: 90                      nop
+>    47bb9: ff 05 7c 30 80 c0       incl   0xc080307c
 
 
+(I'm not subscribed; please cc any responses to me)
+
+Thanks in advance,
+Yan
