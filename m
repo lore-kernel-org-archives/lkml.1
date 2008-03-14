@@ -1,84 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYCNPVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYCNPci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYCNPVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 11:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYCNPVJ
+	id S1756072AbYCNPci (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 11:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYCNPc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 11:21:09 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:60934 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754067AbYCNPVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 11:21:08 -0400
-Message-ID: <47DA97DF.6010008@us.ibm.com>
-Date: Fri, 14 Mar 2008 08:21:03 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20080131)
+	Fri, 14 Mar 2008 11:32:29 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:60810 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754190AbYCNPc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 11:32:29 -0400
+Date: Fri, 14 Mar 2008 16:00:02 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: broken access to a USB HID device after suspend
+Message-ID: <20080314150002.GA16182@eazy.amigager.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20080314071712.GA15654@dose.home.local> <Pine.LNX.4.44L0.0803141034260.4478-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Christof Schmitt <christof.schmitt@de.ibm.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-btrace@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com>
-In-Reply-To: <20080314132238.GA9815@schmichrtp.de.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0803141034260.4478-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christof Schmitt wrote:
-> On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
->> On Fri, Mar 14 2008, Christof Schmitt wrote:
->>> On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
->>>> That is indeed a bug, does this work for you?
->>>>
->>>> diff --git a/kernel/relay.c b/kernel/relay.c
->>>> index d080b9d..39d1fa8 100644
->>>> --- a/kernel/relay.c
->>>> +++ b/kernel/relay.c
->>>> @@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
->>>>  			       unsigned int flags,
->>>>  			       int *nonpad_ret)
->>>>  {
->>>> -	unsigned int pidx, poff, total_len, subbuf_pages, ret;
->>>> +	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
->>>>  	struct rchan_buf *rbuf = in->private_data;
->>>>  	unsigned int subbuf_size = rbuf->chan->subbuf_size;
->>>>  	uint64_t pos = (uint64_t) *ppos;
->>>> @@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
->>>>  	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
->>>>  	poff = read_start & ~PAGE_MASK;
->>>>
->>>> -	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
->>>> +	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
->>>> +
->>>> +	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
->>>>  		unsigned int this_len, this_end, private;
->>>>  		unsigned int cur_pos = read_start + total_len;
->>> With the patch, i can run dd and 'blktrace -h traceserver' without the
->>> oops. But the output from blktrace only contains only zeros and no
->>> usable data for blkparse. Using blktrace to write the data directly to
->>> disk, without using the blktrace server works. Is there anything i
->>> should look for to help debugging the problem?
->> We should probably get Tom in the loop, as he is the relay expert. I'll
->> make sure the above patch gets into 2.6.25, as it is definitely a bug
->> that needs fixing.
-> 
-> http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> his email address seems to be no longer valid. I copy Dave Wilder
-> here, since he is mentioned as relay maintainer on the web page.
-> 
-> Dave, can you have a look at this? I can easily reproduce the problem
-> on s390 Linux for testing and getting more debug information.
-> 
-> Christof
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+On Fri, Mar 14, 2008 at 10:36:06 -0400, Alan Stern wrote:
 
-I will take a look at the problem.
-Any thing special about the test you are running I need to know?
+[...]
+
+> Have you tried using the LCD device with a different computer?  It's 
+> worth a try, just to rule out the possibility that something is wrong 
+> with your computer's USB hardware.
+
+OK. When it happens again, I'll plug the USB cable into my notebook and
+try to use hidmon on the notebook.
+
+Regards,
+Tino
