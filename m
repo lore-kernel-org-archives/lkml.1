@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbYCNTFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCNTHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbYCNTFA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 15:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYCNTEu
+	id S1757408AbYCNTHa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 15:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYCNTHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 15:04:50 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3158 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752402AbYCNTEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 15:04:50 -0400
-Date: Fri, 14 Mar 2008 20:03:57 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <ric@emc.com>
-Cc: Theodore Tso <tytso@mit.edu>, Benny Amorsen <benny+usenet@amorsen.dk>,
-       linux-kernel@vger.kernel.org
-Subject: writeback cache dangers Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080314190357.GB7151@ucw.cz>
-References: <200803110450.19390.phillips@phunq.net> <20080311215601.GM23784@marowsky-bree.de> <200803111602.53835.phillips@phunq.net> <m3d4q08477.fsf@ursa.amorsen.dk> <20080312133001.1668f40d@the-village.bc.nu> <20080314093019.GA5966@ucw.cz> <47DA5C8D.2020207@emc.com> <m3fxutcz2s.fsf@ursa.amorsen.dk> <20080314125656.GA7412@mit.edu> <47DA9DF8.5010600@emc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Mar 2008 15:07:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57321 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbYCNTHT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 15:07:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.25-rc5-git2: Reported regressions from 2.6.24
+Date: Fri, 14 Mar 2008 20:06:34 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+References: <200803120141.51844.rjw@sisk.pl> <20080314184245.GA7151@ucw.cz>
+In-Reply-To: <20080314184245.GA7151@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <47DA9DF8.5010600@emc.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200803142006.35771.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Friday, 14 of March 2008, Pavel Machek wrote:
+> On Wed 2008-03-12 01:41:51, Rafael J. Wysocki wrote:
+> > [Again, some entries have been closed since yesterday and there's been some
+> > regressions-related activity in general, so below is yet another update.
+> > It contains a new feature too: the "approximate age" of each regression
+> > report.]
+> > 
+> > This message contains a list of some regressions from 2.6.24 reported since
+> > 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> > of.  If any of them have been fixed already, please let me know.
+> > 
+> > If you know of any other unresolved regressions from 2.6.24, please let me know
+> > either and I'll add them to the list.  Also, please let me know if any of the
+> > entries below are invalid.
+> > 
+> > 
+> > Listed regressions statistics:
+> > 
+> >   Date          Total  Pending  Unresolved
+> >   ----------------------------------------
+> >   2008-03-12      143       51          41
+> >   2008-03-11      141       58          43
+> >   2008-03-10      138       66          47
+> >   2008-03-03      115       65          49
+> >   2008-02-25       90       51          39
+> >   2008-02-17       61       45          37
+> > 
+> > 
+> > Unresolved regressions
+> > ----------------------
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9954
+> > Subject		: iwl3945: not only it periodically dies, it also BUG()s
+> > Submitter	: Pavel Machek <pavel@ucw.cz>
+> > Date		: 2008-02-05 22:44 (37 days old)
+> > References	: http://lkml.org/lkml/2008/2/5/453
+> > Handled-By	: Chatre, Reinette <reinette.chatre@intel.com>
+> 
+> I only seen the BUG() once. iwl3945 seems to work slightly better, big
+> part of problem was CGROUP_SCHED... All problems with iwl are not
+> solved, but it probably works as well as it did in 2.6.24 now...
 
-> The ingest rate at the time of a power hit makes a huge 
-> difference as well - basically, pulling the power cord 
-> when a box is idle is normally not harmful. Try that 
-> when you are really pounding on the disks and you will 
-> see corruptions a plenty without barriers ;-)
+Thanks for the update, I've closed the bug.
 
-I tried that, and could not get a corrruption. cp -a on big kernel
-trees, on sata disk with writeback cache and no barriers... and I
-could not cause fs corruption. ext3.
-
-I'd like to demo danger of writeback cache. What should I do?
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rafael
