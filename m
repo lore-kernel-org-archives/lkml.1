@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYCNBGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYCNBXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbYCNBGL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYCNBF6
+	id S1755322AbYCNBXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYCNBXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:05:58 -0400
-Received: from mga11.intel.com ([192.55.52.93]:54045 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752373AbYCNBF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:05:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,497,1199692800"; 
-   d="scan'208";a="533638512"
-Subject: Re: [2.6.25-rc5-mm1] WARNING: at drivers/base/sys.c:173
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Dave Jones <davej@codemonkey.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-acpi@vger.kernel.org
-In-Reply-To: <47D9C04E.3060208@imap.cc>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <47D87238.8080305@imap.cc> <20080313195656.GA32463@codemonkey.org.uk>
-	 <47D9C04E.3060208@imap.cc>
-Content-Type: text/plain
-Date: Fri, 14 Mar 2008 08:57:11 +0800
-Message-Id: <1205456231.4082.2.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Mar 2008 21:23:14 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50880 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbYCNBXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 21:23:14 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 14 Mar 2008 02:22:30 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: fw-ohci: use dma_alloc_coherent for ar_buffer
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
+In-Reply-To: <47D8679A.10303@s5r6.in-berlin.de>
+Message-ID: <tkrat.d74b3aa2387b0f72@s5r6.in-berlin.de>
+References: <200803121743.27170.jwilson@redhat.com>
+ <47D8679A.10303@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-14 at 01:01 +0100, Tilman Schmidt wrote:
-> Am 13.03.2008 20:56 schrieb Dave Jones:
+I wrote:
+> Jarod Wilson wrote:
+>> Resolves constant buffer failures on my own x86_64 laptop w/4GB of RAM and
+>> likely to fix a number of other failures witnessed on x86_64 systems with
+>> 4GB of RAM or more.
+>> 
+>> Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 > 
-> >  > [   56.759128] ------------[ cut here ]------------
-> >  > [   56.765058] WARNING: at drivers/base/sys.c:173 sysdev_driver_register+0x34/0xce()
-> >  > [   56.776027] Modules linked in: acpi_cpufreq(+) speedstep_lib ip6table_filter ip6_tables x_tables ipv6 microcode firmware_class loop osst st sr_mod cdrom pata_acpi bas_gigaset snd_hda_intel gigaset isdn snd_pcm ata_generic<6>ip_tables: (C) 2000-2006 Netfilter Core Team
-> >  > [   56.785293]  snd_timer aic7xxx slhc snd ohci1394 rtc_cmos ieee1394 shpchp crc_ccitt iTCO_wdt e1000e rtc_core iTCO_vendor_support soundcore scsi_transport_spi watchdog_core pci_hotplug intel_agp button thermal agpgart rtc_lib processor i2c_i801 watchdog_dev parport_pc i2c_core snd_page_alloc parport pata_marvell sg ext3 jbd mbcache linear sd_mod usbhid hid ff_memless ahci libata scsi_mod ehci_hcd uhci_hcd usbcore dm_snapshot dm_mod
-> >  > [   56.805358] Pid: 2856, comm: modprobe Not tainted 2.6.25-rc5-mm1-testing #1
-> >  > [   56.810766]  [<c01272e9>] warn_on_slowpath+0x41/0x6d
-> >  > [   56.820628]  [<c0230065>] ? acpi_ns_lookup+0x2b5/0x497
-> >  > [   56.830455]  [<c0230e25>] ? acpi_evaluate_object+0x23e/0x249
-> >  > [   56.840414]  [<c02ff809>] ? mutex_unlock+0x8/0xa
-> >  > [   56.848380]  [<fa9fec1d>] ? acpi_processor_preregister_performance+0x4e6/0x4f1 [processor]
-> >  > [   56.858297]  [<c0286438>] ? cpufreq_register_driver+0x42/0xfc
-> >  > [   56.868263]  [<c026423d>] sysdev_driver_register+0x34/0xce
-> >  > [   56.877974]  [<c0286476>] cpufreq_register_driver+0x80/0xfc
-> >  > [   56.887327]  [<facde034>] acpi_cpufreq_init+0x34/0x3a [acpi_cpufreq]
-> >  > [   56.897290]  [<c014ad7a>] sys_init_module+0x1816/0x1943
-> >  > [   56.907304]  [<facb5000>] ? icmp_checkentry+0x0/0x14 [ip_tables]
-> >  > [   56.917255]  [<c0183cd2>] ? sys_read+0x3b/0x60
-> >  > [   56.925094]  [<c0106aec>] sysenter_past_esp+0x6d/0xc5
-> >  > [   56.935071]  =======================
-> >  > [   56.945016] ---[ end trace 9ade9adb26b6da0a ]---
+> Looks good at first glance.  Alas my PCs aren't affected, so I can only 
+> test it for lack of regressions.
 > 
-> > Full dmesg please, with CPU_FREQ_DEBUG=y, and boot with cpufreq.debug=7
-> 
-> You can find it at
-> http://gollum.phnxsoft.com/~ts/linux/dmesg.out
-> and the corresponding .config right beside it at
-> http://gollum.phnxsoft.com/~ts/linux/config-2.6.25-rc5-mm1
-> 
-> CCing linux-acpi as you did in your other mail.
+> I'm tempted to push this to Linus later this week.
 
-Please set CONFIG_ACPI_DEBUG and boot the system with the option of
-"acpi.debug_layer=0x01010000 acpi.debug_level=0x1f".
+I tested it on a 2GB EM64T machine, on PPC32, and i686.  I used the
+latter for stress-tests with SBP-2, DV, and IIDC traffic on two buses
+with 3 devices each, all active at once.
 
-It will be great if the acpidump output is attached.
+I had one lock-up during the stress-tests which I suspect is the
+handle_at_packet panic, http://bugzilla.kernel.org/show_bug.cgi?id=9617
+which is unrelated to this patch.
 
-Thanks.
+I committed your patch to linux1394-2.6.git, whose shortlog and diff
+from origin..for-linus looks now like this:
 
-> HTH
-> T.
-> 
+Jarod Wilson (2):
+      firewire: fw-sbp2: set single-phase retry_limit
+      firewire: fw-ohci: use dma_alloc_coherent for ar_buffer
+
+Stefan Richter (9):
+      firewire: endianess fix
+      firewire: endianess annotations
+      firewire: fw-ohci: PPC PMac platform code
+      firewire: fw-ohci: Apple UniNorth 1st generation support
+      firewire: warn on fatal condition in topology code
+      firewire: update Kconfig help text
+      firewire: fw-sbp2: fix for SYM13FW500 bridge (Datafab disk)
+      ieee1394: sbp2: fix for SYM13FW500 bridge (Datafab disk)
+      firewire: fw-ohci: shut up false compiler warning on PPC32
+
+ drivers/firewire/Kconfig          |   50 +++++--------
+ drivers/firewire/fw-ohci.c        |  108 +++++++++++++++++++++-------
+ drivers/firewire/fw-sbp2.c        |   36 +++++++++-
+ drivers/firewire/fw-topology.c    |    3 +-
+ drivers/firewire/fw-transaction.c |    2 +-
+ drivers/firewire/fw-transaction.h |    6 +-
+ drivers/ieee1394/sbp2.c           |    5 ++
+ 7 files changed, 143 insertions(+), 67 deletions(-)
+
+I'd like to submit this to Linus later today (Friday).  It all looks
+like a bit too much for such a late -rc phase; but half of fw-ohci's
+diffstat is actually just the added PMac code which has already proven
+itself in ohci1394.
+
+There are also some small new commits to linux1394-2.6.git master, whose
+history is once again somewhat obfuscated by my pulling 'origin' and
+'for-linus' into master, so that vice versa master can be cleanly pulled
+into descendants of Linus' tree.
+
+http://me.in-berlin.de/~s5r6/linux1394/updates/2.6.25-rc5/patches/series
+gives a better picture of what is currently in the pipeline than git log
+would give.
+-- 
+Stefan Richter
+-=====-==--- --== -===-
+http://arcgraph.de/sr/
 
