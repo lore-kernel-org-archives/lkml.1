@@ -1,148 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbYCNAQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYCNAQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbYCNAQd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 20:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbYCNAPv
+	id S1758128AbYCNAQr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 20:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbYCNAQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 20:15:51 -0400
-Received: from saeurebad.de ([85.214.36.134]:56649 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbYCNAPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 20:15:50 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
-References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
-Date: Fri, 14 Mar 2008 01:13:30 +0100
-In-Reply-To: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
-	(Yinghai Lu's message of "Thu, 13 Mar 2008 16:45:42 -0700")
-Message-ID: <87iqzq40yd.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 13 Mar 2008 20:16:27 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54022 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758674AbYCNAQ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 20:16:26 -0400
+Message-ID: <47D9C369.2030709@cn.fujitsu.com>
+Date: Fri, 14 Mar 2008 09:14:33 +0900
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Add a document describing the resource counter abstraction
+ (v2)
+References: <47D8F561.4000004@openvz.org>
+In-Reply-To: <47D8F561.4000004@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Pavel Emelyanov wrote:
+> The resource counter is supposed to facilitate the resource accounting
+> of arbitrary resource (and it already does this for memory controller).
+> 
+> However, it is about to be used in other resources controllers (swap,
+> kernel memory, networking, etc), so provide a doc describing how to
+> work with it.  This will eliminate all the possible future duplications
+> in the appropriate controllers' docs.
+> 
+> Fixed errors pointed out by Randy.
+> 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+> 
+> diff --git a/Documentation/controllers/resource_counter.txt b/Documentation/controllers/resource_counter.txt
+> new file mode 100644
+> index 0000000..563000d
+> --- /dev/null
+> +++ b/Documentation/controllers/resource_counter.txt
+> @@ -0,0 +1,181 @@
+> +
+> +		The Resource Counter
+> +
+> +The resource counter, declared at include/linux/res_counter.h,
+> +is supposed to facilitate the resource management by controllers
+> +by providing common stuff for accounting.
+> +
+> +This "stuff" includes the res_counter structure and routines
+> +to work with it.
+> +
+> +
+> +
+> +1. Crucial parts of the res_counter structure
+> +
+> + a. unsigned long long usage
+> +
+> + 	The usage value shows the amount of a resource that is consumed
+> +	by a group at a given time. The units of measurement should be
+> +	determined by the controller that uses this counter. E.g. it can
+> +	be bytes, items or any other unit the controller operates on.
+> +
+> + b. unsigned long long max_usage
+> +
+> + 	The maximal value of the usage over time.
+> +
+> + 	This value is useful when gathering statistical information about
+> +	the particular group, as it shows the actual resource requirements
+> +	for a particular group, not just some usage snapshot.
+> +
+> + c. unsigned long long limit
+> +
+> + 	The maximal allowed amount of resource to consume by the group. In
+> +	case the group requests for more resources, so that the usage value
+> +	would exceed the limit, the resource allocation is rejected (see
+> +	the next section).
+> +
+> + d. unsigned long long failcnt
+> +
+> + 	The failcnt stands for "failures counter". This is the number of
+> +	resource allocation attempts that failed.
+> +
+> + c. spinlock_t lock
+> +
+> + 	Protects changes of the above values.
+> +
+> +
+> +
+> +2. Basic accounting routines
+> +
+> + a. void res_counter_init(struct res_counter *rc)
+> +
+> + 	Initializes the resource counter. As usual, should be the first
+> +	routine called for a new counter.
+> +
+> + b. int res_counter_charge[_locked]
+> +			(struct res_counter *rc, unsigned long val)
+> +
+> +	When a resource is about to be allocated it has to be accounted
+> +	with the appropriate resource counter (controller should determine
+> +	which one to use on its own). This operation is called "charging".
+> +
+> +	This is not very important which operation - resource allocation
+> +	or charging - is performed first, but
+> +	  * if the allocation is performed first, this may create a
+> +	    temporary resource over-usage by the time resource counter is
+> +	    charged;
+> +	  * if the charging is performed first, then it should be uncharged
+> +	    on error path (if the one is called).
+> +
+> + c. void res_counter_uncharge[_locked]
+> +			(struct res_counter *rc, unsigned long val)
+> +
+> +	When a resource is released (freed) is should be de-accounted
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+                                            it
 
-> Index: linux-2.6/mm/bootmem.c
-> ===================================================================
-> --- linux-2.6.orig/mm/bootmem.c
-> +++ linux-2.6/mm/bootmem.c
-> @@ -111,44 +111,69 @@ static unsigned long __init init_bootmem
->   * might be used for boot-time allocations - or it might get added
->   * to the free page pool later on.
->   */
-> -static int __init reserve_bootmem_core(bootmem_data_t *bdata,
-> +static int __init can_reserve_bootmem_core(bootmem_data_t *bdata,
->  			unsigned long addr, unsigned long size, int flags)
->  {
->  	unsigned long sidx, eidx;
->  	unsigned long i;
-> -	int ret;
-> +
-> +	BUG_ON(!size);
-> +
-> +	/* out of range, don't hold other */
-> +	if (addr >= bdata->node_boot_start && addr < bdata->last_success)
-> +		return 0;
->  
->  	/*
-> -	 * round up, partially reserved pages are considered
-> -	 * fully reserved.
-> +	 * Round up to index to the range.
->  	 */
-> +	if (addr > bdata->node_boot_start)
-> +		sidx= PFN_DOWN(addr - bdata->node_boot_start);
-> +	else
-> +		sidx = 0;
-> +
-> +	eidx = PFN_UP(addr + size - bdata->node_boot_start);
-> +	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
-> +		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
-> +
-> +	for (i = sidx; i < eidx; i++)
-> +		if (test_bit(i, bdata->node_bootmem_map)) {
-> +			if (flags & BOOTMEM_EXCLUSIVE)
-> +				return -EBUSY;
-> +		}
-> +
-> +	return 0;
-> +
-> +}
-> +static void __init reserve_bootmem_core(bootmem_data_t *bdata,
-> +			unsigned long addr, unsigned long size, int flags)
-> +{
-> +	unsigned long sidx, eidx;
-> +	unsigned long i;
-> +
->  	BUG_ON(!size);
-> -	BUG_ON(PFN_DOWN(addr) >= bdata->node_low_pfn);
-> -	BUG_ON(PFN_UP(addr + size) > bdata->node_low_pfn);
-> -	BUG_ON(addr < bdata->node_boot_start);
->  
-> -	sidx = PFN_DOWN(addr - bdata->node_boot_start);
-> +	/* out of range */
-> +	if (addr >= bdata->node_boot_start && addr < bdata->last_success)
-> +		return;
-> +
-> +	/*
-> +	 * Round up to index to the range.
-> +	 */
-> +	if (addr > bdata->node_boot_start)
-> +		sidx= PFN_DOWN(addr - bdata->node_boot_start);
-> +	else
-> +		sidx = 0;
-> +
->  	eidx = PFN_UP(addr + size - bdata->node_boot_start);
-> +	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
-> +		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
->  
->  	for (i = sidx; i < eidx; i++)
->  		if (test_and_set_bit(i, bdata->node_bootmem_map)) {
->  #ifdef CONFIG_DEBUG_BOOTMEM
->  			printk("hm, page %08lx reserved twice.\n", i*PAGE_SIZE);
->  #endif
-> -			if (flags & BOOTMEM_EXCLUSIVE) {
-> -				ret = -EBUSY;
-> -				goto err;
-> -			}
->  		}
-> -
-> -	return 0;
-> -
-> -err:
-> -	/* unreserve memory we accidentally reserved */
-> -	for (i--; i >= sidx; i--)
-> -		clear_bit(i, bdata->node_bootmem_map);
-> -
-> -	return ret;
->  }
->  
->  static void __init free_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
-> @@ -407,6 +432,11 @@ unsigned long __init init_bootmem_node(p
->  void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
->  				 unsigned long size, int flags)
->  {
-> +	int ret;
-> +
-> +	ret = can_reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
-> +	if (ret < 0)
-> +		return;
->  	reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
-
-I don't get it.  Sorry.  What is the purpose of
-can_reserve_bootmem_core()?  It does exactly what reserve_bootmem_core
-does besides actually setting the bits.  All the pre-checking you wanted
-to have out of the way is repeated again in reserve_bootmem_core()
-(well, almost all).
-
-	Hannes
