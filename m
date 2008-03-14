@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYCNScZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYCNSfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbYCNScZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 14:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYCNScR
+	id S1758242AbYCNSfB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 14:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYCNSey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 14:32:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:36862 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbYCNScQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 14:32:16 -0400
-Message-ID: <47DAC435.1050105@goop.org>
-Date: Fri, 14 Mar 2008 11:30:13 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Hugh Dickins <hugh@veritas.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       virtualization@lists.osdl.org, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
-       andrea@qumranet.com, clameter@sgi.com, a.p.zijlstra@chello.nl,
-       Keir Fraser <keir@xensource.com>, Ian Pratt <ian.pratt@xensource.com>
-Subject: Re: [patch 0/6] Guest page hinting version 6.
-References: <20080312132132.520833247@de.ibm.com>	 <Pine.LNX.4.64.0803131627450.17244@blonde.site> <47D9754B.1030509@goop.org>	 <Pine.LNX.4.64.0803131848080.800@blonde.site> <1205438038.14987.1.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1205438038.14987.1.camel@bodhitayantram.eng.vmware.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Mar 2008 14:34:54 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1827 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753407AbYCNSey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 14:34:54 -0400
+Date: Fri, 14 Mar 2008 19:34:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Mike Galbraith <efault@gmx.de>, Jan Knutar <jk-lkml@sci.fi>,
+       linux-kernel@vger.kernel.org, Hans-Peter Jansen <hpj@urpla.net>,
+       Jiri Kosina <jkosina@suse.cz>, David Newall <davidn@davidnewall.com>,
+       Theodore Tso <tytso@mit.edu>, "Fred ." <eldmannen@gmail.com>
+Subject: Re: Keys get stuck
+Message-ID: <20080314183438.GB6722@ucw.cz>
+References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <200803122222.05663.hpj@urpla.net> <1205386933.4797.22.camel@marge.simson.net> <200803131148.22056.jk-lkml@sci.fi> <1205407693.6686.16.camel@marge.simson.net> <20080313120238.GA3860@localhost.ift.unesp.br> <47D937A2.9070305@aitel.hist.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D937A2.9070305@aitel.hist.no>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> On Thu, 2008-03-13 at 18:55 +0000, Hugh Dickins wrote:
->   
->> On Thu, 13 Mar 2008, Jeremy Fitzhardinge wrote:
->>     
->>> My other concern is just correctness over time on the Linux side.  We already
->>> have enough trouble keeping things like the pte and page structure state in
->>> sync, with resulting rare data-loss bugs.  Adding another layer which only
->>> applies in specific environments raises the possibility for new bugs to be
->>> un-noticed for a long time.  How can we structure the VM changes to make sure
->>> that its robust in the face of maintenance?
->>>       
->> Yes, that's the main concern, as whenever lots of subtlety is added.
->> I wonder if there's any chance of a CONFIG_DEBUG mode, which could be
->> run on anybody's x86 machine, without involving any virtualization, but
->> in which the PAGE_STATEs become essential to the correct working of the mm.
->>     
->
-> How about a fake hypervisor, which is really just a random page evictor,
-> following the rules of CMM?
->   
+On Thu 2008-03-13 15:18:10, Helge Hafting wrote:
+> Carlos R. Mafra wrote:
+> >On Thu 13.Mar'08 at 12:28:13 +0100, Mike Galbraith 
+> >wrote:
+> >  
+> >>[...]
+> >>Swap can definitely keep X off the cpu for extended 
+> >>periods,
+> >>[...]
+> >>    
+> >
+> >So I would like to ask if swap letting X (and 
+> >everything else
+> >in my experience) out of the cpu for extended periods is
+> >considered normal behaviour, in the sense that nobody is
+> >trying to "fix" it (due to it being considered 
+> >impossible
+> >to fix)...?
+> >  
+> Yes, this is perfectly normal. A heavily swapping machine
+> will swap out parts of X.
+> 
+> Now, if X has a need for low-latency for keyboard 
+> handling,
 
-Probably simpler to just have variants of the page_set_* functions which 
-simulate the worst-possible host action immediately (ie, stealing pages, 
-logically swapping them, etc).  That wouldn't give you full coverage, 
-but it would go some way.  An async variant which schedules a change in 
-a few milliseconds would help too.
+If X needs low-latency for keyboard, X is misdesigned.
 
-I guess that's equivalent to having a special-purpose hypervisor built 
-into the kernel (hm, sounds familiar...).
-
-    J
+Kernel already provides timestamped input events...
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
