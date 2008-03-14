@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYCNQuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbYCNQvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYCNQuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbYCNQuZ
+	id S1758209AbYCNQvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYCNQv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:50:25 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:26109 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757019AbYCNQuY (ORCPT
+	Fri, 14 Mar 2008 12:51:26 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41863 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbYCNQv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:50:24 -0400
-Date: Thu, 13 Mar 2008 17:49:19 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Chandru <chandru@in.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jdmason@kudzu.us
-Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables
-	in kdump
-Message-ID: <20080313154919.GE7114@il.ibm.com>
-References: <20071009210623.GK4335@rhun.haifa.ibm.com> <20071010053057.GA24434@in.ibm.com> <20071014054110.GB4399@rhun.haifa.ibm.com> <20071015062919.GA4598@in.ibm.com> <476F4064.8010601@in.ibm.com> <47D5359D.5000909@in.ibm.com> <20080311132921.GA10828@redhat.com> <47D76561.8050805@in.ibm.com> <20080312095820.GG10790@tyrion.haifa.ibm.com> <20080312180806.GB13549@redhat.com>
-MIME-Version: 1.0
+	Fri, 14 Mar 2008 12:51:26 -0400
+Date: Fri, 14 Mar 2008 17:53:36 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       clameter@sgi.com, linux-kernel@vger.kernel.org,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] mm: fix boundary checking in free_bootmem_core
+Message-ID: <20080314165336.GS2522@one.firstfloor.org>
+References: <86802c440803111801m20349386l58a108cec13eb5ee@mail.gmail.com> <86802c440803121811i262b21bdrfb07df52fd27aaae@mail.gmail.com> <20080312182240.db32c858.akpm@linux-foundation.org> <200803132259.47063.ak@suse.de> <86802c440803131522t3d038d39gbe8eb0d38ddcb634@mail.gmail.com> <87iqzp5xfv.fsf@basil.nowhere.org> <86802c440803140944p302b300fy7515fb758221932b@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080312180806.GB13549@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <86802c440803140944p302b300fy7515fb758221932b@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 12, 2008 at 02:08:06PM -0400, Vivek Goyal wrote:
-
-> Agree. Ignoring all the DMA errors in kdump kernel does not sound
-> very good.
+On Fri, Mar 14, 2008 at 09:44:50AM -0700, Yinghai Lu wrote:
+> On 14 Mar 2008 12:58:44 +0100, Andi Kleen <andi@firstfloor.org> wrote:
+> > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> >  >
+> >  > then i tried to reserve 64M or 128M RAM before that, and free that
+> >  > before gart/switotble try to allloc_bootmem under 4g.
+> >
+> >  Sounds like an incredible hack. There are far better ways to do that
+> >  for bootmem allocations. e.g. you can just specify a high enough "goal"
+> >  That is how swiotlb solves a similar problem (at least before my
+> >  mask allocator rewrite)
 > 
-> On a side note, typically how much time does it take to for DMA
-> operations to finish. Can we wait for a random amount of time in
-> second kernel, hoping all the DMA operations are complete, and then
-> setup a new table?
+> I don't think so.
 > 
-> This can be atleast a stop gap solution till we come up with a good
-> solution?
+> anyway, otherway to workaround it is
+> change
+>                 return __earlyonly_bootmem_alloc(node, size, size,
+>                                 __pa(MAX_DMA_ADDRESS));
+> in vmemmap_alloc_block to
+>                 return __earlyonly_bootmem_alloc(node, size, size,
+>                                 __pa(MAX_DMA_ADDRESS + (1<<27)));
+> to make room for gart. but that is global change. and may affect other
+> platform. 
 
-The problem as I understand it is that when we boot into the kdump
-kernel we have left-over devices from the old kernel which are active
-and initiating DMA's. This is fine as long as Calgayr is also active
-(with the old kernel's mappings). Once we initialize Calgary (in the
-kdump) kernel with the new mappings, however, it starts trapping all
-those DMA's. We can't wait for them to stop, because that will only
-happen when the device is re-initialized (or otherwise quiesced).
+You can just make it an optional architecture defined macro
 
-Cheers,
-Muli
+> and don't make sure gart will get it.
+
+Has nothing to do with the gart?
+
+
+> 
+> also i assume swiotlb need that range is less than 4g.
+
+The normal rule is that anybody who needs big bootmem allocations
+need to make sure they're high enough to not fill up first 4GB.
+For small allocations like most of bootmem it doesn't matter because 
+they're, um, small.
+
+If vmemmap doesn't do that vmemmap needs to be fixed.
+
+-Andi
+
+
