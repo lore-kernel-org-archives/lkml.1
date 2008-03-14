@@ -1,135 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCNRua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbYCNRyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYCNRua (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbYCNRuW
+	id S1757756AbYCNRyJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbYCNRx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:50:22 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:64683 "EHLO mummy.ncsc.mil"
+	Fri, 14 Mar 2008 13:53:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38898 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754621AbYCNRuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:50:21 -0400
-Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
-From: Stephen Smalley <sds@epoch.ncsc.mil>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, Greg KH <greg@kroah.com>,
-       Pavel Emelianov <xemul@openvz.org>
-In-Reply-To: <20080314143216.GC9741@sergelap.austin.ibm.com>
-References: <20080313144142.GB11265@sergelap.austin.ibm.com>
-	 <Xine.LNX.4.64.0803142039460.32184@us.intercode.com.au>
-	 <1205501248.22912.35.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080314143216.GC9741@sergelap.austin.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 14 Mar 2008 13:41:56 -0400
-Message-Id: <1205516516.22912.92.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1755208AbYCNRx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 13:53:56 -0400
+To: Daniel Phillips <phillips@phunq.net>
+Cc: David Newall <davidn@davidnewall.com>, david@lang.hm,
+       Chris Friesen <cfriesen@nortel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+References: <200803092346.17556.phillips@phunq.net>
+	<200803131232.07879.phillips@phunq.net>
+	<47D9856E.9010304@davidnewall.com>
+	<200803131303.04118.phillips@phunq.net>
+From: Jeff Moyer <jmoyer@redhat.com>
+Date: Fri, 14 Mar 2008 13:53:30 -0400
+In-Reply-To: <200803131303.04118.phillips@phunq.net> (Daniel Phillips's message of "Thu\, 13 Mar 2008 12\:03\:03 -0800")
+Message-ID: <x498x0lb3ad.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Daniel Phillips <phillips@phunq.net> writes:
 
-On Fri, 2008-03-14 at 09:32 -0500, Serge E. Hallyn wrote:
-> Quoting Stephen Smalley (sds@epoch.ncsc.mil):
-> > 
-> > On Fri, 2008-03-14 at 21:17 +1100, James Morris wrote:
-> > > On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
-> > > 
-> > > > Implement a cgroup using the LSM interface to enforce open and mknod
-> > > > on device files.
-> > > 
-> > > Actually, I'm not sure that the LSM approach in general is best here.
-> > > 
-> > > The LSM model is that standard DAC logic lives in the core kernel, and 
-> > > that extended security logic (e.g. MAC) is called after DAC via hooks.  
-> > > cgroups has introduced new security logic of its own, which is arguably 
-> > > "standard DAC" when cgroups is enabled.
-> > > 
-> > > I can understand Greg not wanting this security logic in the core kernel, 
-> > > but it is specific to cgroups (which itself is security model agnostic) 
-> > > and does not stand alone as a distinct security framework.
-> 
-> I completely disagree.   We have two separate frameworks in the kernel,
-> one to enforce generic additional security stuff, and one to track
-> tasks.  When I need a feature which tracks tasks to do some security
-> tasks, it seems obvious that I would use both, just like to enforce a
-> certain type of MAC I end up using both netfilter and LSM through
-> selinux.
+> On Thursday 13 March 2008 12:50, David Newall wrote:
+>> Daniel Phillips wrote:
+>> > The period where you cannot access the data is downtime.  If your script
+>> > just does a cp from a disk array to the ram device you cannot just read
+>> > from the backing store in that period because you will need to fail over
+>> > to the ramdisk at some point, and you cannot just read from the ramdisk
+>> > because it is not populated yet.
+>> 
+>> Wouldn't a raid-1 set comprising disk + ramdisk do that with no downtime?
+>
+> In raid1, write completion has to wait for write completion on all
+> mirror members, so writes run at disk speed.  Reads run at ramdisk
+> speed, so your proposal sounds useful, but ramback aims for high
+> write performance as well.
 
-Depends on whether you think LSM hooks are like netfilter hooks (i.e.
-fine for each module to just implement a few here and there, then
-combine resulting modules), or whether they are about implementing
-complete security models (ala SELinux or Smack).  As they currently
-exist, they aren't very well suited to the former - they impose a cost
-on all hooked operations in order to hook any at all, as has been a
-concern for your device controller.
+Ramback could be an interesting building block.  Consider using a
+couple of systems exporting Ramback devices via Evgeniy's distributed
+storage target (or something similiar).  In this case, you can have as
+many Ramback devices as you want comprise your mirror set to meet your
+availability requirements.  Perhaps people are looking at this too
+much as an entire solution as opposed to a piece of a bigger puzzle.
+I think the idea has merit.
 
-> > > The fact that all existing LSMs need to invoke exactly the same code is an 
-> > > indicator that it doesn't belong in LSM.
-> 
-> No, that's like saying capabilities don't belong in LSM because all LSMS
-> need to invoke it the same way.  What it is an indicator of is that
-> there are (not-quite-)orthogonal pieces of security which users might
-> want to use together.
+Cheers,
 
-Likely not a popular view, but capabilities don't belong in LSM.  Look
-at them:  the capability state is still directly embedded in the
-relevant kernel data structures, various bits of capability specific
-logic and interfaces remain in the core kernel, they don't present a
-complete security model (just an auxiliary to some other model like DAC
-or Smack for privilege purposes), they use only a small subset of the
-hooks, they force LSM to violate its usual restrictive-only paradigm to
-support capable(), CONFIG_SECURITY=n still has to invoke the capability
-functions, and all of the other LSMs do need to call it the same way to
-keep Linux working as expected for applications and users.
-
-The original promise was that LSM would allow kernels to be built that
-shed capabilities altogether, but in practice no one seems to do that as
-both users and applications expect them to exist in Linux.  In fact, the
-possibility of not having capabilities present has caused problems that
-have led to the dummy module being turned more and more into a clone of
-the capabilities module (actually managing and testing the capability
-bits rather than just uid == 0 as originally).
-
-So I wouldn't point to capabilities as a counter example to James' point
-- they are actually a supporting example.
-
-> As I told stephen I hope to provide the enhanced selinux support for
-> devices, and at that point perhaps you won't want to support
-> SELINUX+CGROUPS_DEV anymore.
-> 
-> Now that's just my opinion and it doesn't count for much.  I'll do
-> whatever everyone can agree on, but will wait for Paul's opinion about
-> adding cgroup hooks next to the two security hooks.
-> 
-> > > Moving this logic into LSM means that instead of the cgroups security 
-> > > logic being called from one place in the main kernel (where cgroups 
-> > > lives), it must be called identically from each LSM (none of which are 
-> > > even aware of cgroups), which I think is pretty obviously the wrong 
-> > > solution.
-> > > 
-> > > This is baggage which comes with cgroups -- please don't push it into LSM 
-> > > to try and hide that.
-> > 
-> > I agree with the above, and would further note that I would expect the
-> > SELinux solution to the problem would be done not by stacking with or
-> > calling this device whitelist lsm but instead by introducing the ability
-> > to bind security labels to devices within the kernel (independent of the
-> > particular device node(s) in the filesystem used to access that device)
-> > and applying permission checks on those device labels when processes
-> > attempt to create or access those devices (again independent of the
-> > particular device node used to access them).  That keeps the policy
-> > integrated and analyzable and avoids an external dependency.
-> 
-> Agreed.
-> 
-> -serge
--- 
-Stephen Smalley
-National Security Agency
-
+Jeff
