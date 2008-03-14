@@ -1,175 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbYCNUth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYCNUv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758498AbYCNUth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYCNUt1
+	id S1758655AbYCNUv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYCNUvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:49:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52079 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbYCNUt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:49:27 -0400
-Message-ID: <47DAE2E7.101@redhat.com>
-Date: Fri, 14 Mar 2008 16:41:11 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 14 Mar 2008 16:51:49 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:27367 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbYCNUvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 16:51:48 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -6.389
+Message-ID: <47DAE55C.3080506@tremplin-utc.net>
+Date: Fri, 14 Mar 2008 21:51:40 +0100
+From: Eric Piel <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.12) Gecko/20080305 Mandriva/2.0.0.12-3mdv2008.1 (2008.1) Thunderbird/2.0.0.12 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Shaohua Li <shaohua.li@intel.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: [PATCH -mm 4/5] kprobes: add (un)register_jprobes for batch registration
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@osdl.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>	 <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>	 <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net> <1205525184.12763.32.camel@nimitz.home.sr71.net>
+In-Reply-To: <1205525184.12763.32.camel@nimitz.home.sr71.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce unregister_/register_jprobes() for jprobe
-batch registration.
+Dave Hansen wrote:
+> For those of you new to this thread, here's the initial report:
+> 
+> 	http://marc.info/?t=120536629300001&r=1&w=2
+> 
+> I'm pretty sure the root cause of this bug is this commit:
+> 
+> 	ACPI: basic initramfs DSDT override support
+> 	71fc47a9adf8ee89e5c96a47222915c5485ac437
+> 
+> Which did this hunk:
+>         
+>         @@ -648,6 +654,7 @@ asmlinkage void __init start_kernel(void)
+>          
+>                 check_bugs();
+>          
+>         +       populate_rootfs(); /* For DSDT override from initramfs
+>         */
+>                 acpi_early_init(); /* before LAPIC and SMP init */
+>          
+>                 /* Do the rest non-__init'ed, we're now alive */
+>         	rest_init();
+>         ...
+> 
+> Well, the fs initcalls aren't actually done until during rest_init(),
+> including initializing my mnt_writer[] spinlocks.  I guess I could
+> statically initialize them, but that's not the root of the problem, it's
+> just the canary in the coal mine.
+> 
+> I think the populate_rootfs() call is completely bogus and certainly
+> can't be done before the initcalls.  But, I don't immediately have any
+> better suggestions for you.  Can you delay the ACPI init until after the
+> fs initcalls are made?
+Hi,
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
+I have made a patch to fix problems with regards to early userspace 
+calls (http://lkml.org/lkml/2008/2/23/306) but I don't think it will 
+solve this bug. So far I had not heard of problems with filesystem 
+initialization.
 
- include/linux/kprobes.h |    9 ++++++
- kernel/kprobes.c        |   65 +++++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 65 insertions(+), 9 deletions(-)
+I'm not sure it would be possible to delay acpi_early_init() until after 
+the fs initcalls. Maybe Len knows. How about trying the opposite: what 
+is the barely minimum to initialize so that the rootfs can be populated 
+and read? Would it be possible to have a kind of 
+early_mnt_writer_initialize() that would do that?
 
-Index: 2.6.25-rc5-mm1/include/linux/kprobes.h
-===================================================================
---- 2.6.25-rc5-mm1.orig/include/linux/kprobes.h
-+++ 2.6.25-rc5-mm1/include/linux/kprobes.h
-@@ -240,6 +240,8 @@ int setjmp_pre_handler(struct kprobe *,
- int longjmp_break_handler(struct kprobe *, struct pt_regs *);
- int register_jprobe(struct jprobe *p);
- void unregister_jprobe(struct jprobe *p);
-+int register_jprobes(struct jprobe **jps, int num);
-+void unregister_jprobes(struct jprobe **jps, int num);
- void jprobe_return(void);
- unsigned long arch_deref_entry_point(void *);
-
-@@ -279,9 +281,16 @@ static inline int register_jprobe(struct
- {
- 	return -ENOSYS;
- }
-+static inline int register_jprobes(struct jprobe **jps, int num)
-+{
-+	return -ENOSYS;
-+}
- static inline void unregister_jprobe(struct jprobe *p)
- {
- }
-+static inline void unregister_jprobes(struct jprobe **jps, int num)
-+{
-+}
- static inline void jprobe_return(void)
- {
- }
-Index: 2.6.25-rc5-mm1/kernel/kprobes.c
-===================================================================
---- 2.6.25-rc5-mm1.orig/kernel/kprobes.c
-+++ 2.6.25-rc5-mm1/kernel/kprobes.c
-@@ -755,24 +755,69 @@ unsigned long __weak arch_deref_entry_po
- 	return (unsigned long)entry;
- }
-
--int __kprobes register_jprobe(struct jprobe *jp)
-+static int __register_jprobes(struct jprobe **jps, int num,
-+	unsigned long called_from)
- {
--	unsigned long addr = arch_deref_entry_point(jp->entry);
-+	struct jprobe *jp;
-+	int ret = 0, i;
-
--	if (!kernel_text_address(addr))
-+	if (num <= 0)
- 		return -EINVAL;
-+	for (i = 0; i < num; i++) {
-+		unsigned long addr;
-+		jp = jps[i];
-+		addr = arch_deref_entry_point(jp->entry);
-+
-+		if (!kernel_text_address(addr))
-+			ret = -EINVAL;
-+		else {
-+			/* Todo: Verify probepoint is a function entry point */
-+			jp->kp.pre_handler = setjmp_pre_handler;
-+			jp->kp.break_handler = longjmp_break_handler;
-+			ret = __register_kprobe(&jp->kp, called_from);
-+		}
-+		if (ret < 0 && i > 0) {
-+			unregister_jprobes(jps, i);
-+			break;
-+		}
-+	}
-+	return ret;
-+}
-
--	/* Todo: Verify probepoint is a function entry point */
--	jp->kp.pre_handler = setjmp_pre_handler;
--	jp->kp.break_handler = longjmp_break_handler;
--
--	return __register_kprobe(&jp->kp,
-+int __kprobes register_jprobe(struct jprobe *jp)
-+{
-+	return __register_jprobes(&jp, 1,
- 		(unsigned long)__builtin_return_address(0));
- }
-
- void __kprobes unregister_jprobe(struct jprobe *jp)
- {
--	unregister_kprobe(&jp->kp);
-+	unregister_jprobes(&jp, 1);
-+}
-+
-+int __kprobes register_jprobes(struct jprobe **jps, int num)
-+{
-+	return __register_jprobes(jps, num,
-+		(unsigned long)__builtin_return_address(0));
-+}
-+
-+void __kprobes unregister_jprobes(struct jprobe **jps, int num)
-+{
-+	int i;
-+
-+	if (num <= 0)
-+		return;
-+	mutex_lock(&kprobe_mutex);
-+	for (i = 0; i < num; i++)
-+		if (__unregister_kprobe_top(&jps[i]->kp) < 0)
-+			jps[i]->kp.addr = NULL;
-+	mutex_unlock(&kprobe_mutex);
-+
-+	synchronize_sched();
-+	for (i = 0; i < num; i++) {
-+		if (jps[i]->kp.addr)
-+			__unregister_kprobe_bottom(&jps[i]->kp);
-+	}
- }
-
- #ifdef CONFIG_KRETPROBES
-@@ -1236,6 +1281,8 @@ EXPORT_SYMBOL_GPL(register_kprobes);
- EXPORT_SYMBOL_GPL(unregister_kprobes);
- EXPORT_SYMBOL_GPL(register_jprobe);
- EXPORT_SYMBOL_GPL(unregister_jprobe);
-+EXPORT_SYMBOL_GPL(register_jprobes);
-+EXPORT_SYMBOL_GPL(unregister_jprobes);
- #ifdef CONFIG_KPROBES
- EXPORT_SYMBOL_GPL(jprobe_return);
- #endif
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
-
-
+See you,
+Eric
