@@ -1,186 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYCNSvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYCNS6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbYCNSvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 14:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYCNSvZ
+	id S1756614AbYCNS6U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 14:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYCNS6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 14:51:25 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:39177 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYCNSvY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 14:51:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
-In-Reply-To: Your message of "Wed, 12 Mar 2008 21:27:08 PDT."
-             <20080312212708.b970077c.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080312003227.a94580e8.akpm@linux-foundation.org> <4351.1205374751@turing-police.cc.vt.edu> <20080312193230.da330ff7.akpm@linux-foundation.org> <9373.1205380632@turing-police.cc.vt.edu>
-            <20080312212708.b970077c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1205520633_3170P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 14 Mar 2008 14:58:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:32956 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbYCNS6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 14:58:06 -0400
+Message-ID: <47DACA43.2000700@goop.org>
+Date: Fri, 14 Mar 2008 11:56:03 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] x86: bitops asm constraint fixes
+References: <47D8FD33.76E4.0078.0@novell.com>
+In-Reply-To: <47D8FD33.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 14 Mar 2008 14:50:33 -0400
-Message-ID: <383.1205520633@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1205520633_3170P
-Content-Type: text/plain; charset=us-ascii
+Jan Beulich wrote:
+> This (simplified) piece of code didn't behave as expected due to
+> incorrect constraints in some of the bitops functions, when
+> X86_FEATURE_xxx is referring to other than the first long:
+>
+> int test(struct cpuinfo_x86 *c) {
+> 	if (cpu_has(c, X86_FEATURE_xxx))
+> 		clear_cpu_cap(c, X86_FEATURE_xxx);
+> 	return cpu_has(c, X86_FEATURE_xxx);
+> }
+>
+> I'd really like understand, though, what the policy of (not) having a
+> "memory" clobber in these operations is - currently, this appears to
+> be totally inconsistent.
+I think there's years of history here, much of it involving rites with 
+chicken entrails.
 
-On Wed, 12 Mar 2008 21:27:08 PDT, Andrew Morton said:
+"memory" clobber is generally needed because the bit operations can 
+touch memory beyond their apparent arguments.  Proper "m" constraints 
+are the way to go.
 
-> Try this:
-> 
-> echo "git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#for-akpm" > .git/branches/git-foo
-> git-fetch git-foo
-> git-checkout git-foo
-> git-bisect start
-> git-bisect good 968f7910e8d10e5273977248f3d89193b32e8c20
-> git-bisect bad c28550f4f68a894a3c05141762f388b5a14f33e3
+>  Also, many comments of the non-atomic
+> functions say those may also be re-ordered - this contradicts the use
+> of "asm volatile" in there, which again I'd like to understand.
+>   
 
-Trying it against what I already pulled down:
+"asm volatile" has no effect on ordering.  It's only necessary to force 
+an asm with no apparent side-effects to get emitted (ie, an asm with 
+outputs which don't get used; asms without outputs are implicitly volatile).
 
-[/usr/src/valdis/x86.git] echo "git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#for-akpm" > .git/branches/git-foo
-[/usr/src/valdis/x86.git] git-fetch git-foo
-remote: Counting objects: 1642, done.
-remote: Compressing objects: 100% (261/261), done.
-remote: Total 1296 (delta 1090), reused 1238 (delta 1034)
-Receiving objects: 100% (1296/1296), 197.24 KiB | 215 KiB/s, done.
-Resolving deltas: 100% (1090/1090), completed with 218 local objects.
-[/usr/src/valdis/x86.git] git-checkout git-foo
-error: pathspec 'git-foo' did not match any file(s) known to git.
-Did you forget to 'git add'?
-[/usr/src/valdis/x86.git] git-bisect start
-won't bisect on seeked tree
-[/usr/src/valdis/x86.git] git-checkout -b git-foo git-foo
-git checkout: updating paths is incompatible with switching branches/forcing
-Did you intend to checkout 'git-foo' which can not be resolved as commit?
+All these operations should either explicitly list memory modification 
+as an output.  The bit tests have no side-effects, so there's no problem 
+if gcc decides they don't need to be emitted.
 
-Trying again against a totally clean new directory:
+> As much as all of these, using 'int' for the 'nr' parameter and
+> 'void *' for the 'addr' one is in conflict with
+> Documentation/atomic_ops.txt, especially because bt{,c,r,s} indeed
+> take the bit index as signed (which hence would really need special
+> precaution) and access the full 32 bits (if 'unsigned long' was used
+> properly here, 64 bits for x86-64) pointed at, so invalid uses like
+> referencing a 'char' array cannot currently be caught.
+>   
 
-[/usr/src/valdis] git --version
-git version 1.5.4.3
-[/usr/src/valdis] rm -rf x86.git
-[/usr/src/valdis] mkdir x86.git
-[/usr/src/valdis] cd x86.git
-[/usr/src/valdis/x86.git] git-init-db
-Initialized empty Git repository in .git/
-[/usr/src/valdis/x86.git] git-remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-[/usr/src/valdis/x86.git] git-remote update
-Updating linus
-warning: no common commits
-remote: Counting objects: 721254, done.
-remote: Compressing objects: 100% (130309/130309), done.
-remote: Total 721254 (delta 598318), reused 711930 (delta 589976)
-Receiving objects: 100% (721254/721254), 175.04 MiB | 3535 KiB/s, done.
-Resolving deltas: 100% (598318/598318), done.
->From git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
- * [new branch]      master     -> linus/master
-remote: Counting objects: 105, done.
-remote: Compressing objects: 100% (105/105), done.
-remote: Total 105 (delta 0), reused 102 (delta 0)
-Receiving objects: 100% (105/105), 30.40 KiB, done.
->From git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
- * [new tag]         v2.6.12    -> v2.6.12
- * [new tag]         v2.6.12-rc2 -> v2.6.12-rc2
-(...)
- * [new tag]         v2.6.25-rc3 -> v2.6.25-rc3
- * [new tag]         v2.6.25-rc4 -> v2.6.25-rc4
- * [new tag]         v2.6.25-rc5 -> v2.6.25-rc5
-[/usr/src/valdis/x86.git] echo "git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#for-akpm" > .git/branches/git-foo
-[/usr/src/valdis/x86.git] git-fetch git-foo
-remote: Counting objects: 1035, done.
-remote: Compressing objects: 100% (171/171), done.
-remote: Total 909 (delta 777), reused 868 (delta 738)
-Receiving objects: 100% (909/909), 138.30 KiB, done.
-Resolving deltas: 100% (777/777), completed with 117 local objects.
-[/usr/src/valdis/x86.git] git-checkout git-foo
-error: pathspec 'git-foo' did not match any file(s) known to git.
-Did you forget to 'git add'?
-[/usr/src/valdis/x86.git]  git-bisect start
-[/usr/src/valdis/x86.git] git-bisect good 968f7910e8d10e5273977248f3d89193b32e8c20
-fatal: Needed a single revision
-Bad rev commit: ^{commit}
+What's the problem with accessing a char array as bits?
 
-Try a third time, pulling down linus and x86 trees:
+> Finally, the code with and without this patch relies heavily on the
+> -fno-strict-aliasing compiler switch and I'm not certain this really
+> is a good idea.
+>   
 
-[/usr/src/valdis] rm -rf x86.git
-[/usr/src/valdis] mkdir x86.git
-[/usr/src/valdis] cd x86.git
-[/usr/src/valdis/x86.git] git-remote add x86 git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-fatal: Not a git repository at /usr/lib/perl5/vendor_perl/5.10.0/Git.pm line 197.
-[/usr/src/valdis/x86.git] git-init-db
-Initialized empty Git repository in .git/
-[/usr/src/valdis/x86.git] git-remote add x86 git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-[/usr/src/valdis/x86.git] git-remote add x86 git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-remote x86 already exists.
-[/usr/src/valdis/x86.git] git-remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-[/usr/src/valdis/x86.git] git-remote update
-Updating linus
-warning: no common commits
-remote: Counting objects: 721254, done.
-remote: Compressing objects: 100% (130309/130309), done.
-remote: Total 721254 (delta 598318), reused 711930 (delta 589976)
-Receiving objects: 100% (721254/721254), 175.04 MiB | 10032 KiB/s, done.
-Resolving deltas: 100% (598318/598318), done.
->From git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
- * [new branch]      master     -> linus/master
-remote: Counting objects: 105, done.
-remote: Compressing objects: 100% (105/105), done.
-remote: Total 105 (delta 0), reused 102 (delta 0)
-Receiving objects: 100% (105/105), 30.40 KiB, done.
->From git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
- * [new tag]         v2.6.12    -> v2.6.12
- * [new tag]         v2.6.12-rc2 -> v2.6.12-rc2
- * [new tag]         v2.6.12-rc3 -> v2.6.12-rc3
-(...}
- * [new tag]         v2.6.25-rc3 -> v2.6.25-rc3
- * [new tag]         v2.6.25-rc4 -> v2.6.25-rc4
- * [new tag]         v2.6.25-rc5 -> v2.6.25-rc5
-Updating x86
-remote: Counting objects: 2651, done.
-remote: Compressing objects: 100% (340/340), done.
-remote: Total 2320 (delta 1978), reused 2320 (delta 1978)
-Receiving objects: 100% (2320/2320), 408.43 KiB | 588 KiB/s, done.
-Resolving deltas: 100% (1978/1978), completed with 310 local objects.
->From git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86
- * [new branch]      base       -> x86/base
- * [new branch]      for-akpm   -> x86/for-akpm
- * [new branch]      for-linus  -> x86/for-linus
- * [new branch]      latest     -> x86/latest
- * [new branch]      master     -> x86/master
- * [new branch]      origin     -> x86/origin
- * [new branch]      testing    -> x86/testing
-[/usr/src/valdis/x86.git] echo "git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#for-akpm" > .git/branches/git-foo
-[/usr/src/valdis/x86.git] git-fetch git-foo
-[/usr/src/valdis/x86.git] git-checkout git-foo
-error: pathspec 'git-foo' did not match any file(s) known to git.
-Did you forget to 'git add'?
-[/usr/src/valdis/x86.git] git-bisect start
-[/usr/src/valdis/x86.git] git-bisect good 968f7910e8d10e5273977248f3d89193b32e8c20
-fatal: Needed a single revision
-Bad rev commit: ^{commit}
+Doesn't the casting via void * stomp all that?
 
-Obviously, I'm either a *total* git-idiot, or malevolent spirits have taken
-up residence in my laptop and are conspiring to prevent me from troubleshooting
-this problem... ;)
+> In the light of all of this I'm sending this as RFC, as fixing the
+> above might warrant a much bigger patch...
+>
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>
+> ---
+>  include/asm-x86/bitops.h |   43 ++++++++++++++++++++++++-------------------
+>  1 file changed, 24 insertions(+), 19 deletions(-)
+>
+> --- linux-2.6.25-rc5/include/asm-x86/bitops.h	2008-03-10 13:24:33.000000000 +0100
+> +++ 2.6.25-rc5-x86-clear-bit/include/asm-x86/bitops.h	2008-03-13 08:45:40.000000000 +0100
+> @@ -24,9 +24,12 @@
+>  /* Technically wrong, but this avoids compilation errors on some gcc
+>     versions. */
+>  #define ADDR "=m" (*(volatile long *) addr)
+> +#define BIT_ADDR "=m" (((volatile int *) addr)[nr >> 5])
+>  #else
+>  #define ADDR "+m" (*(volatile long *) addr)
+> +#define BIT_ADDR "+m" (((volatile int *) addr)[nr >> 5])
+>  #endif
+> +#define BASE_ADDR "m" (*(volatile int *) addr)
+>   
 
+Hm, hardcoding ">> 5" seems like asking for trouble.  At least make the 
+"int" an explicitly sized type.  It should also pass "nr" in as an 
+explicit macro argument rather than just picking it up.
 
---==_Exmh_1205520633_3170P
-Content-Type: application/pgp-signature
+Does plain ADDR still get used?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+It's unfortunate that gcc will runtime-compute the address of 
+addr[nr>>5] even though we only need it for proper compile-time constraints.
 
-iD8DBQFH2sj5cC3lWbTT17ARAsOxAKCqLfJF10bE2sjBKBHPQVhj90SBwwCgojBF
-WW1RbtLrxrISMij0nAkNrgY=
-=9VmN
------END PGP SIGNATURE-----
+    J
 
---==_Exmh_1205520633_3170P--
+>  
+>  /**
+>   * set_bit - Atomically set a bit in memory
+> @@ -79,9 +82,8 @@ static inline void __set_bit(int nr, vol
+>   */
+>  static inline void clear_bit(int nr, volatile void *addr)
+>  {
+> -	asm volatile(LOCK_PREFIX "btr %1,%0"
+> -		     : ADDR
+> -		     : "Ir" (nr));
+> +	asm volatile(LOCK_PREFIX "btr %1,%2"
+> +		     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+>  }
+>  
+>  /*
+> @@ -100,7 +102,7 @@ static inline void clear_bit_unlock(unsi
+>  
+>  static inline void __clear_bit(int nr, volatile void *addr)
+>  {
+> -	asm volatile("btr %1,%0" : ADDR : "Ir" (nr));
+> +	asm volatile("btr %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+>  }
+>  
+>  /*
+> @@ -135,7 +137,7 @@ static inline void __clear_bit_unlock(un
+>   */
+>  static inline void __change_bit(int nr, volatile void *addr)
+>  {
+> -	asm volatile("btc %1,%0" : ADDR : "Ir" (nr));
+> +	asm volatile("btc %1,%2" : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+>  }
+>  
+>  /**
+> @@ -149,8 +151,8 @@ static inline void __change_bit(int nr, 
+>   */
+>  static inline void change_bit(int nr, volatile void *addr)
+>  {
+> -	asm volatile(LOCK_PREFIX "btc %1,%0"
+> -		     : ADDR : "Ir" (nr));
+> +	asm volatile(LOCK_PREFIX "btc %1,%2"
+> +		     : BIT_ADDR : "Ir" (nr), BASE_ADDR);
+>  }
+>  
+>  /**
+> @@ -198,10 +200,10 @@ static inline int __test_and_set_bit(int
+>  {
+>  	int oldbit;
+>  
+> -	asm("bts %2,%1\n\t"
+> -	    "sbb %0,%0"
+> -	    : "=r" (oldbit), ADDR
+> -	    : "Ir" (nr));
+> +	asm volatile("bts %2,%3\n\t"
+> +		     "sbb %0,%0"
+> +		     : "=r" (oldbit), BIT_ADDR
+> +		     : "Ir" (nr), BASE_ADDR);
+>  	return oldbit;
+>  }
+>  
+> @@ -238,10 +240,10 @@ static inline int __test_and_clear_bit(i
+>  {
+>  	int oldbit;
+>  
+> -	asm volatile("btr %2,%1\n\t"
+> +	asm volatile("btr %2,%3\n\t"
+>  		     "sbb %0,%0"
+> -		     : "=r" (oldbit), ADDR
+> -		     : "Ir" (nr));
+> +		     : "=r" (oldbit), BIT_ADDR
+> +		     : "Ir" (nr), BASE_ADDR);
+>  	return oldbit;
+>  }
+>  
+> @@ -250,10 +252,10 @@ static inline int __test_and_change_bit(
+>  {
+>  	int oldbit;
+>  
+> -	asm volatile("btc %2,%1\n\t"
+> +	asm volatile("btc %2,%3\n\t"
+>  		     "sbb %0,%0"
+> -		     : "=r" (oldbit), ADDR
+> -		     : "Ir" (nr) : "memory");
+> +		     : "=r" (oldbit), BIT_ADDR
+> +		     : "Ir" (nr), BASE_ADDR);
+>  
+>  	return oldbit;
+>  }
+> @@ -288,10 +290,11 @@ static inline int variable_test_bit(int 
+>  {
+>  	int oldbit;
+>  
+> -	asm volatile("bt %2,%1\n\t"
+> +	asm volatile("bt %2,%3\n\t"
+>  		     "sbb %0,%0"
+>  		     : "=r" (oldbit)
+> -		     : "m" (*(unsigned long *)addr), "Ir" (nr));
+> +		     : "m" (((volatile const int *)addr)[nr >> 5]),
+> +		       "Ir" (nr), BASE_ADDR);
+>  
+>  	return oldbit;
+>  }
+> @@ -310,6 +313,8 @@ static int test_bit(int nr, const volati
+>  	 constant_test_bit((nr),(addr)) :	\
+>  	 variable_test_bit((nr),(addr)))
+>  
+> +#undef BASE_ADDR
+> +#undef BIT_ADDR
+>  #undef ADDR
+>  
+>  #ifdef CONFIG_X86_32
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+
