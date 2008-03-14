@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYCNQI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYCNQP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbYCNQI1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYCNQIR
+	id S1756528AbYCNQP6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYCNQPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:08:17 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:54255 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbYCNQIR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:08:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oML/qknliR+0/yW/E+mmoC4QuaYYfU+kR4Rbl/y7r0Qrf09hPkdzJBV1/lcXy+qHkZ1LJUVaswlplqLFWQ+I4VnjYDzIudTXFGNIYcYVLTLAJvyEeiRboiOSOGhOuQQUSnjTQm+3G2VvliuWqTCzftJ+meGRGuLjfARUBROWZTA=
-Message-ID: <54b90fdf0803140908k44bee3a2gbf4187ae40dad4b3@mail.gmail.com>
-Date: Fri, 14 Mar 2008 12:08:16 -0400
-From: Yan <rottled@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: 2.6.22.6 - Discrepancy between running and on-disk kernels
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080314090049.346d7428@laptopd505.fenrus.org>
+	Fri, 14 Mar 2008 12:15:48 -0400
+Received: from sacred.ru ([62.205.161.221]:56824 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751798AbYCNQPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 12:15:47 -0400
+Message-ID: <47DA9FC2.7060405@openvz.org>
+Date: Fri, 14 Mar 2008 18:54:42 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Greg KH <greg@kroah.com>, James Morris <jmorris@namei.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [RFC] cgroups: implement device whitelist lsm (v2)
+References: <20080313131818.GA9771@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140049270.9059@us.intercode.com.au> <20080313143803.GA11265@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803140925410.30342@us.intercode.com.au> <20080313224616.GA9139@sergelap.austin.ibm.com> <Xine.LNX.4.64.0803141046340.1545@us.intercode.com.au> <20080314014121.GA8320@sergelap.austin.ibm.com> <20080314044741.GB18077@kroah.com> <20080314135416.GD8744@sergelap.austin.ibm.com> <47DA848C.3070901@openvz.org> <20080314154537.GA6604@sergelap.austin.ibm.com>
+In-Reply-To: <20080314154537.GA6604@sergelap.austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <54b90fdf0803140751m71935a09r9b039ca6eb124f4d@mail.gmail.com>
-	 <20080314090049.346d7428@laptopd505.fenrus.org>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Mar 2008 18:54:46 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can you point me to where in the source that self-patching happens? I
-tried grep'ing
-through the source for anything relevant, and came out empty handed.
+Serge E. Hallyn wrote:
+> Quoting Pavel Emelyanov (xemul@openvz.org):
+>> [snip]
+>>
+>>>> My main question was why was that file in the kernel/ directory?
+>>>> Shouldn't that also be in the security/ directory?
+>>> I'm using cgroups to track the tasks which should have their device
+>>> permissions restricted.  Right now cgroups are all under kernel/.
+>> No. Memory cgroup is under mm/ :)
+> 
+> Ah.
+> 
+> Guess it could all go under security/.  Should it still go there even if
+> we make it not use lsm?
 
--yan
+Sure it can - security/ is in obj-y regardless of whether the 
+SECURITY itself is on or off :)
 
-On Fri, Mar 14, 2008 at 12:00 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Fri, 14 Mar 2008 10:51:43 -0400
->  Yan <rottled@gmail.com> wrote:
->
->  > Hello,
->  >
->  > I have been trying to compare the code from the on-disk compressed
->  > kernel that was booted and the running kernel extracted
->  > from /dev/kmem. I extracted the kernel's code from the disk image by
->  > stripping the head.S and similar and gunzipping it, and extracted the
->  > kernel from /dev/kmem by reading data between _text and _etext symbol
->  > offsets.
->  >
->  > I then ran both through a disassembler and diff'ed the outputs.
->  > Predictably, the disassembly was similar, but not identical. Some
->  > instructions (e.g. bts) had a 'lock' prefix, where as others had a
->  > 'nop' in its place.
->  >
->  > There were other differences with some instructions like mfence.
->  > Everything else matched just fine, the differences were mostly in
->  > memory-referencing instructions.
->  >
->  > My question is, what can be changing the kernel between being on
->  > static storage and being loaded?
->
->  the kernel code is self-patching, it gets modified to match your system
->  during boot time. So you cannot assume that the kernel on disk and the kernel
->  in memory are identical.
->  (Same goes for modules)
->
+>>>> And to be honest, I didn't really look at it at all other than the
+>>>> diffstat to make sure you weren't messing with the kobj_map stuff
+>>>> anymore :)
+>>>>
+>>>> thanks,
+>>>>
+>>>> greg k-h
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
