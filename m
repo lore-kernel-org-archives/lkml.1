@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbYCNRpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYCNRqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758005AbYCNRpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYCNRpf
+	id S1758195AbYCNRqk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYCNRqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:45:35 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:52695 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754456AbYCNRpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:45:34 -0400
-Date: Fri, 14 Mar 2008 18:45:09 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH 1/4] introduce explicit signed/unsigned 64bit divide
-In-Reply-To: <20080313133459.8d7d870d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0803141839080.1791@scrub.home>
-References: <20080313002235.351414762@linux-m68k.org> <20080313004902.808083566@linux-m68k.org>
- <Pine.LNX.4.64.0803131110520.9727@vixen.sonytel.be>
- <Pine.LNX.4.64.0803131546420.1791@scrub.home> <20080313133459.8d7d870d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Mar 2008 13:46:32 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10113 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbYCNRqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 13:46:31 -0400
+Date: Fri, 14 Mar 2008 10:44:44 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Cc: kvm-devel@lists.sourceforge.net, avi@qumranet.com,
+       tglx <tglx@linutronix.de>, mingo <mingo@redhat.com>,
+       hpa <hpa@zytor.com>
+Subject: [PATCH] x86: don't allow KVM_CLOCK without HAVE_KVM
+Message-Id: <20080314104444.ca80e434.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-On Thu, 13 Mar 2008, Andrew Morton wrote:
+Make KVM_CLOCK depend on HAVE_KVM.  Otherwise a Voyager build can
+fail with:
 
-> I think what happened was that [patch 3/4] fixed this up.  Of course,
-> that patch doesn't apply on this updated [1/4].  I _could_ just take the
-> old [1/4] (I think), but I don't know if that wouild be bisection-friendly.
-> 
-> Anyway, please redo&resend?  Thanks.
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from include2/asm/irqflags.h:59,
+                 from /local/linsrc/next-20080314/include/linux/irqflags.h:46,
+                 from include2/asm/system.h:11,
+                 from include2/asm/processor.h:21,
+                 from include2/asm/atomic_32.h:5,
+                 from include2/asm/atomic.h:2,
+                 from /local/linsrc/next-20080314/include/linux/crypto.h:20,
+                 from /local/linsrc/next-20080314/arch/x86/kernel/asm-offsets_32.c:7,
+                 from /local/linsrc/next-20080314/arch/x86/kernel/asm-offsets.c:2:
+include2/asm/paravirt.h: In function 'startup_ipi_hook':
+include2/asm/paravirt.h:856: error: 'struct pv_apic_ops' has no member named 'startup_ipi_hook'
+include2/asm/paravirt.h:856: error: 'struct pv_apic_ops' has no member named 'startup_ipi_hook'
+include2/asm/paravirt.h:856: error: memory input 4 is not directly addressable
+make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
+make[1]: *** [prepare0] Error 2
+make: *** [sub-make] Error 2
 
-Done.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-> Please have a think about that code in arch/x86/kvm/i8254.c too.  It is
-> painful to see remote subsystems (re)implementing generic infrastructure.
-> Can KVM use existing code?  Should we hoist what KVM has done there into
-> generic code?  Did it have to use a(nother bleeding) macro?
-
-Looker closer at it, div64_u64() seems to be a bit overkill, as the 
-divisor is a 32bit value, so the following should do the same job (only 
-compile tested):
-
-u64 muldiv64(u64 a, u32 b, u32 c)
-{       
-	union { 
-		u64 ll;
-		struct {
-			u32 low, high;
-		};
-	} u, res, rl, rh;
-
-	u.ll = a;
-	rl.ll = (u64)b * u.low;
-	rh.ll = (u64)b * u.high;
-	rh.ll += rl.high;
-	res.high = div_u64_rem(rh.ll, c, &rl.high);
-	res.low = div_u64(rl.ll, c);
-	return res.ll;
-}
-
-Moving it to a more generic location shouldn't be a big problem.
-
-bye, Roman
+--- next-20080314.orig/arch/x86/Kconfig
++++ next-20080314/arch/x86/Kconfig
+@@ -370,6 +370,7 @@ config VMI
+ config KVM_CLOCK
+ 	bool "KVM paravirtualized clock"
+ 	select PARAVIRT
++	depends on HAVE_KVM
+ 	help
+ 	  Turning on this option will allow you to run a paravirtualized clock
+ 	  when running over the KVM hypervisor. Instead of relying on a PIT
