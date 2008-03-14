@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYCNBdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYCNBd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYCNBdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYCNBdQ
+	id S1757414AbYCNBd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 21:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYCNBdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:33:16 -0400
-Received: from testure.choralone.org ([194.9.77.134]:46254 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbYCNBdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:33:16 -0400
-Date: Thu, 13 Mar 2008 21:33:03 -0400
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       avorontsov@ru.mvista.com
-Subject: Re: [patch 2.6.25-rc5 2/2] gpiochip_reserve()
-Message-ID: <20080314013303.GA15600@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-	avorontsov@ru.mvista.com
-References: <200803131552.22122.david-b@pacbell.net> <20080313160606.219166f5.akpm@linux-foundation.org>
+	Thu, 13 Mar 2008 21:33:49 -0400
+Received: from saeurebad.de ([85.214.36.134]:36373 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753525AbYCNBdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Mar 2008 21:33:49 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5-git3: Reported regressions from 2.6.24
+References: <200803140136.38549.rjw@sisk.pl>
+Date: Fri, 14 Mar 2008 02:31:29 +0100
+In-Reply-To: <200803140136.38549.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri, 14 Mar 2008 01:36:37 +0100")
+Message-ID: <87bq5i3xce.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313160606.219166f5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 04:06:06PM -0700, Andrew Morton wrote:
- > On Thu, 13 Mar 2008 14:52:21 -0800
- > David Brownell <david-b@pacbell.net> wrote:
- > 
- > > +int __init __must_check gpiochip_reserve(int start, int ngpio)
- > 
- > I applaud the addition of __msut_check to a newly-added function of this
- > kind, but we usually only add the tag to the declaration, not to the
- > definition as well.
+Hi Rafael,
 
-A bit unfortunate really, given that use of ctags and friends in some editors
-jumps to the first definition they come across, so if the prototype is stuffed
-somewhere in include/, it shows the definitions from drivers or fs or wherever
-that doesn't have the tag.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Given it doesn't cost us anything except a few more bytes in the source code,
-is consistency such a bad thing?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10164
+> Subject		: ntfs build failure on no-mmu
+> Submitter	: Mike Frysinger <vapier.adi@gmail.com>
+> Date		: 2008-03-03 11:05 (11 days old)
+> References	: http://lkml.org/lkml/2008/3/1/179
 
-	Dave
+I found this: http://lkml.org/lkml/2008/3/13/6
 
--- 
-http://www.codemonkey.org.uk
+	Hannes
