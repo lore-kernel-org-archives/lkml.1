@@ -1,94 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYCNAvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYCNAwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYCNAvw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 20:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYCNAvn
+	id S1757213AbYCNAwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 20:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYCNAwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 20:51:43 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:60853
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751998AbYCNAvm (ORCPT
+	Thu, 13 Mar 2008 20:52:04 -0400
+Received: from mga05.intel.com ([192.55.52.89]:1030 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756071AbYCNAv7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 20:51:42 -0400
-Date: Thu, 13 Mar 2008 17:51:39 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: linux-usb@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]  mass storage : emulation of sat scsi_pass_thru with ATACB
-Message-ID: <20080314005139.GP2820@one-eyed-alien.net>
-Mail-Followup-To: matthieu castet <castet.matthieu@free.fr>,
-	linux-usb@vger.kernel.org,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <47D2CD95.9070701@free.fr> <20080308183125.GB2820@one-eyed-alien.net> <47D2F23A.4020103@free.fr> <20080308212148.GC2820@one-eyed-alien.net> <47D39E14.9050900@free.fr> <20080309184524.GF2820@one-eyed-alien.net> <47D459DA.20207@free.fr> <20080310012014.GG2820@one-eyed-alien.net> <47D99B01.1030709@free.fr>
+	Thu, 13 Mar 2008 20:51:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,497,1199692800"; 
+   d="scan'208";a="533632603"
+Subject: Re: hackbench regression since 2.6.25-rc
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080313171202.GA5233@suse.de>
+References: <1205394417.3215.85.camel@ymzhang>
+	 <20080313151413.GA14045@suse.de>
+	 <20080313091921.834d2532.randy.dunlap@oracle.com>
+	 <20080313171202.GA5233@suse.de>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 14 Mar 2008 08:50:19 +0800
+Message-Id: <1205455819.3215.154.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KM+e2hnYAO+MCJ5e"
-Content-Disposition: inline
-In-Reply-To: <47D99B01.1030709@free.fr>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Thu, 13 Mar 2008 17:51:39 -0700 (PDT)
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-03-13 at 10:12 -0700, Greg KH wrote:
+> On Thu, Mar 13, 2008 at 09:19:21AM -0700, Randy Dunlap wrote:
+> > On Thu, 13 Mar 2008 08:14:13 -0700 Greg KH wrote:
+> > 
+> > > On Thu, Mar 13, 2008 at 03:46:57PM +0800, Zhang, Yanmin wrote:
+> > > > Comparing with 2.6.24, on my 16-core tigerton, hackbench process mode has about
+> > > > 40% regression with 2.6.25-rc1, and more than 20% regression with kernel
+> > > > 2.6.25-rc4, because rc4 includes the reverting patch of scheduler load balance.
+> > > > 
+> > > > Command to start it.
+> > > > #hackbench 100 process 2000
+> > > > I ran it for 3 times and sum the values.
+> > > > 
+> > > > I tried to investiagte it by bisect.
+> > > > Kernel up to tag 0f4dafc0563c6c49e17fe14b3f5f356e4c4b8806 has the 20% regression.
+> > > > Kernel up to tag 6e90aa972dda8ef86155eefcdbdc8d34165b9f39 hasn't regression.
+> > > > 
+> > > > Any bisect between above 2 tags cause kernel hang. I tried to checkout to a point between
+> > > > these 2 tags for many times manually and kernel always paniced.
+> > > 
+> > > Where is the kernel panicing?  The changeset right after the last one
+> > > above: bc87d2fe7a1190f1c257af8a91fc490b1ee35954, is a change to efivars,
+> > > are you using that in your .config?
+> > > 
+> > > > All patches between the 2 tags are on kobject restructure. I guess such restructure
+> > > > creates more cache miss on the 16-core tigerton.
+> > > 
+> > > Nothing should be creating kobjects on a normal load like this, so a
+> > > regression seems very odd.  Unless the /sys/kernel/uids/ stuff is
+> > > triggering this?
+> > > 
+> > > Do you have a link to where I can get hackbench (google seems to find
+> > > lots of reports with it, but not the source itself), so I can test to
+> > > see if we are accidentally creating kobjects with this load?
+> > 
+> > The version that I see referenced most often (unscientifically :)
+> > is somewhere under people.redhat.com/mingo/, like so:
+> > http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+> 
+> Great, thanks for the link.
+> 
+> In using that version, I do not see any kobjects being created at all
+> when running the program.  So I don't see how a kobject change could
+> have caused any slowdown.
+> 
+> Yanmin, is the above link the version you are using?
+Yes.
 
---KM+e2hnYAO+MCJ5e
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> 
+> Hm, running with "hackbench 100 process 2000" seems to lock up my
+> laptop, maybe I shouldn't run 4000 tasks at once on such a memory
+> starved machine...
+The issue doesn't exist on my 8-core stoakley and on tulsa. So I don't think
+you could reproduce it on laptop.
 
-On Thu, Mar 13, 2008 at 10:22:09PM +0100, matthieu castet wrote:
-> Matthew Dharm wrote:
-> >On Sun, Mar 09, 2008 at 10:42:50PM +0100, matthieu castet wrote:
-> >>Hi
-> >>
-> >>here an update version of the patch
-> >
-> >We're getting very close here.
+>From the oprofile data, perhaps we need dig into SLUB firstly.
 
-> +		unsigned char sk, asc, ascq;
+-yanmin
 
-> +		sk =3D RECOVERED_ERROR;
-> +		asc =3D 0; /* ATA PASS THROUGH INFORMATION AVAILABLE */
-> +		ascq =3D 0x1D;
 
-> +		/* XXX we should generate sk, asc, ascq from status and error
-> +		 * regs
-> +		 * (see 11.1 Error translation ? ATA device error to SCSI error map)
-> +		 * and ata_to_sense_error from libata.
-> +		 */
-> +		sb[1] =3D sk;
-> +		sb[2] =3D asc;
-> +		sb[3] =3D ascq;
-
-I may have missed this in an earlier patch, but why to you declare and use
-these 3 variables like this?  Seems odd and confusing to me....
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-It was a new hope.
-					-- Dust Puppy
-User Friendly, 12/25/1998
-
---KM+e2hnYAO+MCJ5e
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFH2cwbHL9iwnUZqnkRAvziAJwLry8RhkENb63c4IoEj6guCwd4fQCgiB6C
-Zsmi0Md6R2OFnWGbJUOf+LY=
-=Q0FQ
------END PGP SIGNATURE-----
-
---KM+e2hnYAO+MCJ5e--
