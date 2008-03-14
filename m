@@ -1,377 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbYCNUix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbYCNUmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbYCNUix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYCNUio
+	id S1757914AbYCNUmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYCNUmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:38:44 -0400
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:29247 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYCNUin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:38:43 -0400
-Date: Fri, 14 Mar 2008 21:35:26 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] x86: merge the simple bitops and move them to bitops.h
-Message-ID: <20080314203526.GA13959@mailshack.com>
-References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org> <1205523826.7441.1242464129@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1205523826.7441.1242464129@webmail.messagingengine.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Fri, 14 Mar 2008 21:37:47 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.31; host: AntiVir3)
+	Fri, 14 Mar 2008 16:42:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54899 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754083AbYCNUmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 16:42:09 -0400
+Message-ID: <47DAE2D6.9010404@redhat.com>
+Date: Fri, 14 Mar 2008 16:40:54 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Shaohua Li <shaohua.li@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       David Miller <davem@davemloft.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: [PATCH -mm 2/5] kprobes: add (un)register_kprobes for batch registration
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: merge the simple bitops and move them to bitops.h.
+Introduce unregister_/register_kprobes() for kprobe batch
+registration. This can reduce waiting time for
+synchronized_sched() when a lot of probes have to be
+unregistered at once.
 
-Some of those can be written in such a way that the same
-inline assembly can be used to generate both 32 bit and
-64 bit code.
-
-For ffs and fls, x86_64 unconditionally used the cmov
-instruction and i386 unconditionally used a conditional
-branch over a mov instruction. In the current patch I
-chose to select the version based on the availability
-of the cmov instruction instead. A small detail here is
-that x86_64 did not previously set CONFIG_X86_CMOV=y.
-
-Improved comments for ffs and fls.
-
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 ---
+I rewrote a patchset which had been discussed on LKML,
+and simplified its interfaces.
+ http://lkml.org/lkml/2007/3/23/181
 
-Hi,
+ include/linux/kprobes.h |    9 +++
+ kernel/kprobes.c        |  124 +++++++++++++++++++++++++++++++++---------------
+ 2 files changed, 96 insertions(+), 37 deletions(-)
 
-Here is a new version with improved (I hope) comments for
-the functions ffs and fls, suggested by Jeremy. I left
-the explicit use of the -l forms in the inline assembly
-of ffs and fls, because I think it is clearer that way.
+Index: 2.6.25-rc5-mm1/include/linux/kprobes.h
+===================================================================
+--- 2.6.25-rc5-mm1.orig/include/linux/kprobes.h
++++ 2.6.25-rc5-mm1/include/linux/kprobes.h
+@@ -234,6 +234,8 @@ static inline struct kprobe_ctlblk *get_
 
-Greetings,
-	Alexander
-
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 31e92fb..fb7399b 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -399,7 +399,7 @@ config X86_TSC
- # generates cmov.
- config X86_CMOV
- 	def_bool y
--	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7)
-+	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || X86_64)
- 
- config X86_MINIMUM_CPU_FAMILY
- 	int
-diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
-index 1a23ce1..363a4ff 100644
---- a/include/asm-x86/bitops.h
-+++ b/include/asm-x86/bitops.h
-@@ -66,7 +66,6 @@ static inline void __set_bit(int nr, volatile void *addr)
- 		     : "Ir" (nr) : "memory");
+ int register_kprobe(struct kprobe *p);
+ void unregister_kprobe(struct kprobe *p);
++int register_kprobes(struct kprobe **kps, int num);
++void unregister_kprobes(struct kprobe **kps, int num);
+ int setjmp_pre_handler(struct kprobe *, struct pt_regs *);
+ int longjmp_break_handler(struct kprobe *, struct pt_regs *);
+ int register_jprobe(struct jprobe *p);
+@@ -261,9 +263,16 @@ static inline int register_kprobe(struct
+ {
+ 	return -ENOSYS;
  }
- 
--
- /**
-  * clear_bit - Clears a bit in memory
-  * @nr: Bit to clear
-@@ -310,6 +309,104 @@ static int test_bit(int nr, const volatile unsigned long *addr);
- 	 constant_test_bit((nr),(addr)) :	\
- 	 variable_test_bit((nr),(addr)))
- 
-+/**
-+ * __ffs - find first bit in word.
-+ * @word: The word to search
-+ *
-+ * Undefined if no bit exists, so code should check against 0 first.
-+ */
-+static inline unsigned long __ffs(unsigned long word)
++static inline int register_kprobes(struct kprobe **kps, int num)
 +{
-+	__asm__("bsf %1,%0"
-+		:"=r" (word)
-+		:"rm" (word));
-+	return word;
++	return -ENOSYS;
++}
+ static inline void unregister_kprobe(struct kprobe *p)
+ {
+ }
++static inline void unregister_kprobes(struct kprobe **kps, int num)
++{
++}
+ static inline int register_jprobe(struct jprobe *p)
+ {
+ 	return -ENOSYS;
+Index: 2.6.25-rc5-mm1/kernel/kprobes.c
+===================================================================
+--- 2.6.25-rc5-mm1.orig/kernel/kprobes.c
++++ 2.6.25-rc5-mm1/kernel/kprobes.c
+@@ -580,6 +580,7 @@ static int __kprobes __register_kprobe(s
+ 	}
+
+ 	p->nmissed = 0;
++	INIT_LIST_HEAD(&p->list);
+ 	mutex_lock(&kprobe_mutex);
+ 	old_p = get_kprobe(p->addr);
+ 	if (old_p) {
+@@ -606,35 +607,28 @@ out:
+ 	return ret;
+ }
+
+-int __kprobes register_kprobe(struct kprobe *p)
+-{
+-	return __register_kprobe(p, (unsigned long)__builtin_return_address(0));
+-}
+-
+-void __kprobes unregister_kprobe(struct kprobe *p)
++/*
++ * Unregister a kprobe without a scheduler synchronization.
++ */
++static int __kprobes __unregister_kprobe_top(struct kprobe *p)
+ {
+-	struct module *mod;
+ 	struct kprobe *old_p, *list_p;
+-	int cleanup_p;
+
+-	mutex_lock(&kprobe_mutex);
+ 	old_p = get_kprobe(p->addr);
+-	if (unlikely(!old_p)) {
+-		mutex_unlock(&kprobe_mutex);
+-		return;
+-	}
++	if (unlikely(!old_p))
++		return -EINVAL;
++
+ 	if (p != old_p) {
+ 		list_for_each_entry_rcu(list_p, &old_p->list, list)
+ 			if (list_p == p)
+ 			/* kprobe p is a valid probe */
+ 				goto valid_p;
+-		mutex_unlock(&kprobe_mutex);
+-		return;
++		return -EINVAL;
+ 	}
+ valid_p:
+ 	if (old_p == p ||
+ 	    (old_p->pre_handler == aggr_pre_handler &&
+-	     p->list.next == &old_p->list && p->list.prev == &old_p->list)) {
++	     list_singleton(&old_p->list))) {
+ 		/*
+ 		 * Only probe on the hash list. Disarm only if kprobes are
+ 		 * enabled - otherwise, the breakpoint would already have
+@@ -643,43 +637,97 @@ valid_p:
+ 		if (kprobe_enabled)
+ 			arch_disarm_kprobe(p);
+ 		hlist_del_rcu(&old_p->hlist);
+-		cleanup_p = 1;
+ 	} else {
++		if (p->break_handler)
++			old_p->break_handler = NULL;
++		if (p->post_handler) {
++			list_for_each_entry_rcu(list_p, &old_p->list, list) {
++				if ((list_p != p) && (list_p->post_handler))
++					goto noclean;
++			}
++			old_p->post_handler = NULL;
++		}
++noclean:
+ 		list_del_rcu(&p->list);
+-		cleanup_p = 0;
+ 	}
++	return 0;
++}
+
+-	mutex_unlock(&kprobe_mutex);
++static void __kprobes __unregister_kprobe_bottom(struct kprobe *p)
++{
++	struct module *mod;
++	struct kprobe *old_p;
+
+-	synchronize_sched();
+ 	if (p->mod_refcounted) {
+ 		mod = module_text_address((unsigned long)p->addr);
+ 		if (mod)
+ 			module_put(mod);
+ 	}
+
+-	if (cleanup_p) {
+-		if (p != old_p) {
+-			list_del_rcu(&p->list);
++	if (list_empty(&p->list) || list_singleton(&p->list)) {
++		if (!list_empty(&p->list)) {
++			/* "p" is the last child of an aggr_kprobe */
++			old_p = list_entry(p->list.next, struct kprobe, list);
++			list_del(&p->list);
+ 			kfree(old_p);
+ 		}
+ 		arch_remove_kprobe(p);
+-	} else {
+-		mutex_lock(&kprobe_mutex);
+-		if (p->break_handler)
+-			old_p->break_handler = NULL;
+-		if (p->post_handler){
+-			list_for_each_entry_rcu(list_p, &old_p->list, list){
+-				if (list_p->post_handler){
+-					cleanup_p = 2;
+-					break;
+-				}
+-			}
+-			if (cleanup_p == 0)
+-				old_p->post_handler = NULL;
++	}
 +}
 +
-+/**
-+ * ffz - find first zero in word.
-+ * @word: The word to search
-+ *
-+ * Undefined if no zero exists, so code should check against ~0UL first.
-+ */
-+static inline unsigned long ffz(unsigned long word)
++static int __register_kprobes(struct kprobe **kps, int num,
++	unsigned long called_from)
 +{
-+	__asm__("bsf %1,%0"
-+		:"=r" (word)
-+		:"r" (~word));
-+	return word;
++	int i, ret = 0;
++
++	if (num <= 0)
++		return -EINVAL;
++	for (i = 0; i < num; i++) {
++		ret = __register_kprobe(kps[i], called_from);
++		if (ret < 0 && i > 0) {
++			unregister_kprobes(kps, i);
++			break;
+ 		}
+-		mutex_unlock(&kprobe_mutex);
+ 	}
++	return ret;
 +}
 +
 +/*
-+ * __fls: find last bit set.
-+ * @word: The word to search
-+ *
-+ * Undefined if no zero exists, so code should check against ~0UL first.
++ * Registration and unregistration functions for kprobe.
 + */
-+static inline unsigned long __fls(unsigned long word)
++int __kprobes register_kprobe(struct kprobe *p)
 +{
-+	__asm__("bsr %1,%0"
-+		:"=r" (word)
-+		:"rm" (word));
-+	return word;
++	return __register_kprobes(&p, 1,
++				  (unsigned long)__builtin_return_address(0));
 +}
 +
-+#ifdef __KERNEL__
-+/**
-+ * ffs - find first bit set
-+ * @x: the word to search
-+ *
-+ * This is defined the same way as the libc and compiler builtin ffs
-+ * routines, therefore differs in spirit from the other bitops.
-+ *
-+ * ffs(value) returns 0 if value is 0 or the position of the first
-+ * set bit if value is nonzero. The first (least significant) bit
-+ * is at position 1.
-+ */
-+static inline int ffs(int x)
++void __kprobes unregister_kprobe(struct kprobe *p)
 +{
-+	int r;
-+#ifdef CONFIG_X86_CMOV
-+	__asm__("bsfl %1,%0\n\t"
-+		"cmovzl %2,%0"
-+		: "=r" (r) : "rm" (x), "r" (-1));
-+#else
-+	__asm__("bsfl %1,%0\n\t"
-+		"jnz 1f\n\t"
-+		"movl $-1,%0\n"
-+		"1:" : "=r" (r) : "rm" (x));
-+#endif
-+	return r + 1;
++	unregister_kprobes(&p, 1);
 +}
 +
-+/**
-+ * fls - find last bit set
-+ * @x: the word to search
-+ *
-+ * This is defined in a similar way as the libc and compiler builtin
-+ * ffs, but returns the position of the most significant set bit.
-+ *
-+ * fls(value) returns 0 if value is 0 or the position of the last
-+ * set bit if value is nonzero. The last (most significant) bit is
-+ * at position 32.
-+ */
-+static inline int fls(int x)
++int __kprobes register_kprobes(struct kprobe **kps, int num)
 +{
-+	int r;
-+#ifdef CONFIG_X86_CMOV
-+	__asm__("bsrl %1,%0\n\t"
-+		"cmovzl %2,%0"
-+		: "=&r" (r) : "rm" (x), "rm" (-1));
-+#else
-+	__asm__("bsrl %1,%0\n\t"
-+		"jnz 1f\n\t"
-+		"movl $-1,%0\n"
-+		"1:" : "=r" (r) : "rm" (x));
-+#endif
-+	return r + 1;
++	return __register_kprobes(kps, num,
++				  (unsigned long)__builtin_return_address(0));
 +}
-+#endif /* __KERNEL__ */
 +
- #undef ADDR
- 
- #ifdef CONFIG_X86_32
-diff --git a/include/asm-x86/bitops_32.h b/include/asm-x86/bitops_32.h
-index 570f0fa..c19fbe9 100644
---- a/include/asm-x86/bitops_32.h
-+++ b/include/asm-x86/bitops_32.h
-@@ -38,20 +38,6 @@ static inline int find_first_zero_bit(const unsigned long *addr, unsigned size)
++void __kprobes unregister_kprobes(struct kprobe **kps, int num)
++{
++	int i;
++
++	if (num <= 0)
++		return;
++	mutex_lock(&kprobe_mutex);
++	for (i = 0; i < num; i++)
++		if (__unregister_kprobe_top(kps[i]) < 0)
++			kps[i]->addr = NULL;
++	mutex_unlock(&kprobe_mutex);
++
++	synchronize_sched();
++	for (i = 0; i < num; i++)
++		if (kps[i]->addr)
++			__unregister_kprobe_bottom(kps[i]);
  }
- 
- /**
-- * __ffs - find first bit in word.
-- * @word: The word to search
-- *
-- * Undefined if no bit exists, so code should check against 0 first.
-- */
--static inline unsigned long __ffs(unsigned long word)
--{
--	__asm__("bsfl %1,%0"
--		:"=r" (word)
--		:"rm" (word));
--	return word;
--}
--
--/**
-  * find_first_bit - find the first set bit in a memory region
-  * @addr: The address to start the search at
-  * @size: The maximum size to search
-@@ -72,60 +58,10 @@ static inline unsigned find_first_bit(const unsigned long *addr, unsigned size)
- 	return x;
- }
- 
--/**
-- * ffz - find first zero in word.
-- * @word: The word to search
-- *
-- * Undefined if no zero exists, so code should check against ~0UL first.
-- */
--static inline unsigned long ffz(unsigned long word)
--{
--	__asm__("bsfl %1,%0"
--		:"=r" (word)
--		:"r" (~word));
--	return word;
--}
--
- #ifdef __KERNEL__
- 
- #include <asm-generic/bitops/sched.h>
- 
--/**
-- * ffs - find first bit set
-- * @x: the word to search
-- *
-- * This is defined the same way as
-- * the libc and compiler builtin ffs routines, therefore
-- * differs in spirit from the above ffz() (man ffs).
-- */
--static inline int ffs(int x)
--{
--	int r;
--
--	__asm__("bsfl %1,%0\n\t"
--		"jnz 1f\n\t"
--		"movl $-1,%0\n"
--		"1:" : "=r" (r) : "rm" (x));
--	return r+1;
--}
--
--/**
-- * fls - find last bit set
-- * @x: the word to search
-- *
-- * This is defined the same way as ffs().
-- */
--static inline int fls(int x)
--{
--	int r;
--
--	__asm__("bsrl %1,%0\n\t"
--		"jnz 1f\n\t"
--		"movl $-1,%0\n"
--		"1:" : "=r" (r) : "rm" (x));
--	return r+1;
--}
--
- #include <asm-generic/bitops/hweight.h>
- 
- #endif /* __KERNEL__ */
-diff --git a/include/asm-x86/bitops_64.h b/include/asm-x86/bitops_64.h
-index 87e1a17..866ed56 100644
---- a/include/asm-x86/bitops_64.h
-+++ b/include/asm-x86/bitops_64.h
-@@ -35,71 +35,11 @@ static inline void set_bit_string(unsigned long *bitmap, unsigned long i,
- 	}
- } 
- 
--/**
-- * ffz - find first zero in word.
-- * @word: The word to search
-- *
-- * Undefined if no zero exists, so code should check against ~0UL first.
-- */
--static inline unsigned long ffz(unsigned long word)
--{
--	__asm__("bsfq %1,%0"
--		:"=r" (word)
--		:"r" (~word));
--	return word;
--}
--
--/**
-- * __ffs - find first bit in word.
-- * @word: The word to search
-- *
-- * Undefined if no bit exists, so code should check against 0 first.
-- */
--static inline unsigned long __ffs(unsigned long word)
--{
--	__asm__("bsfq %1,%0"
--		:"=r" (word)
--		:"rm" (word));
--	return word;
--}
--
--/*
-- * __fls: find last bit set.
-- * @word: The word to search
-- *
-- * Undefined if no zero exists, so code should check against ~0UL first.
-- */
--static inline unsigned long __fls(unsigned long word)
--{
--	__asm__("bsrq %1,%0"
--		:"=r" (word)
--		:"rm" (word));
--	return word;
--}
--
- #ifdef __KERNEL__
- 
- #include <asm-generic/bitops/sched.h>
- 
- /**
-- * ffs - find first bit set
-- * @x: the word to search
-- *
-- * This is defined the same way as
-- * the libc and compiler builtin ffs routines, therefore
-- * differs in spirit from the above ffz (man ffs).
-- */
--static inline int ffs(int x)
--{
--	int r;
--
--	__asm__("bsfl %1,%0\n\t"
--		"cmovzl %2,%0" 
--		: "=r" (r) : "rm" (x), "r" (-1));
--	return r+1;
--}
--
--/**
-  * fls64 - find last bit set in 64 bit word
-  * @x: the word to search
-  *
-@@ -112,22 +52,6 @@ static inline int fls64(__u64 x)
- 	return __fls(x) + 1;
- }
- 
--/**
-- * fls - find last bit set
-- * @x: the word to search
-- *
-- * This is defined the same way as ffs.
-- */
--static inline int fls(int x)
--{
--	int r;
--
--	__asm__("bsrl %1,%0\n\t"
--		"cmovzl %2,%0"
--		: "=&r" (r) : "rm" (x), "rm" (-1));
--	return r+1;
--}
--
- #define ARCH_HAS_FAST_MULTIPLIER 1
- 
- #include <asm-generic/bitops/hweight.h>
+
+ static struct notifier_block kprobe_exceptions_nb = {
+@@ -1118,6 +1166,8 @@ module_init(init_kprobes);
+
+ EXPORT_SYMBOL_GPL(register_kprobe);
+ EXPORT_SYMBOL_GPL(unregister_kprobe);
++EXPORT_SYMBOL_GPL(register_kprobes);
++EXPORT_SYMBOL_GPL(unregister_kprobes);
+ EXPORT_SYMBOL_GPL(register_jprobe);
+ EXPORT_SYMBOL_GPL(unregister_jprobe);
+ #ifdef CONFIG_KPROBES
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
+
+
+
 
