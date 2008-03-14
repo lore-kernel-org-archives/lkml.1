@@ -1,177 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYCNB6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbYCNCAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYCNB6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Mar 2008 21:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYCNB6b
+	id S1756069AbYCNCAn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Mar 2008 22:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYCNCAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Mar 2008 21:58:31 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:39733 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751937AbYCNB6a (ORCPT
+	Thu, 13 Mar 2008 22:00:34 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:31509 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbYCNCAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Mar 2008 21:58:30 -0400
-Date: Thu, 13 Mar 2008 21:58:23 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] KERNEL:  Explicitly include required header files under
- kernel/.
-Message-ID: <alpine.LFD.1.00.0803132154290.11934@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 13 Mar 2008 22:00:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=por8TkEnVcwb0QirjbkK6mZp1rgZ6CEZnG5PGKmd9tS6I8/Gh8RKbbZI7njIVmI2rDhjbxHxoW6t8JBG1eS8QfEsthgQJhrCxVY493e02YAbsbZAZiOSD4MH96az1QCi4oa0k9JQU2KHmLvB3hpbONxeMIFCEr00OfI6XO/pNCQ=
+Message-ID: <86802c440803131900j30ef490bk1923fdd219433535@mail.gmail.com>
+Date: Thu, 13 Mar 2008 19:00:33 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] mm: make reserve_bootmem can crossed the nodes
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
+In-Reply-To: <20080314105529.79921546.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440803131645q1eb31cb7jb0774d9cf67c767@mail.gmail.com>
+	 <20080314103431.ff07070c.kamezawa.hiroyu@jp.fujitsu.com>
+	 <86802c440803131835u4e506d69l4f116eb49d9ee9b2@mail.gmail.com>
+	 <20080314105529.79921546.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 13, 2008 at 6:55 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 13 Mar 2008 18:35:51 -0700
+>
+> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>
+>  > On Thu, Mar 13, 2008 at 6:34 PM, KAMEZAWA Hiroyuki
+>  > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>  > > On Thu, 13 Mar 2008 16:45:42 -0700
+>  > >  "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>  > >  > int __init reserve_bootmem(unsigned long addr, unsigned long size,
+>  > >  >                           int flags)
+>  > >  >  {
+>  > >  > -     return reserve_bootmem_core(NODE_DATA(0)->bdata, addr, size, flags);
+>  > >  > +     int ret;
+>  > >  > +     bootmem_data_t *bdata;
+>  > >  > +     list_for_each_entry(bdata, &bdata_list, list) {
+>  > >  > +             ret = can_reserve_bootmem_core(bdata, addr, size, flags);
+>  > >  > +             if (ret < 0)
+>  > >  > +                     return ret;
+>  > >  > +     }
+>  > >  > +     list_for_each_entry(bdata, &bdata_list, list)
+>  > >  > +             reserve_bootmem_core(bdata, addr, size, flags);
+>  > >  > +     return 0;
+>  > >  >  }
+>  > >
+>  > >  why list_for_each twice ?
+>  >
+>  > first_for_each only check if we can reserve that.
+>  > second will do the reserve job.
+>  >
+>  Hmm, can a call to reserve_bootmem() return a memory region which spread across
+>  prural nodes ?
 
-Following an experimental deletion of the unnecessary directive
+Yes. there is one reserve_bootmem in reserve_crashkernel. and position
+is passed via commandline...
+there is some chance for ramdisk too. it is called via reserve_bootmem_generic.
 
- #include <linux/slab.h>
-
-from the header file <linux/percpu.h>, these files under kernel/ were
-exposed as needing to include one of <linux/slab.h> or <linux/gfp.h>,
-so explicit includes were added where necessary.
-
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-
----
-
- kernel/irq/devres.c     |    1 +
- kernel/irq/manage.c     |    1 +
- kernel/marker.c         |    1 +
- kernel/ns_cgroup.c      |    1 +
- kernel/rcutorture.c     |    1 +
- kernel/res_counter.c    |    1 +
- kernel/time.c           |    1 +
- kernel/user_namespace.c |    1 +
- kernel/utsname.c        |    1 +
- 9 files changed, 9 insertions(+)
-
-diff --git a/kernel/irq/devres.c b/kernel/irq/devres.c
-index 6d9204f..38a25b8 100644
---- a/kernel/irq/devres.c
-+++ b/kernel/irq/devres.c
-@@ -1,6 +1,7 @@
- #include <linux/module.h>
- #include <linux/interrupt.h>
- #include <linux/device.h>
-+#include <linux/gfp.h>
-
- /*
-  * Device resource management aware IRQ request/free implementation.
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 438a014..46e4ad1 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -11,6 +11,7 @@
- #include <linux/module.h>
- #include <linux/random.h>
- #include <linux/interrupt.h>
-+#include <linux/slab.h>
-
- #include "internals.h"
-
-diff --git a/kernel/marker.c b/kernel/marker.c
-index 48a4ea5..5685f51 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -23,6 +23,7 @@
- #include <linux/rcupdate.h>
- #include <linux/marker.h>
- #include <linux/err.h>
-+#include <linux/slab.h>
-
- extern struct marker __start___markers[];
- extern struct marker __stop___markers[];
-diff --git a/kernel/ns_cgroup.c b/kernel/ns_cgroup.c
-index aead4d6..18df038 100644
---- a/kernel/ns_cgroup.c
-+++ b/kernel/ns_cgroup.c
-@@ -7,6 +7,7 @@
- #include <linux/module.h>
- #include <linux/cgroup.h>
- #include <linux/fs.h>
-+#include <linux/slab.h>
-
- struct ns_cgroup {
- 	struct cgroup_subsys_state css;
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index fd59982..8e8b85a 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -45,6 +45,7 @@
- #include <linux/byteorder/swabb.h>
- #include <linux/stat.h>
- #include <linux/srcu.h>
-+#include <linux/slab.h>
-
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
-diff --git a/kernel/res_counter.c b/kernel/res_counter.c
-index efbfc0f..a508c27 100644
---- a/kernel/res_counter.c
-+++ b/kernel/res_counter.c
-@@ -10,6 +10,7 @@
- #include <linux/types.h>
- #include <linux/parser.h>
- #include <linux/fs.h>
-+#include <linux/slab.h>
- #include <linux/res_counter.h>
- #include <linux/uaccess.h>
-
-diff --git a/kernel/time.c b/kernel/time.c
-index a5ec013..adca7f5 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -35,6 +35,7 @@
- #include <linux/syscalls.h>
- #include <linux/security.h>
- #include <linux/fs.h>
-+#include <linux/slab.h>
-
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 4c90062..2731ba8 100644
---- a/kernel/user_namespace.c
-+++ b/kernel/user_namespace.c
-@@ -8,6 +8,7 @@
- #include <linux/module.h>
- #include <linux/version.h>
- #include <linux/nsproxy.h>
-+#include <linux/slab.h>
- #include <linux/user_namespace.h>
-
- /*
-diff --git a/kernel/utsname.c b/kernel/utsname.c
-index 816d7b2..64d398f 100644
---- a/kernel/utsname.c
-+++ b/kernel/utsname.c
-@@ -14,6 +14,7 @@
- #include <linux/utsname.h>
- #include <linux/version.h>
- #include <linux/err.h>
-+#include <linux/slab.h>
-
- /*
-  * Clone a new ns copying an original utsname, setting refcount to 1
-
-
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+YH
