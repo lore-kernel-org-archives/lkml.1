@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbYCNQjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbYCNQj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbYCNQjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 12:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYCNQjJ
+	id S1757943AbYCNQj7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 12:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYCNQju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 12:39:09 -0400
-Received: from postel.suug.ch ([194.88.212.233]:51207 "EHLO postel.suug.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbYCNQjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 12:39:08 -0400
-Date: Fri, 14 Mar 2008 17:39:29 +0100
-From: Thomas Graf <tgraf@suug.ch>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Audit vs netlink interaction problem
-Message-ID: <20080314163929.GP20815@postel.suug.ch>
-References: <47DAA660.90401@openvz.org>
+	Fri, 14 Mar 2008 12:39:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41611 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756221AbYCNQjt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 12:39:49 -0400
+Date: Fri, 14 Mar 2008 09:38:14 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Joel K. Greene" <joel.greene@catapult.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Timer interrupt stops, causes soft lockup
+Message-ID: <20080314093814.3147f250@laptopd505.fenrus.org>
+In-Reply-To: <1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
+References: <1204653133.718.14.camel@linuxdt036.nc.catapult.com>
+	<47CD634E.2828.00B3.0@novell.com>
+	<1204722318.6578.12.camel@linuxdt036.nc.catapult.com>
+	<47CE45D8.2828.00B3.0@novell.com>
+	<1204728175.6578.23.camel@linuxdt036.nc.catapult.com>
+	<47D3DC53.2828.00B3.0@novell.com>
+	<1205152374.18463.17.camel@linuxdt036.nc.catapult.com>
+	<1205235450.18463.45.camel@linuxdt036.nc.catapult.com>
+	<47D6423D.1E6F.00AA.0@novell.com>
+	<1205255048.18463.60.camel@linuxdt036.nc.catapult.com>
+	<1205260328.18463.67.camel@linuxdt036.nc.catapult.com>
+	<47D68B9D.1E6F.00AA.0@novell.com>
+	<1205265642.18463.82.camel@linuxdt036.nc.catapult.com>
+	<1205322793.20205.9.camel@linuxdt036.nc.catapult.com>
+	<1205326713.20205.27.camel@linuxdt036.nc.catapult.com>
+	<1205332212.20205.33.camel@linuxdt036.nc.catapult.com>
+	<1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47DAA660.90401@openvz.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Emelyanov <xemul@openvz.org> 2008-03-14 19:22
-> I've found an interesting feature of how audit uses netlink for
-> communications. Look.
-> 
-> The kauditd_thread() calls netlink_unicast() and passes the 
-> audit_pid to it. The audit_pid, in turn, is received from the 
-> user space and the tool (I've checked the audit v1.6.9) uses 
-> getpid() to pass one in the kernel. Besides, this tool doesn't
-> bind the netlink socket to this id, but simply creates it 
-> allowing the kernel to auto-bind one.
-> 
-> That's the preamble.
-> 
-> The problem is that netlink_autobind() _does_not_ guarantees
-> that the socket will be auto-binded to the current pid. Instead
-> it uses the current pid as a hint to start looking for a free
-> id. So, in case of conflict, the audit messages can be sent
-> to a wrong socket. This can happen (it's unlikely, but can be)
-> in case some task opens more than one netlink sockets and then
-> the audit one starts - in this case the audit's pid can be busy
-> and its socket will be bound to another id.
+On Fri, 14 Mar 2008 11:53:29 -0400
+"Joel K. Greene" <joel.greene@catapult.com> wrote:
 
-The audit userspace tool should be fixed, no question. It can continue
-to auto bind but must report the correct netlink pid.
+> We originally saw this on the SLED10 kernel - SuSE's version of
+> 2.6.16.21 - where the issue would occur in a matter of weeks or
+> months.
 
-As a workaround: Assuming that the audit daemon is the only application
-to issue a AUDIT_SET command to set the status pid, the kernel can
-compare the netlink source pid of the AUDIT_SET message and compare it
-against the status pid provided. If they differ, issue a warning but
-use the netlink source pid thus covering the case where the auto bound
-netlink pid actually differs from the process pid.
+Hi,
+
+this is roughly a 3 year old kernel; and the thing is, this code has been
+revamped entirely several times since then. Do you see this behavior with,
+say the 2.6.24 kernel? That's a twofold question, since it has with-tickless 
+and without-tickless as option. (tickless doesn't tend to use the PIT at all
+so would just avoid the entire issue; without-tickless still uses the PIT)
+
+It's really better to use your support contract with Novell to get them to fix
+it for SLE(S/D)10 if you are not in a position to test or diagnose with new
+kernels; they're there to support you for their old kernel. In general, the folks
+on this list are working on current kernels and don't tend to spend time working
+on such old kernels. The probability of this bug being fixed since then, or the fix
+being totally not applicable to current kernels, is quite high (given the several rewrites
+of the timer code) so it'd be a waste of the time of the people on this list.
+
+Now, if you can see the behavior on 2.6.24 (or better, the latest 2.6.25-rc), then
+suddenly you'll find a lot more people who're going to be interested....
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
