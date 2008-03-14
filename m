@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbYCNTfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYCNTjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115AbYCNTfY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 15:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYCNTfL
+	id S1757055AbYCNTjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 15:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYCNTjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 15:35:11 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59631 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbYCNTfK (ORCPT
+	Fri, 14 Mar 2008 15:39:13 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:50385 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbYCNTjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 15:35:10 -0400
-Date: Fri, 14 Mar 2008 20:35:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: David Newall <davidn@davidnewall.com>, Jiri Kosina <jkosina@suse.cz>,
-       "Fred ." <eldmannen@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Keys get stuck
-Message-ID: <20080314193534.GB24646@elf.ucw.cz>
-References: <f188924b0803111632h3c122ec7x1be171edd0884dee@mail.gmail.com> <Pine.LNX.4.64.0803121131200.7266@twin.jikos.cz> <47D7B428.6010804@davidnewall.com> <20080313171425.GA4840@ucw.cz> <20080314133019.GE1289@csclub.uwaterloo.ca>
+	Fri, 14 Mar 2008 15:39:12 -0400
+Message-ID: <47DAD39C.90405@indt.org.br>
+Date: Fri, 14 Mar 2008 15:35:56 -0400
+From: Carlos Aguiar <carlos.aguiar@indt.org.br>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080314133019.GE1289@csclub.uwaterloo.ca>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 00/18] MMC: OMAP: Sync MMC OMAP driver with mainline tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Mar 2008 19:38:36.0274 (UTC) FILETIME=[FECD9520:01C8860A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-03-14 09:30:19, Lennart Sorensen wrote:
-> On Thu, Mar 13, 2008 at 06:14:26PM +0100, Pavel Machek wrote:
-> > hw is proper place to implement autorepeat, and along with some
-> > buffering, it has chance to work. Kernel is not real-time, and X are
-> > definitely not real-time, while autorepeat is real-time operation.
-> > 
-> > It actually mostly works in ps/2 case. Buffer in hardware means that
-> > pretty big interrupt delays can be tolerated without problems.
-> 
-> So does the keyboard events generate something like this then:
-> 
-> KEY_x_DOWN
-> KEY_x_REPEAT
-> KEY_x_UP
+Hi Pierre, Tony and folks,
 
-Yes, kernel<->user interface is something like that. Try evtest to see
-it.
+The new version of the patch series that follows is a synchronization
+of MMC OMAP driver from Linux-OMAP tree into mainline tree.
 
-> If so then X certainly could get all the keyboard information I imagine
-> it needs from the kernel, but otherwise I am not sure how it could.
-> A
-> repeated series of key down events are not enough since some keys you
-> don't want repeated you just want to know when the key is held down and
-> when it isn't.
+Improvements and corrections are based on comments from Pierre Ossman and 
+Roel Kluin, from LKML.
 
-PS/2 keyboard sends both ups and downs. "down down down up" means
-autorepeat. It is not actually ambiguous.
+Just to remind you, basically it brings MMC multislot support for OMAP boards 
+with one slot (like H2 1611, H3 1710) or two slots (like H4 2420 and N800).
+Others boards supported by such feature are: N770, Siemens SX1 and Apollon.
 
-BTW this is what I use to generate huge latencies and cause X
-problems:
+BR,
 
-void
-main(void)
-{
-        int i;
-        iopl(3);
-        while (1) {
-                asm volatile("cli");
-                //              for (i=0; i<20000000; i++)
-                for (i=0; i<1000000000; i++)
-                        asm volatile("");
-                asm volatile("sti");
-                sleep(1);
-        }
-}
+Carlos.
 
-...run it once per core.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Carlos Eduardo Aguiar
+Nokia Institute of Technology - INdT
+Open Source Mobile Research Center - OSMRC - Manaus
+Core Team
+Phone: +55 92 2126-1079
+Mobile: +55 92 8127-1797
+E-mail: carlos.aguiar@indt.org.br
 
