@@ -1,71 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYCNRqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCNRua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYCNRqk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 13:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYCNRqc
+	id S1757408AbYCNRua (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 13:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbYCNRuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 13:46:32 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:10113 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754673AbYCNRqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 13:46:31 -0400
-Date: Fri, 14 Mar 2008 10:44:44 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Cc: kvm-devel@lists.sourceforge.net, avi@qumranet.com,
-       tglx <tglx@linutronix.de>, mingo <mingo@redhat.com>,
-       hpa <hpa@zytor.com>
-Subject: [PATCH] x86: don't allow KVM_CLOCK without HAVE_KVM
-Message-Id: <20080314104444.ca80e434.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 14 Mar 2008 13:50:22 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:64683 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754621AbYCNRuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 13:50:21 -0400
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+From: Stephen Smalley <sds@epoch.ncsc.mil>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <20080314143216.GC9741@sergelap.austin.ibm.com>
+References: <20080313144142.GB11265@sergelap.austin.ibm.com>
+	 <Xine.LNX.4.64.0803142039460.32184@us.intercode.com.au>
+	 <1205501248.22912.35.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080314143216.GC9741@sergelap.austin.ibm.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 14 Mar 2008 13:41:56 -0400
+Message-Id: <1205516516.22912.92.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Make KVM_CLOCK depend on HAVE_KVM.  Otherwise a Voyager build can
-fail with:
+On Fri, 2008-03-14 at 09:32 -0500, Serge E. Hallyn wrote:
+> Quoting Stephen Smalley (sds@epoch.ncsc.mil):
+> > 
+> > On Fri, 2008-03-14 at 21:17 +1100, James Morris wrote:
+> > > On Thu, 13 Mar 2008, Serge E. Hallyn wrote:
+> > > 
+> > > > Implement a cgroup using the LSM interface to enforce open and mknod
+> > > > on device files.
+> > > 
+> > > Actually, I'm not sure that the LSM approach in general is best here.
+> > > 
+> > > The LSM model is that standard DAC logic lives in the core kernel, and 
+> > > that extended security logic (e.g. MAC) is called after DAC via hooks.  
+> > > cgroups has introduced new security logic of its own, which is arguably 
+> > > "standard DAC" when cgroups is enabled.
+> > > 
+> > > I can understand Greg not wanting this security logic in the core kernel, 
+> > > but it is specific to cgroups (which itself is security model agnostic) 
+> > > and does not stand alone as a distinct security framework.
+> 
+> I completely disagree.   We have two separate frameworks in the kernel,
+> one to enforce generic additional security stuff, and one to track
+> tasks.  When I need a feature which tracks tasks to do some security
+> tasks, it seems obvious that I would use both, just like to enforce a
+> certain type of MAC I end up using both netfilter and LSM through
+> selinux.
 
-  CC      arch/x86/kernel/asm-offsets.s
-In file included from include2/asm/irqflags.h:59,
-                 from /local/linsrc/next-20080314/include/linux/irqflags.h:46,
-                 from include2/asm/system.h:11,
-                 from include2/asm/processor.h:21,
-                 from include2/asm/atomic_32.h:5,
-                 from include2/asm/atomic.h:2,
-                 from /local/linsrc/next-20080314/include/linux/crypto.h:20,
-                 from /local/linsrc/next-20080314/arch/x86/kernel/asm-offsets_32.c:7,
-                 from /local/linsrc/next-20080314/arch/x86/kernel/asm-offsets.c:2:
-include2/asm/paravirt.h: In function 'startup_ipi_hook':
-include2/asm/paravirt.h:856: error: 'struct pv_apic_ops' has no member named 'startup_ipi_hook'
-include2/asm/paravirt.h:856: error: 'struct pv_apic_ops' has no member named 'startup_ipi_hook'
-include2/asm/paravirt.h:856: error: memory input 4 is not directly addressable
-make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-make[1]: *** [prepare0] Error 2
-make: *** [sub-make] Error 2
+Depends on whether you think LSM hooks are like netfilter hooks (i.e.
+fine for each module to just implement a few here and there, then
+combine resulting modules), or whether they are about implementing
+complete security models (ala SELinux or Smack).  As they currently
+exist, they aren't very well suited to the former - they impose a cost
+on all hooked operations in order to hook any at all, as has been a
+concern for your device controller.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+> > > The fact that all existing LSMs need to invoke exactly the same code is an 
+> > > indicator that it doesn't belong in LSM.
+> 
+> No, that's like saying capabilities don't belong in LSM because all LSMS
+> need to invoke it the same way.  What it is an indicator of is that
+> there are (not-quite-)orthogonal pieces of security which users might
+> want to use together.
 
---- next-20080314.orig/arch/x86/Kconfig
-+++ next-20080314/arch/x86/Kconfig
-@@ -370,6 +370,7 @@ config VMI
- config KVM_CLOCK
- 	bool "KVM paravirtualized clock"
- 	select PARAVIRT
-+	depends on HAVE_KVM
- 	help
- 	  Turning on this option will allow you to run a paravirtualized clock
- 	  when running over the KVM hypervisor. Instead of relying on a PIT
+Likely not a popular view, but capabilities don't belong in LSM.  Look
+at them:  the capability state is still directly embedded in the
+relevant kernel data structures, various bits of capability specific
+logic and interfaces remain in the core kernel, they don't present a
+complete security model (just an auxiliary to some other model like DAC
+or Smack for privilege purposes), they use only a small subset of the
+hooks, they force LSM to violate its usual restrictive-only paradigm to
+support capable(), CONFIG_SECURITY=n still has to invoke the capability
+functions, and all of the other LSMs do need to call it the same way to
+keep Linux working as expected for applications and users.
+
+The original promise was that LSM would allow kernels to be built that
+shed capabilities altogether, but in practice no one seems to do that as
+both users and applications expect them to exist in Linux.  In fact, the
+possibility of not having capabilities present has caused problems that
+have led to the dummy module being turned more and more into a clone of
+the capabilities module (actually managing and testing the capability
+bits rather than just uid == 0 as originally).
+
+So I wouldn't point to capabilities as a counter example to James' point
+- they are actually a supporting example.
+
+> As I told stephen I hope to provide the enhanced selinux support for
+> devices, and at that point perhaps you won't want to support
+> SELINUX+CGROUPS_DEV anymore.
+> 
+> Now that's just my opinion and it doesn't count for much.  I'll do
+> whatever everyone can agree on, but will wait for Paul's opinion about
+> adding cgroup hooks next to the two security hooks.
+> 
+> > > Moving this logic into LSM means that instead of the cgroups security 
+> > > logic being called from one place in the main kernel (where cgroups 
+> > > lives), it must be called identically from each LSM (none of which are 
+> > > even aware of cgroups), which I think is pretty obviously the wrong 
+> > > solution.
+> > > 
+> > > This is baggage which comes with cgroups -- please don't push it into LSM 
+> > > to try and hide that.
+> > 
+> > I agree with the above, and would further note that I would expect the
+> > SELinux solution to the problem would be done not by stacking with or
+> > calling this device whitelist lsm but instead by introducing the ability
+> > to bind security labels to devices within the kernel (independent of the
+> > particular device node(s) in the filesystem used to access that device)
+> > and applying permission checks on those device labels when processes
+> > attempt to create or access those devices (again independent of the
+> > particular device node used to access them).  That keeps the policy
+> > integrated and analyzable and avoids an external dependency.
+> 
+> Agreed.
+> 
+> -serge
+-- 
+Stephen Smalley
+National Security Agency
+
