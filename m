@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYCNUv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYCNUxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbYCNUv6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 16:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYCNUvt
+	id S1758814AbYCNUxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 16:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbYCNUxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 16:51:49 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:27367 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYCNUvs (ORCPT
+	Fri, 14 Mar 2008 16:53:07 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51473 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbYCNUxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 16:51:48 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -6.389
-Message-ID: <47DAE55C.3080506@tremplin-utc.net>
-Date: Fri, 14 Mar 2008 21:51:40 +0100
-From: Eric Piel <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.12) Gecko/20080305 Mandriva/2.0.0.12-3mdv2008.1 (2008.1) Thunderbird/2.0.0.12 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>	 <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>	 <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net> <1205525184.12763.32.camel@nimitz.home.sr71.net>
-In-Reply-To: <1205525184.12763.32.camel@nimitz.home.sr71.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Mar 2008 16:53:05 -0400
+To: staubach@redhat.com
+CC: miklos@szeredi.hu, drepper@redhat.com, viro@ZenIV.linux.org.uk,
+       bharata@linux.vnet.ibm.com, libc-alpha@sourceware.org, jblunck@suse.de,
+       ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@lst.de, cmm@us.ibm.com,
+       haveblue@us.ibm.com
+In-reply-to: <47DABBAF.4040005@redhat.com> (message from Peter Staubach on
+	Fri, 14 Mar 2008 13:53:51 -0400)
+Subject: Re: [RFC] Union mount readdir support in glibc
+References: <20080311055527.GA7256@in.ibm.com> <47D9F6CC.6010009@redhat.com> <20080314053925.GA10722@ZenIV.linux.org.uk> <47DA257C.9060409@redhat.com> <E1Ja5Tf-0003Op-Fi@pomaz-ex.szeredi.hu> <47DABBAF.4040005@redhat.com>
+Message-Id: <E1JaGsN-00055L-Df@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 14 Mar 2008 21:51:39 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> For those of you new to this thread, here's the initial report:
+> >>> Actually, do we really need it other than to 0 and to current position
+> >>> (i.e. full rewind and a no-op)?
+> >>>       
+> >> Ever heard of the little function "telldir"?
+> >>     
+> >
+> > Actually, telldir/seekdir is already broken for some filesystems (NFS
+> > comes to mind).  POSIX was really crazy to require a working seekdir
+> > implementation, and userspace should quickly start _not_ using it.
+> >
+> >   
 > 
-> 	http://marc.info/?t=120536629300001&r=1&w=2
-> 
-> I'm pretty sure the root cause of this bug is this commit:
-> 
-> 	ACPI: basic initramfs DSDT override support
-> 	71fc47a9adf8ee89e5c96a47222915c5485ac437
-> 
-> Which did this hunk:
->         
->         @@ -648,6 +654,7 @@ asmlinkage void __init start_kernel(void)
->          
->                 check_bugs();
->          
->         +       populate_rootfs(); /* For DSDT override from initramfs
->         */
->                 acpi_early_init(); /* before LAPIC and SMP init */
->          
->                 /* Do the rest non-__init'ed, we're now alive */
->         	rest_init();
->         ...
-> 
-> Well, the fs initcalls aren't actually done until during rest_init(),
-> including initializing my mnt_writer[] spinlocks.  I guess I could
-> statically initialize them, but that's not the root of the problem, it's
-> just the canary in the coal mine.
-> 
-> I think the populate_rootfs() call is completely bogus and certainly
-> can't be done before the initcalls.  But, I don't immediately have any
-> better suggestions for you.  Can you delay the ACPI init until after the
-> fs initcalls are made?
-Hi,
+> What makes you think that telldir/seekdir don't work for NFS?
 
-I have made a patch to fix problems with regards to early userspace 
-calls (http://lkml.org/lkml/2008/2/23/306) but I don't think it will 
-solve this bug. So far I had not heard of problems with filesystem 
-initialization.
+  http://thread.gmane.org/gmane.comp.file-systems.fuse.devel/5124
 
-I'm not sure it would be possible to delay acpi_early_init() until after 
-the fs initcalls. Maybe Len knows. How about trying the opposite: what 
-is the barely minimum to initialize so that the rootfs can be populated 
-and read? Would it be possible to have a kind of 
-early_mnt_writer_initialize() that would do that?
+It turned out to be due to incorrect NFS behavior if files are removed
+between telldir and seekdir.
 
-See you,
-Eric
+So it does work sometimes, but does not seem to correctly handle all
+cases.  I have no idea if this is an issue in the server, the client
+or the protocol.
+
+What is certain, is that seekdir/telldir is a really bad interface,
+that just makes life difficult for filesystem implementors, without
+any real gain.  It deserves to die.
+
+Miklos
