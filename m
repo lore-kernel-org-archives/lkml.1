@@ -1,86 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbYCOMRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbYCOMkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752767AbYCOMRL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 08:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYCOMRA
+	id S1752600AbYCOMkA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 08:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYCOMju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 08:17:00 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37255 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751690AbYCOMQ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 08:16:59 -0400
-X-Sasl-enc: JiKdTmOhkaOkQgBzvUeEPz48wja3pkD5ocKRVYAokVcb 1205583417
-Message-ID: <47DBBE2E.2020704@imap.cc>
-Date: Sat, 15 Mar 2008 13:16:46 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Zhao Yakui <yakui.zhao@intel.com>
-CC: Dave Jones <davej@codemonkey.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-acpi@vger.kernel.org
-Subject: Re: [2.6.25-rc5-mm1] WARNING: at drivers/base/sys.c:173
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>	 <47D87238.8080305@imap.cc> <20080313195656.GA32463@codemonkey.org.uk>	 <47D9C04E.3060208@imap.cc> <1205456231.4082.2.camel@yakui_zhao.sh.intel.com>
-In-Reply-To: <1205456231.4082.2.camel@yakui_zhao.sh.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF2688528FC33A86F5BBF460C"
+	Sat, 15 Mar 2008 08:39:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2880 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751706AbYCOMjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 08:39:49 -0400
+Date: Sat, 15 Mar 2008 13:39:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/4] disk-protect: Add disk shock protection helpers to libata
+Message-ID: <20080315123933.GA4669@ucw.cz>
+References: <87skzgd1zk.fsf@denkblock.local> <20080226123946.75dbe3d2@core> <87mypl8p49.fsf@denkblock.local> <20080228111349.6831925c@core> <87bq5qfm2v.fsf@denkblock.local> <20080307181750.9981.88028.stgit@denkblock.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080307181750.9981.88028.stgit@denkblock.local>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF2688528FC33A86F5BBF460C
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Fri 2008-03-07 19:25:16, Elias Oltmanns wrote:
+> This patch adds some helper functions to libata in order to provide low
+> level suport for disk shock protection. The user interface to this
+> functionality will be implemented in the block layer in a subsequent patch.
+> 
+> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 
-Am 14.03.2008 01:57 schrieb Zhao Yakui:
->=20
-> Please set CONFIG_ACPI_DEBUG and boot the system with the option of
-> "acpi.debug_layer=3D0x01010000 acpi.debug_level=3D0x1f".
->=20
-> It will be great if the acpidump output is attached.
+Looks ok to me, but I'm not an ata expert.
 
-Ok, that took a bit longer than I hoped, but the result is now
-finally available at:
-
-http://gollum.phnxsoft.com/~ts/linux/dmesg-acpidebug.out
-
-Note that I doctored this a bit: the dmesg buffer had already
-overflowed by the time I ran the dmesg command, so I manually
-prepended the missing part from the file /var/log/boot.msg into
-which SUSE saves the early kernel messages. The border between
-the two is marked off by the string "~~~~~~~~splice~~~~~~~~",
-and I left a line of overlap to make it very clear.
-
-The output of acpidump is unchanged wrt what I already posted.
-(Unsurprisingly, but nevertheless I checked. Call me paranoid. ;-)
-
-HTH
-T.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigF2688528FC33A86F5BBF460C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFH2742MdB4Whm86/kRAv/ZAJ9wHRGJV9wZDxWkk5uUlqCQfaNqjgCeIU3z
-fMy1oiGH9kRxMbzJkffG5s8=
-=Y1Oo
------END PGP SIGNATURE-----
-
---------------enigF2688528FC33A86F5BBF460C--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
