@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYCOVGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYCOVG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYCOVGV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 17:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYCOVGL
+	id S1754752AbYCOVG5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 17:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYCOVGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 17:06:11 -0400
-Received: from phunq.net ([64.81.85.152]:55456 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752710AbYCOVGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 17:06:10 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Sat, 15 Mar 2008 13:05:59 -0800
-User-Agent: KMail/1.9.5
-Cc: David Newall <davidn@davidnewall.com>, david@lang.hm,
-       Chris Friesen <cfriesen@nortel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803131303.04118.phillips@phunq.net> <20080315202625.GC4193@ucw.cz>
-In-Reply-To: <20080315202625.GC4193@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Mar 2008 17:06:45 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58031 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754401AbYCOVGd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 17:06:33 -0400
+Message-Id: <1205615192.29139.1242596503@webmail.messagingengine.com>
+X-Sasl-Enc: U0vUiVhxmsYXdVw/JVqXl+AZPuAfw7BsOZwyLe0Mcq6V 1205615192
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "LKML" <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-Message-Id: <200803151406.00410.phillips@phunq.net>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org>
+   <1205523826.7441.1242464129@webmail.messagingengine.com>
+   <20080314195520.GV2522@one.firstfloor.org>
+   <1205530409.27413.1242484373@webmail.messagingengine.com>
+   <20080315191946.GA21817@mailshack.com> <47DC2F08.9080004@zytor.com>
+Subject: Re: K8, EFFICEON and CORE2 support the cmovxx instructions.
+In-Reply-To: <47DC2F08.9080004@zytor.com>
+Date: Sat, 15 Mar 2008 22:06:32 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 March 2008 13:26, Pavel Machek wrote:
-> On Thu 2008-03-13 12:03:03, Daniel Phillips wrote:
-> > On Thursday 13 March 2008 12:50, David Newall wrote:
-> > > Daniel Phillips wrote:
-> > > > The period where you cannot access the data is downtime.  If your script
-> > > > just does a cp from a disk array to the ram device you cannot just read
-> > > > from the backing store in that period because you will need to fail over
-> > > > to the ramdisk at some point, and you cannot just read from the ramdisk
-> > > > because it is not populated yet.
-> > > 
-> > > Wouldn't a raid-1 set comprising disk + ramdisk do that with no downtime?
+On Sat, 15 Mar 2008 21:18:16 +0100, "H. Peter Anvin" <hpa@zytor.com>
+said:
+> Alexander van Heukelum wrote:
+> > K8, EFFICEON and CORE2 support the cmovxx instructions.
 > > 
-> > In raid1, write completion has to wait for write completion on all
-> > mirror members, so writes run at disk speed.  Reads run at ramdisk
-> > speed, so your proposal sounds useful, but ramback aims for high
-> > write performance as well.
+> > Instead of listing the cpu's that have support for the
+> > cmovxx instructions, list the cpu's that don't.
+> > 
+> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> > ---
+> > 
+> > A bit of playing resulted in:
+> > 
+> > CPUS="M386 M486 M586 M586TSC M586MMX M686 MPENTIUMII MPENTIUMIII"
+> > CPUS=$CPUS" MPENTIUMM MPENTIUM4 MK6 MK7 MK8 MCRUSOE MEFFICEON"
+> > CPUS=$CPUS" MWINCHIPC6 MWINCHIP2 MWINCHIP3D MGEODEGX1 MGEODE_LX"
+> > CPUS=$CPUS" MCYRIXIII MVIAC3_2 MVIAC7 MPSC MCORE2"
+> > 
+> > for cpu in $CPUS
+> > do
+> >         echo "CONFIG_${cpu}=y" > testconfig
+> >         make ARCH=i386 allnoconfig KCONFIG_ALLCONFIG=testconfig > /dev/null
+> >         echo ${cpu} >> result
+> >         grep X86_CMOV .config >> result
+> >         echo >> result
+> > done
+> > 
+> > I'm quite sure that K8, EFFICEON and CORE2 support HAVE_CMOV, but
+> > they did not set X86_CMOV.
+> > 
 > 
-> raid1 + kflushd tweak?
-> special raid1 mode that signals completion when it hits _one_ of the
-> drives, and does sync when the slower drive is idle?
+> Crusoe has CMOV as well.
 
-Feel free :-)
+Hi hpa,
 
-This is very close to how ramback already works.  One subtlety is that
-ramback does not write twice from the same application data source,
-which could allow the data on the backing device to differ from the
-ramdisk if the user changes it during the write.  I don't know how
-important it is to protect against this bug actually, but there you
-have it.  Ramback can easily to changed to write twice from the same
-source just like a raid1 (in fact it originally was that way) which
-would make it even more like raid1.
+I believe you... and the Makefile_32.cpu: it gets a -march=i686. I
+also found out that I missed X86_ELAN, which is treated as a i486.
 
-Adding ramback-like functionality to raid1 would be a nice
-contribution.  I would fully support that but I do not have time to do
-it myself.
+Also, MGEODE_LX does not get any optimization flags. I think that
+is unintentional, but what should they be?
 
-Daniel
+And MPSC (Intel P4 / older Netburst based Xeon) depends on X86_64.
+I would be very surprised if that one could not run 32-bit code,
+though. What flags should that one get?
+
+Thanks for pointing out I missed Crusoe. As a punishment you
+can answer my questions ;).
+
+Greetings,
+    Alexander
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Send your email first class
+
