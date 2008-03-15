@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYCONcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbYCON5C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbYCONcY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 09:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYCONcO
+	id S1752711AbYCON5C (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 09:57:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYCON4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 09:32:14 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:46537 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbYCONcN convert rfc822-to-8bit (ORCPT
+	Sat, 15 Mar 2008 09:56:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56622 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751628AbYCON4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 09:32:13 -0400
-From: Chr <chunkeey@web.de>
-To: Milan Broz <mbroz@redhat.com>
-Subject: [dm-crypt] INFO: task mount:11202 blocked for more than 120 seconds
-Date: Sat, 15 Mar 2008 14:32:10 +0100
-User-Agent: KMail/1.9.9
-Cc: David Chinner <dgc@sgi.com>, Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
-       dm-devel@redhat.com, Alasdair G Kergon <agk@redhat.com>,
-       dm-crypt@saout.de
-References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <47DA44EB.8000307@redhat.com> <200803150108.04008.chunkeey@web.de>
-In-Reply-To: <200803150108.04008.chunkeey@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803151432.11125.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX1+P5JjyGf0xJc52Hg13/HblmGlz/bNKvH9B+lAR
-	u3E3ybF8IjgQDM6wDL79WsbV2DMRTWA4t8D5OMyOG03Kv55A6O
-	Iv2Z6rbkA=
+	Sat, 15 Mar 2008 09:56:52 -0400
+Date: Sat, 15 Mar 2008 13:34:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nebojsa Miljanovic <neb@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org,
+       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
+       asweeney@alcatel-lucent.com,
+       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
+Subject: Re: SO_REUSEADDR not allowing server and client to use same port
+Message-ID: <20080315133426.1f48c99c@the-village.bc.nu>
+In-Reply-To: <47D97DF7.8000702@alcatel-lucent.com>
+References: <47C6FA2A.5030302@alcatel-lucent.com>
+	<20080228201926.558c4e7c@core>
+	<47D97DF7.8000702@alcatel-lucent.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On Sat, Mar 15, 2008 at 01:21:04AM +0100, Ulrich Lukas wrote:
->> With that patch applied, writing seems to work again.
-> 
-> Current version of the patch is below.  It's still not quite finished.
->
-:-/, both patches freezes here... 
+On Thu, 13 Mar 2008 14:18:15 -0500
+Nebojsa Miljanovic <neb@alcatel-lucent.com> wrote:
 
-I'll try to revert:
+> Alan,
+> I would appreciate it if you could elaborate on the security issue. Can you
+> describe the simultaneous connect scenario?
+> 
+> We have a system we are migrating to Linux from Lynx. We have always had the
+> ability to re-use ports. We are wondering if this security issue is something we
+> should take seriously. Or, maybe it is not likely to be seen with our system
+> running well defined set of applications (i.e. not a PC where anybody could run
+> anything).
 
-commit  3a7f6c990ad04e6f576a159876c602d14d6f7fef
-dm crypt: use async crypto
+See RFC 793. It is permissible for a connection to be created between two
+end points both making a connection (crossing SYN frames are both
+acked). Thus if you allow such reuse it is possible (although usually
+very very hard) to mount a timing based attack.
 
-dm-crypt: Use crypto ablkcipher interface
-Move encrypt/decrypt core to async crypto call.
+It's not a very practical attack in most scenarios so we block it out of
+correctness and concerns for completely robust and proper behaviour
+rather than because it is seen in the wild.
 
-maybe it isn't the async stuff after all..
-
->> Btw, is this a regression because of the changed 2.6.25(-rc) code or is
->> it just a coincidence that it worked before?
->
->Introduced during code changes to support async crypto interface.
-
-Regards,
-	Chr
- 
+Alan
