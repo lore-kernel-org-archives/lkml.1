@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYCOM5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYCONcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbYCOM5y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 08:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYCOM5p
+	id S1752777AbYCONcY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 09:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYCONcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 08:57:45 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44960 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751706AbYCOM5o (ORCPT
+	Sat, 15 Mar 2008 09:32:14 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:46537 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751749AbYCONcN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 08:57:44 -0400
-Date: Sat, 15 Mar 2008 12:36:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/12] ali14xx: add "vlb_clock=" parameter
-Message-ID: <20080315123614.6c548306@the-village.bc.nu>
-In-Reply-To: <20080313224352.7051.44005.sendpatchset@localhost.localdomain>
-References: <20080313224352.7051.44005.sendpatchset@localhost.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Mar 2008 09:32:13 -0400
+From: Chr <chunkeey@web.de>
+To: Milan Broz <mbroz@redhat.com>
+Subject: [dm-crypt] INFO: task mount:11202 blocked for more than 120 seconds
+Date: Sat, 15 Mar 2008 14:32:10 +0100
+User-Agent: KMail/1.9.9
+Cc: David Chinner <dgc@sgi.com>, Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+       dm-devel@redhat.com, Alasdair G Kergon <agk@redhat.com>,
+       dm-crypt@saout.de
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <47DA44EB.8000307@redhat.com> <200803150108.04008.chunkeey@web.de>
+In-Reply-To: <200803150108.04008.chunkeey@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803151432.11125.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1+P5JjyGf0xJc52Hg13/HblmGlz/bNKvH9B+lAR
+	u3E3ybF8IjgQDM6wDL79WsbV2DMRTWA4t8D5OMyOG03Kv55A6O
+	Iv2Z6rbkA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 23:43:52 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+>On Sat, Mar 15, 2008 at 01:21:04AM +0100, Ulrich Lukas wrote:
+>> With that patch applied, writing seems to work again.
+> 
+> Current version of the patch is below.  It's still not quite finished.
+>
+:-/, both patches freezes here... 
 
-> Add "vlb_clock=" parameter for specifying VLB clock frequency (in MHz).
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+I'll try to revert:
 
-Surely this value should be set once per system (ditto for PCI) not
-something you have to set in each specific driver on the box ?
+commit  3a7f6c990ad04e6f576a159876c602d14d6f7fef
+dm crypt: use async crypto
+
+dm-crypt: Use crypto ablkcipher interface
+Move encrypt/decrypt core to async crypto call.
+
+maybe it isn't the async stuff after all..
+
+>> Btw, is this a regression because of the changed 2.6.25(-rc) code or is
+>> it just a coincidence that it worked before?
+>
+>Introduced during code changes to support async crypto interface.
+
+Regards,
+	Chr
+ 
