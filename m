@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYCOTr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYCOTsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbYCOTr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 15:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYCOTrv
+	id S1754693AbYCOTsX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 15:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYCOTry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 15:47:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1867 "EHLO spitz.ucw.cz"
+	Sat, 15 Mar 2008 15:47:54 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1870 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752445AbYCOTru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 15:47:50 -0400
-Date: Sat, 15 Mar 2008 14:16:11 +0100
+	id S1752522AbYCOTrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 15:47:52 -0400
+Date: Sat, 15 Mar 2008 14:32:42 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: ACPI lockdep warning on boot, 2.6.25-rc5
-Message-ID: <20080315131611.GA4828@ucw.cz>
-References: <E1JZOGd-00057d-BU@pomaz-ex.szeredi.hu> <200803122301.17356.rjw@sisk.pl> <200803131614.33386.lenb@kernel.org> <20080314001819.GA32584@linux-os.sc.intel.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Message-ID: <20080315133242.GB4828@ucw.cz>
+References: <200803092346.17556.phillips@phunq.net> <200803122317.24849.phillips@phunq.net> <47D8C9E8.6020908@davidnewall.com> <200803122350.56811.phillips@phunq.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080314001819.GA32584@linux-os.sc.intel.com>
+In-Reply-To: <200803122350.56811.phillips@phunq.net>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed 2008-03-12 22:50:55, Daniel Phillips wrote:
+> On Wednesday 12 March 2008 23:30, David Newall wrote:
+> > Daniel Phillips wrote:
+> > >> Your idea seems predicated on throwing large amounts of RAM at the
+> > >> problem.  What I want to know is this: Is it really 25 times faster than
+> > >> ext3 with an equally huge buffer cache?
+> > >
+> > > Yes.
+> > 
+> > Well, that sounds convincing.  Not.  You know this how?
+> 
+> By measuring it.  time untar -xf linux-2.2.26.tar; time sync
 
-> @@ -421,7 +423,9 @@
->  		else
->  			acpi_safe_halt();
->  
-> -		local_irq_enable();
-> +		if (irqs_disabled())
-> +			local_irq_enable();
-> +
->  		return;
->  	}
->  
-> @@ -530,7 +534,9 @@
->  		 *       skew otherwise.
->  		 */
->  		sleep_ticks = 0xFFFFFFFF;
-> -		local_irq_enable();
-> +		if (irqs_disabled())
-> +			local_irq_enable();
-> +
->  		break;
->  
->  	case ACPI_STATE_C2:
+Thats cheating. Your ramback ignores sync.
 
-That's pretty ugly. Could the code be modified to have interrupt
-consistent at this point?
+Just time it against ext3 _without_ doing the sync. That's still more
+reliable than what you have.
 
+Heck, comment out sync and fsync from your kernel. You'll likely be 10
+times normal speed, and still more reliable than ramback.
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
