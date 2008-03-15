@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYCORWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYCORYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbYCORWe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 13:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYCORWZ
+	id S1754152AbYCORYY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 13:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYCORYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 13:22:25 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:48528 "EHLO scrub.xs4all.nl"
+	Sat, 15 Mar 2008 13:24:17 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:33683 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbYCORWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 13:22:24 -0400
-Date: Sat, 15 Mar 2008 18:14:05 +0100 (CET)
+	id S1751969AbYCORYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 13:24:16 -0400
+Date: Sat, 15 Mar 2008 18:23:16 +0100 (CET)
 From: Roman Zippel <zippel@linux-m68k.org>
 X-X-Sender: roman@scrub.home
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 7/8] Remove current_tick_length()
-In-Reply-To: <2c0942db0803150929q7cc628f8h18269f10daec8ab1@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0803151812020.1791@scrub.home>
-References: <20080314184001.695807682@linux-m68k.org> 
- <20080314195737.153531685@linux-m68k.org>  <1205548860.6122.55.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0803150429500.1791@scrub.home>  <1205552909.6122.63.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0803150511580.1791@scrub.home>
- <2c0942db0803150929q7cc628f8h18269f10daec8ab1@mail.gmail.com>
+To: =?UTF-8?Q?J=F6rg-Volker_Peetz?= <jvpeetz@web.de>
+cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/5] cleanups ntp.c (from Ingo)
+In-Reply-To: <47DB97BA.3080109@web.de>
+Message-ID: <Pine.LNX.4.64.0803151817480.1791@scrub.home>
+References: <1205553852.6122.76.camel@localhost.localdomain> 
+ <1205553938.6122.79.camel@localhost.localdomain>  <1205554018.6122.81.camel@localhost.localdomain>
+ <1205554210.6122.85.camel@localhost.localdomain> <47DB97BA.3080109@web.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811837-1823744743-1205601796=:1791"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463811837-1823744743-1205601796=:1791
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
 Hi,
 
-On Sat, 15 Mar 2008, Ray Lee wrote:
+On Sat, 15 Mar 2008, J=F6rg-Volker Peetz wrote:
 
-> Then make the original function an inline. With -O2 it should compile
-> to exactly the same thing.
+> Since you are at it, isn't "time_adj" a poor name since you also have a
+> "time_adjust"?
 
-This would also defeat John's intention of keeping the value static.
+These are two different (and independent) mechanism to adjust time. The=20
+names are a little confusing, but I'd be a little reluctant to rename=20
+time_adj, as the same name is used in the reference implementation.
 
 bye, Roman
+---1463811837-1823744743-1205601796=:1791--
