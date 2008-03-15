@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYCOQF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYCOQaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYCOQF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 12:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYCOQFH
+	id S1753942AbYCOQaQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 12:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYCOQaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 12:05:07 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:42733 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753823AbYCOQFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 12:05:04 -0400
-Date: Sat, 15 Mar 2008 17:05:02 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: jcliburn@gmail.com, csnook@redhat.com, atl1-devel@lists.sourceforge.net,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/7] drivers/net/atl1/atl1_main.c: remove unused variable
-Message-ID: <Pine.LNX.4.64.0803151704400.24178@ask.diku.dk>
+	Sat, 15 Mar 2008 12:30:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:42871 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751898AbYCOQaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 12:30:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=tsEsPuKuJOe8/ijImph9wLEw79zqth2bpEupMdq2Yb5IAFnlQ3dT+3lk9O+rGYzK+Y8iduT9Rys28/hg8B0np0n18F4y2eJ/hoStR7NBQKDY+vQSRvtfX9lCuqjjiv/HqQYW5mM/xdi9Azcl1oh5o7ohHNXA7vq3+1B/rJ3w2jI=
+Message-ID: <2c0942db0803150929q7cc628f8h18269f10daec8ab1@mail.gmail.com>
+Date: Sat, 15 Mar 2008 09:29:59 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: [PATCH 7/8] Remove current_tick_length()
+Cc: "john stultz" <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <Pine.LNX.4.64.0803150511580.1791@scrub.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080314184001.695807682@linux-m68k.org>
+	 <20080314195737.153531685@linux-m68k.org>
+	 <1205548860.6122.55.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0803150429500.1791@scrub.home>
+	 <1205552909.6122.63.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0803150511580.1791@scrub.home>
+X-Google-Sender-Auth: 6808137aa160ce95
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Fri, Mar 14, 2008 at 9:18 PM, Roman Zippel <zippel@linux-m68k.org> wrote:
+>  > > > Is there any additional rational for this change?
+>  > >
+>  > > Useless bloat?
+>  >
+>  > I agree its a trade off. But do you have performance numbers to make the
+>  > maintainability trade off worth it? (I admit, it is used in the
+>  > timer_interrupt, so it may very well be worth it, but we might want to
+>  > check first).
+>
+>  It depends on the architecture, but it's effects regularly executed code
+>  and every byte counts.
 
-The variable update_rx is initialized but never used otherwise.
-
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@@
-type T;
-identifier i;
-constant C;
-@@
-
-(
-extern T i;
-|
-- T i;
-  <+... when != i
-- i = C;
-  ...+>
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
- drivers/net/atl1/atl1_main.c |    3 ---
- 1 file changed, 3 deletions(-)
-
-diff -u -p a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
---- a/drivers/net/atl1/atl1_main.c	2008-03-12 14:13:13.000000000 +0100
-+++ b/drivers/net/atl1/atl1_main.c	2008-03-15 16:18:08.000000000 +0100
-@@ -1765,15 +1765,12 @@ static irqreturn_t atl1_intr(int irq, vo
- {
- 	struct atl1_adapter *adapter = netdev_priv(data);
- 	u32 status;
--	u8 update_rx;
- 	int max_ints = 10;
- 
- 	status = adapter->cmb.cmb->int_stats;
- 	if (!status)
- 		return IRQ_NONE;
- 
--	update_rx = 0;
--
- 	do {
- 		/* clear CMB interrupt status at once */
- 		adapter->cmb.cmb->int_stats = 0;
+Then make the original function an inline. With -O2 it should compile
+to exactly the same thing.
