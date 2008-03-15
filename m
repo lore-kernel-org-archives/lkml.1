@@ -1,92 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYCORdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYCORfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYCORdH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 13:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYCORck
+	id S1754328AbYCORfj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 13:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYCORf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 13:32:40 -0400
-Received: from theia.rz.uni-saarland.de ([134.96.7.31]:13090 "EHLO
-	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbYCORcj (ORCPT
+	Sat, 15 Mar 2008 13:35:29 -0400
+Received: from outbound-mail-29.bluehost.com ([69.89.17.211]:34815 "HELO
+	outbound-mail-29.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751990AbYCORf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 13:32:39 -0400
-Date: Sat, 15 Mar 2008 18:30:57 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm
-Subject: [1/3] Introduce a generic __fls implementation
-Message-ID: <20080315173056.GA21659@mailshack.com>
-References: <20080315172913.GA21648@mailshack.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 15 Mar 2008 13:35:29 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Justin Madru <jdm64@gawab.com>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+Date: Sat, 15 Mar 2008 10:35:23 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Bryce Harrington <bryce@bryceharrington.org>
+References: <47D828BB.2000702@gawab.com> <200803141029.38124.jbarnes@virtuousgeek.org> <47DB46F1.80106@gawab.com>
+In-Reply-To: <47DB46F1.80106@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080315172913.GA21648@mailshack.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Sat, 15 Mar 2008 18:31:48 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.31; host: AntiVir1)
+Message-Id: <200803151035.23808.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a generic __fls implementation in the same spirit as
-the generic __ffs one. It finds the last (most significant)
-set bit in the given long value.
+[Adding Bryce to cc list, he may have a copy of intel_reg_dumper already built 
+for Ubuntu.  Bryce, please see below for a few more questions, thanks.]
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- include/asm-generic/bitops/__fls.h |   43 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 43 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-generic/bitops/__fls.h
+On Friday, March 14, 2008 8:48 pm Justin Madru wrote:
+> Jesse Barnes wrote:
+> > It would be interesting if you could get register dumps at a couple of
+> > different points, using the intel_reg_dumper tool in
+> > git://git.freedesktop.org/git/xorg/driver/xf86-video-intel (in
+> > src/reg_dumper).
+>
+> I couldn't get it to compile. What am I suppose to do? I ran autogen.sh
+> in the top level dir and it gave the error message:
+>
+> ./configure: line 20486: syntax error near unexpected token `XINERMA,'
+> ./configure: line 20486: `XORG_DRIVER_CHECK_EXT(XINERMA, xineramaproto)'
 
-diff --git a/include/asm-generic/bitops/__fls.h b/include/asm-generic/bitops/__fls.h
-new file mode 100644
-index 0000000..be24465
---- /dev/null
-+++ b/include/asm-generic/bitops/__fls.h
-@@ -0,0 +1,43 @@
-+#ifndef _ASM_GENERIC_BITOPS___FLS_H_
-+#define _ASM_GENERIC_BITOPS___FLS_H_
-+
-+#include <asm/types.h>
-+
-+/**
-+ * __fls - find last (most-significant) set bit in a long word
-+ * @word: the word to search
-+ *
-+ * Undefined if no set bit exists, so code should check against 0 first.
-+ */
-+static inline unsigned long __fls(unsigned long word)
-+{
-+	int num = BITS_PER_LONG - 1;
-+
-+#if BITS_PER_LONG == 64
-+	if (!(word & (~0ul << 32))) {
-+		num -= 32;
-+		word <<= 32;
-+	}
-+#endif
-+	if (!(word & (~0ul << (BITS_PER_LONG-16)))) {
-+		num -= 16;
-+		word <<= 16;
-+	}
-+	if (!(word & (~0ul << (BITS_PER_LONG-8)))) {
-+		num -= 8;
-+		word <<= 8;
-+	}
-+	if (!(word & (~0ul << (BITS_PER_LONG-4)))) {
-+		num -= 4;
-+		word <<= 4;
-+	}
-+	if (!(word & (~0ul << (BITS_PER_LONG-2)))) {
-+		num -= 2;
-+		word <<= 2;
-+	}
-+	if (!(word & (~0ul << (BITS_PER_LONG-1))))
-+		num -= 1;
-+	return num;
-+}
-+
-+#endif /* _ASM_GENERIC_BITOPS___FLS_H_ */
+This usually means you don't have the xorg autoconf macros installed.  Your 
+distro probably has some sort of xserver-devel package that may include it.
+
+> Then I also tried to run make and make -f Makefile.in (in the reg_dumper
+> dir and top level dir), and it said:
+>
+> Makefile.in:15 *** missing separator. Stop.
+>
+> That part of Makefile.in contains:
+> @SET_MAKE@
+> VPATH = @srcdir@
+>
+> What am I doing wrong? You'll have to forgive me, I'm not that
+> experienced with the cmd line and compiling - I'm trying though.
+
+No problem, building X still isn't quite as easy as it should be, but it's 
+only slightly more complicated than the typical './configure;make;make 
+install' due to the dependencies between packages.  You can check out the X 
+wiki (wiki.x.org), there are some hints on building things there.
+
+> > You'll probably have to modify your boot scripts though.
+> > It would be good to get them:
+> >   - at startup time before the splash screen
+> >   - sometime while the splash screen is running
+> >   - after X starts and you see the blank screen
+>
+> How exactly would I do that? I would think I could just add command at
+> the end of 3 files in /etc/init.d. Would that work? It should run my
+> command when it starts that script and gets to the end. Or do boot
+> scripts exit in the middle of the script, which would prevent my command
+> from running?
+
+Hm, I haven't looked at the Ubuntu scripts before.  I know they're using 
+upstart, but if they haven't divered too much from the old style init, you 
+may be able to modify rc.sysinit to get the boot time register dump.
+
+For the splash screen dump, you'd just have to add the intel_reg_dumper 
+command to one of the other init scripts that runs while the splash screen is 
+up (maybe the HAL daemon script or something).
+
+Once your screen is blank, it's probably easiest to ssh into your machine and 
+capture the dump that way.
+
+Hope that helps, maybe Bryce can give you some more hints on Ubuntu specifics.
+
+> > What's different between your Uni. environment and your home environment?
+>
+> I'm not sure. I just have a home wireless router (Hawking HWR54G). I
+> have no idea what the Uni. router is.
+> On both, I connect to an unencrypted network, but at the Uni. it
+> redirects to a login page where I have to log on before I can actually
+> use the Internet. Is there anyway I could get more information about the
+> Uni. router?
+
+Probably, though the messages in your log from your Univ. connection may be 
+enough for the networking guys to figure things out.  It's probably best to 
+track the wireless thing as a separate issue though, I'd recommend mailing 
+linux-wireless@vger.kernel.org with the problem.
+
+Thanks,
+Jesse
+
 
