@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbYCOEFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbYCOEHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752514AbYCOEFx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 00:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYCOEFp
+	id S1753268AbYCOEHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 00:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYCOEHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 00:05:45 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:58358 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbYCOEFo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 00:05:44 -0400
-Subject: [PATCH 1/5] split clocksource adjustment from clockosurce mult
+	Sat, 15 Mar 2008 00:07:04 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:45571 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750730AbYCOEHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 00:07:03 -0400
+Subject: [PATCH 2/5] introduce CLOCK_MONOTONIC_RAW
 From: john stultz <johnstul@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1205553852.6122.76.camel@localhost.localdomain>
+In-Reply-To: <1205553938.6122.79.camel@localhost.localdomain>
 References: <1205553852.6122.76.camel@localhost.localdomain>
+	 <1205553938.6122.79.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 14 Mar 2008 21:05:38 -0700
-Message-Id: <1205553938.6122.79.camel@localhost.localdomain>
+Date: Fri, 14 Mar 2008 21:06:57 -0700
+Message-Id: <1205554018.6122.81.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -26,133 +26,207 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The clocksource frequency is represented by
-clocksource->mult/2^(clocksource->shift). Currently, when NTP makes
-adjustments to the clock frequency, they are made directly to the mult
-value.
+In talking with Josip Loncaric, and his work on clock synchronization
+(see btime.sf.net), he mentioned that for really close synchronization,
+it is useful to have access to "hardware time", that is a notion of time
+that is not in any way adjusted by the clock slewing done to keep close
+time sync.
 
-This has the drawback that once changed, we cannot know what the orignal
-mult value was, or how much adjustment has been applied.
+Part of the issue is if we are using the kernel's ntp adjusted
+representation of time in order to measure how we should correct time,
+we can run into what Paul McKenney aptly described as "Painting a road
+using the lines we're painting as the guide". 
 
-This property causes problems in calculating proper ntp intervals when
-switching back and forth between clocksources. 
+I had been thinking of a similar problem, and was trying to come up with
+a way to give users access to a purely hardware based time
+representation that avoided users having to know the underlying
+frequency and mask values needed to deal with the wide variety of
+possible underlying hardware counters.
 
-This patch separates the current mult value into a mult and mult_adj
-pair. The mult value stays constant, while the ntp clocksource
-adjustments are done only to the mult_adj value.
+My solution is to introduce CLOCK_MONOTONIC_RAW. This exposes a
+nanosecond based time value, that increments starting at bootup and has
+no frequency adjustments made to it what so ever.
 
-This allows for correct ntp interval calculation and additionally lays
-the groundwork for a new notion of time, what I'm calling the
-monotonic-raw time, which is introduced in a following patch.
+The time is accessed from userspace via the posix_clock_gettime()
+syscall, passing CLOCK_MONOTONIC_RAW as the clock_id.
 
-Thoughts or comments would be appreciated.
+This patch very much depends on the mult/mult_adj split patch in this
+series.
+
+Thoughts comments would be greatly appreciated!
 
 thanks
 -john
 
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
-index 17fda52..37851e1 100644
---- a/arch/ia64/kernel/time.c
-+++ b/arch/ia64/kernel/time.c
-@@ -357,7 +357,7 @@ void update_vsyscall(struct timespec *wall, struct clocksource *c)
- 
-         /* copy fsyscall clock data */
-         fsyscall_gtod_data.clk_mask = c->mask;
--        fsyscall_gtod_data.clk_mult = c->mult;
-+        fsyscall_gtod_data.clk_mult = c->mult + c->mult_adj;
-         fsyscall_gtod_data.clk_shift = c->shift;
-         fsyscall_gtod_data.clk_fsys_mmio = c->fsys_mmio;
-         fsyscall_gtod_data.clk_cycle_last = c->cycle_last;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 3b26fbd..36aa8da 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -814,7 +814,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 
- 	/* XXX this assumes clock->shift == 22 */
- 	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
--	t2x = (u64) clock->mult * 4611686018ULL;
-+	t2x = (u64) (clock->mult + clock->mult_adj) * 4611686018ULL;
- 	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
- 	do_div(stamp_xsec, 1000000000);
- 	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 3f82427..14afd48 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -83,7 +83,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 	vsyscall_gtod_data.clock.vread = clock->vread;
- 	vsyscall_gtod_data.clock.cycle_last = clock->cycle_last;
- 	vsyscall_gtod_data.clock.mask = clock->mask;
--	vsyscall_gtod_data.clock.mult = clock->mult;
-+	vsyscall_gtod_data.clock.mult = clock->mult + clock->mult_adj;
- 	vsyscall_gtod_data.clock.shift = clock->shift;
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
 diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 85778a4..e917a30 100644
+index e917a30..1460803 100644
 --- a/include/linux/clocksource.h
 +++ b/include/linux/clocksource.h
-@@ -45,7 +45,8 @@ struct clocksource;
-  * @read:		returns a cycle value
-  * @mask:		bitmask for two's complement
-  *			subtraction of non 64 bit counters
-- * @mult:		cycle to nanosecond multiplier
-+ * @mult:		cycle to nanosecond multiplier (unadjusted)
-+ * @mult_adj:		NTP adjustment factor added to the multiplier
-  * @shift:		cycle to nanosecond divisor (power of two)
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-@@ -63,6 +64,7 @@ struct clocksource {
- 	cycle_t (*read)(void);
- 	cycle_t mask;
- 	u32 mult;
-+	s32 mult_adj;
- 	u32 shift;
- 	unsigned long flags;
- 	cycle_t (*vread)(void);
-@@ -179,7 +181,7 @@ static inline cycle_t clocksource_read(struct clocksource *cs)
- static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
- {
- 	u64 ret = (u64)cycles;
--	ret = (ret * cs->mult) >> cs->shift;
-+	ret = (ret * (cs->mult + cs->mult_adj)) >> cs->shift;
- 	return ret;
+@@ -79,6 +79,7 @@ struct clocksource {
+ 	/* timekeeping specific data, ignore */
+ 	cycle_t cycle_interval;
+ 	u64	xtime_interval;
++	u64	raw_interval;
+ 	/*
+ 	 * Second part is written at each timer interrupt
+ 	 * Keep it in a different cache line to dirty no
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 2091a19..9548eb4 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -116,6 +116,7 @@ extern int do_setitimer(int which, struct itimerval *value,
+ extern unsigned int alarm_setitimer(unsigned int seconds);
+ extern int do_getitimer(int which, struct itimerval *value);
+ extern void getnstimeofday(struct timespec *tv);
++extern void getrawmonotonic(struct timespec *ts);
+ extern void getboottime(struct timespec *ts);
+ extern void monotonic_to_bootbased(struct timespec *ts);
+ 
+@@ -214,6 +215,7 @@ struct itimerval {
+ #define CLOCK_MONOTONIC			1
+ #define CLOCK_PROCESS_CPUTIME_ID	2
+ #define CLOCK_THREAD_CPUTIME_ID		3
++#define CLOCK_MONOTONIC_RAW		4
+ 
+ /*
+  * The IDs of various hardware clocks:
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 022c9c3..91a6c19 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -224,6 +224,15 @@ static int posix_ktime_get_ts(clockid_t which_clock, struct timespec *tp)
  }
  
-@@ -199,7 +201,7 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
- {
- 	u64 tmp;
+ /*
++ * Get monotonic time for posix timers
++ */
++static int posix_get_monotonic_raw(clockid_t which_clock, struct timespec *tp)
++{
++	getrawmonotonic(tp);
++	return 0;
++}
++
++/*
+  * Initialize everything, well, just everything in Posix clocks/timers ;)
+  */
+ static __init int init_posix_timers(void)
+@@ -236,9 +245,15 @@ static __init int init_posix_timers(void)
+ 		.clock_get = posix_ktime_get_ts,
+ 		.clock_set = do_posix_clock_nosettime,
+ 	};
++	struct k_clock clock_monotonic_raw = {
++		.clock_getres = hrtimer_get_res,
++		.clock_get = posix_get_monotonic_raw,
++		.clock_set = do_posix_clock_nosettime,
++	};
  
--	/* XXX - All of this could use a whole lot of optimization */
-+	/* Do the ns -> cycle conversion first, ignoring mult_adj */
- 	tmp = length_nsec;
- 	tmp <<= c->shift;
- 	tmp += c->mult/2;
-@@ -209,7 +211,8 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
- 	if (c->cycle_interval == 0)
- 		c->cycle_interval = 1;
+ 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+ 	register_posix_clock(CLOCK_MONOTONIC, &clock_monotonic);
++	register_posix_clock(CLOCK_MONOTONIC_RAW, &clock_monotonic_raw);
  
--	c->xtime_interval = (u64)c->cycle_interval * c->mult;
-+	/* Go back from cycles -> shifted ns, this time include mult_adj */
-+	c->xtime_interval = (u64)c->cycle_interval * (c->mult + c->mult_adj);
- }
- 
- 
+ 	posix_timers_cache = kmem_cache_create("posix_timers_cache",
+ 					sizeof (struct k_itimer), 0, SLAB_PANIC,
 diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 1af9fb0..5b11b0f 100644
+index cb17979..fc70529 100644
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -426,7 +426,7 @@ static void clocksource_adjust(s64 offset)
- 	} else
- 		return;
+@@ -44,6 +44,7 @@ __cacheline_aligned_in_smp DEFINE_SEQLOCK(xtime_lock);
+  */
+ struct timespec xtime __attribute__ ((aligned (16)));
+ struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
++struct timespec monotonic_raw;
+ static unsigned long total_sleep_time;		/* seconds */
  
--	clock->mult += adj;
-+	clock->mult_adj += adj;
- 	clock->xtime_interval += interval;
- 	clock->xtime_nsec -= offset;
- 	clock->error -= (interval - offset) <<
+ static struct timespec xtime_cache __attribute__ ((aligned (16)));
+@@ -106,6 +107,39 @@ void getnstimeofday(struct timespec *ts)
+ EXPORT_SYMBOL(getnstimeofday);
+ 
+ /**
++ * getrawmonotonic - Returns the raw monotonic time in a timespec
++ * @ts:		pointer to the timespec to be set
++ *
++ * Returns the raw monotonic time (completely un-modified by ntp)
++ */
++void getrawmonotonic(struct timespec *ts)
++{
++	unsigned long seq;
++	s64 nsecs;
++	cycle_t cycle_now, cycle_delta;
++
++	do {
++		seq = read_seqbegin(&xtime_lock);
++
++		/* read clocksource: */
++		cycle_now = clocksource_read(clock);
++
++		/* calculate the delta since the last update_wall_time: */
++		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
++
++		/* convert to nanoseconds: */
++		nsecs = ((s64)cycle_delta * clock->mult) >> clock->shift;
++
++		*ts = monotonic_raw;
++		
++	} while (read_seqretry(&xtime_lock, seq));
++
++	timespec_add_ns(ts, nsecs);
++}
++
++EXPORT_SYMBOL(getrawmonotonic);
++
++/**
+  * do_gettimeofday - Returns the time of day in a timeval
+  * @tv:		pointer to the timeval to be set
+  *
+@@ -251,6 +285,8 @@ void __init timekeeping_init(void)
+ 	xtime.tv_nsec = 0;
+ 	set_normalized_timespec(&wall_to_monotonic,
+ 		-xtime.tv_sec, -xtime.tv_nsec);
++	set_normalized_timespec(&monotonic_raw, 0,0);
++	
+ 	update_xtime_cache(0);
+ 	total_sleep_time = 0;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+@@ -439,6 +475,7 @@ static void clocksource_adjust(s64 offset)
+ void update_wall_time(void)
+ {
+ 	cycle_t offset;
++	static u64 raw_snsec; /* shifted raw nanosecnds */
+ 
+ 	/* Make sure we're fully resumed: */
+ 	if (unlikely(timekeeping_suspended))
+@@ -457,6 +494,7 @@ void update_wall_time(void)
+ 	while (offset >= clock->cycle_interval) {
+ 		/* accumulate one interval */
+ 		clock->xtime_nsec += clock->xtime_interval;
++		raw_snsec += clock->raw_interval;
+ 		clock->cycle_last += clock->cycle_interval;
+ 		offset -= clock->cycle_interval;
+ 
+@@ -466,6 +504,11 @@ void update_wall_time(void)
+ 			second_overflow();
+ 		}
+ 
++		if (raw_snsec >= (u64)NSEC_PER_SEC << clock->shift) {
++			raw_snsec -= (u64)NSEC_PER_SEC << clock->shift;
++			monotonic_raw.tv_sec++;
++		}
++	
+ 		/* accumulate error between NTP and clock interval */
+ 		clock->error += current_tick_length();
+ 		clock->error -= clock->xtime_interval << (TICK_LENGTH_SHIFT - clock->shift);
+@@ -478,6 +521,10 @@ void update_wall_time(void)
+ 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+ 
++	/* store full nanoseconds into raw_monotonic */
++	monotonic_raw.tv_nsec = (s64)raw_snsec >> clock->shift;
++
++
+ 	update_xtime_cache(cyc2ns(clock, offset));
+ 
+ 	/* check to see if there is a new clocksource to use */
 
 
