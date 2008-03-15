@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYCOPFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYCOPsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYCOPFW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 11:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYCOPFK
+	id S1753012AbYCOPsB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 11:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYCOPrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 11:05:10 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:58316 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751872AbYCOPFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 11:05:09 -0400
-Date: Sat, 15 Mar 2008 16:04:28 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Simon Huggins <huggie@earth.li>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: Scheduler broken? sdhci issues with scheduling
-Message-ID: <20080315160428.6d25b4e0@mjolnir.drzeus.cx>
-In-Reply-To: <20080313211749.GN28693@paranoidfreak.co.uk>
-References: <20080229115256.GG24533@paranoidfreak.co.uk>
-	<20080302104031.GB3861@ucw.cz>
-	<20080303204300.69cbe392@mjolnir.drzeus.cx>
-	<20080303203808.GH13869@elf.ucw.cz>
-	<20080303220530.49201544@mjolnir.drzeus.cx>
-	<20080313211749.GN28693@paranoidfreak.co.uk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Sat, 15 Mar 2008 11:47:52 -0400
+Received: from web52510.mail.re2.yahoo.com ([206.190.48.193]:39897 "HELO
+	web52510.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751831AbYCOPrw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 11:47:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=2YM5UBxWbulYI8uLz7YnEuEiN9u0Okt321Fl2+8ANf1DbcyaHn95RCi4dZkOUzEi/31qnObAI6jJD9QC8G46LQ/Vqi7qX+N/8t9RaTP2+viaQE1YkFedufdBL7D7zebfEMywT4pdbFlVqxFtEAekiPkLSSrKWCLLGZu+T+CGF9w=;
+X-YMail-OSG: PQDQtrwVM1l14GFDABHmBEENojVjHGPTgFiufEKhdyFj4Jp4tRIK2P3mhZ41gdp1zzz7y0BX6AsjasfrifhvjHrF1zXj7zVuUt36lbcWAZc8_gUyLMU-
+Date: Sat, 15 Mar 2008 08:47:47 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: TCP stack optimization for high number of connections [OT]
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <873209.1586.qm@web52510.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Mar 2008 21:17:49 +0000
-Simon Huggins <huggie@earth.li> wrote:
+I'm running a front end spam filtering service and I
+get a lot of incoming connections but not a lot of
+volume of traffic. I'm experiencing some high loads
+and I think it might be related to the volume of
+connections it's processing. I often will be connected
+to 2500 email servers at once and a lot more that are
+trying to connect and being denied.
 
-> 
-> I'm happy to test bits.  What do I need to do to switch time sources for
-> instance?
-> 
+My question - are there any optimizations I can do to
+make the TCP faster for high number of short lived
+connections?
 
-I'm no expert, but you have the kernel parameter "clocksource" documented in Documentation/kernel-parameters. Also check the directory /sys/devices/system/clocksource for assorted runtime changes.
+Also - how much do iptable entries slow things down
+and is there any optimizations for that?
 
-Rgds
--- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
+
+
+      ____________________________________________________________________________________
+Never miss a thing.  Make Yahoo your home page. 
+http://www.yahoo.com/r/hs
