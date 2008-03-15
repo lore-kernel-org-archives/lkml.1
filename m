@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYCOUUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYCOUWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbYCOUUf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 16:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCOUU0
+	id S1754201AbYCOUWR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 16:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCOUWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 16:20:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752566AbYCOUUZ (ORCPT
+	Sat, 15 Mar 2008 16:22:07 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57168 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752575AbYCOUWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 16:20:25 -0400
-Date: Sat, 15 Mar 2008 13:19:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: ?ric Piel <Eric.Piel@tremplin-utc.net>
-cc: Tilman Schmidt <tilman@imap.cc>, Dave Hansen <haveblue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Arjan van de Ven <arjanv@redhat.com>
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-In-Reply-To: <47DC26BC.7060502@tremplin-utc.net>
-Message-ID: <alpine.LFD.1.00.0803151315250.3020@woody.linux-foundation.org>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>  <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>  <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net>  <1205525184.12763.32.camel@nimitz.home.sr71.net>
-  <47DAE55C.3080506@tremplin-utc.net>  <1205530551.8167.20.camel@nimitz.home.sr71.net>  <47DB013D.3060102@tremplin-utc.net> <1205537395.8167.31.camel@nimitz.home.sr71.net> <47DBC578.7050101@imap.cc> <alpine.LFD.1.00.0803151212180.3020@woody.linux-foundation.org>
- <47DC26BC.7060502@tremplin-utc.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sat, 15 Mar 2008 16:22:06 -0400
+Message-ID: <47DC2F08.9080004@zytor.com>
+Date: Sat, 15 Mar 2008 21:18:16 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alexander van Heukelum <heukelum@mailshack.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: K8, EFFICEON and CORE2 support the cmovxx instructions.
+References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org> <1205523826.7441.1242464129@webmail.messagingengine.com> <20080314195520.GV2522@one.firstfloor.org> <1205530409.27413.1242484373@webmail.messagingengine.com> <20080315191946.GA21817@mailshack.com>
+In-Reply-To: <20080315191946.GA21817@mailshack.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexander van Heukelum wrote:
+> K8, EFFICEON and CORE2 support the cmovxx instructions.
+> 
+> Instead of listing the cpu's that have support for the
+> cmovxx instructions, list the cpu's that don't.
+> 
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> ---
+> 
+> A bit of playing resulted in:
+> 
+> CPUS="M386 M486 M586 M586TSC M586MMX M686 MPENTIUMII MPENTIUMIII"
+> CPUS=$CPUS" MPENTIUMM MPENTIUM4 MK6 MK7 MK8 MCRUSOE MEFFICEON"
+> CPUS=$CPUS" MWINCHIPC6 MWINCHIP2 MWINCHIP3D MGEODEGX1 MGEODE_LX"
+> CPUS=$CPUS" MCYRIXIII MVIAC3_2 MVIAC7 MPSC MCORE2"
+> 
+> for cpu in $CPUS
+> do
+>         echo "CONFIG_${cpu}=y" > testconfig
+>         make ARCH=i386 allnoconfig KCONFIG_ALLCONFIG=testconfig > /dev/null
+>         echo ${cpu} >> result
+>         grep X86_CMOV .config >> result
+>         echo >> result
+> done
+> 
+> I'm quite sure that K8, EFFICEON and CORE2 support HAVE_CMOV, but
+> they did not set X86_CMOV.
+> 
 
+Crusoe has CMOV as well.
 
-On Sat, 15 Mar 2008, ?ric Piel wrote:
->
-> It's a pity, I had just nearly finished a new approach. Instead of
-> relying on populate_rootfs() and the filesystem infrastructure, the new
-> approach directly finds the file in the initramfs.
-
-So that avoids the VFS layer issues, but it's still strictly much worse 
-than just having a run-time loading.
-
-What's the problem with just loading a new DSDT later? Potentially as in 
-*much* later: including when user-space is all up-and-running? 
-
-For things like DVD install images, you'd quite possibly want to have a 
-few known-workaround DSDT images with the installer, and just say "ok, we 
-want to fix up this ACPI crap in order to get working suspend/resume" kind 
-of thing.
-
-So what's the reason for pushing for this insanely-early workaround in the 
-first place, instead of letting user-space do something like
-
-	cat my-dsdt-image > /proc/sys/acpi/DSDT
-
-or whatever at runtime?
-
-		Linus
+	-hpa
