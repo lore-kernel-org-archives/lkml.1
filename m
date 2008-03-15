@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYCOVSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYCOVZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbYCOVSU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 17:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYCOVSM
+	id S1753823AbYCOVZB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 17:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYCOVYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 17:18:12 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35892 "EHLO
+	Sat, 15 Mar 2008 17:24:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43603 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752632AbYCOVSL (ORCPT
+	with ESMTP id S1752069AbYCOVYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 17:18:11 -0400
-Date: Sat, 15 Mar 2008 20:56:17 +0000
+	Sat, 15 Mar 2008 17:24:52 -0400
+Date: Sat, 15 Mar 2008 21:03:08 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Daniel Phillips <phillips@phunq.net>,
-       David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080315205617.58aa8965@the-village.bc.nu>
-In-Reply-To: <20080315205950.GA13012@1wt.eu>
+Message-ID: <20080315210308.72824eb3@the-village.bc.nu>
+In-Reply-To: <200803151417.13899.phillips@phunq.net>
 References: <200803092346.17556.phillips@phunq.net>
-	<200803122314.18244.phillips@phunq.net>
-	<20080313132211.6af855b3@the-village.bc.nu>
 	<200803131214.40321.phillips@phunq.net>
 	<20080315205950.GA13012@1wt.eu>
+	<200803151417.13899.phillips@phunq.net>
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -34,13 +33,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> RAID controllers do not have half a terabyte of RAM. Also, you are always
-> invited to choose between speed (write back) and reliability (write through).
+> > RAID controllers do not have half a terabyte of RAM.
+> 
+> And?  Either you have battery backed ram with critical data in it or
+> you do not.  Exactly how much makes little difference to the question.
 
-The write back ones are also battery backed properly, and will switched
-to write through (flushing out the cache) on the first sniff of a low
-battery signal.
+It makes a lot of difference, and in addition raid controllers (good
+ones) respect barrier ordering in their RAM cache so they'll take tags or
+similar interfaces and honour them.
 
-The decent ones (the kind used in serious business) also let you swap the
-battery backed RAM module to another card in the event of a failure of a
-card so you can complete recovery.
+> That is why I keep recommending that a ramback setup be replicated or
+> mirrored, which people in this thread keep glossing over.  When
+> replicated or mirrored, you still get the microsecond-level transaction
+> times, and you get the safety too.
+
+Either you keep a mirror in sync and get normal data rates or you keep
+the mirror out of sync and then you need to sort your writeback process
+out to preserve ordering.
+
+If you want ramback to be taken seriously then that is the interesting
+problem to solve and clearly has multiple solutions if you would start to
+take an objective look at your work.
+
