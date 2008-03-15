@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbYCOVx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbYCOVyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbYCOVx4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 17:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYCOVxp
+	id S1753339AbYCOVyV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 17:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYCOVyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 17:53:45 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2892 "HELO
+	Sat, 15 Mar 2008 17:54:06 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2905 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753438AbYCOVxn (ORCPT
+	with SMTP id S1753722AbYCOVyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 17:53:43 -0400
-Date: Sat, 15 Mar 2008 17:53:42 -0400 (EDT)
+	Sat, 15 Mar 2008 17:54:03 -0400
+Date: Sat, 15 Mar 2008 17:54:02 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
 To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
@@ -20,21 +20,19 @@ cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
        Kernel development list <linux-kernel@vger.kernel.org>,
        <apw@shadowen.org>, Len Brown <lenb@kernel.org>,
        Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 2/3] PM: make wakeup flags available whenever CONFIG_PM is
- set (ver 2)
+Subject: [PATCH 3/3] PM: convert wakeup flag accessors to inline functions
 In-Reply-To: <200803142337.12605.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803151715300.28007-100000@netrider.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0803151717210.28007-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The various wakeup flags and their accessor macros in struct
-dev_pm_info should be available whenever CONFIG_PM is enabled, not
-just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
-be configurable for runtime power management.  This patch (as1056b)
-fixes the oversight.
+This patch (as1058) improves the wakeup macros in include/linux/pm.h.
+All but the trivial ones are converted to inline routines, which
+requires moving them to a separate header file since they depend on
+the definition of struct device.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
@@ -44,104 +42,169 @@ Index: usb-2.6/include/linux/pm.h
 ===================================================================
 --- usb-2.6.orig/include/linux/pm.h
 +++ usb-2.6/include/linux/pm.h
-@@ -183,8 +183,8 @@ typedef struct pm_message {
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned		can_wakeup:1;
--#ifdef	CONFIG_PM_SLEEP
- 	unsigned		should_wakeup:1;
-+#ifdef	CONFIG_PM_SLEEP
- 	struct list_head	entry;
- #endif
- };
-@@ -197,11 +197,6 @@ extern void device_resume(void);
- extern int device_suspend(pm_message_t state);
- extern int device_prepare_suspend(pm_message_t state);
+@@ -211,54 +211,10 @@ static inline int device_suspend(pm_mess
+ 	return 0;
+ }
  
+-#define suspend_report_result(fn, ret) do { } while (0)
++#define suspend_report_result(fn, ret)		do {} while (0)
+ 
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+-#ifdef CONFIG_PM
+-
 -#define device_set_wakeup_enable(dev,val) \
 -	((dev)->power.should_wakeup = !!(val))
 -#define device_may_wakeup(dev) \
 -	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
 -
- extern void __suspend_report_result(const char *function, void *fn, int ret);
+-/*
+- * Platform hook to activate device wakeup capability, if that's not already
+- * handled by enable_irq_wake() etc.
+- * Returns zero on success, else negative errno
+- */
+-extern int (*platform_enable_wakeup)(struct device *dev, int is_on);
+-
+-static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+-{
+-	if (platform_enable_wakeup)
+-		return (*platform_enable_wakeup)(dev, is_on);
+-	return 0;
+-}
+-
+-#else /* !CONFIG_PM */
+-
+-#define device_set_wakeup_enable(dev,val)	do{}while(0)
+-#define device_may_wakeup(dev)			(0)
+-
+-static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+-{
+-	return 0;
+-}
+-
+-#endif /* !CONFIG_PM */
+-
+-/* changes to device_may_wakeup take effect on the next pm state change.
+- * by default, devices should wakeup if they can.
+- */
+-#define device_can_wakeup(dev) \
+-	((dev)->power.can_wakeup)
+-#define device_init_wakeup(dev,val) \
+-	do { \
+-		device_can_wakeup(dev) = !!(val); \
+-		device_set_wakeup_enable(dev,val); \
+-	} while(0)
+-
+ /*
+  * Global Power Management flags
+  * Used to keep APM and ACPI from both being active
+Index: usb-2.6/include/linux/device.h
+===================================================================
+--- usb-2.6.orig/include/linux/device.h
++++ usb-2.6/include/linux/device.h
+@@ -475,6 +475,9 @@ struct device {
+ 	void	(*release)(struct device *dev);
+ };
  
- #define suspend_report_result(fn, ret)					\
-@@ -209,6 +204,24 @@ extern void __suspend_report_result(cons
- 		__suspend_report_result(__FUNCTION__, fn, ret);		\
- 	} while (0)
- 
-+#else /* !CONFIG_PM_SLEEP */
++/* Get the wakeup routines, which depend on struct device */
++#include <linux/pm_wakeup.h>
 +
-+static inline int device_suspend(pm_message_t state)
+ #ifdef CONFIG_NUMA
+ static inline int dev_to_node(struct device *dev)
+ {
+Index: usb-2.6/include/linux/pm_wakeup.h
+===================================================================
+--- /dev/null
++++ usb-2.6/include/linux/pm_wakeup.h
+@@ -0,0 +1,90 @@
++/*
++ *  pm_wakeup.h - Power management wakeup interface
++ *
++ *  Copyright (C) 2008 Alan Stern
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#ifndef _LINUX_PM_WAKEUP_H
++#define _LINUX_PM_WAKEUP_H
++
++#ifndef _DEVICE_H_
++# error "please don't include this file directly"
++#endif
++
++#ifdef CONFIG_PM
++
++/* changes to device_may_wakeup take effect on the next pm state change.
++ * by default, devices should wakeup if they can.
++ */
++static inline void device_init_wakeup(struct device *dev, int val)
++{
++	dev->power.can_wakeup = dev->power.should_wakeup = !!val;
++}
++
++static inline int device_can_wakeup(struct device *dev)
++{
++	return dev->power.can_wakeup;
++}
++
++static inline void device_set_wakeup_enable(struct device *dev, int val)
++{
++	dev->power.should_wakeup = !!val;
++}
++
++static inline int device_may_wakeup(struct device *dev)
++{
++	return dev->power.can_wakeup & dev->power.should_wakeup;
++}
++
++/*
++ * Platform hook to activate device wakeup capability, if that's not already
++ * handled by enable_irq_wake() etc.
++ * Returns zero on success, else negative errno
++ */
++extern int (*platform_enable_wakeup)(struct device *dev, int is_on);
++
++static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
++{
++	if (platform_enable_wakeup)
++		return (*platform_enable_wakeup)(dev, is_on);
++	return 0;
++}
++
++#else /* !CONFIG_PM */
++
++/* For some reason the next two routines work even without CONFIG_PM */
++static inline void device_init_wakeup(struct device *dev, int val)
++{
++	dev->power.can_wakeup = !!val;
++}
++
++static inline int device_can_wakeup(struct device *dev)
++{
++	return dev->power.can_wakeup;
++}
++
++#define device_set_wakeup_enable(dev, val)	do {} while (0)
++#define device_may_wakeup(dev)			0
++
++static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
 +{
 +	return 0;
 +}
 +
-+#define suspend_report_result(fn, ret) do { } while (0)
-+
-+#endif /* !CONFIG_PM_SLEEP */
-+
-+#ifdef CONFIG_PM
-+
-+#define device_set_wakeup_enable(dev,val) \
-+	((dev)->power.should_wakeup = !!(val))
-+#define device_may_wakeup(dev) \
-+	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
-+
- /*
-  * Platform hook to activate device wakeup capability, if that's not already
-  * handled by enable_irq_wake() etc.
-@@ -223,24 +236,17 @@ static inline int call_platform_enable_w
- 	return 0;
- }
- 
--#else /* !CONFIG_PM_SLEEP */
--
--static inline int device_suspend(pm_message_t state)
--{
--	return 0;
--}
-+#else /* !CONFIG_PM */
- 
- #define device_set_wakeup_enable(dev,val)	do{}while(0)
- #define device_may_wakeup(dev)			(0)
- 
--#define suspend_report_result(fn, ret) do { } while (0)
--
- static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
- {
- 	return 0;
- }
- 
--#endif /* !CONFIG_PM_SLEEP */
 +#endif /* !CONFIG_PM */
- 
- /* changes to device_may_wakeup take effect on the next pm state change.
-  * by default, devices should wakeup if they can.
-Index: usb-2.6/drivers/base/power/main.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/main.c
-+++ usb-2.6/drivers/base/power/main.c
-@@ -56,8 +56,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
- 
- static DECLARE_RWSEM(pm_sleep_rwsem);
- 
--int (*platform_enable_wakeup)(struct device *dev, int is_on);
--
- /**
-  *	device_pm_add - add a device to the list of active devices
-  *	@dev:	Device to be added to the list
-Index: usb-2.6/drivers/base/power/sysfs.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/sysfs.c
-+++ usb-2.6/drivers/base/power/sysfs.c
-@@ -6,6 +6,8 @@
- #include <linux/string.h>
- #include "power.h"
- 
-+int (*platform_enable_wakeup)(struct device *dev, int is_on);
 +
- 
- /*
-  *	wakeup - Report/change current wakeup option for device
++#endif /* _LINUX_PM_WAKEUP_H */
 
