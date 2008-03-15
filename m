@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYCOUWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYCOUXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYCOUWR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 16:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCOUWH
+	id S1754566AbYCOUXT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 16:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYCOUXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 16:22:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57168 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbYCOUWG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 16:22:06 -0400
-Message-ID: <47DC2F08.9080004@zytor.com>
-Date: Sat, 15 Mar 2008 21:18:16 +0100
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 15 Mar 2008 16:23:11 -0400
+Received: from phunq.net ([64.81.85.152]:58595 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752710AbYCOUXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 16:23:10 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Sat, 15 Mar 2008 12:22:47 -0800
+User-Agent: KMail/1.9.5
+Cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803122350.56811.phillips@phunq.net> <20080315133242.GB4828@ucw.cz>
+In-Reply-To: <20080315133242.GB4828@ucw.cz>
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@mailshack.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: K8, EFFICEON and CORE2 support the cmovxx instructions.
-References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org> <1205523826.7441.1242464129@webmail.messagingengine.com> <20080314195520.GV2522@one.firstfloor.org> <1205530409.27413.1242484373@webmail.messagingengine.com> <20080315191946.GA21817@mailshack.com>
-In-Reply-To: <20080315191946.GA21817@mailshack.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803151322.48688.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
-> K8, EFFICEON and CORE2 support the cmovxx instructions.
+On Saturday 15 March 2008 06:32, Pavel Machek wrote:
+> On Wed 2008-03-12 22:50:55, Daniel Phillips wrote:
+> > On Wednesday 12 March 2008 23:30, David Newall wrote:
+> > > Daniel Phillips wrote:
+> > > >> Your idea seems predicated on throwing large amounts of RAM at the
+> > > >> problem.  What I want to know is this: Is it really 25 times faster than
+> > > >> ext3 with an equally huge buffer cache?
+> > > >
+> > > > Yes.
+> > > 
+> > > Well, that sounds convincing.  Not.  You know this how?
+> > 
+> > By measuring it.  time untar -xf linux-2.2.26.tar; time sync
 > 
-> Instead of listing the cpu's that have support for the
-> cmovxx instructions, list the cpu's that don't.
+> Thats cheating. Your ramback ignores sync.
 > 
-> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> ---
-> 
-> A bit of playing resulted in:
-> 
-> CPUS="M386 M486 M586 M586TSC M586MMX M686 MPENTIUMII MPENTIUMIII"
-> CPUS=$CPUS" MPENTIUMM MPENTIUM4 MK6 MK7 MK8 MCRUSOE MEFFICEON"
-> CPUS=$CPUS" MWINCHIPC6 MWINCHIP2 MWINCHIP3D MGEODEGX1 MGEODE_LX"
-> CPUS=$CPUS" MCYRIXIII MVIAC3_2 MVIAC7 MPSC MCORE2"
-> 
-> for cpu in $CPUS
-> do
->         echo "CONFIG_${cpu}=y" > testconfig
->         make ARCH=i386 allnoconfig KCONFIG_ALLCONFIG=testconfig > /dev/null
->         echo ${cpu} >> result
->         grep X86_CMOV .config >> result
->         echo >> result
-> done
-> 
-> I'm quite sure that K8, EFFICEON and CORE2 support HAVE_CMOV, but
-> they did not set X86_CMOV.
-> 
+> Just time it against ext3 _without_ doing the sync. That's still more
+> reliable than what you have.
 
-Crusoe has CMOV as well.
+No, that allows ext3 to cheat, because ext3 does not supply any means
+of flushing its cached data to disk in response to loss of line power,
+and then continuing on in a "safe" mode until line power comes back.
 
-	-hpa
+Fix that and you will have a replacement for ramback, arguably a more
+efficient one for this specialized application (it will not work for an
+external ramdisk).  Until you do that, ramback is the only game in town
+to get these transaction speeds together with data durability.
+
+I have mentioned a number of times, that you _already_ rely on an
+equivalent scheme to ramback if you are using a battery-backed raid
+controller. Somehow, posters to this thread keep glossing over that
+and going back to the sky-is-falling argument.
+
+Daniel
