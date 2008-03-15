@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbYCOUSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYCOUUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbYCOUSi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 16:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYCOUS2
+	id S1753898AbYCOUUf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 16:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCOUU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 16:18:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2684 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752548AbYCOUS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 16:18:27 -0400
-Date: Sat, 15 Mar 2008 21:18:16 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: david@lang.hm, David Newall <davidn@davidnewall.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080315201815.GB4193@ucw.cz>
-References: <200803092346.17556.phillips@phunq.net> <200803130106.26910.phillips@phunq.net> <alpine.DEB.1.00.0803130133470.22040@asgard.lang.hm> <200803130216.03230.phillips@phunq.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803130216.03230.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+	Sat, 15 Mar 2008 16:20:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752566AbYCOUUZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 16:20:25 -0400
+Date: Sat, 15 Mar 2008 13:19:24 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: ?ric Piel <Eric.Piel@tremplin-utc.net>
+cc: Tilman Schmidt <tilman@imap.cc>, Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Arjan van de Ven <arjanv@redhat.com>
+Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
+In-Reply-To: <47DC26BC.7060502@tremplin-utc.net>
+Message-ID: <alpine.LFD.1.00.0803151315250.3020@woody.linux-foundation.org>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>  <47D86D43.2060108@imap.cc> <1205441216.4971.65.camel@nimitz.home.sr71.net>  <47D9C853.3040701@imap.cc> <1205517802.12763.18.camel@nimitz.home.sr71.net>  <1205525184.12763.32.camel@nimitz.home.sr71.net>
+  <47DAE55C.3080506@tremplin-utc.net>  <1205530551.8167.20.camel@nimitz.home.sr71.net>  <47DB013D.3060102@tremplin-utc.net> <1205537395.8167.31.camel@nimitz.home.sr71.net> <47DBC578.7050101@imap.cc> <alpine.LFD.1.00.0803151212180.3020@woody.linux-foundation.org>
+ <47DC26BC.7060502@tremplin-utc.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > if you have a reliable UPS and are willing to rely on it to save your data 
-> > take the identical hardware to what you are planning to use, but instead 
-> > of using your driver just create a ramdisk and load it on boot and save 
-> > the contents on shutdown.
-> 
-> Aha!  You are getting close.  Really, that is all ramback does.  It
-> just handles some very difficult related issues efficiently, in such a
-> way as to minimize any denial of service from complete loss of UPS
-> power.  This is all just about using power management in a new way that
-> gets higher performance.  But your battery power has to be reliable.
-> Just make it so.  It is not difficult these days, or even particularly
-> expensive.
-> 
-> I calculated somewhere along the line that it would take something like
-> 17 minutes to populate the big Violin ramdisk initially, and 17 minutes
-> to save it during a loss of line power event, during which UPS power
-> must be not run out before ramback achieves disk sync or you will get
-> file corruption.  (This rule was mentioned in my original post.)
-> 
-> All well and could, you can in fact do that with a pretty simple script.
-> But in the initial 17 minutes your application may not read or write
-> the ramdisk data and in the closing 17 minutes it may not write.  That
-> knocks your system down to 4 nines, given one planned shutdown per year.
-> Not good, not good at all.
 
-Hmm, what happens if applications keep dirtying so much data you miss
-your 17minute deadline?
+On Sat, 15 Mar 2008, ?ric Piel wrote:
+>
+> It's a pity, I had just nearly finished a new approach. Instead of
+> relying on populate_rootfs() and the filesystem infrastructure, the new
+> approach directly finds the file in the initramfs.
 
-Anyway...
- ext2
- + lots of memory
- + tweaked settings of kflushd (only write data older than 10 years)
- + just not using sync/fsync except during shutdown
- + find / | xargs cat 
- 
-...is ramback, right? Should have same performance, and you can still
-read/write during that 17+17 minutes.
+So that avoids the VFS layer issues, but it's still strictly much worse 
+than just having a run-time loading.
 
-Ok, find | xargs might be slower... but we probably want to fix that
-anyway....
+What's the problem with just loading a new DSDT later? Potentially as in 
+*much* later: including when user-space is all up-and-running? 
 
-It has big advantage: if you only tell kflushd to hold up writes for
-an hour, you loose a little in performance and gain a lot in
-reliability...
+For things like DVD install images, you'd quite possibly want to have a 
+few known-workaround DSDT images with the installer, and just say "ok, we 
+want to fix up this ACPI crap in order to get working suspend/resume" kind 
+of thing.
 
-(If ext2+tweaks is slower than ramback, we have a bug to fix, I'm
-afraid).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+So what's the reason for pushing for this insanely-early workaround in the 
+first place, instead of letting user-space do something like
+
+	cat my-dsdt-image > /proc/sys/acpi/DSDT
+
+or whatever at runtime?
+
+		Linus
