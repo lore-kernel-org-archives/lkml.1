@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbYCOHC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbYCOHEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbYCOHC7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 03:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYCOHCu
+	id S1752030AbYCOHEP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 03:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbYCOHD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 03:02:50 -0400
-Received: from 1wt.eu ([62.212.114.60]:2459 "EHLO 1wt.eu"
+	Sat, 15 Mar 2008 03:03:59 -0400
+Received: from 1wt.eu ([62.212.114.60]:2462 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbYCOHCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 03:02:49 -0400
-Date: Sat, 15 Mar 2008 07:57:41 +0100
+	id S1750998AbYCOHD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 03:03:59 -0400
+Date: Sat, 15 Mar 2008 07:58:49 +0100
 From: Willy Tarreau <w@1wt.eu>
 To: Gabriel Barazer <gabriel@oxeva.fr>
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, netdev@kernel.org
 Subject: Re: [2.6.24.3][net] bug: TCP 3rd handshake abnormal timeouts
-Message-ID: <20080315065739.GL8953@1wt.eu>
-References: <47DB28E9.4050309@oxeva.fr>
+Message-ID: <20080315065849.GA11817@1wt.eu>
+References: <47DB28E9.4050309@oxeva.fr> <20080315065739.GL8953@1wt.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47DB28E9.4050309@oxeva.fr>
+In-Reply-To: <20080315065739.GL8953@1wt.eu>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+
+[ forgot to CC netdev ]
 
 Hi Gabriel,
 
