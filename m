@@ -1,111 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYCORfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYCORfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbYCORfj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 13:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYCORf3
+	id S1754893AbYCORfw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 13:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYCORfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 13:35:29 -0400
-Received: from outbound-mail-29.bluehost.com ([69.89.17.211]:34815 "HELO
-	outbound-mail-29.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751990AbYCORf3 (ORCPT
+	Sat, 15 Mar 2008 13:35:36 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:11486 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752575AbYCORfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 13:35:29 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Justin Madru <jdm64@gawab.com>
-Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
-Date: Sat, 15 Mar 2008 10:35:23 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Bryce Harrington <bryce@bryceharrington.org>
-References: <47D828BB.2000702@gawab.com> <200803141029.38124.jbarnes@virtuousgeek.org> <47DB46F1.80106@gawab.com>
-In-Reply-To: <47DB46F1.80106@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Mar 2008 13:35:34 -0400
+Date: Sat, 15 Mar 2008 18:31:49 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch <linux-arch@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm
+Subject: [2/3] Implement __fls on all 64-bit archs
+Message-ID: <20080315173149.GB21659@mailshack.com>
+References: <20080315172913.GA21648@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803151035.23808.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080315172913.GA21648@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sat, 15 Mar 2008 18:34:49 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.31; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding Bryce to cc list, he may have a copy of intel_reg_dumper already built 
-for Ubuntu.  Bryce, please see below for a few more questions, thanks.]
+Implement __fls on all 64-bit archs:
 
-On Friday, March 14, 2008 8:48 pm Justin Madru wrote:
-> Jesse Barnes wrote:
-> > It would be interesting if you could get register dumps at a couple of
-> > different points, using the intel_reg_dumper tool in
-> > git://git.freedesktop.org/git/xorg/driver/xf86-video-intel (in
-> > src/reg_dumper).
->
-> I couldn't get it to compile. What am I suppose to do? I ran autogen.sh
-> in the top level dir and it gave the error message:
->
-> ./configure: line 20486: syntax error near unexpected token `XINERMA,'
-> ./configure: line 20486: `XORG_DRIVER_CHECK_EXT(XINERMA, xineramaproto)'
+alpha has an implementation of fls64.
+	Added __fls(x) = fls64(x) - 1.
 
-This usually means you don't have the xorg autoconf macros installed.  Your 
-distro probably has some sort of xserver-devel package that may include it.
+ia64 has fls, but not __fls.
+	Added __fls based on code of fls.
 
-> Then I also tried to run make and make -f Makefile.in (in the reg_dumper
-> dir and top level dir), and it said:
->
-> Makefile.in:15 *** missing separator. Stop.
->
-> That part of Makefile.in contains:
-> @SET_MAKE@
-> VPATH = @srcdir@
->
-> What am I doing wrong? You'll have to forgive me, I'm not that
-> experienced with the cmd line and compiling - I'm trying though.
+mips and powerpc have __ilog2, which is the same as __fls.
+	Added __fls = __ilog2.
 
-No problem, building X still isn't quite as easy as it should be, but it's 
-only slightly more complicated than the typical './configure;make;make 
-install' due to the dependencies between packages.  You can check out the X 
-wiki (wiki.x.org), there are some hints on building things there.
+parisc, s390, sh and sparc64:
+	Include generic __fls.
 
-> > You'll probably have to modify your boot scripts though.
-> > It would be good to get them:
-> >   - at startup time before the splash screen
-> >   - sometime while the splash screen is running
-> >   - after X starts and you see the blank screen
->
-> How exactly would I do that? I would think I could just add command at
-> the end of 3 files in /etc/init.d. Would that work? It should run my
-> command when it starts that script and gets to the end. Or do boot
-> scripts exit in the middle of the script, which would prevent my command
-> from running?
+x86_64 already has __fls.
 
-Hm, I haven't looked at the Ubuntu scripts before.  I know they're using 
-upstart, but if they haven't divered too much from the old style init, you 
-may be able to modify rc.sysinit to get the boot time register dump.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ include/asm-alpha/bitops.h   |    5 +++++
+ include/asm-ia64/bitops.h    |   16 ++++++++++++++++
+ include/asm-mips/bitops.h    |    5 +++++
+ include/asm-parisc/bitops.h  |    1 +
+ include/asm-powerpc/bitops.h |    5 +++++
+ include/asm-s390/bitops.h    |    1 +
+ include/asm-sh/bitops.h      |    1 +
+ include/asm-sparc64/bitops.h |    1 +
+ 8 files changed, 35 insertions(+), 0 deletions(-)
 
-For the splash screen dump, you'd just have to add the intel_reg_dumper 
-command to one of the other init scripts that runs while the splash screen is 
-up (maybe the HAL daemon script or something).
-
-Once your screen is blank, it's probably easiest to ssh into your machine and 
-capture the dump that way.
-
-Hope that helps, maybe Bryce can give you some more hints on Ubuntu specifics.
-
-> > What's different between your Uni. environment and your home environment?
->
-> I'm not sure. I just have a home wireless router (Hawking HWR54G). I
-> have no idea what the Uni. router is.
-> On both, I connect to an unencrypted network, but at the Uni. it
-> redirects to a login page where I have to log on before I can actually
-> use the Internet. Is there anyway I could get more information about the
-> Uni. router?
-
-Probably, though the messages in your log from your Univ. connection may be 
-enough for the networking guys to figure things out.  It's probably best to 
-track the wireless thing as a separate issue though, I'd recommend mailing 
-linux-wireless@vger.kernel.org with the problem.
-
-Thanks,
-Jesse
-
+diff --git a/include/asm-alpha/bitops.h b/include/asm-alpha/bitops.h
+index 9e19a70..15f3ae2 100644
+--- a/include/asm-alpha/bitops.h
++++ b/include/asm-alpha/bitops.h
+@@ -388,6 +388,11 @@ static inline int fls64(unsigned long x)
+ }
+ #endif
+ 
++static inline unsigned long __fls(unsigned long x)
++{
++	return fls64(x) - 1;
++}
++
+ static inline int fls(int x)
+ {
+ 	return fls64((unsigned int) x);
+diff --git a/include/asm-ia64/bitops.h b/include/asm-ia64/bitops.h
+index 953d3df..e2ca800 100644
+--- a/include/asm-ia64/bitops.h
++++ b/include/asm-ia64/bitops.h
+@@ -407,6 +407,22 @@ fls (int t)
+ 	return ia64_popcnt(x);
+ }
+ 
++/*
++ * Find the last (most significant) bit set.  Undefined for x==0.
++ * Bits are numbered from 0..63 (e.g., __fls(9) == 3).
++ */
++static inline unsigned long
++__fls (unsigned long x)
++{
++	x |= x >> 1;
++	x |= x >> 2;
++	x |= x >> 4;
++	x |= x >> 8;
++	x |= x >> 16;
++	x |= x >> 32;
++	return ia64_popcnt(x) - 1;
++}
++
+ #include <asm-generic/bitops/fls64.h>
+ 
+ /*
+diff --git a/include/asm-mips/bitops.h b/include/asm-mips/bitops.h
+index ec75ce4..c2bd126 100644
+--- a/include/asm-mips/bitops.h
++++ b/include/asm-mips/bitops.h
+@@ -591,6 +591,11 @@ static inline int __ilog2(unsigned long x)
+ 	return 63 - lz;
+ }
+ 
++static inline unsigned long __fls(unsigned long x)
++{
++	return __ilog2(x);
++}
++
+ #if defined(CONFIG_CPU_MIPS32) || defined(CONFIG_CPU_MIPS64)
+ 
+ /*
+diff --git a/include/asm-parisc/bitops.h b/include/asm-parisc/bitops.h
+index f8eebcb..7a6ea10 100644
+--- a/include/asm-parisc/bitops.h
++++ b/include/asm-parisc/bitops.h
+@@ -210,6 +210,7 @@ static __inline__ int fls(int x)
+ 	return ret;
+ }
+ 
++#include <asm-generic/bitops/__fls.h>
+ #include <asm-generic/bitops/fls64.h>
+ #include <asm-generic/bitops/hweight.h>
+ #include <asm-generic/bitops/lock.h>
+diff --git a/include/asm-powerpc/bitops.h b/include/asm-powerpc/bitops.h
+index 220d9a7..2fc0c45 100644
+--- a/include/asm-powerpc/bitops.h
++++ b/include/asm-powerpc/bitops.h
+@@ -312,6 +312,11 @@ static __inline__ int fls(unsigned int x)
+ 	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
+ 	return 32 - lz;
+ }
++
++static __inline__ unsigned long __fls(unsigned long x)
++{
++	return __ilog2(x);
++}
+ #include <asm-generic/bitops/fls64.h>
+ 
+ #include <asm-generic/bitops/hweight.h>
+diff --git a/include/asm-s390/bitops.h b/include/asm-s390/bitops.h
+index 965394e..b4eb24a 100644
+--- a/include/asm-s390/bitops.h
++++ b/include/asm-s390/bitops.h
+@@ -769,6 +769,7 @@ static inline int sched_find_first_bit(unsigned long *b)
+ }
+ 
+ #include <asm-generic/bitops/fls.h>
++#include <asm-generic/bitops/__fls.h>
+ #include <asm-generic/bitops/fls64.h>
+ 
+ #include <asm-generic/bitops/hweight.h>
+diff --git a/include/asm-sh/bitops.h b/include/asm-sh/bitops.h
+index b6ba5a6..d7d382f 100644
+--- a/include/asm-sh/bitops.h
++++ b/include/asm-sh/bitops.h
+@@ -95,6 +95,7 @@ static inline unsigned long ffz(unsigned long word)
+ #include <asm-generic/bitops/ext2-atomic.h>
+ #include <asm-generic/bitops/minix.h>
+ #include <asm-generic/bitops/fls.h>
++#include <asm-generic/bitops/__fls.h>
+ #include <asm-generic/bitops/fls64.h>
+ 
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-sparc64/bitops.h b/include/asm-sparc64/bitops.h
+index 982ce89..11f9d81 100644
+--- a/include/asm-sparc64/bitops.h
++++ b/include/asm-sparc64/bitops.h
+@@ -34,6 +34,7 @@ extern void change_bit(unsigned long nr, volatile unsigned long *addr);
+ #include <asm-generic/bitops/ffz.h>
+ #include <asm-generic/bitops/__ffs.h>
+ #include <asm-generic/bitops/fls.h>
++#include <asm-generic/bitops/__fls.h>
+ #include <asm-generic/bitops/fls64.h>
+ 
+ #ifdef __KERNEL__
 
