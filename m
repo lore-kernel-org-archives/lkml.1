@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYCOTU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbYCOTVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYCOTU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 15:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYCOTUQ
+	id S1753452AbYCOTVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 15:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYCOTVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 15:20:16 -0400
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:2652 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbYCOTUO (ORCPT
+	Sat, 15 Mar 2008 15:21:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:4953 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753926AbYCOTUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 15:20:14 -0400
-Date: Sat, 15 Mar 2008 20:19:46 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: K8, EFFICEON and CORE2 support the cmovxx instructions.
-Message-ID: <20080315191946.GA21817@mailshack.com>
-References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org> <1205523826.7441.1242464129@webmail.messagingengine.com> <20080314195520.GV2522@one.firstfloor.org> <1205530409.27413.1242484373@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1205530409.27413.1242484373@webmail.messagingengine.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sat, 15 Mar 2008 20:19:48 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.3.31; host: AntiVir3)
+	Sat, 15 Mar 2008 15:20:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:in-reply-to:content-type:content-transfer-encoding:mime-version:subject:date:references:x-mailer;
+        b=gakqmcqMEnB12ahXyntEPKzprD6RlYtCb4IpnKRwgibzP2AYpgtPllH3OhW46F/SkeTOfTQ3NJ6FMIaZMPfNMbYZdRzhbvo851JD8zZ5jYk+ocZwHSDFH9A5QhRYVMuhbypkRykf8DNobr6DX7Z/Qp2Bj18Uq5ahyAqvh2FTs4Y=
+Message-Id: <B7F28152-6756-4530-B884-79AF36B4244E@gmail.com>
+From: David Martin <taldmd@gmail.com>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <0823A347-CBEA-40DC-B07B-8A699038EB4C@gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: x86: not showing f00f bug correctly in /proc/cpuinfo
+Date: Sat, 15 Mar 2008 20:20:50 +0100
+References: <0823A347-CBEA-40DC-B07B-8A699038EB4C@gmail.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-K8, EFFICEON and CORE2 support the cmovxx instructions.
+Hi,
 
-Instead of listing the cpu's that have support for the
-cmovxx instructions, list the cpu's that don't.
+This also could be interesting:
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
+Executing a test program taken from
 
-A bit of playing resulted in:
+http://lwn.net/2001/0329/a/ltp-f00f.php3
 
-CPUS="M386 M486 M586 M586TSC M586MMX M686 MPENTIUMII MPENTIUMIII"
-CPUS=$CPUS" MPENTIUMM MPENTIUM4 MK6 MK7 MK8 MCRUSOE MEFFICEON"
-CPUS=$CPUS" MWINCHIPC6 MWINCHIP2 MWINCHIP3D MGEODEGX1 MGEODE_LX"
-CPUS=$CPUS" MCYRIXIII MVIAC3_2 MVIAC7 MPSC MCORE2"
+  $ ./f00f.o
+Testing for proper f00f instruction handling.
+Segmentation fault
+  $ dmesg
+......
+BUG: unable to handle kernel paging request at virtual address ffffb030
+printing eip: 08049678 *pde = 00296067 *pte = 00271061
+Oops: 0003 [#1]
 
-for cpu in $CPUS
-do
-        echo "CONFIG_${cpu}=y" > testconfig
-        make ARCH=i386 allnoconfig KCONFIG_ALLCONFIG=testconfig > /dev/null
-        echo ${cpu} >> result
-        grep X86_CMOV .config >> result
-        echo >> result
-done
+Pid: 1838, comm: f00f.o Not tainted (2.6.24 #5)
+EIP: 0073:[<08049678>] EFLAGS: 00010246 CPU: 0
+EAX: 08049678 EBX: b7f36ff4 ECX: 0000002e EDX: b7f380d0
+ESI: 00000000 EDI: 08048350 EBP: bfbcf608 ESP: bfbcf5dc
+  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 007b
+Process f00f.o (pid: 1838, ti=c46b0000 task=c12299a0 task.ti=c46b0000)
+EIP: [<08049678>]  SS:ESP 007b:bfbcf5dc
+---[ end trace 52e28d53c342d03a ]---
+....
 
-I'm quite sure that K8, EFFICEON and CORE2 support HAVE_CMOV, but
-they did not set X86_CMOV.
+Is that patch working correctly?
 
-Greetings,
-	Alexander van Heukelum
+Cheers,
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 31e92fb..7a3a2d4 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -399,7 +399,7 @@ config X86_TSC
- # generates cmov.
- config X86_CMOV
- 	def_bool y
--	depends on (MK7 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7)
-+	depends on !(MCYRIXIII || MGEODE_LX || MGEODEGX1 || MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCRUSOE || MK6 || M586MMX || M586TSC || M586 || M486 || M386)
- 
- config X86_MINIMUM_CPU_FAMILY
- 	int
-
+David.
