@@ -1,111 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYCORAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYCORWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbYCORAf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 13:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYCORAZ
+	id S1753480AbYCORWe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 13:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYCORWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 13:00:25 -0400
-Received: from smtp8-g19.free.fr ([212.27.42.65]:56382 "EHLO smtp8-g19.free.fr"
+	Sat, 15 Mar 2008 13:22:25 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:48528 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751898AbYCORAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 13:00:24 -0400
-Message-ID: <1205600416.47dc00a0cd55b@imp.free.fr>
-Date: Sat, 15 Mar 2008 18:00:16 +0100
-From: bruno.roussel@free.fr
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Christian Kujau <lists@nerdbynature.de>,
-       bruno.roussel@free.fr, LKML <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-Subject: Re: possible recursive locking detected
-References: <1205082504.47d41988f0db5@imp.free.fr> <alpine.DEB.1.00.0803092215010.5349@sheep.housecafe.de> <Pine.LNX.4.64.0803092332160.18589@twin.jikos.cz> <20080310142921.2696e8b9@hyperion.delvare>
-In-Reply-To: <20080310142921.2696e8b9@hyperion.delvare>
+	id S1751967AbYCORWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 13:22:24 -0400
+Date: Sat, 15 Mar 2008 18:14:05 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 7/8] Remove current_tick_length()
+In-Reply-To: <2c0942db0803150929q7cc628f8h18269f10daec8ab1@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0803151812020.1791@scrub.home>
+References: <20080314184001.695807682@linux-m68k.org> 
+ <20080314195737.153531685@linux-m68k.org>  <1205548860.6122.55.camel@localhost.localdomain>
+  <Pine.LNX.4.64.0803150429500.1791@scrub.home>  <1205552909.6122.63.camel@localhost.localdomain>
+  <Pine.LNX.4.64.0803150511580.1791@scrub.home>
+ <2c0942db0803150929q7cc628f8h18269f10daec8ab1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 82.249.224.54
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have switch to the new 2.6.24.3 kernel version and it's OK now
-Strange ...
+Hi,
 
-Thank's for all
+On Sat, 15 Mar 2008, Ray Lee wrote:
 
-Selon Jean Delvare <khali@linux-fr.org>:
+> Then make the original function an inline. With -O2 it should compile
+> to exactly the same thing.
 
-> On Sun, 9 Mar 2008 23:41:50 +0100 (CET), Jiri Kosina wrote:
-> > On Sun, 9 Mar 2008, Christian Kujau wrote:
-> >
-> > > > =============================================
-> > > > [ INFO: possible recursive locking detected ]
-> > > > 2.6.24.2-1mdv #1
-> > > > ---------------------------------------------
-> > > Hm, strange: a similiar looking issue has been reported back in 2006, it
-> > > even comes with a patch: http://lkml.org/lkml/2006/10/14/38
-> > > ..but I cannot tell if the patch made it into mainline. I've Cc'ed the
-> i2c
-> > > folks, maybe they can tell what's going on here.
-> >
-> > I don't recall this, but from looking at the source it seems that only
-> > part of my patch made it upstream for some reason ...
->
-> I applied the i2c-core part:
->
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6ea23039cb1cc7c379eb5fba0ed2c53291e9bea7
->
-> But I have no idea what happened to the DVB device-driver specific part.
->
-> >
-> > Bruno, does the patch below remove the warning for you? (we should rather
-> > used lockdep_set_class() now, when this is already available ... it wasn't
-> > in the time I was doping the original patch back in 2006).
-> >
-> >
-> >
-> > Set locking depth properly (level == 0 for DVB frontend, level == 1 for
-> > DVB adapter).
-> >
-> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> >
-> > diff --git a/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-> b/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-> > index 23428cd..8c5dc35 100644
-> > --- a/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-> > +++ b/drivers/media/dvb/dvb-usb/dvb-usb-i2c.c
-> > @@ -27,6 +27,7 @@ int dvb_usb_i2c_init(struct dvb_usb_device *d)
-> >  #endif
-> >  	d->i2c_adap.algo      = d->props.i2c_algo;
-> >  	d->i2c_adap.algo_data = NULL;
-> > +	d->i2c_adap.level = 1;
-> >  	d->i2c_adap.dev.parent = &d->udev->dev;
-> >
-> >  	i2c_set_adapdata(&d->i2c_adap, d);
-> > diff --git a/drivers/media/dvb/frontends/dibx000_common.c
-> b/drivers/media/dvb/frontends/dibx000_common.c
-> > index 315e09e..a3ed8cf 100644
-> > --- a/drivers/media/dvb/frontends/dibx000_common.c
-> > +++ b/drivers/media/dvb/frontends/dibx000_common.c
-> > @@ -111,6 +111,7 @@ static int i2c_adapter_init(struct i2c_adapter
-> *i2c_adap, struct i2c_algorithm *
-> >  	i2c_adap->class     = I2C_CLASS_TV_DIGITAL,
-> >  	i2c_adap->algo      = algo;
-> >  	i2c_adap->algo_data = NULL;
-> > +	i2c_adap->level = 0;
-> >  	i2c_set_adapdata(i2c_adap, mst);
-> >  	if (i2c_add_adapter(i2c_adap) < 0)
-> >  		return -ENODEV;
->
-> Also note:
->
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=cea443a81c9c6257bf2d00f1392f7d1d4ce03b75
->
-> This patch that was applied recently to i2c-core might cause lockdep
-> issues. For some reason there's no "nested" variant of mutex_trylock?
->
-> --
-> Jean Delvare
->
+This would also defeat John's intention of keeping the value static.
 
-
+bye, Roman
