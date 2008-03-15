@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752564AbYCOFYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYCOFc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752564AbYCOFYB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 01:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYCOFXw
+	id S1752696AbYCOFc3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 01:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYCOFcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 01:23:52 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:53395 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750949AbYCOFXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 01:23:52 -0400
-Date: Sat, 15 Mar 2008 06:06:47 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: john stultz <johnstul@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/5] cleanups ntp.c (from Ingo)
-In-Reply-To: <1205554210.6122.85.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0803150556090.1791@scrub.home>
-References: <1205553852.6122.76.camel@localhost.localdomain> 
- <1205553938.6122.79.camel@localhost.localdomain>  <1205554018.6122.81.camel@localhost.localdomain>
- <1205554210.6122.85.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 15 Mar 2008 01:32:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55461 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbYCOFcT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 01:32:19 -0400
+Date: Fri, 14 Mar 2008 22:30:37 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Joel K. Greene" <joel.greene@catapult.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Timer interrupt stops, causes soft lockup
+Message-ID: <20080314223037.32fc5d7a@laptopd505.fenrus.org>
+In-Reply-To: <1205515282.29658.111.camel@linuxdt036.nc.catapult.com>
+References: <1204653133.718.14.camel@linuxdt036.nc.catapult.com>
+	<47CD634E.2828.00B3.0@novell.com>
+	<1204722318.6578.12.camel@linuxdt036.nc.catapult.com>
+	<47CE45D8.2828.00B3.0@novell.com>
+	<1204728175.6578.23.camel@linuxdt036.nc.catapult.com>
+	<47D3DC53.2828.00B3.0@novell.com>
+	<1205152374.18463.17.camel@linuxdt036.nc.catapult.com>
+	<1205235450.18463.45.camel@linuxdt036.nc.catapult.com>
+	<47D6423D.1E6F.00AA.0@novell.com>
+	<1205255048.18463.60.camel@linuxdt036.nc.catapult.com>
+	<1205260328.18463.67.camel@linuxdt036.nc.catapult.com>
+	<47D68B9D.1E6F.00AA.0@novell.com>
+	<1205265642.18463.82.camel@linuxdt036.nc.catapult.com>
+	<1205322793.20205.9.camel@linuxdt036.nc.catapult.com>
+	<1205326713.20205.27.camel@linuxdt036.nc.catapult.com>
+	<1205332212.20205.33.camel@linuxdt036.nc.catapult.com>
+	<1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
+	<20080314093814.3147f250@laptopd505.fenrus.org>
+	<1205515282.29658.111.camel@linuxdt036.nc.catapult.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 14 Mar 2008 13:21:22 -0400
+"Joel K. Greene" <joel.greene@catapult.com> wrote:
 
-On Fri, 14 Mar 2008, john stultz wrote:
+> Hi Arjan,
+> 
+> Thanks for your response. 
+> 
+> Sorry for the long post, I think the issue required a lot of detail.
+> I'm sure that it was easy to overlook that this is still an issue in
+> a 6 week old kernel:
+> >  Yesterday I pulled down 2.6.16.60 from kernel.org and built that
+> > kernel with HZ=1000 and reproduced the problem in about 7 hours.
 
-> -#define MAX_TICKADJ		500		/* microsecs */
-> +static const long	max_tickadj = 500;	/* (usec) */
+I did see that, doesn't mean it's not 3 years old...
 
-That's a matter of taste, but MAX_TICKADJ just works as well, so why 
-change it?
 
->  /* TIME_ERROR prevents overwriting the CMOS clock */
-> -static int time_state = TIME_OK;	/* clock synchronization status	*/
-> -int time_status = STA_UNSYNC;		/* clock status bits		*/
-> -static long time_tai;			/* TAI offset (s)		*/
-> -static s64 time_offset;			/* time adjustment (ns)		*/
-> -static long time_constant = 2;		/* pll time constant		*/
-> -long time_maxerror = NTP_PHASE_LIMIT;	/* maximum error (us)		*/
-> -long time_esterror = NTP_PHASE_LIMIT;	/* estimated error (us)		*/
-> -static s64 time_freq;			/* frequency offset (scaled ns/s)*/
-> -static long time_reftime;		/* time at last adjustment (s)	*/
-> -long time_adjust;
-> -static long ntp_tick_adj;
-> +static int	time_state = TIME_OK;		/* clock synch status	 */
-> +int		time_status = STA_UNSYNC;	/* clock status bits	 */
-> +static long	time_tai;			/* TAI offset (s)	 */
-> +static s64	time_offset;			/* time adjustment (ns)	 */
-> +static long	time_constant = 2;		/* pll time constant	 */
-> +long		time_maxerror = NTP_PHASE_LIMIT;/* maximum error (us)	 */
-> +long		time_esterror = NTP_PHASE_LIMIT;/* estimated error (us)	 */
-> +static		s64 time_freq;		/* frequency offset (scaled ns/s)*/
-> +static long	time_reftime;		/* time at last adjustment (s)	 */
-> +long		time_adjust;
-> +static long	ntp_tick_adj;
 
-I must say I really hate this kind of formating, it either gets out of 
-sync or requires reformatting. I would very strongly prefer not to 
-introduce this sort of formatting here.
 
-> +static inline u64 scale_tickadj(u64 adj)
-> +{
-> +	return ((adj * NSEC_PER_USEC) << NTP_SCALE_SHIFT) / NTP_INTERVAL_FREQ;
-> +}
-
-The function argument is actually s32 and depending on NTP_INTERVAL_FREQ 
-it might produce a link error on 32bit archs.
-
-bye, Roman
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
