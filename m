@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYCOJdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbYCOJwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752051AbYCOJdH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 05:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYCOJc4
+	id S1752093AbYCOJwp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 05:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYCOJwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 05:32:56 -0400
-Received: from main.gmane.org ([80.91.229.2]:33206 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbYCOJcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 05:32:55 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	Sat, 15 Mar 2008 05:52:35 -0400
+Received: from mango.safe-mail.net ([213.8.192.71]:38094 "EHLO
+	mango.safe-mail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYCOJwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 05:52:34 -0400
+X-Greylist: delayed 3897 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Mar 2008 05:52:34 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+	s=N1-0105; d=Safe-mail.net;
+	b=RoAWGZxdhPsMVfYnd9wouu6WIxvku7ulDS9Iex/SpM4IwLBLHBCNGnGCaLIc9Nha
+	B3cj77bhu+KrBEZRa443mFhbzfbF7kCdz6c3viAfSGuZDTtMYGUHD+wDhpOrsPg0
+	h/4PLFV4Ec12JgYA/TeJT/hO6g7IOx/EcEyQgdWiOwo=;
+Subject: vmlinuz resume=/dev/md0 borks swap ( unlike /dev/sda1 )
+Date: Sat, 15 Mar 2008 04:47:27 -0400
+From: "Antryg Revok" <antrygrevok@Safe-mail.net>
 To: linux-kernel@vger.kernel.org
-From: =?ISO-8859-1?Q?J=F6rg-Volker_Peetz?= <jvpeetz@web.de>
-Subject: Re: [PATCH 3/5] cleanups ntp.c (from Ingo)
-Date: Sat, 15 Mar 2008 10:32:42 +0100
-Message-ID: <47DB97BA.3080109@web.de>
-References: <1205553852.6122.76.camel@localhost.localdomain>	 <1205553938.6122.79.camel@localhost.localdomain>	 <1205554018.6122.81.camel@localhost.localdomain> <1205554210.6122.85.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: lkml <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Ingo Molnar <mingo@elte.hu>
-X-Gmane-NNTP-Posting-Host: p5b375663.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-In-Reply-To: <1205554210.6122.85.camel@localhost.localdomain>
+X-SMType: Regular
+X-SMRef: N1N-U8gRtCsRlA
+Message-Id: <N1N-U8gRtCsRlA@Safe-mail.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-SMSignature: SBKeZIIobJDV/12JAJEJo7A76UFiMcYLplbfyJiQQKDXTiPvIlkVEGwg7r9vhksx
+	Ro6/CDnvfeHP260mITyXv/txySX+sURRZ7l9hVTnDBa5nC4boyOZnS/EPPAHsn77
+	UumQ0V+laj4IKtorlNDLc3jT9n5F6ZfWe4X4c+q/qIs=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:
-> Make this file more readable by applying a consistent coding style.
-> 
-> No code changed.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Merged on top of Roman's very similar cleanups.
-> (In other words: Blame John for the merge screwups).
-> 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> 
-> 
-> Index: linux-2.6/kernel/time/ntp.c
-> ===================================================================
-<snip>
-> @@ -193,21 +197,20 @@ void second_overflow(void)
->  	 * Compute the phase adjustment for the next second. The offset is
->  	 * reduced by a fixed factor times the time constant.
->  	 */
-> -	tick_length = tick_length_base;
-> -	time_adj = shift_right(time_offset, SHIFT_PLL + time_constant);
-> -	time_offset -= time_adj;
-> -	tick_length += time_adj;
-> +	tick_length	= tick_length_base;
-> +	time_adj	= shift_right(time_offset, SHIFT_PLL + time_constant);
-> +	time_offset	-= time_adj;
-> +	tick_length	+= time_adj;
->  
->  	if (unlikely(time_adjust)) {
-> -		if (time_adjust > MAX_TICKADJ) {
-> -			time_adjust -= MAX_TICKADJ;
-> -			tick_length += MAX_TICKADJ_SCALED;
-> -		} else if (time_adjust < -MAX_TICKADJ) {
-> -			time_adjust += MAX_TICKADJ;
-> -			tick_length -= MAX_TICKADJ_SCALED;
-> +		if (time_adjust > max_tickadj) {
-> +			time_adjust -= max_tickadj;
-> +			tick_length += scale_tickadj(max_tickadj);
-> +		} else if (time_adjust < -max_tickadj) {
-> +			time_adjust += max_tickadj;
-> +			tick_length -= scale_tickadj(max_tickadj);
->  		} else {
-> -			tick_length += (s64)(time_adjust * NSEC_PER_USEC /
-> -					NTP_INTERVAL_FREQ) << NTP_SCALE_SHIFT;
-> +			tick_length += scale_tickadj(time_adjust);
->  			time_adjust = 0;
->  		}
->  	}
-<snip>
+I'm not subscribed
+( tried that once, and couldn't use that e-mail account again, due to swamping )
+so please cc me to replies, if you feel I might help further. . .
 
-Since you are at it, isn't "time_adj" a poor name since you also have a 
-"time_adjust"?
--- 
-Regards,
-Jörg-Volker.
+circumstance:
+openSUSE 10.3 x86_64 ( on an X2 ), 4GB RAM, 4GB swap ( some apps do go bonkers, sometimes ) on /dev/md0 ( raid-1 /dev/sda1 /dev/sdb1 )
 
+
+/boot/grub/menu.lst
+
+# Modified by YaST2. Last modification on Fri Mar 14 17:02:28 EDT 2008
+default 0
+timeout 8
+gfxmenu (hd0,2)/boot/message
+##YaST - activate
+
+###Don't change this comment - YaST2 identifier: Original name: linux###
+title openSUSE 10.3 - 2.6.22.17-0.1
+    root (hd0,2)
+#kernel /boot/vmlinuz-2.6.22.17-0.1-default root=/dev/md2 vga=0x375 dma resume=/dev/md0 splash=verbose showopts
+    kernel /boot/vmlinuz-2.6.22.17-0.1-default root=/dev/md2 vga=0x375 dma splash=verbose showopts
+    initrd /boot/initrd-2.6.22.17-0.1-default
+
+###Don't change this comment - YaST2 identifier: Original name: failsafe###
+title Failsafe -- openSUSE 10.3 - 2.6.22.17-0.1
+    root (hd0,2)
+    kernel /boot/vmlinuz-2.6.22.17-0.1-default root=/dev/md2 vga=ask showopts ide=nodma apm=off acpi=off noresume edd=off  3
+    initrd /boot/initrd-2.6.22.17-0.1-default
+
+
+I couldn't get swap to activate on /dev/md0
+when the "resume=..." bit was in there, and
+I couldn't get mdadm to stop /dev/md0
+( btw, the manpage for mdadm is wrong, at least in syntax, on opensuse 10.3 )
+it complained that the thing was still in use, but nothing in /etc/fstab was identified as being on it
+( I'd commented-out the swap line, to minimize complexity ), and I couldn't find anything else that seemed to be using it.
+
+lsof | grep md0
+md0_raid1 2283 root cwd DIR 9,2 4096 2 /
+md0_raid1 2283 root rtd DIR 9,2 4096 2 /
+md0_raid1 2283 root txt unknown /proc/2283/exe
+
+Then removing that "resume=..." from grub's menu.lst bit fixed swap.
+/dev/md0 /could/ be activated as swap, then, and /dev/md0 behaved as a normal raid device, being stoppable & runnable.
+
+I *need* this machine to be redundant-everything, very-very-reliable, because it's going to someone who can't geek, and they need it to work.
+( which is the reason I'm not permitting MS-Windows anywhere near the metal )
+
+Presumeably the resume stuff wasn't /intended/ to require a non-raid-1 partition if it is to co-exist with swap, 
+I think it was an oversight, 
+but maybe it's impossible?
+
+My current "solution" is to rip all suspend/hibernate system/sw from this machine, to prevent any problems with the system "assuming" that the resume-data exists.
+
+Please get the fixers to perceive the problem, if youse can, & thanks in advance, eh?
+
+  : )
