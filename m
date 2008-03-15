@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYCOCg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbYCOClS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796AbYCOCg4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Mar 2008 22:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYCOCgq
+	id S1753299AbYCOClS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Mar 2008 22:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYCOClI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Mar 2008 22:36:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38536 "EHLO mx1.redhat.com"
+	Fri, 14 Mar 2008 22:41:08 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:54678 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751420AbYCOCgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Mar 2008 22:36:45 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH update] firewire: debug AT, AR, and selfID-complete events
-Date: Fri, 14 Mar 2008 21:57:42 -0400
-User-Agent: KMail/1.9.9
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <tkrat.f96c4067f6a48f4a@s5r6.in-berlin.de> <200803121034.39583.jwilson@redhat.com> <47D7FE4D.5090107@s5r6.in-berlin.de>
-In-Reply-To: <47D7FE4D.5090107@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751131AbYCOClH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Mar 2008 22:41:07 -0400
+Subject: Re: [PATCH 7/8] Remove current_tick_length()
+From: john stultz <johnstul@us.ibm.com>
+To: zippel@linux-m68k.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20080314195737.153531685@linux-m68k.org>
+References: <20080314184001.695807682@linux-m68k.org>
+	 <20080314195737.153531685@linux-m68k.org>
+Content-Type: text/plain
+Date: Fri, 14 Mar 2008 19:41:00 -0700
+Message-Id: <1205548860.6122.55.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803142157.42684.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 March 2008 12:01:17 pm Stefan Richter wrote:
-> Jarod Wilson wrote:
-> > Want to do that as a later follow-up patch, or roll it into this one and
-> > post another update?
->
-> I haven't committed to linux1394-2.6.git, hence I prefer to post an
-> update rather than incremental patch.
->
-> > (I'm fully prepared to sign off on either way after having
-> > extensively used these patches the past several days...)
->
-> BTW, if I get sign-offs/ acks/ test feedback on a patch before another
-> patch update (but not before committing the final version to the
-> upstream submission branch), I add those sign-offs etc. like this
->
->     S-o-b: Someone
->     S-o-b: Me (modified whitespace or something else trivial)
->
-> or this
->
->     Initial changelog
->
->     S-o-b: Someone
->
->     Changelog post scriptum
->
->     S-o-b: Me
->
-> provided that the update only marginally changes the patch or can be
-> clearly distinguished from the formerly signed off parts.  Of course if
-> I get sign-offs etc. on the final version of the patch
 
-In that case, for the version with module params to enable debugging:
+On Fri, 2008-03-14 at 19:40 +0100, zippel@linux-m68k.org wrote:
+> plain text document attachment (tick_length)
+> current_tick_length used to do a little more, but now it just returns
+> tick_length, which we can also access directly at the few places, where
+> it's needed.
+> 
+> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 
-Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+Hrm. I'm not sure I like using a global variable instead of using an
+accessor function. At least with the accessor function folks couldn't
+just tweak the value outside ntp as easily.
+
+Is there any additional rational for this change?
+
+thanks
+-john
 
 
--- 
-Jarod Wilson
-jwilson@redhat.com
