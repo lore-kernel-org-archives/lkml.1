@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752007AbYCOEEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbYCOEFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752007AbYCOEEZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 00:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbYCOEEQ
+	id S1752514AbYCOEFx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 00:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYCOEFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 00:04:16 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:43339 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbYCOEEP (ORCPT
+	Sat, 15 Mar 2008 00:05:45 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58358 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbYCOEFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 00:04:15 -0400
-Subject: [PATCH 0/5] time/ntp changes
+	Sat, 15 Mar 2008 00:05:44 -0400
+Subject: [PATCH 1/5] split clocksource adjustment from clockosurce mult
 From: john stultz <johnstul@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1205553852.6122.76.camel@localhost.localdomain>
+References: <1205553852.6122.76.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 14 Mar 2008 21:04:12 -0700
-Message-Id: <1205553852.6122.76.camel@localhost.localdomain>
+Date: Fri, 14 Mar 2008 21:05:38 -0700
+Message-Id: <1205553938.6122.79.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -24,42 +26,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've re-based my timekeeping patch queue ontop of Roman's recent NTP and
-div64 patches. I've been a little short on time, so I've not been able
-to get them all tested (ntp testing takes a number of hours), but they
-do build and I wanted to get some feedback on the re-base.
+The clocksource frequency is represented by
+clocksource->mult/2^(clocksource->shift). Currently, when NTP makes
+adjustments to the clock frequency, they are made directly to the mult
+value.
 
-My apologies to Ingo for sitting on his patches for this long.
+This has the drawback that once changed, we cannot know what the orignal
+mult value was, or how much adjustment has been applied.
 
-I'll get a test setup going over the weekend to make sure all is well.
+This property causes problems in calculating proper ntp intervals when
+switching back and forth between clocksources. 
 
-The total patch queue is large, so while folks probably won't try it
-themselves, here's the full series I'm using to build:
+This patch separates the current mult value into a mult and mult_adj
+pair. The mult value stays constant, while the ntp clocksource
+adjustments are done only to the mult_adj value.
 
-#start w/ linus' -git
+This allows for correct ntp interval calculation and additionally lays
+the groundwork for a new notion of time, what I'm calling the
+monotonic-raw time, which is introduced in a following patch.
 
-#roman's udiv patches
-01-udiv.patchd
-02-convert.patch
-03-remove.patch
+Thoughts or comments would be appreciated.
 
-#roman's ntp changes
-1-cleanup.patch
-2-ntp4.patch
-3-timefreq.patch
-4-timeoffset.patch
-5-tai.patch
-6-scaleshift.patch
-7-ticklength.patch
-8-leap.patch
+thanks
+-john
 
-#my timekeeping changes
-mult-adj-split.patch
-monotonic-raw
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-#ntp cleanups from Ingo and me
-ntp-cleanup-ingo1.patch
-ntp-cleanup-ingo2.patch
-ntp_cleanup-john.patch
+diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+index 17fda52..37851e1 100644
+--- a/arch/ia64/kernel/time.c
++++ b/arch/ia64/kernel/time.c
+@@ -357,7 +357,7 @@ void update_vsyscall(struct timespec *wall, struct clocksource *c)
+ 
+         /* copy fsyscall clock data */
+         fsyscall_gtod_data.clk_mask = c->mask;
+-        fsyscall_gtod_data.clk_mult = c->mult;
++        fsyscall_gtod_data.clk_mult = c->mult + c->mult_adj;
+         fsyscall_gtod_data.clk_shift = c->shift;
+         fsyscall_gtod_data.clk_fsys_mmio = c->fsys_mmio;
+         fsyscall_gtod_data.clk_cycle_last = c->cycle_last;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 3b26fbd..36aa8da 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -814,7 +814,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+ 
+ 	/* XXX this assumes clock->shift == 22 */
+ 	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
+-	t2x = (u64) clock->mult * 4611686018ULL;
++	t2x = (u64) (clock->mult + clock->mult_adj) * 4611686018ULL;
+ 	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
+ 	do_div(stamp_xsec, 1000000000);
+ 	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
+diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
+index 3f82427..14afd48 100644
+--- a/arch/x86/kernel/vsyscall_64.c
++++ b/arch/x86/kernel/vsyscall_64.c
+@@ -83,7 +83,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+ 	vsyscall_gtod_data.clock.vread = clock->vread;
+ 	vsyscall_gtod_data.clock.cycle_last = clock->cycle_last;
+ 	vsyscall_gtod_data.clock.mask = clock->mask;
+-	vsyscall_gtod_data.clock.mult = clock->mult;
++	vsyscall_gtod_data.clock.mult = clock->mult + clock->mult_adj;
+ 	vsyscall_gtod_data.clock.shift = clock->shift;
+ 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
+ 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index 85778a4..e917a30 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -45,7 +45,8 @@ struct clocksource;
+  * @read:		returns a cycle value
+  * @mask:		bitmask for two's complement
+  *			subtraction of non 64 bit counters
+- * @mult:		cycle to nanosecond multiplier
++ * @mult:		cycle to nanosecond multiplier (unadjusted)
++ * @mult_adj:		NTP adjustment factor added to the multiplier
+  * @shift:		cycle to nanosecond divisor (power of two)
+  * @flags:		flags describing special properties
+  * @vread:		vsyscall based read
+@@ -63,6 +64,7 @@ struct clocksource {
+ 	cycle_t (*read)(void);
+ 	cycle_t mask;
+ 	u32 mult;
++	s32 mult_adj;
+ 	u32 shift;
+ 	unsigned long flags;
+ 	cycle_t (*vread)(void);
+@@ -179,7 +181,7 @@ static inline cycle_t clocksource_read(struct clocksource *cs)
+ static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
+ {
+ 	u64 ret = (u64)cycles;
+-	ret = (ret * cs->mult) >> cs->shift;
++	ret = (ret * (cs->mult + cs->mult_adj)) >> cs->shift;
+ 	return ret;
+ }
+ 
+@@ -199,7 +201,7 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
+ {
+ 	u64 tmp;
+ 
+-	/* XXX - All of this could use a whole lot of optimization */
++	/* Do the ns -> cycle conversion first, ignoring mult_adj */
+ 	tmp = length_nsec;
+ 	tmp <<= c->shift;
+ 	tmp += c->mult/2;
+@@ -209,7 +211,8 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
+ 	if (c->cycle_interval == 0)
+ 		c->cycle_interval = 1;
+ 
+-	c->xtime_interval = (u64)c->cycle_interval * c->mult;
++	/* Go back from cycles -> shifted ns, this time include mult_adj */
++	c->xtime_interval = (u64)c->cycle_interval * (c->mult + c->mult_adj);
+ }
+ 
+ 
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 1af9fb0..5b11b0f 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -426,7 +426,7 @@ static void clocksource_adjust(s64 offset)
+ 	} else
+ 		return;
+ 
+-	clock->mult += adj;
++	clock->mult_adj += adj;
+ 	clock->xtime_interval += interval;
+ 	clock->xtime_nsec -= offset;
+ 	clock->error -= (interval - offset) <<
 
 
