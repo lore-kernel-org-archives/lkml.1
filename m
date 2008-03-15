@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYCOX2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYCOXhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYCOX2B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 19:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYCOX1x
+	id S1754794AbYCOXhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 19:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYCOXhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 19:27:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43520 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752534AbYCOX1x (ORCPT
+	Sat, 15 Mar 2008 19:37:13 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:40947 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYCOXhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 19:27:53 -0400
-Date: Sat, 15 Mar 2008 23:05:58 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080315230558.12e9c96c@the-village.bc.nu>
-In-Reply-To: <200803151500.05993.phillips@phunq.net>
-References: <200803092346.17556.phillips@phunq.net>
-	<200803151417.13899.phillips@phunq.net>
-	<20080315210308.72824eb3@the-village.bc.nu>
-	<200803151500.05993.phillips@phunq.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 15 Mar 2008 19:37:12 -0400
+Date: Sat, 15 Mar 2008 16:36:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: more [PATCH 0/2] PM: Remove legacy PM
+Message-Id: <20080315163602.1b368275.randy.dunlap@oracle.com>
+In-Reply-To: <200803140000.02420.lenb@kernel.org>
+References: <200803132351.19794.rjw@sisk.pl>
+	<200803140000.02420.lenb@kernel.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > It makes a lot of difference,
-> 
-> It makes a difference of degree, not of kind.
+On Fri, 14 Mar 2008 00:00:02 -0400 Len Brown wrote:
 
-I think "I get my data back" is a difference in kind.
+Please add this docbook patch.
 
-> But interpreting a barrier to mean flush through to rotating media...
-> performance will drop to the millisecond per transaction zone, like a
+---
 
-That isn't anything to do with what was being proposed. *ORDERING* not
-flush to media.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Even raid controllers... so you agree that some of them just don't
-> respond conservatively to tagged commands, either because the engineers
-> don't know how to implement that (unlikely) or because they want to win
-> the performance benchmarks, and they do trust their battery?
+Source file was removed.  Need to remove docbook reference also.
 
-The ones that don't respect tagged ordering are the ultra cheap nasty
-things you buy down the local computer store that come with a 2 page
-manual in something vaguely like English. The stuff used for real work is
-quite different.
+Are there other files in kernel/power/ that should be added to the docbook?
 
-> Ramback already is taken seriously, just not by you.  That is fine, you
-> apparently do not need or want the speed.
+$ power> kerndoc-search.pl --count *.c
+file console.c: 0 kernel-doc blocks
+file disk.c: 18 kernel-doc blocks
+file main.c: 9 kernel-doc blocks
+file poweroff.c: 0 kernel-doc blocks
+file process.c: 2 kernel-doc blocks
+file snapshot.c: 39 kernel-doc blocks
+file swap.c: 10 kernel-doc blocks
+file swsusp.c: 4 kernel-doc blocks
+file user.c: 0 kernel-doc blocks
 
-I want the speed and reliability. Without that ramback is a distraction
-until someone solves the real problems.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/kernel-api.tmpl |    5 -----
+ 1 file changed, 5 deletions(-)
 
-> they need to achieve microsecond level transaction throughput and data
-
-You have no guarantee of commit to stable storage so your use of the word
-"transaction" is a bit farcical.
-
-There are a whole variety of ways to get far better results than "whoops
-bang there goes the file system". Log structured backing media is one,
-even snapshots. That way you'd quantify that for the cost of more
-rotating storage (which is cheap) you can only lose "x" minutes of data
-and will lose everything from a defined consistent point. File based
-backing store also has similar properties done right, but needs some
-higher level care to track closure and dirty blocks on a per inode basis.
-
-Alan
+--- mmotm-2008-0314-1449.orig/Documentation/DocBook/kernel-api.tmpl
++++ mmotm-2008-0314-1449/Documentation/DocBook/kernel-api.tmpl
+@@ -297,11 +297,6 @@ X!Earch/x86/kernel/mca_32.c
+ !Ikernel/acct.c
+   </chapter>
+ 
+-  <chapter id="pmfuncs">
+-     <title>Power Management</title>
+-!Ekernel/power/pm.c
+-  </chapter>
+-
+   <chapter id="devdrivers">
+      <title>Device drivers infrastructure</title>
+      <sect1><title>Device Drivers Base</title>
