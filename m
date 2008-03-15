@@ -1,45 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbYCOGet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbYCOHC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752441AbYCOGet (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 02:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYCOGek
+	id S1752360AbYCOHC7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 03:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYCOHCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 02:34:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48933 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbYCOGej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 02:34:39 -0400
-Date: Sat, 15 Mar 2008 02:34:03 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>,
-       akpm@linux-foundation.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] NLM: Initialize completion variable in lockd_up
-Message-ID: <20080315063403.GA6942@infradead.org>
-References: <1199820798-5289-1-git-send-email-jlayton@redhat.com> <1199820798-5289-2-git-send-email-jlayton@redhat.com> <1199820798-5289-3-git-send-email-jlayton@redhat.com> <1199820798-5289-4-git-send-email-jlayton@redhat.com> <20080109173542.GA30523@infradead.org> <20080113082718.396890f7@tleilax.poochiereds.net> <20080113181743.GA20219@infradead.org> <170fa0d20803142044i3e4d134fq5b287134248a113f@mail.gmail.com>
-MIME-Version: 1.0
+	Sat, 15 Mar 2008 03:02:50 -0400
+Received: from 1wt.eu ([62.212.114.60]:2459 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751495AbYCOHCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 03:02:49 -0400
+Date: Sat, 15 Mar 2008 07:57:41 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Gabriel Barazer <gabriel@oxeva.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24.3][net] bug: TCP 3rd handshake abnormal timeouts
+Message-ID: <20080315065739.GL8953@1wt.eu>
+References: <47DB28E9.4050309@oxeva.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <170fa0d20803142044i3e4d134fq5b287134248a113f@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <47DB28E9.4050309@oxeva.fr>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 10:44:31PM -0500, Mike Snitzer wrote:
-> On Sun, Jan 13, 2008 at 1:17 PM, Christoph Hellwig <hch@infradead.org> wrote:
-> >  Btw, lockd() takes BKL just after starting up and only implicitly drops
-> >  it when blocking.  This seems very dangerous to me and badly wants
-> >  updating to some real locking scheme..
-> 
-> Can you elaborate on what is meant by lockd "blocking"?  Blocking in
-> svc_recv() or during a SETLKW or ???
+Hi Gabriel,
 
-Blocking in kernel context means sleeping aka scheduling away.  So in the
-sentence above that means BKL is dropped once lockd sleeps on a
-syncronization primitive the first time.
+On Sat, Mar 15, 2008 at 02:39:53AM +0100, Gabriel Barazer wrote:
+> Hi,
+
+[cc'd netdev]
+
+> I am experiencing a very annoying bug which I think is a kernel bug, 
+> related to how a client establishes a TCP connection to a server (both 
+> linux, same  vanilla 2.6.24.3 kernels but the problem happened also in 
+> the previous 2.6.23.14 and kernel installed).
+> 
+> The case is about a bunch of web servers accessing a MySQL database 
+> server via TCP and non-persistent connections and all application level 
+> errors have been excluded.
+> "Sometimes" when establishing a TCP connection to the server, we are 
+> seeing a 3000ms delay before the connection if effectively made. This 
+> has been confirmed first by some strace-d telnet tests, then by tcpdump 
+> captures on both side at the same time.
+> 
+> Here is a simplified version of what _both_ the server and the client 
+> see (it's important because this means the packets are not lost and the 
+> bug not caused by a lossy network). I can send the original pcap file if 
+> necessary.
+> 
+> - The client send a TCP packet with the SYN bit
+> - The server replies by a TCP packet with the SYN,ACK bits (connection 
+> appears in netstat -a as in the SYN_RECV state)
+> - Here the client should have replied with a TCP ACK packet, but for 
+> some reason wait for exactly 3 seconds instead (the delay for 
+> retransmitting a SYN packet).
+> - The client re-send a TCP SYN packet
+> - The server replies by its TCP SYN,ACK packet
+> - And finally the client send its TCP ACK packet, completing the 3-way 
+> handshake and beginning communication with the MySQL server.
+> 
+> During the time when the bug happens (~1 minute), I can log into the 
+> server, and confirm this 3 second delay when strace-ing a telnet session 
+> to the mysql port.
+> 
+> I believe the problem is on the client side because when this abnormal 
+> delay happens, all the other mysql connections from the other web 
+> servers are doing fine (the MySQL server serves other host's queries 
+> without any connection delay), and I think I can rule out the userland 
+> processes as well because they are not aware of this TCP handshake 
+> failing and retrying, only the connect() syscall does.
+> 
+> I have reports of other people having this problem on other networks 
+> with different hardware specs, and on different networks (I run this on 
+> a local network).
+> 
+> I have no syncookies enabled, and have the netfilter connection tracking 
+> enabled but the tracked connections count is very stable, not 
+> overflowing and not even increasing when the problem happens.
+> 
+> Obviously, no message in the syslog or the kernel buffer ring.
+> 
+> Has anyone any idea on where to start to find and fix this bug? the 
+> situation is becoming critical as this affects all of our installations 
+> and I can't find a way to solve or even workaround this.
+> 
+> Any comment or idea would be very appreciated.
+
+You should carefully check the the SYN-ACK received by the client has a
+correct checksum ("cksum OK" in tcpdump output). It would be possible
+that for some reason, something on the network randomly corrupts it.
+
+Also, you say you have netfilter with conntrack. Is this on the client ?
+If so, you should try disabling it to rule out any possible bug in the
+connection tracking.
+
+Regards,
+Willy
 
