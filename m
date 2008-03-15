@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbYCOKO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbYCOLrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbYCOKO2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 06:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYCOKOP
+	id S1752217AbYCOLrb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 07:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYCOLrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 06:14:15 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:46484 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbYCOKON (ORCPT
+	Sat, 15 Mar 2008 07:47:22 -0400
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:64270 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYCOLrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 06:14:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bmwEUe+Aq0kWEkoabGB/7FG+BOd1b/60xwJ3quD176qR2r590OqvvxAOTYg/sdtTw4MZapXVXmxfOaEBzMaiqBlUx6cALCwwmcG1lOv5cepsb3HoW+ze1SV0efUER+LfJd5UcNijQjbji0jty7yvSUuQxbTewZfq6f45nAAPb+w=
-Message-ID: <751a4f870803150314r7bfeffaqbad33c040f95ea82@mail.gmail.com>
-Date: Sat, 15 Mar 2008 11:14:10 +0100
-From: "Aron Stansvik" <elvstone@gmail.com>
-To: nick.cheng@areca.com.tw
-Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1
-Cc: erich <erich@areca.com.tw>, akpm@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <751a4f870803141025r2cb6bf88hdee3cf9583d9ad44@mail.gmail.com>
+	Sat, 15 Mar 2008 07:47:21 -0400
+X-Greylist: delayed 657 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Mar 2008 07:47:21 EDT
+Message-ID: <47DBB442.90509@freemail.hu>
+Date: Sat, 15 Mar 2008 12:34:26 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Disposition: inline
-References: <751a4f870802251451k2f6355d0o110d74cd226f0f84@mail.gmail.com>
-	 <000901c8781e$1cb6e780$8800a8c0@Nick>
-	 <751a4f870803141025r2cb6bf88hdee3cf9583d9ad44@mail.gmail.com>
+To: David Airlie <airlied@linux.ie>
+CC: Shankar Giri V <shankargiri@gmail.com>, dri-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] change the type of Unichrome display adapter (PCI ID=1106:3108)
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m2FA9unq014516
 
-Hello again.
-2008/3/14, Aron Stansvik <elvstone@gmail.com>:> 2008/2/26, nickcheng <nick.cheng@areca.com.tw>:>  > Hi Aron,>> >  Thanks for your patience.>  >  If you still got into trouble, please let me know.>  >  Thank you again,>>> I have now tried:>>  * Turning on/off NCQ in the Areca RAID.>  * Turning on/off read-ahead cache in the Areca RAID.>  * Putting the disks in anti-vibration mounts in 5.25" slots.>  * Switching SATA cables.>  * Using legacy ATA power connectors instead of the SATA ones.>>  But I still have the problem. The power supply is 650W so there should>  be plenty of power. There's only two Raptor disks, an Opteron CPU and>  an nVidia 6600GT in the machine.>>  The Raptor two Raptor disks have different firmware on them, could>  that cause any problem?>>  Two people who had read my post here on LKML have contacted me on>  e-mail and have the same problem, but they have Seagate and Samsung>  disks, and use the 1220 controller.>>  The problem is hard to trigger, I've not been able to trigger it with>  any benchmarking tool, but in ~95% of the cases I can trigger it by>  just copying a directory with lots of small files (around 500 MB).>>  Anyone else seeing this? I'd really like to get it to work since this>  is my only computer :(>>  Should I try with XFS or ReiserFS instead of EXT3?
-I've now tried with ReiserFS, same problem. My distribution didn'thave XFS as a choice at installation so I haven't tried it yet. I'lltry with a LiveCD that supports XFS later. The two disks in the arrayare the only ones in the system.
-Aron
->>  Regards,>> Aron>>>  >>  > -----Original Message----->  >  From: Aron Stansvik [mailto:elvstone@gmail.com]>  >>  > Sent: Tuesday, February 26, 2008 6:52 AM>  >  To: erich>  >  Cc: nick.cheng@areca.com.tw; akpm@linux-foundation.org;>  >  linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org>  >  Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >>  >  Hi Erich.>  >>  >  2008/2/25, nickcheng <nick.cheng@areca.com.tw>:>  >  > Hi Aron,>  >  >  From our field experiences and customers' feedbacks, all of them direct>  >  to>  >  >  vibration and power issues.>  >  >  The vibration could be caused by FANs not only by themselves.>  >>  >  Okay. I have a chassi fan that is quite close to the drives, I will>  >  try disabling it. I've also ordered two Nexus TwinDisk anti vibration>  >  harddrive mounts with which I'll place the disks in my 5.25" slots>  >  instead, away from any fans.>  >>  >  If this doesn't work, I'm stumped, as I really don't think it's the>  >  power supply and I don't have the money to buy a new one.>  >>  >  >  You mentioned it could be the F/W issue.>  >  >  If the environment does not meet the prerequisite, FW could not work>  >  >  correctly.>  >  >  Actually FW just reacts to the situations not it causes the issue.>  >>  >  Of course, I understand this. Just trying to figure this problem out..>  >>  >  >  Please check it out!!>  >>  >  I'll report back with my findings with moving disk away from fans and>  >  using anti-vibrations mounts.>  >>  >  Thanks for taking your time to reply.>  >>  >  Aron>  >>  >  >  Thank you,>  >  >>  >  >>  >  >  -----Original Message----->  >  >  From: Aron Stansvik [mailto:elvstone@gmail.com]>  >  >  Sent: Sunday, February 24, 2008 1:54 AM>  >  >  To: nick.cheng@areca.com.tw>  >  >  Cc: erich; akpm@linux-foundation.org; linux-scsi@vger.kernel.org;>  >  >  linux-kernel@vger.kernel.org>  >  >>  >  > Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >  >>  >  >  Hello again Areca and LKML hackers.>  >  >>  >  >  2008/2/18, Aron Stansvik <elvstone@gmail.com>:>  >  >  > Hello Nick.>  >  >  >>  >  >  >  Sorry that I'm not answering until now. I've been busy.>  >  >  >>  >  >  >  2008/2/13, nickcheng <nick.cheng@areca.com.tw>:>  >  >  >>  >  >  > > Hi Aron,>  >  >  >  >  From our experience and some customers' feedback, your issue could>  >  be>  >  >  caused>  >  >  >  >  by power instability or vibration to your HDs.>  >  >  >  >  Please check step by step:>  >  >  >  >  (1).under your original environment, increase the SCSI command>  >  value,>  >  >  >  >  default=30, with the shell script, set_scsicmd_timeout(). 90 or 120>  >  is>  >  >  >  >  enough.>  >  >  >  >  (2).if method 1 does not work, find out the vibration source or>  >  change>  >  >  the>  >  >  >  >  power supply>  >  >  >>  >  >  >>  >  >  > I will try to increase that value. I don't think it's vibration; the>  >  >  >  disks are firmly in place in a very heavy chassi (Silverstone>  >  >  >  SST-TJ05B-T). And I really don't think there's something wrong with>  >  >  >  the power supply, it's a pretty new Silverstone ST65ZF 650W. This is>  >  >  >  my own personal workstation, so I don't just have another power supply>  >  >  >  to test with :/>  >  >  >>  >  >  >  I will report back on my success/failure. Thanks for your answer.>  >  >>  >  >  I've now tried with both 90 and 120 for the timeout value, and the>  >  >  problem still persists. It seems to happen when lots of small writes>  >  >  are occuring, e.g. when installing something.>  >  >>  >  >  I really don't think the disks are vibrating, I don't see how they>  >  >  could. One more thing I'm going to test is to use the legacy ATA power>  >  >  connector instead of the SATA power connector. This was what I was>  >  >  using before when I only had a single drive and no RAID controller.>  >  >  Maybe my power supply is malfunctioning and not giving enough power on>  >  >  the SATA power connectors.. but I doubt it.>  >  >>  >  >  Is there anything else that could cause this? Have you guys at Areca>  >  >  tested the ARC-1200 with Raptors in RAID1?>  >  >>  >  >  :(>  >  >>  >  >  Regards,>  >  >  Aron>  >  >>  >  >  >>  >  >  >>  >  >  >  Aron>  >  >  >>  >  >  >>  >  >  >  >  If your still have any questions, please feel free to let me know.>  >  >  >  >>  >  >  >  >  P.S. The attached driver source, arcmsr-1.20.00.15-71224, has been>  >  >  >  >  upstreamed to kernel.org and will be released in kernel 2.6.25. If>  >  you>  >  >  like,>  >  >  >  >  you could update your driver with it.>  >  >  >  >  It fixes some minor bugs, but these bugs are nothing to do with>  >  your>  >  >  issue.>  >  >  >  >>  >  >  >  >>  >  >  >  >  -----Original Message----->  >  >  >  >  From: erich [mailto:erich@areca.com.tw]>  >  >  >  >  Sent: Wednesday, February 13, 2008 4:33 PM>  >  >  >  >  To: (ºs¶w¨Ïßﬁ)æG¶u¡æ>  >  >  >  >  Subject: Fw: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >  >  >  >>  >  >  >  >>  >  >  >  >>  >  >  >  >  ----- Original Message ----->  >  >  >  >  From: "Andrew Morton" <akpm@linux-foundation.org>>  >  >  >  >  To: "Aron Stansvik" <elvstone@gmail.com>>  >  >  >  >  Cc: <linux-kernel@vger.kernel.org>; <linux-scsi@vger.kernel.org>;>  >  >  "erich">  >  >  >  >  <erich@areca.com.tw>>  >  >  >  >  Sent: Wednesday, February 13, 2008 4:03 PM>  >  >  >  >  Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1>  >  >  >  >>  >  >  >  >>  >  >  >  >  >>  >  >  >  >  > (cc's added)>  >  >  >  >  >>  >  >  >  >  > On Mon, 11 Feb 2008 17:44:08 +0100 "Aron Stansvik">  >  >  <elvstone@gmail.com>>  >  >  >  >  > wrote:>  >  >  >  >  >>  >  >  >  >  >> Hello LKML.>  >  >  >  >  >>>  >  >  >  >  >> Under semi-high disk I/O (e.g. installing a compiled KDE), I get>  >  >  the>  >  >  >  >  >> following (accompanied by seconds of lock-ups on the machine):>  >  >  >  >  >>>  >  >  >  >  >> [ 7727.345183] arcmsr0: abort device command of scsi id = 0 lun>  >  = 0>  >  >  >  >  >> [ 7730.348776] arcmsr0:                 scsi id = 0 lun = 0 ccb>  >  =>  >  >  >  >  >> '0xdfb461c0' poll command abort successfully>  >  >  >  >  >> [ 8053.795943] arcmsr0: abort device command of scsi id = 0 lun>  >  = 0>  >  >  >  >  >> [ 8056.799528] arcmsr0:                 scsi id = 0 lun = 0 ccb>  >  =>  >  >  >  >  >> '0xdfb595e0' poll command abort successfully>  >  >  >  >  >> [ 8884.592810] arcmsr0: abort device command of scsi id = 0 lun>  >  = 0>  >  >  >  >  >> [ 8887.596392] arcmsr0:                 scsi id = 0 lun = 0 ccb>  >  =>  >  >  >  >  >> '0xdfb56d80' poll command abort successfully>  >  >  >  >  >> [ 8917.760216] arcmsr0: abort device command of scsi id = 0 lun>  >  = 0>  >  >  >  >  >> [ 8920.763797] arcmsr0:                 scsi id = 0 lun = 0 ccb>  >  =>  >  >  >  >  >> '0xdfb472c0' poll command abort successfully>  >  >  >  >  >> [ 9074.106547] arcmsr0: abort device command of scsi id = 0 lun>  >  = 0>  >  >  >  >  >>>  >  >  >  >  >> This is my setup:>  >  >  >  >  >>>  >  >  >  >  >> 1 x MSI K8N Master2-FAR>  >  >  >  >  >> 1 x Opteron 252>  >  >  >  >  >> 1 x Areca ARC1200 (sitting in a PCIe x4 socket)>  >  >  >  >  >> 2 x WD1500ADFD in RAID1>  >  >  >  >  >>>  >  >  >  >  >> astan@rubik:~$ uname -a>  >  >  >  >  >> Linux rubik 2.6.24-7-generic #1 SMP Thu Feb 7 01:29:58 UTC 2008>  >  >  i686>  >  >  >  >  >> GNU/Linux>  >  >  >  >  >> astan@rubik:~$ modinfo arcmsr>  >  >  >  >  >> filename:>  >  >  >  >  >> /lib/modules/2.6.24-7-generic/kernel/drivers/scsi/arcmsr/arcmsr.>  >  ko>  >  >  >  >  >> version:        Driver Version 1.20.00.15 2007/08/30>  >  >  >  >  >> license:        Dual BSD/GPL>  >  >  >  >  >> description:    ARECA (ARC11xx/12xx/13xx/16xx) SATA/SAS RAID>  >  HOST>  >  >  Adapter>  >  >  >  >  >> author:         Erich Chen <support@areca.com.tw>>  >  >  >  >  >> srcversion:     28EAD6AB49D4491CA04D465>  >  >  >  >  >> [...]>  >  >  >  >  >>>  >  >  >  >  >> I've read some previous posts here on LKML that it could be the>  >  >  Areca>  >  >  >  >  >> firmware who doesn't like my WD disks. Anyone know if this is an>  >  >  IRQ>  >  >  >  >  >> handling problem in the kernel, or if it's a problem with the>  >  RAID>  >  >  >  >  >> controller firmware?>  >  >  >  >  >>>  >  >  >  >  >> Erich Chen (of Areca); have you tried the new ARC1200 in RAID1>  >  >  >  >  >> configuration with Raptor disks on Linux?>  >  >  >  >  >>>  >  >  >  >  >> As a side note, I can tell you that I first tried running>  >  FreeBSD>  >  >  6.3>  >  >  >  >  >> (RELENG_6) on this machine, but got random reboots during disk>  >  I/O>  >  >  >  >  >> (even with a kernel with KDB debugging turned on). This leads me>  >  to>  >  >  >  >  >> believe that it might be a firmware issue, and that Linux just>  >  >  handles>  >  >  >  >  >> it more gracefully than FreeBSD.>  >  >  >  >  >>>  >  >  >  >  >> Any ideas or advice is appriciated. This is my first post to the>  >  >  LKML,>  >  >  >  >  >> so please instruct me if you want more information or if you>  >  want>  >  >  me>  >  >  >  >  >> to take further debugging actions.>  >  >  >  >  >>>  >  >  >  >  >> Best regards,>  >  >  >  >  >> Aron Stansvik>  >  >  >  >  >>  >  >  >  >>  >  >  >  >>  >  >  >>  >  >>  >  >>  >>  >>ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+From: M·rton NÈmeth <nm127@freemail.hu>
+
+Change the type of Unichrome display adapter with PCI ID=1106:3108 to
+get rid of message "irq 16: nobody cared".
+
+See http://bugzilla.kernel.org/show_bug.cgi?id=8641 for details.
+
+Signed-off-by: Shankar Giri V <shankargiri@gmail.com>
+Signed-off-by: M·rton NÈmeth <nm127@freemail.hu>
+---
+
+--- linux-2.6.25-rc5/drivers/char/drm/drm_pciids.h.orig	2008-03-15 10:58:49.000000000 +0100
++++ linux-2.6.25-rc5/drivers/char/drm/drm_pciids.h	2008-03-15 10:59:31.000000000 +0100
+@@ -335,7 +335,7 @@
+ 	{0x1106, 0x3118, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_PRO_GROUP_A}, \
+ 	{0x1106, 0x3122, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
+ 	{0x1106, 0x7205, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
+-	{0x1106, 0x3108, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
++	{0x1106, 0x3108, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_PRO_GROUP_A}, \
+ 	{0x1106, 0x3344, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
+ 	{0x1106, 0x3343, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
+ 	{0x1106, 0x3230, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_DX9_0}, \
