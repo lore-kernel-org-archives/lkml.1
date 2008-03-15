@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbYCOWAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbYCOWBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbYCOWAv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 18:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbYCOWAR
+	id S1755744AbYCOWBV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 18:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYCOWBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 18:00:17 -0400
-Received: from phunq.net ([64.81.85.152]:59030 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754321AbYCOWAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 18:00:14 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Sat, 15 Mar 2008 14:00:05 -0800
-User-Agent: KMail/1.9.5
-Cc: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>,
-       linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803151417.13899.phillips@phunq.net> <20080315210308.72824eb3@the-village.bc.nu>
-In-Reply-To: <20080315210308.72824eb3@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Mar 2008 18:01:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52042 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753116AbYCOWBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 18:01:05 -0400
+Date: Sat, 15 Mar 2008 18:00:58 -0400
+From: Alexander Viro <aviro@redhat.com>
+To: Alan Cox <alan@redhat.com>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       aviro@redhat.com, drepper@redhat.com, hch@infradead.org,
+       sds@tycho.nsa.gov, jmorris@namei.org
+Subject: Re: [RFC] correct flags to f_mode conversion in __dentry_open
+Message-ID: <20080315220058.GA4265@devserv.devel.redhat.com>
+References: <1205346327.5297.232.camel@localhost.localdomain> <20080315215952.GB18676@devserv.devel.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803151500.05993.phillips@phunq.net>
+In-Reply-To: <20080315215952.GB18676@devserv.devel.redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 March 2008 14:03, Alan Cox wrote:
-> > > RAID controllers do not have half a terabyte of RAM.
+On Sat, Mar 15, 2008 at 05:59:52PM -0400, Alan Cox wrote:
+> On Wed, Mar 12, 2008 at 02:25:27PM -0400, Eric Paris wrote:
+> > I recently tried to add an SELinux BUG_ON in the case where the kernel
+> > made a permission request for no permissions and was able to stumble
+> > over it with something as simple as
 > > 
-> > And?  Either you have battery backed ram with critical data in it or
-> > you do not.  Exactly how much makes little difference to the question.
+> > open("/dev/null", 3);
+> > 
+> > Notice that 3 == (O_RDWR | O_WRONLY)
+> > 
+> > First question, is 3 ever a valid flag from from userspace to sys_open?
 > 
-> It makes a lot of difference,
-
-It makes a difference of degree, not of kind.
-
-> and in addition raid controllers (good 
-> ones) respect barrier ordering in their RAM cache so they'll take tags or
-> similar interfaces and honour them.
-
-Ramback should obviously respect barriers, and it does, though at
-present only in the crude, default way of letting the block layer
-handle it.
-
-But interpreting a barrier to mean flush through to rotating media...
-performance will drop to the millisecond per transaction zone, like a
-normal disk.  Not what ramback users want in normal operating mode.
-Flush mode, yes.
-
-Even raid controllers... so you agree that some of them just don't
-respond conservatively to tagged commands, either because the engineers
-don't know how to implement that (unlikely) or because they want to win
-the performance benchmarks, and they do trust their battery?
-
-"Some raid controllers" is just as good for my argument as "all raid
-controllers".  Nobody is telling you which raid controller to use in
-your own personal system.  I will pick the fast one and you can pick
-the slow one that does not trust its own battery circuits.
-
-> > That is why I keep recommending that a ramback setup be replicated or
-> > mirrored, which people in this thread keep glossing over.  When
-> > replicated or mirrored, you still get the microsecond-level transaction
-> > times, and you get the safety too.
+> Yes.
 > 
-> Either you keep a mirror in sync and get normal data rates or you keep
-> the mirror out of sync and then you need to sort your writeback process
-> out to preserve ordering.
+> > does 11 really mean and should it really always be mapped to (FMODE_READ
+> > | FMODE_WRITE) or should it continue to get mapped to 'no permission?'
 > 
-> If you want ramback to be taken seriously then that is the interesting
-> problem to solve and clearly has multiple solutions if you would start to
-> take an objective look at your work.
+> We've always mapped 3 to "no permission" to read or write. It's a linuxism
 
-Ramback already is taken seriously, just not by you.  That is fine, you
-apparently do not need or want the speed.
-
-Anyway, please do not get the impression that I am ignoring your ideas.
-There are some nice, intermediate modes that ramback could and in my
-opinion, should implement, to give users more options on how to trade
-off performance against resilience.  I just need to make it clear that
-ramback, as conceived, already gives system builders the capability
-they need to achieve microsecond level transaction throughput and data
-safety at the same time... given a reliable battery, which is where we
-started.
-
-Daniel
+Note that we *do* request MAY_READ|MAY_WRITE; "no permission" part is
+about what you can do to resulting descriptor afterwards.
