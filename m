@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYCOPsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbYCOQCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753012AbYCOPsB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 11:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYCOPrw
+	id S1753408AbYCOQCu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 12:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYCOQCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 11:47:52 -0400
-Received: from web52510.mail.re2.yahoo.com ([206.190.48.193]:39897 "HELO
-	web52510.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751831AbYCOPrw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 11:47:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=2YM5UBxWbulYI8uLz7YnEuEiN9u0Okt321Fl2+8ANf1DbcyaHn95RCi4dZkOUzEi/31qnObAI6jJD9QC8G46LQ/Vqi7qX+N/8t9RaTP2+viaQE1YkFedufdBL7D7zebfEMywT4pdbFlVqxFtEAekiPkLSSrKWCLLGZu+T+CGF9w=;
-X-YMail-OSG: PQDQtrwVM1l14GFDABHmBEENojVjHGPTgFiufEKhdyFj4Jp4tRIK2P3mhZ41gdp1zzz7y0BX6AsjasfrifhvjHrF1zXj7zVuUt36lbcWAZc8_gUyLMU-
-Date: Sat, 15 Mar 2008 08:47:47 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: TCP stack optimization for high number of connections [OT]
-To: linux-kernel@vger.kernel.org
+	Sat, 15 Mar 2008 12:02:41 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:42247 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751819AbYCOQCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 12:02:40 -0400
+Date: Sat, 15 Mar 2008 17:02:36 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: linux-wireless@vger.kernel.org, linville@tuxdriver.com, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/7] drivers/net/wireless/b43/lo.c: remove unused variable
+Message-ID: <Pine.LNX.4.64.0803151702120.24178@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <873209.1586.qm@web52510.mail.re2.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm running a front end spam filtering service and I
-get a lot of incoming connections but not a lot of
-volume of traffic. I'm experiencing some high loads
-and I think it might be related to the volume of
-connections it's processing. I often will be connected
-to 2500 email servers at once and a lot more that are
-trying to connect and being denied.
+From: Julia Lawall <julia@diku.dk>
 
-My question - are there any optimizations I can do to
-make the TCP faster for high number of short lived
-connections?
+The variable trsw_rx is initialized but never used otherwise.
 
-Also - how much do iptable entries slow things down
-and is there any optimizations for that?
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
+// <smpl>
+@@
+type T;
+identifier i;
+constant C;
+@@
 
-Marc Perkel
-Junk Email Filter dot com
-http://www.junkemailfilter.com
+(
+extern T i;
+|
+- T i;
+  <+... when != i
+- i = C;
+  ...+>
+)
+// </smpl>
 
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ drivers/net/wireless/b43/lo.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-      ____________________________________________________________________________________
-Never miss a thing.  Make Yahoo your home page. 
-http://www.yahoo.com/r/hs
+diff -u -p a/drivers/net/wireless/b43/lo.c b/drivers/net/wireless/b43/lo.c
+--- a/drivers/net/wireless/b43/lo.c	2008-03-12 14:13:14.000000000 +0100
++++ b/drivers/net/wireless/b43/lo.c	2008-03-15 15:56:58.000000000 +0100
+@@ -493,15 +493,12 @@ static void lo_measure_gain_values(struc
+ 		max_rx_gain = 0;
+ 
+ 	if (has_loopback_gain(phy)) {
+-		int trsw_rx = 0;
+ 		int trsw_rx_gain;
+ 
+ 		if (use_trsw_rx) {
+ 			trsw_rx_gain = phy->trsw_rx_gain / 2;
+-			if (max_rx_gain >= trsw_rx_gain) {
++			if (max_rx_gain >= trsw_rx_gain)
+ 				trsw_rx_gain = max_rx_gain - trsw_rx_gain;
+-				trsw_rx = 0x20;
+-			}
+ 		} else
+ 			trsw_rx_gain = max_rx_gain;
+ 		if (trsw_rx_gain < 9) {
