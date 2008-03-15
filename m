@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYCOFc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbYCOGet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbYCOFc3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 01:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYCOFcU
+	id S1752441AbYCOGet (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 02:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYCOGek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 01:32:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55461 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbYCOFcT (ORCPT
+	Sat, 15 Mar 2008 02:34:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48933 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbYCOGej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 01:32:19 -0400
-Date: Fri, 14 Mar 2008 22:30:37 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Joel K. Greene" <joel.greene@catapult.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Timer interrupt stops, causes soft lockup
-Message-ID: <20080314223037.32fc5d7a@laptopd505.fenrus.org>
-In-Reply-To: <1205515282.29658.111.camel@linuxdt036.nc.catapult.com>
-References: <1204653133.718.14.camel@linuxdt036.nc.catapult.com>
-	<47CD634E.2828.00B3.0@novell.com>
-	<1204722318.6578.12.camel@linuxdt036.nc.catapult.com>
-	<47CE45D8.2828.00B3.0@novell.com>
-	<1204728175.6578.23.camel@linuxdt036.nc.catapult.com>
-	<47D3DC53.2828.00B3.0@novell.com>
-	<1205152374.18463.17.camel@linuxdt036.nc.catapult.com>
-	<1205235450.18463.45.camel@linuxdt036.nc.catapult.com>
-	<47D6423D.1E6F.00AA.0@novell.com>
-	<1205255048.18463.60.camel@linuxdt036.nc.catapult.com>
-	<1205260328.18463.67.camel@linuxdt036.nc.catapult.com>
-	<47D68B9D.1E6F.00AA.0@novell.com>
-	<1205265642.18463.82.camel@linuxdt036.nc.catapult.com>
-	<1205322793.20205.9.camel@linuxdt036.nc.catapult.com>
-	<1205326713.20205.27.camel@linuxdt036.nc.catapult.com>
-	<1205332212.20205.33.camel@linuxdt036.nc.catapult.com>
-	<1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
-	<20080314093814.3147f250@laptopd505.fenrus.org>
-	<1205515282.29658.111.camel@linuxdt036.nc.catapult.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	Sat, 15 Mar 2008 02:34:39 -0400
+Date: Sat, 15 Mar 2008 02:34:03 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>,
+       akpm@linux-foundation.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] NLM: Initialize completion variable in lockd_up
+Message-ID: <20080315063403.GA6942@infradead.org>
+References: <1199820798-5289-1-git-send-email-jlayton@redhat.com> <1199820798-5289-2-git-send-email-jlayton@redhat.com> <1199820798-5289-3-git-send-email-jlayton@redhat.com> <1199820798-5289-4-git-send-email-jlayton@redhat.com> <20080109173542.GA30523@infradead.org> <20080113082718.396890f7@tleilax.poochiereds.net> <20080113181743.GA20219@infradead.org> <170fa0d20803142044i3e4d134fq5b287134248a113f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <170fa0d20803142044i3e4d134fq5b287134248a113f@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008 13:21:22 -0400
-"Joel K. Greene" <joel.greene@catapult.com> wrote:
-
-> Hi Arjan,
+On Fri, Mar 14, 2008 at 10:44:31PM -0500, Mike Snitzer wrote:
+> On Sun, Jan 13, 2008 at 1:17 PM, Christoph Hellwig <hch@infradead.org> wrote:
+> >  Btw, lockd() takes BKL just after starting up and only implicitly drops
+> >  it when blocking.  This seems very dangerous to me and badly wants
+> >  updating to some real locking scheme..
 > 
-> Thanks for your response. 
-> 
-> Sorry for the long post, I think the issue required a lot of detail.
-> I'm sure that it was easy to overlook that this is still an issue in
-> a 6 week old kernel:
-> >  Yesterday I pulled down 2.6.16.60 from kernel.org and built that
-> > kernel with HZ=1000 and reproduced the problem in about 7 hours.
+> Can you elaborate on what is meant by lockd "blocking"?  Blocking in
+> svc_recv() or during a SETLKW or ???
 
-I did see that, doesn't mean it's not 3 years old...
+Blocking in kernel context means sleeping aka scheduling away.  So in the
+sentence above that means BKL is dropped once lockd sleeps on a
+syncronization primitive the first time.
 
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
