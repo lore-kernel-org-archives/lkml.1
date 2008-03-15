@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbYCOJCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYCOJdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbYCOJCk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 05:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYCOJCa
+	id S1752051AbYCOJdH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 05:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYCOJc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 05:02:30 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:40109 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbYCOJC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 05:02:29 -0400
-Date: Sat, 15 Mar 2008 05:02:24 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Remove superfluous include of string.h from percpu.h.
-Message-ID: <alpine.LFD.1.00.0803150450020.11459@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sat, 15 Mar 2008 05:32:56 -0400
+Received: from main.gmane.org ([80.91.229.2]:33206 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166AbYCOJcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 05:32:55 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?ISO-8859-1?Q?J=F6rg-Volker_Peetz?= <jvpeetz@web.de>
+Subject: Re: [PATCH 3/5] cleanups ntp.c (from Ingo)
+Date: Sat, 15 Mar 2008 10:32:42 +0100
+Message-ID: <47DB97BA.3080109@web.de>
+References: <1205553852.6122.76.camel@localhost.localdomain>	 <1205553938.6122.79.camel@localhost.localdomain>	 <1205554018.6122.81.camel@localhost.localdomain> <1205554210.6122.85.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: lkml <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Ingo Molnar <mingo@elte.hu>
+X-Gmane-NNTP-Posting-Host: p5b375663.dip.t-dialin.net
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+In-Reply-To: <1205554210.6122.85.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+john stultz wrote:
+> Make this file more readable by applying a consistent coding style.
+> 
+> No code changed.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Merged on top of Roman's very similar cleanups.
+> (In other words: Blame John for the merge screwups).
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> 
+> Index: linux-2.6/kernel/time/ntp.c
+> ===================================================================
+<snip>
+> @@ -193,21 +197,20 @@ void second_overflow(void)
+>  	 * Compute the phase adjustment for the next second. The offset is
+>  	 * reduced by a fixed factor times the time constant.
+>  	 */
+> -	tick_length = tick_length_base;
+> -	time_adj = shift_right(time_offset, SHIFT_PLL + time_constant);
+> -	time_offset -= time_adj;
+> -	tick_length += time_adj;
+> +	tick_length	= tick_length_base;
+> +	time_adj	= shift_right(time_offset, SHIFT_PLL + time_constant);
+> +	time_offset	-= time_adj;
+> +	tick_length	+= time_adj;
+>  
+>  	if (unlikely(time_adjust)) {
+> -		if (time_adjust > MAX_TICKADJ) {
+> -			time_adjust -= MAX_TICKADJ;
+> -			tick_length += MAX_TICKADJ_SCALED;
+> -		} else if (time_adjust < -MAX_TICKADJ) {
+> -			time_adjust += MAX_TICKADJ;
+> -			tick_length -= MAX_TICKADJ_SCALED;
+> +		if (time_adjust > max_tickadj) {
+> +			time_adjust -= max_tickadj;
+> +			tick_length += scale_tickadj(max_tickadj);
+> +		} else if (time_adjust < -max_tickadj) {
+> +			time_adjust += max_tickadj;
+> +			tick_length -= scale_tickadj(max_tickadj);
+>  		} else {
+> -			tick_length += (s64)(time_adjust * NSEC_PER_USEC /
+> -					NTP_INTERVAL_FREQ) << NTP_SCALE_SHIFT;
+> +			tick_length += scale_tickadj(time_adjust);
+>  			time_adjust = 0;
+>  		}
+>  	}
+<snip>
 
-There's nothing in percpu.h that requires an explicit inclusion of
-string.h.
+Since you are at it, isn't "time_adj" a poor name since you also have a 
+"time_adjust"?
+-- 
+Regards,
+Jörg-Volker.
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-
----
-
-  after how hideously i embarrassed myself with that earlier exchange,
-i am by god going to get a patch out of this.  :-)
-
-  compile-tested on x86 after "make allyesconfig", so that deletion
-did not appear to cause any breakage anywhere in the tree.
-
-  p.s.  for the [PATCH] subject line, what kernel subsystem would be
-used for things like the header files?
-
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 1ac9697..d746a2a 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -4,7 +4,6 @@
- #include <linux/preempt.h>
- #include <linux/slab.h> /* For kmalloc() */
- #include <linux/smp.h>
--#include <linux/string.h> /* For memset() */
- #include <linux/cpumask.h>
-
- #include <asm/percpu.h>
-
-
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
