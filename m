@@ -1,109 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYCOVnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYCOVrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbYCOVnA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Mar 2008 17:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYCOVmu
+	id S1754094AbYCOVrZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Mar 2008 17:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYCOVrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Mar 2008 17:42:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:8765 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbYCOVmt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Mar 2008 17:42:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=tyGrFl1nuqrpnAmEl57qUaMThrV5nxjjHeTkcR8Bp2msiXwn0ZykpMT2pGhhaRjBfM0hFaS7dwyuoBZOUt7mCbtp1F7h69bBb9kHeEj+QUI1ufwDXySSZ9XF2BFR7LiAIaWrxqTdxyV8skLxlHpuYGrbd+kDetTRgD6s9S0JD/c=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 3/4] ide: sanitize handling of IDE_HFLAG_NO_SET_MODE host flag
-Date: Sat, 15 Mar 2008 22:57:10 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200802232115.11908.bzolnier@gmail.com> <47D808BD.2080902@ru.mvista.com>
-In-Reply-To: <47D808BD.2080902@ru.mvista.com>
+	Sat, 15 Mar 2008 17:47:17 -0400
+Received: from phunq.net ([64.81.85.152]:38428 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752155AbYCOVrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Mar 2008 17:47:16 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Sat, 15 Mar 2008 13:47:00 -0800
+User-Agent: KMail/1.9.5
+Cc: David Newall <davidn@davidnewall.com>, Chris Friesen <cfriesen@nortel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803151322.48688.phillips@phunq.net> <20080315213309.GA4313@elf.ucw.cz>
+In-Reply-To: <20080315213309.GA4313@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803152257.10439.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803151447.01801.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Wednesday 12 March 2008, Sergei Shtylyov wrote:
-> Hello.
+On Saturday 15 March 2008 14:33, Pavel Machek wrote:
+> On Sat 2008-03-15 12:22:47, Daniel Phillips wrote:
+> > On Saturday 15 March 2008 06:32, Pavel Machek wrote:
+> > > On Wed 2008-03-12 22:50:55, Daniel Phillips wrote:
+> > > > On Wednesday 12 March 2008 23:30, David Newall wrote:
+> > > > > Daniel Phillips wrote:
+> > > > > >> Your idea seems predicated on throwing large amounts of RAM at the
+> > > > > >> problem.  What I want to know is this: Is it really 25 times faster than
+> > > > > >> ext3 with an equally huge buffer cache?
+> > > > > >
+> > > > > > Yes.
+> > > > > 
+> > > > > Well, that sounds convincing.  Not.  You know this how?
+> > > > 
+> > > > By measuring it.  time untar -xf linux-2.2.26.tar; time sync
+> > > 
+> > > Thats cheating. Your ramback ignores sync.
+> > > 
+> > > Just time it against ext3 _without_ doing the sync. That's still more
+> > > reliable than what you have.
+> > 
+> > No, that allows ext3 to cheat, because ext3 does not supply any means
+> > of flushing its cached data to disk in response to loss of line power,
+> > and then continuing on in a "safe" mode until line power comes back.
 > 
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> > * Check for IDE_HFLAG_NO_SET_MODE host flag in ide_set_pio(),
-> >   ide_set_[pio,dma]_mode(), ide_set_xfer_rate() and set_pio_mode().
-> 
-> > * Remove no longer needed IDE_HFLAG_NO_SET_MODE host flag checking
-> >   from ide_tune_dma().
-> 
-> > * Remove superfluous ->set_pio_mode checking from do_special().
-> 
-> > This is a part of preparations for adding 'struct ide_port_ops'.
-> 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> > Index: b/drivers/ide/ide-lib.c
-> > ===================================================================
-> > --- a/drivers/ide/ide-lib.c
-> > +++ b/drivers/ide/ide-lib.c
-> > @@ -353,6 +354,9 @@ int ide_set_pio_mode(ide_drive_t *drive,
-> >  {
-> >  	ide_hwif_t *hwif = drive->hwif;
-> >  
-> > +	if (hwif->host_flags & IDE_HFLAG_NO_SET_MODE)
-> > +		return 0;
-> > +
-> 
->     Shouldn't this be considered an error?
+> Ok, it seems like "ignore sync/fsync unless on UPS power" is what you
+> really want? That should be easy enough to implement, either in
+> kernelor as a LD_PRELOAD hack.
 
-Nope, we want to cheat kernel-level PIO tuning into succeeding. ;)
+Sure, let's try it and then we will have a race.  I would be happy to
+lose that race, but... let's just see who wins.
 
-[ This host flag is used by it821x in "smart" mode so HW takes care of
-  tuning transfer mode on controller / device itself. ]
-
-> >  	if (hwif->set_pio_mode == NULL)
-> >  		return -1;
-> >  
-> > @@ -380,6 +384,9 @@ int ide_set_dma_mode(ide_drive_t *drive,
-> >  {
-> >  	ide_hwif_t *hwif = drive->hwif;
-> >  
-> > +	if (hwif->host_flags & IDE_HFLAG_NO_SET_MODE)
-> > +		return 0;
-> > +
+> So... untar with    sync is fair benchmark against ramback on UPS power
+> and   untar without sync is fair benchmark against ramback on AC power.
 > 
->     Same here....
-
-same for DMA tuning
-
-> >  	if (hwif->set_dma_mode == NULL)
-> >  		return -1;
-> >  
-> > @@ -410,7 +417,8 @@ int ide_set_xfer_rate(ide_drive_t *drive
-> >  {
-> >  	ide_hwif_t *hwif = drive->hwif;
-> >  
-> > -	if (hwif->set_dma_mode == NULL)
-> > +	if (hwif->set_dma_mode == NULL ||
-> > +	    (hwif->host_flags & IDE_HFLAG_NO_SET_MODE))
-> >  		return -1;
+> But you did untar with sync                against ramback on AC power.
 > 
->     Hm, this is was not considered an error before...
+> That's wrong.
 
-Yep, but transfer mode changes are unsupported on it821x in "smart" mode.
+It is consistent and correct.  You need to supply the missing features
+that ramback supplies before you have a filesystem-level solution.  I
+really encourage you to try it, then we can compare the two approaches
+with both of them fully working.
 
-PS Thanks for detailed review of 'struct ide_dma_ops' patch
-   (I'll recast the patch as soon as possible, hopefully tomorrow).
-
-Thanks,
-Bart
+Daniel
