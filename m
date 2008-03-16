@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbYCPX1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYCPX1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbYCPX1U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 19:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbYCPX0s
+	id S1755883AbYCPX1f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 19:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbYCPX0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 19:26:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37738 "EHLO ogre.sisk.pl"
+	Sun, 16 Mar 2008 19:26:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37741 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554AbYCPX0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 19:26:16 -0400
+	id S1753711AbYCPX0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 19:26:18 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [RFC][PATCH 2/3] PM: New suspend and hibernation callbacks for platform bus type
-Date: Mon, 17 Mar 2008 00:24:22 +0100
+Subject: [RFC][PATCH 3/3] PM: New suspend and hibernation callbacks for PCI bus type
+Date: Mon, 17 Mar 2008 00:25:15 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
@@ -26,522 +26,592 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803170024.23451.rjw@sisk.pl>
+Message-Id: <200803170025.16149.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Implement new suspend and hibernation callbacks for the platform bus
-type.
+Implement new suspend and hibernation callbacks for the PCI busi type.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/platform.c         |  444 ++++++++++++++++++++++++++++++++++++++--
- include/linux/platform_device.h |    2 
- 2 files changed, 425 insertions(+), 21 deletions(-)
+ drivers/pci/pci-driver.c |  497 ++++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/pci.h      |    2 
+ 2 files changed, 453 insertions(+), 46 deletions(-)
 
-Index: linux-2.6/include/linux/platform_device.h
+Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
---- linux-2.6.orig/include/linux/platform_device.h
-+++ linux-2.6/include/linux/platform_device.h
-@@ -53,6 +53,8 @@ struct platform_driver {
- 	int (*suspend_late)(struct platform_device *, pm_message_t state);
- 	int (*resume_early)(struct platform_device *);
- 	int (*resume)(struct platform_device *);
-+	struct pm_ops *pm;
-+	struct pm_ops *pm_noirq;
- 	struct device_driver driver;
- };
- 
-Index: linux-2.6/drivers/base/platform.c
-===================================================================
---- linux-2.6.orig/drivers/base/platform.c
-+++ linux-2.6/drivers/base/platform.c
-@@ -560,61 +560,463 @@ static int platform_match(struct device 
- 	return (strncmp(pdev->name, drv->name, BUS_ID_SIZE) == 0);
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -271,45 +271,78 @@ static int pci_device_remove(struct devi
+ 	return 0;
  }
  
--static int platform_suspend(struct device *dev, pm_message_t mesg)
-+#ifdef CONFIG_PM_SLEEP
-+static int platform_pm_prepare(struct device *dev)
+-static int pci_device_suspend(struct device * dev, pm_message_t state)
++static void pci_device_shutdown(struct device *dev)
  {
-+	struct platform_driver *drv;
- 	int ret = 0;
+-	struct pci_dev * pci_dev = to_pci_dev(dev);
+-	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
+-
+-	if (drv && drv->suspend) {
+-		i = drv->suspend(pci_dev, state);
+-		suspend_report_result(drv->suspend, i);
+-	} else {
+-		pci_save_state(pci_dev);
+-		/*
+-		 * mark its power state as "unknown", since we don't know if
+-		 * e.g. the BIOS will change its device state when we suspend.
+-		 */
+-		if (pci_dev->current_state == PCI_D0)
+-			pci_dev->current_state = PCI_UNKNOWN;
+-	}
+-	return i;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++
++	if (drv && drv->shutdown)
++		drv->shutdown(pci_dev);
+ }
  
--	if (dev->driver && dev->driver->suspend)
--		ret = dev->driver->suspend(dev, mesg);
-+	if (!dev->driver)
-+		return 0;
+-static int pci_device_suspend_late(struct device * dev, pm_message_t state)
++#ifdef CONFIG_PM_SLEEP
++static int pci_pm_prepare(struct device *dev)
+ {
+-	struct pci_dev * pci_dev = to_pci_dev(dev);
+-	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
+ 
+-	if (drv && drv->suspend_late) {
+-		i = drv->suspend_late(pci_dev, state);
+-		suspend_report_result(drv->suspend_late, i);
+-	}
+-	return i;
++	if (drv && drv->pm && drv->pm->prepare)
++		error = drv->pm->prepare(dev);
 +
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm && drv->pm->prepare)
-+		ret = drv->pm->prepare(dev);
-+
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_prepare_noirq(struct device *dev)
++static int pci_pm_prepare_noirq(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
-+		return 0;
++	if (drv && drv->pm_noirq && drv->pm_noirq->prepare)
++		error = drv->pm_noirq->prepare(dev);
 +
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm_noirq && drv->pm_noirq->prepare)
-+		ret = drv->pm_noirq->prepare(dev);
-+
-+	return ret;
++	return error;
 +}
 +
-+static void platform_pm_complete(struct device *dev)
++static void pci_pm_complete(struct device *dev)
 +{
-+	struct platform_driver *drv;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
 +
-+	if (!dev->driver)
-+		return;
-+
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm && drv->pm->complete)
++	if (drv && drv->pm && drv->pm->complete)
 +		drv->pm->complete(dev);
 +}
 +
-+static void platform_pm_complete_noirq(struct device *dev)
++static void pci_pm_complete_noirq(struct device *dev)
 +{
-+	struct platform_driver *drv;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
 +
-+	if (!dev->driver)
-+		return;
-+
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm_noirq && drv->pm_noirq->complete)
++	if (drv && drv->pm_noirq && drv->pm_noirq->complete)
 +		drv->pm_noirq->complete(dev);
-+}
-+
-+#ifdef CONFIG_SUSPEND
-+static int platform_pm_suspend(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
-+
-+	if (!dev->driver)
-+		return 0;
-+
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm) {
-+		if (drv->pm->suspend)
-+			ret = drv->pm->suspend(dev);
-+	} else if (dev->driver->suspend) {
-+		/* Legacy mechanism */
-+		ret = dev->driver->suspend(dev, PMSG_SUSPEND);
-+	}
-+
-+	return ret;
-+}
-+
-+static int platform_pm_suspend_noirq(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
-+
-+	if (!dev->driver)
-+		return 0;
-+
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm_noirq) {
-+		if (drv->pm_noirq->suspend)
-+			ret = drv->pm_noirq->suspend(dev);
-+	} else {
-+		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->suspend_late)
-+			ret = drv->suspend_late(pdev, PMSG_SUSPEND);
-+	}
-+
-+	return ret;
-+}
-+
-+static int platform_pm_resume(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
-+
-+	if (!dev->driver)
-+		return 0;
-+
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm) {
-+		if (drv->pm->resume)
-+			ret = drv->pm->resume(dev);
-+	} else if (dev->driver->resume) {
-+		/* Legacy mechanism */
-+		ret = dev->driver->resume(dev);
-+	}
- 
- 	return ret;
  }
  
--static int platform_suspend_late(struct device *dev, pm_message_t mesg)
-+static int platform_pm_resume_noirq(struct device *dev)
+ /*
+- * Default resume method for devices that have no driver provided resume,
++ * Default "suspend" method for devices that have no driver provided suspend,
+  * or not even a driver at all.
+  */
+-static int pci_default_resume(struct pci_dev *pci_dev)
++static void pci_default_pm_suspend(struct pci_dev *pci_dev)
++{
++	pci_save_state(pci_dev);
++	/*
++	 * mark its power state as "unknown", since we don't know if
++	 * e.g. the BIOS will change its device state when we suspend.
++	 */
++	if (pci_dev->current_state == PCI_D0)
++		pci_dev->current_state = PCI_UNKNOWN;
++}
++
++/*
++ * Default "resume" method for devices that have no driver provided resume,
++ * or not even a driver at all.
++ */
++static int pci_default_pm_resume(struct pci_dev *pci_dev)
  {
--	struct platform_driver *drv = to_platform_driver(dev->driver);
--	struct platform_device *pdev;
-+	struct platform_driver *drv;
- 	int ret = 0;
+ 	int retval = 0;
  
--	pdev = container_of(dev, struct platform_device, dev);
--	if (dev->driver && drv->suspend_late)
--		ret = drv->suspend_late(pdev, mesg);
-+	if (!dev->driver)
+@@ -324,40 +357,376 @@ static int pci_default_resume(struct pci
+ 	return retval;
+ }
+ 
+-static int pci_device_resume(struct device * dev)
++#ifdef CONFIG_SUSPEND
++static int pci_pm_suspend(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (!drv) {
++		pci_default_pm_suspend(pci_dev);
++		return 0;
++	}
++
++	if (drv->pm) {
++		if (drv->pm->suspend) {
++			error = drv->pm->suspend(dev);
++			suspend_report_result(drv->pm->suspend, error);
++		} else {
++			pci_default_pm_suspend(pci_dev);
++		}
++	} else {
++		/* Legacy mechanism */
++		if (drv->suspend) {
++			error = drv->suspend(pci_dev, PMSG_SUSPEND);
++			suspend_report_result(drv->suspend, error);
++		} else {
++			pci_default_pm_suspend(pci_dev);
++		}
++	}
++
++	return error;
++}
++
++static int pci_pm_suspend_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
++	if (drv->pm_noirq) {
++		if (drv->pm_noirq->suspend) {
++			error = drv->pm_noirq->suspend(dev);
++			suspend_report_result(drv->pm_noirq->suspend, error);
++		}
++	} else if (drv->suspend_late) {
++		/* Legacy mechanism */
++		error = drv->suspend_late(pci_dev, PMSG_SUSPEND);
++		suspend_report_result(drv->suspend_late, error);
++	}
++
++	return error;
++}
++
++static int pci_pm_resume(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
+ 	int error;
+-	struct pci_dev * pci_dev = to_pci_dev(dev);
+-	struct pci_driver * drv = pci_dev->driver;
+ 
+-	if (drv && drv->resume)
++	if (!drv)
++		return pci_default_pm_resume(pci_dev);
++
++	if (drv->pm) {
++		error = drv->pm->resume ?
++			drv->pm->resume(dev) : pci_default_pm_resume(pci_dev);
++	} else {
++		/* Legacy mechanism */
++		error = drv->resume ?
++			drv->resume(pci_dev) : pci_default_pm_resume(pci_dev);
++	}
++
++	return error;
++}
++
++static int pci_pm_resume_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	pci_fixup_device(pci_fixup_resume, pci_dev);
++
++	if (!drv)
++		return 0;
++
 +	if (drv->pm_noirq) {
 +		if (drv->pm_noirq->resume)
-+			ret = drv->pm_noirq->resume(dev);
-+	} else {
++			error = drv->pm_noirq->resume(dev);
++	} else if (drv->resume_early) {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->resume_early)
-+			ret = drv->resume_early(pdev);
++		error = drv->resume_early(pci_dev);
 +	}
- 
- 	return ret;
- }
++
++	return error;
++}
 +#endif /* CONFIG_SUSPEND */
- 
--static int platform_resume_early(struct device *dev)
++
 +#ifdef CONFIG_HIBERNATION
-+static int platform_pm_freeze(struct device *dev)
- {
--	struct platform_driver *drv = to_platform_driver(dev->driver);
--	struct platform_device *pdev;
-+	struct platform_driver *drv;
- 	int ret = 0;
- 
--	pdev = container_of(dev, struct platform_device, dev);
--	if (dev->driver && drv->resume_early)
--		ret = drv->resume_early(pdev);
-+	if (!dev->driver)
-+		return 0;
++static int pci_pm_freeze(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm) {
-+		if (drv->pm->freeze)
-+			ret = drv->pm->freeze(dev);
-+	} else if (dev->driver->suspend) {
-+		/* Legacy mechanism */
-+		ret = dev->driver->suspend(dev, PMSG_FREEZE);
++	if (!drv) {
++		pci_default_pm_suspend(pci_dev);
++		return 0;
 +	}
- 
- 	return ret;
- }
- 
--static int platform_resume(struct device *dev)
-+static int platform_pm_freeze_noirq(struct device *dev)
- {
-+	struct platform_driver *drv;
- 	int ret = 0;
- 
--	if (dev->driver && dev->driver->resume)
-+	if (!dev->driver)
-+		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm_noirq) {
-+		if (drv->pm_noirq->freeze)
-+			ret = drv->pm_noirq->freeze(dev);
++	if (drv->pm) {
++		if (drv->pm->freeze) {
++			error = drv->pm->freeze(dev);
++			suspend_report_result(drv->pm->freeze, error);
++		} else {
++			pci_default_pm_suspend(pci_dev);
++		}
 +	} else {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->suspend_late)
-+			ret = drv->suspend_late(pdev, PMSG_FREEZE);
++		if (drv->suspend) {
++			error = drv->suspend(pci_dev, PMSG_FREEZE);
++			suspend_report_result(drv->suspend, error);
++		} else {
++			pci_default_pm_suspend(pci_dev);
++		}
 +	}
 +
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_thaw(struct device *dev)
++static int pci_pm_freeze_noirq(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
++	if (drv->pm_noirq) {
++		if (drv->pm_noirq->freeze) {
++			error = drv->pm_noirq->freeze(dev);
++			suspend_report_result(drv->pm_noirq->freeze, error);
++		}
++	} else if (drv->suspend_late) {
++		/* Legacy mechanism */
++		error = drv->suspend_late(pci_dev, PMSG_FREEZE);
++		suspend_report_result(drv->suspend_late, error);
++	}
++
++	return error;
++}
++
++static int pci_pm_thaw(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (!drv)
++		return 0;
++
 +	if (drv->pm) {
 +		if (drv->pm->thaw)
-+			ret = drv->pm->thaw(dev);
-+	} else if (dev->driver->resume) {
++			error =  drv->pm->thaw(dev);
++	} else if (drv->resume) {
 +		/* Legacy mechanism */
- 		ret = dev->driver->resume(dev);
+ 		error = drv->resume(pci_dev);
+-	else
+-		error = pci_default_resume(pci_dev);
 +	}
- 
- 	return ret;
- }
- 
-+static int platform_pm_thaw_noirq(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
 +
-+	if (!dev->driver)
++	return error;
++}
++
++static int pci_pm_thaw_noirq(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
++
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm_noirq) {
 +		if (drv->pm_noirq->thaw)
-+			ret = drv->pm_noirq->thaw(dev);
-+	} else {
++			error = drv->pm_noirq->thaw(dev);
++	} else if (drv->resume_early) {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->resume_early)
-+			ret = drv->resume_early(pdev);
++		error = drv->resume_early(pci_dev);
 +	}
 +
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_poweroff(struct device *dev)
++static int pci_pm_poweroff(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm) {
-+		if (drv->pm->poweroff)
-+			ret = drv->pm->poweroff(dev);
-+	} else if (dev->driver->suspend) {
++		if (drv->pm->poweroff) {
++			error = drv->pm->poweroff(dev);
++			suspend_report_result(drv->pm->poweroff, error);
++		}
++	} else if (drv->suspend) {
 +		/* Legacy mechanism */
-+		ret = dev->driver->suspend(dev, PMSG_HIBERNATE);
++		error = drv->suspend(pci_dev, PMSG_HIBERNATE);
++		suspend_report_result(drv->suspend, error);
 +	}
 +
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_poweroff_noirq(struct device *dev)
++static int pci_pm_poweroff_noirq(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm_noirq) {
-+		if (drv->pm_noirq->poweroff)
-+			ret = drv->pm_noirq->poweroff(dev);
-+	} else {
++		if (drv->pm_noirq->poweroff) {
++			error = drv->pm_noirq->poweroff(dev);
++			suspend_report_result(drv->pm_noirq->poweroff, error);
++		}
++	} else if (drv->suspend_late) {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->suspend_late)
-+			ret = drv->suspend_late(pdev, PMSG_HIBERNATE);
++		error = drv->suspend_late(pci_dev, PMSG_HIBERNATE);
++		suspend_report_result(drv->suspend_late, error);
 +	}
 +
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_quiesce(struct device *dev)
++static int pci_pm_quiesce(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm) {
-+		if (drv->pm->quiesce)
-+			ret = drv->pm->quiesce(dev);
-+	} else if (dev->driver->suspend) {
++		if (drv->pm->quiesce) {
++			error = drv->pm->quiesce(dev);
++			suspend_report_result(drv->pm->quiesce, error);
++		}
++	} else if (drv->suspend) {
 +		/* Legacy mechanism */
-+		ret = dev->driver->suspend(dev, PMSG_QUIESCE);
++		error = drv->suspend(pci_dev, PMSG_QUIESCE);
++		suspend_report_result(drv->suspend, error);
 +	}
 +
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_quiesce_noirq(struct device *dev)
++static int pci_pm_quiesce_noirq(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm_noirq) {
-+		if (drv->pm_noirq->quiesce)
-+			ret = drv->pm_noirq->quiesce(dev);
++		if (drv->pm_noirq->quiesce) {
++			error = drv->pm_noirq->quiesce(dev);
++			suspend_report_result(drv->pm_noirq->quiesce, error);
++		}
++	} else if (drv->suspend_late) {
++		/* Legacy mechanism */
++		error = drv->suspend_late(pci_dev, PMSG_QUIESCE);
++		suspend_report_result(drv->suspend_late, error);
++	}
++
++	return error;
++}
++
++static int pci_pm_restore(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error;
++
++	if (!drv)
++		return pci_default_pm_resume(pci_dev);
++
++	if (drv->pm) {
++		error = drv->pm->restore ?
++			drv->pm->restore(dev) : pci_default_pm_resume(pci_dev);
 +	} else {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->suspend_late)
-+			ret = drv->suspend_late(pdev, PMSG_QUIESCE);
++		error = drv->resume ?
++			drv->resume(pci_dev) : pci_default_pm_resume(pci_dev);
 +	}
 +
-+	return ret;
-+}
-+
-+static int platform_pm_restore(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
-+
-+	if (!dev->driver)
+ 	return error;
+ }
+ 
+-static int pci_device_resume_early(struct device * dev)
++static int pci_pm_restore_noirq(struct device *dev)
+ {
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
+ 	int error = 0;
+-	struct pci_dev * pci_dev = to_pci_dev(dev);
+-	struct pci_driver * drv = pci_dev->driver;
+ 
+ 	pci_fixup_device(pci_fixup_resume, pci_dev);
+ 
+-	if (drv && drv->resume_early)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
-+	if (drv->pm) {
-+		if (drv->pm->restore)
-+			ret = drv->pm->restore(dev);
-+	} else if (dev->driver->resume) {
-+		/* Legacy mechanism */
-+		ret = dev->driver->resume(dev);
-+	}
-+
-+	return ret;
-+}
-+
-+static int platform_pm_restore_noirq(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
-+
-+	if (!dev->driver)
-+		return 0;
-+
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm_noirq) {
 +		if (drv->pm_noirq->restore)
-+			ret = drv->pm_noirq->restore(dev);
-+	} else {
++			error = drv->pm_noirq->restore(dev);
++	} else if (drv->resume_early) {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->resume_early)
-+			ret = drv->resume_early(pdev);
+ 		error = drv->resume_early(pci_dev);
 +	}
 +
-+	return ret;
-+}
-+
-+static int platform_pm_recover(struct device *dev)
-+{
-+	struct platform_driver *drv;
-+	int ret = 0;
-+
-+	if (!dev->driver)
+ 	return error;
+ }
+ 
+-static void pci_device_shutdown(struct device *dev)
++static int pci_pm_recover(struct device *dev)
+ {
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
+ 
+-	if (drv && drv->shutdown)
+-		drv->shutdown(pci_dev);
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm) {
 +		if (drv->pm->recover)
-+			ret = drv->pm->recover(dev);
-+	} else if (dev->driver->resume) {
++			error = drv->pm->recover(dev);
++	} else if (drv->resume) {
 +		/* Legacy mechanism */
-+		ret = dev->driver->resume(dev);
++		error = drv->resume(pci_dev);
 +	}
 +
-+	return ret;
++	return error;
 +}
 +
-+static int platform_pm_recover_noirq(struct device *dev)
++static int pci_pm_recover_noirq(struct device *dev)
 +{
-+	struct platform_driver *drv;
-+	int ret = 0;
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	struct pci_driver *drv = pci_dev->driver;
++	int error = 0;
 +
-+	if (!dev->driver)
++	if (!drv)
 +		return 0;
 +
-+	drv = to_platform_driver(dev->driver);
 +	if (drv->pm_noirq) {
 +		if (drv->pm_noirq->recover)
-+			ret = drv->pm_noirq->recover(dev);
-+	} else {
++			error = drv->pm_noirq->recover(dev);
++	} else if (drv->resume_early) {
 +		/* Legacy mechanism */
-+		struct platform_device *pdev;
-+
-+		pdev = container_of(dev, struct platform_device, dev);
-+		if (drv->resume_early)
-+			ret = drv->resume_early(pdev);
++		error = drv->resume_early(pci_dev);
 +	}
 +
-+	return ret;
-+}
++	return error;
+ }
 +#endif /* CONFIG_HIBERNATION */
 +#endif /* CONFIG_PM_SLEEP */
-+
-+struct pm_ops platform_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.prepare = platform_pm_prepare,
-+	.complete = platform_pm_complete,
-+#endif
-+#ifdef CONFIG_SUSPEND
-+	.suspend = platform_pm_suspend,
-+	.resume = platform_pm_resume,
-+#endif
-+#ifdef CONFIG_HIBERNATION
-+	.freeze = platform_pm_freeze,
-+	.thaw = platform_pm_thaw,
-+	.poweroff = platform_pm_poweroff,
-+	.quiesce = platform_pm_quiesce,
-+	.restore = platform_pm_restore,
-+	.recover = platform_pm_recover,
-+#endif
-+};
-+
-+struct pm_ops platform_pm_ops_noirq = {
-+#ifdef CONFIG_PM_SLEEP
-+	.prepare = platform_pm_prepare_noirq,
-+	.complete = platform_pm_complete_noirq,
-+#endif
-+#ifdef CONFIG_SUSPEND
-+	.suspend = platform_pm_suspend_noirq,
-+	.resume = platform_pm_resume_noirq,
-+#endif
-+#ifdef CONFIG_HIBERNATION
-+	.freeze = platform_pm_freeze_noirq,
-+	.thaw = platform_pm_thaw_noirq,
-+	.poweroff = platform_pm_poweroff_noirq,
-+	.quiesce = platform_pm_quiesce_noirq,
-+	.restore = platform_pm_restore_noirq,
-+	.recover = platform_pm_recover_noirq,
-+#endif
-+};
-+
- struct bus_type platform_bus_type = {
- 	.name		= "platform",
- 	.dev_attrs	= platform_dev_attrs,
- 	.match		= platform_match,
- 	.uevent		= platform_uevent,
--	.suspend	= platform_suspend,
--	.suspend_late	= platform_suspend_late,
--	.resume_early	= platform_resume_early,
--	.resume		= platform_resume,
-+	.pm		= &platform_pm_ops,
-+	.pm_noirq	= &platform_pm_ops_noirq,
- };
- EXPORT_SYMBOL_GPL(platform_bus_type);
  
-
+ /**
+  * __pci_register_driver - register a new pci driver
+@@ -500,18 +869,54 @@ int pci_uevent(struct device *dev, struc
+ }
+ #endif
+ 
++struct pm_ops pci_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.prepare = pci_pm_prepare,
++	.complete = pci_pm_complete,
++#endif
++#ifdef CONFIG_SUSPEND
++	.suspend = pci_pm_suspend,
++	.resume = pci_pm_resume,
++#endif
++#ifdef CONFIG_HIBERNATION
++	.freeze = pci_pm_freeze,
++	.thaw = pci_pm_thaw,
++	.poweroff = pci_pm_poweroff,
++	.quiesce = pci_pm_quiesce,
++	.restore = pci_pm_restore,
++	.recover = pci_pm_recover,
++#endif
++};
++
++struct pm_ops pci_pm_ops_noirq = {
++#ifdef CONFIG_PM_SLEEP
++	.prepare = pci_pm_prepare_noirq,
++	.complete = pci_pm_complete_noirq,
++#endif
++#ifdef CONFIG_SUSPEND
++	.suspend = pci_pm_suspend_noirq,
++	.resume = pci_pm_resume_noirq,
++#endif
++#ifdef CONFIG_HIBERNATION
++	.freeze = pci_pm_freeze_noirq,
++	.thaw = pci_pm_thaw_noirq,
++	.poweroff = pci_pm_poweroff_noirq,
++	.quiesce = pci_pm_quiesce_noirq,
++	.restore = pci_pm_restore_noirq,
++	.recover = pci_pm_recover_noirq,
++#endif
++};
++
+ struct bus_type pci_bus_type = {
+ 	.name		= "pci",
+ 	.match		= pci_bus_match,
+ 	.uevent		= pci_uevent,
+ 	.probe		= pci_device_probe,
+ 	.remove		= pci_device_remove,
+-	.suspend	= pci_device_suspend,
+-	.suspend_late	= pci_device_suspend_late,
+-	.resume_early	= pci_device_resume_early,
+-	.resume		= pci_device_resume,
+ 	.shutdown	= pci_device_shutdown,
+ 	.dev_attrs	= pci_dev_attrs,
++	.pm		= &pci_pm_ops,
++	.pm_noirq	= &pci_pm_ops_noirq,
+ };
+ 
+ static int __init pci_driver_init(void)
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -382,6 +382,8 @@ struct pci_driver {
+ 	int  (*resume) (struct pci_dev *dev);	                /* Device woken up */
+ 	void (*shutdown) (struct pci_dev *dev);
+ 
++	struct pm_ops *pm;
++	struct pm_ops *pm_noirq;
+ 	struct pci_error_handlers *err_handler;
+ 	struct device_driver	driver;
+ 	struct pci_dynids dynids;
