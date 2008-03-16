@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYCPKGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbYCPKLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYCPKGk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 06:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYCPKGb
+	id S1752968AbYCPKLj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 06:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYCPKLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 06:06:31 -0400
-Received: from relay.gothnet.se ([82.193.160.251]:6974 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751711AbYCPKGa convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 06:06:30 -0400
-Message-ID: <47DCF107.2040307@tungstengraphics.com>
-Date: Sun, 16 Mar 2008 11:05:59 +0100
-From: =?ISO-8859-2?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080306)
+	Sun, 16 Mar 2008 06:11:32 -0400
+Received: from saeurebad.de ([85.214.36.134]:37663 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751711AbYCPKLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 06:11:31 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Artem S. Tashkinov" <birdie@permonline.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: GIT commit description flag(s)
+References: <47DC4104.1070109@permonline.ru>
+Date: Sun, 16 Mar 2008 11:09:37 +0100
+In-Reply-To: <47DC4104.1070109@permonline.ru> (Artem S. Tashkinov's message of
+	"Sun, 16 Mar 2008 02:35:00 +0500")
+Message-ID: <87zlsz0yla.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-CC: David Airlie <airlied@linux.ie>, Shankar Giri V <shankargiri@gmail.com>,
-       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] change the type of Unichrome display adapter (PCI	ID=1106:3108)
-References: <47DBB442.90509@freemail.hu>
-In-Reply-To: <47DBB442.90509@freemail.hu>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-X-BitDefender-Scanner: Mail not scanned due to license constraints
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Németh Márton wrote:
-> From: Márton Németh <nm127@freemail.hu>
+Hi,
+
+"Artem S. Tashkinov" <birdie@permonline.ru> writes:
+
+> It would be nice if [kernel] git commits had a flag [a char] (or a
+> combination of) describing their main purpose which could be the
+> following:
 >
-> Change the type of Unichrome display adapter with PCI ID=1106:3108 to
-> get rid of message "irq 16: nobody cared".
->
-> See http://bugzilla.kernel.org/show_bug.cgi?id=8641 for details.
->
-> Signed-off-by: Shankar Giri V <shankargiri@gmail.com>
-> Signed-off-by: Márton Németh <nm127@freemail.hu>
-> ---
->
-> --- linux-2.6.25-rc5/drivers/char/drm/drm_pciids.h.orig	2008-03-15 10:58:49.000000000 +0100
-> +++ linux-2.6.25-rc5/drivers/char/drm/drm_pciids.h	2008-03-15 10:59:31.000000000 +0100
-> @@ -335,7 +335,7 @@
->  	{0x1106, 0x3118, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_PRO_GROUP_A}, \
->  	{0x1106, 0x3122, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
->  	{0x1106, 0x7205, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
-> -	{0x1106, 0x3108, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
-> +	{0x1106, 0x3108, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_PRO_GROUP_A}, \
->  	{0x1106, 0x3344, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
->  	{0x1106, 0x3343, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
->  	{0x1106, 0x3230, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_DX9_0}, \
->
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2008.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
->   
-Nope, this is not a correct fix. It enables a set of DMA commands not 
-available on the K8M800, also it makes the via IRQ handler just report 
-"Handled" when in fact the device keeps firing 200 000 or so interrupts 
-per second.
+> bug Fix [F]
+> Speed up/Performance [S]
+> Revert [R]
+> New functionality [N]
 
-I'm 99.99 % convinced that this is a hw bug, and it also appears in the 
-KM400 chipsets. When VIA was asked about it they replied that IRQ 
-functionality was never verified in the K8M800 since the windows driver 
-never used it. They only use IRQ for video capture transfer, and there 
-is no video-in on K8M800s. Other unichromes with the same IRQ register 
-interface work fine.
-Having said that, it's not impossible that there may be a hidden 
-register somewhere that makes it all work.
+> This way it will be much easier to keep track of important changes
+> happening to the kernel.
 
-The K8M800 irqs have been turned off in newer versions of the openChrome 
-2D driver to work around this issue.
+You claim there are unimportant ones? :)
 
-/Thomas
-
-
-
-
-
+	Hannes
