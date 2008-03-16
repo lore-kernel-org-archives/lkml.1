@@ -1,88 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYCPRfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbYCPRxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbYCPRfv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 13:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbYCPRfn
+	id S1752861AbYCPRxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 13:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPRxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 13:35:43 -0400
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:44107 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbYCPRfm (ORCPT
+	Sun, 16 Mar 2008 13:53:04 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:46958 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbYCPRxC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 13:35:42 -0400
-Date: Sun, 16 Mar 2008 13:35:39 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: torvalds@linux-foundation.org
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [git patches] parisc bug fixes for 2.6.25
-Message-ID: <20080316173539.GA3904@phobos.i.cabal.ca>
+	Sun, 16 Mar 2008 13:53:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=SCuwZ0Hdy+/d2Y2vnmc+px7J2uzK9Xx7s6lTr2dqPCsCmotWcloBuKUyjoXqQNyjOSL0j/AjUM/qI4Z9MTGvkHdZmoYoHOJbVzyT9TZzu77rzvz7uci3oGZN/mYhICenCgMtakRhW1zSvRhHLYudjQglFdxfXv7ufT9hFszmk/M=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.25-rc4
+Date: Sun, 16 Mar 2008 19:07:04 +0100
+User-Agent: KMail/1.9.9
+Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080316140118.891732DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200803161907.04581.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit cdeeeae056a429e729ae9e914fa8142ee45bee93:
-  Linus Torvalds (1):
-        Linux 2.6.25-rc5
+On Sunday 16 March 2008, Linus Torvalds wrote:
+> 
+> On Sun, 16 Mar 2008, Anders Eriksson wrote:
+> > 
+> > Many bisects later, now with taking care of making 'make oldconfig' off a 
+> > known good config for each iteration, and doing 10 reboots and 5 smartd 
+> > invocations for each version deemed good (not that anyone failed midway).
+> 
+> Ok, this is interesting. It's clearly a regression, so we need to undo it. 
+> However, it's not trivial to revert, since lots of things have changed 
+> around that area since.
+> 
+> In particular, commit 7267c3377443322588cddaf457cf106839a60463 ("ide: 
+> remove REQ_TYPE_ATA_CMD") ended up removing the whole drive_cmd_intr() 
+> function, because now all the commands are handled with the
+> REQ_TYPE_ATA_TASKFILE model instead, which uses a whole another path.
+> 
+> And quite frankly, I think the commit you bisected to really is very 
+> broken. It starts doing error handling *before* it has handled the DRQ 
+> bit, and that's bogus, since iirc a lot of controllers need to have their 
+> DRQ issues satisfied before anything else.
 
-are available in the git repository at:
+We don't do error handling for special commands (REQ_TYPE_ATA_*) at all,
+ide_error() just dumps device's status/error register(s) and finishes early:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/kyle/parisc-2.6.git master
+ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
+{
+	struct request *rq;
+	u8 err;
 
-Adrian Bunk (1):
-      [PARISC] move defconfig to arch/parisc/configs/
+	err = ide_dump_status(drive, msg, stat);
 
-FUJITA Tomonori (1):
-      [PARISC] make ptr_to_pide() static
+	if ((rq = HWGROUP(drive)->rq) == NULL)
+		return ide_stopped;
 
-Helge Deller (1):
-      [PARISC] head.S: section mismatch fixes
+	/* retry only "normal" I/O: */
+	if (!blk_fs_request(rq)) {
+		rq->errors = 1;
+		ide_end_drive_cmd(drive, stat, err);
+		return ide_stopped;
+	}
 
-James Bottomley (1):
-      [PARISC] add pa8900 CPUs to hardware inventory
+[ Yeah, I completely agree that it needs some re-design but I don't see how
+  it can be related to the problem experienced by Anders. ]
 
-Joel Soete (1):
-      [PARISC] pdc_stable: fix compile errors
+> So what probably happens is that yes, you get an error, but the IDE drive 
 
-Kyle McMartin (11):
-      [PARISC] remove old timerfd syscall
-      [PARISC] wire up timerfd syscalls
-      [PARISC] move VMALLOC_* definitions to fixmap.h
-      [PARISC] unbreak pgalloc.h
-      [PARISC] bump __NR_syscalls
-      [PARISC] remove unused pdc_iodc_printf function
-      [PARISC] dump_stack in show_regs
-      [PARISC] pdc_console: fix bizarre panic on boot
-      [PARISC] clean up show_stack
-      [PARISC] futex: special case cmpxchg NULL in kernel space
-      [PARISC] add back Crestone Peak cpu
+This is unlikely as we should get some error message from ide_dump_status()
+and we are not getting any (Anders, please correct me if I'm wrong).
 
-Randolph Chung (1):
-      [PARISC] clean up include/asm-parisc/elf.h
+Moreover the problem was initially narrowed down to commit
+852738f39258deafb3d89c187cb1a4050820d555 which is two commits _before_
+the one that we are currently discussing.
 
-Thibaut VARENE (1):
-      [PARISC] add back AD1889 MAINTAINERS entry
+I think that we are looking into completely wrong direction...
 
- MAINTAINERS                                        |    9 ++++++
- arch/parisc/Makefile                               |    3 ++
- .../{defconfig => configs/default_defconfig}       |    0 
- arch/parisc/kernel/firmware.c                      |   27 +++++++++++------
- arch/parisc/kernel/hardware.c                      |   13 ++++++++-
- arch/parisc/kernel/head.S                          |    7 ++--
- arch/parisc/kernel/pdc_cons.c                      |   30 ++++++++++---------
- arch/parisc/kernel/syscall_table.S                 |    5 ++-
- arch/parisc/kernel/traps.c                         |   25 ++++++++++++++--
- drivers/parisc/pdc_stable.c                        |    6 ++--
- drivers/parisc/sba_iommu.c                         |    4 +-
- include/asm-parisc/elf.h                           |   22 ++++++--------
- include/asm-parisc/fixmap.h                        |    9 +++++-
- include/asm-parisc/futex.h                         |   10 +++++-
- include/asm-parisc/pdc.h                           |    3 +-
- include/asm-parisc/pgalloc.h                       |    4 +-
- include/asm-parisc/pgtable.h                       |    8 -----
- include/asm-parisc/unistd.h                        |    5 ++-
- 18 files changed, 125 insertions(+), 65 deletions(-)
- rename arch/parisc/{defconfig => configs/default_defconfig} (100%)
+Thanks,
+Bart
