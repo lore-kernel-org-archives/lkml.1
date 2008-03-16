@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYCPUWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYCPUeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYCPUWo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 16:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbYCPUWe
+	id S1753342AbYCPUeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 16:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbYCPUeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 16:22:34 -0400
-Received: from saeurebad.de ([85.214.36.134]:56681 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbYCPUWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 16:22:34 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Dipankar Sarma" <dipankar@in.ibm.com>
-Subject: Re: per cpun+ spin locks coexistence?
-References: <804dabb00803120917w451b16e6q685016d464a2edde@mail.gmail.com>
-	<47DABBCE.5010803@goop.org>
-	<804dabb00803160930t40b7c415ic38f2b9955b515ac@mail.gmail.com>
-Date: Sun, 16 Mar 2008 21:20:29 +0100
-In-Reply-To: <804dabb00803160930t40b7c415ic38f2b9955b515ac@mail.gmail.com>
-	(Peter Teoh's message of "Mon, 17 Mar 2008 00:30:23 +0800")
-Message-ID: <87bq5e1kvm.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	Sun, 16 Mar 2008 16:34:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37243 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752167AbYCPUeE (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 16:34:04 -0400
+Date: Mon, 17 Mar 2008 07:33:47 +1100
+From: David Chinner <dgc@sgi.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: Milan Broz <mbroz@redhat.com>, David Chinner <dgc@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+       dm-devel@redhat.com
+Subject: Re: INFO: task mount:11202 blocked for more than 120 seconds
+Message-ID: <20080316203347.GX95344431@sgi.com>
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <20080307224040.GV155259@sgi.com> <alpine.DEB.1.00.0803080032020.7723@sheep.housecafe.de> <20080309213441.GQ155407@sgi.com> <47DA44EB.8000307@redhat.com> <alpine.DEB.1.00.0803150044130.4696@sheep.housecafe.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0803150044130.4696@sheep.housecafe.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Sat, Mar 15, 2008 at 12:58:02AM +0100, Christian Kujau wrote:
+> On Fri, 14 Mar 2008, Milan Broz wrote:
+> >Yes, there is bug in dm-crypt...
+> >Please try if the patch here helps: http://lkml.org/lkml/2008/3/14/71
+> 
+> Hm, it seems to help the hangs, yes. Applied to today's -git a few hours 
+> ago, the hangs are gone. However, when doing lots of disk I/O, the machine 
+> locks up after a few (10-20) minutes. Sadly, netconsole got nothing :(
+> 
+> After the first lockup I tried again and shortly after bootup I got:
 
-"Peter Teoh" <htmldeveloper@gmail.com> writes:
+False positive. Memory reclaim can inverts the order of iprune_mutex and
+the normal inode locking orders. i.e. Both of these are possible:
 
->>  > Notice above that get_cpu_var() is followed by spin_lock().   Does this
->>  > make sense?   get_cpu_var() will return a variable that is only
->>  > accessible by the current CPU - guaranteed it will not be touch (read or
->>  > write) by another CPU, right?
->>
->>  No, not true.  percpu is for stuff which is generally only touched by
->>  one CPU, but there's nothing stopping other processors from accessing it
->>  with per_cpu(var, cpu).
->
-> get_cpu_var() above, will return a ptr specific for a particular CPU
-> only, is correct?
->
-> #define get_cpu_var(var) (*({                           \
->         extern int simple_identifier_##var(void);       \
->         preempt_disable();                              \
->         &__get_cpu_var(var); }))
->
-> SMP:
->
-> #define __get_cpu_var(var) \
->         (*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
->
-> #define SHIFT_PERCPU_PTR(__p, __offset) RELOC_HIDE((__p), (__offset))
->
-> and RELOC_HIDE() i don't understand.
+	do_something()
+	enter memory reclaim
+	iprune_mutex
+	inode lock
 
-RELOC_HIDE is a GCC hack.  It does basically p+offset.
+or
+	do_something()
+	inode lock
+	do_something_else
+	enter memory reclaim
+	iprune_mutex
+	inode lock on different inode
 
-> So from what u said, per_cpu_var() returns uniquely for each CPU, but
-> __get_cpu_var() may not be unique among the different CPU - is that
-> correct?
->
-> When cpuA and cpuB call get_cpu_var(), the returned ptr is specific
-> only for cpuA and cpuB, right?   So yes, as u said, different cpu can
-> call get_cpu_var(), but the returned ptr will be unique to each cpu,
-> therefore it is guaranteed that another CPU will not get hold of the
-> returned results of get_cpu_var(), right?   So why spin_lock() comes
-> after get_cpu_var()?
+So depending on what is seen first (in this case the first), the second
+will trip lockdep. Neither are a deadlock, because the inode lock
+held before memory reclaim is a referenced inode and will *never* be
+on the free list for memory reclaim to deadlock on....
 
-A per-cpu variable is basically an array the size of the number of
-possible CPUs in the system.  get_cpu_var() checks what current CPU we
-are running on and gets the array-element corresponding to this CPU.
+Cheers,
 
-So, really oversimplified, get_cpu_var(foo) translates to something like
-foo[smp_processor_id()].
-
-But per_cpu(), as Jemery said, allows you to retrieve an element from
-the array that is not meant for your current CPU.  So even if you run on
-CPU1, you might fetch the element that is meant for use on CPU0.
-
-But even if you don't access the cpu-local variable from other CPUs, the
-element might still be a reference to a shared structure that you have
-to lock properly.  Another CPU might have a reference to this same
-structure as well in its per-cpu variable.
-
-	Hannes
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
