@@ -1,131 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbYCPQo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYCPQul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbYCPQo2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 12:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYCPQoS
+	id S1752778AbYCPQul (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 12:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPQuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 12:44:18 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:27591 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYCPQoR (ORCPT
+	Sun, 16 Mar 2008 12:50:32 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:57499 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751165AbYCPQub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 12:44:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=B07hm/roKEN2LT9YsETw9hoNCQnJLxDNuXglqW8gLyRYI7NesdU6xkbX+w4566CODbRgeslgIptMFPDAtJpx/0LmbtKG4FpW14LxM/eHttUvOVk4u2wFys3vOQKOLf/ZWcKdHyBKAbvaePP4md1gAOGyIMrZkSghvEK9HZvQZT4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: [PATCH] ide-tape: Avoid potential null pointer dereference in idetape_abort_pipeline()
-Date: Sun, 16 Mar 2008 17:58:22 +0100
-User-Agent: KMail/1.9.9
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Gadi Oxman <gadio@netvision.net.il>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <alpine.LNX.1.00.0803150123450.29784@dragon.funnycrock.com> <87prtw2413.fsf@saeurebad.de>
-In-Reply-To: <87prtw2413.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803161758.23087.bzolnier@gmail.com>
+	Sun, 16 Mar 2008 12:50:31 -0400
+X-Sasl-enc: XQV2/Ziqhj3IxElcfVDUqI0BI71vmvbw/ioqrNeXCwsN 1205686230
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: =?utf-8?q?N=E9meth=20M=E1rton?= <nm127@freemail.hu>,
+       linux-kernel@vger.kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: [PATCH] LED: add support to leds with readable status
+Date: Sun, 16 Mar 2008 13:50:29 -0300
+Message-Id: <1205686229-23408-1-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Some led hardware allows drivers to query the led state, and this patch
+adds a hook to let the led class take advantage of that information when
+available.
 
-Hi,
+Without this functionality, when access to the led hardware is not
+exclusive (i.e. firmware or hardware might change its state behind the
+kernel's back), reality goes out of sync with the led class' idea of what
+the led is doing, which is annoying at best.
 
-On Saturday 15 March 2008, Johannes Weiner wrote:
-> Hi Jesper,
-> 
-> Jesper Juhl <jesper.juhl@gmail.com> writes:
-> 
-> > If a NULL 'new_last_stage' is passed to idetape_abort_pipeline() then 
-> > we'll dereference a NULL pointer and go *boom*. 
-> > The function does test for a null pointer, unfortunately it only does it 
-> > after having already dereferenced it.
-> 
-> Did you hit an oops because of this?
-> 
-> > @@ -814,11 +814,14 @@ static void idetape_abort_pipeline(ide_drive_t *drive,
-> >  				   idetape_stage_t *new_last_stage)
-> >  {
-> >  	idetape_tape_t *tape = drive->driver_data;
-> > -	idetape_stage_t *stage = new_last_stage->next;
-> > +	idetape_stage_t *stage = NULL;
-> >  	idetape_stage_t *nstage;
-> >  
-> >  	debug_log(DBG_PROCS, "%s: Enter %s\n", tape->name, __func__);
-> >  
-> > +	if (new_last_stage)
-> > +		stage = new_last_stage->next;
-> > +
-> >  	while (stage) {
-> >  		nstage = stage->next;
-> >  		idetape_kfree_stage(tape, stage);
-> 
-> ]		--tape->nr_stages;
-> ]		--tape->nr_pending_stages;
-> ]		stage = nstage;
-> ]	}
-> ]	if (new_last_stage)
-> ]		new_last_stage->next = NULL;
-> 
-> ... because if not, and new_last_stage will never be NULL at all in this
-> function, the check here could be removed instead of adding another one.
-> Or perhaps a BUG_ON(!stage) in idetape_end_request() already?
-> 
-> Bartlomiej, please have a look at the following patch.  Should all of
-> these hand-checks in the file be replaced by BUG_ON()s?  Or be removed
-> completely?
+Behaviour for drivers that do not or cannot read the led status is
+unchanged.
 
-I think that they should be removed completely.
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
+ drivers/leds/led-class.c |    9 +++++++++
+ include/linux/leds.h     |    2 ++
+ 2 files changed, 11 insertions(+), 0 deletions(-)
 
-> 	Hannes
-> 
-> --
-> 
-> Turn possible NULL-pointer dereference in idetape_active_next_stage()
-> into an explicit bug and remove the warn-only checking for it.
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> 
-> ---
-> The explicit checking of @stage indicates that someone was expecting
-> that it could be NULL here.  Could someone with real understanding of
-> the code check if the condition is realistic?
-> 
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index 43e0e05..b63f928 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -724,17 +724,15 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
->  
->  static void idetape_activate_next_stage(ide_drive_t *drive)
->  {
-> +	struct request *rq;
->  	idetape_tape_t *tape = drive->driver_data;
->  	idetape_stage_t *stage = tape->next_stage;
-> -	struct request *rq = &stage->rq;
->  
->  	debug_log(DBG_PROCS, "Enter %s\n", __func__);
->  
-> -	if (stage == NULL) {
-> -		printk(KERN_ERR "ide-tape: bug: Trying to activate a non"
-> -				" existing stage\n");
-> -		return;
-> -	}
-> +	BUG_ON(!stage);
-> +
-> +	rq = &stage->rq;
-
-[ stage->rq will OOPS anyway in case of bug so no need for BUG_ON() ]
+diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+index e6c5b98..2b4bcd4 100644
+--- a/drivers/leds/led-class.c
++++ b/drivers/leds/led-class.c
+@@ -24,6 +24,12 @@
  
->  	rq->rq_disk = tape->disk;
->  	rq->buffer = NULL;
+ static struct class *leds_class;
+ 
++static void led_update_brightness(struct led_classdev *led_cdev)
++{
++	if (led_cdev->brightness_get)
++		led_cdev->brightness = led_cdev->brightness_get(led_cdev);
++}
++
+ static ssize_t led_brightness_show(struct device *dev, 
+ 		struct device_attribute *attr, char *buf)
+ {
+@@ -31,6 +37,7 @@ static ssize_t led_brightness_show(struct device *dev,
+ 	ssize_t ret = 0;
+ 
+ 	/* no lock needed for this */
++	led_update_brightness(led_cdev);
+ 	sprintf(buf, "%u\n", led_cdev->brightness);
+ 	ret = strlen(buf) + 1;
+ 
+@@ -113,6 +120,8 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+ 	list_add_tail(&led_cdev->node, &leds_list);
+ 	up_write(&leds_list_lock);
+ 
++	led_update_brightness(led_cdev);
++
+ #ifdef CONFIG_LEDS_TRIGGERS
+ 	init_rwsem(&led_cdev->trigger_lock);
+ 
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index 01adfad..de704f0 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -37,6 +37,8 @@ struct led_classdev {
+ 	/* Set LED brightness level */
+ 	void		(*brightness_set)(struct led_classdev *led_cdev,
+ 					  enum led_brightness brightness);
++	/* Get LED brightness level */
++	enum led_brightness (*brightness_get)(struct led_classdev *led_cdev);
+ 
+ 	/* Activate hardware accelerated blink */
+ 	int		(*blink_set)(struct led_classdev *led_cdev,
+-- 
+1.5.4.4
 
-Please recast the patch and resumbit.
-
-Thanks,
-Bart
