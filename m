@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYCPXjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYCPXjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbYCPXjU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 19:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYCPXjG
+	id S1755570AbYCPXjj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 19:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYCPXja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 19:39:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37814 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbYCPXjF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 19:39:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-Date: Mon, 17 Mar 2008 00:38:28 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Linas =?iso-8859-2?q?=AEvirblis?= <0x0007@gmail.com>
-References: <200803170018.52663.rjw@sisk.pl> <alpine.LFD.1.00.0803161628410.3020@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803161628410.3020@woody.linux-foundation.org>
+	Sun, 16 Mar 2008 19:39:30 -0400
+Received: from phunq.net ([64.81.85.152]:33137 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752965AbYCPXj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 19:39:29 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Sun, 16 Mar 2008 15:39:11 -0800
+User-Agent: KMail/1.9.5
+Cc: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803161536.20128.phillips@phunq.net> <20080316224633.140a5c99@core>
+In-Reply-To: <20080316224633.140a5c99@core>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803170038.29253.rjw@sisk.pl>
+Message-Id: <200803161639.12555.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 17 of March 2008, Linus Torvalds wrote:
+On Sunday 16 March 2008 15:46, Alan Cox wrote:
+> > Hostility does not equate to accuracy.  Galileo comes to mind.
 > 
-> On Mon, 17 Mar 2008, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9983
-> > Subject		: PROBLEM: 2.6.25-rc1-git2 freezes when accessing external USB hard disk (ehci-hcd)
-> > Submitter	: Linas ®virblis <0x0007@gmail.com>
-> > Date		: 2008-02-13 22:38 (33 days old)
-> > References	: http://lkml.org/lkml/2008/2/13/566
-> 
-> This is most likely already fixed by commit
-> e82cc1288fa57857c6af8c57f3d07096d4bcd9d9.
-> 
-> Unless Linas can reproduce it with a newer kernel (I'm cutting an -rc6 
-> right now, but any -git snapshot in the last few days should work) this 
-> one should be closed.  We can't keep things open just because the tester 
-> hasn't tested.
+> I see no attempt to even discuss the use of two sets
+> of physical storage to maintain coherent snapshots, just comments about
+> hostility. That's a fairly poor way to repay people who spend a lot of
+> time working with enterprise customers and are interested in solutions
+> using things like giant ramdisks and are putting in time to discuss
+> alternative ways of achieving the desired result.
 
-Sure, I'll close it if there's no response in a couple of days.
+You did not explain how your proposal will avoid dropping the transaction
+throughput down to disk speed, whereas I have explained how my existing
+design can be made to achieve enterprise-grade data safety.
 
-Thanks,
-Rafael
+As far as I can see, there is no way to do what you propose without
+losing a couple of orders of magnitude of transaction response time
+under normal running conditions.  If you can see a method that I cannot,
+then I am all ears.  Until then... I just loved the earlier post to the
+thread:
+
+  "It is not the best way to travel faster than light.  It is just
+  the only way".
+
+I do not think you have set out to solve the same problem I have, which
+is to attain the highest possible transaction throughput with enterprise
+scale reliability.  If you would like to take my code and modify it to
+work just as you wish it, then of course you are more than welcome.
+
+Daniel
