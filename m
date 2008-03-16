@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYCPNhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbYCPODH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbYCPNhA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 09:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCPNgx
+	id S1752578AbYCPODH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 10:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCPOCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 09:36:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43909 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751861AbYCPNgw (ORCPT
+	Sun, 16 Mar 2008 10:02:55 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:33802 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751861AbYCPOCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 09:36:52 -0400
-Date: Sun, 16 Mar 2008 13:14:49 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080316131449.7d114d37@the-village.bc.nu>
-In-Reply-To: <200803152033.08788.phillips@phunq.net>
-References: <200803092346.17556.phillips@phunq.net>
-	<200803151533.10797.phillips@phunq.net>
-	<20080315232221.GA24227@1wt.eu>
-	<200803152033.08788.phillips@phunq.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 16 Mar 2008 10:02:46 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Anders Eriksson <aeriksson@fastmail.fm>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc4 
+In-reply-to: <200803101504.17219.bzolnier@gmail.com> 
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101336.56159.bzolnier@gmail.com> <200803101410.27877.rjw@sisk.pl> <200803101504.17219.bzolnier@gmail.com>
+Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+   message dated "Mon, 10 Mar 2008 15:04:17 +0100."
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Date: Sun, 16 Mar 2008 15:01:18 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080316140118.891732DC044@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JatRW-00046Y-8U.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1JatRW-00046Y-8U ee5e3661440473de1325d0beb22ceb7b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Anecdote time.  Remember there used to be "brand name" floppy disks and
-> generic floppy disks, and the brand name ones cost a lot more because
-> they were supposedly safer?  Well, big secret, studies were done and
-> the no-name disks came out better.  Why?  Because selling at commodity
-> prices the generic makers could not afford returns.  So they made them
-> well.
 
-Which is not the case for PCs
-> 
-> It is like that with PCs.  
+Many bisects later, now with taking care of making 'make oldconfig' off a 
+known good config for each iteration, and doing 10 reboots and 5 smartd 
+invocations for each version deemed good (not that anyone failed midway).
 
-Nope.
+4d977e43d8ae758434e603cf2455d955f71c77c4 is first bad commit
+commit 4d977e43d8ae758434e603cf2455d955f71c77c4
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date:   Sat Jan 26 20:13:12 2008 +0100
 
-> when you spend more money and buy all high end near-custom gear.  In
-> fact, the cheap stuff just keeps on chugging, because those guys can't
-> afford to have it break.
+    ide: check BUSY and ERROR status bits before reading data in drive_cmd_intr()
 
-They don't care if it breaks after 12 months, and for components and
-addons they don't care if it breaks, they just blame the end user for
-mis-installation or 'incompatibility'. There is a huge difference in
-quality between high end server boards and cheap desktop PC systems.
+    Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-> Right.  What we are talking about is filling in a missing level in the
-> cache hierarchy, something like:
+:040000 040000 0fda2eb7d96335061741d7f54ed3e05ca34ac5b8 cebc540d20784168d04c159b92bd479593d8c9e8 M      drivers
 
-Perhaps. But if your cache can destroy the contents of the layer below in
-situations that do occur it isn't useful. If you can fix that then it
-obviously has a lot of potential.
 
-Alan
+
