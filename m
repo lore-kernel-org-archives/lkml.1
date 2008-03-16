@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYCPPvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbYCPPv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbYCPPvL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 11:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYCPPuc
+	id S1752437AbYCPPv3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 11:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYCPPue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 11:50:32 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35764 "EHLO mail.screens.ru"
+	Sun, 16 Mar 2008 11:50:34 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35766 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbYCPPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 11:50:31 -0400
+	id S1752268AbYCPPud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 11:50:33 -0400
 Date: Sun, 16 Mar 2008 18:54:53 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -17,8 +17,8 @@ Cc: Davide Libenzi <davidel@xmailserver.org>,
        Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
        Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] signals: allow the kernel to actually kill /sbin/init
-Message-ID: <20080316155453.GA20842@tv-sign.ru>
+Subject: [PATCH 4/5] don't panic if /sbin/init exits or killed
+Message-ID: <20080316155453.GA20845@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,37 +27,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the buggy /sbin/init hangs if SIGSEGV/etc happens. The kernel sends
-the signal, init dequeues it and ignores, returns from the exception, repeats
-the faulting instruction, and so on forever.
+If the buggy init exits, the kernel panics. I see no point for this. It is very
+possible that the system is still usable enough, at least to read the logs and
+prepare the bug report.
 
-Imho, such a behaviour is not good. I think that the explicit loud death of
-the buggy /sbin/init is better than the silent hang.
-
-Change force_sig_info() to clear SIGNAL_UNKILLABLE when the task should be
-really killed.
+Change exit_child_reaper() to do BUG() instead of panic().
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/signal.c~3_INIT_SIGSEGV	2008-03-16 15:45:56.000000000 +0300
-+++ 25/kernel/signal.c	2008-03-16 16:14:56.000000000 +0300
-@@ -877,7 +877,8 @@ specific_send_sig_info(int sig, struct s
-  * since we do not want to have a signal handler that was blocked
-  * be invoked when user space had explicitly blocked it.
-  *
-- * We don't want to have recursive SIGSEGV's etc, for example.
-+ * We don't want to have recursive SIGSEGV's etc, for example,
-+ * that is why we also clear SIGNAL_UNKILLABLE.
-  */
- int
- force_sig_info(int sig, struct siginfo *info, struct task_struct *t)
-@@ -897,6 +898,8 @@ force_sig_info(int sig, struct siginfo *
- 			recalc_sigpending_and_wake(t);
- 		}
- 	}
-+	if (action->sa.sa_handler == SIG_DFL)
-+		t->signal->flags &= ~SIGNAL_UNKILLABLE;
- 	ret = specific_send_sig_info(sig, info, t);
- 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
+--- 25/kernel/exit.c~4_EXIT_DONT_PANIC	2008-03-16 16:49:30.000000000 +0300
++++ 25/kernel/exit.c	2008-03-16 16:49:35.000000000 +0300
+@@ -861,8 +861,10 @@ static inline void exit_child_reaper(str
+ 	if (likely(tsk->group_leader != task_child_reaper(tsk)))
+ 		return;
  
+-	if (tsk->nsproxy->pid_ns == &init_pid_ns)
+-		panic("Attempted to kill init!");
++	if (unlikely(tsk->nsproxy->pid_ns == &init_pid_ns)) {
++		printk(KERN_EMERG "Kernel panic - init is killed!\n");
++		BUG();
++	}
+ 
+ 	/*
+ 	 * @tsk is the last thread in the 'cgroup-init' and is exiting.
 
