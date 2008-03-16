@@ -1,106 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbYCPSeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYCPSoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752811AbYCPSeU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 14:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPSeJ
+	id S1753111AbYCPSoE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 14:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYCPSnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 14:34:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53637 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbYCPSeI (ORCPT
+	Sun, 16 Mar 2008 14:43:53 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:49530 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752169AbYCPSnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 14:34:08 -0400
-Date: Sun, 16 Mar 2008 11:32:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][3/3] Update documentation for virtual address space
- control
-Message-Id: <20080316113200.cc6da618.randy.dunlap@oracle.com>
-In-Reply-To: <20080316173017.8812.41614.sendpatchset@localhost.localdomain>
-References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain>
-	<20080316173017.8812.41614.sendpatchset@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sun, 16 Mar 2008 14:43:52 -0400
+X-Sasl-enc: toO0w5CMqxoJs9YI634U+Jj7+LvunJvMyIYUX0uFU5/f 1205693031
+Date: Sun, 16 Mar 2008 15:43:49 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: David Brownell <dbrownell@users.sourceforge.net>,
+       Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: use of preempt_count instead of in_atomic() at leds-gpio.c
+Message-ID: <20080316184349.GA28543@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Mar 2008 23:00:17 +0530 Balbir Singh wrote:
+David, Richard,
 
-> This patch adds documentation for virtual address space control.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  Documentation/controllers/memory.txt |   26 +++++++++++++++++++++++++-
->  1 file changed, 25 insertions(+), 1 deletion(-)
-> 
-> diff -puN Documentation/controllers/memory.txt~memory-controller-virtual-address-control-documentation Documentation/controllers/memory.txt
-> --- linux-2.6.25-rc5/Documentation/controllers/memory.txt~memory-controller-virtual-address-control-documentation	2008-03-16 22:57:44.000000000 +0530
-> +++ linux-2.6.25-rc5-balbir/Documentation/controllers/memory.txt	2008-03-16 22:57:44.000000000 +0530
-> @@ -237,7 +237,31 @@ cgroup might have some charge associated
->  tasks have migrated away from it. Such charges are automatically dropped at
->  rmdir() if there are no tasks.
->  
-> -5. TODO
-> +5. Virtual address space accounting
-> +
-> +A new resource counter controls the address space expansion of the tasks in
-> +the cgroup. Address space control is provided along the same lines as
-> +RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
-> +The interface for controlling address space is provided through
-> +"as_limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t the user
+Is the use of "if (preempt_count())" to know when to defer led gpio work to
+a workqueue needed?  Shouldn't "if (in_atomic())" be enough?
 
-                                                                w.r.t.
-  or even spelled out.
+I have found no other such uses of preempt_count() anywhere in kernel code,
+while in_atomic() is used for that sort of heuristic in various places.
 
-> +interface. Please see section 3 for more details on how to use the user
-> +interface to get and set values.
-> +
-> +The "as_usage_in_bytes" file provides information about the total address
-> +space usage of the cgroup in bytes.
-> +
-> +5.1 Advantages of providing this feature
-> +
-> +1. Control over virtual address space allows for a cgroup to fail gracefully
-> +   i.e, via a malloc or mmap failure as compared to OOM kill when no
+Relevant git commit id is: 00852279af5ad26956bc7f4d0e86fdb40192e542
+"leds: Teach leds-gpio to handle timer-unsafe GPIOs".   It made mainline in
+2.6.23-rc1.
 
-      i.e.,
-
-> +   pages can be reclaimed
-
-end with period.
-
-> +2. It provides better control over how many pages can be swapped out when
-> +   the cgroup goes over it's limit. A badly setup cgroup can cause excessive
-
-                           its (not "it is")
-
-> +   swapping. Providing control over the address space allocations ensures
-> +   that the system administrator has control over the total swapping that
-> +   can take place.
-> +
-> +6. TODO
->  
->  1. Add support for accounting huge pages (as a separate controller)
->  2. Make per-cgroup scanner reclaim not-shared pages first
-> _
-
----
-~Randy
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
