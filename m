@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbYCPFYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYCPFjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbYCPFYg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 01:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYCPFYa
+	id S1753211AbYCPFjA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 01:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYCPFiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 01:24:30 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:60363 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751356AbYCPFY3 (ORCPT
+	Sun, 16 Mar 2008 01:38:54 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:42206 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751356AbYCPFix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 01:24:29 -0400
-Message-ID: <47DCAF21.8040408@davidnewall.com>
-Date: Sun, 16 Mar 2008 15:54:49 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sun, 16 Mar 2008 01:38:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjsBAKdP3EdBXyn6/2dsb2JhbAAIpxE
+Message-ID: <47DCB26B.20907@sympatico.ca>
+Date: Sun, 16 Mar 2008 01:38:51 -0400
+From: Allan Menezes <amenezes007@sympatico.ca>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.2) Gecko/20040804 Netscape/7.2 (ax)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Daniel Phillips <phillips@phunq.net>
-CC: Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-References: <200803092346.17556.phillips@phunq.net> <200803151533.10797.phillips@phunq.net> <20080315232221.GA24227@1wt.eu> <200803152033.08788.phillips@phunq.net>
-In-Reply-To: <200803152033.08788.phillips@phunq.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: HPL benchmarking linux kernel for shared memory performance.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips wrote:
-> when you spend more money and buy all high end near-custom gear.  In
-> fact, the cheap stuff just keeps on chugging, because those guys can't
-> afford to have it break.
->
-> So please don't underestimate the reliability of a PC.
->   
-
-I strongly disagree.  Cheap PC hardware is not even close to the quality
-of a serious, branded machine.  Often capacitors are missing from power
-lines, and the ones that are installed fail sooner.  Cooling fans are
-lower quality and fail much sooner.  Timing issues abound.
-
-There's a reason why an IBM is a better machine than a "Black-n-Gold":
-IBM value their name so when you have a problem, they have a problem. 
-Buy generic and when you get a problem they already have your money and
-since they have no investment in their name, they have nothing more to
-care about.
+Hi,
+    I eliminated in which kernel verion this begins to happen. I am 
+benchmarking a single node with hpl and openmpi beta 1.3 and gotoblas v1.24
+for personal noncommercial reasons.
+I tried a single node with the command $ mpirun -np 1 ./xhpl
+and with kernel ver 2.6.23.14 i get over 38Gflops
+but with kernel ver 2.6.23.15 compiling with the same .config i get 7.xx 
+Gflops which is 1/5th that of the other kernel.
+Keep in mind that only the kernels have changed from kernel.org not any 
+hardware or anything else as all else is same! but the  performace drops 
+to 1/5th
+There is no network involved in this single node quad core intel test 
+but just shared memory.
+So the shared memory or smp performance of the newer kernels is far far 
+worse than upto 2.6.23.14!
+Even with 2.6.25.rc5 the performance is degraded!
+Can you please help me find why this is occurring? Please advise!
+mY set up Quad core Q6600 intel overclocked stably to 2.88 GHZ , 6 gig 
+ddr2 800 mhz dual channel ram,
+Allan Menezes
