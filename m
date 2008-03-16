@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYCPSM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYCPSOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYCPSM1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 14:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPSMR
+	id S1753726AbYCPSOS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 14:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPSOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 14:12:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:40020 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbYCPSMQ (ORCPT
+	Sun, 16 Mar 2008 14:14:09 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:47497 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbYCPSOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 14:12:16 -0400
+	Sun, 16 Mar 2008 14:14:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=LNCnWzNEmqA+pjXsezLftuZp/T41kuj574CS6m7DNspq1vbTQuoPARHG5vMMCiOCIiMQqymsO72r/hLqgqmmTjioM5wQQO2GAUTgQH1blamQoxSBn2mDi5aUbj4wlEcIPBJCGYeTjgjDM71iJgobu5hZiv7EjVaQWTvHS5uwe4Q=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.25-rc4
-Date: Sun, 16 Mar 2008 19:26:35 +0100
-User-Agent: KMail/1.9.9
-Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com>
-In-Reply-To: <200803161907.04581.bzolnier@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=UJYxGrtTMDV+5E4Yj2wR32uLxlW5uiw98lJZkuqgBC9h0OK6dZNxDIG7vT4QAMLOqUif0eeFO5HL7nJl31fikloXYGXPyr3ewoS0z4hw6sQkgG6dPp4u1HXqomo9Cld8wcu73w+qjNR9tI1MKA7Jcn9NdhWIcnmJAy6/Hqp20nM=
+Message-ID: <47DD6356.30906@gmail.com>
+Date: Sun, 16 Mar 2008 13:13:42 -0500
+From: Roger Heflin <rogerheflin@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803161926.36169.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Allan Menezes <amenezes007@sympatico.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: HPL benchmarking linux kernel for shared memory performance.
+References: <47DCB26B.20907@sympatico.ca>
+In-Reply-To: <47DCB26B.20907@sympatico.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 March 2008, Bartlomiej Zolnierkiewicz wrote:
+Allan Menezes wrote:
+> Hi,
+>    I eliminated in which kernel verion this begins to happen. I am 
+> benchmarking a single node with hpl and openmpi beta 1.3 and gotoblas v1.24
+> for personal noncommercial reasons.
+> I tried a single node with the command $ mpirun -np 1 ./xhpl
+> and with kernel ver 2.6.23.14 i get over 38Gflops
+> but with kernel ver 2.6.23.15 compiling with the same .config i get 7.xx 
+> Gflops which is 1/5th that of the other kernel.
+> Keep in mind that only the kernels have changed from kernel.org not any 
+> hardware or anything else as all else is same! but the  performace drops 
+> to 1/5th
+> There is no network involved in this single node quad core intel test 
+> but just shared memory.
+> So the shared memory or smp performance of the newer kernels is far far 
+> worse than upto 2.6.23.14!
+> Even with 2.6.25.rc5 the performance is degraded!
+> Can you please help me find why this is occurring? Please advise!
+> mY set up Quad core Q6600 intel overclocked stably to 2.88 GHZ , 6 gig 
+> ddr2 800 mhz dual channel ram,
+> Allan Menezes
 
-[...]
+Make sure that it is actually using multiple processes or threads, if it was 
+only using a single thread the number could be that low, and a number of really 
+trivial things being wrong could cause it to only be using one thread.  "top -H" 
+will show threads.
 
-> I think that we are looking into completely wrong direction...
+Is the HPL executable identical (the same executable should work just fine so 
+long as the underlying HW is the same, so no need to recompile/relink xhpl)?
 
-Alt-SysRq-T traces that Anders posted shows that the system hangs inside
-block layer, if not clearing DRQ would be the case we should see system
-getting stuck inside IDE (or at least IDE commands timing out)...
+And you might also try Intel's MKL with hpl and see if that is better or worse 
+than gotoblas (this probably won't affect the problem, but it would be good to 
+know if the Intel MKL is better or worse than gotoblas).
 
-I really do think that it is the same hang-in-block-layer issue that
-Ingo managed to hit once (his system was using libata)...
+Also, as the other person mentioned use git bisect and figure out which patch 
+did it, if you can identify one patch someone can probably figure it out.
 
-Thanks,
-Bart
+                            Roger
