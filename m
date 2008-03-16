@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYCPWU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYCPWb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbYCPWU3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 18:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYCPWUW
+	id S1754020AbYCPWb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 18:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbYCPWbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 18:20:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58638 "EHLO mx1.redhat.com"
+	Sun, 16 Mar 2008 18:31:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38698 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbYCPWUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 18:20:21 -0400
+	id S1752696AbYCPWbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 18:31:48 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -20,44 +20,51 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
        Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] don't panic if /sbin/init exits or killed
-In-Reply-To: Oleg Nesterov's message of  Sunday, 16 March 2008 18:54:53 +0300 <20080316155453.GA20845@tv-sign.ru>
-References: <20080316155453.GA20845@tv-sign.ru>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20080316221938.D217026F995@magilla.localdomain>
-Date: Sun, 16 Mar 2008 15:19:38 -0700 (PDT)
+Subject: Re: [PATCH 5/5] ptrace: it is fun to strace /sbin/init
+In-Reply-To: Oleg Nesterov's message of  Sunday, 16 March 2008 18:54:55 +0300 <20080316155455.GA20848@tv-sign.ru>
+References: <20080316155455.GA20848@tv-sign.ru>
+X-Shopping-List: (1) Pink rectums
+   (2) Nuclear explosion configurations
+   (3) Diffident wine absorbers
+Message-Id: <20080316223138.1029D26F995@magilla.localdomain>
+Date: Sun, 16 Mar 2008 15:31:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BUG() does not seem right to me.  This does not diagnose any kernel bug.
-The kernel source location and backtrace are not useful.  In fact, they
-are likely to mislead the user into reporting the bug to the wrong place
-(because it will look like a kernel bug).
+> Ptracing of /sbin/init is not allowed. Of course, this is very dangerous, but
+> may be useful. Introduce the kernel boot parameter to allow this.
 
-I gather your motivation is to get something "recoverable" rather than
-always rebooting.  This might be useful for developers like you and me.
-I suspect that conservative administrators of production systems prefer
-the current behavior.  If the boot init dies, that is reasonably likely
-to be a "catastrophic" failure of the system as a whole as far as the
-proprietor of a production system is concerned.  That is, the system may
-no longer behave as expected in ways essential for its normal operation.
-If it sticks around in that condition, appearing to be available but not
-doing everything it should, that is usually worse than a quick and
-orderly crash (which the installation's procedures and monitoring
-infrastructure are often prepared to handle).
+Personally I wouldn't mind losing all the ptrace/signals special cases for
+init.  (Just don't have a buggy init and expect not to crash, don't be root
+and kill init, etc.)  So this is fine by me.  The conservative route of
+changing it only with a boot option is the wise thing to do.
 
-panic is a bit extreme for the situation, where we have no reason yet to
-think kernel data structures are inconsistent.  A sync+reboot or sync+crash
-without bust_spinlocks et al might be better.
+> Unless I missed something, ptrace_get_task_struct() is pointless. It does not
+> need to check "pid == 1", ptrace_attach() does this. It doesn't need tasklist.
 
-For letting init die and calling it recoverable for hacking purposes, a
-sysctl to disable the panic/crash makes sense.  But I don't think we
-should change the default setting.
+Agreed.  It's a hold-over from when there was more hair in there.
 
-Have you tested how recoverable it really is?  I wonder what happens
-with init having exited when things get reparented to it.  Don't the
-zombies just pile up?
+> It should be replaced with the generic find_get_task_by_vpid() which does not
+> exist yet.
+
+I didn't see enough other uses to really warrant it.  Most
+find_task_by_vpid calls don't actually do get_task_struct.
+Those that do want to do some other check inside rcu_read_lock
+before deciding to bother with get_task_struct anyway.
+So there is nothing wrong with ptrace just open-coding:
+
+	rcu_read_lock();
+	child = find_task_by_vpid(pid);
+	if (child)
+		get_task_struct(child);
+	rcu_read_unlock();
+
+We are on the way soon to having no arch callers of ptrace_get_task_struct
+left, so only the two kernel/ptrace.c uses will survive.  (x86 and ia64
+switchovers to arch_ptrace/compat_arch_ptrace are already in the pipeline,
+and maybe s390 too.)  So let's worry about the cleanup removing this
+function once those wither away.
 
 
 Thanks,
