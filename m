@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbYCPOOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYCPOQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbYCPOOJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 10:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYCPON5
+	id S1753295AbYCPOQW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 10:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCPOQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 10:13:57 -0400
-Received: from ns.firmix.at ([62.141.48.66]:6161 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751870AbYCPON5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 10:13:57 -0400
-Subject: Re: checkpatch.pl and statics
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Andreas Westin XX <andreas.xx.westin@ericsson.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47DD21E1.2080505@panasas.com>
-References: <6006DAC0B81F85439BC960F36F929CDFB5F5EE@eseldmw101.eemea.ericsson.se>
-	 <1205422989.3621.22.camel@tara.firmix.at>  <47DD21E1.2080505@panasas.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Sun, 16 Mar 2008 15:13:39 +0100
-Message-Id: <1205676819.3815.48.camel@gimli.at.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
+	Sun, 16 Mar 2008 10:16:15 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:61525 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbYCPOQO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 10:16:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=DVGfsJQMVSoqAi9PZqIseaQU5IDb1GnIkI/z8Kg2G3zH8rCiHXHsy5qKeDYKbemRmRklC+0LvxXfb0OZpZ1i+LxCR+/+p0tA2QZAQdcivKoloorivceWDEvl9KUq2Jids0HU5RxyQQ8kMOcvSpiX2pYVL9WNmMJDqjDr1hti4Hs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Subject: Re: Linux 2.6.25-rc4
+Date: Sun, 16 Mar 2008 15:29:47 +0100
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101504.17219.bzolnier@gmail.com> <20080316140118.891732DC044@tippex.mynet.homeunix.org>
+In-Reply-To: <20080316140118.891732DC044@tippex.mynet.homeunix.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.332 required=5
-X-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
+Message-Id: <200803161529.48527.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Son, 2008-03-16 at 15:34 +0200, Benny Halevy wrote:
-> On Mar. 13, 2008, 17:43 +0200, Bernd Petrovitsch <bernd@firmix.at> wrote:
-> > On Don, 2008-03-13 at 16:09 +0100, Andreas Westin XX wrote:
-> > [....]
-> >> I ran checkpatch.pl on a piece of code I wrote and besides all the other
-> >> warnings/errors it complained about a static pointer being initialised
-> >> to NULL/0. I fixed it but I'm curious as to why this is not permitted ?
-> > 
-> > Because "uninitialized" data is automatically initialized wit 0. An
-> > explicit initialization with 0/NULL wastes space in the kernel image.
+On Sunday 16 March 2008, Anders Eriksson wrote:
 > 
-> gcc (at least version >= 4.1.2) seems to smarter than that. It
+> Many bisects later, now with taking care of making 'make oldconfig' off a 
+> known good config for each iteration, and doing 10 reboots and 5 smartd 
+> invocations for each version deemed good (not that anyone failed midway).
+> 
+> 4d977e43d8ae758434e603cf2455d955f71c77c4 is first bad commit
+> commit 4d977e43d8ae758434e603cf2455d955f71c77c4
+> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date:   Sat Jan 26 20:13:12 2008 +0100
+> 
+>     ide: check BUSY and ERROR status bits before reading data in drive_cmd_intr()
+> 
+>     Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-That's good news (and new to me too).
+This commit is also _after_ the previously "guilty" one
+(commit 852738f39258deafb3d89c187cb1a4050820d555)?
 
-> doesn't seem to put data initialized to zero in the initialized data
-> segment but rather adds it to the uninitialized data. That said,
-> initializing statically allocated data to zero is superfluous in C
-> and should be avoided for style/elegance reasons as well.
+IIRC we've agreed that bisection between 2.6.24 and commit 8527* was needed?
 
-Well, one can discuss endlessly about style and elegance ....
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Thanks,
+Bart
