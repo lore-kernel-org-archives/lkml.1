@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYCPWDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYCPWKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbYCPWDQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 18:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYCPWDD
+	id S1753733AbYCPWKA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 18:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYCPWJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 18:03:03 -0400
-Received: from khc.piap.pl ([195.187.100.11]:49332 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbYCPWDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 18:03:01 -0400
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-References: <200803092346.17556.phillips@phunq.net>
-	<200803151533.10797.phillips@phunq.net>
-	<20080315232221.GA24227@1wt.eu>
-	<200803152033.08788.phillips@phunq.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 16 Mar 2008 23:02:58 +0100
-In-Reply-To: <200803152033.08788.phillips@phunq.net> (Daniel Phillips's message of "Sat\, 15 Mar 2008 19\:33\:07 -0800")
-Message-ID: <m3skyq8gz1.fsf@maximus.localdomain>
+	Sun, 16 Mar 2008 18:09:50 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36833
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752550AbYCPWJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 18:09:50 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg KH <gregkh@suse.de>
+Subject: 2.6.24.3 broke "make headers_install".
+Date: Sun, 16 Mar 2008 17:09:51 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Samuel Masham <samuel.masham@gmail.com>, stable@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <93564eb70802241736l741e7406o29fab05a611c12c7@mail.gmail.com> <93564eb70803101913n2ede72d1i33279772440c9afa@mail.gmail.com> <20080311033306.GB9198@suse.de>
+In-Reply-To: <20080311033306.GB9198@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803161709.52389.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips <phillips@phunq.net> writes:
-
-> Anecdote time.  Remember there used to be "brand name" floppy disks and
-> generic floppy disks, and the brand name ones cost a lot more because
-> they were supposedly safer?  Well, big secret, studies were done and
-> the no-name disks came out better.  Why?  Because selling at commodity
-> prices the generic makers could not afford returns.  So they made them
-> well.
-
-I don't think so. I remember we had much more problems with noname
-disks. And yes, certain brands had been problematic too, but most
-(such as Fuji and 3M, and others) were fine.
-
-> It is like that with PCs.  Supposedly you get a lot more reliability
-> when you spend more money and buy all high end near-custom gear.  In
-> fact, the cheap stuff just keeps on chugging, because those guys can't
-> afford to have it break.
-
-The real life can't agree with this at all. The servers keep working
-for years and the cheap stuff quit fast (if initially working, which
-is not always the case).
-
-> The worst bug I've seen in a server this year?  A buggy bios in a Dell
-> server that would issue a keyboard error and sit and wait for somebody
-> to press F1 when there was no keyboard attached.
-
-Most BIOS (all I've seen in this Millennium) have an option to disable
-that.
-
-On a server board you can usually have a remote console, how could
-that work otherwise?
-
-> That is embedded
-> software for you.
-
-Server != embedded.
-
-> Yes.  Dual power supplies are highly recommended for this
-> application.
-
-:-)
-So which user groups are you aiming at exactly?
-
-> Right.  What we are talking about is filling in a missing level in the
-> cache hierarchy, something like:
+On Monday 10 March 2008 22:33:06 Greg KH wrote:
+> On Tue, Mar 11, 2008 at 11:13:02AM +0900, Samuel Masham wrote:
+> > Hi Stable, Greg, all,
+> >
+> > Just a quick ping.
+> >
+> > Still not seeing these on the stable queue? Any issue or am i just
+> > looking in the wrong place:-
+> >
+> > http://www.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git
 >
->    L1 .3 ns
->    L2 3 ns
->    L3 30 ns
->    Ramdisk 2 us
->    Flash 20 us
->    Disk 3 ms
+> You're looking in the right place, I'm just slow these days :)
+>
+> thanks,
+>
+> greg k-h
 
-We already have RAM between L3 and Flash.
-The problem is flushing L1 to disk/flash takes time.
+Speaking of the stable queue, I just tried 2.6.24.3 and "make headers_install" 
+now dies with:
+
+make[2]: *** No rule to make target 
+`/home/landley/firmware/firmware/build/temp-i686/linux/include/linux/if_addrlabel.h', 
+needed by 
+`/home/landley/firmware/firmware/build/cross-compiler-i686/include/linux/if_addrlabel.h'.  
+Stop.
+
+I note that 2.6.24.2 didn't do that.
+
+The problem seems t be this hunk:
+
+diff -ru build.bak/sources/linux/include/linux/Kbuild 
+build/sources/linux/includ
+e/linux/Kbuild
+--- build.bak/sources/linux/include/linux/Kbuild        2008-02-10 
+23:51:11.0000
+00000 -0600
++++ build/sources/linux/include/linux/Kbuild    2008-02-25 
+18:20:20.000000000 -0
+600
+@@ -217,6 +217,7 @@
+ unifdef-y += icmp.h
+ unifdef-y += icmpv6.h
+ unifdef-y += if_addr.h
++unifdef-y += if_addrlabel.h
+ unifdef-y += if_arp.h
+ unifdef-y += if_bridge.h
+ unifdef-y += if_ec.h
+
+The corresponding if_addrlabel.h file isn't in the 2.6.24.3 tarball, that I 
+can find...
+
+Rob
 -- 
-Krzysztof Halasa
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
