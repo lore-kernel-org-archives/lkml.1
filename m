@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYCPQul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYCPQ5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYCPQul (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 12:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPQuc
+	id S1752778AbYCPQ5j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 12:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYCPQ5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 12:50:32 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:57499 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751165AbYCPQub (ORCPT
+	Sun, 16 Mar 2008 12:57:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34317 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752010AbYCPQ5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 12:50:31 -0400
-X-Sasl-enc: XQV2/Ziqhj3IxElcfVDUqI0BI71vmvbw/ioqrNeXCwsN 1205686230
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: =?utf-8?q?N=E9meth=20M=E1rton?= <nm127@freemail.hu>,
-       linux-kernel@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH] LED: add support to leds with readable status
-Date: Sun, 16 Mar 2008 13:50:29 -0300
-Message-Id: <1205686229-23408-1-git-send-email-hmh@hmh.eng.br>
-X-Mailer: git-send-email 1.5.4.1
+	Sun, 16 Mar 2008 12:57:30 -0400
+Date: Sun, 16 Mar 2008 09:56:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc4 
+In-Reply-To: <20080316140118.891732DC044@tippex.mynet.homeunix.org>
+Message-ID: <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101336.56159.bzolnier@gmail.com> <200803101410.27877.rjw@sisk.pl> <200803101504.17219.bzolnier@gmail.com> <20080316140118.891732DC044@tippex.mynet.homeunix.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some led hardware allows drivers to query the led state, and this patch
-adds a hook to let the led class take advantage of that information when
-available.
 
-Without this functionality, when access to the led hardware is not
-exclusive (i.e. firmware or hardware might change its state behind the
-kernel's back), reality goes out of sync with the led class' idea of what
-the led is doing, which is annoying at best.
 
-Behaviour for drivers that do not or cannot read the led status is
-unchanged.
+On Sun, 16 Mar 2008, Anders Eriksson wrote:
+> 
+> Many bisects later, now with taking care of making 'make oldconfig' off a 
+> known good config for each iteration, and doing 10 reboots and 5 smartd 
+> invocations for each version deemed good (not that anyone failed midway).
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Richard Purdie <rpurdie@rpsys.net>
+Ok, this is interesting. It's clearly a regression, so we need to undo it. 
+However, it's not trivial to revert, since lots of things have changed 
+around that area since.
+
+In particular, commit 7267c3377443322588cddaf457cf106839a60463 ("ide: 
+remove REQ_TYPE_ATA_CMD") ended up removing the whole drive_cmd_intr() 
+function, because now all the commands are handled with the
+REQ_TYPE_ATA_TASKFILE model instead, which uses a whole another path.
+
+And quite frankly, I think the commit you bisected to really is very 
+broken. It starts doing error handling *before* it has handled the DRQ 
+bit, and that's bogus, since iirc a lot of controllers need to have their 
+DRQ issues satisfied before anything else.
+
+So what probably happens is that yes, you get an error, but the IDE drive 
+still wants the code to flush the data it generated, and if we don't do 
+that, it will never do anything else ever again. Resulting in a hang.
+
+So Anders, can you try these two silly things:
+
+ - there's a totally untested patch at the end here that tries to make the 
+   error handling do that DRQ flush unconditionally. Does it make a 
+   difference for you?
+
+ - did you already try if ata_piix fixes it? 
+
+but I do think that the commit you bisected is crap, crap, crap.
+
+Bartlomiej?
+
+		Linus
 ---
- drivers/leds/led-class.c |    9 +++++++++
- include/linux/leds.h     |    2 ++
- 2 files changed, 11 insertions(+), 0 deletions(-)
+ drivers/ide/ide-io.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-index e6c5b98..2b4bcd4 100644
---- a/drivers/leds/led-class.c
-+++ b/drivers/leds/led-class.c
-@@ -24,6 +24,12 @@
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index 7153796..9105c09 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -462,8 +462,7 @@ static ide_startstop_t ide_ata_error(ide_drive_t *drive, struct request *rq, u8
+ 		}
+ 	}
  
- static struct class *leds_class;
+-	if ((stat & DRQ_STAT) && rq_data_dir(rq) == READ &&
+-	    (hwif->host_flags & IDE_HFLAG_ERROR_STOPS_FIFO) == 0)
++	if ((stat & DRQ_STAT) && rq_data_dir(rq) == READ)
+ 		try_to_flush_leftover_data(drive);
  
-+static void led_update_brightness(struct led_classdev *led_cdev)
-+{
-+	if (led_cdev->brightness_get)
-+		led_cdev->brightness = led_cdev->brightness_get(led_cdev);
-+}
-+
- static ssize_t led_brightness_show(struct device *dev, 
- 		struct device_attribute *attr, char *buf)
- {
-@@ -31,6 +37,7 @@ static ssize_t led_brightness_show(struct device *dev,
- 	ssize_t ret = 0;
- 
- 	/* no lock needed for this */
-+	led_update_brightness(led_cdev);
- 	sprintf(buf, "%u\n", led_cdev->brightness);
- 	ret = strlen(buf) + 1;
- 
-@@ -113,6 +120,8 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
- 	list_add_tail(&led_cdev->node, &leds_list);
- 	up_write(&leds_list_lock);
- 
-+	led_update_brightness(led_cdev);
-+
- #ifdef CONFIG_LEDS_TRIGGERS
- 	init_rwsem(&led_cdev->trigger_lock);
- 
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index 01adfad..de704f0 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -37,6 +37,8 @@ struct led_classdev {
- 	/* Set LED brightness level */
- 	void		(*brightness_set)(struct led_classdev *led_cdev,
- 					  enum led_brightness brightness);
-+	/* Get LED brightness level */
-+	enum led_brightness (*brightness_get)(struct led_classdev *led_cdev);
- 
- 	/* Activate hardware accelerated blink */
- 	int		(*blink_set)(struct led_classdev *led_cdev,
--- 
-1.5.4.4
-
+ 	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq)) {
