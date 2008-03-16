@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbYCPXdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbYCPXeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755531AbYCPXdo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 19:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYCPXde
+	id S1755531AbYCPXeq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 19:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYCPXeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 19:33:34 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46188 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753955AbYCPXdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 19:33:33 -0400
-Date: Mon, 17 Mar 2008 02:32:30 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] /sbin/init && signals fixes
-Message-ID: <20080316233230.GB428@tv-sign.ru>
-References: <20080316155325.GA20833@tv-sign.ru> <20080316230244.B762526F995@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080316230244.B762526F995@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+	Sun, 16 Mar 2008 19:34:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51716 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752476AbYCPXeh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 19:34:37 -0400
+Date: Sun, 16 Mar 2008 16:33:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       =?ISO-8859-15?Q?Linas_=B4virblis?= <0x0007@gmail.com>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+In-Reply-To: <200803170018.52663.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.00.0803161628410.3020@woody.linux-foundation.org>
+References: <200803170018.52663.rjw@sisk.pl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/16, Roland McGrath wrote:
->
-> If we need to keep the magic special treatment of init,
 
-I think we do need. While playing with these patches I noticed that
-killall5 sends SIGKILL explicitly to init during shutdown on my system.
-Note also http://marc.info/?t=120544648800001
 
-(offtopic: and "PATCH 5/5" helped me to figure out why init wastes CPU
- on my system, it stats /dev/initctl (which I don't have) every 5 secs).
+On Mon, 17 Mar 2008, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9983
+> Subject		: PROBLEM: 2.6.25-rc1-git2 freezes when accessing external USB hard disk (ehci-hcd)
+> Submitter	: Linas ®virblis <0x0007@gmail.com>
+> Date		: 2008-02-13 22:38 (33 days old)
+> References	: http://lkml.org/lkml/2008/2/13/566
 
-> then these three patches look like a good cleanup to me.
+This is most likely already fixed by commit
+e82cc1288fa57857c6af8c57f3d07096d4bcd9d9.
 
-Great, thanks!
+Unless Linas can reproduce it with a newer kernel (I'm cutting an -rc6 
+right now, but any -git snapshot in the last few days should work) this 
+one should be closed.  We can't keep things open just because the tester 
+hasn't tested.
 
-Oleg.
-
+		Linus
