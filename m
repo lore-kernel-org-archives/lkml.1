@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbYCPLz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbYCPMU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbYCPLz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 07:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYCPLzQ
+	id S1752455AbYCPMU2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 08:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYCPMUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 07:55:16 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:35503 "EHLO mo10.iij4u.or.jp"
+	Sun, 16 Mar 2008 08:20:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:41199 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751611AbYCPLzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 07:55:15 -0400
-Date: Sun, 16 Mar 2008 20:55:03 +0900
-To: jbeulich@novell.com
-Cc: tomof@acm.org, fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] avoid endless loops in lib/swiotlb.c
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47DA5EF1.76E4.0078.0@novell.com>
-References: <47D8FE4A.76E4.0078.0@novell.com>
-	<20080314182219P.tomof@acm.org>
-	<47DA5EF1.76E4.0078.0@novell.com>
+	id S1751706AbYCPMUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 08:20:18 -0400
+Date: Sun, 16 Mar 2008 13:20:08 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+Cc: "Jean-Samuel Chenard" <jsamch@gmail.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>,
+       grant.likely@secretlab.ca,
+       "Juergen Beisert" <juergen127@kreuzholzen.de>
+Subject: Re: Linux UIO driver cache problem in PowerPC (fix)
+Message-ID: <20080316132008.5050153d@bluebox.local>
+In-Reply-To: <c384c5ea0803151951g47bd5214j18334f03f95821fe@mail.gmail.com>
+References: <169c03cb0803121222h5fca9cdal5af873cd2a700f4d@mail.gmail.com>
+	<20080313081932.4edee290@dilbert.local>
+	<20080314113336.63af1e7a@bluebox.local>
+	<c384c5ea0803151951g47bd5214j18334f03f95821fe@mail.gmail.com>
+Organization: Linutronix GmbH
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080316205441G.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008 10:18:09 +0000
-"Jan Beulich" <jbeulich@novell.com> wrote:
+Am Sun, 16 Mar 2008 03:51:10 +0100
+schrieb "Leon Woestenberg" <leon.woestenberg@gmail.com>:
 
-> >> - if the number of slots requested fits into a swiotlb segment, but is
-> >>   too large for the part of a segment which remains after considering
-> >>   offset_slots
+> Hello,
+> 
+> On Fri, Mar 14, 2008 at 11:33 AM, Hans J. Koch <hjk@linutronix.de>
+> wrote:
+> >  I investigated a bit and found your patch to be correct. I cleaned
+> > it up a bit and sent it to Greg and LKML. I added you as author
+> > and also took the freedom to add your Signed-off-by.
 > >
-> >Sorry, I'm not sure what you mean. Can you give me an actual example
-> >numbers that leads to that?
-> 
-> For one part, it can happen if nslots > max_slots (which is a driver
-> error [except for the case above where max_slots erroneously got set
-> to zero], but shouldn't lead to a silent hang, especially as it didn't do so
-> before).
-> 
-> For another part, requesting e.g. a transfer of 128k with a segment
-> mask of 128k when the IOTLB isn't aligned to a 128k boundary would
-> again lead to a silent hang, as would various cases where the request
-> exceeds the segment size (and the segment mask is sufficiently small).
-> Neither of these cases got stuck in the old code.
-> 
-> Beyond that, maybe I was too quick in concluding this could happen
-> even in less unusual cases - I think I didn't pay close enough attention
-> to the fact that offset_slots + index gets masked by max_slots - 1.
-> But even then I think the code looks simpler/safer and is smaller with
-> the adjusted logic.
+> Could you elaborate why exactly this is needed, maybe even as a
+> comment in the patch?
 
-I don't think that the old code hits the problems (endless loops or
-silent hang) that you explained, but I agree that the patch made the
-code simpler a bit.
+As far as I understood, the VM_IO flag simply means that the page is
+used for IO. On some architectures this automatically means that the
+page is not cached, but this is not guaranteed. That's why
+pgprot_noncached() exists.
+
+If I misunderstood something or somebody can explain it better, please
+let me know.
+
+> 
+> It seemed non-trivial enough to rectify adding a comment.
+
+It _is_ trivial. It's just something you don't need every day, and
+therefore it's not known to everybody (including me) or not obvious.
+But if you look at it:
+
+VM_IO means IO
+pgprot_noncached means noncached
+
+What could be more trivial?
 
 Thanks,
+Hans
