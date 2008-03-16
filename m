@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYCPMrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbYCPMuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYCPMrm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 08:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYCPMrd
+	id S1753177AbYCPMuE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 08:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYCPMtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 08:47:33 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41331 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbYCPMrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 08:47:32 -0400
-Date: Sun, 16 Mar 2008 14:47:19 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: sparclinux@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: only sparc can not include linux/pagemap.h?
-Message-ID: <20080316124719.GD4902@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.64.0803161317470.7207@anakin>
+	Sun, 16 Mar 2008 08:49:55 -0400
+Received: from smtprelay01.ispgateway.de ([80.67.18.13]:41322 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbYCPMty (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 08:49:54 -0400
+X-Greylist: delayed 341 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Mar 2008 08:49:54 EDT
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: David Newall <davidn@davidnewall.com>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Sun, 16 Mar 2008 13:49:14 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Daniel Phillips <phillips@phunq.net>, Willy Tarreau <w@1wt.eu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803152033.08788.phillips@phunq.net> <47DCAF21.8040408@davidnewall.com>
+In-Reply-To: <47DCAF21.8040408@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803161317470.7207@anakin>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803161349.15907.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 16, 2008 at 01:22:22PM +0100, Geert Uytterhoeven wrote:
-> When trying to compile a m68k kernel with CONFIG_SWAP=n (e.g. allnoconfig), I'm
-> bitten by:
-> 
->     include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
->     include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
->     include/asm-generic/tlb.h: In function 'tlb_remove_page':
->     include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
-> 
-> because include/linux/swap.h defines free_page_and_swap_cache() and
-> free_pages_and_swap_cache() to page_cache_release() resp. release_pages()
-> without including <linux/pagemap.h>.
-> 
-> include/linux/swap.h has a comment that says:
-> 
->     /* only sparc can not include linux/pagemap.h in this file
->      * so leave page_cache_release and release_pages undeclared... */
->     #define free_page_and_swap_cache(page) \
-> 	    page_cache_release(page)
->     #define free_pages_and_swap_cache(pages, nr) \
-> 	    release_pages((pages), (nr), 0);
-> 
-> Is this comment still true?
->...
+On Sunday 16 March 2008, David Newall wrote:
+> There's a reason why an IBM is a better machine than a "Black-n-Gold":
+> IBM value their name so when you have a problem, they have a problem. 
+> Buy generic and when you get a problem they already have your money and
+> since they have no investment in their name, they have nothing more to
+> care about.
 
-Yes, see http://lkml.org/lkml/2008/1/31/268
+That's just nonsense in a consolidated market.
 
-> Thanks!
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
+You change to IBM, then to Dell, then to HP
+then again to IBM. Maybe you even try Sun.
 
-cu
-Adrian
+That causes you more grief than any one of them.
 
--- 
+I have seen people doing that in all industry branches
+and even privately.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+If you love brands, then your choice becomes very limited.
+That's the real reason for them being much more expensive.
 
+If you think machines and specs, then you have a much more clear
+picture. After a while you even have your own measures for failure 
+rates of those components and can handle it. No matter which brand :-)
+
+
+Best Regards
+
+Ingo Oeser
