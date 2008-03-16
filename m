@@ -1,50 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYCPSOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbYCPSSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYCPSOn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 14:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYCPSOd
+	id S1753467AbYCPSSq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 14:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYCPSSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 14:14:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33944 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752043AbYCPSOc (ORCPT
+	Sun, 16 Mar 2008 14:18:37 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53405 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751278AbYCPSSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 14:14:32 -0400
-Date: Sun, 16 Mar 2008 11:13:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4
-In-Reply-To: <200803161907.04581.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080316140118.891732DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sun, 16 Mar 2008 14:18:36 -0400
+Date: Sun, 16 Mar 2008 23:47:11 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: discuss@LessWatts.org,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       venkatesh.pallipadi@intel.com, tglx@linutronix.de,
+       Arjan van de Ven <arjan@infradead.org>, suresh.b.siddha@intel.com,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Chanda Sethia <chanda.sethia@in.ibm.com>
+Subject: Re: Too many timer interrupts in NO_HZ
+Message-ID: <20080316181711.GK18923@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: discuss@LessWatts.org,
+	Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	venkatesh.pallipadi@intel.com, tglx@linutronix.de,
+	Arjan van de Ven <arjan@infradead.org>, suresh.b.siddha@intel.com,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	Chanda Sethia <chanda.sethia@in.ibm.com>
+References: <20080302194812.GD10028@dirshya.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080302194812.GD10028@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-03-03 01:18:13]:
 
-
-On Sun, 16 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
+[sniped]
+       
+ 
+> The problem:
 > 
-> We don't do error handling for special commands (REQ_TYPE_ATA_*) at all,
-> ide_error() just dumps device's status/error register(s) and finishes early:
+> There are way too many timer interrupts even though the CPUs have
+> entered tickless idle loop.  Timer interrupts basically bring the CPU
+> out of idle, and then return to tickless idle.  There are very few
+> try_to_wake_up()s or need_resched() in between the timer interrupts.
+> 
+> What can happen in an idle system in the timer interrupt context that
+> does not invoke a need_resched() or try_to_wake_up()?
+> 
 
-Well that sounds bogus too, for all the same reasons already outlined. The 
-DRQ flag needs to be cleared up on error!
+[sniped]
+ 
+> Please help me to understand the following scenario:
+> 
+> * What can happen in timer interrupt context that need not wakeup any
+>   process?
+> * What can prevent tick_nohz_stop_sched_tick() from actually stopping
+>   the tick?  
+> * Whats wrong in expecting to see some of the CPUs having tickless
+>   idle time of few minutes
 
-> Moreover the problem was initially narrowed down to commit
-> 852738f39258deafb3d89c187cb1a4050820d555 which is two commits _before_
-> the one that we are currently discussing.
+I think I have the answers to some of the above questions.  
 
-.. and that initial narrowing down is now in doubt, with the new one 
-pointing to that DRQ-logic-changing commit!
+Function        Count                   Name
+Address
 
-IOW, Anders re-did things more carefully, and came to a new result. Why 
-are you apparenrly ignoring that fact?
+c0219922        : 5		blk_unplug_timeout
+c014f464        : 55		wb_timer_fn
+c02b2e67        : 350		bnx2_timer
+c03efcbc        : 115		neigh_periodic_timer
+c012894a        : 220		process_timeout
+c027d1c4        : 2		hangcheck_fire
+c03fe232        : 3		peer_check_expire
+c012e830        : 25		delayed_work_timer_fn
+c03afe92        : 2783		ehci_watchdog
+c03f1a35        : 10		neigh_timer_handler
+c01d7456        : 110		commit_timeout
+c04381e9        : 2		addrconf_verify
+c03f6d39        : 365		dev_watchdog
+c04126bc        : 114		tcp_write_timer
 
-			Linus
+These are roughly the list of functions that were responsible for the
+timer interrupts across all cpus including the ones in idle.  Most of
+the functions complete the job in interrupt context and also re-queue
+the timer.  The count number is the call count in the 120s observation
+window across all 4 CPUs.
+
+I got these function addresses from __next_timer_interrupt() in
+timer.c.  Previously, I did not look in timer.c since hrtimers were
+enabled and I assumed all timer call will be through __run_hrtimer
+from hrtimer.c.  The call count of __run_hrtimer was very minimal and
+did not correspond to the local timer interrupt count.
+
+These are device driver timers that we need to investigate.  We should
+try to migrate them to CPU0 (or some other package) to get really long
+uninterrupted CPU sleep time.  
+
+I will post more results after tweaking some of the above timers.
+
+Should PowerTop include local timer interrupt counts as well during
+the observation period?  Interrupt do significantly affect CPU sleep
+time whether they wakeup any process or not.
+
+Comments?
+
+Thanks,
+Vaidy
+
+
