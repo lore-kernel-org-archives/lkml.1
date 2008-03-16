@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYCPRcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYCPRfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYCPRcM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 13:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYCPRbv
+	id S1753543AbYCPRfv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 13:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbYCPRfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 13:31:51 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42646 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbYCPRbu (ORCPT
+	Sun, 16 Mar 2008 13:35:43 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:44107 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbYCPRfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 13:31:50 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sun, 16 Mar 2008 23:00:17 +0530
-Message-Id: <20080316173017.8812.41614.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080316172942.8812.56051.sendpatchset@localhost.localdomain>
-References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain>
-Subject: [RFC][3/3] Update documentation for virtual address space control
+	Sun, 16 Mar 2008 13:35:42 -0400
+Date: Sun, 16 Mar 2008 13:35:39 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: torvalds@linux-foundation.org
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [git patches] parisc bug fixes for 2.6.25
+Message-ID: <20080316173539.GA3904@phobos.i.cabal.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following changes since commit cdeeeae056a429e729ae9e914fa8142ee45bee93:
+  Linus Torvalds (1):
+        Linux 2.6.25-rc5
 
+are available in the git repository at:
 
-This patch adds documentation for virtual address space control.
+  git://git.kernel.org/pub/scm/linux/kernel/git/kyle/parisc-2.6.git master
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Adrian Bunk (1):
+      [PARISC] move defconfig to arch/parisc/configs/
 
- Documentation/controllers/memory.txt |   26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+FUJITA Tomonori (1):
+      [PARISC] make ptr_to_pide() static
 
-diff -puN Documentation/controllers/memory.txt~memory-controller-virtual-address-control-documentation Documentation/controllers/memory.txt
---- linux-2.6.25-rc5/Documentation/controllers/memory.txt~memory-controller-virtual-address-control-documentation	2008-03-16 22:57:44.000000000 +0530
-+++ linux-2.6.25-rc5-balbir/Documentation/controllers/memory.txt	2008-03-16 22:57:44.000000000 +0530
-@@ -237,7 +237,31 @@ cgroup might have some charge associated
- tasks have migrated away from it. Such charges are automatically dropped at
- rmdir() if there are no tasks.
- 
--5. TODO
-+5. Virtual address space accounting
-+
-+A new resource counter controls the address space expansion of the tasks in
-+the cgroup. Address space control is provided along the same lines as
-+RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
-+The interface for controlling address space is provided through
-+"as_limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t the user
-+interface. Please see section 3 for more details on how to use the user
-+interface to get and set values.
-+
-+The "as_usage_in_bytes" file provides information about the total address
-+space usage of the cgroup in bytes.
-+
-+5.1 Advantages of providing this feature
-+
-+1. Control over virtual address space allows for a cgroup to fail gracefully
-+   i.e, via a malloc or mmap failure as compared to OOM kill when no
-+   pages can be reclaimed
-+2. It provides better control over how many pages can be swapped out when
-+   the cgroup goes over it's limit. A badly setup cgroup can cause excessive
-+   swapping. Providing control over the address space allocations ensures
-+   that the system administrator has control over the total swapping that
-+   can take place.
-+
-+6. TODO
- 
- 1. Add support for accounting huge pages (as a separate controller)
- 2. Make per-cgroup scanner reclaim not-shared pages first
-_
+Helge Deller (1):
+      [PARISC] head.S: section mismatch fixes
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+James Bottomley (1):
+      [PARISC] add pa8900 CPUs to hardware inventory
+
+Joel Soete (1):
+      [PARISC] pdc_stable: fix compile errors
+
+Kyle McMartin (11):
+      [PARISC] remove old timerfd syscall
+      [PARISC] wire up timerfd syscalls
+      [PARISC] move VMALLOC_* definitions to fixmap.h
+      [PARISC] unbreak pgalloc.h
+      [PARISC] bump __NR_syscalls
+      [PARISC] remove unused pdc_iodc_printf function
+      [PARISC] dump_stack in show_regs
+      [PARISC] pdc_console: fix bizarre panic on boot
+      [PARISC] clean up show_stack
+      [PARISC] futex: special case cmpxchg NULL in kernel space
+      [PARISC] add back Crestone Peak cpu
+
+Randolph Chung (1):
+      [PARISC] clean up include/asm-parisc/elf.h
+
+Thibaut VARENE (1):
+      [PARISC] add back AD1889 MAINTAINERS entry
+
+ MAINTAINERS                                        |    9 ++++++
+ arch/parisc/Makefile                               |    3 ++
+ .../{defconfig => configs/default_defconfig}       |    0 
+ arch/parisc/kernel/firmware.c                      |   27 +++++++++++------
+ arch/parisc/kernel/hardware.c                      |   13 ++++++++-
+ arch/parisc/kernel/head.S                          |    7 ++--
+ arch/parisc/kernel/pdc_cons.c                      |   30 ++++++++++---------
+ arch/parisc/kernel/syscall_table.S                 |    5 ++-
+ arch/parisc/kernel/traps.c                         |   25 ++++++++++++++--
+ drivers/parisc/pdc_stable.c                        |    6 ++--
+ drivers/parisc/sba_iommu.c                         |    4 +-
+ include/asm-parisc/elf.h                           |   22 ++++++--------
+ include/asm-parisc/fixmap.h                        |    9 +++++-
+ include/asm-parisc/futex.h                         |   10 +++++-
+ include/asm-parisc/pdc.h                           |    3 +-
+ include/asm-parisc/pgalloc.h                       |    4 +-
+ include/asm-parisc/pgtable.h                       |    8 -----
+ include/asm-parisc/unistd.h                        |    5 ++-
+ 18 files changed, 125 insertions(+), 65 deletions(-)
+ rename arch/parisc/{defconfig => configs/default_defconfig} (100%)
