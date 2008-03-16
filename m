@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbYCPOFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbYCPOOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbYCPOFH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 10:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYCPOE4
+	id S1752771AbYCPOOJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 10:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYCPON5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 10:04:56 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:50114 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbYCPOEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 10:04:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=D79aolpsxDPmX2K0ZiCxb/rtLOqcpqxqfenK2B2fcRaKKVzOOzjYr10nQRh/TYqx0ntd3vIZ/bvr0ehsPiaZKHIs0HEWleP/7AgVPWStlvDa12HYoSuK41fpPq/lGFvnXVvYEdRFSscE9ZvTLw+CTM9iw1Sb62D+ETkf0gmWhY8=
-Message-ID: <982c94040803160704h5377c943o68612a0a5d6e4b7d@mail.gmail.com>
-Date: Sun, 16 Mar 2008 10:04:49 -0400
-From: "Philip Pratt-Szeliga" <pcpratts@syr.edu>
-To: linux-kernel@vger.kernel.org
-Subject: scheduler code/doc inconstancy
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 16 Mar 2008 10:13:57 -0400
+Received: from ns.firmix.at ([62.141.48.66]:6161 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751870AbYCPON5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 10:13:57 -0400
+Subject: Re: checkpatch.pl and statics
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: Andreas Westin XX <andreas.xx.westin@ericsson.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47DD21E1.2080505@panasas.com>
+References: <6006DAC0B81F85439BC960F36F929CDFB5F5EE@eseldmw101.eemea.ericsson.se>
+	 <1205422989.3621.22.camel@tara.firmix.at>  <47DD21E1.2080505@panasas.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Sun, 16 Mar 2008 15:13:39 +0100
+Message-Id: <1205676819.3815.48.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-8.fc7) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.332 required=5
+X-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-X-Google-Sender-Auth: 0e9f6b08c8074774
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In Linux 2.6.24.3:
+On Son, 2008-03-16 at 15:34 +0200, Benny Halevy wrote:
+> On Mar. 13, 2008, 17:43 +0200, Bernd Petrovitsch <bernd@firmix.at> wrote:
+> > On Don, 2008-03-13 at 16:09 +0100, Andreas Westin XX wrote:
+> > [....]
+> >> I ran checkpatch.pl on a piece of code I wrote and besides all the other
+> >> warnings/errors it complained about a static pointer being initialised
+> >> to NULL/0. I fixed it but I'm curious as to why this is not permitted ?
+> > 
+> > Because "uninitialized" data is automatically initialized wit 0. An
+> > explicit initialization with 0/NULL wastes space in the kernel image.
+> 
+> gcc (at least version >= 4.1.2) seems to smarter than that. It
 
-kernel/sched.c line 3663 calls sched_info_switch and line 3665 says
-if(likely(prev != next)){
+That's good news (and new to me too).
 
-so it looks like this:
+> doesn't seem to put data initialized to zero in the initialized data
+> segment but rather adds it to the uninitialized data. That said,
+> initializing statically allocated data to zero is superfluous in C
+> and should be avoided for style/elegance reasons as well.
 
-sched_info_switch(prev, next);
+Well, one can discuss endlessly about style and elegance ....
 
-if (likely(prev != next)) {
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-But! In kernel/sched_stat.c the following starts at line 206. It says
-we are only called when prev != next in the comment but that violates
-what is happening above.
-
-/*
-* Called when tasks are switched involuntarily due, typically, to expiring
-* their time slice. (This may also be called when switching to or from
-* the idle task.) ___We are only called when prev != next.___
-*/
-static inline void
-__sched_info_switch(struct task_struct *prev, struct task_struct *next)
-{
-struct rq *rq = task_rq(prev);
-
-/*
-* prev now departs the cpu. It's not interesting to record
-* stats about how efficient we were at scheduling the idle
-* process, however.
-*/
-if (prev != rq->idle)
-sched_info_depart(prev);
-
-if (next != rq->idle)
-sched_info_arrive(next);
-}
-static inline void
-sched_info_switch(struct task_struct *prev, struct task_struct *next)
-{
-if (unlikely(sched_info_on()))
-__sched_info_switch(prev, next);
-}
-
-
-Maybe this is a bug in the code but possibly it is just a problem in
-the documentation
-
-Sincerely,
-Phil Pratt-Szeliga
