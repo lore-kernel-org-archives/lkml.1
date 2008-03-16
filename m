@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbYCPIWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbYCPIYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbYCPIWH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 04:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYCPIVz
+	id S1752770AbYCPIYR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 04:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYCPIYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 04:21:55 -0400
-Received: from io.site5.com ([74.53.58.9]:41953 "EHLO io.site5.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907AbYCPIVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 04:21:30 -0400
-X-Greylist: delayed 1877 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Mar 2008 04:21:30 EDT
-Subject: [PATCH] Subject: kprobes-x86: correct post-eip value in post_hander()
-From: "Yakov Lerner" <iler.ml@gmail.com>
-To: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org, iler.ml@gmail.com
-Message-Id: <E1Jao7N-0005OC-Fe@io.site5.com>
-Date: Sun, 16 Mar 2008 03:21:21 -0500
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - io.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [32290 32293] / [47 12]
-X-AntiAbuse: Sender Address Domain - io.site5.com
+	Sun, 16 Mar 2008 04:24:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:27919 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYCPIYD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 04:24:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ujqp/r17WlNIQCa8j+ioTYv0YGb43Py4H1vuAoCMp+QtSIqdMtoWJQgRSJjrevDRfH9X31CdRnA6uedqH4+f9mZv5OnWFfgF6l23yCmmRt+8XNBXWX5FZUbyw57wmf3ww6N/MIjgzm5ZZvLATICvO8WAGq/YuDkUYDEXvhmdZFo=
+Message-ID: <804dabb00803160124p1240abe1v842821e988fdeca7@mail.gmail.com>
+Date: Sun, 16 Mar 2008 16:24:02 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: spin_lock after get_cpu_var()
+Cc: htmldeveloper@gmail.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I find it quite puzzling (no where else in kernel source is this
+found) that you would want to apply spin_lock() after get_cpu_var().
+The fddef is already percpu, so there is no need to lock it, right?
 
-I was trying to get the address of instruction to be executed 
-next after the kprobed instruction.  But regs->eip in post_handler()
-contains value which is useless to the user. It's pre-corrected value.
-This value is difficult to use without access to resume_execution(), which
-is not exported anyway.
-I moved the invocation of post_handler() to *after* resume_execution().
-Now regs->eip contains meaningful value in post_handler().
+I submitted this patch before, but got no response, just trying my
+luck this time :-).
 
-I do not think this change breaks any backward-compatibility.
-To make meaning of the old value, post_handler() would need access to
-resume_execution() which is not exported.  I have difficulty to believe
-that previous, uncorrected, regs->eip can be meaningfully used in
-post_handler().
+void free_fdtable_rcu(struct rcu_head *rcu)
+{
+        struct fdtable *fdt = container_of(rcu, struct fdtable, rcu);
+        struct fdtable_defer *fddef;
 
-Signed-off-by: Yakov Lerner <iler.ml@gmail.com>
----
- arch/x86/kernel/kprobes.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+        BUG_ON(!fdt);
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 34a5912..60392e2 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -858,15 +858,15 @@ static int __kprobes post_kprobe_handler(struct pt_regs *regs)
- 	if (!cur)
- 		return 0;
- 
-+	resume_execution(cur, regs, kcb);
-+	regs->flags |= kcb->kprobe_saved_flags;
-+	trace_hardirqs_fixup_flags(regs->flags);
-+
- 	if ((kcb->kprobe_status != KPROBE_REENTER) && cur->post_handler) {
- 		kcb->kprobe_status = KPROBE_HIT_SSDONE;
- 		cur->post_handler(cur, regs, 0);
- 	}
- 
--	resume_execution(cur, regs, kcb);
--	regs->flags |= kcb->kprobe_saved_flags;
--	trace_hardirqs_fixup_flags(regs->flags);
--
- 	/* Restore back the original saved kprobes variables and continue. */
- 	if (kcb->kprobe_status == KPROBE_REENTER) {
- 		restore_previous_kprobe(kcb);
--- 
-1.5.4.4
-
+        if (fdt->max_fds <= NR_OPEN_DEFAULT) {
+                /*
+                 * This fdtable is embedded in the files structure and that
+                 * structure itself is getting destroyed.
+                 */
+                kmem_cache_free(files_cachep,
+                                container_of(fdt, struct files_struct, fdtab));
+                return;
+        }
+        if (fdt->max_fds <= (PAGE_SIZE / sizeof(struct file *))) {
+                kfree(fdt->fd);
+                kfree(fdt->open_fds);
+                kfree(fdt);
+        } else {
+                fddef = &get_cpu_var(fdtable_defer_list);=============> here
+                spin_lock(&fddef->lock);==========================>here
+                fdt->next = fddef->next;
+                fddef->next = fdt;
+                /* vmallocs are handled from the workqueue context */
+                schedule_work(&fddef->wq);
+                spin_unlock(&fddef->lock);
+                put_cpu_var(fdtable_defer_list);
+        }
+}
