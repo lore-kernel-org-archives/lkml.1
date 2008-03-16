@@ -1,95 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYCPPvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYCPQCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbYCPPvn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 11:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYCPPuh
+	id S1753335AbYCPQCs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 12:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYCPQCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 11:50:37 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35768 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbYCPPug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 11:50:36 -0400
-Date: Sun, 16 Mar 2008 18:54:55 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
+	Sun, 16 Mar 2008 12:02:39 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:32930 "EHLO WNmonitoring"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751538AbYCPQCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 12:02:38 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
-       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] ptrace: it is fun to strace /sbin/init
-Message-ID: <20080316155455.GA20848@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH 1/1] IDE: fix ide.h compiler warning
+Date: Sun, 16 Mar 2008 17:01:58 +0100
+Message-Id: <1205683318-1409-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ptracing of /sbin/init is not allowed. Of course, this is very dangerous, but
-may be useful. Introduce the kernel boot parameter to allow this.
+Fix following compiler warning by returning EINVAL
+In file included from ANYTHING-INCLUDING-IDE.H:45:
+include/linux/ide.h: In function ‘ide_hwif_setup_dma’:
+include/linux/ide.h:1022: warning: no return statement in function returning non-void
 
-Note that it is really dangerous, also because init can lose SIGNAL_UNKILLABLE
-flag. But this is because we are not careful enough with setting signal->flags,
-this should be cleanuped anyway.
+This fix is only for CONFIG_BLK_DEV_IDEDMA_PCI=n configs and is introduced by
+ide: do complete DMA setup in ->init_dma method.
 
-Unless I missed something, ptrace_get_task_struct() is pointless. It does not
-need to check "pid == 1", ptrace_attach() does this. It doesn't need tasklist.
-It should be replaced with the generic find_get_task_by_vpid() which does not
-exist yet.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ include/linux/ide.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 25/kernel/ptrace.c~5_INIT_PTRACE	2008-03-16 17:22:04.000000000 +0300
-+++ 25/kernel/ptrace.c	2008-03-16 18:33:02.000000000 +0300
-@@ -160,6 +160,15 @@ int ptrace_may_attach(struct task_struct
- 	return !err;
- }
- 
-+static int allow_ptrace_init;
-+
-+static int __init __allow_ptrace_init(char *str)
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 83ddaf0..bd8d751 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1016,7 +1016,10 @@ unsigned long ide_pci_dma_base(ide_hwif_t *, const struct ide_port_info *);
+ int ide_hwif_setup_dma(ide_hwif_t *, const struct ide_port_info *);
+ #else
+ static inline int ide_hwif_setup_dma(ide_hwif_t *hwif,
+-				     const struct ide_port_info *d) { }
++				     const struct ide_port_info *d)
 +{
-+	allow_ptrace_init = 1;
-+	return 1;
++	return -EINVAL;
 +}
-+__setup("init_ptrace", __allow_ptrace_init);
-+
- int ptrace_attach(struct task_struct *task)
- {
- 	int retval;
-@@ -168,7 +177,7 @@ int ptrace_attach(struct task_struct *ta
- 	audit_ptrace(task);
+ #endif
  
- 	retval = -EPERM;
--	if (task->pid <= 1)
-+	if (unlikely(is_global_init(task)) && likely(!allow_ptrace_init))
- 		goto out;
- 	if (same_thread_group(task, current))
- 		goto out;
-@@ -518,12 +527,6 @@ struct task_struct *ptrace_get_task_stru
- {
- 	struct task_struct *child;
- 
--	/*
--	 * Tracing init is not allowed.
--	 */
--	if (pid == 1)
--		return ERR_PTR(-EPERM);
--
- 	read_lock(&tasklist_lock);
- 	child = find_task_by_vpid(pid);
- 	if (child)
---- 25/Documentation/kernel-parameters.txt~5_INIT_PTRACE	2008-02-15 16:58:12.000000000 +0300
-+++ 25/Documentation/kernel-parameters.txt	2008-03-16 18:30:28.000000000 +0300
-@@ -803,6 +803,8 @@ and is between 256 and 4096 characters. 
- 			Run specified binary instead of /sbin/init as init
- 			process.
- 
-+	init_ptrace	[KNL] Allows to ptrace init. Very dangerous. Don't use.
-+
- 	initcall_debug	[KNL] Trace initcalls as they are executed.  Useful
- 			for working out where the kernel is dying during
- 			startup.
+ extern void default_hwif_iops(ide_hwif_t *);
+-- 
+1.5.4.1
 
