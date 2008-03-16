@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYCPWKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYCPWKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753733AbYCPWKA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 18:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYCPWJu
+	id S1752818AbYCPWKl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 18:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYCPWKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 18:09:50 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36833
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752550AbYCPWJu (ORCPT
+	Sun, 16 Mar 2008 18:10:32 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39275 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753438AbYCPWKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 18:09:50 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Greg KH <gregkh@suse.de>
-Subject: 2.6.24.3 broke "make headers_install".
-Date: Sun, 16 Mar 2008 17:09:51 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Samuel Masham <samuel.masham@gmail.com>, stable@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <93564eb70802241736l741e7406o29fab05a611c12c7@mail.gmail.com> <93564eb70803101913n2ede72d1i33279772440c9afa@mail.gmail.com> <20080311033306.GB9198@suse.de>
-In-Reply-To: <20080311033306.GB9198@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 16 Mar 2008 18:10:31 -0400
+Date: Sun, 16 Mar 2008 21:55:47 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Willy Tarreau <w@1wt.eu>, David Newall <davidn@davidnewall.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Message-ID: <20080316215547.07824de7@core>
+In-Reply-To: <200803161457.04580.phillips@phunq.net>
+References: <200803092346.17556.phillips@phunq.net>
+	<200803151500.05993.phillips@phunq.net>
+	<20080315230558.12e9c96c@the-village.bc.nu>
+	<200803161457.04580.phillips@phunq.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803161709.52389.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 March 2008 22:33:06 Greg KH wrote:
-> On Tue, Mar 11, 2008 at 11:13:02AM +0900, Samuel Masham wrote:
-> > Hi Stable, Greg, all,
-> >
-> > Just a quick ping.
-> >
-> > Still not seeing these on the stable queue? Any issue or am i just
-> > looking in the wrong place:-
-> >
-> > http://www.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git
->
-> You're looking in the right place, I'm just slow these days :)
->
-> thanks,
->
-> greg k-h
+> > That isn't anything to do with what was being proposed. *ORDERING* not
+> > flush to media.
+> 
+> This is where you have made a fundamental mistake in your proposal.
+> Suppose you have a steady, heavy write load onto ramback.  Eventually,
+> the entire ramdisk will be dirty and you have to drop back to disk
+> speed, right?  My design does not suffer from that problem, but your
+> proposal does.
 
-Speaking of the stable queue, I just tried 2.6.24.3 and "make headers_install" 
-now dies with:
+In your design the entire ramdisk goes bang and disappears on a crash.
 
-make[2]: *** No rule to make target 
-`/home/landley/firmware/firmware/build/temp-i686/linux/include/linux/if_addrlabel.h', 
-needed by 
-`/home/landley/firmware/firmware/build/cross-compiler-i686/include/linux/if_addrlabel.h'.  
-Stop.
+> It gets worse than that.  Suppose somebody writes the same region
+> twice, how do you order that?  Do you try to store that new data
+> somewhere, keeping in mind that we are already at terabyte scale?  Is
+> there a limit on how much overwrite data you may have to store?  (No.)
 
-I note that 2.6.24.2 didn't do that.
+You only have to care about ordering if there is a store barrier between
+the two (not usual). You only have to care about filling if you generate
+enough dirty blocks at a very high rate (which is unusual for most
+workloads). If you don't care about those then we have ramdisk already and
+if you want to write a ramdisk driver for external ramdisk great. You'd
+also fix the layering violations then by allowing device mapper to
+implement things like snapshotting and writeback seperated from your
+driver.
 
-The problem seems t be this hunk:
+Even in the extreme case that you propose there are trivial ways of
+getting coherency. Simple example - if you can sweep all the data out in
+say 10 minutes then you can buy twice the physical media and ensure that
+one of the two sets of disk backups is genuinely store barrier consistent
+to some snapshot time (say every 30 minutes but obviously user tunable).
+If you at least had some kind of credible snapshotting you'd find people
+less hostile to your glorified ramdisk.
 
-diff -ru build.bak/sources/linux/include/linux/Kbuild 
-build/sources/linux/includ
-e/linux/Kbuild
---- build.bak/sources/linux/include/linux/Kbuild        2008-02-10 
-23:51:11.0000
-00000 -0600
-+++ build/sources/linux/include/linux/Kbuild    2008-02-25 
-18:20:20.000000000 -0
-600
-@@ -217,6 +217,7 @@
- unifdef-y += icmp.h
- unifdef-y += icmpv6.h
- unifdef-y += if_addr.h
-+unifdef-y += if_addrlabel.h
- unifdef-y += if_arp.h
- unifdef-y += if_bridge.h
- unifdef-y += if_ec.h
+> > You have no guarantee of commit to stable storage so your use of the word
+> > "transaction" is a bit farcical.
+> 
+> The UPS provides a guarantee of commit to stable storage.  No amount of
 
-The corresponding if_addrlabel.h file isn't in the 2.6.24.3 tarball, that I 
-can find...
+Stable storage to most people means "won't go away on a bad happening".
+Transaction likewise has a specific meaning in terms of an event occuring
+once only an either being recorded before or after the transaction
+occurred.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Alan
