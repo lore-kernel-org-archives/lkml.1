@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYCPX3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYCPXd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbYCPX3D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 19:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYCPX2y
+	id S1754866AbYCPXd1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 19:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYCPXdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 19:28:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47352 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753058AbYCPX2x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 19:28:53 -0400
-Date: Sun, 16 Mar 2008 16:27:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-Reply-To: <20080316225921.CAA082DC044@tippex.mynet.homeunix.org>
-Message-ID: <alpine.LFD.1.00.0803161618480.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org> <200803162054.04757.bzolnier@gmail.com>
- <20080316225921.CAA082DC044@tippex.mynet.homeunix.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sun, 16 Mar 2008 19:33:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32799 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752546AbYCPXdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 19:33:19 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] don't panic if /sbin/init exits or killed
+In-Reply-To: Oleg Nesterov's message of  Monday, 17 March 2008 02:03:46 +0300 <20080316230346.GA379@tv-sign.ru>
+References: <20080316155453.GA20845@tv-sign.ru>
+	<20080316221938.D217026F995@magilla.localdomain>
+	<20080316230346.GA379@tv-sign.ru>
+X-Shopping-List: (1) Mountainous symmetrical digression digressions
+   (2) Geopolitical faceers
+   (3) Spacious cackling whips
+   (4) Injured negligent ghost-melt lesions
+Message-Id: <20080316233242.DC9E226F995@magilla.localdomain>
+Date: Sun, 16 Mar 2008 16:32:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> But panic() isn't better? It doesn't provide any useful info.
 
+It is not misleading in the same way.  It's clear that going to look at the
+kernel source is not the place to find the root of the problem.
 
-On Sun, 16 Mar 2008, Anders Eriksson wrote:
+> Well, I think the generic "if we have a chance to survive, we should try
+> to survive" rule is good.
 > 
-> rc5 fails with and without that patch.
+> If the boot init dies, at least the admin has a chance to figure out what
+> has happened, and -o remount,ro /.
 
-Can you try to sprinkle printk's around to see where it actually ends up 
-stopping?
+For me and you, I agree.  I think the common case is that there is no admin
+prepared to do any such thing, but just someone expecting a reboot to fix
+things and preferring that a failing system reboot itself in the middle of
+the night rather than wedge.
 
-Since all special commands should now go through the taskfile interface 
-(Bartlomiej - correct?), I guess just a printk() at the top of 
-do_rw_taskfile() should at least get the ball rolling. Even something that 
-just prints out task->data_phase and tf->command would start to unravel at 
-least what the last command is before it hangs..
+> Every BUG/BUG_ON in fact means the system is not useable, but still it does
+> not panic(), but tries to proceed.
 
-		Linus
+Many production systems probably set panic_on_oops.  Having the init panic
+behavior keyed on that seems fine to me.  I just don't like the "kernel bug
+at this source line" output when it's not true.
+
+
+Thanks,
+Roland
