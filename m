@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYCPQ5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbYCPROB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYCPQ5j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 12:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYCPQ5a
+	id S1752666AbYCPROB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 13:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYCPRNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 12:57:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34317 "EHLO
+	Sun, 16 Mar 2008 13:13:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43714 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752010AbYCPQ5a (ORCPT
+	by vger.kernel.org with ESMTP id S1750987AbYCPRNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 12:57:30 -0400
-Date: Sun, 16 Mar 2008 09:56:25 -0700 (PDT)
+	Sun, 16 Mar 2008 13:13:54 -0400
+Date: Sun, 16 Mar 2008 10:13:26 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Anders Eriksson <aeriksson@fastmail.fm>
 cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
@@ -18,9 +18,10 @@ cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.25-rc4 
-In-Reply-To: <20080316140118.891732DC044@tippex.mynet.homeunix.org>
-Message-ID: <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0803160958260.3020@woody.linux-foundation.org>
 References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101336.56159.bzolnier@gmail.com> <200803101410.27877.rjw@sisk.pl> <200803101504.17219.bzolnier@gmail.com> <20080316140118.891732DC044@tippex.mynet.homeunix.org>
+ <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org>
 User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,52 +31,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Sun, 16 Mar 2008, Anders Eriksson wrote:
+On Sun, 16 Mar 2008, Linus Torvalds wrote:
 > 
-> Many bisects later, now with taking care of making 'make oldconfig' off a 
-> known good config for each iteration, and doing 10 reboots and 5 smartd 
-> invocations for each version deemed good (not that anyone failed midway).
+>  - there's a totally untested patch at the end here that tries to make the 
+>    error handling do that DRQ flush unconditionally. Does it make a 
+>    difference for you?
 
-Ok, this is interesting. It's clearly a regression, so we need to undo it. 
-However, it's not trivial to revert, since lots of things have changed 
-around that area since.
+Ok, it's not going to make any difference, because that 
+IDE_HFLAG_ERROR_STOPS_FIFO flag won't be set for you anyway.
 
-In particular, commit 7267c3377443322588cddaf457cf106839a60463 ("ide: 
-remove REQ_TYPE_ATA_CMD") ended up removing the whole drive_cmd_intr() 
-function, because now all the commands are handled with the
-REQ_TYPE_ATA_TASKFILE model instead, which uses a whole another path.
+So assuming it's about a pending DRQ issue that needs to be flushed before 
+the controller will generate any more interrupts (which your bisect 
+implies it is), maybe we have one of
 
-And quite frankly, I think the commit you bisected to really is very 
-broken. It starts doing error handling *before* it has handled the DRQ 
-bit, and that's bogus, since iirc a lot of controllers need to have their 
-DRQ issues satisfied before anything else.
+ - this ide_ata_error() case isn't called at all.
 
-So what probably happens is that yes, you get an error, but the IDE drive 
-still wants the code to flush the data it generated, and if we don't do 
-that, it will never do anything else ever again. Resulting in a hang.
+   This happens for at least WIN_SPECIFY (see ide_ata_error() - it 
+   returns early)
 
-So Anders, can you try these two silly things:
+   Could you add a printk() to ide_ata_error() and see if it gets called 
+   when your machine hangs, and if so, what the case was.
 
- - there's a totally untested patch at the end here that tries to make the 
-   error handling do that DRQ flush unconditionally. Does it make a 
-   difference for you?
+ - try_to_flush_leftover_data() doesn't work (it does have a test for only 
+   acting on disk drives - is this perhaps a CD-ROM?)
 
- - did you already try if ata_piix fixes it? 
+ - or rq_data_dir(rq) is wrong for the offending command (again, maybe 
+   the printk() could help with that).
 
-but I do think that the commit you bisected is crap, crap, crap.
-
-Bartlomiej?
+IOW, try something like this instead of the previous patch.
 
 		Linus
+
 ---
- drivers/ide/ide-io.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/ide/ide-io.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 7153796..9105c09 100644
+index 7153796..6a98937 100644
 --- a/drivers/ide/ide-io.c
 +++ b/drivers/ide/ide-io.c
-@@ -462,8 +462,7 @@ static ide_startstop_t ide_ata_error(ide_drive_t *drive, struct request *rq, u8
+@@ -414,6 +414,7 @@ static void try_to_flush_leftover_data (ide_drive_t *drive)
+ {
+ 	int i = (drive->mult_count ? drive->mult_count : 1) * SECTOR_WORDS;
+ 
++printk("try_to_flush(%d,%d)\n", i, drive->media == ide_disk);
+ 	if (drive->media != ide_disk)
+ 		return;
+ 	while (i > 0) {
+@@ -440,7 +441,10 @@ static ide_startstop_t ide_ata_error(ide_drive_t *drive, struct request *rq, u8
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 
+-	if (stat & BUSY_STAT || ((stat & WRERR_STAT) && !drive->nowerr)) {
++printk("ide_ata_error() stat=%02x err=%02x dir=%d CMD=%02x\n",
++	stat, err, rq_data_dir(rq), hwif->INB(IDE_COMMAND_REG));
++
++	if ((stat & BUSY_STAT) || ((stat & WRERR_STAT) && !drive->nowerr)) {
+ 		/* other bits are useless when BUSY */
+ 		rq->errors |= ERROR_RESET;
+ 	} else if (stat & ERR_STAT) {
+@@ -462,8 +466,7 @@ static ide_startstop_t ide_ata_error(ide_drive_t *drive, struct request *rq, u8
  		}
  	}
  
