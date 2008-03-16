@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbYCPT07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYCPT3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbYCPT07 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 15:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYCPT0t
+	id S1753513AbYCPT3h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 15:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYCPT3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 15:26:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36987 "EHLO ogre.sisk.pl"
+	Sun, 16 Mar 2008 15:29:30 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:40688 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752369AbYCPT0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 15:26:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
-Date: Sun, 16 Mar 2008 20:25:35 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <200706300859.47133.arvidjaar@mail.ru> <200803132146.42156.rjw@sisk.pl> <200803162204.44131.arvidjaar@mail.ru>
-In-Reply-To: <200803162204.44131.arvidjaar@mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	id S1752369AbYCPT33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 15:29:29 -0400
+Subject: Re: [GIT PULL] LED updates
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080316181840.GG19825@khazad-dum.debian.net>
+References: <1202380503.9519.21.camel@dax.rpnet.com>
+	 <20080207213845.GA27862@khazad-dum.debian.net>
+	 <1202422388.9519.123.camel@dax.rpnet.com>
+	 <20080316181840.GG19825@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Sun, 16 Mar 2008 19:29:16 +0000
+Message-Id: <1205695756.4524.20.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803162025.35558.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 16 of March 2008, Andrey Borzenkov wrote:
-> On Thursday 13 March 2008, Rafael J. Wysocki wrote:
-> > On Thursday, 13 of March 2008, Andrey Borzenkov wrote:
+On Sun, 2008-03-16 at 15:18 -0300, Henrique de Moraes Holschuh wrote:
+> On Thu, 07 Feb 2008, Richard Purdie wrote:
+> > > This one causes trouble (at least on 2.6.23 -- I backported the patch) due
+> > > to the 20-byte length limit on sysfs names.  I had to use "tp::<somecrap>"
+> > > instead of "thinkpad::<somecrap>" to name LEDs, and still had to reduce
+> > > ultrabase_battery to ultrabase_batt :-)
 > > > 
-> > > For the record - it happened again under 2.6.25-rc5; it reall drives
-> > > me nuts. Of course every time it happens I do not have infrastructure to use
-> > > netconsole :( I am about to reformat the whole with ext3 as this seems
-> > > to always hang somewhere in fs access and looks like not many people
-> > > use reiser today.
-> > >
+> > > Anyway, IMHO, the LED function should come first, and we should not even
+> > > need the led driver name anywhere.  In case of clashes in the class sysfs
+> > > dir, just tack a .# to the end or somesuch.  The device the LED is tied to
+> > > already differentiates them.  That would save a lot of chars for something
+> > > much more useful (the function).
 > > 
-> > Well, it may be related to having the root partition on reiserfs.  I've never
-> > seen anything like this with non-root reiserfs partitions ...
-> > 
+> > Ouch, I'm looking into this. I wish I'd known about it earlier. I agree
+> > function is more important but didn't want to break the existing
+> > convention. I guess this limitation comes from the kobjects involved...
 > 
-> This one looks the hell similar to what I posted and Ingo is using ext3 ...
+> Richard, any ideas for that?  It *is* still time to change this for 2.6.25,
+> if required.  If you changed it once already, changing it again won't cause
+> further damage.
 > 
-> http://marc.info/?l=linux-kernel&m=120479427912295&w=2
+> I need to know if the current naming scheme will hold or not, I do NOT want
+> an ABI issue on thinkpad-acpi, and I know for a fact at least Debian will
+> want to use the thinkpad-acpi LED interface as soon as I deploy it.  I want
+> to send the thinkpad-acpi LED interface patches to the users as soon as
+> possible.
+> 
+> Sincerely?  I think you should make it <function>:[color][.instance] and
+> drop device name compleley, ASAP.
+> 
+> I will write the patches for mainline and your for-mm branch, if that would
+> speed up things.  But I need to know what you have decided, first.
 
-Hm, this is not related to hibernation.
+As I understand it 2.6.26 will lose the limitation on the name size
+entirely so the problem will go away soon. I don't want to change the
+existing ABI so changing to what you describe above isn't possible. You
+could leave the devicename empty if you wish although I'd prefer you not
+to. Keeping it short might be the best option for 2.6.25.
 
-Perhaps hibernation just makes it easier to trigger the bug.
+Your other patch looks ok btw although I'm not sure why you sent it
+twice. I'll queue that tomorrow.
 
-There's entire thread related to this problem, please have a look at it:
-http://lkml.org/lkml/2008/3/16/55
+Cheers,
 
-Thanks,
-Rafael
+Richard
+
