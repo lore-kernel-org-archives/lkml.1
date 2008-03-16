@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYCPTpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYCPTqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbYCPTpz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 15:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYCPTpr
+	id S1754174AbYCPTqf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 15:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYCPTq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 15:45:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:43221 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbYCPTpr (ORCPT
+	Sun, 16 Mar 2008 15:46:27 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:37940 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752481AbYCPTq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 15:45:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=nN/FNWv0yrdFGLOwtP08OdGOkGk/zj3xGY3FoTTAjUi9YHrqWaYlBxwECkmmKHp8KTdFPpFwEUe+NvVNYzkDjBGJVZLbmX55R2QvhQN2aFW/Wz9qUVPqmIslOSGLjaHhqHBupTeIePSmdgMVJwnQVBSlFMVmvZ15sReiROi/joA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.25-rc4
-Date: Sun, 16 Mar 2008 20:54:04 +0100
-User-Agent: KMail/1.9.9
-Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org>
+	Sun, 16 Mar 2008 15:46:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XZZmyOhYY6jagmWpRkeilUa5ON8qfAeYbNqODDvQyO7HJr4RTiAB1jdz+If3+QOkKHgsiQFVv94Qpz+Wby9SIImZ4daLANpIsItZTUZR3IS9pghGY6xd5WhBibr/+wAQg/AZAx3rghlrB3YhjpHwiC3diJ6exGGj/+IvBcUX2TU=  ;
+X-YMail-OSG: gioBOPkVM1kTSzilX.2OTNGJAgWvMm.FPLvkVqumdynGlyEbDN_PFFnZVCv616P4w_0iRAQsOg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+Date: Sun, 16 Mar 2008 11:46:23 -0800
+User-Agent: KMail/1.9.6
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+References: <20080316184349.GA28543@khazad-dum.debian.net>
+In-Reply-To: <20080316184349.GA28543@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803162054.04757.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200803161246.23909.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 March 2008, Linus Torvalds wrote:
-> 
-> On Sun, 16 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > We don't do error handling for special commands (REQ_TYPE_ATA_*) at all,
-> > ide_error() just dumps device's status/error register(s) and finishes early:
-> 
-> Well that sounds bogus too, for all the same reasons already outlined. The 
-> DRQ flag needs to be cleared up on error!
+On Sunday 16 March 2008, Henrique de Moraes Holschuh wrote:
+> Is the use of "if (preempt_count())" to know when to defer led gpio work to
+> a workqueue needed?  Shouldn't "if (in_atomic())" be enough?
 
-OK, lets try it.
+At this point, I don't know of any such reason.
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: correctly handle DRQ bit set on error also for special requests
-
-commit 4d977e43d8ae758434e603cf2455d955f71c77c4 ("ide: check BUSY and ERROR 
-status bits before reading data in drive_cmd_intr()") changed DRQ handling
-logic (as pointed out by Linus).
-
-Fix it by flushing leftover data for commands using PIO-in protocol
-and special requests (rq->cmd_type == REQ_TYPE_ATA_TASKFILE).
-
-Cc: Anders Eriksson <aeriksson@fastmail.fm>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-against 2.6.25-rc5, untested
-
- drivers/ide/ide-io.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -540,12 +540,19 @@ EXPORT_SYMBOL_GPL(__ide_error);
-  
- ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
- {
--	struct request *rq;
-+	ide_hwif_t *hwif = drive->hwif;
-+	struct request *rq = hwif->hwgroup->rq;
- 	u8 err;
- 
-+	if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
-+		if (hwif->data_phase == TASKFILE_IN && (stat & DRQ_STAT) &&
-+		    (hwif->host_flags & IDE_HFLAG_ERROR_STOPS_FIFO) == 0)
-+			try_to_flush_leftover_data(drive);
-+	}
-+
- 	err = ide_dump_status(drive, msg, stat);
- 
--	if ((rq = HWGROUP(drive)->rq) == NULL)
-+	if (rq == NULL)
- 		return ide_stopped;
- 
- 	/* retry only "normal" I/O: */
+I remember hunting for the right heuristic, and settling on
+that one for reasons that I can't recall now.  They may even
+be no longer applicable.
