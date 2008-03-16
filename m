@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYCPTsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbYCPT5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbYCPTsh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 15:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYCPTs1
+	id S1753467AbYCPT5e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 15:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYCPT5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 15:48:27 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:38119 "EHLO
+	Sun, 16 Mar 2008 15:57:25 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:49136 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752353AbYCPTs0 (ORCPT
+	by vger.kernel.org with ESMTP id S1752353AbYCPT5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 15:48:26 -0400
-X-Sasl-enc: xfbDdbtRvc7pNCEkJpqaUxxMIRc7HNATwbrWVvKbBnXo 1205696905
-Date: Sun, 16 Mar 2008 16:48:23 -0300
+	Sun, 16 Mar 2008 15:57:24 -0400
+X-Sasl-enc: DN0YFK6RNgPEKTeJphJ+hnKUiO8IaUsLl2dopfYIo/M7 1205697443
+Date: Sun, 16 Mar 2008 16:57:22 -0300
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: =?iso-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] LED updates
-Message-ID: <20080316194823.GA31782@khazad-dum.debian.net>
-References: <1202380503.9519.21.camel@dax.rpnet.com> <20080207213845.GA27862@khazad-dum.debian.net> <1202422388.9519.123.camel@dax.rpnet.com> <20080316181840.GG19825@khazad-dum.debian.net> <1205695756.4524.20.camel@dax.rpnet.com>
+To: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Antonino Daplas <adaplas@pol.net>
+Subject: Re: [PATCH] i810fb: Fix console switch regression
+Message-ID: <20080316195722.GB31782@khazad-dum.debian.net>
+References: <200803161942.24555.stefan.bauer@cs.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1205695756.4524.20.camel@dax.rpnet.com>
+In-Reply-To: <200803161942.24555.stefan.bauer@cs.tu-chemnitz.de>
 X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
 	1CDB 0FE3
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
@@ -30,32 +30,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Mar 2008, Richard Purdie wrote:
-> As I understand it 2.6.26 will lose the limitation on the name size
-> entirely so the problem will go away soon. I don't want to change the
-> existing ABI so changing to what you describe above isn't possible. You
-> could leave the devicename empty if you wish although I'd prefer you not
-> to. Keeping it short might be the best option for 2.6.25.
+On Sun, 16 Mar 2008, Stefan Bauer wrote:
+> From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+> 
+> Commit eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5 ("fix ! versus & precedence in 
+> various places") introduced a regression in console switching when using 
+> i810fb. Every 5th to 10th console switch causes 'pixel waste' - the same line 
+> of multi-colored pixels repeated over the whole screen.
+> This reverts eaa0ff1 for i810_main.c.
+> 
+> Signed-off-by: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+> Cc: Antonino Daplas <adaplas@pol.net>
+> 
+> ---
+> As I'm not subscribed to the LKML, please CC me, thanks.
+> 
+> --- linux-2.6/drivers/video/i810/i810_main.c.orig
+> +++ linux-2.6/drivers/video/i810/i810_main.c
+> @@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info 
+> 	struct i810fb_par *par = info->par;
+> 	u8 __iomem *mmio = par->mmio_start_virtual;
+> 
+> -	if (!(par->dev_flags & LOCKUP))
+> +	if (!par->dev_flags & LOCKUP)
+> 		return -ENXIO;
+> 
+> 	if (cursor->image.width > 64 || cursor->image.height > 64)
+> --
 
-Hmm, that means I will have to keep the short names, since I can't very
-much have two different ABIs across several kernel versions... or I will
-have to backport whatever is needed to expand this name size restriction
-(and who knows if that's doable... I better start digging).
+I think you need to add something to that line that avoids someone making
+the same change as eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5 some years down
+the road.
 
-This won't be easy on my side :(
-
-Well, might as well claim tpacpi as a thinkpad-acpi short handle and use it
-on workqueue and kthread naming (and document it) as well as the led class.
-Yuck.
-
-> Your other patch looks ok btw although I'm not sure why you sent it
-> twice. I'll queue that tomorrow.
-
-I screwed up the prefix on the first one (used LED instead of leds). The
-patches are the same.  I wrote the reason for the resend after the first
-"---" separator.
-
-Anyway, thanks for the fast reply.
+Might I suggest using "((!par->dev_flags) & LOCKUP)"?
 
 -- 
   "One disk to rule them all, One disk to find them. One disk to bring
