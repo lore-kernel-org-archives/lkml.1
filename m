@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYCPSTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYCPSWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbYCPSTx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 14:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbYCPSTq
+	id S1753823AbYCPSWS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 14:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbYCPSWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 14:19:46 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:44507 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752134AbYCPSTp (ORCPT
+	Sun, 16 Mar 2008 14:22:10 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:53758 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbYCPSWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 14:19:45 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+	Sun, 16 Mar 2008 14:22:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=NwtCvxmK0m8baU+4UCtPqsnY8LwTgRsB0raYQCbIPBzCHwDAsqbEHqwQ7O3sGF7J+E5UV1enWvYMnFlBPbhCJUBt+Cq34JCAXjDqkIdiPUXiAFQQx0csHZz4qzH1BeJzKwf/ZMQpmWVZOGZPIYtTDpbpqqbuWezPgTSTTIg78Vg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Anders Eriksson <aeriksson@fastmail.fm>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
+Subject: Re: Linux 2.6.25-rc4
+Date: Sun, 16 Mar 2008 19:36:26 +0100
+User-Agent: KMail/1.9.9
+Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-reply-to: <alpine.LFD.1.00.0803160958260.3020@woody.linux-foundation.org> 
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101336.56159.bzolnier@gmail.com> <200803101410.27877.rjw@sisk.pl> <200803101504.17219.bzolnier@gmail.com> <20080316140118.891732DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803160924580.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803160958260.3020@woody.linux-foundation.org>
-Comments: In-reply-to Linus Torvalds <torvalds@linux-foundation.org>
-   message dated "Sun, 16 Mar 2008 10:13:26 -0700."
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Sun, 16 Mar 2008 19:18:41 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080316181841.7BFB52DC044@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JaxRa-0006uM-5d.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JaxRa-0006uM-5d 60f2738e22e7454c4a9abb52fdc5b96d
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803161936.26419.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 16 March 2008, Linus Torvalds wrote:
 
-torvalds@linux-foundation.org said:
->  IOW, try something like this instead of the previous patch.
+> > Moreover the problem was initially narrowed down to commit
+> > 852738f39258deafb3d89c187cb1a4050820d555 which is two commits _before_
+> > the one that we are currently discussing.
+> 
+> .. and that initial narrowing down is now in doubt, with the new one 
+> pointing to that DRQ-logic-changing commit!
+> 
+> IOW, Anders re-did things more carefully, and came to a new result. Why 
+> are you apparenrly ignoring that fact?
 
-Applied with fuzz 9 on all hunks.
+I just lost track at what is confirmed and what not...
 
-Reboot. Run smartd. Nothing in dmesg. Hang.
+Anders, does the kernel at commit 852738f39258deafb3d89c187cb1a4050820d555
+also fail or not?
 
-
-
+Thanks,
+Bart
