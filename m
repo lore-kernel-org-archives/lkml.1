@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbYCPWyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYCPW7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbYCPWyi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 18:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYCPWy3
+	id S1754223AbYCPW7t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 18:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYCPW7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 18:54:29 -0400
-Received: from khc.piap.pl ([195.187.100.11]:51317 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbYCPWy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 18:54:29 -0400
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] don't panic if /sbin/init exits or killed
-References: <20080316155453.GA20845@tv-sign.ru>
-	<20080316221938.D217026F995@magilla.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 16 Mar 2008 23:54:26 +0100
-In-Reply-To: <20080316221938.D217026F995@magilla.localdomain> (Roland McGrath's message of "Sun\, 16 Mar 2008 15\:19\:38 -0700 \(PDT\)")
-Message-ID: <m363vm8el9.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	Sun, 16 Mar 2008 18:59:42 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:35214 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752536AbYCPW7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 18:59:41 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Anders Eriksson <aeriksson@fastmail.fm>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc4 
+In-reply-to: <200803162054.04757.bzolnier@gmail.com> 
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org> <200803162054.04757.bzolnier@gmail.com>
+Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+   message dated "Sun, 16 Mar 2008 20:54:04 +0100."
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Date: Sun, 16 Mar 2008 23:59:21 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080316225921.CAA082DC044@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-ACL-Warn: Too high rate of unknown addresses received from you
+X-Scan-Result: No virus found in message 1Jb1p5-0000YR-7C.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Jb1p5-0000YR-7C 1fd40b643a6b485499ccfbe37459064f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath <roland@redhat.com> writes:
 
-> Have you tested how recoverable it really is?  I wonder what happens
-> with init having exited when things get reparented to it.  Don't the
-> zombies just pile up?
+bzolnier@gmail.com said:
+> OK, lets try it. 
 
-That's not very different from any other "important" program crash,
-we don't sync+reboot when httpd or sshd is killed.
--- 
-Krzysztof Halasa
+rc5 fails with and without that patch.
+
+/A
+
