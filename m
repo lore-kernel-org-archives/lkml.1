@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYCPOQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbYCPOar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbYCPOQW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 10:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCPOQP
+	id S1752810AbYCPOar (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 10:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYCPOah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 10:16:15 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:61525 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYCPOQO (ORCPT
+	Sun, 16 Mar 2008 10:30:37 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:59640 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751918AbYCPOah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 10:16:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=DVGfsJQMVSoqAi9PZqIseaQU5IDb1GnIkI/z8Kg2G3zH8rCiHXHsy5qKeDYKbemRmRklC+0LvxXfb0OZpZ1i+LxCR+/+p0tA2QZAQdcivKoloorivceWDEvl9KUq2Jids0HU5RxyQQ8kMOcvSpiX2pYVL9WNmMJDqjDr1hti4Hs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Subject: Re: Linux 2.6.25-rc4
-Date: Sun, 16 Mar 2008 15:29:47 +0100
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sun, 16 Mar 2008 10:30:37 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101504.17219.bzolnier@gmail.com> <20080316140118.891732DC044@tippex.mynet.homeunix.org>
-In-Reply-To: <20080316140118.891732DC044@tippex.mynet.homeunix.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803161529.48527.bzolnier@gmail.com>
+Subject: Re: Linux 2.6.25-rc4 
+In-reply-to: <200803161529.48527.bzolnier@gmail.com> 
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101504.17219.bzolnier@gmail.com> <20080316140118.891732DC044@tippex.mynet.homeunix.org> <200803161529.48527.bzolnier@gmail.com>
+Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+   message dated "Sun, 16 Mar 2008 15:29:47 +0100."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Sun, 16 Mar 2008 15:29:00 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080316142901.015342DC044@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1Jatrp-00075h-4Z.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1Jatrp-00075h-4Z 5fc72bf455d36f8744fe4fdddf46756d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 March 2008, Anders Eriksson wrote:
-> 
-> Many bisects later, now with taking care of making 'make oldconfig' off a 
-> known good config for each iteration, and doing 10 reboots and 5 smartd 
-> invocations for each version deemed good (not that anyone failed midway).
-> 
-> 4d977e43d8ae758434e603cf2455d955f71c77c4 is first bad commit
-> commit 4d977e43d8ae758434e603cf2455d955f71c77c4
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date:   Sat Jan 26 20:13:12 2008 +0100
-> 
->     ide: check BUSY and ERROR status bits before reading data in drive_cmd_intr()
-> 
->     Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
->     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-This commit is also _after_ the previously "guilty" one
-(commit 852738f39258deafb3d89c187cb1a4050820d555)?
+bzolnier@gmail.com said:
+> This commit is also _after_ the previously "guilty" one (commit
+> 852738f39258deafb3d89c187cb1a4050820d555)?
 
-IIRC we've agreed that bisection between 2.6.24 and commit 8527* was needed?
+Yep.
 
-Thanks,
-Bart
+> IIRC we've agreed that bisection between 2.6.24 and commit 8527* was needed?
+
+I did that first, and it pointed to  8527* as the bad one. During this bisect 
+I took care to always start from a 2.6.24 .config, and do a make oldconfig from 
+that. A clean series of good emerged.. Unfortunately I don't have the configs 
+from the previous runs saved.
+
+Given this, I concluded that the configs had to play a role in making a 
+version go bad, so I decided to do another one between  8527* and 2.6.25-rc1
+always based on the  8527* config (which _worked_ when tested with the 2.6.24 
+config dragged forward. So the upped end of the first bisect was badly chosen)
+
+The attahed was the result of that latter run...
+
+> Thanks, 
+
+
+
