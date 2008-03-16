@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYCPXTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYCPXTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbYCPXTG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 19:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbYCPXSy
+	id S1755119AbYCPXTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 19:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYCPXTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 19:18:54 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37297 "EHLO mail.screens.ru"
+	Sun, 16 Mar 2008 19:19:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38703 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752476AbYCPXSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 19:18:53 -0400
-Date: Mon, 17 Mar 2008 02:17:51 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] ptrace: it is fun to strace /sbin/init
-Message-ID: <20080316231751.GB379@tv-sign.ru>
-References: <20080316155455.GA20848@tv-sign.ru> <20080316223138.1029D26F995@magilla.localdomain>
-Mime-Version: 1.0
+	id S1752701AbYCPXTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 19:19:35 -0400
+From: Neil Brown <neilb@suse.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Date: Mon, 17 Mar 2008 10:19:20 +1100
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080316223138.1029D26F995@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
+Message-ID: <18397.43768.705353.514972@notabene.brown>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Oops in NFSv4 server in 2.6.23.17
+In-Reply-To: message from J. Bruce Fields on Friday March 14
+References: <20080312122550.GB8141@ics.muni.cz>
+	<20080312160007.GA10015@fieldses.org>
+	<20080313143631.GH27873@ics.muni.cz>
+	<20080314181413.GF2119@fieldses.org>
+	<20080314193350.GK2119@fieldses.org>
+	<20080314195303.GA4390@ics.muni.cz>
+	<20080314200510.GL2119@fieldses.org>
+	<20080314234205.GO2119@fieldses.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/16, Roland McGrath wrote:
->
-> > Ptracing of /sbin/init is not allowed. Of course, this is very dangerous, but
-> > may be useful. Introduce the kernel boot parameter to allow this.
+On Friday March 14, bfields@fieldses.org wrote:
+> On Fri, Mar 14, 2008 at 04:05:10PM -0400, bfields wrote:
+> > I find that a little contorted.  So I'll go ahead and submit this small
+> > patch to 2.6.25 and stable now (I have since managed to reproduce what I
+> > believe is your bug, though my symptoms were a little different), and
+> > then submit to 2.6.26 some cleanup which makes this more understandable,
 > 
-> Personally I wouldn't mind losing all the ptrace/signals special cases for
-> init.  (Just don't have a buggy init and expect not to crash, don't be root
-> and kill init, etc.)  So this is fine by me.  The conservative route of
-> changing it only with a boot option is the wise thing to do.
+> Here's an attempt.  We could break up fh_verify even more, though.--b.
 
-Great.
+Looks like a good attempt.
 
-> > Unless I missed something, ptrace_get_task_struct() is pointless. It does not
-> > need to check "pid == 1", ptrace_attach() does this. It doesn't need tasklist.
-> 
-> Agreed.  It's a hold-over from when there was more hair in there.
-> 
-> > It should be replaced with the generic find_get_task_by_vpid() which does not
-> > exist yet.
-> 
-> I didn't see enough other uses to really warrant it.  Most
-> find_task_by_vpid calls don't actually do get_task_struct.
-> Those that do want to do some other check inside rcu_read_lock
-> before deciding to bother with get_task_struct anyway.
-> So there is nothing wrong with ptrace just open-coding:
-> 
-> 	rcu_read_lock();
-> 	child = find_task_by_vpid(pid);
-> 	if (child)
-> 		get_task_struct(child);
-> 	rcu_read_unlock();
+My only suggestion would be to put a comment at the top of
+nfsd_set_fh_dentry explaining what it does and who calls it.
 
-proc_task_lookup(), fill_pid(), attach_task_by_pid(), can use the new helper.
+It's long past time that code had some spring cleaning !!
 
-But yes sure, we can open-code this.
-
-Oleg.
-
+Thanks,
+NeilBrown
