@@ -1,131 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYCPQad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbYCPQo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbYCPQad (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 12:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYCPQaY
+	id S1752666AbYCPQo2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 12:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYCPQoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 12:30:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:60027 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbYCPQaY (ORCPT
+	Sun, 16 Mar 2008 12:44:18 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:27591 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbYCPQoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 12:30:24 -0400
+	Sun, 16 Mar 2008 12:44:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jKV1ipnN6j6bDqJEPxKAV/p1DThpzItCxlGljfZj/Iq00YZuR4xmB4f2x9C+ZKYs7waQSuQCzp+X9bRGS5dI3oNfa/SzjaKqqZ8/8J9VgoWV3OjDOWH20C6kZGjxSTiqVoEDaoYADQMSSADR76dqmQfD7GEzjGS52lxikSqnveI=
-Message-ID: <804dabb00803160930t40b7c415ic38f2b9955b515ac@mail.gmail.com>
-Date: Mon, 17 Mar 2008 00:30:23 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: per cpun+ spin locks coexistence?
-Cc: LKML <linux-kernel@vger.kernel.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Dipankar Sarma" <dipankar@in.ibm.com>
-In-Reply-To: <47DABBCE.5010803@goop.org>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=B07hm/roKEN2LT9YsETw9hoNCQnJLxDNuXglqW8gLyRYI7NesdU6xkbX+w4566CODbRgeslgIptMFPDAtJpx/0LmbtKG4FpW14LxM/eHttUvOVk4u2wFys3vOQKOLf/ZWcKdHyBKAbvaePP4md1gAOGyIMrZkSghvEK9HZvQZT4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Johannes Weiner <hannes@saeurebad.de>
+Subject: Re: [PATCH] ide-tape: Avoid potential null pointer dereference in idetape_abort_pipeline()
+Date: Sun, 16 Mar 2008 17:58:22 +0100
+User-Agent: KMail/1.9.9
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Gadi Oxman <gadio@netvision.net.il>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <alpine.LNX.1.00.0803150123450.29784@dragon.funnycrock.com> <87prtw2413.fsf@saeurebad.de>
+In-Reply-To: <87prtw2413.fsf@saeurebad.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <804dabb00803120917w451b16e6q685016d464a2edde@mail.gmail.com>
-	 <47DABBCE.5010803@goop.org>
+Message-Id: <200803161758.23087.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the answer.   But I still don't get it.
 
-On Sat, Mar 15, 2008 at 1:54 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
-> Peter Teoh wrote:
->  > Help me out this one - in fs/file.c, there is a function free_fdtable_rcu():
->  >
->  > void free_fdtable_rcu(struct rcu_head *rcu)
->  > {
->  >        struct fdtable *fdt = container_of(rcu, struct fdtable, rcu);
->  >        struct fdtable_defer *fddef;
->  >
->  >        BUG_ON(!fdt);
->  >
->  >        if (fdt->max_fds <= NR_OPEN_DEFAULT) {
->  >                /*
->  >                 * This fdtable is embedded in the files structure and that
->  >                 * structure itself is getting destroyed.
->  >                 */
->  >                kmem_cache_free(files_cachep,
->  >                                container_of(fdt, struct files_struct,
->  > fdtab));
->  >                return;
->  >        }
->  >        if (fdt->max_fds <= (PAGE_SIZE / sizeof(struct file *))) {
->  >                kfree(fdt->fd);
->  >                kfree(fdt->open_fds);
->  >                kfree(fdt);
->  >        } else {
->  >                fddef = &get_cpu_var(fdtable_defer_list);
->  >                spin_lock(&fddef->lock);
->  >                fdt->next = fddef->next;
->  >                fddef->next = fdt;
->  >                /* vmallocs are handled from the workqueue context */
->  >                schedule_work(&fddef->wq);
->  >                spin_unlock(&fddef->lock);
->  >                put_cpu_var(fdtable_defer_list);
->  >        }
->  > }
->  >
->  > Notice above that get_cpu_var() is followed by spin_lock().   Does this
->  > make sense?   get_cpu_var() will return a variable that is only
->  > accessible by the current CPU - guaranteed it will not be touch (read or
->  > write) by another CPU, right?
->
->  No, not true.  percpu is for stuff which is generally only touched by
->  one CPU, but there's nothing stopping other processors from accessing it
->  with per_cpu(var, cpu).
+Hi,
 
-get_cpu_var() above, will return a ptr specific for a particular CPU
-only, is correct?
+On Saturday 15 March 2008, Johannes Weiner wrote:
+> Hi Jesper,
+> 
+> Jesper Juhl <jesper.juhl@gmail.com> writes:
+> 
+> > If a NULL 'new_last_stage' is passed to idetape_abort_pipeline() then 
+> > we'll dereference a NULL pointer and go *boom*. 
+> > The function does test for a null pointer, unfortunately it only does it 
+> > after having already dereferenced it.
+> 
+> Did you hit an oops because of this?
+> 
+> > @@ -814,11 +814,14 @@ static void idetape_abort_pipeline(ide_drive_t *drive,
+> >  				   idetape_stage_t *new_last_stage)
+> >  {
+> >  	idetape_tape_t *tape = drive->driver_data;
+> > -	idetape_stage_t *stage = new_last_stage->next;
+> > +	idetape_stage_t *stage = NULL;
+> >  	idetape_stage_t *nstage;
+> >  
+> >  	debug_log(DBG_PROCS, "%s: Enter %s\n", tape->name, __func__);
+> >  
+> > +	if (new_last_stage)
+> > +		stage = new_last_stage->next;
+> > +
+> >  	while (stage) {
+> >  		nstage = stage->next;
+> >  		idetape_kfree_stage(tape, stage);
+> 
+> ]		--tape->nr_stages;
+> ]		--tape->nr_pending_stages;
+> ]		stage = nstage;
+> ]	}
+> ]	if (new_last_stage)
+> ]		new_last_stage->next = NULL;
+> 
+> ... because if not, and new_last_stage will never be NULL at all in this
+> function, the check here could be removed instead of adding another one.
+> Or perhaps a BUG_ON(!stage) in idetape_end_request() already?
+> 
+> Bartlomiej, please have a look at the following patch.  Should all of
+> these hand-checks in the file be replaced by BUG_ON()s?  Or be removed
+> completely?
 
-#define get_cpu_var(var) (*({                           \
-        extern int simple_identifier_##var(void);       \
-        preempt_disable();                              \
-        &__get_cpu_var(var); }))
+I think that they should be removed completely.
 
-SMP:
+> 	Hannes
+> 
+> --
+> 
+> Turn possible NULL-pointer dereference in idetape_active_next_stage()
+> into an explicit bug and remove the warn-only checking for it.
+> 
+> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> 
+> ---
+> The explicit checking of @stage indicates that someone was expecting
+> that it could be NULL here.  Could someone with real understanding of
+> the code check if the condition is realistic?
+> 
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index 43e0e05..b63f928 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -724,17 +724,15 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
+>  
+>  static void idetape_activate_next_stage(ide_drive_t *drive)
+>  {
+> +	struct request *rq;
+>  	idetape_tape_t *tape = drive->driver_data;
+>  	idetape_stage_t *stage = tape->next_stage;
+> -	struct request *rq = &stage->rq;
+>  
+>  	debug_log(DBG_PROCS, "Enter %s\n", __func__);
+>  
+> -	if (stage == NULL) {
+> -		printk(KERN_ERR "ide-tape: bug: Trying to activate a non"
+> -				" existing stage\n");
+> -		return;
+> -	}
+> +	BUG_ON(!stage);
+> +
+> +	rq = &stage->rq;
 
-#define __get_cpu_var(var) \
-        (*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
+[ stage->rq will OOPS anyway in case of bug so no need for BUG_ON() ]
+ 
+>  	rq->rq_disk = tape->disk;
+>  	rq->buffer = NULL;
 
-#define SHIFT_PERCPU_PTR(__p, __offset) RELOC_HIDE((__p), (__offset))
+Please recast the patch and resumbit.
 
-and RELOC_HIDE() i don't understand.   So from what u said,
-per_cpu_var() returns uniquely for each CPU, but __get_cpu_var() may
-not be unique among the different CPU - is that correct?
-
-When cpuA and cpuB call get_cpu_var(), the returned ptr is specific
-only for cpuA and cpuB, right?   So yes, as u said, different cpu can
-call get_cpu_var(), but the returned ptr will be unique to each cpu,
-therefore it is guaranteed that another CPU will not get hold of the
-returned results of get_cpu_var(), right?   So why spin_lock() comes
-after get_cpu_var()?
-
->
->  Besides, the lock isn't locking the percpu list head, but the thing on
->  the head of the list, presumably to prevent races with the workqueue.
-
-I think I have something much deeper to learn.   Can u point me to
-some resources to read more about this?
-I don't understand the difference betw locking the percpu list head,
-and locking things on the head of the list.   For me, spin_lock() is
-always to apply on ANY global variable - so that another cpu will
-block when access to it is attempted - whether it is items on a list,
-ot head of the list etc.
-
->  (Though the list structure is nonstandard, so its not completely clear.)
->
->     J
-
-Thank you in advance for the all the help rendered, :=).
-
--- 
-Regards,
-Peter Teoh
+Thanks,
+Bart
