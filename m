@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbYCPODH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752396AbYCPOEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752578AbYCPODH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 10:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYCPOCz
+	id S1752396AbYCPOEm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 10:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYCPOEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 10:02:55 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:33802 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751861AbYCPOCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 10:02:46 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Anders Eriksson <aeriksson@fastmail.fm>,
+	Sun, 16 Mar 2008 10:04:35 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:39165 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751872AbYCPOEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 10:04:35 -0400
+Date: Sun, 16 Mar 2008 16:04:22 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Chr <chunkeey@web.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-reply-to: <200803101504.17219.bzolnier@gmail.com> 
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803101336.56159.bzolnier@gmail.com> <200803101410.27877.rjw@sisk.pl> <200803101504.17219.bzolnier@gmail.com>
-Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-   message dated "Mon, 10 Mar 2008 15:04:17 +0100."
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Sun, 16 Mar 2008 15:01:18 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080316140118.891732DC044@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JatRW-00046Y-8U.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1JatRW-00046Y-8U ee5e3661440473de1325d0beb22ceb7b
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5-git5: Reported regressions from 2.6.24
+Message-ID: <20080316140422.GE4902@cs181133002.pp.htv.fi>
+References: <200803160112.50874.rjw@sisk.pl> <200803161410.46977.chunkeey@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803161410.46977.chunkeey@web.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 16, 2008 at 02:10:46PM +0100, Chr wrote:
+> On Sunday 16 March 2008 01:12:50 Rafael J. Wysocki wrote:
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10207
+> > Subject         : INFO: task mount:11202 blocked for more than 120 seconds
+> > Submitter       : Christian Kujau <lists@nerdbynature.de>
+> > Date            : 2008-03-07 21:32 (9 days old)
+> > References      : http://lkml.org/lkml/2008/3/7/308
+> >                   http://lkml.org/lkml/2008/3/9/186
+> 
+> well, there's another bug-entry about the same problem there: 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10242
+> 
+> can you anyhow merge these two? (because the other one contains
+> some patches (unfortunately not final) )
+>...
 
-Many bisects later, now with taking care of making 'make oldconfig' off a 
-known good config for each iteration, and doing 10 reboots and 5 smartd 
-invocations for each version deemed good (not that anyone failed midway).
+How do you know for sure it's the same problem?
 
-4d977e43d8ae758434e603cf2455d955f71c77c4 is first bad commit
-commit 4d977e43d8ae758434e603cf2455d955f71c77c4
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date:   Sat Jan 26 20:13:12 2008 +0100
+An example from doing regression tracking for an earlier kernel:
+There were four similar sounding regression reports.
+Three for one regression.
+And the fourth turned out to be a completely different regression.
 
-    ide: check BUSY and ERROR status bits before reading data in drive_cmd_intr()
+Most likely it will turn out these two reports are for the same 
+regression, but until that's verified it mustn't be assumed that
+they are for sure for the same regression.
 
-    Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Regards,
+> 	Chr.
 
-:040000 040000 0fda2eb7d96335061741d7f54ed3e05ca34ac5b8 cebc540d20784168d04c159b92bd479593d8c9e8 M      drivers
+cu
+Adrian
 
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
