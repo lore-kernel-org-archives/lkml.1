@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYCQJ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYCQJ3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755583AbYCQJ2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 05:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYCQJ2o
+	id S1756091AbYCQJ3t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 05:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbYCQJ3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 05:28:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40175 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752026AbYCQJ2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 05:28:43 -0400
-Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Willy Tarreau <w@1wt.eu>, Ray Lee <ray-lk@madrabbit.org>,
-       Ingo Molnar <mingo@elte.hu>, "LKML," <linux-kernel@vger.kernel.org>
-In-Reply-To: <200803171954.01315.nickpiggin@yahoo.com.au>
-References: <200803111749.29143.nickpiggin@yahoo.com.au>
-	 <200803171819.38892.nickpiggin@yahoo.com.au>
-	 <20080317082638.GB18229@1wt.eu>
-	 <200803171954.01315.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Mon, 17 Mar 2008 10:28:04 +0100
-Message-Id: <1205746084.8514.301.camel@twins>
+	Mon, 17 Mar 2008 05:29:42 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51309 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752065AbYCQJ3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 05:29:41 -0400
+Date: Mon, 17 Mar 2008 04:29:39 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [18/18] Implement hugepagesz= option for x86-64
+Message-Id: <20080317042939.051e76ff.pj@sgi.com>
+In-Reply-To: <20080317015832.2E3DF1B41E0@basil.firstfloor.org>
+References: <20080317258.659191058@firstfloor.org>
+	<20080317015832.2E3DF1B41E0@basil.firstfloor.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi wrote:
++	hugepages=	[HW,X86-32,IA-64] HugeTLB pages to allocate at boot.
++	hugepagesz=	[HW,IA-64,PPC,X86-64] The size of the HugeTLB pages.
++			On x86 this option can be specified multiple times
++			interleaved with hugepages= to reserve huge pages
++			of different sizes. Valid pages sizes on x86-64
++			are 2M (when the CPU supports "pse") and 1G (when the
++			CPU supports the "pdpe1gb" cpuinfo flag)
++			Note that 1GB pages can only be allocated at boot time
++			using hugepages= and not freed afterwards.
 
-Nick,
+This seems to say that hugepages are required for hugepagesz to be
+useful, but hugepagesz is supported on PPC, whereas hugepages is not
+supported on PPC ...odd.
 
-We do grow the period as the load increases, and this keeps the slice
-constant - although it might not be big enough for your taste (but its
-tunable)
+Should those two HW lists be the same (and sorted in the same order,
+for ease of reading)?
 
-Short running tasks will indeed be very likely to be run quickly after
-wakeup because wakeup's are placed left in the tree. (and when using
-sleeper fairness, can get up to a whole slice bonus).
-
-Interactivity is all about generating a scheduling pattern that is easy
-on the human brain - that means predictable and preferably with lags <
-40ms - as long as the interval is predictable the human brain will patch
-up a lot, once it becomes erratic all is out the window. (human
-perception of lags is in the 10ms range, but up to 40ms seems to do
-acceptable patch up as long as its predictable).
-
-Due to current desktop bloat, its important cpu bound tasks are treated
-well too. Take for instance scrolling firefox - that utterly consumes
-the fastest cpus, still people expect a smooth experience. By ensuring
-the scheduler behaviour degrades in a predicatable fashion, and trying
-to keep the latency to a sane level.
-
-
-The thing that seems to trip up this psql thing is the strict
-requirement to always run the leftmost task. If all tasks have very
-short runnable periods, we start interleaving between all contending
-tasks. The way we're looking to solve this by weakening this leftmost
-requirement so that a server/client pair can ping-pong for a while, then
-switch to another pair which gets to ping-pong for a while.
-
-This alternating pattern as opposed to the interleaving pattern is much
-more friendly to the cache. And we should do it in such a manner that we
-still ensure fairness and predictablilty and such.
-
-The latest sched code contains a few patches in this direction
-(.25-rc6), and they seem to have the desired effect on 1 socket single
-and dual core and 8 socket single core and dual core. On quad core we
-seem to have some load balance problems that destroy the workload in
-other interresting ways - looking into that now.
-
-- Peter
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
