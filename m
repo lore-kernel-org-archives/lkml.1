@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbYCQMjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYCQMl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbYCQMjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 08:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYCQMjP
+	id S1754257AbYCQMl4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 08:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYCQMls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 08:39:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34050 "EHLO e4.ny.us.ibm.com"
+	Mon, 17 Mar 2008 08:41:48 -0400
+Received: from sacred.ru ([62.205.161.221]:49034 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbYCQMjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 08:39:15 -0400
-Date: Mon, 17 Mar 2008 18:09:51 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: "Yakov Lerner" <iler.ml@gmail.com>
-Cc: prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Subject: kprobes-x86: correct post-eip value in
-	post_hander()
-Message-ID: <20080317123951.GC7229@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <E1Jao7N-0005OC-Fe@io.site5.com> <20080317051956.GB7229@in.ibm.com> <f36b08ee0803170359w675130bas296b5276da5f2a3d@mail.gmail.com>
+	id S1752950AbYCQMlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 08:41:47 -0400
+Message-ID: <47DE66BE.30904@openvz.org>
+Date: Mon, 17 Mar 2008 15:40:30 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f36b08ee0803170359w675130bas296b5276da5f2a3d@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: balbir@linux.vnet.ibm.com
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain> <20080316173005.8812.88290.sendpatchset@localhost.localdomain> <47DE57C2.5060206@openvz.org> <47DE640F.3070601@linux.vnet.ibm.com>
+In-Reply-To: <47DE640F.3070601@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 15:40:27 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 12:59:05PM +0200, Yakov Lerner wrote:
-> On Mon, Mar 17, 2008 at 7:19 AM, Ananth N Mavinakayanahalli
-> <ananth@in.ibm.com> wrote:
-> > On Sun, Mar 16, 2008 at 03:21:21AM -0500, Yakov Lerner wrote:
-> >  >
-> >  > I was trying to get the address of instruction to be executed
-> >  > next after the kprobed instruction.  But regs->eip in post_handler()
-> >  > contains value which is useless to the user. It's pre-corrected value.
-> >  > This value is difficult to use without access to resume_execution(), which
-> >  > is not exported anyway.
-> >  > I moved the invocation of post_handler() to *after* resume_execution().
-> >  > Now regs->eip contains meaningful value in post_handler().
-> >  >
-> >  > I do not think this change breaks any backward-compatibility.
-> >  > To make meaning of the old value, post_handler() would need access to
-> >  > resume_execution() which is not exported.  I have difficulty to believe
-> >  > that previous, uncorrected, regs->eip can be meaningfully used in
-> >  > post_handler().
-> >
-> >  resume_execution() exists not just for the program counter fixups after
-> >  out-of-line singlestepping, but is also as an insurance to put the
-> >  program counter back to the correct address in case the user's
-> >  post_handler() mucks around with it. That isn't possible with this
-> >  change :-(
+Balbir Singh wrote:
+> Pavel Emelyanov wrote:
+>> [snip]
+>>
+>>> +int mem_cgroup_update_as(struct mm_struct *mm, long nr_pages)
+>>> +{
+>>> +	int ret = 0;
+>>> +	struct mem_cgroup *mem;
+>>> +	if (mem_cgroup_subsys.disabled)
+>>> +		return ret;
+>>> +
+>>> +	rcu_read_lock();
+>>> +	mem = rcu_dereference(mm->mem_cgroup);
+>>> +	css_get(&mem->css);
+>>> +	rcu_read_unlock();
+>>> +
+>>> +	if (nr_pages > 0) {
+>>> +		if (res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE)))
+>>> +			ret = 1;
+>>> +	} else
+>>> +		res_counter_uncharge(&mem->as_res, (-nr_pages * PAGE_SIZE));
+>> No, please, no. Let's make two calls - mem_cgroup_charge_as and mem_cgroup_uncharge_as.
+>>
+>> [snip]
+>>
 > 
-> I see your point. This can be prevented by saving and restoring regs->ip
-> around the post_handler() call, no ? Current code is beautiful. Saving and
-> restoring regs->ip would make this place look ugly.
+> Yes, sure :)
+
+Thanks :)
+
+>>> @@ -1117,6 +1117,9 @@ munmap_back:
+>>>  		}
+>>>  	}
+>>>  
+>>> +	if (mem_cgroup_update_as(mm, len >> PAGE_SHIFT))
+>>> +		return -ENOMEM;
+>>> +
+>> Why not use existintg cap_vm_enough_memory and co?
+>>
 > 
-> Otoh, if the post_handler() wants to crash the kernel, it can do it
-> in thousand ways, not just by trashing regs->ip, no ?
+> I thought about it and almost used may_expand_vm(), but there is a slight catch
+> there. With cap_vm_enough_memory() or security_vm_enough_memory(), they are
+> called after total_vm has been calculated. In our case we need to keep the
+> cgroups equivalent of total_vm up to date, and we do this in mem_cgorup_update_as.
 
-Of course, there still are other ways to shoot yourself in the foot with
-the post_handler(), but, atleast for cases we can control, we need to do
-the right thing.
-
-Ananth
+So? What prevents us from using these hooks? :)
