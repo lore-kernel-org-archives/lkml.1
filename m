@@ -1,44 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbYCQUmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYCQUoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756457AbYCQUmP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYCQUmA
+	id S1756972AbYCQUoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbYCQUoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:42:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52663 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbYCQUmA (ORCPT
+	Mon, 17 Mar 2008 16:44:03 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:49464 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbYCQUoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:42:00 -0400
-Date: Mon, 17 Mar 2008 21:44:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Adam Litke <agl@us.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, pj@sgi.com,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [2/18] Add basic support for more than one hstate in hugetlbfs
-Message-ID: <20080317204427.GA10846@one.firstfloor.org>
-References: <20080317258.659191058@firstfloor.org> <20080317015815.D43991B41E0@basil.firstfloor.org> <1205785364.10849.74.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Mon, 17 Mar 2008 16:44:01 -0400
+Date: Mon, 17 Mar 2008 13:43:57 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, mingo@elte.hu, ego@in.ibm.com,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       akpm@linux-foundation.org, josh@freedesktop.org, tglx@linutronix.de,
+       niv@us.ibm.com, heiko.carstens@de.ibm.com
+Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
+Message-ID: <20080317204357.GI10955@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080317010821.GA29875@linux.vnet.ibm.com> <20080317183047.GA188@tv-sign.ru> <20080317190605.GG10955@linux.vnet.ibm.com> <20080317201741.GA92@tv-sign.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1205785364.10849.74.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080317201741.GA92@tv-sign.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> PowerPC will have a 64KB huge page.  Granted, you do fix this in a later
-> patch, so as long as the whole series goes together this shouldn't cause
-> a problem.
-
-No the later patch only supports GB and MB. If you want KB
-you have to do it yourself.
-
-But my patch just keeps the KB support as it was before.
+On Mon, Mar 17, 2008 at 11:17:41PM +0300, Oleg Nesterov wrote:
+> (to clarify: my question is completely offtopic to this patch)
+> On 03/17, Paul E. McKenney wrote:
+> > On Mon, Mar 17, 2008 at 09:30:47PM +0300, Oleg Nesterov wrote:
+> > > I'm not sure the code below is up to date, but what I have in
+> > > arch/s390/kernel/time.c is:
+> > > 
+> > > 	stop_hz_timer:
+> > > 
+> > > 		cpu_set(cpu, nohz_cpu_mask);
+> > > 		
+> > > 		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
+> > > 			cpu_clear(cpu, nohz_cpu_mask);
+> > > 			return;
+> > > 		}
+> > > 
+> > > Don't we need smp_mb() after cpu_set() ?
+> > 
+> > S390's memory model is quite strong, so it might not be needed.
 > 
-> Since mask can always be derived from order, is there a reason we don't
+> OK, in that case we shouldn't worry.
 
-If there was a reason I forgot it. Doesn't really matter much either
-way.
+I don't know if I would go -that- far.  ;-)
 
--Andi
+> > In any
+> > case, if needed, it goes -before- the cpu_set(), because the problems
+> > would arise if prior RCU read-side critical sections were to be reordered
+> > to follow this cpu_set(), right?
+> 
+> No, but it is very possible I missed something.
+> 
+> What if rcu_needs_cpu(cpu) is executed before cpu_set(cpu, nohz_cpu_mask)?
+> It can miss rcu_start_batch() -> rcp->cur++ and return false, but at the
+> same time rcu_start_batch() may see nohz_cpu_mask without this CPU.
+
+If you mean that the rcu_needs_cpu() executes before the cpu_set() in
+the code fragment above, while the rcu_start_batch() executes on some
+other CPU?
+
+Hmmm....  Can't see why this wouldn't be a problem, right off-hand,
+though I cannot claim to be an s390 expert.
+
+Heiko, thoughts?
+
+							Thanx, Paul
+
+> No?
+> 
+> Oleg.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
