@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYCQAGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYCQAVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbYCQAGT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 20:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYCQAGJ
+	id S1754631AbYCQAVU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 20:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYCQAVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 20:06:09 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:60264 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752727AbYCQAGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 20:06:08 -0400
-Date: Mon, 17 Mar 2008 03:05:20 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] don't panic if /sbin/init exits or killed
-Message-ID: <20080317000520.GA542@tv-sign.ru>
-References: <20080316155453.GA20845@tv-sign.ru> <20080316221938.D217026F995@magilla.localdomain> <20080316230346.GA379@tv-sign.ru> <20080316233242.DC9E226F995@magilla.localdomain> <20080316234929.GA456@tv-sign.ru> <20080316235934.22B8626F9E9@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080316235934.22B8626F9E9@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+	Sun, 16 Mar 2008 20:21:06 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:55395 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbYCQAVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 20:21:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=rRE4upNrW3qtwa5mkphhJKRyH2GCDbvh2khE+Kh+RRiKH2S+hjXs/d66apmtV4vQdG+CHZS/dr4/GzZpOEGHU+hqT+elxlDmUgf12a5Hmv0SeP2NsFMEIUU+nFRXRWAPAkAPELj8pR2/0VeCXzlFOG9q6jM4q5pZ2GxylEVlzYI=
+Message-ID: <47DDB969.1060200@googlemail.com>
+Date: Mon, 17 Mar 2008 01:20:57 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+References: <200803170018.52663.rjw@sisk.pl>
+In-Reply-To: <200803170018.52663.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/16, Roland McGrath wrote:
->
-> > Ah, OK. We can change this to dump_stack() without BUG().
+Rafael J. Wysocki wrote:
+
+Hi,
+
+> This message contains a list of some regressions from 2.6.24 reported since
+> 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> of.  If any of them have been fixed already, please let me know.
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10152
+> Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
+> Submitter	: Gabriel C <nix.or.die@googlemail.com>
+> Date		: 2008-02-24 01:31 (22 days old)
+> References	: http://lkml.org/lkml/2008/2/23/380
+> 		  http://lkml.org/lkml/2008/2/24/281
+> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
 > 
-> I'm not sure that's a whole lot better as far as confusion.  
-> And what use is it?  You know init exited.  Just print its exit_code 
-> and/or group_exit_code and you know what kind of kernel entry the exit was.
 
-Agreed. It was either killed, or exited. The exit code provides enough info.
+Thomas do you want me to bisect ? 
 
-Thanks, I'll resend this patch.
+Or do you have any patches I could try ( really does not matter how experimental they are ) ?
 
-Oleg.
+Rafael the bug report is saying x86-64 Component while my box is 32bit :) Could you please correct this ?
+
+Best Regards 
+
+Gabriel
+
+
 
