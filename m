@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYCQBr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYCQBwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbYCQBr5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 21:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYCQBru
+	id S1755371AbYCQBwH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 21:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYCQBv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 21:47:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46000 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbYCQBrt (ORCPT
+	Sun, 16 Mar 2008 21:51:56 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40201 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbYCQBvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 21:47:49 -0400
-Message-ID: <47DDCDA7.4020108@cn.fujitsu.com>
-Date: Mon, 17 Mar 2008 10:47:19 +0900
-From: Li Zefan <lizf@cn.fujitsu.com>
+	Sun, 16 Mar 2008 21:51:55 -0400
+Message-ID: <47DDCE5E.9020104@linux.vnet.ibm.com>
+Date: Mon, 17 Mar 2008 07:20:22 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
 To: Paul Menage <menage@google.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>,
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
        Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, David Rientjes <rientjes@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
        Pavel Emelianov <xemul@openvz.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
@@ -45,13 +47,15 @@ Paul Menage wrote:
 > the performance hit taken) for users that actually want it?
 > 
 
-It will be code duplication to make it a new subsystem, and it will be useful
-to control both of them, am I right? :)
+I am yet to measure the performance overhead of the accounting checks. I'll try
+and get started on that today. I did not consider making it a separate system,
+because I suspect that anybody wanting memory control would also want address
+space control (for the advantages listed in the documentation). I am not against
+the idea of making it a separate subsystem, but first let me get back with the
+numbers.
 
-So could we just add a CONFIG to this patch series, like:
-	CONFIG_CGROUP_MEM_RES_AS_CTLR
-?
-
-> Paul
-> 
-> 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
