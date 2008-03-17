@@ -1,97 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYCQUDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYCQUDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbYCQUDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbYCQUCd
+	id S1758036AbYCQUDz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbYCQUCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:02:33 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51457 "EHLO
+	Mon, 17 Mar 2008 16:02:34 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51459 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756208AbYCQUCb (ORCPT
+	with ESMTP id S1756216AbYCQUCc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:02:31 -0400
-Message-Id: <20080317200053.447640802@szeredi.hu>
+	Mon, 17 Mar 2008 16:02:32 -0400
+Message-Id: <20080317200147.272670426@szeredi.hu>
+References: <20080317200053.447640802@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Mar 2008 21:00:53 +0100
+Date: Mon, 17 Mar 2008 21:00:56 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
        viro@zeniv.linux.org.uk
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 00/11] mount ownership and unprivileged mount syscall (v9)
+Subject: [patch 03/11] unprivileged mounts: propagate error values from clone_mnt
+Content-Disposition: inline; filename=unprivileged-mounts-propagate-error-values-from-clone_mnt.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, Al,
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-Please consider adding this series to your trees.
+Allow clone_mnt() to return errors other than ENOMEM.  This will be used for
+returning a different error value when the number of user mounts goes over the
+limit.
 
-I've been using these patches for a while on my laptop to mount fuse
-filesystems as user, without any suid-root helpers.  The setup is as
-follows:
+Fix copy_tree() to return EPERM for unbindable mounts.
 
-- link /proc/mounts to /etc/mtab
-- patch util-linux-ng with http://lkml.org/lkml/2008/1/16/103
-- remove suid from mount, umount and fusermount
-- add a line to /etc/fstab to bind mount ~/mnt onto itself owned by the user
-- add 'fs.types.fuse.usermount_safe = 1' to /etc/sysctl.conf
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+---
+ fs/namespace.c |   95 ++++++++++++++++++++++++++++-----------------------------
+ fs/pnode.c     |    5 +--
+ 2 files changed, 51 insertions(+), 49 deletions(-)
 
-Apart from '/dev/sda2' being replaced with '/dev/root' in 'mount' and
-'df' outputs, I haven't experienced any problems.
-
-Thanks,
-Miklos
-
-v8 -> v9
-
- - new patch: copy mount ownership when cloning the mount namespace
-
-v7 -> v8
-
- - extend documentation of allow_usermount sysctl tunable
- - describe new unprivileged mounting in fuse.txt
-
-v6 -> v7:
-
- - add '/proc/sys/fs/types/<type>/usermount_safe' tunable (new patch)
- - do not make FUSE safe by default, describe possible problems
-   associated with unprivileged FUSE mounts in patch header
- - return EMFILE instead of EPERM, if maximum user mount count is exceeded
- - rename option 'nomnt' -> 'nosubmnt'
- - clean up error propagation in dup_mnt_ns
- - update util-linux-ng patch
-
-v5 -> v6:
-
- - update to latest -mm
- - preliminary util-linux-ng support (will post right after this series)
-
-v4 -> v5:
-
- - fold back Andrew's changes
- - fold back my update patch:
-    o use fsuid instead of ruid
-    o allow forced unpriv. unmounts for "safe" filesystems
-    o allow mounting over special files, but not over symlinks
-    o set nosuid and nodev based on lack of specific capability
- - patch header updates
- - new patch: on propagation inherit owner from parent
- - new patch: add "no submounts" mount flag
-
-v3 -> v4:
-
- - simplify interface as much as possible, now only a single option
-   ("user=UID") is used to control everything
- - no longer allow/deny mounting based on file/directory permissions,
-   that approach does not always make sense
-
-v1 -> v3:
-
- - add mount flags to set/clear mnt_flags individually
- - add "usermnt" mount flag.  If it is set, then allow unprivileged
-   submounts under this mount
- - make max number of user mounts default to 1024, since now the
-   usermnt flag will prevent user mounts by default
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2008-03-17 20:55:44.000000000 +0100
++++ linux/fs/namespace.c	2008-03-17 20:55:45.000000000 +0100
+@@ -534,43 +534,44 @@ static struct vfsmount *clone_mnt(struct
+ 	struct super_block *sb = old->mnt_sb;
+ 	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
+ 
+-	if (mnt) {
+-		mnt->mnt_flags = old->mnt_flags;
+-		atomic_inc(&sb->s_active);
+-		mnt->mnt_sb = sb;
+-		mnt->mnt_root = dget(root);
+-		mnt->mnt_mountpoint = mnt->mnt_root;
+-		mnt->mnt_parent = mnt;
+-
+-		/* don't copy the MNT_USER flag */
+-		mnt->mnt_flags &= ~MNT_USER;
+-		if (flag & CL_SETUSER)
+-			set_mnt_user(mnt);
+-
+-		if (flag & CL_SLAVE) {
+-			list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+-			mnt->mnt_master = old;
+-			clear_mnt_shared(mnt);
+-		} else if (!(flag & CL_PRIVATE)) {
+-			if (flag & CL_PROPAGATION)
+-				set_mnt_shared(old);
+-			if (IS_MNT_SHARED(old))
+-				make_mnt_peer(old, mnt);
+-			if (IS_MNT_SLAVE(old))
+-				list_add(&mnt->mnt_slave, &old->mnt_slave);
+-			mnt->mnt_master = old->mnt_master;
+-		}
+-		if (flag & CL_MAKE_SHARED)
+-			set_mnt_shared(mnt);
++	if (!mnt)
++		return ERR_PTR(-ENOMEM);
+ 
+-		/* stick the duplicate mount on the same expiry list
+-		 * as the original if that was on one */
+-		if (flag & CL_EXPIRE) {
+-			spin_lock(&vfsmount_lock);
+-			if (!list_empty(&old->mnt_expire))
+-				list_add(&mnt->mnt_expire, &old->mnt_expire);
+-			spin_unlock(&vfsmount_lock);
+-		}
++	mnt->mnt_flags = old->mnt_flags;
++	atomic_inc(&sb->s_active);
++	mnt->mnt_sb = sb;
++	mnt->mnt_root = dget(root);
++	mnt->mnt_mountpoint = mnt->mnt_root;
++	mnt->mnt_parent = mnt;
++
++	/* don't copy the MNT_USER flag */
++	mnt->mnt_flags &= ~MNT_USER;
++	if (flag & CL_SETUSER)
++		set_mnt_user(mnt);
++
++	if (flag & CL_SLAVE) {
++		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
++		mnt->mnt_master = old;
++		clear_mnt_shared(mnt);
++	} else if (!(flag & CL_PRIVATE)) {
++		if (flag & CL_PROPAGATION)
++			set_mnt_shared(old);
++		if (IS_MNT_SHARED(old))
++			make_mnt_peer(old, mnt);
++		if (IS_MNT_SLAVE(old))
++			list_add(&mnt->mnt_slave, &old->mnt_slave);
++		mnt->mnt_master = old->mnt_master;
++	}
++	if (flag & CL_MAKE_SHARED)
++		set_mnt_shared(mnt);
++
++	/* stick the duplicate mount on the same expiry list
++	 * as the original if that was on one */
++	if (flag & CL_EXPIRE) {
++		spin_lock(&vfsmount_lock);
++		if (!list_empty(&old->mnt_expire))
++			list_add(&mnt->mnt_expire, &old->mnt_expire);
++		spin_unlock(&vfsmount_lock);
+ 	}
+ 	return mnt;
+ }
+@@ -1178,11 +1179,11 @@ struct vfsmount *copy_tree(struct vfsmou
+ 	struct nameidata nd;
+ 
+ 	if (!(flag & CL_COPY_ALL) && IS_MNT_UNBINDABLE(mnt))
+-		return NULL;
++		return ERR_PTR(-EPERM);
+ 
+ 	res = q = clone_mnt(mnt, dentry, flag);
+-	if (!q)
+-		goto Enomem;
++	if (IS_ERR(q))
++		goto error;
+ 	q->mnt_mountpoint = mnt->mnt_mountpoint;
+ 
+ 	p = mnt;
+@@ -1203,8 +1204,8 @@ struct vfsmount *copy_tree(struct vfsmou
+ 			nd.path.mnt = q;
+ 			nd.path.dentry = p->mnt_mountpoint;
+ 			q = clone_mnt(p, p->mnt_root, flag);
+-			if (!q)
+-				goto Enomem;
++			if (IS_ERR(q))
++				goto error;
+ 			spin_lock(&vfsmount_lock);
+ 			list_add_tail(&q->mnt_list, &res->mnt_list);
+ 			attach_mnt(q, &nd);
+@@ -1212,7 +1213,7 @@ struct vfsmount *copy_tree(struct vfsmou
+ 		}
+ 	}
+ 	return res;
+-Enomem:
++ error:
+ 	if (res) {
+ 		LIST_HEAD(umount_list);
+ 		spin_lock(&vfsmount_lock);
+@@ -1220,7 +1221,7 @@ Enomem:
+ 		spin_unlock(&vfsmount_lock);
+ 		release_mounts(&umount_list);
+ 	}
+-	return NULL;
++	return q;
+ }
+ 
+ struct vfsmount *collect_mounts(struct vfsmount *mnt, struct dentry *dentry)
+@@ -1422,13 +1423,13 @@ static noinline int do_loopback(struct n
+ 		goto out;
+ 
+ 	clone_fl = (flags & MS_SETUSER) ? CL_SETUSER : 0;
+-	err = -ENOMEM;
+ 	if (flags & MS_REC)
+ 		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
+ 	else
+ 		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
+ 
+-	if (!mnt)
++	err = PTR_ERR(mnt);
++	if (IS_ERR(mnt))
+ 		goto out;
+ 
+ 	err = graft_tree(mnt, nd);
+@@ -2004,10 +2005,10 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	/* First pass: copy the tree topology */
+ 	new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
+ 					CL_COPY_ALL | CL_EXPIRE);
+-	if (!new_ns->root) {
++	if (IS_ERR(new_ns->root)) {
+ 		up_write(&namespace_sem);
+ 		kfree(new_ns);
+-		return ERR_PTR(-ENOMEM);;
++		return ERR_CAST(new_ns->root);
+ 	}
+ 	spin_lock(&vfsmount_lock);
+ 	list_add_tail(&new_ns->list, &new_ns->root->mnt_list);
+Index: linux/fs/pnode.c
+===================================================================
+--- linux.orig/fs/pnode.c	2008-03-17 20:55:31.000000000 +0100
++++ linux/fs/pnode.c	2008-03-17 20:55:45.000000000 +0100
+@@ -306,8 +306,9 @@ int propagate_mnt(struct vfsmount *dest_
+ 
+ 		source =  get_source(m, prev_dest_mnt, prev_src_mnt, &type);
+ 
+-		if (!(child = copy_tree(source, source->mnt_root, type))) {
+-			ret = -ENOMEM;
++		child = copy_tree(source, source->mnt_root, type);
++		if (IS_ERR(child)) {
++			ret = PTR_ERR(child);
+ 			list_splice(tree_list, tmp_list.prev);
+ 			goto out;
+ 		}
 
 --
-
