@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYCQVVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYCQVXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbYCQVVp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYCQVVi
+	id S1756011AbYCQVXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYCQVXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:21:38 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54300 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752632AbYCQVVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:21:37 -0400
-Date: Mon, 17 Mar 2008 22:21:36 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-cc: linux-kernel@vger.kernel.org, michel@tungstengraphics.com
-Subject: Re: [PATCH] Update key codes for Apple aluminium keyboards
-In-Reply-To: <20080317201852.GA30667@hansmi.ch>
-Message-ID: <Pine.LNX.4.64.0803172220190.30831@jikos.suse.cz>
-References: <20080317161826.GA29601@hansmi.ch> <Pine.LNX.4.64.0803171759390.30831@jikos.suse.cz>
- <20080317201852.GA30667@hansmi.ch>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-2041315493-1205788896=:30831"
+	Mon, 17 Mar 2008 17:23:33 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:56203 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbYCQVXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 17:23:32 -0400
+Date: Tue, 18 Mar 2008 00:23:04 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, mingo@elte.hu, ego@in.ibm.com,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       akpm@linux-foundation.org, josh@freedesktop.org, tglx@linutronix.de,
+       niv@us.ibm.com, heiko.carstens@de.ibm.com
+Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
+Message-ID: <20080317212304.GA118@tv-sign.ru>
+References: <20080317010821.GA29875@linux.vnet.ibm.com> <20080317183047.GA188@tv-sign.ru> <20080317190605.GG10955@linux.vnet.ibm.com> <20080317201741.GA92@tv-sign.ru> <20080317204357.GI10955@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080317204357.GI10955@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 03/17, Paul E. McKenney wrote:
+>
+> On Mon, Mar 17, 2008 at 11:17:41PM +0300, Oleg Nesterov wrote:
+> > (to clarify: my question is completely offtopic to this patch)
+> > On 03/17, Paul E. McKenney wrote:
+> > > On Mon, Mar 17, 2008 at 09:30:47PM +0300, Oleg Nesterov wrote:
+> > > > I'm not sure the code below is up to date, but what I have in
+> > > > arch/s390/kernel/time.c is:
+> > > > 
+> > > > 	stop_hz_timer:
+> > > > 
+> > > > 		cpu_set(cpu, nohz_cpu_mask);
+> > > > 		
+> > > > 		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
+> > > > 			cpu_clear(cpu, nohz_cpu_mask);
+> > > > 			return;
+> > > > 		}
+> > > > 
+> > > > Don't we need smp_mb() after cpu_set() ?
+> > > 
+> > > S390's memory model is quite strong, so it might not be needed.
+> > 
+> > OK, in that case we shouldn't worry.
+> 
+> I don't know if I would go -that- far.  ;-)
+> 
+> > > In any
+> > > case, if needed, it goes -before- the cpu_set(), because the problems
+> > > would arise if prior RCU read-side critical sections were to be reordered
+> > > to follow this cpu_set(), right?
+> > 
+> > No, but it is very possible I missed something.
+> > 
+> > What if rcu_needs_cpu(cpu) is executed before cpu_set(cpu, nohz_cpu_mask)?
+> > It can miss rcu_start_batch() -> rcp->cur++ and return false, but at the
+> > same time rcu_start_batch() may see nohz_cpu_mask without this CPU.
+> 
+> If you mean that the rcu_needs_cpu() executes before the cpu_set() in
+> the code fragment above, while the rcu_start_batch() executes on some
+> other CPU?
 
---336216065-2041315493-1205788896=:30831
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Yes, and __rcu_pending() sees the old value of ->cur.
 
-On Mon, 17 Mar 2008, Michael Hanselmann wrote:
+IOW. Suppose that this CPU reads rcp->cur out of order. To simplify, let's
+suppose that stop_hz_timer() on CPU_0 in fact does
 
-> ---
-> F5 and F6 have no second function printed on them. Thus their
-> definitions have been removed from the table.
->=20
-> KEY_CYCLEWINDOWS doesn't name the function of Mac OS X' Expos=E9 properly
-> and because we couldn't find a better key code, we decided to use
-> KEY_FN_F4 instead.
->=20
-> We also changed KEY_BACK and KEY_FORWARD, which apply to browser
-> functions, to KEY_PREVIOUSSONG and KEY_NEXTSONG, since the keys are
-> intended to control a music player.
-> ---
-> Does this contain enough details?
+	xxx = rcu_needs_cpu(cpu); // false
 
-It indeed does. I will queue it in my tree, thanks a lot.
+	// ---- WINDOW ------
 
---=20
-Jiri Kosina
-SUSE Labs
---336216065-2041315493-1205788896=:30831--
+	cpu_set(cpu, nohz_cpu_mask);
+
+	if (xxx || local_softirq_pending()) {
+		... abort ...
+	}
+
+	...proceed...
+
+Another CPU does rcu_start_batch() in the window above. In that case
+rcp->cpumask will include CPU_0, and the grace period can't be completed
+untill CPU_0 is "woken".
+
+Oleg.
+
