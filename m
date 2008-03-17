@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYCQVHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbYCQVIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797AbYCQVHH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYCQVG4
+	id S1755651AbYCQVIu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbYCQVIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:06:56 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:35180 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751700AbYCQVGz (ORCPT
+	Mon, 17 Mar 2008 17:08:43 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:34463 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbYCQVIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:06:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IKOKMg2uwYNhGDpxmPN529Xv3C1sPnSUif3ecrppsQl+JRYB3lX558AHNqZyIw2F6oX4cVcUiqKSL1DEfnVw82SWbY863evoKBQVQ7KlnElJ52Mj56RhCmvqQyur9u0mRB4X/q8K2sHaCsoKABNlxaPROX/fQ2QNJQd2q3UwxiU=  ;
-X-YMail-OSG: gHFm2vIVM1nGkUab7T1wlJCzYi316uHOIDiOapvsKy6lhDRAYOgoMH4tVjA1Tbhda9dZzsq0ZQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-Subject: Re: ehci-hcd affects hda speed
-Date: Mon, 17 Mar 2008 13:06:52 -0800
-User-Agent: KMail/1.9.6
-Cc: Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <alpine.LFD.1.00.0803101303240.4772@nev.ubzr> <alpine.LFD.1.00.0803160054360.23451@nev.ubzr>
-In-Reply-To: <alpine.LFD.1.00.0803160054360.23451@nev.ubzr>
+	Mon, 17 Mar 2008 17:08:43 -0400
+To: Jeff Dike <jdike@addtoit.com>
+Cc: clowncoder <vincent-perrier@club-internet.fr>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@timesys.com>
+Subject: Re: [2.6.24.x] UML select()/poll() oversleeping reproducibly
+References: <47B34BA0.30006@club-internet.fr>
+	<20080214003853.GA15952@c2.user-mode-linux.org>
+	<47B4BDCD.4080605@club-internet.fr>
+	<20080215160205.GA6082@c2.user-mode-linux.org>
+	<47B5CE40.9000005@club-internet.fr>
+	<20080215184650.GA8810@c2.user-mode-linux.org>
+	<87y78kx640.fsf_-_@hades.wkstn.nix>
+	<20080317193415.GA12234@c2.user-mode-linux.org>
+From: Nix <nix@esperi.org.uk>
+Emacs: ... it's not just a way of life, it's a text editor!
+Date: Mon, 17 Mar 2008 21:08:16 +0000
+In-Reply-To: <20080317193415.GA12234@c2.user-mode-linux.org> (Jeff Dike's message of "Mon, 17 Mar 2008 15:34:15 -0400")
+Message-ID: <87k5k112kf.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803171406.53241.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-DCC-dcc1-Metrics: hades 1182; Body=5 Fuz1=5 Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 March 2008, Lev A. Melnikovsky wrote:
->  	Particularly, what does "MAC turn around 
-> time" stand for with respect to EHCI? I would appreciate some reference, 
-> thanks.
+On 17 Mar 2008, Jeff Dike verbalised:
 
-Blame VIA for that one.  Notice how their descriptions of the
-fields in that register don't even mention a MAC.  :)
+> Below is the same patch with another kluge, which cuts down the
+> requested sleep by 10% in hopes of getting the actual sleep closer to
+> what's wanted.
 
-But the relevant bit is the "sleep time" and that's described
-in the EHCI specification.  It basically means how long it waits,
-after noticing a "no work for me" async schedule ring, before
-scanning that schedule again.  It seems your system had that
-set to just 1 usec, meaning it would hardly give anything else
-a chance to get onto the PCI bus.  That's probably why the EHCI
-spec uses a value of 10 usec:  basic fairness.
+Eeuuuuw. :)
 
-- Dave
+> This is unusable in anything resembling mainline, but I'd like to see
+> how your various systems react to it.  I'm getting very close to the
+> sleeps I asked for (with slight undersleeping, which is a bug).
 
+OK.
 
+Tests on host with clocksource pit:
+
+bash-3.2# bin/select-sleep 5
+Slept for 5 seconds.
+bash-3.2# bin/select-sleep 10
+Slept for 11 seconds.
+bash-3.2# bin/select-sleep 30
+Slept for 31 seconds.
+bash-3.2# bin/select-sleep 60
+Slept for 61 seconds.
+
+... so much better than the 4x error without this patch.
+
+Tests on host with clocksource tsc:
+
+bash-3.2# bin/select-sleep 5
+Slept for 5 seconds.
+bash-3.2# bin/select-sleep 10
+Slept for 10 seconds.
+bash-3.2# bin/select-sleep 30
+Slept for 30 seconds.
+bash-3.2# bin/select-sleep 60
+Slept for 61 seconds.
+
+Distinctly better than without this patch.
+
+(Am I the only person who finds it strange that (some) clocksource
+hackers are arguing about accuracy problems in the ppm range while we're
+glad to get an error of `only' single seconds per minute out of it? 
+Maybe next year we can invent the `pendulum' clocksource :) )
+
+-- 
+`The rest is a tale of post and counter-post.' --- Ian Rawlings
+                                                   describes USENET
