@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYCQQSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYCQQYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYCQQSY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 12:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYCQQSP
+	id S1752792AbYCQQYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 12:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYCQQYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 12:18:15 -0400
-Received: from www.tglx.de ([62.245.132.106]:59780 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbYCQQSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 12:18:14 -0400
-Date: Mon, 17 Mar 2008 17:17:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
+	Mon, 17 Mar 2008 12:24:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51138 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751736AbYCQQYK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 12:24:10 -0400
+Date: Mon, 17 Mar 2008 16:07:39 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47DDB969.1060200@googlemail.com>
-Message-ID: <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ultrastor.c is a bit-rot
+Message-ID: <20080317160739.04ad0939@core>
+In-Reply-To: <47DE8736.8020405@panasas.com>
+References: <47DE8736.8020405@panasas.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008, Gabriel C wrote:
-> > Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
-> > Submitter	: Gabriel C <nix.or.die@googlemail.com>
-> > Date		: 2008-02-24 01:31 (22 days old)
-> > References	: http://lkml.org/lkml/2008/2/23/380
-> > 		  http://lkml.org/lkml/2008/2/24/281
-> > Handled-By	: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> 
-> Thomas do you want me to bisect ? 
+> if the machine has more then 2^24 of memory. Then this will never
+> work, right? or I'm missing it completely?
 
-That'd be great.
+It will work compiled in, and probably users of such cards if any don't
+have > 16MB. I doubt anyone is using the driver however.
 
-> Or do you have any patches I could try ( really does not matter how experimental they are ) ?
-
-No, I have not the lightest clue whats going on.
- 
-Thanks,
-
-	tglx
+Alan
