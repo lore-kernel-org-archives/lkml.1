@@ -1,63 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYCQRdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbYCQRgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYCQRdg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 13:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYCQRd1
+	id S1755117AbYCQRgn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 13:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYCQRgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 13:33:27 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:34218 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752184AbYCQRd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 13:33:26 -0400
-Date: Mon, 17 Mar 2008 10:32:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: hackbench regression since 2.6.25-rc
-In-Reply-To: <1205740204.3215.520.camel@ymzhang>
-Message-ID: <Pine.LNX.4.64.0803171027450.7359@schroedinger.engr.sgi.com>
-References: <1205394417.3215.85.camel@ymzhang>  <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-  <1205400538.3215.148.camel@ymzhang>  <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
-  <1205463842.3215.188.camel@ymzhang> <1205465447.3215.195.camel@ymzhang> 
- <Pine.LNX.4.64.0803132333020.24204@schroedinger.engr.sgi.com> 
- <1205479398.3215.284.camel@ymzhang>  <Pine.LNX.4.64.0803141400170.28115@schroedinger.engr.sgi.com>
- <1205740204.3215.520.camel@ymzhang>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Mar 2008 13:36:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43310 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750762AbYCQRgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 13:36:36 -0400
+Date: Mon, 17 Mar 2008 17:36:09 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Christian Kujau <lists@nerdbynature.de>, Chr <chunkeey@web.de>,
+       Milan Broz <mbroz@redhat.com>, David Chinner <dgc@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+       dm-devel@redhat.com, dm-crypt@saout.de,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Ritesh Raj Sarraf <rrs@researchut.com>
+Subject: Re: [dm-crypt] INFO: task mount:11202 blocked for more than 120 seconds
+Message-ID: <20080317173609.GD29322@agk.fab.redhat.com>
+Mail-Followup-To: Christian Kujau <lists@nerdbynature.de>,
+	Chr <chunkeey@web.de>, Milan Broz <mbroz@redhat.com>,
+	David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+	xfs@oss.sgi.com, dm-devel@redhat.com, dm-crypt@saout.de,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Ritesh Raj Sarraf <rrs@researchut.com>
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <200803150108.04008.chunkeey@web.de> <200803151432.11125.chunkeey@web.de> <200803152234.53199.chunkeey@web.de> <alpine.DEB.1.00.0803161406040.6213@sheep.housecafe.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0803161406040.6213@sheep.housecafe.de>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008, Zhang, Yanmin wrote:
+Latest version for everyone to try:
 
-> slub_min_objects	                                   | 8      |   16   |   32   |  64
-> --------------------------------------------------------------------------------------------
-> slab(__slab_alloc+__slab_free+add_partial) cpu utilization | 88.00% | 44.00% | 13.00% | 12%
-> 
-> 
-> When slub_min_objects=32, we could get a reasonable value. Beyond 32, the improvement
-> is very small. 32 is just possible_cpu_number*2 on my tigerton.
+From: Milan Broz <mbroz@redhat.com>
 
-Interesting. What is the optimal configuration for your 8p? Could you 
-figure out the optimal configuration for an 4p and a 2p configuration?
+Fix regression in dm-crypt introduced in commit
+3a7f6c990ad04e6f576a159876c602d14d6f7fef
+(dm crypt: use async crypto).
 
-> It's hard to say hackbench simulates real applications closely. But it discloses a possible
-> performance bottlebeck. Last year, we once captured the kmalloc-2048 issue by tbench. So the
-> default slub_min_objects need to be revised. In the other hand, slab is allocated by alloc_page
-> when its size is equal to or more than a half page, so enlarging slub_min_objects won't create
-> too many slab page buffers.
-> 
-> As for NUMA, perhaps we could define slub_min_objects to 2*max_cpu_number_per_node.
+If write requests need to be split into pieces, the code must not
+process them in parallel because the crypto context cannot be shared.
+So there can be parallel crypto operations on one part of the write,
+but only one write bio can be processed at a time.
 
-Well for a 4k cpu configu this would set min_objects to 8192. So I think 
-we could implement a form of logarithmic scaling based on cpu 
-counts comparable to what is done for the statistics update in vmstat.c
+This is not optimal and the workqueue code need to be optimized for
+parallel processing, but for now it solves problem without affecting
+the performance of synchronous crypto operation (most of current
+dm-crypt users).
 
-fls(num_online_cpus()) = 4
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 
-So maybe
+---
+ drivers/md/dm-crypt.c |   58 +++++++++++++++++++++++++-------------------------
+ 1 files changed, 30 insertions(+), 28 deletions(-)
 
-slub_min_objects= 8 + (2 + fls(num_online_cpus())) * 4
+Index: linux-2.6.25-rc4/drivers/md/dm-crypt.c
+===================================================================
+--- linux-2.6.25-rc4.orig/drivers/md/dm-crypt.c	2008-03-17 11:42:16.000000000 +0000
++++ linux-2.6.25-rc4/drivers/md/dm-crypt.c	2008-03-17 11:42:28.000000000 +0000
+@@ -1,7 +1,7 @@
+ /*
+  * Copyright (C) 2003 Christophe Saout <christophe@saout.de>
+  * Copyright (C) 2004 Clemens Fruhwirth <clemens@endorphin.org>
+- * Copyright (C) 2006-2007 Red Hat, Inc. All rights reserved.
++ * Copyright (C) 2006-2008 Red Hat, Inc. All rights reserved.
+  *
+  * This file is released under the GPL.
+  */
+@@ -93,6 +93,8 @@ struct crypt_config {
+ 
+ 	struct workqueue_struct *io_queue;
+ 	struct workqueue_struct *crypt_queue;
++	wait_queue_head_t writeq;
++
+ 	/*
+ 	 * crypto related data
+ 	 */
+@@ -331,14 +333,7 @@ static void crypt_convert_init(struct cr
+ 	ctx->idx_out = bio_out ? bio_out->bi_idx : 0;
+ 	ctx->sector = sector + cc->iv_offset;
+ 	init_completion(&ctx->restart);
+-	/*
+-	 * Crypto operation can be asynchronous,
+-	 * ctx->pending is increased after request submission.
+-	 * We need to ensure that we don't call the crypt finish
+-	 * operation before pending got incremented
+-	 * (dependent on crypt submission return code).
+-	 */
+-	atomic_set(&ctx->pending, 2);
++	atomic_set(&ctx->pending, 1);
+ }
+ 
+ static int crypt_convert_block(struct crypt_config *cc,
+@@ -411,43 +406,42 @@ static void crypt_alloc_req(struct crypt
+ static int crypt_convert(struct crypt_config *cc,
+ 			 struct convert_context *ctx)
+ {
+-	int r = 0;
++	int r;
+ 
+ 	while(ctx->idx_in < ctx->bio_in->bi_vcnt &&
+ 	      ctx->idx_out < ctx->bio_out->bi_vcnt) {
+ 
+ 		crypt_alloc_req(cc, ctx);
+ 
++		atomic_inc(&ctx->pending);
++
+ 		r = crypt_convert_block(cc, ctx, cc->req);
+ 
+ 		switch (r) {
++		/* async */
+ 		case -EBUSY:
+ 			wait_for_completion(&ctx->restart);
+ 			INIT_COMPLETION(ctx->restart);
+ 			/* fall through*/
+ 		case -EINPROGRESS:
+-			atomic_inc(&ctx->pending);
+ 			cc->req = NULL;
+-			r = 0;
+-			/* fall through*/
++			ctx->sector++;
++			continue;
++
++		/* sync */
+ 		case 0:
++			atomic_dec(&ctx->pending);
+ 			ctx->sector++;
+ 			continue;
+-		}
+ 
+-		break;
++		/* error */
++		default:
++			atomic_dec(&ctx->pending);
++			return r;
++		}
+ 	}
+ 
+-	/*
+-	 * If there are pending crypto operation run async
+-	 * code. Otherwise process return code synchronously.
+-	 * The step of 2 ensures that async finish doesn't
+-	 * call crypto finish too early.
+-	 */
+-	if (atomic_sub_return(2, &ctx->pending))
+-		return -EINPROGRESS;
+-
+-	return r;
++	return 0;
+ }
+ 
+ static void dm_crypt_bio_destructor(struct bio *bio)
+@@ -624,8 +618,10 @@ static void kcryptd_io_read(struct dm_cr
+ static void kcryptd_io_write(struct dm_crypt_io *io)
+ {
+ 	struct bio *clone = io->ctx.bio_out;
++	struct crypt_config *cc = io->target->private;
+ 
+ 	generic_make_request(clone);
++	wake_up(&cc->writeq);
+ }
+ 
+ static void kcryptd_io(struct work_struct *work)
+@@ -698,7 +694,8 @@ static void kcryptd_crypt_write_convert_
+ 
+ 		r = crypt_convert(cc, &io->ctx);
+ 
+-		if (r != -EINPROGRESS) {
++		if (atomic_dec_and_test(&io->ctx.pending)) {
++			/* processed, no running async crypto  */
+ 			kcryptd_crypt_write_io_submit(io, r, 0);
+ 			if (unlikely(r < 0))
+ 				return;
+@@ -706,8 +703,12 @@ static void kcryptd_crypt_write_convert_
+ 			atomic_inc(&io->pending);
+ 
+ 		/* out of memory -> run queues */
+-		if (unlikely(remaining))
++		if (unlikely(remaining)) {
++			/* wait for async crypto and reinitialize pending counter */
++			wait_event(cc->writeq, !atomic_read(&io->ctx.pending));
++			atomic_set(&io->ctx.pending, 1);
+ 			congestion_wait(WRITE, HZ/100);
++		}
+ 	}
+ }
+ 
+@@ -746,7 +747,7 @@ static void kcryptd_crypt_read_convert(s
+ 
+ 	r = crypt_convert(cc, &io->ctx);
+ 
+-	if (r != -EINPROGRESS)
++	if (atomic_dec_and_test(&io->ctx.pending))
+ 		kcryptd_crypt_read_done(io, r);
+ 
+ 	crypt_dec_pending(io);
+@@ -1047,6 +1048,7 @@ static int crypt_ctr(struct dm_target *t
+ 		goto bad_crypt_queue;
+ 	}
+ 
++	init_waitqueue_head(&cc->writeq);
+ 	ti->private = cc;
+ 	return 0;
+ 
