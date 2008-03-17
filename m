@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYCQWU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYCQWan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYCQWU7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 18:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYCQWUv
+	id S1755537AbYCQWan (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 18:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYCQWad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 18:20:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44854 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753374AbYCQWUv (ORCPT
+	Mon, 17 Mar 2008 18:30:33 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:40776 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbYCQWac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 18:20:51 -0400
-Date: Mon, 17 Mar 2008 15:18:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 8/8] handle leap second via timer
-Message-Id: <20080317151856.adea0488.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0803150417540.1791@scrub.home>
-References: <20080314184001.695807682@linux-m68k.org>
-	<20080314195737.212526899@linux-m68k.org>
-	<1205526244.6122.5.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0803150417540.1791@scrub.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Mar 2008 18:30:32 -0400
+Message-ID: <47DEF13F.4000703@keyaccess.nl>
+Date: Mon, 17 Mar 2008 23:31:27 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: Len Brown <lenb@kernel.org>, Dave Jones <davej@codemonkey.org.uk>,
+       linux-acpi@vger.kernel.org, Adam M Belay <abelay@mit.edu>,
+       Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PNP: dynamic pnp resources
+References: <20080312151452.GA4523@codemonkey.org.uk>	 <200803121345.21297.lenb@kernel.org> <1205409848.29877.358.camel@queen.suse.de>
+In-Reply-To: <1205409848.29877.358.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Mar 2008 04:18:39 +0100 (CET)
-Roman Zippel <zippel@linux-m68k.org> wrote:
+On 13-03-08 13:04, Thomas Renninger wrote:
 
-> Hi,
+> I had the problem that I could not test on isa systems.
+
+Perhaps we can go organize a fundraiser for SuSE so they can go out and buy 
+an ISAPnP soundcard. I have a few I can sell. I promise I won't overcharge 
+them (much).
+
+> Rene Herman helped here a lot.
+> There are still open issues, last state was (comment from Rene):
+> ------------------------
+> No. Please note we're talking about ISAPnP, not PnPBIOS. No BIOS
+> involved at all.
 > 
-> On Fri, 14 Mar 2008, john stultz wrote:
+> Driver (sound/isa/cs423x/cs4236.c) furthermore does not use anything but
+> the PnP layer itself. Start at snd_cs423x_pnpc_detect, which is the
+> pnp .probe() method.
 > 
-> > Instead of exporting the clocksource making it global, could you use a
-> > timekeeping_insert/remove_second() style interface?
-> 
-> Sounds good.
-> 
+> I'll look into providing a more extensive answer and/or test whatever
+> comes in later.
+> -------------------------
 
-It sounds like a few updates are in the pipeline, but I merged this series
-as-is into -mm.
+Did look, but decided there wasn't much more specifically to add. It's 
+something more fundamental about the flow of things and while the comment 
+above is obviously cynical I did grow a bit tired of a series of patches 
+that just transported the OOPS two lines down again each time, so I held out 
+for Bjorn as well.
 
-I'll normally push ntp changes through Thomas's git-hrt tree, however this
-patch series has dependencies upon at least
+Still availabe for tests.
 
-introduce-explicit-signed-unsigned-64bit-divide.patch
-convert-a-few-do_div-user.patch
-rename-div64_64-to-div64_u64.patch
-rename-div64_64-to-div64_u64-mm.patch
-remove-div_long_long_rem.patch
-
-so they can't go into git-hrt immediately.
-
-The idealised algorithm is
-
-- 2.6.26 opens
-- Thomas merges git-hrt
-- I merge the above patches
-- I then send these ntp patches to Thomas
-- He merges them into git-hrt
-- He does another git-hrt -> Linus merge
-
-And that's all OK, but various lags might cause us to miss the merge
-window, as I merge the -mm stuff last, and some git-tree maintainers are
-dawdlers.
-
-So if Thomas wants to ack these I can merge them directly late in the
-2.6.26 merge window.
-
+Rene.
