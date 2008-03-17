@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbYCQBIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYCQB2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbYCQBIg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 21:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYCQBI1
+	id S1754040AbYCQB2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 21:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYCQB2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 21:08:27 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42810 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbYCQBI0 (ORCPT
+	Sun, 16 Mar 2008 21:28:15 -0400
+Received: from mail9.dslextreme.com ([66.51.199.94]:35780 "HELO
+	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751594AbYCQB2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 21:08:26 -0400
-Date: Sun, 16 Mar 2008 18:08:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: rostedt@goodmis.org, linux-rt-users@vger.kernel.org, mingo@elte.hu,
-       ego@in.ibm.com, dipankar@in.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, oleg@tv-sign.ru, akpm@linux-foundation.org,
-       josh@freedesktop.org, tglx@linutronix.de, niv@us.ibm.com
-Subject: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
-Message-ID: <20080317010821.GA29875@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Sun, 16 Mar 2008 21:28:14 -0400
+Message-ID: <47DDC92A.7000703@gawab.com>
+Date: Sun, 16 Mar 2008 18:28:10 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Bryce Harrington <bryce@canonical.com>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+References: <47D828BB.2000702@gawab.com> <200803141029.38124.jbarnes@virtuousgeek.org> <47DB46F1.80106@gawab.com> <200803151035.23808.jbarnes@virtuousgeek.org>
+In-Reply-To: <200803151035.23808.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Jesse Barnes wrote:
+> No problem, building X still isn't quite as easy as it should be, but it's 
+> only slightly more complicated than the typical './configure;make;make 
+> install' due to the dependencies between packages.  You can check out the X 
+> wiki (wiki.x.org), there are some hints on building things there.
+>   
 
-In the process of writing up the mechanical proof of correctness for the
-dynticks/preemptable-RCU interface, I noticed misplaced memory barriers
-in rcu_enter_nohz() and rcu_exit_nohz().  This patch puts them in the
-right place and adds a comment.  The key thing to keep in mind is that
-rcu_enter_nohz() is -exiting- the mode that can legally execute RCU
-read-side critical sections.  The memory barrier must be between any
-potential RCU read-side critical sections and the increment of the per-CPU
-dynticks_progress_counter, and thus must come -before- this increment.
-And vice versa for rcu_exit_nohz().
+I'm just compiling the intel_reg_dumper right? I don't have to recompile 
+all of X to use it?
 
-The locking in the scheduler is probably saving us for the moment.
+Bryce Harrington wrote:
+> The following command will pull in all the dependencies you need for
+> building -intel:
+>
+>  sudo apt-get build-dep xserver-xorg-video-intel
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+Ok, got that. I tried to compile and I found out I also had to install 
+libpciaccess-dev, that's probably because I'm using the git tree and not 
+the one that Ubuntu 7.10 uses. But I still can't compile the 
+intel_reg_dumper I get the following error:
 
- rcupreempt.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+intel-driver/src/reg_dumper$ make
+gcc -DHAVE_CONFIG_H -I. -I../.. -Wall -Wpointer-arith 
+-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations 
+-Wnested-externs -fno-strict-aliasing -I./.. -DREG_DUMPER -g -O2 -MT 
+main.o -MD -MP -MF .deps/main.Tpo -c -o main.o main.c
+main.c: In function ‘main’:
+main.c:72: warning: implicit declaration of function ‘pci_device_map_range’
+main.c:72: warning: nested extern declaration of ‘pci_device_map_range’
+main.c:75: error: ‘PCI_DEV_MAP_FLAG_WRITABLE’ undeclared (first use in 
+this function)
+main.c:75: error: (Each undeclared identifier is reported only once
+main.c:75: error: for each function it appears in.)
+make: *** [main.o] Error 1
 
-diff -urpNa -X dontdiff linux-2.6.25-rc6/include/linux/rcupreempt.h linux-2.6.25-rc6-rcu_nohz-fix/include/linux/rcupreempt.h
---- linux-2.6.25-rc6/include/linux/rcupreempt.h	2008-03-16 17:45:16.000000000 -0700
-+++ linux-2.6.25-rc6-rcu_nohz-fix/include/linux/rcupreempt.h	2008-03-16 17:59:24.000000000 -0700
-@@ -87,15 +87,15 @@ DECLARE_PER_CPU(long, dynticks_progress_
- 
- static inline void rcu_enter_nohz(void)
- {
-+	mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
- 	__get_cpu_var(dynticks_progress_counter)++;
- 	WARN_ON(__get_cpu_var(dynticks_progress_counter) & 0x1);
--	mb();
- }
- 
- static inline void rcu_exit_nohz(void)
- {
--	mb();
- 	__get_cpu_var(dynticks_progress_counter)++;
-+	mb(); /* CPUs seeing ++ must see subsequent RCU read-side crit sects */
- 	WARN_ON(!(__get_cpu_var(dynticks_progress_counter) & 0x1));
- }
- 
+Justin
