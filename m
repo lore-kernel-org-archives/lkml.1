@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbYCQUab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbYCQUbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758552AbYCQUab (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbYCQUaM
+	id S1758610AbYCQUbQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYCQUa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:30:12 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38770 "EHLO e2.ny.us.ibm.com"
+	Mon, 17 Mar 2008 16:30:58 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54392 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758028AbYCQUaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:30:09 -0400
-Subject: Re: [PATCH] [10/18] Factor out new huge page preparation code into
-	separate function
-From: Adam Litke <agl@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au, agl <agl@linux.vnet.ibm.com>
-In-Reply-To: <20080317015824.074A31B41E0@basil.firstfloor.org>
-References: <20080317258.659191058@firstfloor.org>
-	 <20080317015824.074A31B41E0@basil.firstfloor.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Mon, 17 Mar 2008 15:31:53 -0500
-Message-Id: <1205785913.10849.84.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1753121AbYCQUa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 16:30:57 -0400
+Date: Mon, 17 Mar 2008 22:30:38 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Meyer <thomas@m3y3r.de>, lenb@kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, htejun@gmail.com,
+       jeff@garzik.org, linux-acpi@vger.kernel.org
+Subject: [2.6.25 patch] acpi_drivers.h: fix dock dummy functions
+Message-ID: <20080317203038.GE9550@cs181133002.pp.htv.fi>
+References: <47DEC970.2050402@m3y3r.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47DEC970.2050402@m3y3r.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Built-in code can't use functions in a modular ACPI dock driver.
 
-On Mon, 2008-03-17 at 02:58 +0100, Andi Kleen wrote:
-> Index: linux/mm/hugetlb.c
-> ===================================================================
-> --- linux.orig/mm/hugetlb.c
-> +++ linux/mm/hugetlb.c
-> @@ -200,6 +200,17 @@ static int adjust_pool_surplus(struct hs
->  	return ret;
->  }
-> 
-> +static void huge_new_page(struct hstate *h, struct page *page)
-> +{
-> +	unsigned nid = pfn_to_nid(page_to_pfn(page));
-> +	set_compound_page_dtor(page, free_huge_page);
-> +	spin_lock(&hugetlb_lock);
-> +	h->nr_huge_pages++;
-> +	h->nr_huge_pages_node[nid]++;
-> +	spin_unlock(&hugetlb_lock);
-> +	put_page(page); /* free it into the hugepage allocator */
-> +}
-> +
->  static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
->  {
->  	struct page *page;
+This patch fixes the following build error reported by Thomas Meyer:
 
-We do not usually preface functions in mm/hugetlb.c with "huge" and the
-name you have chosen doesn't seem that clear to me anyway.  Could we
-rename it to prep_new_huge_page() or something similar?
+<--  snip  -->
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+...
+ LD      .tmp_vmlinux1
+drivers/built-in.o: In function `ata_acpi_associate':
+(.text+0x7106a): undefined reference to `register_hotplug_dock_device'
+drivers/built-in.o: In function `ata_acpi_associate':
+(.text+0x710bd): undefined reference to `register_hotplug_dock_device'
+make: *** [.tmp_vmlinux1] Fehler 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+
+---
+74baa78e04fe0f1aa04d3f09ab63a15da4d92fbd diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index 9757a04..f70b246 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -113,7 +113,7 @@ int acpi_processor_set_thermal_limit(acpi_handle handle, int type);
+ /*--------------------------------------------------------------------------
+                                   Dock Station
+   -------------------------------------------------------------------------- */
+-#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
++#if defined(CONFIG_ACPI_DOCK) || (defined(CONFIG_ACPI_DOCK_MODULE) && defined (MODULE))
+ extern int is_dock_device(acpi_handle handle);
+ extern int register_dock_notifier(struct notifier_block *nb);
+ extern void unregister_dock_notifier(struct notifier_block *nb);
 
