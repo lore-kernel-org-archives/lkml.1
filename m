@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYCQMup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYCQMv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbYCQMup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 08:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYCQMuf
+	id S1753434AbYCQMv2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 08:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYCQMvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 08:50:35 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:49589 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbYCQMud (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 08:50:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WGrXSzyulZL7/xXDYPkU1BWzOpoWwb9hKqZsnoF0K/LAcUxTF5adSLJORGALLNG5KHZsA7mcOzJ35jy0t6x3u/5oNzBcB2vCKvPp+G2aFy3vpvp6l9LWb3aPh3TcKs7CNdG2x7blMoj0i0c06NT7gQjeJg5ysiCE8GPxmfUP50g=
-Message-ID: <939d53060803170550r46a7e93ex31c166fff86bcf50@mail.gmail.com>
-Date: Mon, 17 Mar 2008 13:50:29 +0100
-From: "Benjamin Thery" <ben.thery@gmail.com>
-To: "Daniel Lezcano" <dlezcano@fr.ibm.com>
-Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command as non-root
-Cc: "Tilman Schmidt" <tilman@imap.cc>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "David Miller" <davem@davemloft.net>, pekkas@netcore.fi,
-       yoshfuji@linux-ipv6.org
-In-Reply-To: <47DE4B7B.9040504@fr.ibm.com>
+	Mon, 17 Mar 2008 08:51:19 -0400
+Received: from sacred.ru ([62.205.161.221]:45923 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751544AbYCQMvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 08:51:18 -0400
+Message-ID: <47DE692F.5010600@openvz.org>
+Date: Mon, 17 Mar 2008 15:50:55 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
+To: Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>
+CC: general@lists.openfabrics.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>
+Subject: [PATCH 3/3] Infiniband: don't use task_struct.tgid in make_cm_node()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <47D98510.60801@imap.cc> <47D9A8DF.30809@fr.ibm.com>
-	 <47D9C1F0.6050803@imap.cc> <47DE4B7B.9040504@fr.ibm.com>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 15:50:47 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I also tried to reproduce your problem with Postfix (on a Debian
-distro) but failed to
-obtain the error message.
+The task_struct->tgid field is about to become deprecated, due to
+pid namespaces make tasks have many pids, not one. There is one
+place using it left to fix in infiniband - the make_cm_node().
 
-While googling for the error string, I found this link which report
-the same kind of
-error when Postfix is used with grsecurity (in 2006):
+This function uses the task tgid just to generate a session id,
+so it's perfectly safe to use appropriate wrapper - task_tgid_nr().
 
-http://blog.jensthebrain.de/archives/2006/12/11/IPv6-Probleme-mit-Postfix-und-grsecurity
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-I barely understand German so I'm not sure it is related to your problem.
+---
 
-Benjamin
+ drivers/infiniband/hw/nes/nes_cm.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/nes/nes_cm.c b/drivers/infiniband/hw/nes/nes_cm.c
+index 39adb26..7a06156 100644
+--- a/drivers/infiniband/hw/nes/nes_cm.c
++++ b/drivers/infiniband/hw/nes/nes_cm.c
+@@ -1077,7 +1077,8 @@ static struct nes_cm_node *make_cm_node(struct nes_cm_core *cm_core,
+ 	/* get a unique session ID , add thread_id to an upcounter to handle race */
+ 	atomic_inc(&cm_core->node_cnt);
+ 	atomic_inc(&cm_core->session_id);
+-	cm_node->session_id = (u32)(atomic_read(&cm_core->session_id) + current->tgid);
++	cm_node->session_id = (u32)(atomic_read(&cm_core->session_id) +
++			task_tgid_nr(current));
+ 	cm_node->conn_type = cm_info->conn_type;
+ 	cm_node->apbvt_set = 0;
+ 	cm_node->accept_pend = 0;
+@@ -1606,7 +1607,8 @@ static struct nes_cm_listener *mini_cm_listen(struct nes_cm_core *cm_core,
+ 	atomic_inc(&cm_core->node_cnt);
+ 	atomic_inc(&cm_core->session_id);
+ 
+-	listener->session_id = (u32)(atomic_read(&cm_core->session_id) + current->tgid);
++	listener->session_id = (u32)(atomic_read(&cm_core->session_id) +
++			task_tgid_nr(current));
+ 	listener->conn_type = cm_info->conn_type;
+ 	listener->backlog = cm_info->backlog;
+ 	listener->listener_state = NES_CM_LISTENER_ACTIVE_STATE;
 
 
-On Mon, Mar 17, 2008 at 11:44 AM, Daniel Lezcano <dlezcano@fr.ibm.com> wrote:
-> Tilman Schmidt wrote:
->  > Am 13.03.2008 23:21 schrieb Daniel Lezcano:
->  >> Tilman Schmidt wrote:
->  >
->  >>> ts@xenon:~/kernel> /usr/sbin/sendmail -t < patch-usb-reduce-syslog-clutter-v3
->  >>> postdrop: warning: can't open /proc/net/if_inet6 (Permission denied) - skipping IPv6 configuration
->  >>> postdrop: fatal: parameter inet_interfaces: no local interface found for ::1
->  >>> sendmail: warning: command "/usr/sbin/postdrop -r" exited with status 1
->  >>> sendmail: fatal: ts(1000): unable to execute /usr/sbin/postdrop -r: Success
->  >>> ts@xenon:~/kernel>
->  >>>
->  >>> and unsurprisingly, the mail is not sent. If I do the same as root,
->  >>> everything works as usual, there is no console output from the
->  >>> sendmail command, and the mail goes out as it should. All other
->  >>> networking applications appear to be running normally.
->  >
->  >> Is it possible to have your config file used to compile the kernel ?
->  >
->  > Sure. You can find it at
->  > http://gollum.phnxsoft.com/~ts/linux/config-2.6.25-rc5-mm1
->
->  Thanks,
->
->  I was not able to reproduce it, but I think I didn't configured postfix
->  as I should had. What version do you use ?
->  If I may ask you, can you put your postfix configuration file and a
->  strace -f of your failing command ? on your website, that will help me a
->  lot to investigate.
->
->    -- Daniel
->
->
-> --
->  To unsubscribe from this list: send the line "unsubscribe netdev" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
