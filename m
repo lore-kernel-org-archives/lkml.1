@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYCQGMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbYCQGlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbYCQGMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 02:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYCQGMo
+	id S1754354AbYCQGlp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 02:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYCQGld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 02:12:44 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:38259 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbYCQGMn (ORCPT
+	Mon, 17 Mar 2008 02:41:33 -0400
+Received: from hu-out-0506.google.com ([72.14.214.234]:30085 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbYCQGlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 02:12:43 -0400
-Message-ID: <47DE0BD7.7020500@skyrush.com>
-Date: Mon, 17 Mar 2008 00:12:39 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, vatsa@linux.vnet.ibm.com
-Subject: Interactivity degrades with CONFIG_[FAIR]_GROUP_SCHED set in 2.6.24
- and later
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Mar 2008 02:41:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
+        b=dFaXiZL0KfCK8rZqlNRJjFYUoz0veeDm3ugCwgdak1cpMINUVuzSC0KDI2zIMxDsiP2Gmiz23eIQTL+4WnA7u4J6ZJZGuKWcUKfaS6H0j6QLBomjEx2y1Qn2ZbLbprv46IQcgfQgUXgnev0ep33hajdwnl4StJMpHy5PANROZto=
+To: <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+Subject: [PATCH 01/17] ide-tape: remove unused parameter from idetape_copy_stage_to_user
+Date: Mon, 17 Mar 2008 07:41:14 +0100
+Message-Id: <1205736090-4435-2-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <1205736090-4435-1-git-send-email-petkovbb@gmail.com>
+References: <1205736090-4435-1-git-send-email-petkovbb@gmail.com>
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all, I am very excited to see the CFS in the kernel.
-Interactivity is really great; much better than before.
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-tape.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
 
-When going from kernel 2.6.23 to 2.6.24, however, I noticed that
-interactivity (namely the smoothness of mouse motion) was noticeably
-less smooth under load.  The most obvious case was while pulling down a
-Subversion repository; the mouse would freeze for quite long periods
-while being moved (i.e. a large fraction of a second), which never
-happens under 2.6.23.  I was using ZFS-FUSE on the partition I was
-writing to, and it uses a lot of CPU at times, but 2.6.23 seems to
-handle it better.
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 86be926..b931547 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -1619,7 +1619,7 @@ static int idetape_copy_stage_from_user(idetape_tape_t *tape,
+ }
+ 
+ static int idetape_copy_stage_to_user(idetape_tape_t *tape, char __user *buf,
+-		idetape_stage_t *stage, int n)
++				      int n)
+ {
+ 	struct idetape_bh *bh = tape->bh;
+ 	int count;
+@@ -2493,8 +2493,7 @@ static ssize_t idetape_chrdev_read(struct file *file, char __user *buf,
+ 	if (tape->merge_stage_size) {
+ 		actually_read = min((unsigned int)(tape->merge_stage_size),
+ 				    (unsigned int)count);
+-		if (idetape_copy_stage_to_user(tape, buf, tape->merge_stage,
+-					       actually_read))
++		if (idetape_copy_stage_to_user(tape, buf, actually_read))
+ 			ret = -EFAULT;
+ 		buf += actually_read;
+ 		tape->merge_stage_size -= actually_read;
+@@ -2504,8 +2503,7 @@ static ssize_t idetape_chrdev_read(struct file *file, char __user *buf,
+ 		bytes_read = idetape_add_chrdev_read_request(drive, ctl);
+ 		if (bytes_read <= 0)
+ 			goto finish;
+-		if (idetape_copy_stage_to_user(tape, buf, tape->merge_stage,
+-					       bytes_read))
++		if (idetape_copy_stage_to_user(tape, buf, bytes_read))
+ 			ret = -EFAULT;
+ 		buf += bytes_read;
+ 		count -= bytes_read;
+@@ -2516,8 +2514,7 @@ static ssize_t idetape_chrdev_read(struct file *file, char __user *buf,
+ 		if (bytes_read <= 0)
+ 			goto finish;
+ 		temp = min((unsigned long)count, (unsigned long)bytes_read);
+-		if (idetape_copy_stage_to_user(tape, buf, tape->merge_stage,
+-					       temp))
++		if (idetape_copy_stage_to_user(tape, buf, temp))
+ 			ret = -EFAULT;
+ 		actually_read += temp;
+ 		tape->merge_stage_size = bytes_read-temp;
+-- 
+1.5.4.1
 
-After reading many posts on similar sounding issues, I decided to try
-getting later versions of the kernel: 2.6.25-rc5 and the latest 2.6.25
-from the git archive (as of yesterday, 3/16) in case recent patches
-addressed this.  They both still exibit the issue, however.
-
-I then tried compiling without CONFIG_GROUP_SCHED (which also turned off
-CONFIG_FAIR_GROUP_SCHED and a number of other options), and the behavior
-seems to be back to the (better) 2.6.23 performance, at least has far as
-what I can tell from my tests.
-
-After playing around with the later kernels with CONFIG_GROUP_SCHED
-enabled, I noticed a number of random times the mouse was not smooth and
-seemed to not be getting an "interactive" amount of CPU time, but I have
-a couple of tasks that repeat the problem reliably, so if there is any
-debug information I can provide, please let me know, and I'll be glad to
-help out in any way I can.
-
-					Thanks, Joe
