@@ -1,92 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbYCQUfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYCQUiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758714AbYCQUfM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbYCQUe5
+	id S1755905AbYCQUiw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYCQUio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:34:57 -0400
-Received: from mga02.intel.com ([134.134.136.20]:57672 "EHLO mga02.intel.com"
+	Mon, 17 Mar 2008 16:38:44 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:51640 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752998AbYCQUe4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:34:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,514,1199692800"; 
-   d="scan'208";a="356197104"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH v2] pasemi_dma: Driver for PA Semi PWRficient on-chip DMAengine
-Date: Mon, 17 Mar 2008 13:34:05 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C043E6716@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20080316213002.GA2589@lixom.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH v2] pasemi_dma: Driver for PA Semi PWRficient on-chip DMAengine
-thread-index: AciHq+pqjGltKl/ASNaiT3KpOsdc5gAtKaoQ
-References: <20080306233900.GA3969@lixom.net> <20080316213002.GA2589@lixom.net>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Olof Johansson" <olof@lixom.net>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Cc: <linux-kernel@vger.kernel.org>, <pasemi-linux@ozlabs.org>,
-       <linuxppc-dev@ozlabs.org>, <hskinnemoen@atmel.com>
-X-OriginalArrivalTime: 17 Mar 2008 20:34:05.0721 (UTC) FILETIME=[3E8C2090:01C8886E]
+	id S1753051AbYCQUin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 16:38:43 -0400
+Subject: [PATCH 4/4] scsi: megaraid_sas - Update the Version and Changelog
+From: bo yang <bo.yang@lsi.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>, neela.kolli@lsi.com,
+       bo.yang@lsi.com
+In-Reply-To: <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
+References: <9738BCBE884FDB42801FAD8A7769C26501CE50E4@NAMAIL1.ad.lsil.com>
+	 <1195251505.3407.30.camel@localhost.localdomain>
+	 <9738BCBE884FDB42801FAD8A7769C26501C9A4AF@NAMAIL1.ad.lsil.com>
+	 <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Mar 2008 04:18:17 -0400
+Message-Id: <1205741897.7479.22.camel@pcp021067pcs.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
+X-OriginalArrivalTime: 17 Mar 2008 20:38:04.0743 (UTC) FILETIME=[CD03FD70:01C8886E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Olof Johansson [mailto:olof@lixom.net] 
->Sent: Sunday, March 16, 2008 2:30 PM
->
->pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
->
->DMA copy offload driver for PA Semi PWRficient. It uses the
->platform-specific functions to allocate channels, etc.
->
->Signed-off-by: Olof Johansson <olof@lixom.net>
->
->---
->
->Changes since last post:
->
->* Add DMA_INTERRUPT support and handling of the interrupt flag
->* Fix interrupt handler for above and add tasklet
->* Switch to spin_lock_bh() where possible
->* Remove empty dependency_added() function since it's no longer
->  used in the framework.
->* Fix bug in "ring full" estimation.
->
->Note that this still needs to go on top of the powerpc.git 
->tree due to the
->pasemi_dma.h updates that this driver depends on. I suggest 
->merging this
->through pasemi.git->powerpc.git->linus with an Acked-by from 
->the DMA guys.
+Update the Version and ChangeLog
 
-Hi Olof,
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-In the future please copy Maciej as one of "the DMA guys" as he has
-taken over ioatdma for me.  Beyond that, one little picky comment
-below...
+---
+ Documentation/scsi/ChangeLog.megaraid_sas |   22 ++++++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.c      |    2 -
+ drivers/scsi/megaraid/megaraid_sas.h      |    6 ++---
+ 3 files changed, 26 insertions(+), 4 deletions(-)
 
-
->
->
->-Olof
->
-> [...]
-> 
->+
->+static unsigned int channels = 4;
->+module_param(channels, uint, S_IRUGO);
->+MODULE_PARM_DESC(channels, "Number of channels for copy 
->(default: 2)");
-
-Is the number of channels defaulting to 2 or 4?
-
-sln
+diff -rupN linux-2.6.24_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.24_new/Documentation/scsi/ChangeLog.megaraid_sas
+--- linux-2.6.24_orig/Documentation/scsi/ChangeLog.megaraid_sas	2008-03-10 10:17:25.000000000 -0400
++++ linux-2.6.24_new/Documentation/scsi/ChangeLog.megaraid_sas	2008-03-10 10:41:39.000000000 -0400
+@@ -3,6 +3,28 @@
+ 			Sumant Patro
+ 			Bo Yang
+ 
++2 Current Version : 00.00.03.20
++3 Older Version   : 00.00.03.16
++
++1. Sense buffer ptr data type in the ioctl path is reverted  back to
++	u32 * as in previous versions of driver.
++
++2. Fixed the driver frame count.
++	When Driver sent wrong frame count to firmware.  As this particular
++	command is sent to drive, FW is seeing continuous chip resets and so
++	the command will timeout.
++
++3. Add the new controller(1078DE) support to the driver.
++
++4. Increase the max_wait to 60 from 10 in the controller operational status.
++	With this max_wait increase, driver will make sure the FW will finish
++	the pending cmd for KDUMP case.   
++
++1 Release Date    : Thur. Nov. 07 16:30:43 PST 2007 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Sumant Patro
++			Bo Yang
++
+ 2 Current Version : 00.00.03.16
+ 3 Older Version   : 00.00.03.15
+ 
+diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:54:59.000000000 -0400
++++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:55:30.000000000 -0400
+@@ -10,7 +10,7 @@
+  *	   2 of the License, or (at your option) any later version.
+  *
+  * FILE		: megaraid_sas.c
+- * Version	: v00.00.03.16-rc1
++ * Version	: v00.00.03.20-rc1
+  *
+  * Authors:
+  *	(email-id : megaraidlinux@lsi.com)
+diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.h	2008-03-10 10:17:25.000000000 -0400
++++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.h	2008-03-10 10:51:02.000000000 -0400
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION				"00.00.03.16-rc1"
+-#define MEGASAS_RELDATE				"Nov. 07, 2007"
+-#define MEGASAS_EXT_VERSION			"Thu. Nov. 07 10:09:32 PDT 2007"
++#define MEGASAS_VERSION			"00.00.03.20-rc1"
++#define MEGASAS_RELDATE			"March 10, 2008"
++#define MEGASAS_EXT_VERSION		"Mon. March 10 11:02:31 PDT 2008"
+ 
+ /*
+  * Device IDs
 
