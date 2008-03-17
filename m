@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbYCQTds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbYCQTfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465AbYCQTds (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 15:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYCQTdi
+	id S1756808AbYCQTfP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 15:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYCQTe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 15:33:38 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:45689 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752312AbYCQTdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 15:33:37 -0400
-Subject: [PATCH 1/4] scsi: megaraid_sas - Rollback the sense info
-	implementation
-From: bo yang <bo.yang@lsi.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>, nella.kolli@lsi.com,
-       bo.yang@lsi.com
-In-Reply-To: <9738BCBE884FDB42801FAD8A7769C26501C9A4AF@NAMAIL1.ad.lsil.com>
-References: <9738BCBE884FDB42801FAD8A7769C26501CE50E4@NAMAIL1.ad.lsil.com>
-	 <1195251505.3407.30.camel@localhost.localdomain>
-	 <9738BCBE884FDB42801FAD8A7769C26501C9A4AF@NAMAIL1.ad.lsil.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 18 Mar 2008 03:13:06 -0400
-Message-Id: <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
-X-OriginalArrivalTime: 17 Mar 2008 19:32:52.0146 (UTC) FILETIME=[B0ED1120:01C88865]
+	Mon, 17 Mar 2008 15:34:59 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:42027 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311AbYCQTe6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 15:34:58 -0400
+Date: Mon, 17 Mar 2008 15:34:15 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Nix <nix@esperi.org.uk>
+Cc: clowncoder <vincent-perrier@club-internet.fr>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@timesys.com>
+Subject: Re: [2.6.24.x] UML select()/poll() oversleeping reproducibly (was
+	Re: [uml-devel] g_timeout_add)
+Message-ID: <20080317193415.GA12234@c2.user-mode-linux.org>
+References: <47B34BA0.30006@club-internet.fr> <20080214003853.GA15952@c2.user-mode-linux.org> <47B4BDCD.4080605@club-internet.fr> <20080215160205.GA6082@c2.user-mode-linux.org> <47B5CE40.9000005@club-internet.fr> <20080215184650.GA8810@c2.user-mode-linux.org> <87y78kx640.fsf_-_@hades.wkstn.nix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87y78kx640.fsf_-_@hades.wkstn.nix>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rollback the sense info implementation
+Below is the same patch with another kluge, which cuts down the
+requested sleep by 10% in hopes of getting the actual sleep closer to
+what's wanted.
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+This is unusable in anything resembling mainline, but I'd like to see
+how your various systems react to it.  I'm getting very close to the
+sleeps I asked for (with slight undersleeping, which is a bug).
 
----
- drivers/scsi/megaraid/megaraid_sas.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+       	       	   Jeff
 
-diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c	2008-03-07 10:59:53.000000000 -0500
-+++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:47:08.000000000 -0400
-@@ -2909,7 +2909,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 	void *sense = NULL;
- 	dma_addr_t sense_handle;
- 	u32 *sense_ptr;
--	unsigned long *sense_buff;
+-- 
+Work email - jdike at linux dot intel dot com
+
+Index: linux-2.6.22/arch/um/os-Linux/time.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/time.c	2008-02-18 11:53:51.000000000 -0500
++++ linux-2.6.22/arch/um/os-Linux/time.c	2008-03-17 15:11:51.000000000 -0400
+@@ -58,12 +58,17 @@ static inline long long timeval_to_ns(co
+ long long disable_timer(void)
+ {
+ 	struct itimerval time = ((struct itimerval) { { 0, 0 }, { 0, 0 } });
++	int remain, max = UM_NSEC_PER_SEC / UM_HZ;
  
- 	memset(kbuff_arr, 0, sizeof(kbuff_arr));
+ 	if (setitimer(ITIMER_VIRTUAL, &time, &time) < 0)
+ 		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
+ 		       "errno = %d\n", errno);
  
-@@ -3014,14 +3013,14 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+-	return timeval_to_ns(&time.it_value);
++	remain = timeval_to_ns(&time.it_value);
++	if (remain > max)
++		remain = max;
++
++	return remain;
+ }
+ 
+ long long os_nsecs(void)
+@@ -126,6 +131,8 @@ void idle_sleep(unsigned long long nsecs
  	 */
- 	if (ioc->sense_len) {
- 		/*
--		 * sense_buff points to the location that has the user
-+		 * sense_ptr points to the location that has the user
- 		 * sense buffer address
- 		 */
--		sense_buff = (unsigned long *) ((unsigned long)ioc->frame.raw +
--								ioc->sense_off);
-+		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
-+				     ioc->sense_off);
+ 	if (nsecs == 0)
+ 		nsecs = UM_NSEC_PER_SEC / UM_HZ;
++
++	nsecs = nsecs * 9 / 10;
+ 	ts = ((struct timespec) { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
+ 				  .tv_nsec	= nsecs % UM_NSEC_PER_SEC });
  
--		if (copy_to_user((void __user *)(unsigned long)(*sense_buff),
--				sense, ioc->sense_len)) {
-+		if (copy_to_user((void __user *)((unsigned long)(*sense_ptr)),
-+				 sense, ioc->sense_len)) {
- 			printk(KERN_ERR "megasas: Failed to copy out to user "
- 					"sense data\n");
- 			error = -EFAULT;
-
