@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbYCQLHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYCQLSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753699AbYCQLHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 07:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYCQLHk
+	id S1753583AbYCQLSi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 07:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYCQLS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 07:07:40 -0400
-Received: from web95111.mail.in2.yahoo.com ([203.104.18.163]:43253 "HELO
-	web95111.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751874AbYCQLHj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 07:07:39 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Mar 2008 07:07:38 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=zVU/t9l5lUalhyd/aBLWhlJKaqNoJ0hIX9fbz+20u0r8pqCw66JvcCs1iDFrTB71Q+/rpp8HAD966cd1o1HS/SL4XTOOmeiwCMyBhnVeSB30D6eixGUIiOp7WQuOws4TEl+oYOsDNTpX0UdwDEym/xK4/uigtj5TO6S6rruIugg=;
-X-YMail-OSG: evGIINUVM1lRScbxW4mDTIdYp34n3W9X64dAF5fP31KCoenjmWKQXxynuXvvcXojPG5fTU_905pUXkRBzu_JaRxMhEniqTtfkj.e8JmXBSyrPo4SRBT94GHXFzWAWQ--
-X-Mailer: YahooMailRC/902.38 YahooMailWebService/0.7.162
-Date: Mon, 17 Mar 2008 16:30:56 +0530 (IST)
-From: murtuja bharmal <murtuja_bharmal@yahoo.com>
-Subject: ip_rcv, ip_output  is not exported in 2.6 kernel.
-To: linux-kernel@vger.kernel.org
+	Mon, 17 Mar 2008 07:18:28 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56864 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbYCQLS1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 07:18:27 -0400
+Date: Mon, 17 Mar 2008 20:18:43 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish >12 hour
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080317200924.7B4C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <675935.47325.qm@web95111.mail.in2.yahoo.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
- 
-         Can any one tell me why ip_rcv, ip_output is not exported in 2.6 kernel.
-         If I have to use this function in kernel module what should be the approach.
-         Do I need to export it, in kernel code or there is any other alternative.
+Hi
 
-Thanks
-Murtuja Bharmal
+I tested following.
+
+ % ./hackbench 130 process 500
+
+ (this parameter mean consume all physical memory and 1G swap space)
 
 
-      Meet people who discuss and share your passions. Go to http://in.promos.yahoo.com/groups
+2.6.25-rc3-mm1: works well
+2.6.25-rc5:     works well
+2.6.25-rc5-mm1: doesn't finish >12 hour 
+
+my bisect indicate the cause of bug is git-ia64.patch.
+and, git-ia64.patch of 2.6.25-rc5-mm1 contain following patches.
+
+    [IA64] cleanup and improve fsys_gettimeofday
+    [IA64] Multiple outstanding ptc.g instruction support
+    [IA64] VIRT_CPU_ACCOUNTING (accurate cpu time accounting)
+
+
+unfortunately, I don't know how investigate more ;-)
+Please any suggestion.
+
+
+
+
+
