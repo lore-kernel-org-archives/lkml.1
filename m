@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbYCQOSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYCQOV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbYCQOSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 10:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbYCQOSi
+	id S1754707AbYCQOV7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 10:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYCQOVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 10:18:38 -0400
-Received: from mail.daxal.com ([66.221.37.219]:33203 "EHLO mail.daxal.com"
+	Mon, 17 Mar 2008 10:21:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:46980 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbYCQOSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 10:18:38 -0400
-From: "Scott Edwards" <lkml@foss.daxal.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Fibre channel network interfaces + Linux SAN
-Date: Mon, 17 Mar 2008 09:18:36 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="utf-8,iso-8859-1"
+	id S1753666AbYCQOVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 10:21:51 -0400
+Message-ID: <47DE7DCF.6090103@goop.org>
+Date: Mon, 17 Mar 2008 07:18:55 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Tarkan Erimer <tarkan@netone.net.tr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.25-rc4 (and also in rc3) Compile Error
+References: <47CE6F66.7020004@netone.net.tr> <47D0895C.5070901@goop.org> <47D0F9D7.8010607@netone.net.tr> <47D172A2.5000408@goop.org> <47D4F250.5000307@netone.net.tr> <47D52B79.7030009@netone.net.tr> <47DE3227.2030802@netone.net.tr>
+In-Reply-To: <47DE3227.2030802@netone.net.tr>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080317141836.29FB5320007@mail.daxal.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two things I'm trying to solve with my fc hardware.  How do I enable these 
-for IP networking, and how do I offer say lvm logical volumes behind Linux 
-as a SAN? I'd like nodes to be bootable and offer specific volumes as their 
-disks.  I'm using 2.6.28 
+Tarkan Erimer wrote:
+> Tarkan Erimer wrote:
+>> Tarkan Erimer wrote:
+>>> I use Kubuntu's own kernel build via the command "make-kpkg 
+>>> --revision=1  kernel_image kernel_headers". It fails at the very 
+>>> early build stage. When issued this command, just after few lines 
+>>> and then it fails. Today, I will try the same .config with recently 
+>>> released rc5 and will let know the result.
+>>>
+>>
+>> I tried with .rc5 now and the result is the same. I attached the full 
+>> error log.
+>
+> I tried the recently released .rc6 and still the problem is there. I 
+> got the same error message which is :
+>
+> echo done >  stamp-debian
+> echo done >  debian/stamp-conf
+> ====== making target CONFIG-common [new prereqs: stamp-conf]======
+> This is kernel package version 11.001.
+> ====== making target stamp-arch-conf [new prereqs: CONFIG-common]======
+>
+> ====== making target CONFIG-arch [new prereqs: stamp-arch-conf]======
+> ====== making target conf.vars [new prereqs: Makefile .config]======
+>
+> Makefile:514: /usr/src/linux-2.6.25-rc6/arch/xen/Makefile: No such 
+> file or directory
+> make[1]: *** No rule to make target 
+> `/usr/src/linux-2.6.25-rc6/arch/xen/Makefile'.  Stop.
+> make: *** [conf.vars] Error 2
 
-As for networking, I vaguely remember setting up IPv4 on fibre channel some 
-time ago.  So far I have two hosts connected to a Compaq Storage Works FC 
-arbitrated loop.  Each host has Online for 
-/sys/class/fc_host/hostN/port_state.  I can't find the network device in 
-/proc/net/dev or via ifconfig -a. 
+What's the command you're using to build?  What happens if you build the 
+kernel normally?
 
-riddle: 2.6.18-5-xen-vserver-686
-00:0a.0 Fibre Channel [0c04]: Emulex Corporation LP8000 Fibre Channel Host 
-Adapter [10df:f800] (rev 02) 
-
-armada: 2.6.18-5-vserver-686
-01:0b.0 Fibre Channel [0c04]: Emulex Corporation LP8000 Fibre Channel Host 
-Adapter [10df:f800] (rev 02) 
-
-Both have lpfc loaded (if you didn't guess that by now).  I thought there 
-was a more generic ip<->fc net driver. I did find net/802/fc.c using fc%d as 
-the net device, and lpfc.ko is the only module I've found containing fc%d. 
-
-modinfo lpfc seems to apply to the fc layer only.  I did find some outdated 
-Emulex documentation about configuring this hardware for a network 
-interface. 
-
-Any comments? 
-
-Thanks, 
-
-
-Scott
- -- Daxal Communications - http://sslrenewal.com/?lkml 
+    J
 
