@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbYCQU5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYCQVBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbYCQU5s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYCQU5l
+	id S1754028AbYCQVBM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYCQVAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:57:41 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:6897 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753351AbYCQU5l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:57:41 -0400
-Message-ID: <47DEDB3F.3040500@hp.com>
-Date: Mon, 17 Mar 2008 16:57:35 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: [PATCH (block.git) 0/2] IO CPU affinity update:
-References: <47DE9D8F.8050402@hp.com> <20080317192714.GJ17940@kernel.dk>
-In-Reply-To: <20080317192714.GJ17940@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Mar 2008 17:00:54 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:34867 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753382AbYCQVAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 17:00:52 -0400
+Date: Mon, 17 Mar 2008 22:00:45 +0100
+From: Jan Kasprzak <kas@fi.muni.cz>
+To: Malte =?iso-8859-1?Q?Schr=F6der?= <maltesch@gmx.de>
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot (resend)
+Message-ID: <20080317210045.GG3189@fi.muni.cz>
+References: <20080214184700.0bd3837d@highlander.home.lan> <47B4D02E.9030101@gmail.com> <20080215191215.430ee2e0@highlander.home.lan> <47BCE71F.2000309@gmail.com> <20080221172757.44882428@highlander.home.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080221172757.44882428@highlander.home.lan>
+User-Agent: Mutt/1.4.2.2i
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Muni-Envelope-From: kas@fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 17 Mar 2008 22:00:47 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Mar 17 2008, Alan D. Brunelle wrote:
->> Hi Jens -
->>
->> Two patches: 
->>
->> 1. Adds in the IRQ saving to generic_smp_call_function_single_interrupt (as you had suggested).
->> 2. Ensures a single IPI generated to get a remote function call handler going. 
->>
->> So far it is working better than before on the 4-way IA64 w/ the mkfs/untar/make test suite - after 22 runs:
->>
->> Part  RQ   MIN     AVG     MAX      Dev
->> ----- --  ------  ------  ------  ------
->>  mkfs  0  18.786  19.253  19.655   0.241
->>  mkfs  1  18.639  19.182  19.786   0.293
->>
->> untar  0  17.140  17.486  18.250   0.322
->> untar  1  16.951  17.494  18.274   0.350
->>
->>  make  0  22.927  24.310  34.339   2.287
->>  make  1  22.863  23.788  24.189   0.333
->>
->>  comb  0  59.478  61.049  70.320   2.142
->>  comb  1  59.875  60.463  61.305   0.458
->>
->>  psys  0   3.96%   4.14%   4.39%   0.100
->>  psys  1   3.60%   3.85%   4.19%   0.176
->>
->> So we're seeing reduced time (~1.0%) and reduced %sys to do it (7.0%).
->> The tighter deviations for make with rq=1 may be interesting... :-)
->>
->> I've compiled & booted the patches for x86_64 - rq=1 is working on
->> that platform too.
-> 
-> This is starting to look pretty good! Thanks a lot for these results,
-> and the ->activated optimizations. I had a feeling the unstable results
-> were something like this, missing ipi's.
-> 
+Malte Schröder wrote:
+: I "solved" the problem by updating the BIOS. It now works perfectly. I
+: thought I had mailed that .. maybe I forgot.
 
-Jens: FYI: I am still seeing infrequent hangs on the x86_64-based platform. It happened again today after my patch was added, I did get <alt><sysrq><W> to work this time, and the threads that were stuck were waiting for IOs to complete. I believe at some point you were thinking of hacking in a block IO dump magic key as well - is that there yet?
+	I have the same problem (ASUS M2R32-MVP board with SB600 chipset,
+Athlon64 X2), but I am already using the latest BIOS for this mainboard.
 
-I'll get to the ia64 testing tomorrow - have to run now, spent most of the day looking at what could cause stuff to be missed on x86_64. The code looks solid to me, but this hang needs to be figured out. 
+2.6.22.19 works
+2.6.24.3 does not work
+2.6.25-rc6 does not work
 
-Lastly, I did do a run on a 16-way ia64 (with my patches) and again it ran fine.
+	I can try to bisect it (maybe tomorrow).
+I use AHCI mode, maybe I should try the legacy mode as well.
 
-Alan
+-Yenya
+
+-- 
+| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
+| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
+| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
+>>  If you find yourself arguing with Alan Cox, you’re _probably_ wrong.  <<
+>>     --James Morris in "How and Why You Should Become a Kernel Hacker"  <<
