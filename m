@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYCQQzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYCQQ53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbYCQQzv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 12:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYCQQzn
+	id S1755038AbYCQQ53 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 12:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYCQQ5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 12:55:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50299 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751684AbYCQQzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 12:55:43 -0400
-Date: Mon, 17 Mar 2008 09:55:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] thermal: fix Kconfig dependencies
-In-Reply-To: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.1.00.0803170953210.3020@woody.linux-foundation.org>
-References: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Mar 2008 12:57:22 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:41841 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751532AbYCQQ5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 12:57:21 -0400
+Date: Mon, 17 Mar 2008 20:01:24 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] kill_pid_info: don't take now unneeded tasklist_lock
+Message-ID: <20080317170124.GA115@tv-sign.ru>
+References: <20080304185745.GA8482@tv-sign.ru> <47DE5665.2030802@bk.jp.nec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47DE5665.2030802@bk.jp.nec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 17 Mar 2008, Heiko Carstens wrote:
+On 03/17, Atsushi Tsuji wrote:
+>
+> (2008/03/05 3:57), Oleg Nesterov wrote:
+> >Previously handle_stop_signal(SIGCONT) could drop ->siglock. That is why
+> >kill_pid_info(SIGCONT) takes tasklist_lock to make sure the target task
+> >can't go away after unlock. Not needed now.
+> >
+> >Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 > 
-> Change the select to a depends on to fix this. Should work as well.
+> Hi Oleg,
+> 
+> I tried your patches on vanila kernel 2.6.25-rc3 (ia64).  Then, I got
+> the NULL pointer dereference at task_session_nr(t) in
+> check_kill_permission(). That is why t->signal->__session is accessed
+> after t->signal was released.  It is reproducible by sending many
+> SIGCONT signals to exiting processes.
 
-Nope, that doesn't work. ACPI_THERMAL will select THERMAL, so now you have 
-THERMAL selected without HWMON.
+Ah. Indeed!!! Thanks a lot Atsushi.
 
-As a minimal fix, you'd at least need to make ACPI_THERMAL depend on 
-THERMAL too.
+Note that check_kill_permission() is the last user of the deprecated
+signal->__session/session, I was going to change this code later, but
+missed the issue you pointed out.
 
-		Linus
+I'll make the patch tomorrow.
+
+Thanks!
+
+Oleg.
+
