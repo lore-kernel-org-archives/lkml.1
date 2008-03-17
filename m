@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYCQTx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYCQTxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbYCQTx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 15:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbYCQTxT
+	id S1756778AbYCQTxv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 15:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbYCQTxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 15:53:19 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:23061 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912AbYCQTxS (ORCPT
+	Mon, 17 Mar 2008 15:53:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34791 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755970AbYCQTxi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 15:53:18 -0400
-Date: Mon, 17 Mar 2008 13:53:17 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Mark Lord <mlord@pobox.com>
-Cc: kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [regression] pciehp hang on hp ia64 rx6600
-Message-ID: <20080317195317.GE6808@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Mark Lord <mlord@pobox.com>, kristen.c.accardi@intel.com,
-	linux-kernel@vger.kernel.org
-References: <20080312064755.GA31493@ldl.fc.hp.com> <47D8142E.6060305@pobox.com>
+	Mon, 17 Mar 2008 15:53:38 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: =?utf-8?q?=C3=89ric_Piel?= <Eric.Piel@tremplin-utc.net>
+Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
+Date: Mon, 17 Mar 2008 14:05:04 -0400
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tilman Schmidt <tilman@imap.cc>, Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>, Arjan van de Ven <arjanv@redhat.com>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <alpine.LFD.1.00.0803151212180.3020@woody.linux-foundation.org> <47DC26BC.7060502@tremplin-utc.net>
+In-Reply-To: <47DC26BC.7060502@tremplin-utc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <47D8142E.6060305@pobox.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200803171405.04808.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On Saturday 15 March 2008, Éric Piel wrote:
+> 15/03/08 20:21, Linus Torvalds wrote/a écrit:
+> > 
+> > I've reverted the whole thing. Or rather, since there were various small 
+> > fixup commits over time, and a simple revert doesn't really work, I ended 
+> > up just removing the option and the code that was conditional on it - that 
+> > way, if we really want to fight this out some time (after 2.6.25 is out) 
+> > or some vendor wants to use a known-broken option anyway, there's a simple 
+> > and fairly clean commit to revert the revert.
+> > 
+> > It's commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47, see 
+> > 
+> > 	http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9a9e0d685553af76cb6ae2af93cca4913e7fcd47
+> > 
+> > for details if you aren't a git person.
 
-* Mark Lord <mlord@pobox.com>:
-> Alex Chiang wrote:
->> Hi Mark, Kristin,
->> On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
->> system hang on 2.6.25-rc4. My system often hangs when only pciehp
->> is loaded and my console is sitting idle, but I can accelerate
->> the hang 100% of the time by immediately doing a 'modprobe
->> acpiphp' right afterwards.
-> ..
->
-> Does this patch fix things for you?
+> It's a pity, I had just nearly finished a new approach. Instead of
+> relying on populate_rootfs() and the filesystem infrastructure, the new
+> approach directly finds the file in the initramfs. With
+> unpack_to_rootfs(), it turned out to be rather straightforward. Attached
+>  is a half-tested version of the patch (it boots and works but I haven't
+> compiled without the option yet). Just in case you would like to change
+> your mind ;-)
 
-Yes, this patch does revert back to previously working 2.6.24
-behavior and fixes the problem for me.
+I recommend that you make a new proposal for 2.6.26
+that applies on top of Linus' top-of-tree and that we
+include lkml in hashing it out rather than just linux-acpi.
 
-Thanks.
-
-> * * *
->
-> Invoke pciehp_enable_slot() at startup only when pciehp_force=1.
-> Some HP equipment apparently cannot cope with it otherwise.
->
-> This restores the (previously working) 2.6.24 behaviour here,
-> while allowing machines that need a kick to use pciehp_force=1.
->
-
-Acked-by: Alex Chiang <achiang@hp.com>
-
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> ---
->
-> --- linux-2.6.25-rc5-git2/drivers/pci/hotplug/pciehp_core.c	2008-03-12 
-> 13:21:46.000000000 -0400
-> +++ linux/drivers/pci/hotplug/pciehp_core.c	2008-03-12 13:23:54.000000000 
-> -0400
-> @@ -467,7 +467,7 @@
-> 	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
-> 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is 
-> occupied */
-> -	if (value) {
-> +	if (value && pciehp_force) {
-> 		rc = pciehp_enable_slot(t_slot);
-> 		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
-> 			value = 0;
->
+thanks,
+-Len
