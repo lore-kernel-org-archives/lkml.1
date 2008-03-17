@@ -1,50 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYCQTjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbYCQTlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYCQTjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 15:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYCQTjH
+	id S1756593AbYCQTlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 15:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbYCQTlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 15:39:07 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:12304 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753154AbYCQTjF (ORCPT
+	Mon, 17 Mar 2008 15:41:09 -0400
+Received: from rn-out-0910.google.com ([64.233.170.186]:30390 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbYCQTlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 15:39:05 -0400
-Message-ID: <fa686aa40803171239h46878550r1b58d796d0ff8af6@mail.gmail.com>
-Date: Mon, 17 Mar 2008 13:39:01 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: powerpc: cuImage.* creation error
-Cc: "Kumar Gala" <galak@kernel.crashing.org>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "Paul Gortmaker" <paul.gortmaker@windriver.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080317193652.GA9550@cs181133002.pp.htv.fi>
+	Mon, 17 Mar 2008 15:41:08 -0400
+Message-ID: <7e0fb38c0803171241w6bfe5080l1b1b6d3ba8c93e8f@mail.gmail.com>
+Date: Mon, 17 Mar 2008 15:41:05 -0400
+From: "Eric Paris" <eparis@parisplace.org>
+To: "Pavel Emelyanov" <xemul@openvz.org>
+Subject: Re: Audit vs netlink interaction problem
+Cc: "Thomas Graf" <tgraf@suug.ch>, "David Woodhouse" <dwmw2@infradead.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Netdev List" <netdev@vger.kernel.org>, linux-audit@redhat.com
+In-Reply-To: <47DE254A.5070608@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080317193652.GA9550@cs181133002.pp.htv.fi>
-X-Google-Sender-Auth: 6c48a27dd9e36bf7
+References: <47DAA660.90401@openvz.org> <20080314163929.GP20815@postel.suug.ch>
+	 <47DAB065.6060804@openvz.org> <20080314182927.GQ20815@postel.suug.ch>
+	 <20080314184052.GR20815@postel.suug.ch> <47DE254A.5070608@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 1:36 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> When building all powerpc defconfigs in 2.6.25-rc6 exactly three of
->  them fail to build, and all with similar problems:
+It looks reasonable to me.  If you can send a tested patch with a good
+description to linux-audit@redhat.com I can work it into mainline.
+
+-Eric
+
+On 3/17/08, Pavel Emelyanov <xemul@openvz.org> wrote:
+> Thomas Graf wrote:
+>  > * Thomas Graf <tgraf@suug.ch> 2008-03-14 19:29
+>  >> * Pavel Emelyanov <xemul@openvz.org> 2008-03-14 20:05
+>  >>> Hmmm... I'm afraid, that this can break the audit filtering and signal
+>  >>> auditing. I haven't yet looked deep into it, but it compares the
+>  >>> task->tgid with this audit_pid for different purposes. If audit_pid
+>  >>> changes this code will be broken.
+>  >> OK, then both pids have to be stored. audit_pid remains as-is but is
+>  >> no longer used as destination netlink pid. A second pid is stored and
+>  >> updated whenever a netlink message is received from userspace.
+>  >
+>  > The following patch represents what I mean. Untested!
 >
->  powerpc64-linux-ld: arch/powerpc/boot/cuboot-tqm8540.o: No such file: No such file or directory
->  make[2]: *** No rule to make target `arch/powerpc/boot/cuImage.tqm8548', needed >  powerpc64-linux-ld: arch/powerpc/boot/cuboot-tqm8540.o: No such file: No such file or directory
->  make[2]: *** [arch/powerpc/boot/cuImage.tqm8540] Error 1
 >
->  Is this a problem on my side or is there a bug that should be fixed?
-
-I may have messed something up.  I'll dig into it this afternoon.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> Looks great, all the more so I created very similar patch.
+>  David, can we have this in mainline some day?
+>
+>  Thanks,
+>  Pavel
+>
+>
+>  > Index: net-2.6.26/kernel/audit.c
+>  > ===================================================================
+>  > --- net-2.6.26.orig/kernel/audit.c    2008-03-14 19:31:53.000000000 +0100
+>  > +++ net-2.6.26/kernel/audit.c 2008-03-14 19:38:35.000000000 +0100
+>  > @@ -82,6 +82,9 @@
+>  >   * contains the (non-zero) pid. */
+>  >  int          audit_pid;
+>  >
+>  > +/* Actual netlink pid of the userspace process */
+>  > +static int   audit_nlk_pid;
+>  > +
+>  >  /* If audit_rate_limit is non-zero, limit the rate of sending audit records
+>  >   * to that number per second.  This prevents DoS attacks, but results in
+>  >   * audit records being dropped. */
+>  > @@ -347,12 +350,12 @@
+>  >               skb = skb_dequeue(&audit_skb_queue);
+>  >               wake_up(&audit_backlog_wait);
+>  >               if (skb) {
+>  > -                     if (audit_pid) {
+>  > -                             int err = netlink_unicast(audit_sock, skb, audit_pid, 0);
+>  > +                     if (audit_nlk_pid) {
+>  > +                             int err = netlink_unicast(audit_sock, skb, audit_nlk_pid, 0);
+>  >                               if (err < 0) {
+>  >                                       BUG_ON(err != -ECONNREFUSED); /* Shoudn't happen */
+>  > -                                     printk(KERN_ERR "audit: *NO* daemon at audit_pid=%d\n", audit_pid);
+>  > -                                     audit_pid = 0;
+>  > +                                     printk(KERN_ERR "audit: *NO* daemon at audit_nlk_pid=%d\n", audit_nlk_pid);
+>  > +                                     audit_nlk_pid = 0;
+>  >                               }
+>  >                       } else {
+>  >                               if (printk_ratelimit())
+>  > @@ -623,6 +626,12 @@
+>  >                                                       sid, 1);
+>  >
+>  >                       audit_pid = new_pid;
+>  > +
+>  > +                     /*
+>  > +                      * Netlink pid is only updated here to avoid overwrites
+>  > +                      * from potential processes only querying the interface.
+>  > +                      */
+>  > +                     audit_nlk_pid = NETLINK_CB(skb).pid;
+>  >               }
+>  >               if (status_get->mask & AUDIT_STATUS_RATE_LIMIT)
+>  >                       err = audit_set_rate_limit(status_get->rate_limit,
+>  > @@ -1350,7 +1359,7 @@
+>  >       if (!audit_rate_check()) {
+>  >               audit_log_lost("rate limit exceeded");
+>  >       } else {
+>  > -             if (audit_pid) {
+>  > +             if (audit_nlk_pid) {
+>  >                       struct nlmsghdr *nlh = nlmsg_hdr(ab->skb);
+>  >                       nlh->nlmsg_len = ab->skb->len - NLMSG_SPACE(0);
+>  >                       skb_queue_tail(&audit_skb_queue, ab->skb);
+>  >
+>
+>  --
+>
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+>
+> the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
