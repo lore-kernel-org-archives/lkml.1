@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYCQSRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYCQSUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYCQSRs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 14:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYCQSRk
+	id S1754115AbYCQSUa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 14:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYCQSUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 14:17:40 -0400
-Received: from ihemail2.lucent.com ([135.245.0.35]:37300 "EHLO
-	ihemail2.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbYCQSRj (ORCPT
+	Mon, 17 Mar 2008 14:20:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:4308 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbYCQSUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 14:17:39 -0400
-Message-ID: <47DEB5B9.4030905@alcatel-lucent.com>
-Date: Mon, 17 Mar 2008 13:17:29 -0500
-From: Nebojsa Miljanovic <neb@alcatel-lucent.com>
-Organization: Lucent Technologies
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.0.1) Gecko/20020823 Netscape/7.0 (CK-LucentTPES)
-X-Accept-Language: sr, hr, en, zh, zh-cn, zh-hk, z
+	Mon, 17 Mar 2008 14:20:22 -0400
+Message-ID: <47DEB65A.9080907@googlemail.com>
+Date: Mon, 17 Mar 2008 19:20:10 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org,
-       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
-       asweeney@alcatel-lucent.com,
-       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
-Subject: Re: SO_REUSEADDR not allowing server and client to use same port
-References: <47C6FA2A.5030302@alcatel-lucent.com>	<20080228201926.558c4e7c@core>	<47D97DF7.8000702@alcatel-lucent.com>	<20080315133426.1f48c99c@the-village.bc.nu>	<47DE9FB0.5030801@alcatel-lucent.com> <20080317173021.28e6fd97@core>
-Content-Type: text/plain; charset=us-ascii
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Gabriel C <crazy@frugalware.org>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK. I see. So, it would have to be some malicious application running together
-with the server (i.e. on the same CPU). I do see now why you said it would be
-very very hard to make this happen.
-
-Still, it would be nice to introduce SO_REUSEPORT socket options so secure
-servers (who happen to be clients as well) can re-use ports when necessary.
-
-Another option would be to check if port re-use is happening inside same
-application and allow it. That may make half of the folks happy, so I am not
-sure if I like it as much as I like SO_REUSEPORT option.
-
-Thanks,
-Neb
-
-
-On 3/17/2008 12:30 PM, Alan Cox wrote:
-> On Mon, 17 Mar 2008 11:43:28 -0500
-> Nebojsa Miljanovic <neb@alcatel-lucent.com> wrote:
+Thomas Gleixner wrote:
+> On Mon, 17 Mar 2008, Gabriel C wrote:
+>>> Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
+>>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
+>>> Date		: 2008-02-24 01:31 (22 days old)
+>>> References	: http://lkml.org/lkml/2008/2/23/380
+>>> 		  http://lkml.org/lkml/2008/2/24/281
+>>> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+>>>
+>> Thomas do you want me to bisect ? 
 > 
-> 
->>Alan,
->>thanks. With that additional INFO, I was able to find detailed description of
->>this denial of service attack (attached below).
->>Just to clarify. Having this port re-use check prevents folks from launching
->>this attack as opposed to being victim of it?
-> 
-> 
-> Different issue. I can hijack a connection.
-> 
-> Imagine I have a server bound to *.5000, and someone is about to connect.
-> If on the server box I am able to bind and issue a connect outwards
-> matching the inbound connection I will get the connection not the server.
+> That'd be great.
 
+Ok I'll start doing that later on today.
 
+> 
+>> Or do you have any patches I could try ( really does not matter how experimental they are ) ?
+> 
+> No, I have not the lightest clue whats going on.
+>  
+> Thanks,
+> 
+> 	tglx
+> 
+
+Gabriel
