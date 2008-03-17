@@ -1,189 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYCQMtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYCQMup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbYCQMtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 08:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYCQMtF
+	id S1754874AbYCQMup (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 08:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYCQMuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 08:49:05 -0400
-Received: from sacred.ru ([62.205.161.221]:45483 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751946AbYCQMtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 08:49:02 -0400
-Message-ID: <47DE6899.7000903@openvz.org>
-Date: Mon, 17 Mar 2008 15:48:25 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 17 Mar 2008 08:50:35 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:49589 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbYCQMud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 08:50:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WGrXSzyulZL7/xXDYPkU1BWzOpoWwb9hKqZsnoF0K/LAcUxTF5adSLJORGALLNG5KHZsA7mcOzJ35jy0t6x3u/5oNzBcB2vCKvPp+G2aFy3vpvp6l9LWb3aPh3TcKs7CNdG2x7blMoj0i0c06NT7gQjeJg5ysiCE8GPxmfUP50g=
+Message-ID: <939d53060803170550r46a7e93ex31c166fff86bcf50@mail.gmail.com>
+Date: Mon, 17 Mar 2008 13:50:29 +0100
+From: "Benjamin Thery" <ben.thery@gmail.com>
+To: "Daniel Lezcano" <dlezcano@fr.ibm.com>
+Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command as non-root
+Cc: "Tilman Schmidt" <tilman@imap.cc>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>, pekkas@netcore.fi,
+       yoshfuji@linux-ipv6.org
+In-Reply-To: <47DE4B7B.9040504@fr.ibm.com>
 MIME-Version: 1.0
-To: Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>
-CC: general@lists.openfabrics.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>
-Subject: [PATCH 2/3] Infiniband: make ehca_cq use struct pid pointer rather
- than pid_t
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 15:48:17 +0300 (MSK)
+Content-Disposition: inline
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	 <47D98510.60801@imap.cc> <47D9A8DF.30809@fr.ibm.com>
+	 <47D9C1F0.6050803@imap.cc> <47DE4B7B.9040504@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The task_struct->tgid field is about to become deprecated, due to
-pid namespaces make tasks have many pids, not one. The infiniband
-driver is one of the code, that still uses it in some places.
+I also tried to reproduce your problem with Postfix (on a Debian
+distro) but failed to
+obtain the error message.
 
-Now make struct ehca_cq use a struct pid pointer and consolidate
-owners check into one call.
+While googling for the error string, I found this link which report
+the same kind of
+error when Postfix is used with grsecurity (in 2006):
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+http://blog.jensthebrain.de/archives/2006/12/11/IPv6-Probleme-mit-Postfix-und-grsecurity
 
----
+I barely understand German so I'm not sure it is related to your problem.
 
- drivers/infiniband/hw/ehca/ehca_classes.h |    2 +-
- drivers/infiniband/hw/ehca/ehca_cq.c      |   30 ++++++++++++++++++------------
- drivers/infiniband/hw/ehca/ehca_tools.h   |    2 ++
- drivers/infiniband/hw/ehca/ehca_uverbs.c  |    7 +------
- 4 files changed, 22 insertions(+), 19 deletions(-)
+Benjamin
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index 92cce8a..29004cb 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -215,7 +215,7 @@ struct ehca_cq {
- 	atomic_t nr_events; /* #events seen */
- 	wait_queue_head_t wait_completion;
- 	spinlock_t task_lock;
--	u32 ownpid;
-+	struct pid *ownpid;
- 	/* mmap counter for resources mapped into user space */
- 	u32 mm_count_queue;
- 	u32 mm_count_galpa;
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index 0467c15..db25056 100644
---- a/drivers/infiniband/hw/ehca/ehca_cq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -113,6 +113,19 @@ struct ehca_qp *ehca_cq_get_qp(struct ehca_cq *cq, int real_qp_num)
- 	return ret;
- }
- 
-+int ehca_check_cq_owner(struct ib_device *device, struct ehca_cq *cq)
-+{
-+	struct pid *cur_pid = task_tgid(current);
-+
-+	if (likely(cur_pid == cq->ownpid))
-+		return 0;
-+
-+	ehca_err(device, "Invalid caller pid=%x ownpid=%x "
-+			"cq_num=%x",
-+			pid_nr(cur_pid), pid_nr(cq->ownpid), cq->cq_number);
-+	return -EINVAL;
-+}
-+
- struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
- 			     struct ib_ucontext *context,
- 			     struct ib_udata *udata)
-@@ -148,7 +161,7 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
- 	spin_lock_init(&my_cq->task_lock);
- 	atomic_set(&my_cq->nr_events, 0);
- 	init_waitqueue_head(&my_cq->wait_completion);
--	my_cq->ownpid = current->tgid;
-+	my_cq->ownpid = get_pid(task_tgid(current));
- 
- 	cq = &my_cq->ib_cq;
- 
-@@ -306,6 +319,7 @@ create_cq_exit2:
- 	write_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 
- create_cq_exit1:
-+	put_pid(my_cq->ownpid);
- 	kmem_cache_free(cq_cache, my_cq);
- 
- 	return cq;
-@@ -320,7 +334,6 @@ int ehca_destroy_cq(struct ib_cq *cq)
- 	struct ehca_shca *shca = container_of(device, struct ehca_shca,
- 					      ib_device);
- 	struct ipz_adapter_handle adapter_handle = shca->ipz_hca_handle;
--	u32 cur_pid = current->tgid;
- 	unsigned long flags;
- 
- 	if (cq->uobject) {
-@@ -329,12 +342,8 @@ int ehca_destroy_cq(struct ib_cq *cq)
- 				 "user space cq_num=%x", my_cq->cq_number);
- 			return -EINVAL;
- 		}
--		if (my_cq->ownpid != cur_pid) {
--			ehca_err(device, "Invalid caller pid=%x ownpid=%x "
--				 "cq_num=%x",
--				 cur_pid, my_cq->ownpid, my_cq->cq_number);
-+		if (ehca_check_cq_owner(device, my_cq))
- 			return -EINVAL;
--		}
- 	}
- 
- 	/*
-@@ -367,6 +376,7 @@ int ehca_destroy_cq(struct ib_cq *cq)
- 		return ehca2ib_return_code(h_ret);
- 	}
- 	ipz_queue_dtor(NULL, &my_cq->ipz_queue);
-+	put_pid(my_cq->ownpid);
- 	kmem_cache_free(cq_cache, my_cq);
- 
- 	return 0;
-@@ -375,13 +385,9 @@ int ehca_destroy_cq(struct ib_cq *cq)
- int ehca_resize_cq(struct ib_cq *cq, int cqe, struct ib_udata *udata)
- {
- 	struct ehca_cq *my_cq = container_of(cq, struct ehca_cq, ib_cq);
--	u32 cur_pid = current->tgid;
- 
--	if (cq->uobject && my_cq->ownpid != cur_pid) {
--		ehca_err(cq->device, "Invalid caller pid=%x ownpid=%x",
--			 cur_pid, my_cq->ownpid);
-+	if (cq->uobject && ehca_check_cq_owner(cq->device, my_cq))
- 		return -EINVAL;
--	}
- 
- 	/* TODO: proper resize needs to be done */
- 	ehca_err(cq->device, "not implemented yet");
-diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
-index 4a8346a..0e59891 100644
---- a/drivers/infiniband/hw/ehca/ehca_tools.h
-+++ b/drivers/infiniband/hw/ehca/ehca_tools.h
-@@ -154,8 +154,10 @@ extern int ehca_debug_level;
- int ehca2ib_return_code(u64 ehca_rc);
- 
- struct ib_device;
-+struct ehca_cq;
- struct ehca_pd;
- 
-+int ehca_check_cq_owner(struct ib_device *device, struct ehca_cq *cq);
- int ehca_check_pd_owner(struct ib_device *device, struct ehca_pd *pd);
- 
- #endif /* EHCA_TOOLS_H */
-diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-index 5234d6c..82746da 100644
---- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-@@ -253,7 +253,6 @@ int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
- 	u32 idr_handle = fileoffset & 0x1FFFFFF;
- 	u32 q_type = (fileoffset >> 27) & 0x1;	  /* CQ, QP,...        */
- 	u32 rsrc_type = (fileoffset >> 25) & 0x3; /* sq,rq,cmnd_window */
--	u32 cur_pid = current->tgid;
- 	u32 ret;
- 	struct ehca_cq *cq;
- 	struct ehca_qp *qp;
-@@ -270,12 +269,8 @@ int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
- 		if (!cq)
- 			return -EINVAL;
- 
--		if (cq->ownpid != cur_pid) {
--			ehca_err(cq->ib_cq.device,
--				 "Invalid caller pid=%x ownpid=%x",
--				 cur_pid, cq->ownpid);
-+		if (ehca_check_cq_owner(cq->ib_cq.device, cq))
- 			return -ENOMEM;
--		}
- 
- 		if (!cq->ib_cq.uobject || cq->ib_cq.uobject->context != context)
- 			return -EINVAL;
 
+On Mon, Mar 17, 2008 at 11:44 AM, Daniel Lezcano <dlezcano@fr.ibm.com> wrote:
+> Tilman Schmidt wrote:
+>  > Am 13.03.2008 23:21 schrieb Daniel Lezcano:
+>  >> Tilman Schmidt wrote:
+>  >
+>  >>> ts@xenon:~/kernel> /usr/sbin/sendmail -t < patch-usb-reduce-syslog-clutter-v3
+>  >>> postdrop: warning: can't open /proc/net/if_inet6 (Permission denied) - skipping IPv6 configuration
+>  >>> postdrop: fatal: parameter inet_interfaces: no local interface found for ::1
+>  >>> sendmail: warning: command "/usr/sbin/postdrop -r" exited with status 1
+>  >>> sendmail: fatal: ts(1000): unable to execute /usr/sbin/postdrop -r: Success
+>  >>> ts@xenon:~/kernel>
+>  >>>
+>  >>> and unsurprisingly, the mail is not sent. If I do the same as root,
+>  >>> everything works as usual, there is no console output from the
+>  >>> sendmail command, and the mail goes out as it should. All other
+>  >>> networking applications appear to be running normally.
+>  >
+>  >> Is it possible to have your config file used to compile the kernel ?
+>  >
+>  > Sure. You can find it at
+>  > http://gollum.phnxsoft.com/~ts/linux/config-2.6.25-rc5-mm1
+>
+>  Thanks,
+>
+>  I was not able to reproduce it, but I think I didn't configured postfix
+>  as I should had. What version do you use ?
+>  If I may ask you, can you put your postfix configuration file and a
+>  strace -f of your failing command ? on your website, that will help me a
+>  lot to investigate.
+>
+>    -- Daniel
+>
+>
+> --
+>  To unsubscribe from this list: send the line "unsubscribe netdev" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
