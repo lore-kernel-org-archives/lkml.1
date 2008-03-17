@@ -1,106 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYCQPT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYCQPXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817AbYCQPT1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 11:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbYCQPTT
+	id S1752640AbYCQPXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 11:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYCQPXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 11:19:19 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:45926 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYCQPTS (ORCPT
+	Mon, 17 Mar 2008 11:23:09 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38108 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751456AbYCQPXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 11:19:18 -0400
-Date: Mon, 17 Mar 2008 16:19:16 +0100
-From: Christof Schmitt <christof.schmitt@de.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: David Wilder <dwilder@us.ibm.com>, linux-btrace@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080317151915.GA19368@schmichrtp.de.ibm.com>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <47DA97DF.6010008@us.ibm.com> <20080314162807.GA4488@schmichrtp.de.ibm.com> <20080317080836.GZ17940@kernel.dk>
+	Mon, 17 Mar 2008 11:23:07 -0400
+Subject: Re: ultrastor.c is a bit-rot
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <47DE8736.8020405@panasas.com>
+References: <47DE8736.8020405@panasas.com>
+Content-Type: text/plain
+Date: Mon, 17 Mar 2008 10:23:03 -0500
+Message-Id: <1205767383.6767.139.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080317080836.GZ17940@kernel.dk>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 09:08:37AM +0100, Jens Axboe wrote:
-> On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > On Fri, Mar 14, 2008 at 08:21:03AM -0700, David Wilder wrote:
-> > > Christof Schmitt wrote:
-> > > >On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> > > >>On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > > >>>On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > > >>>>That is indeed a bug, does this work for you?
-> > > >>>>
-> > > >>>>diff --git a/kernel/relay.c b/kernel/relay.c
-> > > >>>>index d080b9d..39d1fa8 100644
-> > > >>>>--- a/kernel/relay.c
-> > > >>>>+++ b/kernel/relay.c
-> > > >>>>@@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > > >>>> 			       unsigned int flags,
-> > > >>>> 			       int *nonpad_ret)
-> > > >>>> {
-> > > >>>>-	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > > >>>>+	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > > >>>> 	struct rchan_buf *rbuf = in->private_data;
-> > > >>>> 	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > > >>>> 	uint64_t pos = (uint64_t) *ppos;
-> > > >>>>@@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > > >>>> 	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > > >>>> 	poff = read_start & ~PAGE_MASK;
-> > > >>>>
-> > > >>>>-	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > > >>>>+	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > > >>>>+
-> > > >>>>+	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > > >>>> 		unsigned int this_len, this_end, private;
-> > > >>>> 		unsigned int cur_pos = read_start + total_len;
-> > > >>>With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > > >>>oops. But the output from blktrace only contains only zeros and no
-> > > >>>usable data for blkparse. Using blktrace to write the data directly to
-> > > >>>disk, without using the blktrace server works. Is there anything i
-> > > >>>should look for to help debugging the problem?
-> > > >>We should probably get Tom in the loop, as he is the relay expert. I'll
-> > > >>make sure the above patch gets into 2.6.25, as it is definitely a bug
-> > > >>that needs fixing.
-> > > >
-> > > >http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> > > >his email address seems to be no longer valid. I copy Dave Wilder
-> > > >here, since he is mentioned as relay maintainer on the web page.
-> > > >
-> > > >Dave, can you have a look at this? I can easily reproduce the problem
-> > > >on s390 Linux for testing and getting more debug information.
-> > > >
-> > > >Christof
-> > > >--
-> > > >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > >the body of a message to majordomo@vger.kernel.org
-> > > >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > >Please read the FAQ at  http://www.tux.org/lkml/
-> > > >
-> > > 
-> > > I will take a look at the problem.
-> > > Any thing special about the test you are running I need to know?
-> > 
-> > The test is about using the blktrace network feature on a 64 bit s390
-> > guest on z/VM. I don't know if 64 bit and z/VM are related to the
-> > problem scenario, it is the only setup i tested. To reproduce, start
-> > somewhere 'blktrace -l' as a server and issue 
-> > blktrace -h tracehostname
-> > dd if=/dev/sda of=/dev/null
-> > to start blktrace and some I/O load.
+On Mon, 2008-03-17 at 16:59 +0200, Boaz Harrosh wrote:
+> Inspecting ultrastor.c it is clear to me that this was never used for
+> a loooooooooong time. Not since a PC has more then 2^24 bit of memory.
+> Let me explain below.
 > 
-> If the problem is in the splice part of relay, then the problem will
-> likely go away if you add the -s parameter to blktrace. Might be handy
-> to know if you are experimenting.
+> Now I'm not saying it should be fixed. I'm saying that it should be dumped
+> in the account that it is not used by any one and that it does not work.
+> 
+> Why it never worked?
+> ~~~~~~~~~~~~~~~~~~~~~
+> 
+> The driver's header says it supports 3 cards
+> 
+>  *	14F - ISA first-party DMA HA with floppy support and WD1003 emulation.
+>  *	24F - EISA Bus Master HA with floppy support and WD1003 emulation.
+>  *	34F - VL-Bus Bus Master HA with floppy support (no WD1003 emulation).
+> 
+> But Kconfig only specifies ISA. I'm not sure what a VL-Bus is.
 
-I still have your patch applied. blktrace with -s returns the trace
-data, as expected and blktrace without the -s returns data, but
-nothing useful for blkparse.
+VL is vesa local ... it was an ISA like graphics bus that was fast and
+could reach > 16MB.
 
-Christof
+> now the driver defines a static array of structures like this:
+> 
+> 	struct {
+> 	  ...
+> 	
+> 	  struct mscp mscp[ULTRASTOR_MAX_CMDS];
+> 	} config = {0};
+> 
+> and allocates a struct mscp in .queuecommand like this:
+> 	    my_mscp = &config.mscp[mscp_index];
+> 
+> it will go on preparing this my_mscp structure including stuffing
+> some mapped pointers. Lets put that aside for now.
+> At the very end it will pass this my_mscp structure to the card's 
+> firmware like this:
+> 
+> 	    /* Store pointer in OGM address bytes */
+> 	outl(isa_virt_to_bus(my_mscp), config.ogm_address);
+> 
+> Now this is one hell of a smart ISA card. But putting this aside.
+> 
+> if the machine has more then 2^24 of memory. Then this will never
+> work, right? or I'm missing it completely?
+
+It will definitely work for EISA and VL bus.  I think if you analyse the
+placement of kernel data segments for compiled in drivers, it might also
+work for ISA too, since I think the pfn will be low enough.  It should
+fail as a module not just because the area will be out of range for ISA,
+but also because the module data segment is in vmalloc space, so the
+virt_to_bus assumptions of contiguity could be violated.
+
+James
+
+
