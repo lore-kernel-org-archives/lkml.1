@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYCQCTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYCQCZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYCQCTz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 22:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYCQCTr
+	id S1755330AbYCQCZA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 22:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYCQCYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 22:19:47 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:9327 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbYCQCTq (ORCPT
+	Sun, 16 Mar 2008 22:24:52 -0400
+Received: from n4.bullet.mail.tp2.yahoo.com ([203.188.202.80]:28040 "HELO
+	n4.bullet.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751232AbYCQCYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 22:19:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XIUmcvqc+ZEOtVk67kcLy2sXSOh730lbb95aQu90bSnYFragToC2NZghOH2VZLPR3AZqmHvP6Pwi+yLOvSISsevUBuAYKoqhFOpKaCa0NXezZ1xjtybc9tnrzqEg9cibwXnxTPXKw6kCNcEQL0kK1iRP4sFEeNZ8OXXlj9qy/bw=
-Message-ID: <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
-Date: Sun, 16 Mar 2008 19:19:45 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-In-Reply-To: <20080317015825.0C0171B41E0@basil.firstfloor.org>
+	Sun, 16 Mar 2008 22:24:51 -0400
+X-Yahoo-Newman-Id: 118230.19036.bm@omp415.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=REsIchYkuVPk/c7KFbfA4pMfojWjkYuja/zOoRXWHC7jfDYpCYqOsbk1BZqm2PD1nRxmZKuzpFWRQ/Mqs88b3/MYn2qJ8kLLSUVO/m1ij46SmviUBbatFnchuQ0qQREXgWJvTRHMZLeF/hO3x0QibpQNw/GF0qhEwePxRN1paBE=  ;
+X-YMail-OSG: eEWi6IAVM1m8B1U_wnkDFGaKMXUTv649OYC36CYFOCQ.jOlBqTum_sHEQrMNm9UBeyGChmC_wQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/7] x86-64: introduce fast variant of smp_call_function_single()
+Date: Mon, 17 Mar 2008 13:24:31 +1100
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       npiggin@suse.de, dgc@sgi.com
+References: <1205322940-20127-1-git-send-email-jens.axboe@oracle.com> <20080316184506.GW17940@kernel.dk> <47DDA624.8000307@goop.org>
+In-Reply-To: <47DDA624.8000307@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080317258.659191058@firstfloor.org>
-	 <20080317015825.0C0171B41E0@basil.firstfloor.org>
+Message-Id: <200803171324.32001.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 16, 2008 at 6:58 PM, Andi Kleen <andi@firstfloor.org> wrote:
+On Monday 17 March 2008 09:58, Jeremy Fitzhardinge wrote:
+> Jens Axboe wrote:
+> > On Fri, Mar 14 2008, Jeremy Fitzhardinge wrote:
+> >> Jens Axboe wrote:
+> >>> rom: Nick Piggin <npiggin@suse.de>
+> >>
+> >> Why is this necessary?  How is smp_call_function_single slow?
+> >
+> > Because it's completely serialized by the call_lock spinlock.
 >
->  Without this fix bootmem can return unaligned addresses when the start of a
->  node is not aligned to the align value. Needed for reliably allocating
->  gigabyte pages.
->  Signed-off-by: Andi Kleen <ak@suse.de>
->
->  ---
->   mm/bootmem.c |    4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
->  Index: linux/mm/bootmem.c
->  ===================================================================
->  --- linux.orig/mm/bootmem.c
->  +++ linux/mm/bootmem.c
->  @@ -197,6 +197,7 @@ __alloc_bootmem_core(struct bootmem_data
->   {
->         unsigned long offset, remaining_size, areasize, preferred;
->         unsigned long i, start = 0, incr, eidx, end_pfn;
->  +       unsigned long pfn;
->         void *ret;
->
->         if (!size) {
->  @@ -239,12 +240,13 @@ __alloc_bootmem_core(struct bootmem_data
->         preferred = PFN_DOWN(ALIGN(preferred, align)) + offset;
->         areasize = (size + PAGE_SIZE-1) / PAGE_SIZE;
->         incr = align >> PAGE_SHIFT ? : 1;
->  +       pfn = PFN_DOWN(bdata->node_boot_start);
->
->   restart_scan:
->         for (i = preferred; i < eidx; i += incr) {
->                 unsigned long j;
->                 i = find_next_zero_bit(bdata->node_bootmem_map, eidx, i);
->  -               i = ALIGN(i, incr);
->  +               i = ALIGN(pfn + i, incr) - pfn;
->                 if (i >= eidx)
->                         break;
->                 if (test_bit(i, bdata->node_bootmem_map))
->  --
+> Hm, yes.  Would it be possible to implement smp_call_function_mask in a
+> generic way to avoid that?  Turn the static structure into a per-cpu
+> request list?
 
-node_boot_start is not page aligned?
+Not really. The common cases (that I can see) are either call all,
+or call one. In the call all case, you would have to touch every
+other CPU's request list, and that's not really any better than
+what I've done in my patchest for that.
 
-YH
+There would presumably be some cutoff where it makes more sense to
+queue events to the percpu IPI lists if you are only sending to a
+few CPUs. That would be trivial to implement, but... what are the
+use-cases for that? The big one that I really know of is user TLB
+shootdown, but that has its own vector anyway.
+
