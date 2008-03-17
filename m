@@ -1,112 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYCQCC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYCQCDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbYCQCC5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 22:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbYCQB6b
+	id S1758211AbYCQCDV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 22:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbYCQB6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 21:58:31 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:23330 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756032AbYCQB6a (ORCPT
+	Sun, 16 Mar 2008 21:58:32 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:18079 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756061AbYCQB6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 21:58:30 -0400
+	Sun, 16 Mar 2008 21:58:31 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080317258.659191058@firstfloor.org>
 In-Reply-To: <20080317258.659191058@firstfloor.org>
 To: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
        nickpiggin@yahoo.com.au
-Subject: [PATCH] [14/18] Clean up hugetlb boot time printk
-Message-Id: <20080317015828.1AB091B41E0@basil.firstfloor.org>
-Date: Mon, 17 Mar 2008 02:58:28 +0100 (CET)
-X-OriginalArrivalTime: 17 Mar 2008 01:51:53.0830 (UTC) FILETIME=[799CE860:01C887D1]
+Subject: [PATCH] [15/18] Add support to x86-64 to allocate and lookup GB pages in hugetlb
+Message-Id: <20080317015829.1FA4F1B41E0@basil.firstfloor.org>
+Date: Mon, 17 Mar 2008 02:58:29 +0100 (CET)
+X-OriginalArrivalTime: 17 Mar 2008 01:51:54.0861 (UTC) FILETIME=[7A3A39D0:01C887D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-- Reword sentence to clarify meaning with multiple options
-- Add support for using GB prefixes for the page size
-- Add extra printk to delayed > MAX_ORDER allocation code
-
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- mm/hugetlb.c |   33 ++++++++++++++++++++++++++++++---
- 1 file changed, 30 insertions(+), 3 deletions(-)
+ arch/x86/mm/hugetlbpage.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-Index: linux/mm/hugetlb.c
+Index: linux/arch/x86/mm/hugetlbpage.c
 ===================================================================
---- linux.orig/mm/hugetlb.c
-+++ linux/mm/hugetlb.c
-@@ -510,6 +510,15 @@ static struct page *alloc_huge_page(stru
- 	return page;
- }
- 
-+static __init char *memfmt(char *buf, unsigned long n)
-+{
-+	if (n >= (1UL << 30))
-+		sprintf(buf, "%lu GB", n >> 30);
-+	else
-+		sprintf(buf, "%lu MB", n >> 20);
-+	return buf;
-+}
-+
- static __initdata LIST_HEAD(huge_boot_pages);
- 
- struct huge_bm_page {
-@@ -536,14 +545,28 @@ static int __init alloc_bm_huge_page(str
- /* Put bootmem huge pages into the standard lists after mem_map is up */
- static int __init huge_init_bm(void)
- {
-+	unsigned long pages = 0;
- 	struct huge_bm_page *m;
-+	struct hstate *h = NULL;
-+	char buf[32];
-+
- 	list_for_each_entry (m, &huge_boot_pages, list) {
- 		struct page *page = virt_to_page(m);
--		struct hstate *h = m->hstate;
-+		h = m->hstate;
- 		__ClearPageReserved(page);
- 		prep_compound_page(page, h->order);
- 		huge_new_page(h, page);
-+		pages++;
+--- linux.orig/arch/x86/mm/hugetlbpage.c
++++ linux/arch/x86/mm/hugetlbpage.c
+@@ -133,9 +133,14 @@ pte_t *huge_pte_alloc(struct mm_struct *
+ 	pgd = pgd_offset(mm, addr);
+ 	pud = pud_alloc(mm, pgd, addr);
+ 	if (pud) {
+-		if (pud_none(*pud))
+-			huge_pmd_share(mm, addr, pud);
+-		pte = (pte_t *) pmd_alloc(mm, pud, addr);
++		if (sz == PUD_SIZE) {
++			pte = (pte_t *)pud;
++		} else {
++			BUG_ON(sz != PMD_SIZE);
++			if (pud_none(*pud))
++				huge_pmd_share(mm, addr, pud);
++			pte = (pte_t *) pmd_alloc(mm, pud, addr);
++		}
  	}
-+
-+	/*
-+	 * This only prints for a single hstate. This works for x86-64,
-+	 * but if you do multiple > MAX_ORDER hstates you'll need to fix it.
-+	 */
-+	if (pages > 0)
-+		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
-+				h->free_huge_pages,
-+				memfmt(buf, huge_page_size(h)));
- 	return 0;
- }
- __initcall(huge_init_bm);
-@@ -551,6 +574,8 @@ __initcall(huge_init_bm);
- static int __init hugetlb_init_hstate(struct hstate *h)
- {
- 	unsigned long i;
-+	char buf[32];
-+	unsigned long pages = 0;
+ 	BUG_ON(pte && !pte_none(*pte) && !pte_huge(*pte));
  
- 	/* Don't reinitialize lists if they have been already init'ed */
- 	if (!h->hugepage_freelists[0].next) {
-@@ -567,12 +592,14 @@ static int __init hugetlb_init_hstate(st
- 		} else if (!alloc_fresh_huge_page(h))
- 			break;
- 		h->parsed_hugepages++;
-+		pages++;
+@@ -151,8 +156,11 @@ pte_t *huge_pte_offset(struct mm_struct 
+ 	pgd = pgd_offset(mm, addr);
+ 	if (pgd_present(*pgd)) {
+ 		pud = pud_offset(pgd, addr);
+-		if (pud_present(*pud))
++		if (pud_present(*pud)) {
++			if (pud_large(*pud))
++				return (pte_t *)pud;
+ 			pmd = pmd_offset(pud, addr);
++		}
  	}
- 	max_huge_pages[h - hstates] = h->parsed_hugepages;
- 
--	printk(KERN_INFO "Total HugeTLB memory allocated, %ld %dMB pages\n",
-+	if (pages > 0)
-+		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
- 			h->free_huge_pages,
--			1 << (h->order + PAGE_SHIFT - 20));
-+			memfmt(buf, huge_page_size(h)));
- 	return 0;
+ 	return (pte_t *) pmd;
  }
- 
