@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYCQPq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYCQPrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbYCQPq7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 11:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYCQPqw
+	id S1754755AbYCQPrn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 11:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYCQPrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 11:46:52 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1182 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751992AbYCQPqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 11:46:51 -0400
-Date: Mon, 17 Mar 2008 16:46:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Joel K. Greene" <joel.greene@catapult.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Timer interrupt stops, causes soft lockup
-Message-ID: <20080317154639.GA4102@ucw.cz>
-References: <1205235450.18463.45.camel@linuxdt036.nc.catapult.com> <47D6423D.1E6F.00AA.0@novell.com> <1205255048.18463.60.camel@linuxdt036.nc.catapult.com> <1205260328.18463.67.camel@linuxdt036.nc.catapult.com> <47D68B9D.1E6F.00AA.0@novell.com> <1205265642.18463.82.camel@linuxdt036.nc.catapult.com> <1205322793.20205.9.camel@linuxdt036.nc.catapult.com> <1205326713.20205.27.camel@linuxdt036.nc.catapult.com> <1205332212.20205.33.camel@linuxdt036.nc.catapult.com> <1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Mar 2008 11:47:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:39163 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbYCQPrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 11:47:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qd2bTJXW3CONK7XgOxgPKM9rdGygw78yCuDI2XIm1Fyr1dSkVyJcGvGiB7naYSwfDADXAfQjMHI3iZ9F0AT+8cvPBRYlhtUjRZbfeUmwKjJylPuHTQSQaUZXYkVzQ3OzG0i2Ofhhn5wpOgAj6ZwsiNRcH7rhZrj2SyHXyclC2no=
+Message-ID: <2c0942db0803170847n3e88bdf6r33eabe4c15e7d3f2@mail.gmail.com>
+Date: Mon, 17 Mar 2008 08:47:30 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Christoph Hellwig" <hch@infradead.org>
+Subject: Re: 2.6.25-rc1/2 regression: first-time login into gnome fails
+Cc: "Romano Giannetti" <romanol@upcomillas.es>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080317120641.GA16710@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
-User-Agent: Mutt/1.5.9i
+References: <1203332161.26696.11.camel@pern>
+	 <2c0942db0802180815r59c2ef1s8d4c2e1e733b79c4@mail.gmail.com>
+	 <20080317120641.GA16710@infradead.org>
+X-Google-Sender-Auth: e69e85df15d79267
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Mar 17, 2008 at 5:06 AM, Christoph Hellwig <hch@infradead.org> wrote:
+> On Mon, Feb 18, 2008 at 08:15:01AM -0800, Ray Lee wrote:
+>  > It may be a race. Please try booting up, then waiting for a minute or
+>  > two once you see the gdm login screen, then try logging in.
+>  >
+>  > If that succeeds then something (dbus perhaps) is hanging on something
+>  > that eventually times out.
+>
+>  Just upgraded my laptop to 2.6.25-rc6 and I see the same.  A little
+>  instrumentation shows that there is no socket to connect to aka the
+>  server side process (whatever that is) didn't start.
 
-> Of course when time stops progessing forward at a steady pace all
-> sorts of Bad Things happen.  
-> 
-> The clock loop is caused by jiffies not incrementing. It seems that wall
-> time updates itself and then resync's with jiffies every ~4s.
-> 
-> We verified that all spinlocks ( xtime_lock in particular ) were not
-> being held, and that the kernel had no reason not to update jiffies.
-> Other interrupts continue to fire, so we're not stuck in the timer
-> handler.
-> 
-> So, we went on to look at the PIC. We threw together a little kernel
-> module to get some debug info.
+Hmm. Okay, mind if I ask some stupid questions?
 
-Nice debugging.
+I'm assuming you upgraded from 2.6.24, correct? (not .25-rcX).
 
-> We have over 10 systems demonstrating the problem, many in customer
-> sites. 
+Are you running either debian or ubuntu? If so, do you have the
+dbus-x11 package installed? Alternately, does /usr/bin/dbus-launch
+exist? If no, try installing dbus-x11 and try again. I think a
+side-effect of installing is to start dbus earlier, and may perhaps
+avoid the race (if it is a race that's causing all this, which I still
+think it is).
 
-Does nosmp help?
+References if you're bored:
+  http://bugzilla.gnome.org/show_bug.cgi?id=395488
+  http://www.mail-archive.com/desktop-bugs@lists.ubuntu.com/msg139625.html
 
-Does noapic/nolapic help?
-
-You may want to try testing with HZ=4000... to show the problem
-faster.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If the above doesn't help, is there anything interesting in ~/.xsession-errors?
