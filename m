@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYCQIJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbYCQIKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYCQIJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 04:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYCQIJs
+	id S1756363AbYCQIKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 04:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYCQIKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 04:09:48 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:39739 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752781AbYCQIJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 04:09:47 -0400
-Date: Mon, 17 Mar 2008 03:09:42 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [4/18] Add basic support for more than one hstate in
- hugetlbfs
-Message-Id: <20080317030942.8465b09e.pj@sgi.com>
-In-Reply-To: <20080317015817.DE00E1B41E0@basil.firstfloor.org>
+	Mon, 17 Mar 2008 04:10:34 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:57005 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752890AbYCQIKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 04:10:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=Ei0BgNhDuQ7XvQoEjh9KGxxugZkus7oHmysiLerDjvr1/fCC6XhBLsQw3x4kqDZOlTT2S2lchCK/V1rR/g1vUYUe6gWKzvHNt82EO0YJ0ZwEd9Hw/jscIAmTuDVsWxUlo/XEEUURVZxkOXwBX8pcDMM+9L3atsnpYuAdXD8s4XE=
+Message-ID: <86802c440803170110l2e47c25bu2adb16b094d2867f@mail.gmail.com>
+Date: Mon, 17 Mar 2008 01:10:31 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+In-Reply-To: <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_16162_26021772.1205741431225"
 References: <20080317258.659191058@firstfloor.org>
-	<20080317015817.DE00E1B41E0@basil.firstfloor.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	 <20080317015825.0C0171B41E0@basil.firstfloor.org>
+	 <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
+	 <20080317070208.GC27015@one.firstfloor.org>
+	 <86802c440803170017r622114bdpede8625d1a8ff585@mail.gmail.com>
+	 <86802c440803170031u75167e5m301f65049b6d62ff@mail.gmail.com>
+	 <20080317074146.GG27015@one.firstfloor.org>
+	 <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+------=_Part_16162_26021772.1205741431225
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Seems to me that both patches 2/18 and 4/18 are called:
+please check the one against -mm and x86.git
 
-  Add basic support for more than one hstate in hugetlbfs
+---
 
-You probably want to change this detail.
+------=_Part_16162_26021772.1205741431225
+Content-Type: text/x-patch; name=offset_alloc_bootmem.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdwrbn060
+Content-Disposition: attachment; filename=offset_alloc_bootmem.patch
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+RnJvbTogQW5kaSBLbGVlbiA8YWtAc3VzZS5kZT4KCltQQVRDSF0gbW06IG9mZnNldCBhbGlnbiBp
+biBhbGxvY19ib290bWVtCgpuZWVkIG9mZnNldCBhbGlnbm1lbnQgd2hlbiBub2RlX2Jvb3Rfc3Rh
+cnQncyBhbGlnbm1lbnQgaXMgbGVzcyB0aGFuCmFsaWduIHJlcXVpcmVkCgpJbmRleDogbGludXgt
+Mi42L21tL2Jvb3RtZW0uYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9tbS9ib290bWVt
+LmMKKysrIGxpbnV4LTIuNi9tbS9ib290bWVtLmMKQEAgLTI1Nyw3ICsyNTcsNyBAQCByZXN0YXJ0
+X3NjYW46CiAJCXVuc2lnbmVkIGxvbmcgajsKIAogCQlpID0gZmluZF9uZXh0X3plcm9fYml0KGJk
+YXRhLT5ub2RlX2Jvb3RtZW1fbWFwLCBlaWR4LCBpKTsKLQkJaSA9IEFMSUdOKGksIGluY3IpOwor
+CQlpID0gQUxJR04oaSArIG9mZnNldCwgaW5jcikgLSBvZmZzZXQ7CiAJCWlmIChpID49IGVpZHgp
+CiAJCQlicmVhazsKIAkJaWYgKHRlc3RfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKSkg
+ewpAQCAtMjczLDcgKzI3Myw3IEBAIHJlc3RhcnRfc2NhbjoKIAkJc3RhcnQgPSBpOwogCQlnb3Rv
+IGZvdW5kOwogCWZhaWxfYmxvY2s6Ci0JCWkgPSBBTElHTihqLCBpbmNyKTsKKwkJaSA9IEFMSUdO
+KGogKyBvZmZzZXQsIGluY3IpIC0gb2Zmc2V0OwogCQlpZiAoaSA9PSBqKQogCQkJaSArPSBpbmNy
+OwogCX0K
+------=_Part_16162_26021772.1205741431225--
