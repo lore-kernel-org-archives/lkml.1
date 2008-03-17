@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYCQJjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbYCQJji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbYCQJjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 05:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYCQJhp
+	id S1757429AbYCQJji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 05:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbYCQJhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 05:37:45 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:42593 "EHLO uludag.org.tr"
+	Mon, 17 Mar 2008 05:37:47 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:42595 "EHLO uludag.org.tr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753366AbYCQJhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 05:37:20 -0400
+	id S1753546AbYCQJhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 05:37:24 -0400
 From: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
 To: linux-kernel@vger.kernel.org
 Cc: linux-wireless@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] net/mac80211/: Use time_* macros
-Date: Mon, 17 Mar 2008 11:36:29 +0200
-Message-Id: <1205746593-24820-7-git-send-email-caglar@pardus.org.tr>
+Subject: [PATCH] drivers/net/wireless/atmel.c: Use time_* macros
+Date: Mon, 17 Mar 2008 11:36:31 +0200
+Message-Id: <1205746593-24820-9-git-send-email-caglar@pardus.org.tr>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1205746593-24820-6-git-send-email-caglar@pardus.org.tr>
+In-Reply-To: <1205746593-24820-8-git-send-email-caglar@pardus.org.tr>
 References: <>
  <1205746593-24820-1-git-send-email-caglar@pardus.org.tr>
  <1205746593-24820-2-git-send-email-caglar@pardus.org.tr>
@@ -24,6 +24,8 @@ References: <>
  <1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
  <1205746593-24820-5-git-send-email-caglar@pardus.org.tr>
  <1205746593-24820-6-git-send-email-caglar@pardus.org.tr>
+ <1205746593-24820-7-git-send-email-caglar@pardus.org.tr>
+ <1205746593-24820-8-git-send-email-caglar@pardus.org.tr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -39,52 +41,39 @@ Cc: linux-wireless@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 ---
- net/mac80211/rc80211_simple.c |    3 ++-
- net/mac80211/rx.c             |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/wireless/atmel.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/net/mac80211/rc80211_simple.c b/net/mac80211/rc80211_simple.c
-index 9a78b11..91bbff1 100644
---- a/net/mac80211/rc80211_simple.c
-+++ b/net/mac80211/rc80211_simple.c
-@@ -7,6 +7,7 @@
-  * published by the Free Software Foundation.
-  */
- 
+diff --git a/drivers/net/wireless/atmel.c b/drivers/net/wireless/atmel.c
+index 63ec7a7..ef2da40 100644
+--- a/drivers/net/wireless/atmel.c
++++ b/drivers/net/wireless/atmel.c
+@@ -66,6 +66,7 @@
+ #include <linux/device.h>
+ #include <linux/moduleparam.h>
+ #include <linux/firmware.h>
 +#include <linux/jiffies.h>
- #include <linux/init.h>
- #include <linux/netdevice.h>
- #include <linux/types.h>
-@@ -177,7 +178,7 @@ static void rate_control_simple_tx_status(void *priv, struct net_device *dev,
- 		rate_control_rate_dec(local, sta);
- 	}
+ #include <net/ieee80211.h>
+ #include "atmel.h"
  
--	if (srctrl->avg_rate_update + 60 * HZ < jiffies) {
-+	if (time_after(jiffies, srctrl->avg_rate_update + 60 * HZ)) {
- 		srctrl->avg_rate_update = jiffies;
- 		if (srctrl->tx_avg_rate_num > 0) {
- #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
-diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
-index 535407d..592581a 100644
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -9,6 +9,7 @@
-  * published by the Free Software Foundation.
-  */
+@@ -516,7 +517,7 @@ struct atmel_private {
+ 		SITE_SURVEY_IN_PROGRESS,
+ 		SITE_SURVEY_COMPLETED
+ 	} site_survey_state;
+-	time_t last_survey;
++	unsigned long last_survey;
  
-+#include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/skbuff.h>
- #include <linux/netdevice.h>
-@@ -801,7 +802,7 @@ ieee80211_reassemble_find(struct ieee80211_sub_if_data *sdata,
- 		    compare_ether_addr(hdr->addr2, f_hdr->addr2) != 0)
- 			continue;
+ 	int station_was_associated, station_is_associated;
+ 	int fast_scan;
+@@ -2283,7 +2284,7 @@ static int atmel_set_scan(struct net_device *dev,
+ 		return -EAGAIN;
  
--		if (entry->first_frag_time + 2 * HZ < jiffies) {
-+		if (time_after(jiffies, entry->first_frag_time + 2 * HZ)) {
- 			__skb_queue_purge(&entry->skb_list);
- 			continue;
- 		}
+ 	/* Timeout old surveys. */
+-	if ((jiffies - priv->last_survey) > (20 * HZ))
++	if (time_after(jiffies, priv->last_survey + 20 * HZ))
+ 		priv->site_survey_state = SITE_SURVEY_IDLE;
+ 	priv->last_survey = jiffies;
+ 
 -- 
 1.5.4.3
 
