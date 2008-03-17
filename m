@@ -1,37 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYCQG7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbYCQHAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbYCQG7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 02:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYCQG7o
+	id S1755680AbYCQHAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 03:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYCQHAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 02:59:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57977 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbYCQG7n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 02:59:43 -0400
-Date: Mon, 17 Mar 2008 08:02:08 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, pj@sgi.com,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
-Message-ID: <20080317070208.GC27015@one.firstfloor.org>
-References: <20080317258.659191058@firstfloor.org> <20080317015825.0C0171B41E0@basil.firstfloor.org> <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
+	Mon, 17 Mar 2008 03:00:22 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:43545 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752647AbYCQHAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 03:00:22 -0400
+Date: Mon, 17 Mar 2008 02:00:18 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [0/18] GB pages hugetlb support
+Message-Id: <20080317020018.2bf0b466.pj@sgi.com>
+In-Reply-To: <20080317070026.GB27015@one.firstfloor.org>
+References: <20080317258.659191058@firstfloor.org>
+	<20080316221132.7218743e.pj@sgi.com>
+	<20080317070026.GB27015@one.firstfloor.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> node_boot_start is not page aligned?
+Andi wrote:
+> This was against 2.6.25-rc4 
 
-It is, but it is not necessarily GB aligned and without this
-change sometimes alloc_bootmem when requesting GB alignment
-doesn't return GB aligned memory. This was a nasty problem
-that took some time to track down.
+Ok - I'll try that one.
 
--Andi
+> Ideally look at the end result of the whole series.
+
+Ok.  Thanks.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
