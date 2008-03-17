@@ -1,175 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbYCQRZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYCQRZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbYCQRZp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 13:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYCQRZf
+	id S1755052AbYCQRZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 13:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYCQRZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 13:25:35 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:58082 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbYCQRZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 13:25:33 -0400
-Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
-From: Stephen Smalley <sds@epoch.ncsc.mil>
-To: casey@schaufler-ca.com
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>, Greg KH <greg@kroah.com>,
-       Pavel Emelianov <xemul@openvz.org>
-In-Reply-To: <176755.88432.qm@web36612.mail.mud.yahoo.com>
-References: <176755.88432.qm@web36612.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 17 Mar 2008 09:26:39 -0400
-Message-Id: <1205760399.22912.183.camel@moss-spartans.epoch.ncsc.mil>
+	Mon, 17 Mar 2008 13:25:41 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:41757 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752694AbYCQRZj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 13:25:39 -0400
+Subject: Re: ultrastor.c is a bit-rot
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+In-Reply-To: <47DEA3F3.7070908@panasas.com>
+References: <47DE8736.8020405@panasas.com>
+	 <1205767383.6767.139.camel@localhost.localdomain>
+	 <47DE95A9.8060502@panasas.com>
+	 <1205769786.6767.140.camel@localhost.localdomain>
+	 <47DEA3F3.7070908@panasas.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 17 Mar 2008 12:25:35 -0500
+Message-Id: <1205774735.6767.148.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-03-17 at 19:01 +0200, Boaz Harrosh wrote:
+> In Hebrew we say: "You make me drink Kerosene". 
 
-On Fri, 2008-03-14 at 15:44 -0700, Casey Schaufler wrote:
-> --- Stephen Smalley <sds@epoch.ncsc.mil> wrote:
-> 
-> > 
-> > ... 
-> > > I completely disagree.   We have two separate frameworks in the kernel,
-> > > one to enforce generic additional security stuff, and one to track
-> > > tasks.  When I need a feature which tracks tasks to do some security
-> > > tasks, it seems obvious that I would use both, just like to enforce a
-> > > certain type of MAC I end up using both netfilter and LSM through
-> > > selinux.
-> > 
-> > Depends on whether you think LSM hooks are like netfilter hooks (i.e.
-> > fine for each module to just implement a few here and there, then
-> > combine resulting modules), or whether they are about implementing
-> > complete security models (ala SELinux or Smack).  As they currently
-> > exist, they aren't very well suited to the former - they impose a cost
-> > on all hooked operations in order to hook any at all, as has been a
-> > concern for your device controller.
-> 
-> I don't intend that Smack be thought of as a complete security model.
-> Smack implements Mandatory Access Control, but leaves the privilege
-> mechanism (root and/or capabilities) to the whims of others. Similarly
-> Smack does not do DAC (unlike SELinux with MCS) although "owned rules"
-> has been proposed as an additional feature. I certainly wouldn't
-> want every new facility that comes in to require multiple versions
-> that depend on the other LSMs involved. It's true that today's LSM is
-> optimized for the only LSM that existed a year ago, and that was a
-> monolythic security model.
+Slàinte mhath as we say in English.
 
-By complete security model, I don't mean it has to be MAC+DAC
-+privileges.  Just that it does in fact implement a well formed security
-model, not just an ad hoc set of stupid security tricks.  Smack and
-SELinux are examples of the former.
-
-> > > > > The fact that all existing LSMs need to invoke exactly the same code is
-> > an 
-> > > > > indicator that it doesn't belong in LSM.
-> > > 
-> > > No, that's like saying capabilities don't belong in LSM because all LSMS
-> > > need to invoke it the same way.  What it is an indicator of is that
-> > > there are (not-quite-)orthogonal pieces of security which users might
-> > > want to use together.
-> > 
-> > Likely not a popular view, but capabilities don't belong in LSM.
+> An "obvious enough to apply the best straight line fix" submitted below:
 > 
-> I share this view, which add credibility to the claim that it's
-> not popular. (smiley)
+> I say dump it, it's unused.
 > 
-> > Look
-> > at them:  the capability state is still directly embedded in the
-> > relevant kernel data structures, various bits of capability specific
-> > logic and interfaces remain in the core kernel,
+> Boaz
+> ---
+> From: Boaz Harrosh <bharrosh@panasas.com>
+> Date: Mon, 17 Mar 2008 18:40:03 +0200
+> Subject: [PATCH] ultrastor: Fix for ISA DMA allocation
 > 
-> It does seem as if a separate Linux Privilege Module framework
-> might be a better scheme. It would be very easy to pull out, and
-> simple to create the obvious LPMs:
+> "obvious enough to apply the best straight line fix" submitted
+> below.
 > 
-> - Traditional root
->   hooks look like "return (euid == 0) ? 0 : -EACCES;"
-> - No access check at all
->   hooks look like "return 0;"
-> - Root or capabilities
->   hooks look like "return (euid == 0 || capable(xxx)) ? 0 : -EACCES;"
-> - Pure capabilities
->   hooks look like "return capable(xxx) ? 0 : -EACCES;"
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> CC: Andi Kleen <ak@suse.de>
+> ---
+>  drivers/scsi/ultrastor.c |   24 +++++++++++++++++++++---
+>  1 files changed, 21 insertions(+), 3 deletions(-)
 > 
-> > they don't present a
-> > complete security model (just an auxiliary to some other model like DAC
-> > or Smack for privilege purposes), they use only a small subset of the
-> > hooks, they force LSM to violate its usual restrictive-only paradigm to
-> > support capable(), CONFIG_SECURITY=n still has to invoke the capability
-> > functions, and all of the other LSMs do need to call it the same way to
-> > keep Linux working as expected for applications and users.
-> 
-> Plus, if SELinux wants to abandon capabilities they can add thier own
-> scheme or insist the user use the noop LPM and do whatever they like
-> in the LSM. Smack has no intention of mucking with the privilege
-> mechanism, and will happily go along with whatever the rest of the
-> system wants to use, although the noop LSM seems a bit pointless in
-> that case.
-> 
-> > The original promise was that LSM would allow kernels to be built that
-> > shed capabilities altogether,
-> 
-> I don't remember that, but it's been a long time so it could be true.
-
-"One of the explicit requirements to get LSM into the kernel was to have
-the ability to make capabilities be a module.  This allows the embedded
-people to completely remove capabilities, as they really want this.  I
-don't think we can ignore this, no matter how much of a pain in the butt
-it is :)" - Greg KH
-
-Quoted from:
-http://marc.info/?l=linux-security-module&m=99236500727804&w=2
-
-Ironically, since that time, capabilities have doubled in size and still
-can't be removed from the core kernel since LSM didn't push the state
-into the security blobs.
-
-> 
-> > but in practice no one seems to do that as
-> > both users and applications expect them to exist in Linux.  In fact, the
-> > possibility of not having capabilities present has caused problems that
-> > have led to the dummy module being turned more and more into a clone of
-> > the capabilities module (actually managing and testing the capability
-> > bits rather than just uid == 0 as originally).
-> 
-> This is why Smack is sticking to MAC rather than trying to be a
-> wholistic security policy mechanism. To quote the prophet, "God
-> created the world in 7 days, but then, He didn't have an install
-> base".
->
-> > So I wouldn't point to capabilities as a counter example to James' point
-> > - they are actually a supporting example.
-> 
-> In particular, capabilities are not an access control mechanism,
-> they are a privilege mechanism. A lot of discussion about LSM has
-> centered around the appropriate charactoristics of an LSM, and
-> these discussions always assume that the LSM in question is
-> exactly an access control mechanism. If we split the LSM into
-> a LACM for access control and an LPM for privilege management
-> maybe we can eliminate the most contentious issues.
+> diff --git a/drivers/scsi/ultrastor.c b/drivers/scsi/ultrastor.c
+> index f385dce..04441eb 100644
+> --- a/drivers/scsi/ultrastor.c
+> +++ b/drivers/scsi/ultrastor.c
+> @@ -255,8 +255,9 @@ static struct ultrastor_config
+>    unsigned long mscp_free;
+>  #endif
+>    volatile unsigned char aborted[ULTRASTOR_MAX_CMDS];
+> -  struct mscp mscp[ULTRASTOR_MAX_CMDS];
+> -} config = {0};
+> +  struct mscp *mscp;
+> +  dma_addr_t dma;
+> +} config;
 >  
-> Does anyone know why that would be stoopid before I whack out
-> patches?
+>  /* Set this to 1 to reset the SCSI bus on error.  */
+>  static int ultrastor_bus_reset;
+> @@ -646,12 +647,29 @@ static int ultrastor_24f_detect(struct scsi_host_template * tpnt)
+>  
+>  static int ultrastor_detect(struct scsi_host_template * tpnt)
+>  {
+> +	int ret;
+> +
+>  	tpnt->proc_name = "ultrastor";
+> -	return ultrastor_14f_detect(tpnt) || ultrastor_24f_detect(tpnt);
+> +
+> +	if (!config.mscp)
+> +		config.mscp = dma_alloc_coherent(NULL,
+> +			sizeof(*config.mscp) * ULTRASTOR_MAX_CMDS,
+> +			&config.dma, GFP_KERNEL);
 
-If you do re-factor it in that manner, SELinux will have to register
-under both schemes in order to preserve its current logic, of course.
+Error handling here, I'm afraid; dma_alloc_coherent can return NULL.
 
-And there are points of overlap between the two schemes even for
-non-privilege-managing security modules (e.g. they both need hooks on
-ptrace, inode_setxattr, etc).
+Other than that, looks great.
 
-Lastly, since LSM didn't really do the job of migrating the capability
-state out of the core kernel data structures and fully encapsulating the
-capability logic, you'd have to do that work too to do it right.
+James
 
--- 
-Stephen Smalley
-National Security Agency
 
