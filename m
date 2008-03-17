@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbYCQHxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYCQIAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbYCQHxz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 03:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYCQHxp
+	id S1754789AbYCQIAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 04:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYCQIAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 03:53:45 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:28979 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344AbYCQHxp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 03:53:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nziA5NU9sYW0tVc4bdXx72VLgFba0A6FU+FdHf1o3zFLq3dFljOhirshHHnDblpns2nWHLA1MGJERFhwj+UHhrYGWgFwsgUvOQtByoYWuL0aqALiYhlIyl/gTHU1dIegIaUZ9hcqNjj36e+MZWm7Joad5BPwCmV5Ho0py7R61bA=
-Message-ID: <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
-Date: Mon, 17 Mar 2008 00:53:43 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-In-Reply-To: <20080317074146.GG27015@one.firstfloor.org>
+	Mon, 17 Mar 2008 04:00:20 -0400
+Received: from sacred.ru ([62.205.161.221]:34080 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbYCQIAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 04:00:19 -0400
+Message-ID: <47DE24ED.7060101@openvz.org>
+Date: Mon, 17 Mar 2008 10:59:41 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
+To: Thomas Graf <tgraf@suug.ch>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Audit vs netlink interaction problem
+References: <47DAA660.90401@openvz.org> <20080314163929.GP20815@postel.suug.ch> <47DAB065.6060804@openvz.org> <20080314182927.GQ20815@postel.suug.ch>
+In-Reply-To: <20080314182927.GQ20815@postel.suug.ch>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080317258.659191058@firstfloor.org>
-	 <20080317015825.0C0171B41E0@basil.firstfloor.org>
-	 <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
-	 <20080317070208.GC27015@one.firstfloor.org>
-	 <86802c440803170017r622114bdpede8625d1a8ff585@mail.gmail.com>
-	 <86802c440803170031u75167e5m301f65049b6d62ff@mail.gmail.com>
-	 <20080317074146.GG27015@one.firstfloor.org>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 10:59:37 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 12:41 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> > when node_boot_start is 512M alignment, and align is 1024M, offset
->  > could be 512M. it seems
->  > i = ALIGN(i, incr) need to do sth with offset...
->
->  It's possible that there are better fixes for this, but at least
->  my simple patch seems to work here. I admit I was banging my
->  head against this for some time and when I did the fix I just
->  wanted the bug to go away and didn't really go for subtleness.
->
->  The bootmem allocator is quite spaghetti in fact, it could
->  really need some general clean up (although it's' not quite
->  as bad yet as page_alloc.c)
+Thomas Graf wrote:
+> * Pavel Emelyanov <xemul@openvz.org> 2008-03-14 20:05
+>> Hmmm... I'm afraid, that this can break the audit filtering and signal
+>> auditing. I haven't yet looked deep into it, but it compares the 
+>> task->tgid with this audit_pid for different purposes. If audit_pid
+>> changes this code will be broken.
+> 
+> OK, then both pids have to be stored. audit_pid remains as-is but is
+> no longer used as destination netlink pid. A second pid is stored and
+> updated whenever a netlink message is received from userspace.
+> 
+>> Bu we have no the netlink socket at the moment of setting the pid to
+>> check this. The audit_reveive_msg() call which does this set is received 
+>> via another (pre-created global) socket.
+> 
+> I don't understand this. As far as I can read the code, a plain kernel
+> side netlink socket is created in audit_init(). But it doesn't matter,
+> as soon as we receive the first message from userspace, we know the
+> netlink source pid.
 
-i = ALIGN(i+offset, incr) - offset;
+audit_init() creates a kernel-side socket, while we need to know the pid 
+of a user-side one. But I saw your patch, seems like the NETLINK_CB(skb).pid
+is what we need for this check :)
 
-also the one in fail_block...
+>> I though, that proper behavior would be to split audit_pid, used for
+>> filtering from the audit_nlk_pid used for netlink communications.
+> 
+> Yes, exactly.
+> 
 
-only happen when align is large than alignment of node_boot_start.
-
-YH
