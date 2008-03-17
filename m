@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYCQQx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYCQQzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYCQQx0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 12:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYCQQxT
+	id S1754321AbYCQQzv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 12:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYCQQzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 12:53:19 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:34801 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751355AbYCQQxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 12:53:18 -0400
-Subject: Re: [RFC][2/3] Account and control virtual address space
-	allocations
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080316173005.8812.88290.sendpatchset@localhost.localdomain>
-References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain>
-	 <20080316173005.8812.88290.sendpatchset@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 17 Mar 2008 09:53:10 -0700
-Message-Id: <1205772790.18916.17.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Mar 2008 12:55:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50299 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751684AbYCQQzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 12:55:43 -0400
+Date: Mon, 17 Mar 2008 09:55:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] thermal: fix Kconfig dependencies
+In-Reply-To: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.LFD.1.00.0803170953210.3020@woody.linux-foundation.org>
+References: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-03-16 at 23:00 +0530, Balbir Singh wrote:
-> @@ -787,6 +788,8 @@ static int ptrace_bts_realloc(struct tas
->         current->mm->total_vm  -= old_size;
->         current->mm->locked_vm -= old_size;
->  
-> +       mem_cgroup_update_as(current->mm, -old_size);
-> +
->         if (size == 0)
->                 goto out;
 
-I think splattering these things all over is probably a bad idea.
 
-If you're going to do this, I think you need a couple of phases.  
+On Mon, 17 Mar 2008, Heiko Carstens wrote:
+> 
+> Change the select to a depends on to fix this. Should work as well.
 
-1. update the vm_(un)acct_memory() functions to take an mm
-2. start using them (or some other abstracted functions in place)
-3. update the new functions for cgroups
+Nope, that doesn't work. ACPI_THERMAL will select THERMAL, so now you have 
+THERMAL selected without HWMON.
 
-It's a bit non-obvious why you do the mem_cgroup_update_as() calls in
-the places that you do from context.
+As a minimal fix, you'd at least need to make ACPI_THERMAL depend on 
+THERMAL too.
 
-Having some other vm-abstracted functions will also keep you from
-splattering mem_cgroup_update_as() across the tree.  That's a pretty bad
-name. :)  ...update_mapped() or ...update_vm() might be a wee bit
-better. 
-
--- Dave
-
+		Linus
