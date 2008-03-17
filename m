@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbYCRF2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbYCRF3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756868AbYCRF2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 01:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYCRFYV
+	id S1757024AbYCRF3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 01:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYCRFYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 01:24:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:37845 "EHLO mail.goop.org"
+	Tue, 18 Mar 2008 01:24:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:37856 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbYCRFYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 01:24:09 -0400
+	id S1752938AbYCRFYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 01:24:10 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 13 of 31] x86/pgtable.h: demacro ptep_test_and_clear_young
-X-Mercurial-Node: fa1668ffe5ae5645787028a30a12c0bf92be6eaa
-Message-Id: <fa1668ffe5ae56457870.1205797024@localhost>
+Subject: [PATCH 11 of 31] x86: add pud_alloc for 4-level pagetables
+X-Mercurial-Node: 0c545f2790ac5388d9b30b69be133f8bb434a657
+Message-Id: <0c545f2790ac5388d9b3.1205797022@localhost>
 In-Reply-To: <patchbomb.1205797011@localhost>
-Date: Mon, 17 Mar 2008 16:37:04 -0700
+Date: Mon, 17 Mar 2008 16:37:02 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
@@ -26,52 +26,88 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/mm/pgtable.c     |   15 +++++++++++++++
- include/asm-x86/pgtable.h |   11 ++---------
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ arch/x86/kernel/paravirt.c |    2 ++
+ arch/x86/mm/pgtable.c      |    1 +
+ include/asm-x86/paravirt.h |   11 +++++++++++
+ include/asm-x86/pgalloc.h  |    3 +++
+ 4 files changed, 17 insertions(+)
 
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -385,8 +385,10 @@
+ 	.alloc_pte = paravirt_nop,
+ 	.alloc_pmd = paravirt_nop,
+ 	.alloc_pmd_clone = paravirt_nop,
++	.alloc_pud = paravirt_nop,
+ 	.release_pte = paravirt_nop,
+ 	.release_pmd = paravirt_nop,
++	.release_pud = paravirt_nop,
+ 
+ 	.set_pte = native_set_pte,
+ 	.set_pte_at = native_set_pte_at,
 diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
 --- a/arch/x86/mm/pgtable.c
 +++ b/arch/x86/mm/pgtable.c
-@@ -262,3 +262,18 @@
- 
- 	return changed;
+@@ -38,6 +38,7 @@
+ #if PAGETABLE_LEVELS > 3
+ void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
+ {
++	paravirt_release_pud(__pa(pud) >> PAGE_SHIFT);
+ 	tlb_remove_page(tlb, virt_to_page(pud));
  }
-+
-+int ptep_test_and_clear_young(struct vm_area_struct *vma,
-+			      unsigned long addr, pte_t *ptep)
+ #endif	/* PAGETABLE_LEVELS > 3 */
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -223,8 +223,10 @@
+ 	void (*alloc_pte)(struct mm_struct *mm, u32 pfn);
+ 	void (*alloc_pmd)(struct mm_struct *mm, u32 pfn);
+ 	void (*alloc_pmd_clone)(u32 pfn, u32 clonepfn, u32 start, u32 count);
++	void (*alloc_pud)(struct mm_struct *mm, u32 pfn);
+ 	void (*release_pte)(u32 pfn);
+ 	void (*release_pmd)(u32 pfn);
++	void (*release_pud)(u32 pfn);
+ 
+ 	/* Pagetable manipulation functions */
+ 	void (*set_pte)(pte_t *ptep, pte_t pteval);
+@@ -918,6 +920,15 @@
+ 	PVOP_VCALL1(pv_mmu_ops.release_pmd, pfn);
+ }
+ 
++static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned pfn)
 +{
-+	int ret = 0;
-+
-+	if (pte_young(*ptep))
-+		ret = test_and_clear_bit(_PAGE_BIT_ACCESSED,
-+					 &ptep->pte);
-+
-+	if (ret)
-+		pte_update(vma->vm_mm, addr, ptep);
-+
-+	return ret;
++	PVOP_VCALL2(pv_mmu_ops.alloc_pud, mm, pfn);
 +}
-diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
---- a/include/asm-x86/pgtable.h
-+++ b/include/asm-x86/pgtable.h
-@@ -304,15 +304,8 @@
- 				 pte_t entry, int dirty);
++static inline void paravirt_release_pud(unsigned pfn)
++{
++	PVOP_VCALL1(pv_mmu_ops.release_pud, pfn);
++}
++
+ #ifdef CONFIG_HIGHPTE
+ static inline void *kmap_atomic_pte(struct page *page, enum km_type type)
+ {
+diff --git a/include/asm-x86/pgalloc.h b/include/asm-x86/pgalloc.h
+--- a/include/asm-x86/pgalloc.h
++++ b/include/asm-x86/pgalloc.h
+@@ -11,8 +11,10 @@
+ #define paravirt_alloc_pte(mm, pfn) do { } while (0)
+ #define paravirt_alloc_pmd(mm, pfn) do { } while (0)
+ #define paravirt_alloc_pmd_clone(pfn, clonepfn, start, count) do { } while (0)
++#define paravirt_alloc_pud(mm, pfn) do { } while (0)
+ #define paravirt_release_pte(pfn) do { } while (0)
+ #define paravirt_release_pmd(pfn) do { } while (0)
++#define paravirt_release_pud(pfn) do { } while (0)
+ #endif
  
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
--#define ptep_test_and_clear_young(vma, addr, ptep) ({			\
--	int __ret = 0;							\
--	if (pte_young(*(ptep)))						\
--		__ret = test_and_clear_bit(_PAGE_BIT_ACCESSED,		\
--					   &(ptep)->pte);		\
--	if (__ret)							\
--		pte_update((vma)->vm_mm, addr, ptep);			\
--	__ret;								\
--})
-+extern int ptep_test_and_clear_young(struct vm_area_struct *vma,
-+				     unsigned long addr, pte_t *ptep);
+ /*
+@@ -101,6 +103,7 @@
+ #if PAGETABLE_LEVELS > 3
+ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
+ {
++	paravirt_alloc_pud(mm, __pa(pud) >> PAGE_SHIFT);
+ 	set_pgd(pgd, __pgd(_PAGE_TABLE | __pa(pud)));
+ }
  
- #define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
- #define ptep_clear_flush_young(vma, address, ptep)			\
 
 
