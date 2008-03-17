@@ -1,60 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYCQRUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbYCQRZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbYCQRUL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 13:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYCQRT6
+	id S1753796AbYCQRZp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 13:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYCQRZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 13:19:58 -0400
-Received: from mail.lang.hm ([64.81.33.126]:58163 "EHLO bifrost.lang.hm"
+	Mon, 17 Mar 2008 13:25:35 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:58082 "EHLO zombie.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750762AbYCQRT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 13:19:58 -0400
-Date: Mon, 17 Mar 2008 10:23:10 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Daniel Phillips <phillips@phunq.net>
-cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-In-Reply-To: <alpine.DEB.1.00.0803170740440.14887@asgard.lang.hm>
-Message-ID: <alpine.DEB.1.00.0803171021300.17640@asgard.lang.hm>
-References: <200803092346.17556.phillips@phunq.net> <200803162252.58274.phillips@phunq.net> <alpine.DEB.1.00.0803162341340.14887@asgard.lang.hm> <200803170116.19546.phillips@phunq.net> <alpine.DEB.1.00.0803170740440.14887@asgard.lang.hm>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1751413AbYCQRZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 13:25:33 -0400
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+From: Stephen Smalley <sds@epoch.ncsc.mil>
+To: casey@schaufler-ca.com
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <176755.88432.qm@web36612.mail.mud.yahoo.com>
+References: <176755.88432.qm@web36612.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 17 Mar 2008 09:26:39 -0400
+Message-Id: <1205760399.22912.183.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008, david@lang.hm wrote:
 
-> On Mon, 17 Mar 2008, Daniel Phillips wrote:
+On Fri, 2008-03-14 at 15:44 -0700, Casey Schaufler wrote:
+> --- Stephen Smalley <sds@epoch.ncsc.mil> wrote:
+> 
+> > 
+> > ... 
+> > > I completely disagree.   We have two separate frameworks in the kernel,
+> > > one to enforce generic additional security stuff, and one to track
+> > > tasks.  When I need a feature which tracks tasks to do some security
+> > > tasks, it seems obvious that I would use both, just like to enforce a
+> > > certain type of MAC I end up using both netfilter and LSM through
+> > > selinux.
+> > 
+> > Depends on whether you think LSM hooks are like netfilter hooks (i.e.
+> > fine for each module to just implement a few here and there, then
+> > combine resulting modules), or whether they are about implementing
+> > complete security models (ala SELinux or Smack).  As they currently
+> > exist, they aren't very well suited to the former - they impose a cost
+> > on all hooked operations in order to hook any at all, as has been a
+> > concern for your device controller.
+> 
+> I don't intend that Smack be thought of as a complete security model.
+> Smack implements Mandatory Access Control, but leaves the privilege
+> mechanism (root and/or capabilities) to the whims of others. Similarly
+> Smack does not do DAC (unlike SELinux with MCS) although "owned rules"
+> has been proposed as an additional feature. I certainly wouldn't
+> want every new facility that comes in to require multiple versions
+> that depend on the other LSMs involved. It's true that today's LSM is
+> optimized for the only LSM that existed a year ago, and that was a
+> monolythic security model.
+
+By complete security model, I don't mean it has to be MAC+DAC
++privileges.  Just that it does in fact implement a well formed security
+model, not just an ad hoc set of stupid security tricks.  Smack and
+SELinux are examples of the former.
+
+> > > > > The fact that all existing LSMs need to invoke exactly the same code is
+> > an 
+> > > > > indicator that it doesn't belong in LSM.
+> > > 
+> > > No, that's like saying capabilities don't belong in LSM because all LSMS
+> > > need to invoke it the same way.  What it is an indicator of is that
+> > > there are (not-quite-)orthogonal pieces of security which users might
+> > > want to use together.
+> > 
+> > Likely not a popular view, but capabilities don't belong in LSM.
+> 
+> I share this view, which add credibility to the claim that it's
+> not popular. (smiley)
+> 
+> > Look
+> > at them:  the capability state is still directly embedded in the
+> > relevant kernel data structures, various bits of capability specific
+> > logic and interfaces remain in the core kernel,
+> 
+> It does seem as if a separate Linux Privilege Module framework
+> might be a better scheme. It would be very easy to pull out, and
+> simple to create the obvious LPMs:
+> 
+> - Traditional root
+>   hooks look like "return (euid == 0) ? 0 : -EACCES;"
+> - No access check at all
+>   hooks look like "return 0;"
+> - Root or capabilities
+>   hooks look like "return (euid == 0 || capable(xxx)) ? 0 : -EACCES;"
+> - Pure capabilities
+>   hooks look like "return capable(xxx) ? 0 : -EACCES;"
+> 
+> > they don't present a
+> > complete security model (just an auxiliary to some other model like DAC
+> > or Smack for privilege purposes), they use only a small subset of the
+> > hooks, they force LSM to violate its usual restrictive-only paradigm to
+> > support capable(), CONFIG_SECURITY=n still has to invoke the capability
+> > functions, and all of the other LSMs do need to call it the same way to
+> > keep Linux working as expected for applications and users.
+> 
+> Plus, if SELinux wants to abandon capabilities they can add thier own
+> scheme or insist the user use the noop LPM and do whatever they like
+> in the LSM. Smack has no intention of mucking with the privilege
+> mechanism, and will happily go along with whatever the rest of the
+> system wants to use, although the noop LSM seems a bit pointless in
+> that case.
+> 
+> > The original promise was that LSM would allow kernels to be built that
+> > shed capabilities altogether,
+> 
+> I don't remember that, but it's been a long time so it could be true.
+
+"One of the explicit requirements to get LSM into the kernel was to have
+the ability to make capabilities be a module.  This allows the embedded
+people to completely remove capabilities, as they really want this.  I
+don't think we can ignore this, no matter how much of a pain in the butt
+it is :)" - Greg KH
+
+Quoted from:
+http://marc.info/?l=linux-security-module&m=99236500727804&w=2
+
+Ironically, since that time, capabilities have doubled in size and still
+can't be removed from the core kernel since LSM didn't push the state
+into the security blobs.
+
+> 
+> > but in practice no one seems to do that as
+> > both users and applications expect them to exist in Linux.  In fact, the
+> > possibility of not having capabilities present has caused problems that
+> > have led to the dummy module being turned more and more into a clone of
+> > the capabilities module (actually managing and testing the capability
+> > bits rather than just uid == 0 as originally).
+> 
+> This is why Smack is sticking to MAC rather than trying to be a
+> wholistic security policy mechanism. To quote the prophet, "God
+> created the world in 7 days, but then, He didn't have an install
+> base".
 >
->> On Sunday 16 March 2008 23:49, david@lang.hm wrote:
->>>> Mirroring on the other hand, makes a realtime copy of a volume, that is
->>>> never out of date.
->>> 
->>> so just mirror to a local disk array then.
->> 
->> Great idea.  Except that the disk array has millisecond level latency,
->> when what we trying to achieve is microsecond level latency.
->> 
->>> a local disk array has more write bandwidth than a network connection to a
->>> remote machine, so if you can mirror to a remote machine you can mirror to
->>> a local disk array.
->> 
->> So you could potentially connect to a _huge_ disk array and write deltas
->> to it.  The disk array would have to support roughly 3 Gbytes/second of
->> write bandwidth to keep up with the Violin ramdisk.  Doable, but you are
->> now in the serious heavy iron zone.
->
-> your network will do less then 1 Gbit/sec, so to mirror in real-time (what 
-> you claim is trivial) you would need at least 24 network connections in 
-> parallel. that's a LOT harder to setup then a high performance disk array.
+> > So I wouldn't point to capabilities as a counter example to James' point
+> > - they are actually a supporting example.
+> 
+> In particular, capabilities are not an access control mechanism,
+> they are a privilege mechanism. A lot of discussion about LSM has
+> centered around the appropriate charactoristics of an LSM, and
+> these discussions always assume that the LSM in question is
+> exactly an access control mechanism. If we split the LSM into
+> a LACM for access control and an LPM for privilege management
+> maybe we can eliminate the most contentious issues.
+>  
+> Does anyone know why that would be stoopid before I whack out
+> patches?
 
-by the way, the only way to get this much bandwideth between two machines 
-is to directly connect PCI-e/16 card slots togeather. this is definantly 
-not commodity hardware anymore (if it's even possible, PCI-e has some very 
-short distance limitations)
+If you do re-factor it in that manner, SELinux will have to register
+under both schemes in order to preserve its current logic, of course.
 
-David Lang
+And there are points of overlap between the two schemes even for
+non-privilege-managing security modules (e.g. they both need hooks on
+ptrace, inode_setxattr, etc).
+
+Lastly, since LSM didn't really do the job of migrating the capability
+state out of the core kernel data structures and fully encapsulating the
+capability logic, you'd have to do that work too to do it right.
+
+-- 
+Stephen Smalley
+National Security Agency
+
