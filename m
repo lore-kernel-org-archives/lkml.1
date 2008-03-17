@@ -1,117 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYCQAi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYCQBAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbYCQAi5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 20:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYCQAit
+	id S1754157AbYCQBAh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 21:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYCQBA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 20:38:49 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:37335 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274AbYCQAis (ORCPT
+	Sun, 16 Mar 2008 21:00:28 -0400
+Received: from n70.bullet.mail.sp1.yahoo.com ([98.136.44.38]:39197 "HELO
+	n70.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751313AbYCQBA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 20:38:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=ExFoS475swZeaXE+cHpqsaLd/wzKUu4oYlgrQvAirNj4CcbqIq7JIryFQ0xGFtVhL5fHDsLy6kfk+hAnh69NAc9SoAJUNQG3blLnfi45h8Vdlvtfq9InR+6HCcWMfpboO3v5f9OURIJWU0/f17z6v9T0x3Wx+7JY3jwfXJamsuM=
-Message-ID: <86802c440803161738v77c8e6a7s360cc8672ec17bb0@mail.gmail.com>
-Date: Sun, 16 Mar 2008 17:38:45 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, steve@lobefin.net,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Andi Kleen" <ak@suse.de>
-Subject: [PATCH] x86: trim mtrr don't close gap for resource allocation
-Cc: "Linux Kernel ML" <linux-kernel@vger.kernel.org>
+	Sun, 16 Mar 2008 21:00:27 -0400
+X-Yahoo-Newman-Id: 585809.14307.bm@omp406.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=vFitfZfiZzMuTaq+5808jtSNrazJHjjioZfC0P3Y5nsp/JMv7KOfS5hYKgm9dnW9ZWv4OdnPmlSZ1L8BodMlgmWGQpoASYGOU0af7UDvzN45UaSkRge9GlF4OkVI3Q8BbLgu+nOrvEQI6xHxLsvxrDbLsTdFc2HqY3N+G8hJP5s=  ;
+X-YMail-OSG: Dp_SYZwVM1kR2YwMgyI_j6Yed6QDKI7zYhz4S6_8T2ll0etSqDVqGyNQEl4TQ66Yu72shpTdyA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Poor PostgreSQL scaling on Linux 2.6.25-rc5 (vs 2.6.22)
+Date: Mon, 17 Mar 2008 11:44:35 +1100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, "LKML," <linux-kernel@vger.kernel.org>
+References: <200803111749.29143.nickpiggin@yahoo.com.au> <200803121221.37234.nickpiggin@yahoo.com.au> <1205308704.8514.197.camel@twins>
+In-Reply-To: <1205308704.8514.197.camel@twins>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_15446_8248837.1205714325039"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803171144.35479.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_15446_8248837.1205714325039
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wednesday 12 March 2008 18:58, Peter Zijlstra wrote:
+> On Wed, 2008-03-12 at 12:21 +1100, Nick Piggin wrote:
+> > (Back onto lkml)
+> >
+> > On Tuesday 11 March 2008 23:02, Ingo Molnar wrote:
+> > > another thing to try would be to increase:
+> > >
+> > >   /proc/sys/kernel/sched_migration_cost
+> > >
+> > > from its 500 usecs default to a few msecs ?
+> >
+> > This doesn't really help either (at 10ms).
+> >
+> > (For the record, I've tried turning SD_WAKE_IDLE, SD_WAKE_AFFINE
+> > on and off for each domain and that hasn't helped either).
+> >
+> > I've also tried increasing sched_latency_ns as far as it can go.
+> > BTW. this is a pretty nasty behaviour if you ask my opinion. It
+> > starts *increasing* the number of involuntary context switches
+> > as resources get oversubscribed. That's completely unintuitive as
+> > far as I can see -- when we get overloaded, the obvious thing to
+> > do is try to increase efficiency, or at least try as hard as
+> > possible not to lose it. So context switches should be steady or
+> > decreasing as I add more processes to a runqueue.
+> >
+> > It seems to max out at nearly 100 context switches per second,
+> > and this has actually shown to be too frequent for modern CPUs
+> > and big caches.
+> >
+> > Increasing the tunable didn't help for this workload, but it really
+> > needs to be fixed so it doesn't decrease timeslices as the number
+> > of processes increases.
+>
+> /proc/sys/kernel/sched_min_granularity_ns
+> /proc/sys/kernel/sched_latency_ns
+>
+> period := max(latency, nr_running * min_granularity)
+> slice := period * w_{i} / W
+> W := \Sum_{i} w_{i}
+>
+> So if you want to increase the slice length for loaded systems, up
+> min_granularity.
 
+OK, but the very concept of reducing efficiency when load increases
+is nasty, and leads to nasty feedback loops. It's just a very bad
+behaviour to have out of the box, and as a general observation, 10ms
+is too short a default timeslice IMO.
 
+I don't see how it is really helpful for interactive processes either.
+By definition, if they are not CPU bound, then they should be run
+quite soon after waking up; if they are CPU bound, then reducing
+efficiency by increasing context switches is effectively going to
+increase their latency anyway.
 
-------=_Part_15446_8248837.1205714325039
-Content-Type: text/x-patch; name=update_memory_region.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdwb6sg50
-Content-Disposition: attachment; filename=update_memory_region.patch
+Can this be changed by default, please?
 
-W1BBVENIXSB4ODY6IHRyaW0gbXRyciBkb24ndCBjbG9zZSBnYXAgZm9yIHJlc291cmNlIGFsbG9j
-YXRpb24uCgpmb3IKCWh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
-MDIzMgoKdXNlIHVwZGF0ZV9tZW1vcnlfcmFuZ2UgaW5zdGVhZCBvZiBhZGRfbWVtb3J5X3Jhbmdl
-IGRpcmVjdGx5CnRvIGF2b2lkIGNsb3NpbmcgdGhhdCBnYXAuCgpTaWduZWQtb2ZmLWJ5OiBZaW5n
-aGFpIEx1IDx5aGx1LmtlbnJlbEBnbWFpbC5jb20+CgpJbmRleDogbGludXgtMi42L2FyY2gveDg2
-L2tlcm5lbC9jcHUvbXRyci9tYWluLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJj
-aC94ODYva2VybmVsL2NwdS9tdHJyL21haW4uYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5l
-bC9jcHUvbXRyci9tYWluLmMKQEAgLTcxMSw3ICs3MTEsOCBAQCBpbnQgX19pbml0IG10cnJfdHJp
-bV91bmNhY2hlZF9tZW1vcnkodW5zCiAJCXRyaW1fc2l6ZSA9IGVuZF9wZm47CiAJCXRyaW1fc2l6
-ZSA8PD0gUEFHRV9TSElGVDsKIAkJdHJpbV9zaXplIC09IHRyaW1fc3RhcnQ7Ci0JCWFkZF9tZW1v
-cnlfcmVnaW9uKHRyaW1fc3RhcnQsIHRyaW1fc2l6ZSwgRTgyMF9SRVNFUlZFRCk7CisJCXVwZGF0
-ZV9tZW1vcnlfcmFuZ2UodHJpbV9zdGFydCwgdHJpbV9zaXplLCBFODIwX1JBTSwKKwkJCQkJRTgy
-MF9SRVNFUlZFRCk7CiAJCXVwZGF0ZV9lODIwKCk7CiAJCXJldHVybiAxOwogCX0KSW5kZXg6IGxp
-bnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvZTgyMF8zMi5jCj09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
-Ni5vcmlnL2FyY2gveDg2L2tlcm5lbC9lODIwXzMyLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9r
-ZXJuZWwvZTgyMF8zMi5jCkBAIC03MzYsNiArNzM2LDMyIEBAIHN0YXRpYyBpbnQgX19pbml0IHBh
-cnNlX21lbW1hcChjaGFyICphcmcKIAlyZXR1cm4gMDsKIH0KIGVhcmx5X3BhcmFtKCJtZW1tYXAi
-LCBwYXJzZV9tZW1tYXApOwordm9pZCBfX2luaXQgdXBkYXRlX21lbW9yeV9yYW5nZSh1NjQgc3Rh
-cnQsIHU2NCBzaXplLCB1bnNpZ25lZCBvbGRfdHlwZSwKKwkJCQl1bnNpZ25lZCBuZXdfdHlwZSkK
-K3sKKwlpbnQgaTsKKworCUJVR19PTihvbGRfdHlwZSA9PSBuZXdfdHlwZSk7CisKKwlmb3IgKGkg
-PSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlzdHJ1Y3QgZTgyMGVudHJ5ICplaSA9ICZl
-ODIwLm1hcFtpXTsKKwkJdTY0IGZpbmFsX3N0YXJ0LCBmaW5hbF9lbmQ7CisJCWlmIChlaS0+dHlw
-ZSAhPSBvbGRfdHlwZSkKKwkJCWNvbnRpbnVlOworCQkvKiB0b3RhbGx5IGNvdmVyZWQ/ICovCisJ
-CWlmIChlaS0+YWRkciA+PSBzdGFydCAmJiBlaS0+c2l6ZSA8PSBzaXplKSB7CisJCQllaS0+dHlw
-ZSA9IG5ld190eXBlOworCQkJY29udGludWU7CisJCX0KKwkJLyogcGFydGlhbGx5IGNvdmVyZWQg
-Ki8KKwkJZmluYWxfc3RhcnQgPSBtYXgoc3RhcnQsIGVpLT5hZGRyKTsKKwkJZmluYWxfZW5kID0g
-bWluKHN0YXJ0ICsgc2l6ZSwgZWktPmFkZHIgKyBlaS0+c2l6ZSk7CisJCWlmIChmaW5hbF9zdGFy
-dCA+PSBmaW5hbF9lbmQpCisJCQljb250aW51ZTsKKwkJYWRkX21lbW9yeV9yZWdpb24oZmluYWxf
-c3RhcnQsIGZpbmFsX2VuZCAtIGZpbmFsX3N0YXJ0LAorCQkJCQkgbmV3X3R5cGUpOworCX0KK30K
-IHZvaWQgX19pbml0IHVwZGF0ZV9lODIwKHZvaWQpCiB7CiAJdTggbnJfbWFwOwpJbmRleDogbGlu
-dXgtMi42L2FyY2gveDg2L2tlcm5lbC9lODIwXzY0LmMKPT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42
-Lm9yaWcvYXJjaC94ODYva2VybmVsL2U4MjBfNjQuYworKysgbGludXgtMi42L2FyY2gveDg2L2tl
-cm5lbC9lODIwXzY0LmMKQEAgLTczMSw2ICs3MzEsMzMgQEAgdm9pZCBfX2luaXQgZmluaXNoX2U4
-MjBfcGFyc2luZyh2b2lkKQogCX0KIH0KIAordm9pZCBfX2luaXQgdXBkYXRlX21lbW9yeV9yYW5n
-ZSh1NjQgc3RhcnQsIHU2NCBzaXplLCB1bnNpZ25lZCBvbGRfdHlwZSwKKwkJCQl1bnNpZ25lZCBu
-ZXdfdHlwZSkKK3sKKwlpbnQgaTsKKworCUJVR19PTihvbGRfdHlwZSA9PSBuZXdfdHlwZSk7CisK
-Kwlmb3IgKGkgPSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlzdHJ1Y3QgZTgyMGVudHJ5
-ICplaSA9ICZlODIwLm1hcFtpXTsKKwkJdTY0IGZpbmFsX3N0YXJ0LCBmaW5hbF9lbmQ7CisJCWlm
-IChlaS0+dHlwZSAhPSBvbGRfdHlwZSkKKwkJCWNvbnRpbnVlOworCQkvKiB0b3RhbGx5IGNvdmVy
-ZWQ/ICovCisJCWlmIChlaS0+YWRkciA+PSBzdGFydCAmJiBlaS0+c2l6ZSA8PSBzaXplKSB7CisJ
-CQllaS0+dHlwZSA9IG5ld190eXBlOworCQkJY29udGludWU7CisJCX0KKwkJLyogcGFydGlhbGx5
-IGNvdmVyZWQgKi8KKwkJZmluYWxfc3RhcnQgPSBtYXgoc3RhcnQsIGVpLT5hZGRyKTsKKwkJZmlu
-YWxfZW5kID0gbWluKHN0YXJ0ICsgc2l6ZSwgZWktPmFkZHIgKyBlaS0+c2l6ZSk7CisJCWlmIChm
-aW5hbF9zdGFydCA+PSBmaW5hbF9lbmQpCisJCQljb250aW51ZTsKKwkJYWRkX21lbW9yeV9yZWdp
-b24oZmluYWxfc3RhcnQsIGZpbmFsX2VuZCAtIGZpbmFsX3N0YXJ0LAorCQkJCQkgbmV3X3R5cGUp
-OworCX0KK30KKwogdm9pZCBfX2luaXQgdXBkYXRlX2U4MjAodm9pZCkKIHsKIAl1OCBucl9tYXA7
-CkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2L2U4MjBfMzIuaAo9PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0t
-LSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14ODYvZTgyMF8zMi5oCisrKyBsaW51eC0yLjYv
-aW5jbHVkZS9hc20teDg2L2U4MjBfMzIuaApAQCAtMjgsNiArMjgsOCBAQCBleHRlcm4gdm9pZCBm
-aW5kX21heF9wZm4odm9pZCk7CiBleHRlcm4gdm9pZCByZWdpc3Rlcl9ib290bWVtX2xvd19wYWdl
-cyh1bnNpZ25lZCBsb25nIG1heF9sb3dfcGZuKTsKIGV4dGVybiB2b2lkIGFkZF9tZW1vcnlfcmVn
-aW9uKHVuc2lnbmVkIGxvbmcgbG9uZyBzdGFydCwKIAkJCSAgICAgIHVuc2lnbmVkIGxvbmcgbG9u
-ZyBzaXplLCBpbnQgdHlwZSk7CitleHRlcm4gdm9pZCB1cGRhdGVfbWVtb3J5X3JhbmdlKHU2NCBz
-dGFydCwgdTY0IHNpemUsIHVuc2lnbmVkIG9sZF90eXBlLAorCQkJCXVuc2lnbmVkIG5ld190eXBl
-KTsKIGV4dGVybiB2b2lkIGU4MjBfcmVnaXN0ZXJfbWVtb3J5KHZvaWQpOwogZXh0ZXJuIHZvaWQg
-bGltaXRfcmVnaW9ucyh1bnNpZ25lZCBsb25nIGxvbmcgc2l6ZSk7CiBleHRlcm4gdm9pZCBwcmlu
-dF9tZW1vcnlfbWFwKGNoYXIgKndobyk7CkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2
-L2U4MjBfNjQuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14ODYv
-ZTgyMF82NC5oCisrKyBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2L2U4MjBfNjQuaApAQCAtMTgs
-NiArMTgsOCBAQCBleHRlcm4gdW5zaWduZWQgbG9uZyBmaW5kX2U4MjBfYXJlYSh1bnNpCiAJCQkJ
-ICAgIHVuc2lnbmVkIGxvbmcgc2l6ZSwgdW5zaWduZWQgbG9uZyBhbGlnbik7CiBleHRlcm4gdm9p
-ZCBhZGRfbWVtb3J5X3JlZ2lvbih1bnNpZ25lZCBsb25nIHN0YXJ0LCB1bnNpZ25lZCBsb25nIHNp
-emUsIAogCQkJICAgICAgaW50IHR5cGUpOworZXh0ZXJuIHZvaWQgdXBkYXRlX21lbW9yeV9yYW5n
-ZSh1NjQgc3RhcnQsIHU2NCBzaXplLCB1bnNpZ25lZCBvbGRfdHlwZSwKKwkJCQl1bnNpZ25lZCBu
-ZXdfdHlwZSk7CiBleHRlcm4gdm9pZCBzZXR1cF9tZW1vcnlfcmVnaW9uKHZvaWQpOwogZXh0ZXJu
-IHZvaWQgY29udGlnX2U4MjBfc2V0dXAodm9pZCk7IAogZXh0ZXJuIHVuc2lnbmVkIGxvbmcgZTgy
-MF9lbmRfb2ZfcmFtKHZvaWQpOwo=
-------=_Part_15446_8248837.1205714325039--
