@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYCQP6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYCQQBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbYCQP6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 11:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYCQP6E
+	id S1753203AbYCQQBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 12:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYCQQBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 11:58:04 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31304 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbYCQP5p (ORCPT
+	Mon, 17 Mar 2008 12:01:07 -0400
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:35186 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbYCQQBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 11:57:45 -0400
-Date: Mon, 17 Mar 2008 08:55:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       kvm-devel@lists.sourceforge.net, tglx <tglx@linutronix.de>,
-       mingo <mingo@redhat.com>, hpa <hpa@zytor.com>
-Subject: Re: [PATCH] x86: don't allow KVM_CLOCK without HAVE_KVM
-Message-Id: <20080317085555.b5168b6f.randy.dunlap@oracle.com>
-In-Reply-To: <47DD00C4.2070100@qumranet.com>
-References: <20080314104444.ca80e434.randy.dunlap@oracle.com>
-	<47DD00C4.2070100@qumranet.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Mar 2008 12:01:06 -0400
+Message-ID: <47DE95A9.8060502@panasas.com>
+Date: Mon, 17 Mar 2008 18:00:41 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ultrastor.c is a bit-rot
+References: <47DE8736.8020405@panasas.com> <1205767383.6767.139.camel@localhost.localdomain>
+In-Reply-To: <1205767383.6767.139.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Mar 2008 13:13:08 +0200 Avi Kivity wrote:
-
-> Randy Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> >
-> > Make KVM_CLOCK depend on HAVE_KVM.  Otherwise a Voyager build can
-> > fail with:
-> >
-> >   CC      arch/x86/kernel/asm-offsets.s
-> > In file included from include2/asm/irqflags.h:59,
-> >                  from /local/linsrc/next-20080314/include/linux/irqflags.h:46,
-> >                  from include2/asm/system.h:11,
-> >                  from include2/asm/processor.h:21,
-> >                  from include2/asm/atomic_32.h:5,
-> >                  from include2/asm/atomic.h:2,
-> >                  from /local/linsrc/next-20080314/include/linux/crypto.h:20,
-> >                  from /local/linsrc/next-20080314/arch/x86/kernel/asm-offsets_32.c:7,
-> >                  from /local/linsrc/next-20080314/arch/x86/kernel/asm-offsets.c:2:
-> > include2/asm/paravirt.h: In function 'startup_ipi_hook':
-> > include2/asm/paravirt.h:856: error: 'struct pv_apic_ops' has no member named 'startup_ipi_hook'
-> > include2/asm/paravirt.h:856: error: 'struct pv_apic_ops' has no member named 'startup_ipi_hook'
-> > include2/asm/paravirt.h:856: error: memory input 4 is not directly addressable
-> > make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-> > make[1]: *** [prepare0] Error 2
-> > make: *** [sub-make] Error 2
-> >
-> >   
+On Mon, Mar 17 2008 at 17:23 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Mon, 2008-03-17 at 16:59 +0200, Boaz Harrosh wrote:
+>> Inspecting ultrastor.c it is clear to me that this was never used for
+>> a loooooooooong time. Not since a PC has more then 2^24 bit of memory.
+>> Let me explain below.
+>>
+>> Now I'm not saying it should be fixed. I'm saying that it should be dumped
+>> in the account that it is not used by any one and that it does not work.
+>>
+>> Why it never worked?
+>> ~~~~~~~~~~~~~~~~~~~~~
+>>
+>> The driver's header says it supports 3 cards
+>>
+>>  *	14F - ISA first-party DMA HA with floppy support and WD1003 emulation.
+>>  *	24F - EISA Bus Master HA with floppy support and WD1003 emulation.
+>>  *	34F - VL-Bus Bus Master HA with floppy support (no WD1003 emulation).
+>>
+>> But Kconfig only specifies ISA. I'm not sure what a VL-Bus is.
 > 
-> Looks like it's a general paravirt vs voyager issue, nothing kvmclock 
-> specific about it.  Wouldn't it be better to have voyager and paravirt 
-> mutually exclude each other, rather than every paravirt user?
+> VL is vesa local ... it was an ISA like graphics bus that was fast and
+> could reach > 16MB.
+> 
+>> now the driver defines a static array of structures like this:
+>>
+>> 	struct {
+>> 	  ...
+>> 	
+>> 	  struct mscp mscp[ULTRASTOR_MAX_CMDS];
+>> 	} config = {0};
+>>
+>> and allocates a struct mscp in .queuecommand like this:
+>> 	    my_mscp = &config.mscp[mscp_index];
+>>
+>> it will go on preparing this my_mscp structure including stuffing
+>> some mapped pointers. Lets put that aside for now.
+>> At the very end it will pass this my_mscp structure to the card's 
+>> firmware like this:
+>>
+>> 	    /* Store pointer in OGM address bytes */
+>> 	outl(isa_virt_to_bus(my_mscp), config.ogm_address);
+>>
+>> Now this is one hell of a smart ISA card. But putting this aside.
+>>
+>> if the machine has more then 2^24 of memory. Then this will never
+>> work, right? or I'm missing it completely?
+> 
+> It will definitely work for EISA and VL bus.  I think if you analyse the
+> placement of kernel data segments for compiled in drivers, it might also
+> work for ISA too, since I think the pfn will be low enough.  It should
+> fail as a module not just because the area will be out of range for ISA,
+> but also because the module data segment is in vmalloc space, so the
+> virt_to_bus assumptions of contiguity could be violated.
+> 
+> James
+> 
 
-They do generally mutually exclude each other.  I think that the problem
-is just that dirty old "select PARAVIRT" in config KVM_CLOCK.
-PARAVIRT depends on !(X86_VISWS || X86_VOYAGER), but "select" doesn't
-care^W honor that.  As Documentation/kbuild/kconfig-language.txt says:
+So what is the verdict? is it removed? marked broken for ISA?
 
-	"In general use select only for
-	non-visible symbols (no prompts anywhere) and for symbols with
-	no dependencies. That will limit the usefulness but on the
-	other hand avoid the illegal configurations all over. kconfig
-	should one day warn about such things."
+can I safely say that unchecked_isa_dma can be removed?
 
-so changing the select to depends on would fix it, but that's the
-only fix that I know of.
-
-> HAVE_KVM is intended for the host, not the guest, btw.
-
-
----
-~Randy
+Boaz
