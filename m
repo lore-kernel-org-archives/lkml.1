@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYCRFdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbYCRFdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758435AbYCRFdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 01:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYCRFYa
+	id S1758325AbYCRFdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 01:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYCRFYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 01:24:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:37848 "EHLO mail.goop.org"
+	Tue, 18 Mar 2008 01:24:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:37854 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752419AbYCRFYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752882AbYCRFYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Mar 2008 01:24:09 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 16 of 31] xen: use appropriate pte types
-X-Mercurial-Node: 0a6a8ca6f5c2b2c1596db9ecfd221d08ade565de
-Message-Id: <0a6a8ca6f5c2b2c1596d.1205797027@localhost>
+Subject: [PATCH 07 of 31] x86: move pmd functions into common asm/pgalloc.h
+X-Mercurial-Node: 048aa7d0d95a7b8998059999c094ca69f648919b
+Message-Id: <048aa7d0d95a7b899805.1205797018@localhost>
 In-Reply-To: <patchbomb.1205797011@localhost>
-Date: Mon, 17 Mar 2008 16:37:07 -0700
+Date: Mon, 17 Mar 2008 16:36:58 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
@@ -24,117 +24,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert Xen pagetable handling to use appropriate *val_t types.
+Common definitions for 3-level pagetable functions.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/mmu.c |   32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+ arch/x86/mm/init_64.c        |    5 -----
+ arch/x86/mm/pgtable.c        |    8 ++++++++
+ arch/x86/mm/pgtable_32.c     |   10 ----------
+ include/asm-x86/pgalloc.h    |   33 +++++++++++++++++++++++++++++++++
+ include/asm-x86/pgalloc_32.h |   32 --------------------------------
+ include/asm-x86/pgalloc_64.h |   24 ------------------------
+ 6 files changed, 41 insertions(+), 71 deletions(-)
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -214,35 +214,35 @@
- 	xen_set_pmd(pmdp, __pmd(0));
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -848,11 +848,6 @@
+ }
+ #endif
+ 
+-void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
+-{
+-	tlb_remove_page(tlb, virt_to_page(pmd));
+-}
+-
+ void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
+ {
+ 	tlb_remove_page(tlb, virt_to_page(pud));
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -27,6 +27,14 @@
+ 	paravirt_release_pt(page_to_pfn(pte));
+ 	tlb_remove_page(tlb, pte);
+ }
++
++#if PAGETABLE_LEVELS > 2
++void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
++{
++	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
++	tlb_remove_page(tlb, virt_to_page(pmd));
++}
++#endif	/* PAGETABLE_LEVELS > 2 */
+ 
+ #ifdef CONFIG_X86_64
+ static inline void pgd_list_add(pgd_t *pgd)
+diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
+--- a/arch/x86/mm/pgtable_32.c
++++ b/arch/x86/mm/pgtable_32.c
+@@ -173,16 +173,6 @@
+ 	__VMALLOC_RESERVE += reserve;
  }
  
--unsigned long long xen_pte_val(pte_t pte)
-+pteval_t xen_pte_val(pte_t pte)
+-#ifdef CONFIG_X86_PAE
+-
+-void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
+-{
+-	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
+-	tlb_remove_page(tlb, virt_to_page(pmd));
+-}
+-
+-#endif
+-
+ int pmd_bad(pmd_t pmd)
  {
--	unsigned long long ret = 0;
-+	pteval_t ret = 0;
+ 	WARN_ON_ONCE(pmd_bad_v1(pmd) != pmd_bad_v2(pmd));
+diff --git a/include/asm-x86/pgalloc.h b/include/asm-x86/pgalloc.h
+--- a/include/asm-x86/pgalloc.h
++++ b/include/asm-x86/pgalloc.h
+@@ -40,6 +40,39 @@
  
- 	if (pte.pte_low) {
--		ret = ((unsigned long long)pte.pte_high << 32) | pte.pte_low;
-+		ret = ((pteval_t)pte.pte_high << 32) | pte.pte_low;
- 		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
- 	}
+ extern void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte);
  
- 	return ret;
++static inline void pmd_populate_kernel(struct mm_struct *mm,
++				       pmd_t *pmd, pte_t *pte)
++{
++	paravirt_alloc_pt(mm, __pa(pte) >> PAGE_SHIFT);
++	set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
++}
++
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++				struct page *pte)
++{
++	unsigned long pfn = page_to_pfn(pte);
++
++	paravirt_alloc_pt(mm, pfn);
++	set_pmd(pmd, __pmd(((pteval_t)pfn << PAGE_SHIFT) | _PAGE_TABLE));
++}
++
++#define pmd_pgtable(pmd) pmd_page(pmd)
++
++#if PAGETABLE_LEVELS > 2
++static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
++{
++	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
++}
++
++static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
++{
++	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
++	free_page((unsigned long)pmd);
++}
++
++extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
++#endif	/* PAGETABLE_LEVELS > 2 */
++
+ #ifdef CONFIG_X86_32
+ # include "pgalloc_32.h"
+ #else
+diff --git a/include/asm-x86/pgalloc_32.h b/include/asm-x86/pgalloc_32.h
+--- a/include/asm-x86/pgalloc_32.h
++++ b/include/asm-x86/pgalloc_32.h
+@@ -1,39 +1,7 @@
+ #ifndef _I386_PGALLOC_H
+ #define _I386_PGALLOC_H
+ 
+-static inline void pmd_populate_kernel(struct mm_struct *mm,
+-				       pmd_t *pmd, pte_t *pte)
+-{
+-	paravirt_alloc_pt(mm, __pa(pte) >> PAGE_SHIFT);
+-	set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
+-}
+-
+-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct page *pte)
+-{
+-	unsigned long pfn = page_to_pfn(pte);
+-
+-	paravirt_alloc_pt(mm, pfn);
+-	set_pmd(pmd, __pmd(((pteval_t)pfn << PAGE_SHIFT) | _PAGE_TABLE));
+-}
+-#define pmd_pgtable(pmd) pmd_page(pmd)
+-
+ #ifdef CONFIG_X86_PAE
+-/*
+- * In the PAE case we free the pmds as part of the pgd.
+- */
+-static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+-{
+-	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
+-}
+-
+-static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+-{
+-	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
+-	free_page((unsigned long)pmd);
+-}
+-
+-extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
+-
+ static inline void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd)
+ {
+ 	paravirt_alloc_pd(mm, __pa(pmd) >> PAGE_SHIFT);
+diff --git a/include/asm-x86/pgalloc_64.h b/include/asm-x86/pgalloc_64.h
+--- a/include/asm-x86/pgalloc_64.h
++++ b/include/asm-x86/pgalloc_64.h
+@@ -2,11 +2,6 @@
+ #define _X86_64_PGALLOC_H
+ 
+ #include <asm/pda.h>
+-
+-static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd, pte_t *pte)
+-{
+-	set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)));
+-}
+ 
+ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ {
+@@ -16,24 +11,6 @@
+ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
+ {
+ 	set_pgd(pgd, __pgd(_PAGE_TABLE | __pa(pud)));
+-}
+-
+-#define pmd_pgtable(pmd) pmd_page(pmd)
+-
+-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct page *pte)
+-{
+-	set_pmd(pmd, __pmd(_PAGE_TABLE | (page_to_pfn(pte) << PAGE_SHIFT)));
+-}
+-
+-static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+-{
+-	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
+-	free_page((unsigned long)pmd);
+-}
+-
+-static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
+-{
+-	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
  }
  
--unsigned long long xen_pmd_val(pmd_t pmd)
-+pmdval_t xen_pmd_val(pmd_t pmd)
- {
--	unsigned long long ret = pmd.pmd;
-+	pmdval_t ret = pmd.pmd;
- 	if (ret)
- 		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
- 	return ret;
+ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+@@ -47,7 +24,6 @@
+ 	free_page((unsigned long)pud);
  }
  
--unsigned long long xen_pgd_val(pgd_t pgd)
-+pgdval_t xen_pgd_val(pgd_t pgd)
- {
--	unsigned long long ret = pgd.pgd;
-+	pgdval_t ret = pgd.pgd;
- 	if (ret)
- 		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
- 	return ret;
- }
+-extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
+ extern void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud);
  
--pte_t xen_make_pte(unsigned long long pte)
-+pte_t xen_make_pte(pteval_t pte)
- {
- 	if (pte & _PAGE_PRESENT) {
- 		pte = phys_to_machine(XPADDR(pte)).maddr;
-@@ -252,7 +252,7 @@
- 	return (pte_t){ .pte = pte };
- }
- 
--pmd_t xen_make_pmd(unsigned long long pmd)
-+pmd_t xen_make_pmd(pmdval_t pmd)
- {
- 	if (pmd & 1)
- 		pmd = phys_to_machine(XPADDR(pmd)).maddr;
-@@ -260,7 +260,7 @@
- 	return (pmd_t){ pmd };
- }
- 
--pgd_t xen_make_pgd(unsigned long long pgd)
-+pgd_t xen_make_pgd(pgdval_t pgd)
- {
- 	if (pgd & _PAGE_PRESENT)
- 		pgd = phys_to_machine(XPADDR(pgd)).maddr;
-@@ -273,9 +273,9 @@
- 	*ptep = pte;
- }
- 
--unsigned long xen_pte_val(pte_t pte)
-+pteval_t xen_pte_val(pte_t pte)
- {
--	unsigned long ret = pte.pte_low;
-+	pteval_t ret = pte.pte_low;
- 
- 	if (ret & _PAGE_PRESENT)
- 		ret = machine_to_phys(XMADDR(ret)).paddr;
-@@ -283,15 +283,15 @@
- 	return ret;
- }
- 
--unsigned long xen_pgd_val(pgd_t pgd)
-+pgdval_t xen_pgd_val(pgd_t pgd)
- {
--	unsigned long ret = pgd.pgd;
-+	pteval_t ret = pgd.pgd;
- 	if (ret)
- 		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
- 	return ret;
- }
- 
--pte_t xen_make_pte(unsigned long pte)
-+pte_t xen_make_pte(pteval_t pte)
- {
- 	if (pte & _PAGE_PRESENT) {
- 		pte = phys_to_machine(XPADDR(pte)).maddr;
-@@ -301,7 +301,7 @@
- 	return (pte_t){ pte };
- }
- 
--pgd_t xen_make_pgd(unsigned long pgd)
-+pgd_t xen_make_pgd(pgdval_t pgd)
- {
- 	if (pgd & _PAGE_PRESENT)
- 		pgd = phys_to_machine(XPADDR(pgd)).maddr;
+ #endif /* _X86_64_PGALLOC_H */
 
 
