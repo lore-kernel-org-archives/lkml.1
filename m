@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbYCQCEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbYCQCLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758658AbYCQCEo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 22:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbYCQCCU
+	id S1755882AbYCQCLJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 22:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYCQCK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 22:02:20 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:14589 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757809AbYCQCCT (ORCPT
+	Sun, 16 Mar 2008 22:10:56 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:3605 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751325AbYCQCKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 22:02:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ULM7F8vCjZ7oc9nuONAi0swjHZjgO5P4KKomLgNvaQc0fuMZvfzTaT4+0CCfYFnTR
-	yscqlS/U8BoKEh3BWinTg==
-Message-ID: <6599ad830803161902r8f9a274t246a25b3d337fee8@mail.gmail.com>
-Date: Mon, 17 Mar 2008 10:02:09 +0800
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC][2/3] Account and control virtual address space allocations
-Cc: linux-mm@kvack.org, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       "David Rientjes" <rientjes@google.com>,
-       "Pavel Emelianov" <xemul@openvz.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080316173005.8812.88290.sendpatchset@localhost.localdomain>
+	Sun, 16 Mar 2008 22:10:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:subject:to:content-type:mime-version:content-transfer-encoding:date:message-id;
+        b=s5x8cbFiSDugkx2xPody5KmRkmPnaKGqB5IqcqlkWtpww08Mb1JhGdnqJdWcRuL0ymttbgmGe+Ag2+RW7gMZFdfljpHRbQ6T8MLW5l0DNkGzlmvTn5Rf6+Zu7LXxyuTyy8qHVrY9BeSSWmj9JDZSRamueGN2KE8htWZY7kLfHpM=
+From: "chen" <aslzmyesxiao@gmail.com>
+Subject: =?CP936?B?18nRrw==?=
+To: marco.leipert@googlemail.com
+Content-Type: text/plain;
+	charset="CP936"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain>
-	 <20080316173005.8812.88290.sendpatchset@localhost.localdomain>
+Date: Mon, 17 Mar 2008 10:10:48 +0800
+Message-ID: <47ddd32d.06d6720a.276b.3145@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m2H29pnq014353
 
-On Mon, Mar 17, 2008 at 1:30 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->   /*
->  + * Check if the current cgroup exceeds its address space limit.
->  + * Returns 0 on success and 1 on failure.
->  + */
->  +int mem_cgroup_update_as(struct mm_struct *mm, long nr_pages)
->  +{
->  +       int ret = 0;
->  +       struct mem_cgroup *mem;
->  +       if (mem_cgroup_subsys.disabled)
->  +               return ret;
->  +
->  +       rcu_read_lock();
->  +       mem = rcu_dereference(mm->mem_cgroup);
->  +       css_get(&mem->css);
->  +       rcu_read_unlock();
->  +
 
-How about if this function avoided charging the root cgroup? You'd
-save 4 atomic operations on a global data structure on every
-mmap/munmap when the virtual address limit cgroup wasn't in use, which
-could be significant on a large system. And I don't see situations
-where you really need to limit the address space of the root cgroup.
+                                     
+                                                        ÖÂ¹ó¹«Ë¾£¨³§£©²ÆÎñ²¿Ğ­ÒéÊé
 
-Paul
+×ğ¹óµÄÏÈÉú£¨Ğ¡½ã£©ÄúºÃ£¡
+      ÍÆ³ö´ËÏîÒµÎñÊÇË«·½¹«Ë¾µÄÀûÒæ£¬ÊÇÒ»ÏîË«Ó®µÄÒµÎñ£¬±¾¹«Ë¾Ã¿ÔÂ¶¼ÓĞ·¢Æ±Ê£Óà£¬Òò´ËÔ¸ÎªÓĞĞèÒªµÄ¿Í»§´úÀí¿ª¾ß·¢Æ±¡£
+
+      ±¾¹«Ë¾ÓĞÔöÖµË°×¨ÓÃ·¢Æ±¡¢ÆÕÍ¨·¢Æ±£¬»¹¿ÉÌá¹©¶à¼Ò¹«Ë¾¼°²»Í¬ĞÔÖÊµÄ·¢Æ±¡¢º£¹Ø½ø¿ÚÔöÖµ¡¢½¨ÖşÒµ¡¢¹ã¸æÒµ¡¢ÔËÊäÒµ¡¢·şÎñÒµµÈ¡£µãÊıÓÅ»İ¡¢·¢Æ±ÕæÊµÓĞĞ§¿ÉÑéÖ¤ºó¸¶¿î¡£
+
+     ÈôÓĞ²»Ã÷£¬»¶Ó­À´µçÇ¢Ì¸£¬ÈôÓĞ´ò½Á¡¢¾´ÇëÁÂ½â£¡±¾¹«Ë¾½«Õæ³ÏÓëÄú³¤ÆÚºÏ×÷£¡
+
+Ë³×£ÉÌì÷£¡
+ÁªÏµµç»°£º0512-67138515      ÍõĞ¡½ã( ËÕÖİ¹ã´ïĞÂ¹«Ë¾)
+MSN:sale-account2008@hotmail.com
+QQ:954661604
+
+                                                                              ½¨ÒéÄú±£Áô±¾ÓÊ¼ş
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
