@@ -1,37 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYCQOE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbYCQOJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbYCQOE7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 10:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYCQOEt
+	id S1754495AbYCQOJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 10:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbYCQOJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 10:04:49 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:55922 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbYCQOEs (ORCPT
+	Mon, 17 Mar 2008 10:09:04 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:58554 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753512AbYCQOJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 10:04:48 -0400
-Message-ID: <47DE786A.7060301@trash.net>
-Date: Mon, 17 Mar 2008 14:55:54 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Mon, 17 Mar 2008 10:09:03 -0400
+Date: Mon, 17 Mar 2008 09:08:53 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Stephen Smalley <sds@epoch.ncsc.mil>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+Message-ID: <20080317140853.GC5875@sergelap.austin.rr.com>
+References: <1205516516.22912.92.camel@moss-spartans.epoch.ncsc.mil> <176755.88432.qm@web36612.mail.mud.yahoo.com>
 MIME-Version: 1.0
-To: Daniel Hokka Zakrisson <daniel@hozac.com>
-CC: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       akpm@linux-foundation.org, skennedy@vcn.com
-Subject: Re: [PATCH] netfilter: ipt_recent: sanity check hit count
-References: <50136.192.168.101.12.1205588993.squirrel@intranet>
-In-Reply-To: <50136.192.168.101.12.1205588993.squirrel@intranet>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <176755.88432.qm@web36612.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hokka Zakrisson wrote:
-> If a rule using ipt_recent is created with a hit count greater than
-> ip_pkt_list_tot, the rule will never match as it cannot keep track
-> of enough timestamps. This patch makes ipt_recent refuse to create such
-> rules.
+Quoting Casey Schaufler (casey@schaufler-ca.com):
+> 
+> --- Stephen Smalley <sds@epoch.ncsc.mil> wrote:
+> 
+> > 
+> > ... 
+> > > I completely disagree.   We have two separate frameworks in the kernel,
+> > > one to enforce generic additional security stuff, and one to track
+> > > tasks.  When I need a feature which tracks tasks to do some security
+> > > tasks, it seems obvious that I would use both, just like to enforce a
+> > > certain type of MAC I end up using both netfilter and LSM through
+> > > selinux.
+> > 
+> > Depends on whether you think LSM hooks are like netfilter hooks (i.e.
+> > fine for each module to just implement a few here and there, then
+> > combine resulting modules), or whether they are about implementing
+> > complete security models (ala SELinux or Smack).  As they currently
+> > exist, they aren't very well suited to the former - they impose a cost
+> > on all hooked operations in order to hook any at all, as has been a
+> > concern for your device controller.
+> 
+> I don't intend that Smack be thought of as a complete security model.
+> Smack implements Mandatory Access Control, but leaves the privilege
+> mechanism (root and/or capabilities) to the whims of others. Similarly
+> Smack does not do DAC (unlike SELinux with MCS) although "owned rules"
+> has been proposed as an additional feature. I certainly wouldn't
+> want every new facility that comes in to require multiple versions
+> that depend on the other LSMs involved. It's true that today's LSM is
+> optimized for the only LSM that existed a year ago, and that was a
+> monolythic security model.
+> 
+> > > > > The fact that all existing LSMs need to invoke exactly the same code is
+> > an 
+> > > > > indicator that it doesn't belong in LSM.
+> > > 
+> > > No, that's like saying capabilities don't belong in LSM because all LSMS
+> > > need to invoke it the same way.  What it is an indicator of is that
+> > > there are (not-quite-)orthogonal pieces of security which users might
+> > > want to use together.
+> > 
+> > Likely not a popular view, but capabilities don't belong in LSM.
+> 
+> I share this view, which add credibility to the claim that it's
+> not popular. (smiley)
+> 
+> > Look
+> > at them:  the capability state is still directly embedded in the
+> > relevant kernel data structures, various bits of capability specific
+> > logic and interfaces remain in the core kernel,
+> 
+> It does seem as if a separate Linux Privilege Module framework
+> might be a better scheme. It would be very easy to pull out, and
+> simple to create the obvious LPMs:
+> 
+> - Traditional root
+>   hooks look like "return (euid == 0) ? 0 : -EACCES;"
+> - No access check at all
+>   hooks look like "return 0;"
+> - Root or capabilities
+>   hooks look like "return (euid == 0 || capable(xxx)) ? 0 : -EACCES;"
+> - Pure capabilities
+>   hooks look like "return capable(xxx) ? 0 : -EACCES;"
+> 
+> > they don't present a
+> > complete security model (just an auxiliary to some other model like DAC
+> > or Smack for privilege purposes), they use only a small subset of the
+> > hooks, they force LSM to violate its usual restrictive-only paradigm to
+> > support capable(), CONFIG_SECURITY=n still has to invoke the capability
+> > functions, and all of the other LSMs do need to call it the same way to
+> > keep Linux working as expected for applications and users.
+> 
+> Plus, if SELinux wants to abandon capabilities they can add thier own
+> scheme or insist the user use the noop LPM and do whatever they like
+> in the LSM. Smack has no intention of mucking with the privilege
+> mechanism, and will happily go along with whatever the rest of the
+> system wants to use, although the noop LSM seems a bit pointless in
+> that case.
+> 
+> > The original promise was that LSM would allow kernels to be built that
+> > shed capabilities altogether,
+> 
+> I don't remember that, but it's been a long time so it could be true.
+> 
+> > but in practice no one seems to do that as
+> > both users and applications expect them to exist in Linux.  In fact, the
+> > possibility of not having capabilities present has caused problems that
+> > have led to the dummy module being turned more and more into a clone of
+> > the capabilities module (actually managing and testing the capability
+> > bits rather than just uid == 0 as originally).
+> 
+> This is why Smack is sticking to MAC rather than trying to be a
+> wholistic security policy mechanism. To quote the prophet, "God
+> created the world in 7 days, but then, He didn't have an install
+> base".
+> 
+> > So I wouldn't point to capabilities as a counter example to James' point
+> > - they are actually a supporting example.
+> 
+> In particular, capabilities are not an access control mechanism,
+> they are a privilege mechanism. A lot of discussion about LSM has
+> centered around the appropriate charactoristics of an LSM, and
+> these discussions always assume that the LSM in question is
+> exactly an access control mechanism. If we split the LSM into
+> a LACM for access control and an LPM for privilege management
+> maybe we can eliminate the most contentious issues.
+> 
+> Does anyone know why that would be stoopid before I whack out
+> patches?
 
+No I'd like to see those patches.  It would ideally allow LSM to become
+*purely* restrictive and LPM to be purely empowering, presumably making
+the resulting hook sets easier to review and maintain.  The LPM wouldn't
+(I assume) gain any *new* hook points so we wouldn't be adding any new
+places for hooks to be overriden by a rootkit.
 
-Applied, thanks.
+-serge
