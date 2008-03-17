@@ -1,67 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYCQTxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbYCQT5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbYCQTxv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 15:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbYCQTxj
+	id S1755654AbYCQT5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 15:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYCQT5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 15:53:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34791 "EHLO hera.kernel.org"
+	Mon, 17 Mar 2008 15:57:12 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:47939 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755970AbYCQTxi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 15:53:38 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: =?utf-8?q?=C3=89ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-Date: Mon, 17 Mar 2008 14:05:04 -0400
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tilman Schmidt <tilman@imap.cc>, Dave Hansen <haveblue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>, Arjan van de Ven <arjanv@redhat.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <alpine.LFD.1.00.0803151212180.3020@woody.linux-foundation.org> <47DC26BC.7060502@tremplin-utc.net>
-In-Reply-To: <47DC26BC.7060502@tremplin-utc.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803171405.04808.lenb@kernel.org>
+	id S1752938AbYCQT5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 15:57:11 -0400
+Subject: [PATCH 2/4] scsi: megaraid_sas - Fix the frame count calculation
+From: bo yang <bo.yang@lsi.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>, neela.kolli@lsi.com
+In-Reply-To: <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
+References: <9738BCBE884FDB42801FAD8A7769C26501CE50E4@NAMAIL1.ad.lsil.com>
+	 <1195251505.3407.30.camel@localhost.localdomain>
+	 <9738BCBE884FDB42801FAD8A7769C26501C9A4AF@NAMAIL1.ad.lsil.com>
+	 <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Mar 2008 03:36:43 -0400
+Message-Id: <1205739403.7479.9.camel@pcp021067pcs.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
+X-OriginalArrivalTime: 17 Mar 2008 19:56:30.0932 (UTC) FILETIME=[FE96A140:01C88868]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 March 2008, Éric Piel wrote:
-> 15/03/08 20:21, Linus Torvalds wrote/a écrit:
-> > 
-> > I've reverted the whole thing. Or rather, since there were various small 
-> > fixup commits over time, and a simple revert doesn't really work, I ended 
-> > up just removing the option and the code that was conditional on it - that 
-> > way, if we really want to fight this out some time (after 2.6.25 is out) 
-> > or some vendor wants to use a known-broken option anyway, there's a simple 
-> > and fairly clean commit to revert the revert.
-> > 
-> > It's commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47, see 
-> > 
-> > 	http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9a9e0d685553af76cb6ae2af93cca4913e7fcd47
-> > 
-> > for details if you aren't a git person.
+Driver sent the wrong frame count to firmware.  This patch fixed the frame count calculation.
+  
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-> It's a pity, I had just nearly finished a new approach. Instead of
-> relying on populate_rootfs() and the filesystem infrastructure, the new
-> approach directly finds the file in the initramfs. With
-> unpack_to_rootfs(), it turned out to be rather straightforward. Attached
->  is a half-tested version of the patch (it boots and works but I haven't
-> compiled without the option yet). Just in case you would like to change
-> your mind ;-)
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   31 ++++++++++++++++---------
+ drivers/scsi/megaraid/megaraid_sas.h |    4 +++
+ 2 files changed, 25 insertions(+), 10 deletions(-)
 
-I recommend that you make a new proposal for 2.6.26
-that applies on top of Linus' top-of-tree and that we
-include lkml in hashing it out rather than just linux-acpi.
+diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:51:18.000000000 -0400
++++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:50:39.000000000 -0400
+@@ -488,12 +488,13 @@ megasas_make_sgl64(struct megasas_instan
+ 
+  /**
+  * megasas_get_frame_count - Computes the number of frames
++ * @frame_type		: type of frame- io or pthru frame
+  * @sge_count		: number of sg elements
+  *
+  * Returns the number of frames required for numnber of sge's (sge_count)
+  */
+ 
+-static u32 megasas_get_frame_count(u8 sge_count)
++static u32 megasas_get_frame_count(u8 sge_count, u8 frame_type)
+ {
+ 	int num_cnt;
+ 	int sge_bytes;
+@@ -504,13 +505,22 @@ static u32 megasas_get_frame_count(u8 sg
+ 	    sizeof(struct megasas_sge32);
+ 
+ 	/*
+-	* Main frame can contain 2 SGEs for 64-bit SGLs and
+-	* 3 SGEs for 32-bit SGLs
+-	*/
+-	if (IS_DMA64)
+-		num_cnt = sge_count - 2;
+-	else
+-		num_cnt = sge_count - 3;
++	 * Main frame can contain 2 SGEs for 64-bit SGLs and
++	 * 3 SGEs for 32-bit SGLs for ldio &
++	 * 1 SGEs for 64-bit SGLs and
++	 * 2 SGEs for 32-bit SGLs for pthru frame
++	 */
++	if (unlikely(frame_type == PTHRU_FRAME)) {
++		if (IS_DMA64)
++			num_cnt = sge_count - 1;
++		else
++			num_cnt = sge_count - 2;
++	} else {
++		if (IS_DMA64)
++			num_cnt = sge_count - 2;
++		else
++			num_cnt = sge_count - 3;
++	}
+ 
+ 	if(num_cnt>0){
+ 		sge_bytes = sge_sz * num_cnt;
+@@ -592,7 +602,8 @@ megasas_build_dcdb(struct megasas_instan
+ 	 * Compute the total number of frames this command consumes. FW uses
+ 	 * this number to pull sufficient number of frames from host memory.
+ 	 */
+-	cmd->frame_count = megasas_get_frame_count(pthru->sge_count);
++	cmd->frame_count = megasas_get_frame_count(pthru->sge_count,
++							PTHRU_FRAME);
+ 
+ 	return cmd->frame_count;
+ }
+@@ -709,7 +720,7 @@ megasas_build_ldio(struct megasas_instan
+ 	 * Compute the total number of frames this command consumes. FW uses
+ 	 * this number to pull sufficient number of frames from host memory.
+ 	 */
+-	cmd->frame_count = megasas_get_frame_count(ldio->sge_count);
++	cmd->frame_count = megasas_get_frame_count(ldio->sge_count, IO_FRAME);
+ 
+ 	return cmd->frame_count;
+ }
+diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.h	2008-03-07 13:45:43.000000000 -0500
++++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.h	2008-03-07 14:03:41.000000000 -0500
+@@ -542,6 +542,10 @@ struct megasas_ctrl_info {
+ 
+ #define MEGASAS_FW_BUSY				1
+ 
++/* Frame Type */
++#define IO_FRAME				0
++#define PTHRU_FRAME				1
++
+ /*
+  * When SCSI mid-layer calls driver's reset routine, driver waits for
+  * MEGASAS_RESET_WAIT_TIME seconds for all outstanding IO to complete. Note
 
-thanks,
--Len
+
