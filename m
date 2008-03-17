@@ -1,120 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYCQUE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYCQUF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbYCQUE5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbYCQUCw
+	id S1754808AbYCQUF0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbYCQUC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:02:52 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51460 "EHLO
+	Mon, 17 Mar 2008 16:02:26 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51451 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756369AbYCQUCd (ORCPT
+	with ESMTP id S1754241AbYCQUCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:02:33 -0400
-Message-Id: <20080317200150.124782424@szeredi.hu>
+	Mon, 17 Mar 2008 16:02:20 -0400
+Message-Id: <20080317200159.072705368@szeredi.hu>
 References: <20080317200053.447640802@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Mar 2008 21:00:58 +0100
+Date: Mon, 17 Mar 2008 21:01:04 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
        viro@zeniv.linux.org.uk
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 05/11] unprivileged mounts: allow unprivileged bind mounts
-Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-bind-mounts.patch
+Subject: [patch 11/11] unprivileged mounts: copy mount ownership on namespace cloning
+Content-Disposition: inline; filename=unprivileged-mounts-clone-inherit-owner.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Allow bind mounts to unprivileged users if the following conditions are met:
-
-  - mountpoint is not a symlink
-  - parent mount is owned by the user
-  - the number of user mounts is below the maximum
-
-Unprivileged mounts imply MS_SETUSER, and will also have the "nosuid" and
-"nodev" mount flags set.
-
-In particular, if mounting process doesn't have CAP_SETUID capability,
-then the "nosuid" flag will be added, and if it doesn't have CAP_MKNOD
-capability, then the "nodev" flag will be added.
+Mount ownership wasn't copied on CLONE_NEWNS.  Noticed by Al Viro.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- fs/namespace.c |   44 +++++++++++++++++++++++++++-----------------
- 1 file changed, 27 insertions(+), 17 deletions(-)
+ fs/namespace.c |    7 ++++++-
+ fs/pnode.h     |    1 +
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
 Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/namespace.c	2008-03-17 20:55:47.000000000 +0100
-+++ linux/fs/namespace.c	2008-03-17 20:55:48.000000000 +0100
-@@ -555,6 +555,11 @@ static void __set_mnt_user(struct vfsmou
- 	WARN_ON(mnt->mnt_flags & MNT_USER);
- 	mnt->mnt_uid = current->fsuid;
- 	mnt->mnt_flags |= MNT_USER;
-+
-+	if (!capable(CAP_SETUID))
-+		mnt->mnt_flags |= MNT_NOSUID;
-+	if (!capable(CAP_MKNOD))
-+		mnt->mnt_flags |= MNT_NODEV;
- }
+--- linux.orig/fs/namespace.c	2008-03-17 20:55:53.000000000 +0100
++++ linux/fs/namespace.c	2008-03-17 20:55:53.000000000 +0100
+@@ -585,6 +585,11 @@ static struct vfsmount *clone_mnt(struct
+ 	struct super_block *sb = old->mnt_sb;
+ 	struct vfsmount *mnt;
  
- static void set_mnt_user(struct vfsmount *mnt)
-@@ -1201,22 +1206,26 @@ asmlinkage long sys_oldumount(char __use
++	if ((flag & CL_COPYUSER) && (old->mnt_flags & MNT_USER)) {
++		owner = old->mnt_uid;
++		flag |= CL_SETUSER;
++	}
++
+ 	if (flag & CL_SETUSER) {
+ 		int err = reserve_user_mount();
+ 		if (err)
+@@ -2141,7 +2146,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	down_write(&namespace_sem);
+ 	/* First pass: copy the tree topology */
+ 	new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
+-					CL_COPY_ALL | CL_EXPIRE, 0);
++				 CL_COPY_ALL | CL_EXPIRE | CL_COPYUSER, 0);
+ 	if (IS_ERR(new_ns->root)) {
+ 		up_write(&namespace_sem);
+ 		kfree(new_ns);
+Index: linux/fs/pnode.h
+===================================================================
+--- linux.orig/fs/pnode.h	2008-03-17 20:55:52.000000000 +0100
++++ linux/fs/pnode.h	2008-03-17 20:55:53.000000000 +0100
+@@ -24,6 +24,7 @@
+ #define CL_PRIVATE 		0x20
+ #define CL_SETUSER		0x40
+ #define CL_NOSUID		0x80
++#define CL_COPYUSER		0x100
  
- #endif
- 
--static int mount_is_safe(struct nameidata *nd)
-+/*
-+ * Conditions for unprivileged mounts are:
-+ * - mountpoint is not a symlink
-+ * - mountpoint is in a mount owned by the user
-+ */
-+static bool permit_mount(struct nameidata *nd, int *flags)
- {
-+	struct inode *inode = nd->path.dentry->d_inode;
-+
- 	if (capable(CAP_SYS_ADMIN))
--		return 0;
--	return -EPERM;
--#ifdef notyet
--	if (S_ISLNK(nd->path.dentry->d_inode->i_mode))
--		return -EPERM;
--	if (nd->path.dentry->d_inode->i_mode & S_ISVTX) {
--		if (current->uid != nd->path.dentry->d_inode->i_uid)
--			return -EPERM;
--	}
--	if (vfs_permission(nd, MAY_WRITE))
--		return -EPERM;
--	return 0;
--#endif
-+		return true;
-+
-+	if (S_ISLNK(inode->i_mode))
-+		return false;
-+
-+	if (!is_mount_owner(nd->path.mnt, current->fsuid))
-+		return false;
-+
-+	*flags |= MS_SETUSER;
-+	return true;
- }
- 
- static int lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
-@@ -1463,9 +1472,10 @@ static noinline int do_loopback(struct n
- 	int clone_fl;
- 	struct nameidata old_nd;
- 	struct vfsmount *mnt = NULL;
--	int err = mount_is_safe(nd);
--	if (err)
--		return err;
-+	int err;
-+
-+	if (!permit_mount(nd, &flags))
-+		return -EPERM;
- 	if (!old_name || !*old_name)
- 		return -EINVAL;
- 	err = path_lookup(old_name, LOOKUP_FOLLOW, &old_nd);
+ void set_mnt_shared(struct vfsmount *);
+ void clear_mnt_shared(struct vfsmount *);
 
 --
