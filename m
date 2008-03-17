@@ -1,180 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYCQCC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYCQCC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbYCQCC1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 22:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYCQB63
+	id S1758112AbYCQCC5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 22:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbYCQB6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 21:58:29 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:45391 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756047AbYCQB62 (ORCPT
+	Sun, 16 Mar 2008 21:58:31 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:23330 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756032AbYCQB6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 21:58:28 -0400
+	Sun, 16 Mar 2008 21:58:30 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080317258.659191058@firstfloor.org>
 In-Reply-To: <20080317258.659191058@firstfloor.org>
 To: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
        nickpiggin@yahoo.com.au
-Subject: [PATCH] [12/18] Add support to allocate hugetlb pages that are larger than MAX_ORDER
-Message-Id: <20080317015826.110AA1B41E0@basil.firstfloor.org>
-Date: Mon, 17 Mar 2008 02:58:26 +0100 (CET)
-X-OriginalArrivalTime: 17 Mar 2008 01:51:51.0798 (UTC) FILETIME=[7866D960:01C887D1]
+Subject: [PATCH] [14/18] Clean up hugetlb boot time printk
+Message-Id: <20080317015828.1AB091B41E0@basil.firstfloor.org>
+Date: Mon, 17 Mar 2008 02:58:28 +0100 (CET)
+X-OriginalArrivalTime: 17 Mar 2008 01:51:53.0830 (UTC) FILETIME=[799CE860:01C887D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is needed on x86-64 to handle GB pages in hugetlbfs, because it is
-not practical to enlarge MAX_ORDER to 1GB. 
-
-Instead the 1GB pages are only allocated at boot using the bootmem
-allocator using the hugepages=... option.
-
-These 1G bootmem pages are never freed. In theory it would be possible
-to implement that with some complications, but since it would be a one-way
-street (> MAX_ORDER pages cannot be allocated later) I decided not to currently.
-
-The > MAX_ORDER code is not ifdef'ed per architecture. It is not very big
-and the ifdef uglyness seemed not be worth it.
-
-Known problems: /proc/meminfo and "free" do not display the memory 
-allocated for gb pages in "Total". This is a little confusing for the
-user.
+- Reword sentence to clarify meaning with multiple options
+- Add support for using GB prefixes for the page size
+- Add extra printk to delayed > MAX_ORDER allocation code
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- mm/hugetlb.c |   64 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 62 insertions(+), 2 deletions(-)
+ mm/hugetlb.c |   33 ++++++++++++++++++++++++++++++---
+ 1 file changed, 30 insertions(+), 3 deletions(-)
 
 Index: linux/mm/hugetlb.c
 ===================================================================
 --- linux.orig/mm/hugetlb.c
 +++ linux/mm/hugetlb.c
-@@ -14,6 +14,7 @@
- #include <linux/mempolicy.h>
- #include <linux/cpuset.h>
- #include <linux/mutex.h>
-+#include <linux/bootmem.h>
- 
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -153,7 +154,7 @@ static void free_huge_page(struct page *
- 	INIT_LIST_HEAD(&page->lru);
- 
- 	spin_lock(&hugetlb_lock);
--	if (h->surplus_huge_pages_node[nid]) {
-+	if (h->surplus_huge_pages_node[nid] && h->order <= MAX_ORDER) {
- 		update_and_free_page(h, page);
- 		h->surplus_huge_pages--;
- 		h->surplus_huge_pages_node[nid]--;
-@@ -215,6 +216,9 @@ static struct page *alloc_fresh_huge_pag
- {
- 	struct page *page;
- 
-+	if (h->order > MAX_ORDER)
-+		return NULL;
-+
- 	page = alloc_pages_node(nid,
- 		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|__GFP_NOWARN,
- 			huge_page_order(h));
-@@ -271,6 +275,9 @@ static struct page *alloc_buddy_huge_pag
- 	struct page *page;
- 	unsigned int nid;
- 
-+	if (h->order > MAX_ORDER)
-+		return NULL;
-+
- 	/*
- 	 * Assume we will successfully allocate the surplus page to
- 	 * prevent racing processes from causing the surplus to exceed
-@@ -422,6 +429,10 @@ return_unused_surplus_pages(struct hstat
- 	/* Uncommit the reservation */
- 	h->resv_huge_pages -= unused_resv_pages;
- 
-+	/* Cannot return gigantic pages currently */
-+	if (h->order > MAX_ORDER)
-+		return;
-+
- 	nr_pages = min(unused_resv_pages, h->surplus_huge_pages);
- 
- 	while (nr_pages) {
-@@ -499,6 +510,44 @@ static struct page *alloc_huge_page(stru
+@@ -510,6 +510,15 @@ static struct page *alloc_huge_page(stru
  	return page;
  }
  
-+static __initdata LIST_HEAD(huge_boot_pages);
-+
-+struct huge_bm_page {
-+	struct list_head list;
-+	struct hstate *hstate;
-+};
-+
-+static int __init alloc_bm_huge_page(struct hstate *h)
++static __init char *memfmt(char *buf, unsigned long n)
 +{
-+	struct huge_bm_page *m;
-+	m = __alloc_bootmem_node_nopanic(NODE_DATA(h->hugetlb_next_nid),
-+					huge_page_size(h), huge_page_size(h),
-+					0);
-+	if (!m)
-+		return 0;
-+	BUG_ON((unsigned long)virt_to_phys(m) & (huge_page_size(h) - 1));
-+	/* Put them into a private list first because mem_map is not up yet */
-+	list_add(&m->list, &huge_boot_pages);
-+	m->hstate = h;
-+	huge_next_node(h);
-+	return 1;
++	if (n >= (1UL << 30))
++		sprintf(buf, "%lu GB", n >> 30);
++	else
++		sprintf(buf, "%lu MB", n >> 20);
++	return buf;
 +}
 +
-+/* Put bootmem huge pages into the standard lists after mem_map is up */
-+static int __init huge_init_bm(void)
-+{
-+	struct huge_bm_page *m;
-+	list_for_each_entry (m, &huge_boot_pages, list) {
-+		struct page *page = virt_to_page(m);
-+		struct hstate *h = m->hstate;
-+		__ClearPageReserved(page);
-+		prep_compound_page(page, h->order);
-+		huge_new_page(h, page);
-+	}
-+	return 0;
-+}
-+__initcall(huge_init_bm);
+ static __initdata LIST_HEAD(huge_boot_pages);
+ 
+ struct huge_bm_page {
+@@ -536,14 +545,28 @@ static int __init alloc_bm_huge_page(str
+ /* Put bootmem huge pages into the standard lists after mem_map is up */
+ static int __init huge_init_bm(void)
+ {
++	unsigned long pages = 0;
+ 	struct huge_bm_page *m;
++	struct hstate *h = NULL;
++	char buf[32];
 +
+ 	list_for_each_entry (m, &huge_boot_pages, list) {
+ 		struct page *page = virt_to_page(m);
+-		struct hstate *h = m->hstate;
++		h = m->hstate;
+ 		__ClearPageReserved(page);
+ 		prep_compound_page(page, h->order);
+ 		huge_new_page(h, page);
++		pages++;
+ 	}
++
++	/*
++	 * This only prints for a single hstate. This works for x86-64,
++	 * but if you do multiple > MAX_ORDER hstates you'll need to fix it.
++	 */
++	if (pages > 0)
++		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
++				h->free_huge_pages,
++				memfmt(buf, huge_page_size(h)));
+ 	return 0;
+ }
+ __initcall(huge_init_bm);
+@@ -551,6 +574,8 @@ __initcall(huge_init_bm);
  static int __init hugetlb_init_hstate(struct hstate *h)
  {
  	unsigned long i;
-@@ -509,7 +558,10 @@ static int __init hugetlb_init_hstate(st
- 	h->hugetlb_next_nid = first_node(node_online_map);
++	char buf[32];
++	unsigned long pages = 0;
  
- 	for (i = 0; i < max_huge_pages[h - hstates]; ++i) {
--		if (!alloc_fresh_huge_page(h))
-+		if (h->order > MAX_ORDER) {
-+			if (!alloc_bm_huge_page(h))
-+				break;
-+		} else if (!alloc_fresh_huge_page(h))
+ 	/* Don't reinitialize lists if they have been already init'ed */
+ 	if (!h->hugepage_freelists[0].next) {
+@@ -567,12 +592,14 @@ static int __init hugetlb_init_hstate(st
+ 		} else if (!alloc_fresh_huge_page(h))
  			break;
+ 		h->parsed_hugepages++;
++		pages++;
  	}
- 	max_huge_pages[h - hstates] = h->free_huge_pages = h->nr_huge_pages = i;
-@@ -581,6 +633,9 @@ static void do_try_to_free_low(struct hs
- {
- 	int i;
+ 	max_huge_pages[h - hstates] = h->parsed_hugepages;
  
-+	if (h->order > MAX_ORDER)
-+		return;
-+
- 	for (i = 0; i < MAX_NUMNODES; ++i) {
- 		struct page *page, *next;
- 		struct list_head *freel = &h->hugepage_freelists[i];
-@@ -618,6 +673,11 @@ set_max_huge_pages(struct hstate *h, uns
+-	printk(KERN_INFO "Total HugeTLB memory allocated, %ld %dMB pages\n",
++	if (pages > 0)
++		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
+ 			h->free_huge_pages,
+-			1 << (h->order + PAGE_SHIFT - 20));
++			memfmt(buf, huge_page_size(h)));
+ 	return 0;
+ }
  
- 	*err = 0;
- 
-+	if (h->order > MAX_ORDER) {
-+		*err = -EINVAL;
-+		return max_huge_pages[h - hstates];
-+	}
-+
- 	/*
- 	 * Increase the pool size
- 	 * First take pages out of surplus state.  Then make up the
