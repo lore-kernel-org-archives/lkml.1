@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbYCQVIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYCQVKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651AbYCQVIu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbYCQVIn
+	id S1754239AbYCQVKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYCQVKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:08:43 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:34463 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbYCQVIn (ORCPT
+	Mon, 17 Mar 2008 17:10:33 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:50103 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752634AbYCQVKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:08:43 -0400
-To: Jeff Dike <jdike@addtoit.com>
-Cc: clowncoder <vincent-perrier@club-internet.fr>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@timesys.com>
-Subject: Re: [2.6.24.x] UML select()/poll() oversleeping reproducibly
-References: <47B34BA0.30006@club-internet.fr>
-	<20080214003853.GA15952@c2.user-mode-linux.org>
-	<47B4BDCD.4080605@club-internet.fr>
-	<20080215160205.GA6082@c2.user-mode-linux.org>
-	<47B5CE40.9000005@club-internet.fr>
-	<20080215184650.GA8810@c2.user-mode-linux.org>
-	<87y78kx640.fsf_-_@hades.wkstn.nix>
-	<20080317193415.GA12234@c2.user-mode-linux.org>
-From: Nix <nix@esperi.org.uk>
-Emacs: ... it's not just a way of life, it's a text editor!
-Date: Mon, 17 Mar 2008 21:08:16 +0000
-In-Reply-To: <20080317193415.GA12234@c2.user-mode-linux.org> (Jeff Dike's message of "Mon, 17 Mar 2008 15:34:15 -0400")
-Message-ID: <87k5k112kf.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
-MIME-Version: 1.0
+	Mon, 17 Mar 2008 17:10:32 -0400
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Anders Eriksson <aeriksson@fastmail.fm>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc4 
+In-reply-to: <alpine.LFD.1.00.0803161618480.3020@woody.linux-foundation.org> 
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org> <200803162054.04757.bzolnier@gmail.com> <20080316225921.CAA082DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803161618480.3020@woody.linux-foundation.org>
+Comments: In-reply-to Linus Torvalds <torvalds@linux-foundation.org>
+   message dated "Sun, 16 Mar 2008 16:27:52 -0700."
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-DCC-dcc1-Metrics: hades 1182; Body=5 Fuz1=5 Fuz2=5
+Date: Mon, 17 Mar 2008 22:09:00 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080317210901.0135A93C911@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JbMaS-0005qa-5n.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JbMaS-0005qa-5n 9ca8fece23fed455e08c023286af0af3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17 Mar 2008, Jeff Dike verbalised:
 
-> Below is the same patch with another kluge, which cuts down the
-> requested sleep by 10% in hopes of getting the actual sleep closer to
-> what's wanted.
+torvalds@linux-foundation.org said:
+> Can you try to sprinkle printk's around to see where it actually ends up
+> stopping?
 
-Eeuuuuw. :)
+> Since all special commands should now go through the taskfile interface
+> (Bartlomiej - correct?), I guess just a printk() at the top of
+> do_rw_taskfile() should at least get the ball rolling. Even something that
+> just prints out task->data_phase and tf->command would start to unravel at
+> least what the last command is before it hangs.. 
 
-> This is unusable in anything resembling mainline, but I'd like to see
-> how your various systems react to it.  I'm getting very close to the
-> sleeps I asked for (with slight undersleeping, which is a bug).
+Tossing a prink in like so:
+ide_startstop_t do_rw_taskfile (ide_drive_t *drive, ide_task_t *task)
+{
+        ide_hwif_t *hwif        = HWIF(drive);
+        struct ide_taskfile *tf = &task->tf;
+        ide_handler_t *handler = NULL;
 
-OK.
+        printk("do_rw_taskfile(task->data_phase=%i, tf->command=%i\n",task->data_phase,tf->command);
 
-Tests on host with clocksource pit:
+        if (task->data_phase == TASKFILE_MULTI_IN ||
 
-bash-3.2# bin/select-sleep 5
-Slept for 5 seconds.
-bash-3.2# bin/select-sleep 10
-Slept for 11 seconds.
-bash-3.2# bin/select-sleep 30
-Slept for 31 seconds.
-bash-3.2# bin/select-sleep 60
-Slept for 61 seconds.
 
-... so much better than the 4x error without this patch.
 
-Tests on host with clocksource tsc:
+Yields:
+Mar 17 21:57:29 tippex smartd[5810]: smartd version 5.37 [i686-pc-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Mar 17 21:57:29 tippex smartd[5810]: Home page is http://smartmontools.sourceforge.net/
+Mar 17 21:57:29 tippex smartd[5810]: Opened configuration file /etc/smartd.conf
+Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=32, tf->command=37
+Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
+Mar 17 21:57:29 tippex smartd[5810]: Configuration file /etc/smartd.conf parsed.
+Mar 17 21:57:29 tippex smartd[5810]: Device: /dev/hda, opened
+Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
+Mar 17 21:57:29 tippex smartd[5810]: Device: /dev/hda, found in smartd database.
+Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
+Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
+Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
+Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, can't monitor Current Pending Sector count - no Attribute 197
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, can't monitor Offline Uncorrectable Sector count  - no Attribute 198
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, can't monitor Temperature, ignoring -W Directive
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, appears to lack SMART Self-Test log; disabling -l selftest (override with -T permissive Directive)
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, appears to lack SMART Error log; disabling -l error (override with -T permissive Directive)
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, is SMART capable. Adding to "monitor" list.
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, opened
+Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, found in smartd database.
+Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
+Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
+Mar 17 21:58:00 tippex hda: lost interrupt
 
-bash-3.2# bin/select-sleep 5
-Slept for 5 seconds.
-bash-3.2# bin/select-sleep 10
-Slept for 10 seconds.
-bash-3.2# bin/select-sleep 30
-Slept for 30 seconds.
-bash-3.2# bin/select-sleep 60
-Slept for 61 seconds.
 
-Distinctly better than without this patch.
+And the usual freeze. This is on -rc5 with Barts latest suggestion.
 
-(Am I the only person who finds it strange that (some) clocksource
-hackers are arguing about accuracy problems in the ppm range while we're
-glad to get an error of `only' single seconds per minute out of it? 
-Maybe next year we can invent the `pendulum' clocksource :) )
+next?
 
--- 
-`The rest is a tale of post and counter-post.' --- Ian Rawlings
-                                                   describes USENET
+/A
+
