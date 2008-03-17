@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYCQNDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYCQNHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbYCQNDV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 09:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYCQNDN
+	id S1754279AbYCQNHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 09:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYCQNH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 09:03:13 -0400
-Received: from sacred.ru ([62.205.161.221]:52828 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752114AbYCQNDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 09:03:13 -0400
-Message-ID: <47DE6B8D.5090302@openvz.org>
-Date: Mon, 17 Mar 2008 16:01:01 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 17 Mar 2008 09:07:27 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:4630 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbYCQNH0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 09:07:26 -0400
+Message-ID: <47DE6CC7.2000405@imap.cc>
+Date: Mon, 17 Mar 2008 14:06:15 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][2/3] Account and control virtual address space allocations
-References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain> <20080316173005.8812.88290.sendpatchset@localhost.localdomain> <47DE57C2.5060206@openvz.org> <47DE640F.3070601@linux.vnet.ibm.com> <47DE66BE.30904@openvz.org> <47DE695D.3080605@linux.vnet.ibm.com>
-In-Reply-To: <47DE695D.3080605@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 16:00:57 +0300 (MSK)
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       pekkas@netcore.fi, yoshfuji@linux-ipv6.org
+Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command
+ as non-root
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org> <47D98510.60801@imap.cc> <47D9A8DF.30809@fr.ibm.com> <47D9C1F0.6050803@imap.cc> <47DE4B7B.9040504@fr.ibm.com>
+In-Reply-To: <47DE4B7B.9040504@fr.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7B6DABE6C137B0E4DCEACF24"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Pavel Emelyanov wrote:
->> Balbir Singh wrote:
->>> Pavel Emelyanov wrote:
->>>> [snip]
->>>>
->>>>> +int mem_cgroup_update_as(struct mm_struct *mm, long nr_pages)
->>>>> +{
->>>>> +	int ret = 0;
->>>>> +	struct mem_cgroup *mem;
->>>>> +	if (mem_cgroup_subsys.disabled)
->>>>> +		return ret;
->>>>> +
->>>>> +	rcu_read_lock();
->>>>> +	mem = rcu_dereference(mm->mem_cgroup);
->>>>> +	css_get(&mem->css);
->>>>> +	rcu_read_unlock();
->>>>> +
->>>>> +	if (nr_pages > 0) {
->>>>> +		if (res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE)))
->>>>> +			ret = 1;
->>>>> +	} else
->>>>> +		res_counter_uncharge(&mem->as_res, (-nr_pages * PAGE_SIZE));
->>>> No, please, no. Let's make two calls - mem_cgroup_charge_as and mem_cgroup_uncharge_as.
->>>>
->>>> [snip]
->>>>
->>> Yes, sure :)
->> Thanks :)
->>
->>>>> @@ -1117,6 +1117,9 @@ munmap_back:
->>>>>  		}
->>>>>  	}
->>>>>  
->>>>> +	if (mem_cgroup_update_as(mm, len >> PAGE_SHIFT))
->>>>> +		return -ENOMEM;
->>>>> +
->>>> Why not use existintg cap_vm_enough_memory and co?
->>>>
->>> I thought about it and almost used may_expand_vm(), but there is a slight catch
->>> there. With cap_vm_enough_memory() or security_vm_enough_memory(), they are
->>> called after total_vm has been calculated. In our case we need to keep the
->>> cgroups equivalent of total_vm up to date, and we do this in mem_cgorup_update_as.
->> So? What prevents us from using these hooks? :)
-> 
-> 1. We need to account total_vm usage of the task anyway. So why have two places,
->    one for accounting and second for control?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7B6DABE6C137B0E4DCEACF24
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-We still have two of them even placing hooks in each place manually.
+Daniel Lezcano schrieb:
 
-Besides, putting the mem_cgroup_(un)charge_as() in these vm hooks will
-1. save the number of places to patch
-2. help keeping memcgroup consistent in case someone adds more places
-   that expand tasks vm (arches, drivers) - in case we have our hooks
-   celled from inside vm ones, we won't have to patch more.
+> I was not able to reproduce it, but I think I didn't configured postfix=
+=20
+> as I should had. What version do you use ?
 
-> 2. These hooks are activated for conditionally invoked for vma's with VM_ACCOUNT
->    set.
+It's the one that comes with openSUSE 10.3:
 
-This is a good point against. But, wrt my previous comment, can we handle 
-this somehow?
+ts@xenon:~> rpm -q postfix
+postfix-2.4.5-20.2
+
+> If I may ask you, can you put your postfix configuration file and a=20
+> strace -f of your failing command ? on your website, that will help me =
+a=20
+> lot to investigate.
+
+Sure, no problem. You may find them at
+
+http://gollum.phnxsoft.com/~ts/linux/main.cf
+http://gollum.phnxsoft.com/~ts/linux/strace.log
+
+HTH
+T.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig7B6DABE6C137B0E4DCEACF24
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFH3mzHQ3+did9BuFsRAnbKAJ9oHGy2VxrAEhzAE/fix4Fhx0dq4ACbB0tu
+5L7z+g04FX9uxXKRm/5E0wI=
+=vk8G
+-----END PGP SIGNATURE-----
+
+--------------enig7B6DABE6C137B0E4DCEACF24--
