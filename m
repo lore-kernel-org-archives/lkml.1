@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYCQIVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYCQIWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYCQIVF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 04:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYCQIUz
+	id S1755234AbYCQIWE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 04:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYCQIVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 04:20:55 -0400
-Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3]:33864 "EHLO
-	lana.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbYCQIUy convert rfc822-to-8bit (ORCPT
+	Mon, 17 Mar 2008 04:21:54 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:48063 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbYCQIVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 04:20:54 -0400
-From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Organization: Chemnitz University of Technology
-To: Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Antonino Daplas <adaplas@pol.net>
-Subject: Re: [PATCH] i810fb: Fix console switch regression
-Date: Mon, 17 Mar 2008 09:20:32 +0100
-User-Agent: KMail/1.9.5
-References: <200803161942.24555.stefan.bauer@cs.tu-chemnitz.de> <Pine.LNX.4.64.0803162042460.7207@anakin>
-In-Reply-To: <Pine.LNX.4.64.0803162042460.7207@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803170920.33626.stefan.bauer@cs.tu-chemnitz.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.4 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: 652e4af5a5c207f483e6e71f7e96832f
+	Mon, 17 Mar 2008 04:21:53 -0400
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Zachary Amsden <zach@vmware.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
+       andrea@qumranet.com, clameter@sgi.com, a.p.zijlstra@chello.nl,
+       Keir Fraser <keir@xensource.com>, Ian Pratt <ian.pratt@xensource.com>
+In-Reply-To: <1205530358.14987.32.camel@bodhitayantram.eng.vmware.com>
+References: <20080312132132.520833247@de.ibm.com>
+	 <Pine.LNX.4.64.0803131627450.17244@blonde.site> <47D9754B.1030509@goop.org>
+	 <1205530358.14987.32.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 17 Mar 2008 10:21:40 +0100
+Message-Id: <1205745700.16137.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 16. März 2008 20:48 schrieb Geert Uytterhoeven:
-> On Sun, 16 Mar 2008, Stefan Bauer wrote:
-> > --- linux-2.6/drivers/video/i810/i810_main.c.orig
-> > +++ linux-2.6/drivers/video/i810/i810_main.c
-> > @@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info
-> > 	struct i810fb_par *par = info->par;
-> > 	u8 __iomem *mmio = par->mmio_start_virtual;
-> >
-> > -	if (!(par->dev_flags & LOCKUP))
-> > +	if (!par->dev_flags & LOCKUP)
-> > 		return -ENXIO;
->
-> However, the original expression didn't make sense, as LOCKUP is 8 and
-> !par->dev_flags is either 0 or 1, so `!par->dev_flags & LOCKUP' is
-> always 0.
->
-> I took a quick look at the usage of the LOCKUP flag. Apparently when a
-> lock-up is detected, this flag is set, and the driver will fall back to
-> software operations instead of hardware accelerated operations.
->
-> Is it possible the intended code was
->
-> 	if (par->dev_flags & LOCKUP)
-> 		return -ENXIO;
->
-> ?
+On Fri, 2008-03-14 at 14:32 -0700, Zachary Amsden wrote:
+> On Fri, 2008-03-14 at 11:30 -0700, Jeremy Fitzhardinge wrote:
+> > Zachary Amsden wrote:
+> > > How about a fake hypervisor, which is really just a random page evictor,
+> > > following the rules of CMM?
+> > >   
+> > 
+> > Probably simpler to just have variants of the page_set_* functions which 
+> > simulate the worst-possible host action immediately (ie, stealing pages, 
+> > logically swapping them, etc).  That wouldn't give you full coverage, 
+> > but it would go some way.  An async variant which schedules a change in 
+> > a few milliseconds would help too.
+> > 
+> > I guess that's equivalent to having a special-purpose hypervisor built 
+> > into the kernel (hm, sounds familiar...).
+> 
+> It needn't be that hard on s390, I believe you don't need to worry about
+> PTEs becoming asynchronous when stealing a page, since if I understand
+> the hypervisor architecture, there is a per-page mapping level
+> available, allowing you to generate discard faults on access.  It might
+> be possible to use this mapping layer without implementing a full blown
+> hypervisor.  Martin?
 
-Yes, IMO you are right. 4c7ffe0 ("fbdev: prevent drivers that have hardware 
-cursors from calling software cursor code") introduced the senseless code.
+Yes, on s390 the PTEs cannot be asynchronous because there is no need to
+synchronize them in the first place. A mapping layer with all primitives
+without using the SIE instruction will be difficult. For one we cannot
+use the ESSA instruction which isolates the state changes and host page
+table is tied to the SIE. The page state is stored in the page table
+extension and the discard state is basically a specially marked invalid
+pte in the host table. A mapping layer with some restrictions is
+certainly possible.
 
-I'm going on testing today, but I think that's it.
+> For x86, at discard time, you would have to manually walk and invalidate
+> any PTEs potentially mapping the discarded page, but there is already
+> this great thing called Xen paravirt-ops which actually does that for
+> completely different reasons (PT page protection).
 
-Again, please CC me, thanks.
+If you have to walk the guest page tables you call into the guest, no ?
+I would characterize this more as a ballooner since you need guest
+activity to do the page stealing. The trick with guest page hinting is
+that you do NOT call into the guest to do the discard. You'll a nested
+page table for that I'm afraid.
 
----
-From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+> I think a random exponential distribution for discard would be needed to
+> catch all the racey failure modes.
 
-Since 4c7ffe0b9f7f40bd818fe3af51342f64c483908e ("fbdev: prevent drivers that 
-have hardware cursors from calling software cursor code") every call of 
-i810fb_cursor fails with -ENXIO because of a incorrect "!".
+We had quite a few of these racy failures. Nasty. Hard to find.
 
-This hasn't striked until eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5 ("fix ! 
-versus & precedence in various places") surrounded the expression with 
-braces, so that the intended behavior was inverted. That caused 'pixel 
-waste' - the same line of multi-colored pixels repeated over the whole 
-screen - during console switch.
+-- 
+blue skies,
+  Martin.
 
-This switches back to the original pre-4c7ffe0 behavior.
+"Reality continues to ruin my life." - Calvin.
 
-Signed-off-by: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Antonino Daplas <adaplas@pol.net>
 
----
---- linux-2.6/drivers/video/i810/i810_main.c.orig
-+++ linux-2.6/drivers/video/i810/i810_main.c
-@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info
-        struct i810fb_par *par = info->par;
-        u8 __iomem *mmio = par->mmio_start_virtual;
-
--       if (!(par->dev_flags & LOCKUP))
-+       if (par->dev_flags & LOCKUP)
-                return -ENXIO;
-
-        if (cursor->image.width > 64 || cursor->image.height > 64)
