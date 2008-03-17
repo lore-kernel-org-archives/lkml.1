@@ -1,77 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYCQNAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYCQNDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYCQNAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 09:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYCQM74
+	id S1754210AbYCQNDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 09:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYCQNDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 08:59:56 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:61357 "EHLO smtp.mba.ocn.ne.jp"
+	Mon, 17 Mar 2008 09:03:13 -0400
+Received: from sacred.ru ([62.205.161.221]:52828 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751947AbYCQM7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 08:59:55 -0400
-Date: Mon, 17 Mar 2008 22:00:27 +0900 (JST)
-Message-Id: <20080317.220027.01917573.anemo@mba.ocn.ne.jp>
-To: tiwai@suse.de
-Cc: haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org,
-       hcegtvedt@atmel.com, avictor.za@gmail.com
-Subject: Re: [PATCH] at73c213: Fix DMA size at the end of DMA buffer
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <s5hzlt1s9up.wl%tiwai@suse.de>
-References: <20080314104445.32f4da40@hskinnemo-gx620.norway.atmel.com>
-	<20080314.222932.74752532.anemo@mba.ocn.ne.jp>
-	<s5hzlt1s9up.wl%tiwai@suse.de>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1752114AbYCQNDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 09:03:13 -0400
+Message-ID: <47DE6B8D.5090302@openvz.org>
+Date: Mon, 17 Mar 2008 16:01:01 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain> <20080316173005.8812.88290.sendpatchset@localhost.localdomain> <47DE57C2.5060206@openvz.org> <47DE640F.3070601@linux.vnet.ibm.com> <47DE66BE.30904@openvz.org> <47DE695D.3080605@linux.vnet.ibm.com>
+In-Reply-To: <47DE695D.3080605@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 16:00:57 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Mar 2008 14:39:42 +0100, Takashi Iwai <tiwai@suse.de> wrote:
-> Add the following constraint in the open callback:
+Balbir Singh wrote:
+> Pavel Emelyanov wrote:
+>> Balbir Singh wrote:
+>>> Pavel Emelyanov wrote:
+>>>> [snip]
+>>>>
+>>>>> +int mem_cgroup_update_as(struct mm_struct *mm, long nr_pages)
+>>>>> +{
+>>>>> +	int ret = 0;
+>>>>> +	struct mem_cgroup *mem;
+>>>>> +	if (mem_cgroup_subsys.disabled)
+>>>>> +		return ret;
+>>>>> +
+>>>>> +	rcu_read_lock();
+>>>>> +	mem = rcu_dereference(mm->mem_cgroup);
+>>>>> +	css_get(&mem->css);
+>>>>> +	rcu_read_unlock();
+>>>>> +
+>>>>> +	if (nr_pages > 0) {
+>>>>> +		if (res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE)))
+>>>>> +			ret = 1;
+>>>>> +	} else
+>>>>> +		res_counter_uncharge(&mem->as_res, (-nr_pages * PAGE_SIZE));
+>>>> No, please, no. Let's make two calls - mem_cgroup_charge_as and mem_cgroup_uncharge_as.
+>>>>
+>>>> [snip]
+>>>>
+>>> Yes, sure :)
+>> Thanks :)
+>>
+>>>>> @@ -1117,6 +1117,9 @@ munmap_back:
+>>>>>  		}
+>>>>>  	}
+>>>>>  
+>>>>> +	if (mem_cgroup_update_as(mm, len >> PAGE_SHIFT))
+>>>>> +		return -ENOMEM;
+>>>>> +
+>>>> Why not use existintg cap_vm_enough_memory and co?
+>>>>
+>>> I thought about it and almost used may_expand_vm(), but there is a slight catch
+>>> there. With cap_vm_enough_memory() or security_vm_enough_memory(), they are
+>>> called after total_vm has been calculated. In our case we need to keep the
+>>> cgroups equivalent of total_vm up to date, and we do this in mem_cgorup_update_as.
+>> So? What prevents us from using these hooks? :)
 > 
-> 	err = snd_pcm_hw_constraint_integer(runtime,
-> 					SNDRV_PCM_HW_PARAM_PERIODS);
-> 	if (err < 0)
-> 		return err;
-> 
-> This will guarantee that the period size fits with the buffer size.
+> 1. We need to account total_vm usage of the task anyway. So why have two places,
+>    one for accounting and second for control?
 
-Thank you!  It works fine.  Here is a new patch.
+We still have two of them even placing hooks in each place manually.
 
+Besides, putting the mem_cgroup_(un)charge_as() in these vm hooks will
+1. save the number of places to patch
+2. help keeping memcgroup consistent in case someone adds more places
+   that expand tasks vm (arches, drivers) - in case we have our hooks
+   celled from inside vm ones, we won't have to patch more.
 
-------------------------------------------------------
-Subject: [PATCH] at73c213: Add constraints for periods value
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> 2. These hooks are activated for conditionally invoked for vma's with VM_ACCOUNT
+>    set.
 
-The interrupt handler always provide runtime->period_size data, so it
-works correctly only if buffer_size was a multiple of period_size.
-
-This patch fixes periodic click noise.
-
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-This patch obsoletes a patch titled "at73c213: fix DMA size at the end
-of DMA buffer" in git-alsa-tiwai.patch in mm tree.
-
-diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
-index 7c077c6..9a5c118 100644
---- a/sound/spi/at73c213.c
-+++ b/sound/spi/at73c213.c
-@@ -210,7 +210,13 @@ static int snd_at73c213_pcm_open(struct snd_pcm_substream *substream)
- {
- 	struct snd_at73c213 *chip = snd_pcm_substream_chip(substream);
- 	struct snd_pcm_runtime *runtime = substream->runtime;
-+	int err;
- 
-+	/* ensure buffer_size is a multiple of period_size */
-+	err = snd_pcm_hw_constraint_integer(runtime,
-+					SNDRV_PCM_HW_PARAM_PERIODS);
-+	if (err < 0)
-+		return err;
- 	snd_at73c213_playback_hw.rate_min = chip->bitrate;
- 	snd_at73c213_playback_hw.rate_max = chip->bitrate;
- 	runtime->hw = snd_at73c213_playback_hw;
+This is a good point against. But, wrt my previous comment, can we handle 
+this somehow?
