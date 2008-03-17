@@ -1,173 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYCQV1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbYCQV3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbYCQV1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYCQV1Z
+	id S1753901AbYCQV3H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYCQV24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:27:25 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:39832 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752792AbYCQV1Y (ORCPT
+	Mon, 17 Mar 2008 17:28:56 -0400
+Received: from www17.your-server.de ([213.133.104.17]:51231 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbYCQV2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:27:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=Xq6SOHGmsXRhhiKPtCGsu2wAx4J7GB96/wQ5y25WV8ykCUMEM1VxIkInVjZStXHUaiUwUrg0NInSPv8l8htR+uhaqapFtXz6ALcOgonK7ueF1ruVf9icUFPyq+4Bqtuis6A/eDeLImGA0Ia1tYZ/RUXIe9Dizah6Gdv5uYkZ0wE=
-Message-ID: <86802c440803171427y7c9b2a54nacb0603916713033@mail.gmail.com>
-Date: Mon, 17 Mar 2008 14:27:21 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-In-Reply-To: <86802c440803171152y379560dfp1296aefb0b86b54b@mail.gmail.com>
+	Mon, 17 Mar 2008 17:28:54 -0400
+Message-ID: <47DEE282.8060904@m3y3r.de>
+Date: Mon, 17 Mar 2008 22:28:34 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080310)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_18705_33452704.1205789241136"
-References: <20080317258.659191058@firstfloor.org>
-	 <20080317015825.0C0171B41E0@basil.firstfloor.org>
-	 <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
-	 <20080317070208.GC27015@one.firstfloor.org>
-	 <86802c440803170017r622114bdpede8625d1a8ff585@mail.gmail.com>
-	 <86802c440803170031u75167e5m301f65049b6d62ff@mail.gmail.com>
-	 <20080317074146.GG27015@one.firstfloor.org>
-	 <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
-	 <20080317085604.GA12405@basil.nowhere.org>
-	 <86802c440803171152y379560dfp1296aefb0b86b54b@mail.gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
+References: <200803110014.52985.rjw@sisk.pl> <47D67992.8010308@s5r6.in-berlin.de> <20080311130449.GA21157@cs181133002.pp.htv.fi>
+In-Reply-To: <20080311130449.GA21157@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_18705_33452704.1205789241136
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Adrian Bunk schrieb:
+> On Tue, Mar 11, 2008 at 01:22:42PM +0100, Stefan Richter wrote:
+>   
+>> Rafael J. Wysocki wrote:
+>>     
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10080
+>>> Subject		: 2.6.25-rc2: ohci1394 problem
+>>> Submitter	: Thomas Meyer <thomas@m3y3r.de>
+>>> Date		: 2008-02-20 08:47
+>>> References	: http://lkml.org/lkml/2008/2/20/58
+>>> Handled-By	: Stefan Richter <stefanr@s5r6.in-berlin.de>
+>>>       
+>> Thomas wrote on 2008-02-25:
+>> ''So i did a "make clean" and a "make" (not a make
+>> -j3 as i use to do) and recompiled 2.6.25-rc3 and now it works again.
+>> Case closed under strange error.''
+>> ...
+>>     
+>
+> Although I don't think this would cause the error, it would be nice if 
+> Thomas could verify that the -j3 did not cause the problem.
+>   
+I still cannot *believe* this bug, but  i just checked out the latest 
+kernel and did a make distclean and a make (with mr. bunks patch 
+applied) and there it is again:
+$ dmesg
 
-On Mon, Mar 17, 2008 at 11:52 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Mon, Mar 17, 2008 at 1:56 AM, Andi Kleen <andi@firstfloor.org> wrote:
->  > > only happen when align is large than alignment of node_boot_start.
->  >
->  >  Here's an updated version of the patch with this addressed.
->  >  Please review. The patch is somewhat more complicated, but
->  >  actually makes the code a little cleaner now.
->  >
->  >  -Andi
->  >
->  >
->  >  Fix alignment bug in bootmem allocator
->  >
->  >
->  >  Without this fix bootmem can return unaligned addresses when the start of a
->  >  node is not aligned to the align value. Needed for reliably allocating
->  >  gigabyte pages.
->  >
->  >  I removed the offset variable because all tests should align themself correctly
->  >  now. Slight drawback might be that the bootmem allocator will spend
->  >  some more time skipping bits in the bitmap initially, but that shouldn't
->  >  be a big issue.
->  >
->  >
->  >  Signed-off-by: Andi Kleen <ak@suse.de>
->  >
->  how about create local node_boot_start and node_bootmem_map that make
->  sure node_boot_start has bigger alignment than align input.
+(cut)
+[  464.852986] ohci1394: fw-host0: physical posted write error
+[  464.852991] ohci1394: fw-host0: respTxComplete: dma prg stopped
+[  464.852997] ohci1394: fw-host0: SelfID received outside of bus reset 
+sequence
+[  464.853002] ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+[  464.896722] ohci1394: fw-host0: Unrecoverable error!
+[  464.896722] ohci1394: fw-host0: Async Rsp Tx Context died: 
+ctrl[f0002a00] cmdptr[f0002a00]
+[  464.896722] ohci1394: fw-host0: Iso Recv 3 Context died: 
+ctrl[d4000d0e] cmdptr[0014c397] match[00000000]
+[  464.896722] ohci1394: fw-host0: Iso Recv 17 Context died: 
+ctrl[7c006e38] cmdptr[f58b18cd] match[4910c683]
+[  464.896722] ohci1394: fw-host0: Iso Recv 18 Context died: 
+ctrl[003cacf0] cmdptr[88f2eb10] match[46e8104e]
+[  464.896722] ohci1394: fw-host0: Iso Recv 19 Context died: 
+ctrl[0c047e80] cmdptr[83060246] match[83060846]
+[  464.896722] ohci1394: fw-host0: Iso Recv 26 Context died: 
+ctrl[00656c62] cmdptr[6e696461] match[706f2067]
+[  464.896722] ohci1394: fw-host0: Iso Recv 27 Context died: 
+ctrl[4d006d65] cmdptr[61726570] match[676e6974]
+[  464.896722] ohci1394: fw-host0: physical posted write error
+[  464.896722] ohci1394: fw-host0: respTxComplete: dma prg stopped
+[  464.896722] ohci1394: fw-host0: SelfID received outside of bus reset 
+sequence
+[  464.896722] ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+[  464.898957] ohci1394: fw-host0: Unrecoverable error!
+[  464.898957] ohci1394: fw-host0: Async Rsp Tx Context died: 
+ctrl[f0002a00] cmdptr[f0002a00]
+[  464.898957] ohci1394: fw-host0: Iso Recv 3 Context died: 
+ctrl[d4000d0e] cmdptr[0014c397] match[00000000]
+[  464.898957] ohci1394: fw-host0: Iso Recv 17 Context died: 
+ctrl[7c006e38] cmdptr[f58b18cd] match[4910c683]
+[  464.898957] ohci1394: fw-host0: Iso Recv 18 Context died: 
+ctrl[003cacf0] cmdptr[88f2eb10] match[46e8104e]
+[  464.898957] ohci1394: fw-host0: Iso Recv 19 Context died: 
+ctrl[0c047e80] cmdptr[83060246] match[83060846]
+[  464.898957] ohci1394: fw-host0: Iso Recv 26 Context died: 
+ctrl[00656c62] cmdptr[6e696461] match[706f2067]
+[  464.898957] ohci1394: fw-host0: Iso Recv 27 Context died: 
+ctrl[4d006d65] cmdptr[61726570] match[676e6974]
+[  464.898957] ohci1394: fw-host0: physical posted write error
+[  464.898957] ohci1394: fw-host0: respTxComplete: dma prg stopped
+[  464.898957] ohci1394: fw-host0: SelfID received outside of bus reset 
+sequence
+[  464.898957] ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+and so on....
 
-please check it
+$ git describe
+v2.6.25-rc6-14-gbde4f8f
 
-YH
+As i already wrote: I tried to bisect this behavior, but with no result.
 
-------=_Part_18705_33452704.1205789241136
-Content-Type: text/x-patch; name=offset_alloc_bootmem_v2.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdxjtwqk0
-Content-Disposition: attachment; filename=offset_alloc_bootmem_v2.patch
+And Stefan didn't change anything in the involved drivers. I have no 
+idea what could cause this kind of bug!
+Suggestions?
 
-W1BBVENIXSBtbTogb2Zmc2V0IGFsaWduIGluIGFsbG9jX2Jvb3RtZW0gdjIKCm5lZWQgb2Zmc2V0
-IGFsaWdubWVudCB3aGVuIG5vZGVfYm9vdF9zdGFydCdzIGFsaWdubWVudCBpcyBsZXNzIHRoYW4K
-YWxpZ24gcmVxdWlyZWQKCnYyOiB1c2UgbG9jYWwgbm9kZV9ib290X3N0YXJ0IHRvIG1hdGNoIGFs
-aWduLgoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoK
-SW5kZXg6IGxpbnV4LTIuNi9tbS9ib290bWVtLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9y
-aWcvbW0vYm9vdG1lbS5jCisrKyBsaW51eC0yLjYvbW0vYm9vdG1lbS5jCkBAIC0yMDYsOSArMjA2
-LDExIEBAIHZvaWQgKiBfX2luaXQKIF9fYWxsb2NfYm9vdG1lbV9jb3JlKHN0cnVjdCBib290bWVt
-X2RhdGEgKmJkYXRhLCB1bnNpZ25lZCBsb25nIHNpemUsCiAJICAgICAgdW5zaWduZWQgbG9uZyBh
-bGlnbiwgdW5zaWduZWQgbG9uZyBnb2FsLCB1bnNpZ25lZCBsb25nIGxpbWl0KQogewotCXVuc2ln
-bmVkIGxvbmcgb2Zmc2V0LCByZW1haW5pbmdfc2l6ZSwgYXJlYXNpemUsIHByZWZlcnJlZDsKKwl1
-bnNpZ25lZCBsb25nIGFyZWFzaXplLCBwcmVmZXJyZWQ7CiAJdW5zaWduZWQgbG9uZyBpLCBzdGFy
-dCA9IDAsIGluY3IsIGVpZHgsIGVuZF9wZm47CiAJdm9pZCAqcmV0OworCXVuc2lnbmVkIGxvbmcg
-bm9kZV9ib290X3N0YXJ0OworCXZvaWQgKm5vZGVfYm9vdG1lbV9tYXA7CiAKIAlpZiAoIXNpemUp
-IHsKIAkJcHJpbnRrKCJfX2FsbG9jX2Jvb3RtZW1fY29yZSgpOiB6ZXJvLXNpemVkIHJlcXVlc3Rc
-biIpOwpAQCAtMjE2LDIzICsyMTgsMjkgQEAgX19hbGxvY19ib290bWVtX2NvcmUoc3RydWN0IGJv
-b3RtZW1fZGF0YQogCX0KIAlCVUdfT04oYWxpZ24gJiAoYWxpZ24tMSkpOwogCi0JaWYgKGxpbWl0
-ICYmIGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQgPj0gbGltaXQpCi0JCXJldHVybiBOVUxMOwotCiAJ
-Lyogb24gbm9kZXMgd2l0aG91dCBtZW1vcnkgLSBib290bWVtX21hcCBpcyBOVUxMICovCiAJaWYg
-KCFiZGF0YS0+bm9kZV9ib290bWVtX21hcCkKIAkJcmV0dXJuIE5VTEw7CiAKKwkvKiBiZGF0YS0+
-bm9kZV9ib290X3N0YXJ0IGlzIHN1cHBvc2VkIHRvIGJlICgxMis2KWJpdHMgYWxpZ25tZW50ID8g
-Ki8KKwlpZiAoYWxpZ24gJiYgZmZzKGFsaWduKSA+IGZmcyhiZGF0YS0+bm9kZV9ib290X3N0YXJ0
-KSkgeworCQlub2RlX2Jvb3Rfc3RhcnQgPSBBTElHTihiZGF0YS0+bm9kZV9ib290X3N0YXJ0LCBh
-bGlnbik7CisJCW5vZGVfYm9vdG1lbV9tYXAgPSAodW5zaWduZWQgY2hhciAqKWJkYXRhLT5ub2Rl
-X2Jvb3RtZW1fbWFwICsKKwkJICAgIFBGTl9ET1dOKG5vZGVfYm9vdF9zdGFydCAtIGJkYXRhLT5u
-b2RlX2Jvb3Rfc3RhcnQpL0JJVFNfUEVSX0xPTkc7CisJfSBlbHNlIHsKKwkJbm9kZV9ib290X3N0
-YXJ0ID0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydDsKKwkJbm9kZV9ib290bWVtX21hcCA9IGJkYXRh
-LT5ub2RlX2Jvb3RtZW1fbWFwOworCX0KKworCWlmIChsaW1pdCAmJiBub2RlX2Jvb3Rfc3RhcnQg
-Pj0gbGltaXQpCisJCXJldHVybiBOVUxMOworCiAJZW5kX3BmbiA9IGJkYXRhLT5ub2RlX2xvd19w
-Zm47CiAJbGltaXQgPSBQRk5fRE9XTihsaW1pdCk7CiAJaWYgKGxpbWl0ICYmIGVuZF9wZm4gPiBs
-aW1pdCkKIAkJZW5kX3BmbiA9IGxpbWl0OwogCi0JZWlkeCA9IGVuZF9wZm4gLSBQRk5fRE9XTihi
-ZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKLQlvZmZzZXQgPSAwOwotCWlmIChhbGlnbiAmJiAoYmRh
-dGEtPm5vZGVfYm9vdF9zdGFydCAmIChhbGlnbiAtIDFVTCkpICE9IDApCi0JCW9mZnNldCA9IGFs
-aWduIC0gKGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQgJiAoYWxpZ24gLSAxVUwpKTsKLQlvZmZzZXQg
-PSBQRk5fRE9XTihvZmZzZXQpOworCWVpZHggPSBlbmRfcGZuIC0gUEZOX0RPV04obm9kZV9ib290
-X3N0YXJ0KTsKIAogCS8qCiAJICogV2UgdHJ5IHRvIGFsbG9jYXRlIGJvb3RtZW0gcGFnZXMgYWJv
-dmUgJ2dvYWwnCkBAIC0yNDAsMTUgKzI0OCwxNSBAQCBfX2FsbG9jX2Jvb3RtZW1fY29yZShzdHJ1
-Y3QgYm9vdG1lbV9kYXRhCiAJICovCiAJcHJlZmVycmVkID0gMDsKIAlpZiAoZ29hbCAmJiBQRk5f
-RE9XTihnb2FsKSA8IGVuZF9wZm4pIHsKLQkJaWYgKGdvYWwgPiBiZGF0YS0+bm9kZV9ib290X3N0
-YXJ0KQotCQkJcHJlZmVycmVkID0gZ29hbCAtIGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQ7CisJCWlm
-IChnb2FsID4gbm9kZV9ib290X3N0YXJ0KQorCQkJcHJlZmVycmVkID0gZ29hbCAtIG5vZGVfYm9v
-dF9zdGFydDsKIAogCQlpZiAoYmRhdGEtPmxhc3Rfc3VjY2VzcyA+PSBwcmVmZXJyZWQpCiAJCQlp
-ZiAoIWxpbWl0IHx8IChsaW1pdCAmJiBsaW1pdCA+IGJkYXRhLT5sYXN0X3N1Y2Nlc3MpKQogCQkJ
-CXByZWZlcnJlZCA9IGJkYXRhLT5sYXN0X3N1Y2Nlc3M7CiAJfQogCi0JcHJlZmVycmVkID0gUEZO
-X0RPV04oQUxJR04ocHJlZmVycmVkLCBhbGlnbikpICsgb2Zmc2V0OworCXByZWZlcnJlZCA9IFBG
-Tl9ET1dOKEFMSUdOKHByZWZlcnJlZCwgYWxpZ24pKTsKIAlhcmVhc2l6ZSA9IChzaXplICsgUEFH
-RV9TSVpFLTEpIC8gUEFHRV9TSVpFOwogCWluY3IgPSBhbGlnbiA+PiBQQUdFX1NISUZUID8gOiAx
-OwogCkBAIC0yNTYsMTggKzI2NCwxOCBAQCByZXN0YXJ0X3NjYW46CiAJZm9yIChpID0gcHJlZmVy
-cmVkOyBpIDwgZWlkeDspIHsKIAkJdW5zaWduZWQgbG9uZyBqOwogCi0JCWkgPSBmaW5kX25leHRf
-emVyb19iaXQoYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXAsIGVpZHgsIGkpOworCQlpID0gZmluZF9u
-ZXh0X3plcm9fYml0KG5vZGVfYm9vdG1lbV9tYXAsIGVpZHgsIGkpOwogCQlpID0gQUxJR04oaSwg
-aW5jcik7CiAJCWlmIChpID49IGVpZHgpCiAJCQlicmVhazsKLQkJaWYgKHRlc3RfYml0KGksIGJk
-YXRhLT5ub2RlX2Jvb3RtZW1fbWFwKSkgeworCQlpZiAodGVzdF9iaXQoaSwgbm9kZV9ib290bWVt
-X21hcCkpIHsKIAkJCWkgKz0gaW5jcjsKIAkJCWNvbnRpbnVlOwogCQl9CiAJCWZvciAoaiA9IGkg
-KyAxOyBqIDwgaSArIGFyZWFzaXplOyArK2opIHsKIAkJCWlmIChqID49IGVpZHgpCiAJCQkJZ290
-byBmYWlsX2Jsb2NrOwotCQkJaWYgKHRlc3RfYml0KGosIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFw
-KSkKKwkJCWlmICh0ZXN0X2JpdChqLCBub2RlX2Jvb3RtZW1fbWFwKSkKIAkJCQlnb3RvIGZhaWxf
-YmxvY2s7CiAJCX0KIAkJc3RhcnQgPSBpOwpAQCAtMjc4LDggKzI4Niw4IEBAIHJlc3RhcnRfc2Nh
-bjoKIAkJCWkgKz0gaW5jcjsKIAl9CiAKLQlpZiAocHJlZmVycmVkID4gb2Zmc2V0KSB7Ci0JCXBy
-ZWZlcnJlZCA9IG9mZnNldDsKKwlpZiAocHJlZmVycmVkID4gMCkgeworCQlwcmVmZXJyZWQgPSAw
-OwogCQlnb3RvIHJlc3RhcnRfc2NhbjsKIAl9CiAJcmV0dXJuIE5VTEw7CkBAIC0yOTUsNiArMzAz
-LDcgQEAgZm91bmQ6CiAJICovCiAJaWYgKGFsaWduIDwgUEFHRV9TSVpFICYmCiAJICAgIGJkYXRh
-LT5sYXN0X29mZnNldCAmJiBiZGF0YS0+bGFzdF9wb3MrMSA9PSBzdGFydCkgeworCQl1bnNpZ25l
-ZCBsb25nIG9mZnNldCwgcmVtYWluaW5nX3NpemU7CiAJCW9mZnNldCA9IEFMSUdOKGJkYXRhLT5s
-YXN0X29mZnNldCwgYWxpZ24pOwogCQlCVUdfT04ob2Zmc2V0ID4gUEFHRV9TSVpFKTsKIAkJcmVt
-YWluaW5nX3NpemUgPSBQQUdFX1NJWkUgLSBvZmZzZXQ7CkBAIC0zMDMsMTQgKzMxMiwxMiBAQCBm
-b3VuZDoKIAkJCS8qIGxhc3RfcG9zIHVuY2hhbmdlZCAqLwogCQkJYmRhdGEtPmxhc3Rfb2Zmc2V0
-ID0gb2Zmc2V0ICsgc2l6ZTsKIAkJCXJldCA9IHBoeXNfdG9fdmlydChiZGF0YS0+bGFzdF9wb3Mg
-KiBQQUdFX1NJWkUgKwotCQkJCQkgICBvZmZzZXQgKwotCQkJCQkgICBiZGF0YS0+bm9kZV9ib290
-X3N0YXJ0KTsKKwkJCQkJICAgb2Zmc2V0ICsgbm9kZV9ib290X3N0YXJ0KTsKIAkJfSBlbHNlIHsK
-IAkJCXJlbWFpbmluZ19zaXplID0gc2l6ZSAtIHJlbWFpbmluZ19zaXplOwogCQkJYXJlYXNpemUg
-PSAocmVtYWluaW5nX3NpemUgKyBQQUdFX1NJWkUtMSkgLyBQQUdFX1NJWkU7CiAJCQlyZXQgPSBw
-aHlzX3RvX3ZpcnQoYmRhdGEtPmxhc3RfcG9zICogUEFHRV9TSVpFICsKLQkJCQkJICAgb2Zmc2V0
-ICsKLQkJCQkJICAgYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7CisJCQkJCSAgIG9mZnNldCArIG5v
-ZGVfYm9vdF9zdGFydCk7CiAJCQliZGF0YS0+bGFzdF9wb3MgPSBzdGFydCArIGFyZWFzaXplIC0g
-MTsKIAkJCWJkYXRhLT5sYXN0X29mZnNldCA9IHJlbWFpbmluZ19zaXplOwogCQl9CkBAIC0zMTgs
-MTQgKzMyNSwxNCBAQCBmb3VuZDoKIAl9IGVsc2UgewogCQliZGF0YS0+bGFzdF9wb3MgPSBzdGFy
-dCArIGFyZWFzaXplIC0gMTsKIAkJYmRhdGEtPmxhc3Rfb2Zmc2V0ID0gc2l6ZSAmIH5QQUdFX01B
-U0s7Ci0JCXJldCA9IHBoeXNfdG9fdmlydChzdGFydCAqIFBBR0VfU0laRSArIGJkYXRhLT5ub2Rl
-X2Jvb3Rfc3RhcnQpOworCQlyZXQgPSBwaHlzX3RvX3ZpcnQoc3RhcnQgKiBQQUdFX1NJWkUgKyBu
-b2RlX2Jvb3Rfc3RhcnQpOwogCX0KIAogCS8qCiAJICogUmVzZXJ2ZSB0aGUgYXJlYSBub3c6CiAJ
-ICovCiAJZm9yIChpID0gc3RhcnQ7IGkgPCBzdGFydCArIGFyZWFzaXplOyBpKyspCi0JCWlmICh1
-bmxpa2VseSh0ZXN0X2FuZF9zZXRfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKSkpCisJ
-CWlmICh1bmxpa2VseSh0ZXN0X2FuZF9zZXRfYml0KGksIG5vZGVfYm9vdG1lbV9tYXApKSkKIAkJ
-CUJVRygpOwogCW1lbXNldChyZXQsIDAsIHNpemUpOwogCXJldHVybiByZXQ7Cg==
-------=_Part_18705_33452704.1205789241136--
+- Maybe my build chain produces corrupted code?
+- Maybe an udev error?
+- ...?
+
+$ emerge --info
+Portage 2.1.4.4 (default-linux/x86/2006.1, gcc-4.2.3, glibc-2.7-r1, 
+2.6.25-rc6 i686)
+=================================================================
+System uname: 2.6.25-rc6 i686 Genuine Intel(R) CPU T2400 @ 1.83GHz
+Timestamp of tree: Mon, 17 Mar 2008 19:00:01 +0000
+distcc 2.18.3 i686-pc-linux-gnu (protocols 1 and 2) (default port 3632) 
+[disabled]
+app-shells/bash:     3.2_p33
+dev-java/java-config: 1.3.7, 2.1.5
+dev-lang/python:     2.4.4-r4, 2.5.1-r5
+dev-python/pycrypto: 2.0.1-r6
+sys-apps/baselayout: 2.0.0_rc6-r1
+sys-apps/sandbox:    1.2.18.1-r2
+sys-devel/autoconf:  2.13, 2.61-r1
+sys-devel/automake:  1.4_p6, 1.5, 1.6.3, 1.7.9-r1, 1.8.5-r3, 1.9.6-r2, 
+1.10.1
+sys-devel/binutils:  2.18-r1
+sys-devel/gcc-config: 1.4.0-r4
+sys-devel/libtool:   1.5.26
+virtual/os-headers:  2.6.24
+ACCEPT_KEYWORDS="x86 ~x86"
+CBUILD="i686-pc-linux-gnu"
+CFLAGS="-march=prescott -O2 -pipe"
+CHOST="i686-pc-linux-gnu"
+CONFIG_PROTECT="/etc /usr/kde/3.5/env /usr/kde/3.5/share/config 
+/usr/kde/3.5/shutdown /usr/kde/4.0/env /usr/kde/4.0/share/config 
+/usr/kde/4.0/shutdown /usr/share/config"
+CONFIG_PROTECT_MASK="/etc/env.d /etc/env.d/java/ /etc/fonts/fonts.conf 
+/etc/gconf /etc/gentoo-release /etc/php/apache2-php5/ext-active/ 
+/etc/php/cgi-php5/ext-active/ /etc/php/cli-php5/ext-active/ 
+/etc/revdep-rebuild /etc/terminfo /etc/udev/rules.d"
+CXXFLAGS="-march=prescott -O2 -pipe"
+DISTDIR="/usr/portage/distfiles"
+FEATURES="distlocks metadata-transfer sandbox sfperms strict 
+unmerge-orphans userfetch"
+GENTOO_MIRRORS="http://distfiles.gentoo.org 
+http://distro.ibiblio.org/pub/linux/distributions/gentoo"
+LANG="de_DE"
+LC_ALL="de_DE"
+LINGUAS="de"
+MAKEOPTS="-j3"
+PKGDIR="/usr/portage/packages"
+PORTAGE_RSYNC_OPTS="--recursive --links --safe-links --perms --times 
+--compress --force --whole-file --delete --stats --timeout=180 
+--exclude=/distfiles --exclude=/local --exclude=/packages"
+PORTAGE_TMPDIR="/var/tmp"
+PORTDIR="/usr/portage"
+(cut)
+
