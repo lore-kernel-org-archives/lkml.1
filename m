@@ -1,93 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYCQVKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYCQVS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbYCQVKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYCQVKd
+	id S1755246AbYCQVS6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbYCQVSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:10:33 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:50103 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752634AbYCQVKc (ORCPT
+	Mon, 17 Mar 2008 17:18:48 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:37889 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbYCQVSr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:10:32 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Anders Eriksson <aeriksson@fastmail.fm>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-reply-to: <alpine.LFD.1.00.0803161618480.3020@woody.linux-foundation.org> 
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org> <200803162054.04757.bzolnier@gmail.com> <20080316225921.CAA082DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803161618480.3020@woody.linux-foundation.org>
-Comments: In-reply-to Linus Torvalds <torvalds@linux-foundation.org>
-   message dated "Sun, 16 Mar 2008 16:27:52 -0700."
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 17 Mar 2008 22:09:00 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080317210901.0135A93C911@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JbMaS-0005qa-5n.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JbMaS-0005qa-5n 9ca8fece23fed455e08c023286af0af3
+	Mon, 17 Mar 2008 17:18:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=eAMqNOcOXqnzlDNe8VBTlCV6vxNm11hyw+K/+J8jKk53tz3Dgd7G8kj0VaXTa8prqE+9UcYrO6Ks8K4FRcX3WbpIo7K2SOOsfPr4tY7o5fXMxhNIb15oP0190HZlDfiVVNcz6XF6IXoAddKZf7PcjN+HRlaZbN0eEbosZK+mqDk=
+Message-ID: <86802c440803171418j583a7735r86550382c1ce230@mail.gmail.com>
+Date: Mon, 17 Mar 2008 14:18:46 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Johannes Weiner" <hannes@saeurebad.de>
+Subject: [PATCH] mm: make reserve_bootmem can crossed the nodes v2
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_18670_15617296.1205788726346"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_18670_15617296.1205788726346
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-torvalds@linux-foundation.org said:
-> Can you try to sprinkle printk's around to see where it actually ends up
-> stopping?
+new version about boundary check.
 
-> Since all special commands should now go through the taskfile interface
-> (Bartlomiej - correct?), I guess just a printk() at the top of
-> do_rw_taskfile() should at least get the ball rolling. Even something that
-> just prints out task->data_phase and tf->command would start to unravel at
-> least what the last command is before it hangs.. 
+------=_Part_18670_15617296.1205788726346
+Content-Type: text/x-patch; name=reserve_bootmem_cross_nodes.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdxjhelj0
+Content-Disposition: attachment; filename=reserve_bootmem_cross_nodes.patch
 
-Tossing a prink in like so:
-ide_startstop_t do_rw_taskfile (ide_drive_t *drive, ide_task_t *task)
-{
-        ide_hwif_t *hwif        = HWIF(drive);
-        struct ide_taskfile *tf = &task->tf;
-        ide_handler_t *handler = NULL;
-
-        printk("do_rw_taskfile(task->data_phase=%i, tf->command=%i\n",task->data_phase,tf->command);
-
-        if (task->data_phase == TASKFILE_MULTI_IN ||
-
-
-
-Yields:
-Mar 17 21:57:29 tippex smartd[5810]: smartd version 5.37 [i686-pc-linux-gnu] Copyright (C) 2002-6 Bruce Allen
-Mar 17 21:57:29 tippex smartd[5810]: Home page is http://smartmontools.sourceforge.net/
-Mar 17 21:57:29 tippex smartd[5810]: Opened configuration file /etc/smartd.conf
-Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=32, tf->command=37
-Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
-Mar 17 21:57:29 tippex smartd[5810]: Configuration file /etc/smartd.conf parsed.
-Mar 17 21:57:29 tippex smartd[5810]: Device: /dev/hda, opened
-Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
-Mar 17 21:57:29 tippex smartd[5810]: Device: /dev/hda, found in smartd database.
-Mar 17 21:57:29 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
-Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, can't monitor Current Pending Sector count - no Attribute 197
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, can't monitor Offline Uncorrectable Sector count  - no Attribute 198
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, can't monitor Temperature, ignoring -W Directive
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, appears to lack SMART Self-Test log; disabling -l selftest (override with -T permissive Directive)
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, appears to lack SMART Error log; disabling -l error (override with -T permissive Directive)
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, is SMART capable. Adding to "monitor" list.
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, opened
-Mar 17 21:57:30 tippex smartd[5810]: Device: /dev/hda, found in smartd database.
-Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
-Mar 17 21:57:30 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-Mar 17 21:58:00 tippex hda: lost interrupt
-
-
-And the usual freeze. This is on -rc5 with Barts latest suggestion.
-
-next?
-
-/A
-
+W1BBVENIXSBtbTogbWFrZSByZXNlcnZlX2Jvb3RtZW0gY2FuIGNyb3NzZWQgdGhlIG5vZGVzIHYy
+CgpzcGxpdCByZXNlcnZlX2Jvb3RtZW1fY29yZSB0byB0d28gZnVuY3Rpb24sIG9uZSBjaGVjayBj
+b25mbGljdHMsIGFuZCBvbmUgc2V0IGJpdHMuCgphbmQgbWFrZSByZXNlcnZlX2Jvb3RtZW0gdG8g
+bG9vcCBiZGF0YV9saXN0IHRvIGNyb3NzIHRoZSBub2Rlcy4KCnVzZXIgY291bGQgYmUgY3Jhc2hr
+ZXJuZWwgYW5kIHJhbWRpc2suLi4sIGluIGNhc2UgdGhlIHJhbmdlIGNyb3NzIHRoZSBub2RlcwoK
+djIsIGZpeCBvdXQgb2YgcmFuZ2UgY2hlY2sKClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUgPHlo
+bHUua2VybmVsQGdtYWlsLmNvbT4KCkluZGV4OiBsaW51eC0yLjYvbW0vYm9vdG1lbS5jCj09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL21tL2Jvb3RtZW0uYworKysgbGludXgtMi42L21tL2Jv
+b3RtZW0uYwpAQCAtMTExLDQ0ICsxMTEsNzEgQEAgc3RhdGljIHVuc2lnbmVkIGxvbmcgX19pbml0
+IGluaXRfYm9vdG1lbQogICogbWlnaHQgYmUgdXNlZCBmb3IgYm9vdC10aW1lIGFsbG9jYXRpb25z
+IC0gb3IgaXQgbWlnaHQgZ2V0IGFkZGVkCiAgKiB0byB0aGUgZnJlZSBwYWdlIHBvb2wgbGF0ZXIg
+b24uCiAgKi8KLXN0YXRpYyBpbnQgX19pbml0IHJlc2VydmVfYm9vdG1lbV9jb3JlKGJvb3RtZW1f
+ZGF0YV90ICpiZGF0YSwKK3N0YXRpYyBpbnQgX19pbml0IGNhbl9yZXNlcnZlX2Jvb3RtZW1fY29y
+ZShib290bWVtX2RhdGFfdCAqYmRhdGEsCiAJCQl1bnNpZ25lZCBsb25nIGFkZHIsIHVuc2lnbmVk
+IGxvbmcgc2l6ZSwgaW50IGZsYWdzKQogewogCXVuc2lnbmVkIGxvbmcgc2lkeCwgZWlkeDsKIAl1
+bnNpZ25lZCBsb25nIGk7Ci0JaW50IHJldDsKKworCUJVR19PTighc2l6ZSk7CisKKwkvKiBvdXQg
+b2YgcmFuZ2UsIGRvbid0IGhvbGQgb3RoZXIgKi8KKwlpZiAoYWRkciArIHNpemUgPCBiZGF0YS0+
+bm9kZV9ib290X3N0YXJ0IHx8CisJCVBGTl9ET1dOKGFkZHIpID4gYmRhdGEtPm5vZGVfbG93X3Bm
+bikKKwkJcmV0dXJuIDA7CiAKIAkvKgotCSAqIHJvdW5kIHVwLCBwYXJ0aWFsbHkgcmVzZXJ2ZWQg
+cGFnZXMgYXJlIGNvbnNpZGVyZWQKLQkgKiBmdWxseSByZXNlcnZlZC4KKwkgKiBSb3VuZCB1cCB0
+byBpbmRleCB0byB0aGUgcmFuZ2UuCiAJICovCisJaWYgKGFkZHIgPiBiZGF0YS0+bm9kZV9ib290
+X3N0YXJ0KQorCQlzaWR4PSBQRk5fRE9XTihhZGRyIC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7
+CisJZWxzZQorCQlzaWR4ID0gMDsKKworCWVpZHggPSBQRk5fVVAoYWRkciArIHNpemUgLSBiZGF0
+YS0+bm9kZV9ib290X3N0YXJ0KTsKKwlpZiAoZWlkeCA+IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQ
+Rk5fRE9XTihiZGF0YS0+bm9kZV9ib290X3N0YXJ0KSkKKwkJZWlkeCA9IGJkYXRhLT5ub2RlX2xv
+d19wZm4gLSBQRk5fRE9XTihiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKKworCWZvciAoaSA9IHNp
+ZHg7IGkgPCBlaWR4OyBpKyspCisJCWlmICh0ZXN0X2JpdChpLCBiZGF0YS0+bm9kZV9ib290bWVt
+X21hcCkpIHsKKwkJCWlmIChmbGFncyAmIEJPT1RNRU1fRVhDTFVTSVZFKQorCQkJCXJldHVybiAt
+RUJVU1k7CisJCX0KKworCXJldHVybiAwOworCit9CitzdGF0aWMgdm9pZCBfX2luaXQgcmVzZXJ2
+ZV9ib290bWVtX2NvcmUoYm9vdG1lbV9kYXRhX3QgKmJkYXRhLAorCQkJdW5zaWduZWQgbG9uZyBh
+ZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsIGludCBmbGFncykKK3sKKwl1bnNpZ25lZCBsb25nIHNp
+ZHgsIGVpZHg7CisJdW5zaWduZWQgbG9uZyBpOworCiAJQlVHX09OKCFzaXplKTsKLQlCVUdfT04o
+UEZOX0RPV04oYWRkcikgPj0gYmRhdGEtPm5vZGVfbG93X3Bmbik7Ci0JQlVHX09OKFBGTl9VUChh
+ZGRyICsgc2l6ZSkgPiBiZGF0YS0+bm9kZV9sb3dfcGZuKTsKLQlCVUdfT04oYWRkciA8IGJkYXRh
+LT5ub2RlX2Jvb3Rfc3RhcnQpOwogCi0Jc2lkeCA9IFBGTl9ET1dOKGFkZHIgLSBiZGF0YS0+bm9k
+ZV9ib290X3N0YXJ0KTsKKwkvKiBvdXQgb2YgcmFuZ2UgKi8KKwlpZiAoYWRkciArIHNpemUgPCBi
+ZGF0YS0+bm9kZV9ib290X3N0YXJ0IHx8CisJCVBGTl9ET1dOKGFkZHIpID4gYmRhdGEtPm5vZGVf
+bG93X3BmbikKKwkJcmV0dXJuOworCisJLyoKKwkgKiBSb3VuZCB1cCB0byBpbmRleCB0byB0aGUg
+cmFuZ2UuCisJICovCisJaWYgKGFkZHIgPiBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KQorCQlzaWR4
+PSBQRk5fRE9XTihhZGRyIC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7CisJZWxzZQorCQlzaWR4
+ID0gMDsKKwogCWVpZHggPSBQRk5fVVAoYWRkciArIHNpemUgLSBiZGF0YS0+bm9kZV9ib290X3N0
+YXJ0KTsKKwlpZiAoZWlkeCA+IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQRk5fRE9XTihiZGF0YS0+
+bm9kZV9ib290X3N0YXJ0KSkKKwkJZWlkeCA9IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQRk5fRE9X
+TihiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKIAogCWZvciAoaSA9IHNpZHg7IGkgPCBlaWR4OyBp
+KyspCiAJCWlmICh0ZXN0X2FuZF9zZXRfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKSkg
+ewogI2lmZGVmIENPTkZJR19ERUJVR19CT09UTUVNCiAJCQlwcmludGsoImhtLCBwYWdlICUwOGx4
+IHJlc2VydmVkIHR3aWNlLlxuIiwgaSpQQUdFX1NJWkUpOwogI2VuZGlmCi0JCQlpZiAoZmxhZ3Mg
+JiBCT09UTUVNX0VYQ0xVU0lWRSkgewotCQkJCXJldCA9IC1FQlVTWTsKLQkJCQlnb3RvIGVycjsK
+LQkJCX0KIAkJfQotCi0JcmV0dXJuIDA7Ci0KLWVycjoKLQkvKiB1bnJlc2VydmUgbWVtb3J5IHdl
+IGFjY2lkZW50YWxseSByZXNlcnZlZCAqLwotCWZvciAoaS0tOyBpID49IHNpZHg7IGktLSkKLQkJ
+Y2xlYXJfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKTsKLQotCXJldHVybiByZXQ7CiB9
+CiAKIHN0YXRpYyB2b2lkIF9faW5pdCBmcmVlX2Jvb3RtZW1fY29yZShib290bWVtX2RhdGFfdCAq
+YmRhdGEsIHVuc2lnbmVkIGxvbmcgYWRkciwKQEAgLTQxNCw2ICs0NDEsMTEgQEAgdW5zaWduZWQg
+bG9uZyBfX2luaXQgaW5pdF9ib290bWVtX25vZGUocAogdm9pZCBfX2luaXQgcmVzZXJ2ZV9ib290
+bWVtX25vZGUocGdfZGF0YV90ICpwZ2RhdCwgdW5zaWduZWQgbG9uZyBwaHlzYWRkciwKIAkJCQkg
+dW5zaWduZWQgbG9uZyBzaXplLCBpbnQgZmxhZ3MpCiB7CisJaW50IHJldDsKKworCXJldCA9IGNh
+bl9yZXNlcnZlX2Jvb3RtZW1fY29yZShwZ2RhdC0+YmRhdGEsIHBoeXNhZGRyLCBzaXplLCBmbGFn
+cyk7CisJaWYgKHJldCA8IDApCisJCXJldHVybjsKIAlyZXNlcnZlX2Jvb3RtZW1fY29yZShwZ2Rh
+dC0+YmRhdGEsIHBoeXNhZGRyLCBzaXplLCBmbGFncyk7CiB9CiAKQEAgLTQzOSw3ICs0NzEsMTYg
+QEAgdW5zaWduZWQgbG9uZyBfX2luaXQgaW5pdF9ib290bWVtKHVuc2lnbgogaW50IF9faW5pdCBy
+ZXNlcnZlX2Jvb3RtZW0odW5zaWduZWQgbG9uZyBhZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsCiAJ
+CQkgICAgaW50IGZsYWdzKQogewotCXJldHVybiByZXNlcnZlX2Jvb3RtZW1fY29yZShOT0RFX0RB
+VEEoMCktPmJkYXRhLCBhZGRyLCBzaXplLCBmbGFncyk7CisJaW50IHJldDsKKwlib290bWVtX2Rh
+dGFfdCAqYmRhdGE7CisJbGlzdF9mb3JfZWFjaF9lbnRyeShiZGF0YSwgJmJkYXRhX2xpc3QsIGxp
+c3QpIHsKKwkJcmV0ID0gY2FuX3Jlc2VydmVfYm9vdG1lbV9jb3JlKGJkYXRhLCBhZGRyLCBzaXpl
+LCBmbGFncyk7CisJCWlmIChyZXQgPCAwKQorCQkJcmV0dXJuIHJldDsKKwl9CisJbGlzdF9mb3Jf
+ZWFjaF9lbnRyeShiZGF0YSwgJmJkYXRhX2xpc3QsIGxpc3QpCisJCXJlc2VydmVfYm9vdG1lbV9j
+b3JlKGJkYXRhLCBhZGRyLCBzaXplLCBmbGFncyk7CisJcmV0dXJuIDA7CiB9CiAjZW5kaWYgLyog
+IUNPTkZJR19IQVZFX0FSQ0hfQk9PVE1FTV9OT0RFICovCiAK
+------=_Part_18670_15617296.1205788726346--
