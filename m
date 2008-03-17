@@ -1,128 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYCQI4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYCQI6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbYCQI4T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 04:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYCQI4K
+	id S1754419AbYCQI6l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 04:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYCQI6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 04:56:10 -0400
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:25916 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbYCQI4J (ORCPT
+	Mon, 17 Mar 2008 04:58:34 -0400
+Received: from mail.netone.net.tr ([193.192.98.182]:32461 "EHLO
+	mail.netone.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbYCQI6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 04:56:09 -0400
-Date: Mon, 17 Mar 2008 09:56:04 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, pj@sgi.com,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
-Message-ID: <20080317085604.GA12405@basil.nowhere.org>
-References: <20080317258.659191058@firstfloor.org> <20080317015825.0C0171B41E0@basil.firstfloor.org> <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com> <20080317070208.GC27015@one.firstfloor.org> <86802c440803170017r622114bdpede8625d1a8ff585@mail.gmail.com> <86802c440803170031u75167e5m301f65049b6d62ff@mail.gmail.com> <20080317074146.GG27015@one.firstfloor.org> <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
+	Mon, 17 Mar 2008 04:58:34 -0400
+Message-ID: <47DE3227.2030802@netone.net.tr>
+Date: Mon, 17 Mar 2008 10:56:07 +0200
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 17 Mar 2008 08:49:30.0084 (UTC) FILETIME=[D04DDA40:01C8880B]
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.25-rc4 (and also in rc3) Compile Error
+References: <47CE6F66.7020004@netone.net.tr> <47D0895C.5070901@goop.org> <47D0F9D7.8010607@netone.net.tr> <47D172A2.5000408@goop.org> <47D4F250.5000307@netone.net.tr> <47D52B79.7030009@netone.net.tr>
+In-Reply-To: <47D52B79.7030009@netone.net.tr>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Mar 2008 08:56:44.0550 (UTC) FILETIME=[D3441A60:01C8880C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> only happen when align is large than alignment of node_boot_start.
+Tarkan Erimer wrote:
+> Tarkan Erimer wrote:
+>> I use Kubuntu's own kernel build via the command "make-kpkg 
+>> --revision=1  kernel_image kernel_headers". It fails at the very 
+>> early build stage. When issued this command, just after few lines and 
+>> then it fails. Today, I will try the same .config with recently 
+>> released rc5 and will let know the result.
+>>
+>
+> I tried with .rc5 now and the result is the same. I attached the full 
+> error log.
 
-Here's an updated version of the patch with this addressed.
-Please review. The patch is somewhat more complicated, but
-actually makes the code a little cleaner now.
+I tried the recently released .rc6 and still the problem is there. I got 
+the same error message which is :
 
--Andi
+echo done >  stamp-debian
+echo done >  debian/stamp-conf
+====== making target CONFIG-common [new prereqs: stamp-conf]======
+This is kernel package version 11.001.
+====== making target stamp-arch-conf [new prereqs: CONFIG-common]======
+
+====== making target CONFIG-arch [new prereqs: stamp-arch-conf]======
+====== making target conf.vars [new prereqs: Makefile .config]======
+
+Makefile:514: /usr/src/linux-2.6.25-rc6/arch/xen/Makefile: No such file 
+or directory
+make[1]: *** No rule to make target 
+`/usr/src/linux-2.6.25-rc6/arch/xen/Makefile'.  Stop.
+make: *** [conf.vars] Error 2
 
 
-Fix alignment bug in bootmem allocator
 
-Without this fix bootmem can return unaligned addresses when the start of a
-node is not aligned to the align value. Needed for reliably allocating
-gigabyte pages.
-
-I removed the offset variable because all tests should align themself correctly
-now. Slight drawback might be that the bootmem allocator will spend
-some more time skipping bits in the bitmap initially, but that shouldn't
-be a big issue.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- mm/bootmem.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
-
-Index: linux/mm/bootmem.c
-===================================================================
---- linux.orig/mm/bootmem.c
-+++ linux/mm/bootmem.c
-@@ -195,8 +195,9 @@ void * __init
- __alloc_bootmem_core(struct bootmem_data *bdata, unsigned long size,
- 	      unsigned long align, unsigned long goal, unsigned long limit)
- {
--	unsigned long offset, remaining_size, areasize, preferred;
--	unsigned long i, start = 0, incr, eidx, end_pfn;
-+	unsigned long remaining_size, areasize, preferred;
-+	unsigned long i, start, incr, eidx, end_pfn;
-+	unsigned long pfn;
- 	void *ret;
- 
- 	if (!size) {
-@@ -218,10 +219,6 @@ __alloc_bootmem_core(struct bootmem_data
- 		end_pfn = limit;
- 
- 	eidx = end_pfn - PFN_DOWN(bdata->node_boot_start);
--	offset = 0;
--	if (align && (bdata->node_boot_start & (align - 1UL)) != 0)
--		offset = align - (bdata->node_boot_start & (align - 1UL));
--	offset = PFN_DOWN(offset);
- 
- 	/*
- 	 * We try to allocate bootmem pages above 'goal'
-@@ -236,15 +233,18 @@ __alloc_bootmem_core(struct bootmem_data
- 	} else
- 		preferred = 0;
- 
--	preferred = PFN_DOWN(ALIGN(preferred, align)) + offset;
-+	start = bdata->node_boot_start;
-+	preferred = PFN_DOWN(ALIGN(preferred + start, align) - start);
- 	areasize = (size + PAGE_SIZE-1) / PAGE_SIZE;
- 	incr = align >> PAGE_SHIFT ? : 1;
-+	pfn = PFN_DOWN(start);
-+	start = 0;
- 
- restart_scan:
- 	for (i = preferred; i < eidx; i += incr) {
- 		unsigned long j;
- 		i = find_next_zero_bit(bdata->node_bootmem_map, eidx, i);
--		i = ALIGN(i, incr);
-+		i = ALIGN(pfn + i, incr) - pfn;
- 		if (i >= eidx)
- 			break;
- 		if (test_bit(i, bdata->node_bootmem_map))
-@@ -258,11 +258,11 @@ restart_scan:
- 		start = i;
- 		goto found;
- 	fail_block:
--		i = ALIGN(j, incr);
-+		i = ALIGN(j + pfn, incr) - pfn;
- 	}
- 
--	if (preferred > offset) {
--		preferred = offset;
-+	if (preferred > 0) {
-+		preferred = 0;
- 		goto restart_scan;
- 	}
- 	return NULL;
-@@ -278,7 +278,7 @@ found:
- 	 */
- 	if (align < PAGE_SIZE &&
- 	    bdata->last_offset && bdata->last_pos+1 == start) {
--		offset = ALIGN(bdata->last_offset, align);
-+		unsigned long offset = ALIGN(bdata->last_offset, align);
- 		BUG_ON(offset > PAGE_SIZE);
- 		remaining_size = PAGE_SIZE - offset;
- 		if (size < remaining_size) {
