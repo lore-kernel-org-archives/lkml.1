@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYCQO71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYCQPDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbYCQO71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 10:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYCQO7R
+	id S1754702AbYCQPDs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 11:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbYCQPDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 10:59:17 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:9990 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753054AbYCQO7Q (ORCPT
+	Mon, 17 Mar 2008 11:03:39 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:58107 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753666AbYCQPDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 10:59:16 -0400
-Message-ID: <47DE8736.8020405@panasas.com>
-Date: Mon, 17 Mar 2008 16:59:02 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: ultrastor.c is a bit-rot
-Content-Type: text/plain; charset=UTF-8
+	Mon, 17 Mar 2008 11:03:38 -0400
+Subject: Re: [PATCH] [0/18] GB pages hugetlb support
+From: Adam Litke <agl@us.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+In-Reply-To: <20080317258.659191058@firstfloor.org>
+References: <20080317258.659191058@firstfloor.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 17 Mar 2008 10:05:07 -0500
+Message-Id: <1205766307.10849.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Mar 2008 14:59:04.0859 (UTC) FILETIME=[717FFEB0:01C8883F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Inspecting ultrastor.c it is clear to me that this was never used for
-a loooooooooong time. Not since a PC has more then 2^24 bit of memory.
-Let me explain below.
+On Mon, 2008-03-17 at 02:58 +0100, Andi Kleen wrote:
+<snip>
+> - lockdep sometimes complains about recursive page_table_locks
+> for shared hugetlb memory, but as far as I can see I didn't
+> actually change this area. Looks a little dubious, might
+> be a false positive too.
 
-Now I'm not saying it should be fixed. I'm saying that it should be dumped
-in the account that it is not used by any one and that it does not work.
+I bet copy_hugetlb_page_range() is causing your complaints.  It takes
+the dest_mm->page_table_lock followed by src_mm->page_table_lock inside
+a loop and hasn't yet been converted to call spin_lock_nested().  A
+harmless false positive.
 
-Why it never worked?
-~~~~~~~~~~~~~~~~~~~~~
+> - hugemmap04 from LTP fails. Cause unknown currently
 
-The driver's header says it supports 3 cards
+I am not sure how well LTP is tracking mainline development in this
+area.  How do these patches do with the libhugetlbfs test suite?  We are
+adding support for ginormous pages (1GB, 16GB, etc) but it is not
+complete.  Should run fine with 2M pages though.
 
- *	14F - ISA first-party DMA HA with floppy support and WD1003 emulation.
- *	24F - EISA Bus Master HA with floppy support and WD1003 emulation.
- *	34F - VL-Bus Bus Master HA with floppy support (no WD1003 emulation).
+Before you ask, here is the link:
+http://libhugetlbfs.ozlabs.org/snapshots/libhugetlbfs-dev-20080310.tar.gz
 
-But Kconfig only specifies ISA. I'm not sure what a VL-Bus is.
-
-
-now the driver defines a static array of structures like this:
-
-	struct {
-	  ...
-	
-	  struct mscp mscp[ULTRASTOR_MAX_CMDS];
-	} config = {0};
-
-and allocates a struct mscp in .queuecommand like this:
-	    my_mscp = &config.mscp[mscp_index];
-
-it will go on preparing this my_mscp structure including stuffing
-some mapped pointers. Lets put that aside for now.
-At the very end it will pass this my_mscp structure to the card's 
-firmware like this:
-
-	    /* Store pointer in OGM address bytes */
-	outl(isa_virt_to_bus(my_mscp), config.ogm_address);
-
-Now this is one hell of a smart ISA card. But putting this aside.
-
-if the machine has more then 2^24 of memory. Then this will never
-work, right? or I'm missing it completely?
-
-(Also none of the emails in this file are valid)
-
-Boaz
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
