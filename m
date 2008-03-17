@@ -1,139 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbYCQXTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbYCQXWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbYCQXTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 19:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYCQXTO
+	id S1754814AbYCQXWu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 19:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYCQXWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 19:19:14 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:49139 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbYCQXTN (ORCPT
+	Mon, 17 Mar 2008 19:22:42 -0400
+Received: from ag-out-0708.google.com ([72.14.246.249]:35158 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbYCQXWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 19:19:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:subject:from:to:content-type:organization:date:
-	message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=GbapWnhPqj+QCXR/yfujB0MRJXUNQN8lKqDX2D08eW0tST9+UN3oXivtNLAX95+ij
-	8iuyXU5s2JJffFBYu/e7Q==
-Subject: [PATCH 2.6.25-rc6] Add a "show workqueues" SYSRQ knob.
-From: Frank Mayhar <fmayhar@google.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Mon, 17 Mar 2008 16:19:10 -0700
-Message-Id: <1205795950.15714.39.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 17 Mar 2008 19:22:42 -0400
+Message-ID: <fa686aa40803171622j2183369ei7b384ada72d329d6@mail.gmail.com>
+Date: Mon, 17 Mar 2008 17:22:30 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Paul Gortmaker" <paul.gortmaker@windriver.com>
+Subject: Re: powerpc: cuImage.* creation error
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Kumar Gala" <galak@kernel.crashing.org>,
+       "Paul Mackerras" <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080317224607.GA10732@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080317193652.GA9550@cs181133002.pp.htv.fi>
+	 <20080317200754.GA7383@windriver.com>
+	 <fa686aa40803171541t6357d304i2e7e5292f084d09d@mail.gmail.com>
+	 <20080317224607.GA10732@windriver.com>
+X-Google-Sender-Auth: dde4a5b6825dbf55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a convenient function to show all workqueues using the
-magic SYSRQ handling.  It uses the 'z' key to invoke the function as the
-'w' key was already gone.
+On Mon, Mar 17, 2008 at 4:46 PM, Paul Gortmaker
+<paul.gortmaker@windriver.com> wrote:
+> In message: Re: powerpc: cuImage.* creation error
+>
+>
+> on 17/03/2008 Grant Likely wrote:
+>
+>  > On Mon, Mar 17, 2008 at 2:07 PM, Paul Gortmaker
+>  > <paul.gortmaker@windriver.com> wrote:
+>  > > In message: powerpc: cuImage.* creation error
+>  > >
+>  > >  @@ -253,8 +253,8 @@ image-$(CONFIG_TQM8540)                     += cuImage.tqm8540
+>  > >   image-$(CONFIG_TQM8541)                        += cuImage.tqm8541
+>  > >   image-$(CONFIG_TQM8555)                        += cuImage.tqm8555
+>  > >   image-$(CONFIG_TQM8560)                        += cuImage.tqm8560
+>  > >  -image-$(CONFIG_SBC8548)                        += cuImage.tqm8548
+>  > >  -image-$(CONFIG_SBC8560)                        += cuImage.tqm8560
+>  > >  +image-$(CONFIG_SBC8548)                        += cuImage.sbc8548
+>  > >  +image-$(CONFIG_SBC8560)                        += cuImage.sbc8560
+>  >
+>  > No, the suffix in the cuImage targets has a 1:1 relationship with dts
+>  > files in arch/powerpc/boot/dts/.  If a file doesn't exist there, then
+>  > the target cannot be built.
+>
+>  You should have both the sbc8548.dts and the sbc8560.dts in your tree.
+>  They have been in there for several weeks now.
 
-I've found this very useful in debugging; hopefully others will find it
-as useful.
+Heh; oops.  I looked but somehow missed them.  I guess I didn't look
+hard enough.
 
-diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
-index de60e1e..733d625 100644
---- a/drivers/char/sysrq.c
-+++ b/drivers/char/sysrq.c
-@@ -243,6 +243,18 @@ static struct sysrq_key_op sysrq_showmem_op = {
- 	.enable_mask	= SYSRQ_ENABLE_DUMP,
- };
- 
-+static void sysrq_handle_showwq(int key, struct pt_regs *pt_regs,
-+				   struct tty_struct *tty)
-+{
-+	show_workqueues();
-+}
-+static struct sysrq_key_op sysrq_showwq_op = {
-+	.handler	= sysrq_handle_showwq,
-+	.help_msg	= "showworkqueueZ",
-+	.action_msg	= "Show Workqueues",
-+	.enable_mask	= SYSRQ_ENABLE_DUMP,
-+};
-+
- /*
-  * Signal sysrq helper function.  Sends a signal to all user processes.
-  */
-@@ -358,7 +370,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
- 	/* x: May be registered on ppc/powerpc for xmon */
- 	NULL,				/* x */
- 	NULL,				/* y */
--	NULL				/* z */
-+	&sysrq_showwq_op		/* z */
- };
- 
- /* key2index calculation, -1 on invalid index */
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 542526c..6ae9ebb 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -195,6 +195,7 @@ extern int schedule_on_each_cpu(work_func_t func);
- extern int current_is_keventd(void);
- extern int keventd_up(void);
- 
-+extern void show_workqueues(void);
- extern void init_workqueues(void);
- int execute_in_process_context(work_func_t fn, struct execute_work *);
- 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index ff06611..c97d35d 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -33,6 +33,7 @@
- #include <linux/kallsyms.h>
- #include <linux/debug_locks.h>
- #include <linux/lockdep.h>
-+#include <linux/kallsyms.h>
- 
- /*
-  * The per-CPU workqueue (if single thread, we always use the first
-@@ -867,6 +868,31 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
- 	return NOTIFY_OK;
- }
- 
-+void show_workqueues(void)
-+{
-+	struct workqueue_struct *wq;
-+	int cpu;
-+
-+	spin_lock(&workqueue_lock);
-+	list_for_each_entry(wq, &workqueues, list) {
-+		printk("\n");
-+		printk("Workqueue %s:\n", wq->name);
-+		for_each_online_cpu(cpu) {
-+			struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+			struct work_struct *work;
-+
-+			printk("\tCPU %d ", cpu);
-+			list_for_each_entry(work, &(cwq->worklist), entry) {
-+				print_symbol("function %s", (unsigned long)work->func);
-+			}
-+			printk("\n");
-+		}
-+	}
-+	spin_unlock(&workqueue_lock);
-+	
-+}
-+EXPORT_SYMBOL(show_workqueues);
-+
- void __init init_workqueues(void)
- {
- 	cpu_populated_map = cpu_online_map;
----
+Yes, this looks like the right solution.
 
-diffstat wq.patch 
- drivers/char/sysrq.c      |   14 +++++++++++++-
- include/linux/workqueue.h |    1 +
- kernel/workqueue.c        |   26 ++++++++++++++++++++++++++
- 3 files changed, 40 insertions(+), 1 deletion(-)
+>  Author: Paul Gortmaker <paul.gortmaker@windriver.com>
+>  Date:   Mon Mar 17 18:33:52 2008 -0400
+>
+>     wrapper: Add entries for tqm8540 and sbc85xx
+>
+>     The wrapper script didn't have entries for the TQM8540 board and the
+>     SBC8548 or SBC8560 boards.  I've assumed that the TQM8540 console is
+>     8250 based and not CPM based by looking at its defconfig.  There was
+>     also a trailing * on the TQM8555 entry that I removed too.
+>
+>
+>     Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Signed-off-by:  Frank Mayhar <fmayhar@google.com>
+Cheers,
+g.
+
+
 -- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
-
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
