@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYCQRHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYCQRLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYCQRHN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 13:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbYCQRHB
+	id S1754666AbYCQRLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 13:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYCQRLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 13:07:01 -0400
-Received: from gv-out-0910.google.com ([216.239.58.189]:64935 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYCQRHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 13:07:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JoiOibqJaGil530NmuHzWrc8qsNvVy+YKOVnvVl21/KSXv7gtPP4tZd1nFkoYnEjfGUi6rOWaol8++WboTl0UVSTsUAYprsYTxjf2ecpj4APa1fJMz3p8E0EASXaf7v2kboZcrdSE7gFKQjk4WKhSqbLdQ5OZuV4vghM6uVP9Fs=
-Message-ID: <804dabb00803171006i4423c5b6w58bd95116510d3f5@mail.gmail.com>
-Date: Tue, 18 Mar 2008 01:06:33 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: per cpun+ spin locks coexistence?
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Tejun Heo" <htejun@gmail.com>,
-       "Dipankar Sarma" <dipankar@in.ibm.com>
-In-Reply-To: <87bq5e1kvm.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00803120917w451b16e6q685016d464a2edde@mail.gmail.com>
-	 <47DABBCE.5010803@goop.org>
-	 <804dabb00803160930t40b7c415ic38f2b9955b515ac@mail.gmail.com>
-	 <87bq5e1kvm.fsf@saeurebad.de>
+	Mon, 17 Mar 2008 13:11:06 -0400
+Received: from ns2.tasking.nl ([195.193.207.10]:19821 "EHLO ns2.tasking.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752004AbYCQRLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 13:11:05 -0400
+X-Greylist: delayed 1045 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Mar 2008 13:11:05 EDT
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+X-Newsreader: knews 1.0b.1
+Reply-To: dick.streefland@altium.nl (Dick Streefland)
+Organization: Altium BV
+X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
+From: spam@altium.nl (Dick Streefland)
+Subject: 2.6.24.3: unexpected SIGTRAP in gdb
+Content-Type: text/plain; charset=us-ascii
+NNTP-Posting-Host: 172.17.1.66
+Message-ID: <5ad2.47dea211.2cd38@altium.nl>
+Date: Mon, 17 Mar 2008 16:53:37 -0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the explanation, much apologies for this newbie discussion.
-  But I still find it inexplicable:
+With kernel version 2.6.24.3, I sometimes get an unexpected SIGTRAP
+signal during the evaluation of a function call on the gdb command
+line. This problem does not occur with kernel version 2.6.23.12
+running on the same machine. Both gdb-6.4.90 and gdb-6.7.1 exhibit
+this behavior.
 
-On Mon, Mar 17, 2008 at 4:20 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->
->  A per-cpu variable is basically an array the size of the number of
->  possible CPUs in the system.  get_cpu_var() checks what current CPU we
->  are running on and gets the array-element corresponding to this CPU.
->
->  So, really oversimplified, get_cpu_var(foo) translates to something like
->  foo[smp_processor_id()].
->
+I can reproduce the problem as follows:
 
-Ok, so calling get_cpu_var() always return the array-element for the
-current CPU, and since by design, only the current CPU can
-modify/write to this array element (this is my assumption - correct?),
-and the other CPU will just read it (using the per_cpu construct).
-So far correct?   So why do u still need to spin_lock() to lock other
-CPU from accessing - the other CPU will always just READ it, so just
-go ahead and let them read it.   Seemed like it defeats the purpose of
-get_cpu_var()'s design?
+$ cat > bug.c
+int x;
+int foo(void)
+{
+	return 42;
+}
+int main(int argc, char* argv[])
+{
+	x++;
+	return 0;
+}
+^D
+$ cat > bug.gdb
+b main
+r
+s
+p foo()
+p foo()
+^D
+$ gcc -static -g -o bug bug.c
+$ gdb -n -batch -x bug.gdb bug
+Using host libthread_db library "/lib/tls/libthread_db.so.1".
+Breakpoint 1 at 0x8048200: file bug.c, line 8.
 
-But supposed u really want to put a spin_lock(), just to be sure
-nobody is even reading it, or modifying it, so then what is the
-original purpose of get_cpu_var() - is it not to implement something
-that can be parallelized among different CPU, without affecting each
-other, and using no locks?
+Breakpoint 1, main () at bug.c:8
+8               x++;
+9               return 0;
+$1 = 42
 
-The dual use of spin_lock+get_cpu_var() confuses me here :-).   (not
-the per_cpu(), which I agree is supposed to be callabe from all the
-different CPU, for purpose of enumeration or data collection).
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x080481e9 in foo () at bug.c:3
+3       {
+/tmp/bug.gdb:5: Error in sourced command file:
+The program being debugged was signaled while in a function called from GDB.
+GDB remains in the frame where the signal was received.
+To change this behavior use "set unwindonsignal on"
+Evaluation of the expression containing the function (foo) will be abandoned.
 
 -- 
-Regards,
-Peter Teoh
+Dick Streefland                      ////                      Altium BV
+dick.streefland@altium.nl           (@ @)          http://www.altium.com
+--------------------------------oOO--(_)--OOo---------------------------
+
