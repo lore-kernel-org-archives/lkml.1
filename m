@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbYCQLvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYCQLyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbYCQLvu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 07:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYCQLvk
+	id S1753517AbYCQLyt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 07:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCQLym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 07:51:40 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58050 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbYCQLvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 07:51:39 -0400
-Date: Mon, 17 Mar 2008 20:51:54 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-ia64@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish >12 hour
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080317200924.7B4C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080317200924.7B4C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080317204810.7B4F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 17 Mar 2008 07:54:42 -0400
+Received: from sacred.ru ([62.205.161.221]:50011 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752114AbYCQLym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 07:54:42 -0400
+Message-ID: <47DE57C2.5060206@openvz.org>
+Date: Mon, 17 Mar 2008 14:36:34 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain> <20080316173005.8812.88290.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080316173005.8812.88290.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 14:36:31 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony-san,
+[snip]
 
-seto-san teach me method of more investigate.
-and I found the root cause is contained by following patch.
+> +int mem_cgroup_update_as(struct mm_struct *mm, long nr_pages)
+> +{
+> +	int ret = 0;
+> +	struct mem_cgroup *mem;
+> +	if (mem_cgroup_subsys.disabled)
+> +		return ret;
+> +
+> +	rcu_read_lock();
+> +	mem = rcu_dereference(mm->mem_cgroup);
+> +	css_get(&mem->css);
+> +	rcu_read_unlock();
+> +
+> +	if (nr_pages > 0) {
+> +		if (res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE)))
+> +			ret = 1;
+> +	} else
+> +		res_counter_uncharge(&mem->as_res, (-nr_pages * PAGE_SIZE));
 
-   [IA64] Multiple outstanding ptc.g instruction support
+No, please, no. Let's make two calls - mem_cgroup_charge_as and mem_cgroup_uncharge_as.
 
+[snip]
 
-Could you please revert that patch from ia64?
-I dislike its strong regression.
+> @@ -1117,6 +1117,9 @@ munmap_back:
+>  		}
+>  	}
+>  
+> +	if (mem_cgroup_update_as(mm, len >> PAGE_SHIFT))
+> +		return -ENOMEM;
+> +
 
-- kosaki
+Why not use existintg cap_vm_enough_memory and co?
 
->     [IA64] cleanup and improve fsys_gettimeofday
->     [IA64] Multiple outstanding ptc.g instruction support
->     [IA64] VIRT_CPU_ACCOUNTING (accurate cpu time accounting)
-> 
-> unfortunately, I don't know how investigate more ;-)
-> Please any suggestion.
-
-
-
+[snip]
