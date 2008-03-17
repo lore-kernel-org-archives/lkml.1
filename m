@@ -1,77 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbYCQRhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYCQRhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbYCQRhA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 13:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYCQRgu
+	id S1756277AbYCQRhp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 13:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYCQRhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 13:36:50 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:4276 "EHLO
-	outbound9-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755204AbYCQRgt (ORCPT
+	Mon, 17 Mar 2008 13:37:12 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5952 "EHLO
+	outbound5-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756047AbYCQRhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 13:36:49 -0400
+	Mon, 17 Mar 2008 13:37:10 -0400
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
 From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 To: grant.likely@secretlab.ca, git-dev@xilinx.com, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
 Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: [PATCH 2/3] Xilinx: hwicap: Verify sync before reading idcode.
-Date: Mon, 17 Mar 2008 10:36:31 -0700
+Subject: [PATCH 3/3] Xilinx: hwicap: Use fixed device major.
+Date: Mon, 17 Mar 2008 10:36:32 -0700
 X-Mailer: git-send-email 1.5.3.4-dirty
-In-Reply-To: <1205775392-32222-2-git-send-email-stephen.neuendorffer@xilinx.com>
+In-Reply-To: <1205775392-32222-3-git-send-email-stephen.neuendorffer@xilinx.com>
 References: <1205775392-32222-1-git-send-email-stephen.neuendorffer@xilinx.com>
  <1205775392-32222-2-git-send-email-stephen.neuendorffer@xilinx.com>
-Message-Id: <20080317173645.7A21D9A8069@mail131-sin.bigfish.com>
+ <1205775392-32222-3-git-send-email-stephen.neuendorffer@xilinx.com>
+Message-Id: <20080317173641.C8BE6640069@mail113-sin.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It appears that in some cases, the sync word might not be recognized
-by the hardware correctly.  If this happens, then attempting to read
-from the port results in an unrecoverable error because of the design
-of the FPGA core.  This patch updates the code to check the status of
-the device before reading the IDCODE, in order to avoid entering this
-unrecoverable state.  This patch also adds additional NOOP commands
-into the sychronization sequence, which appears to be necessary to
-avoid the condition on some hardware.
+Major 259 has been assigned by lanana.  Use it.  Also, publish
+/dev/icap[0-k] as the device entries, and register platform devices
+named 'icap' to be consistent.
 
 Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 ---
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |   43 +++++++++-------------------
+ 1 files changed, 14 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index 304727d..5b8d646 100644
+index 5b8d646..016f905 100644
 --- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
 +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -250,8 +250,26 @@ static int hwicap_get_configuration_register(struct hwicap_drvdata *drvdata,
- 	 * Create the data to be written to the ICAP.
- 	 */
- 	buffer[index++] = XHI_DUMMY_PACKET;
-+	buffer[index++] = XHI_NOOP_PACKET;
- 	buffer[index++] = XHI_SYNC_PACKET;
- 	buffer[index++] = XHI_NOOP_PACKET;
-+	buffer[index++] = XHI_NOOP_PACKET;
-+
-+	/*
-+	 * Write the data to the FIFO and initiate the transfer of data present
-+	 * in the FIFO to the ICAP device.
-+	 */
-+	status = drvdata->config->set_configuration(drvdata,
-+						    &buffer[0], index);
-+	if (status)
-+		return status;
-+
-+	/* If the syncword was not found, then we need to start over. */
-+	status = drvdata->config->get_status(drvdata);
-+	if ((status & XHI_SR_DALIGN_MASK) != XHI_SR_DALIGN_MASK)
-+		return -EIO;
-+
-+	index = 0;
- 	buffer[index++] = hwicap_type_1_read(reg) | 1;
- 	buffer[index++] = XHI_NOOP_PACKET;
- 	buffer[index++] = XHI_NOOP_PACKET;
+@@ -36,7 +36,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * This is the code behind /dev/xilinx_icap -- it allows a user-space
++ * This is the code behind /dev/icap* -- it allows a user-space
+  * application to use the Xilinx ICAP subsystem.
+  *
+  * The following operations are possible:
+@@ -67,7 +67,7 @@
+  * user-space application code that uses this device.  The simplest
+  * way to use this interface is simply:
+  *
+- * cp foo.bit /dev/xilinx_icap
++ * cp foo.bit /dev/icap0
+  *
+  * Note that unless foo.bit is an appropriately constructed partial
+  * bitstream, this has a high likelyhood of overwriting the design
+@@ -105,18 +105,14 @@
+ #include "buffer_icap.h"
+ #include "fifo_icap.h"
+ 
+-#define DRIVER_NAME "xilinx_icap"
++#define DRIVER_NAME "icap"
+ 
+ #define HWICAP_REGS   (0x10000)
+ 
+-/* dynamically allocate device number */
+-static int xhwicap_major;
+-static int xhwicap_minor;
++#define XHWICAP_MAJOR 259
++#define XHWICAP_MINOR 0
+ #define HWICAP_DEVICES 1
+ 
+-module_param(xhwicap_major, int, S_IRUGO);
+-module_param(xhwicap_minor, int, S_IRUGO);
+-
+ /* An array, which is set to true when the device is registered. */
+ static bool probed_devices[HWICAP_DEVICES];
+ static struct mutex icap_sem;
+@@ -605,7 +601,7 @@ static int __devinit hwicap_setup(struct device *dev, int id,
+ 	probed_devices[id] = 1;
+ 	mutex_unlock(&icap_sem);
+ 
+-	devt = MKDEV(xhwicap_major, xhwicap_minor + id);
++	devt = MKDEV(XHWICAP_MAJOR, XHWICAP_MINOR + id);
+ 
+ 	drvdata = kzalloc(sizeof(struct hwicap_drvdata), GFP_KERNEL);
+ 	if (!drvdata) {
+@@ -710,7 +706,7 @@ static int __devexit hwicap_remove(struct device *dev)
+ 	dev_set_drvdata(dev, NULL);
+ 
+ 	mutex_lock(&icap_sem);
+-	probed_devices[MINOR(dev->devt)-xhwicap_minor] = 0;
++	probed_devices[MINOR(dev->devt)-XHWICAP_MINOR] = 0;
+ 	mutex_unlock(&icap_sem);
+ 	return 0;		/* success */
+ }
+@@ -850,23 +846,12 @@ static int __init hwicap_module_init(void)
+ 	icap_class = class_create(THIS_MODULE, "xilinx_config");
+ 	mutex_init(&icap_sem);
+ 
+-	if (xhwicap_major) {
+-		devt = MKDEV(xhwicap_major, xhwicap_minor);
+-		retval = register_chrdev_region(
+-				devt,
+-				HWICAP_DEVICES,
+-				DRIVER_NAME);
+-		if (retval < 0)
+-			return retval;
+-	} else {
+-		retval = alloc_chrdev_region(&devt,
+-				xhwicap_minor,
+-				HWICAP_DEVICES,
+-				DRIVER_NAME);
+-		if (retval < 0)
+-			return retval;
+-		xhwicap_major = MAJOR(devt);
+-	}
++	devt = MKDEV(XHWICAP_MAJOR, XHWICAP_MINOR);
++	retval = register_chrdev_region(devt,
++					HWICAP_DEVICES,
++					DRIVER_NAME);
++	if (retval < 0)
++		return retval;
+ 
+ 	retval = platform_driver_register(&hwicap_platform_driver);
+ 
+@@ -891,7 +876,7 @@ static int __init hwicap_module_init(void)
+ 
+ static void __exit hwicap_module_cleanup(void)
+ {
+-	dev_t devt = MKDEV(xhwicap_major, xhwicap_minor);
++	dev_t devt = MKDEV(XHWICAP_MAJOR, XHWICAP_MINOR);
+ 
+ 	class_destroy(icap_class);
+ 
 -- 
 1.5.3.4-dirty
 
