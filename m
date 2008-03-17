@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYCQSUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYCQS0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYCQSUa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 14:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYCQSUX
+	id S1754094AbYCQS0L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 14:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbYCQS0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 14:20:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:4308 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751962AbYCQSUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 14:20:22 -0400
-Message-ID: <47DEB65A.9080907@googlemail.com>
-Date: Mon, 17 Mar 2008 19:20:10 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Gabriel C <crazy@frugalware.org>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Mar 2008 14:26:00 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:34489 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbYCQSZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 14:25:59 -0400
+Date: Mon, 17 Mar 2008 21:30:47 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, mingo@elte.hu, ego@in.ibm.com,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       akpm@linux-foundation.org, josh@freedesktop.org, tglx@linutronix.de,
+       niv@us.ibm.com
+Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
+Message-ID: <20080317183047.GA188@tv-sign.ru>
+References: <20080317010821.GA29875@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080317010821.GA29875@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Mon, 17 Mar 2008, Gabriel C wrote:
->>> Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
->>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
->>> Date		: 2008-02-24 01:31 (22 days old)
->>> References	: http://lkml.org/lkml/2008/2/23/380
->>> 		  http://lkml.org/lkml/2008/2/24/281
->>> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
->>>
->> Thomas do you want me to bisect ? 
+On 03/16, Paul E. McKenney wrote:
 > 
-> That'd be great.
+> In the process of writing up the mechanical proof of correctness for the
+> dynticks/preemptable-RCU interface, I noticed misplaced memory barriers
+> in rcu_enter_nohz() and rcu_exit_nohz().
 
-Ok I'll start doing that later on today.
+Can't comment this patch, there is no rcu_enter_nohz() in my rcupreempt.h ;)
 
-> 
->> Or do you have any patches I could try ( really does not matter how experimental they are ) ?
-> 
-> No, I have not the lightest clue whats going on.
->  
-> Thanks,
-> 
-> 	tglx
-> 
+I'm not sure the code below is up to date, but what I have in
+arch/s390/kernel/time.c is:
 
-Gabriel
+	stop_hz_timer:
+
+		cpu_set(cpu, nohz_cpu_mask);
+		
+		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
+			cpu_clear(cpu, nohz_cpu_mask);
+			return;
+		}
+
+Don't we need smp_mb() after cpu_set() ?
+
+Oleg.
+
