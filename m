@@ -1,213 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYCQUDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYCQUD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYCQUDI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYCQUCY
+	id S1757530AbYCQUD2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbYCQUCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:02:24 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51449 "EHLO
+	Mon, 17 Mar 2008 16:02:32 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51456 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753913AbYCQUCU (ORCPT
+	with ESMTP id S1756169AbYCQUCa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:02:20 -0400
-Message-Id: <20080317200154.777097073@szeredi.hu>
+	Mon, 17 Mar 2008 16:02:30 -0400
+Message-Id: <20080317200144.325204742@szeredi.hu>
 References: <20080317200053.447640802@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Mar 2008 21:01:01 +0100
+Date: Mon, 17 Mar 2008 21:00:54 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
        viro@zeniv.linux.org.uk
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 08/11] unprivileged mounts: make fuse safe
-Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-fuse-mounts.patch
+Subject: [patch 01/11] unprivileged mounts: add user mounts to the kernel
+Content-Disposition: inline; filename=unprivileged-mounts-add-user-mounts-to-the-kernel.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Don't require the "user_id=" and "group_id=" options for unprivileged mounts,
-but if they are present, verify them for sanity.
+This patchset adds support for keeping mount ownership information in the
+kernel, and allow unprivileged mount(2) and umount(2) in certain cases.
 
-Disallow the "allow_other" option for unprivileged mounts.
+The mount owner has the following privileges:
 
-Document new way of enabling unprivileged mounts for fuse.
+  - unmount the owned mount
+  - create a submount under the owned mount
 
-Document problems with unprivileged mounts.
+The sysadmin can set the owner explicitly on mount and remount.  When an
+unprivileged user creates a mount, then the owner is automatically set to the
+user.
+
+The following use cases are envisioned:
+
+1) Private namespace, with selected mounts owned by user.  E.g.
+   /home/$USER is a good candidate for allowing unpriv mounts and unmounts
+   within.
+
+2) Private namespace, with all mounts owned by user and having the "nosuid"
+   flag.  User can mount and umount anywhere within the namespace, but suid
+   programs will not work.
+
+3) Global namespace, with a designated directory, which is a mount owned by
+   the user.  E.g.  /mnt/users/$USER is set up so that it is bind mounted onto
+   itself, and set to be owned by $USER.  The user can add/remove mounts only
+   under this directory.
+
+The following extra security measures are taken for unprivileged mounts:
+
+ - usermounts are limited by a sysctl tunable
+ - force "nosuid,nodev" mount options on the created mount
+
+This series increases the size of vmlinux by about 1.5k on x86_64.
+
+For testing unprivileged mounts (and for other purposes) simple
+mount/umount utilities are available from:
+
+  http://www.kernel.org/pub/linux/kernel/people/mszeredi/mmount/
+
+A preliminary patch for util-linux-ng to add the same functionality to
+mount(8) and umount(8) is available here:
+
+  http://lkml.org/lkml/2008/1/16/103
+
+
+This patch:
+
+A new mount flag, MS_SETUSER is used to make a mount owned by a user.  If this
+flag is specified, then the owner will be set to the current fsuid and the
+mount will be marked with the MNT_USER flag.  On remount don't preserve
+previous owner, and treat MS_SETUSER as for a new mount.  The MS_SETUSER flag
+is ignored on mount move.
+
+The MNT_USER flag is not copied on any kind of mount cloning: namespace
+creation, binding or propagation.  For bind mounts the cloned mount(s) are set
+to MNT_USER depending on the MS_SETUSER mount flag.  In all the other cases
+MNT_USER is always cleared.
+
+For MNT_USER mounts a "user=UID" option is added to /proc/PID/mounts.  This is
+compatible with how mount ownership is stored in /etc/mtab.
+
+The rationale for using MS_SETUSER and MNT_USER, to distinguish "user"
+mounts from "non-user" or "legacy" mounts are follows:
+
+  a) Mount(2) and umount(2) on legacy mounts always need CAP_SYS_ADMIN
+     capability.  As opposed to user mounts, which will only require,
+     that the mount owner matches the current fsuid.  So a process
+     with fsuid=0 should not be able to mount/umount legacy mounts
+     without the CAP_SYS_ADMIN capability.
+
+  b) Legacy userspace programs may set fsuid to nonzero before calling
+     mount(2).  In such an unlikely case, this patchset would cause
+     an unintended side effect of making the mount owned by the fsuid.
+
+  c) For legacy mounts, no "user=UID" option should be shown in
+     /proc/mounts for backwards compatibility.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- Documentation/filesystems/fuse.txt |   88 ++++++++++++++++++++++++++++++++++---
- fs/fuse/inode.c                    |   21 ++++++++
- 2 files changed, 103 insertions(+), 6 deletions(-)
+ fs/namespace.c        |   39 +++++++++++++++++++++++++++++++--------
+ fs/pnode.h            |    1 +
+ include/linux/fs.h    |    1 +
+ include/linux/mount.h |    3 +++
+ 4 files changed, 36 insertions(+), 8 deletions(-)
 
-Index: linux/fs/fuse/inode.c
+Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/fuse/inode.c	2008-03-17 20:55:30.000000000 +0100
-+++ linux/fs/fuse/inode.c	2008-03-17 20:55:51.000000000 +0100
-@@ -373,6 +373,19 @@ static int parse_fuse_opt(char *opt, str
- 	d->max_read = ~0;
- 	d->blksize = FUSE_DEFAULT_BLKSIZE;
+--- linux.orig/fs/namespace.c	2008-03-17 20:55:31.000000000 +0100
++++ linux/fs/namespace.c	2008-03-17 20:55:42.000000000 +0100
+@@ -521,6 +521,13 @@ static struct vfsmount *skip_mnt_tree(st
+ 	return p;
+ }
  
-+	/*
-+	 * For unprivileged mounts use current uid/gid.  Still allow
-+	 * "user_id" and "group_id" options for compatibility, but
-+	 * only if they match these values.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		d->user_id = current->uid;
-+		d->user_id_present = 1;
-+		d->group_id = current->gid;
-+		d->group_id_present = 1;
++static void set_mnt_user(struct vfsmount *mnt)
++{
++	WARN_ON(mnt->mnt_flags & MNT_USER);
++	mnt->mnt_uid = current->fsuid;
++	mnt->mnt_flags |= MNT_USER;
++}
 +
+ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+ 					int flag)
+ {
+@@ -535,6 +542,11 @@ static struct vfsmount *clone_mnt(struct
+ 		mnt->mnt_mountpoint = mnt->mnt_root;
+ 		mnt->mnt_parent = mnt;
+ 
++		/* don't copy the MNT_USER flag */
++		mnt->mnt_flags &= ~MNT_USER;
++		if (flag & CL_SETUSER)
++			set_mnt_user(mnt);
++
+ 		if (flag & CL_SLAVE) {
+ 			list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+ 			mnt->mnt_master = old;
+@@ -739,6 +751,8 @@ static void show_mnt_opts(struct seq_fil
+ 		if (mnt->mnt_flags & fs_infop->flag)
+ 			seq_puts(m, fs_infop->str);
+ 	}
++	if (mnt->mnt_flags & MNT_USER)
++		seq_printf(m, ",user=%i", mnt->mnt_uid);
+ }
+ 
+ static void show_type(struct seq_file *m, struct super_block *sb)
+@@ -1364,8 +1378,9 @@ static noinline int do_change_type(struc
+  * noinline this do_mount helper to save do_mount stack space.
+  */
+ static noinline int do_loopback(struct nameidata *nd, char *old_name,
+-				int recurse)
++				int flags)
+ {
++	int clone_fl;
+ 	struct nameidata old_nd;
+ 	struct vfsmount *mnt = NULL;
+ 	int err = mount_is_safe(nd);
+@@ -1385,11 +1400,12 @@ static noinline int do_loopback(struct n
+ 	if (!check_mnt(nd->path.mnt) || !check_mnt(old_nd.path.mnt))
+ 		goto out;
+ 
++	clone_fl = (flags & MS_SETUSER) ? CL_SETUSER : 0;
+ 	err = -ENOMEM;
+-	if (recurse)
+-		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, 0);
++	if (flags & MS_REC)
++		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
+ 	else
+-		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, 0);
++		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
+ 
+ 	if (!mnt)
+ 		goto out;
+@@ -1452,8 +1468,11 @@ static noinline int do_remount(struct na
+ 		err = change_mount_flags(nd->path.mnt, flags);
+ 	else
+ 		err = do_remount_sb(sb, flags, data, 0);
+-	if (!err)
++	if (!err) {
+ 		nd->path.mnt->mnt_flags = mnt_flags;
++		if (flags & MS_SETUSER)
++			set_mnt_user(nd->path.mnt);
 +	}
-+
- 	while ((p = strsep(&opt, ",")) != NULL) {
- 		int token;
- 		int value;
-@@ -401,6 +414,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_USER_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->user_id_present && d->user_id != value)
-+				return 0;
- 			d->user_id = value;
- 			d->user_id_present = 1;
- 			break;
-@@ -408,6 +423,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_GROUP_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->group_id_present && d->group_id != value)
-+				return 0;
- 			d->group_id = value;
- 			d->group_id_present = 1;
- 			break;
-@@ -630,6 +647,10 @@ static int fuse_fill_super(struct super_
- 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
- 		return -EINVAL;
+ 	up_write(&sb->s_umount);
+ 	if (!err)
+ 		security_sb_post_remount(nd->path.mnt, flags, data);
+@@ -1566,10 +1585,13 @@ static noinline int do_new_mount(struct 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
  
-+	/* This is a privileged option */
-+	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
-+		return -EPERM;
+-	mnt = do_kern_mount(type, flags, name, data);
++	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
+ 	if (IS_ERR(mnt))
+ 		return PTR_ERR(mnt);
+ 
++	if (flags & MS_SETUSER)
++		set_mnt_user(mnt);
 +
- 	if (is_bdev) {
- #ifdef CONFIG_BLOCK
- 		if (!sb_set_blocksize(sb, d.blksize))
-Index: linux/Documentation/filesystems/fuse.txt
+ 	return do_add_mount(mnt, nd, mnt_flags, NULL);
+ }
+ 
+@@ -1601,7 +1623,8 @@ int do_add_mount(struct vfsmount *newmnt
+ 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+ 		goto unlock;
+ 
+-	newmnt->mnt_flags = mnt_flags;
++	/* MNT_USER was set earlier */
++	newmnt->mnt_flags |= mnt_flags;
+ 	if ((err = graft_tree(newmnt, nd)))
+ 		goto unlock;
+ 
+@@ -1923,7 +1946,7 @@ long do_mount(char *dev_name, char *dir_
+ 		retval = do_remount(&nd, flags & ~MS_REMOUNT, mnt_flags,
+ 				    data_page);
+ 	else if (flags & MS_BIND)
+-		retval = do_loopback(&nd, dev_name, flags & MS_REC);
++		retval = do_loopback(&nd, dev_name, flags);
+ 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
+ 		retval = do_change_type(&nd, flags);
+ 	else if (flags & MS_MOVE)
+Index: linux/fs/pnode.h
 ===================================================================
---- linux.orig/Documentation/filesystems/fuse.txt	2008-03-17 20:55:30.000000000 +0100
-+++ linux/Documentation/filesystems/fuse.txt	2008-03-17 20:55:51.000000000 +0100
-@@ -215,11 +215,87 @@ the filesystem.  There are several ways 
-   - Abort filesystem through the FUSE control filesystem.  Most
-     powerful method, always works.
+--- linux.orig/fs/pnode.h	2008-03-17 20:55:31.000000000 +0100
++++ linux/fs/pnode.h	2008-03-17 20:55:42.000000000 +0100
+@@ -22,6 +22,7 @@
+ #define CL_MAKE_SHARED 		0x08
+ #define CL_PROPAGATION 		0x10
+ #define CL_PRIVATE 		0x20
++#define CL_SETUSER		0x40
  
--How do non-privileged mounts work?
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+Unprivileged fuse mounts
-+~~~~~~~~~~~~~~~~~~~~~~~~
+ void set_mnt_shared(struct vfsmount *);
+ void clear_mnt_shared(struct vfsmount *);
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2008-03-17 20:55:31.000000000 +0100
++++ linux/include/linux/fs.h	2008-03-17 20:55:42.000000000 +0100
+@@ -125,6 +125,7 @@ extern int dir_notify_enable;
+ #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
+ #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
+ #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
++#define MS_SETUSER	(1<<24) /* set mnt_uid to current user */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
  
--Since the mount() system call is a privileged operation, a helper
--program (fusermount) is needed, which is installed setuid root.
-+Possible problems with unprivileged fuse mounts
-+-----------------------------------------------
-+
-+FUSE was designed from the beginning to be safe for unprivileged
-+users.  This has also been verified in practice over many years, with
-+some distributions enabling unprivileged FUSE mounts by default.
-+
-+However, there are cases when unprivileged mounting a fuse filesystem
-+may be problematic, particularly for multi-user systems with untrusted
-+users.  So here are few words of warning:
-+
-+Due to the design of the process freezer, a hanging (due to network
-+problems, etc) or malicious filesystem may prevent suspending to ram
-+or hibernation to succeed.  This is not actually unique to FUSE, as
-+any hanging network filesystem will have the same affect.
-+
-+It is not always possible to use kill(2) (not even with SIGKILL) to
-+terminate a process using a FUSE filesystem (see section "Interrupting
-+filesystem operations" above).  As a special case of the above,
-+killing a self-deadlocked FUSE process is not possible, and even
-+killall5 will not terminate it.
-+
-+If the above could pose a threat to the system, it is recommended,
-+that unprivileged fuse mounts are not enabled.
-+
-+Ways of enabling user mounts
-+----------------------------
-+
-+Now there are two different ways of allowing unprivileged fuse mounts:
-+
-+ 1) new way: unprivileged mount syscall
-+
-+ 2) old way: suid-root fusermount utility
-+
-+Unprivileged mount syscall
-+--------------------------
-+
-+To enable this do
-+
-+  echo 1 > /proc/sys/fs/types/fuse/usermount_safe
-+
-+or add this line to /etc/sysctl.conf:
-+
-+  fs.types.fuse.usermount_safe = 1
-+
-+More information can be found in Documentation/filesystems/proc.txt
-+under the /proc/sys/fs/types/ heading.  Also see description of
-+nr_user_mounts and max_user_mounts under /proc/sys/fs.
-+
-+This doesn't in itself allow users to create mounts, first root needs
-+to create a mount owned by the user, under which the user can create
-+submounts.
-+
-+For example to enable submounts under /home/xyz/mnt do:
-+
-+  mount --bind -ouser=xyz /home/xyz/mnt /home/xyz/mnt
-+
-+or add this line to /etc/fstab:
-+
-+  /home/xyz/mnt  /home/xyz/mnt  none  bind,user=xyz  0 0
-+
-+And finally, make sure, that the user has read and write permissions
-+on /dev/fuse (installing fuse should have already taken care of this):
-+
-+  chmod 0666 /dev/fuse
-+
-+or create a file under /etc/udev/rules.d/ containing:
-+
-+  KERNEL=="fuse", MODE="0666"
-+
-+After this, mounting fuse filesystems under ~xyz/mnt should work, even
-+if fusermount is not installed setuid-root.
-+
-+Suid-root fusermount utility
-+----------------------------
-+
-+[Some of the details described here apply to the new, unprivileged
-+mount system call as well].
+Index: linux/include/linux/mount.h
+===================================================================
+--- linux.orig/include/linux/mount.h	2008-03-17 20:55:31.000000000 +0100
++++ linux/include/linux/mount.h	2008-03-17 20:55:42.000000000 +0100
+@@ -33,6 +33,7 @@ struct mnt_namespace;
  
- The implication of providing non-privileged mounts is that the mount
- owner must not be able to use this capability to compromise the
-@@ -235,7 +311,7 @@ system.  Obvious requirements arising fr
-     other users' or the super user's processes
+ #define MNT_SHRINKABLE	0x100
+ #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
++#define MNT_USER	0x400
  
- How are requirements fulfilled?
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+- - - - - - - - - - - - - - - -
+ #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
+ #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
+@@ -71,6 +72,8 @@ struct vfsmount {
+ 	 * are held, and all mnt_writer[]s on this mount have 0 as their ->count
+ 	 */
+ 	atomic_t __mnt_writers;
++
++	uid_t mnt_uid;			/* owner of the mount */
+ };
  
-  A) The mount owner could gain elevated privileges by either:
- 
-@@ -300,7 +376,7 @@ How are requirements fulfilled?
- 	filesystem, since SIGSTOP can be used to get a similar effect.
- 
- I think these limitations are unacceptable?
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+- - - - - - - - - - - - - - - - - - - - - -
- 
- If a sysadmin trusts the users enough, or can ensure through other
- measures, that system processes will never enter non-privileged
+ static inline struct vfsmount *mntget(struct vfsmount *mnt)
 
 --
