@@ -1,133 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYCQAhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYCQAi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYCQAhN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 20:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYCQAg7
+	id S1755189AbYCQAi5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 20:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYCQAit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 20:36:59 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38906 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbYCQAg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 20:36:59 -0400
-Date: Mon, 17 Mar 2008 00:36:55 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: [git pull] drm fixes for linux-2.6.25-rc6
-Message-ID: <alpine.DEB.0.82.0803170033270.32458@skynet.skynet.ie>
+	Sun, 16 Mar 2008 20:38:49 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:37335 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbYCQAis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 20:38:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=ExFoS475swZeaXE+cHpqsaLd/wzKUu4oYlgrQvAirNj4CcbqIq7JIryFQ0xGFtVhL5fHDsLy6kfk+hAnh69NAc9SoAJUNQG3blLnfi45h8Vdlvtfq9InR+6HCcWMfpboO3v5f9OURIJWU0/f17z6v9T0x3Wx+7JY3jwfXJamsuM=
+Message-ID: <86802c440803161738v77c8e6a7s360cc8672ec17bb0@mail.gmail.com>
+Date: Sun, 16 Mar 2008 17:38:45 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, steve@lobefin.net,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Andi Kleen" <ak@suse.de>
+Subject: [PATCH] x86: trim mtrr don't close gap for resource allocation
+Cc: "Linux Kernel ML" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_15446_8248837.1205714325039"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_15446_8248837.1205714325039
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi Linus,
 
-Please pull the 'drm-fixes' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
 
-Sorry this is so late, but a number of things cropped up in the last week 
-I thought were urgent enough to get into 2.6.25 final.
+------=_Part_15446_8248837.1205714325039
+Content-Type: text/x-patch; name=update_memory_region.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdwb6sg50
+Content-Disposition: attachment; filename=update_memory_region.patch
 
-The PCI GART changes should fix
-'2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang'
-
-The VIA fixes are for a number of upstream bugs, along with the pci ids 
-fixups so we work properly on a new series of ATI cards.
-
-Dave.
-
- drivers/char/drm/ati_pcigart.c |   91 ++++++++++------------------------------
- drivers/char/drm/drmP.h        |    3 +
- drivers/char/drm/drm_fops.c    |    7 ++-
- drivers/char/drm/drm_lock.c    |   35 +++++++++-------
- drivers/char/drm/drm_pciids.h  |    7 ++-
- drivers/char/drm/r128_cce.c    |    1 +
- drivers/char/drm/radeon_cp.c   |    1 +
- drivers/char/drm/via_dma.c     |   59 +++++++++++++++++++++++---
- drivers/char/drm/via_dmablit.c |    2 +-
- 9 files changed, 110 insertions(+), 96 deletions(-)
-
-commit b05c23851ab820b1957cd2f322eaa1ac44c196bd
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Mon Mar 17 10:24:24 2008 +1000
-
-    drm/ati_pcigart: fix the PCIGART to use drm_pci to allocate GART table.
-    
-    This fixes a problem on 64-bit with 4GB with ATI RS690 chipsets. It
-    makes sure the pcigart table is allocated in coherent memory for DMA operations.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 16d3be46d9ffbc2c562b25d66d59666db2cf2cd5
-Author: Alex Deucher <alexdeucher@gmail.com>
-Date:   Mon Mar 17 10:22:12 2008 +1000
-
-    drm/radeon: fixup RV550 chip family
-    
-    This fixes up the RV550 chips which are based on RV515, not RV530.
-    It also adds another RS690 PCI ID.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit f0fb6d7798e7e2d1f37a2c15892910661bdaba55
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Mon Mar 17 10:07:20 2008 +1000
-
-    drm/via: attempt again to stabilise the AGP DMA command submission.
-    
-    It's worth remembering that all new bright ideas on how to make this command reader work properly and according to docs will probably fail :( Bring in some old code.
-    
-    Also allow a larger SG-DMA download stride, and remove unnecessary waits for
-    command regulators pauses.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 9df5808cca52f33e1deb52b5010c68c6ed1656fe
-Author: Mike Isely <isely@isely.net>
-Date:   Thu Mar 13 15:30:35 2008 -0500
-
-    drm: Fix race that can lockup the kernel
-    
-    The i915_vblank_swap() function schedules an automatic buffer swap
-    upon receipt of the vertical sync interrupt.  Such an operation is
-    lengthy so it can't be allowed to happen in normal interrupt context,
-    thus the DRM implements this by scheduling the work in a kernel
-    softirq-scheduled tasklet.  In order for the buffer swap to work
-    safely, the DRM's central lock must be taken, via a call to
-    drm_lock_take() located in drivers/char/drm/drm_irq.c within the
-    function drm_locked_tasklet_func().  The lock-taking logic uses a
-    non-interrupt-blocking spinlock to implement the manipulations needed
-    to take the lock.  This semantic would be safe if all attempts to use
-    the spinlock only happen from process context.  However this buffer
-    swap happens from softirq context which is really a form of interrupt
-    context.  Thus we have an unsafe situation, in that
-    drm_locked_tasklet_func() can block on a spinlock already taken by a
-    thread in process context which will never get scheduled again because
-    of the blocked softirq tasklet.  This wedges the kernel hard.
-    
-    To trigger this bug, run a dual-head cloned mode configuration which
-    uses the i915 drm, then execute an opengl application which
-    synchronizes buffer swaps against the vertical sync interrupt.  In my
-    testing, a lockup always results after running anywhere from 5 minutes
-    to an hour and a half.  I believe dual-head is needed to really
-    trigger the problem because then the vertical sync interrupt handling
-    is no longer predictable (due to being interrupt-sourced from two
-    different heads running at different speeds).  This raises the
-    probability of the tasklet trying to run while the userspace DRI is
-    doing things to the GPU (and manipulating the DRM lock).
-    
-    The fix is to change the relevant spinlock semantics to be the
-    interrupt-blocking form.  After this change I am no longer able to
-    trigger the lockup; the longest test run so far was 20 hours (test
-    stopped after that point).
-    
-    Note: I have examined the places where this spinlock is being
-    employed; all are reasonably short bounded sequences and should be
-    suitable for interrupts being blocked without impacting overall kernel
-    interrupt response latency.
-    
-    Signed-off-by: Mike Isely <isely@pobox.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+W1BBVENIXSB4ODY6IHRyaW0gbXRyciBkb24ndCBjbG9zZSBnYXAgZm9yIHJlc291cmNlIGFsbG9j
+YXRpb24uCgpmb3IKCWh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
+MDIzMgoKdXNlIHVwZGF0ZV9tZW1vcnlfcmFuZ2UgaW5zdGVhZCBvZiBhZGRfbWVtb3J5X3Jhbmdl
+IGRpcmVjdGx5CnRvIGF2b2lkIGNsb3NpbmcgdGhhdCBnYXAuCgpTaWduZWQtb2ZmLWJ5OiBZaW5n
+aGFpIEx1IDx5aGx1LmtlbnJlbEBnbWFpbC5jb20+CgpJbmRleDogbGludXgtMi42L2FyY2gveDg2
+L2tlcm5lbC9jcHUvbXRyci9tYWluLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJj
+aC94ODYva2VybmVsL2NwdS9tdHJyL21haW4uYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5l
+bC9jcHUvbXRyci9tYWluLmMKQEAgLTcxMSw3ICs3MTEsOCBAQCBpbnQgX19pbml0IG10cnJfdHJp
+bV91bmNhY2hlZF9tZW1vcnkodW5zCiAJCXRyaW1fc2l6ZSA9IGVuZF9wZm47CiAJCXRyaW1fc2l6
+ZSA8PD0gUEFHRV9TSElGVDsKIAkJdHJpbV9zaXplIC09IHRyaW1fc3RhcnQ7Ci0JCWFkZF9tZW1v
+cnlfcmVnaW9uKHRyaW1fc3RhcnQsIHRyaW1fc2l6ZSwgRTgyMF9SRVNFUlZFRCk7CisJCXVwZGF0
+ZV9tZW1vcnlfcmFuZ2UodHJpbV9zdGFydCwgdHJpbV9zaXplLCBFODIwX1JBTSwKKwkJCQkJRTgy
+MF9SRVNFUlZFRCk7CiAJCXVwZGF0ZV9lODIwKCk7CiAJCXJldHVybiAxOwogCX0KSW5kZXg6IGxp
+bnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvZTgyMF8zMi5jCj09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
+Ni5vcmlnL2FyY2gveDg2L2tlcm5lbC9lODIwXzMyLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9r
+ZXJuZWwvZTgyMF8zMi5jCkBAIC03MzYsNiArNzM2LDMyIEBAIHN0YXRpYyBpbnQgX19pbml0IHBh
+cnNlX21lbW1hcChjaGFyICphcmcKIAlyZXR1cm4gMDsKIH0KIGVhcmx5X3BhcmFtKCJtZW1tYXAi
+LCBwYXJzZV9tZW1tYXApOwordm9pZCBfX2luaXQgdXBkYXRlX21lbW9yeV9yYW5nZSh1NjQgc3Rh
+cnQsIHU2NCBzaXplLCB1bnNpZ25lZCBvbGRfdHlwZSwKKwkJCQl1bnNpZ25lZCBuZXdfdHlwZSkK
+K3sKKwlpbnQgaTsKKworCUJVR19PTihvbGRfdHlwZSA9PSBuZXdfdHlwZSk7CisKKwlmb3IgKGkg
+PSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlzdHJ1Y3QgZTgyMGVudHJ5ICplaSA9ICZl
+ODIwLm1hcFtpXTsKKwkJdTY0IGZpbmFsX3N0YXJ0LCBmaW5hbF9lbmQ7CisJCWlmIChlaS0+dHlw
+ZSAhPSBvbGRfdHlwZSkKKwkJCWNvbnRpbnVlOworCQkvKiB0b3RhbGx5IGNvdmVyZWQ/ICovCisJ
+CWlmIChlaS0+YWRkciA+PSBzdGFydCAmJiBlaS0+c2l6ZSA8PSBzaXplKSB7CisJCQllaS0+dHlw
+ZSA9IG5ld190eXBlOworCQkJY29udGludWU7CisJCX0KKwkJLyogcGFydGlhbGx5IGNvdmVyZWQg
+Ki8KKwkJZmluYWxfc3RhcnQgPSBtYXgoc3RhcnQsIGVpLT5hZGRyKTsKKwkJZmluYWxfZW5kID0g
+bWluKHN0YXJ0ICsgc2l6ZSwgZWktPmFkZHIgKyBlaS0+c2l6ZSk7CisJCWlmIChmaW5hbF9zdGFy
+dCA+PSBmaW5hbF9lbmQpCisJCQljb250aW51ZTsKKwkJYWRkX21lbW9yeV9yZWdpb24oZmluYWxf
+c3RhcnQsIGZpbmFsX2VuZCAtIGZpbmFsX3N0YXJ0LAorCQkJCQkgbmV3X3R5cGUpOworCX0KK30K
+IHZvaWQgX19pbml0IHVwZGF0ZV9lODIwKHZvaWQpCiB7CiAJdTggbnJfbWFwOwpJbmRleDogbGlu
+dXgtMi42L2FyY2gveDg2L2tlcm5lbC9lODIwXzY0LmMKPT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42
+Lm9yaWcvYXJjaC94ODYva2VybmVsL2U4MjBfNjQuYworKysgbGludXgtMi42L2FyY2gveDg2L2tl
+cm5lbC9lODIwXzY0LmMKQEAgLTczMSw2ICs3MzEsMzMgQEAgdm9pZCBfX2luaXQgZmluaXNoX2U4
+MjBfcGFyc2luZyh2b2lkKQogCX0KIH0KIAordm9pZCBfX2luaXQgdXBkYXRlX21lbW9yeV9yYW5n
+ZSh1NjQgc3RhcnQsIHU2NCBzaXplLCB1bnNpZ25lZCBvbGRfdHlwZSwKKwkJCQl1bnNpZ25lZCBu
+ZXdfdHlwZSkKK3sKKwlpbnQgaTsKKworCUJVR19PTihvbGRfdHlwZSA9PSBuZXdfdHlwZSk7CisK
+Kwlmb3IgKGkgPSAwOyBpIDwgZTgyMC5ucl9tYXA7IGkrKykgeworCQlzdHJ1Y3QgZTgyMGVudHJ5
+ICplaSA9ICZlODIwLm1hcFtpXTsKKwkJdTY0IGZpbmFsX3N0YXJ0LCBmaW5hbF9lbmQ7CisJCWlm
+IChlaS0+dHlwZSAhPSBvbGRfdHlwZSkKKwkJCWNvbnRpbnVlOworCQkvKiB0b3RhbGx5IGNvdmVy
+ZWQ/ICovCisJCWlmIChlaS0+YWRkciA+PSBzdGFydCAmJiBlaS0+c2l6ZSA8PSBzaXplKSB7CisJ
+CQllaS0+dHlwZSA9IG5ld190eXBlOworCQkJY29udGludWU7CisJCX0KKwkJLyogcGFydGlhbGx5
+IGNvdmVyZWQgKi8KKwkJZmluYWxfc3RhcnQgPSBtYXgoc3RhcnQsIGVpLT5hZGRyKTsKKwkJZmlu
+YWxfZW5kID0gbWluKHN0YXJ0ICsgc2l6ZSwgZWktPmFkZHIgKyBlaS0+c2l6ZSk7CisJCWlmIChm
+aW5hbF9zdGFydCA+PSBmaW5hbF9lbmQpCisJCQljb250aW51ZTsKKwkJYWRkX21lbW9yeV9yZWdp
+b24oZmluYWxfc3RhcnQsIGZpbmFsX2VuZCAtIGZpbmFsX3N0YXJ0LAorCQkJCQkgbmV3X3R5cGUp
+OworCX0KK30KKwogdm9pZCBfX2luaXQgdXBkYXRlX2U4MjAodm9pZCkKIHsKIAl1OCBucl9tYXA7
+CkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2L2U4MjBfMzIuaAo9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0t
+LSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14ODYvZTgyMF8zMi5oCisrKyBsaW51eC0yLjYv
+aW5jbHVkZS9hc20teDg2L2U4MjBfMzIuaApAQCAtMjgsNiArMjgsOCBAQCBleHRlcm4gdm9pZCBm
+aW5kX21heF9wZm4odm9pZCk7CiBleHRlcm4gdm9pZCByZWdpc3Rlcl9ib290bWVtX2xvd19wYWdl
+cyh1bnNpZ25lZCBsb25nIG1heF9sb3dfcGZuKTsKIGV4dGVybiB2b2lkIGFkZF9tZW1vcnlfcmVn
+aW9uKHVuc2lnbmVkIGxvbmcgbG9uZyBzdGFydCwKIAkJCSAgICAgIHVuc2lnbmVkIGxvbmcgbG9u
+ZyBzaXplLCBpbnQgdHlwZSk7CitleHRlcm4gdm9pZCB1cGRhdGVfbWVtb3J5X3JhbmdlKHU2NCBz
+dGFydCwgdTY0IHNpemUsIHVuc2lnbmVkIG9sZF90eXBlLAorCQkJCXVuc2lnbmVkIG5ld190eXBl
+KTsKIGV4dGVybiB2b2lkIGU4MjBfcmVnaXN0ZXJfbWVtb3J5KHZvaWQpOwogZXh0ZXJuIHZvaWQg
+bGltaXRfcmVnaW9ucyh1bnNpZ25lZCBsb25nIGxvbmcgc2l6ZSk7CiBleHRlcm4gdm9pZCBwcmlu
+dF9tZW1vcnlfbWFwKGNoYXIgKndobyk7CkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2
+L2U4MjBfNjQuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14ODYv
+ZTgyMF82NC5oCisrKyBsaW51eC0yLjYvaW5jbHVkZS9hc20teDg2L2U4MjBfNjQuaApAQCAtMTgs
+NiArMTgsOCBAQCBleHRlcm4gdW5zaWduZWQgbG9uZyBmaW5kX2U4MjBfYXJlYSh1bnNpCiAJCQkJ
+ICAgIHVuc2lnbmVkIGxvbmcgc2l6ZSwgdW5zaWduZWQgbG9uZyBhbGlnbik7CiBleHRlcm4gdm9p
+ZCBhZGRfbWVtb3J5X3JlZ2lvbih1bnNpZ25lZCBsb25nIHN0YXJ0LCB1bnNpZ25lZCBsb25nIHNp
+emUsIAogCQkJICAgICAgaW50IHR5cGUpOworZXh0ZXJuIHZvaWQgdXBkYXRlX21lbW9yeV9yYW5n
+ZSh1NjQgc3RhcnQsIHU2NCBzaXplLCB1bnNpZ25lZCBvbGRfdHlwZSwKKwkJCQl1bnNpZ25lZCBu
+ZXdfdHlwZSk7CiBleHRlcm4gdm9pZCBzZXR1cF9tZW1vcnlfcmVnaW9uKHZvaWQpOwogZXh0ZXJu
+IHZvaWQgY29udGlnX2U4MjBfc2V0dXAodm9pZCk7IAogZXh0ZXJuIHVuc2lnbmVkIGxvbmcgZTgy
+MF9lbmRfb2ZfcmFtKHZvaWQpOwo=
+------=_Part_15446_8248837.1205714325039--
