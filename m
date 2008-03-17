@@ -1,193 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbYCQUCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYCQUDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbYCQUCp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbYCQUCV
+	id S1755071AbYCQUDI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYCQUCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:02:21 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51447 "EHLO
+	Mon, 17 Mar 2008 16:02:24 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51449 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753255AbYCQUCT (ORCPT
+	with ESMTP id S1753913AbYCQUCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:02:19 -0400
-Message-Id: <20080317200153.430619058@szeredi.hu>
+	Mon, 17 Mar 2008 16:02:20 -0400
+Message-Id: <20080317200154.777097073@szeredi.hu>
 References: <20080317200053.447640802@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Mar 2008 21:01:00 +0100
+Date: Mon, 17 Mar 2008 21:01:01 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
        viro@zeniv.linux.org.uk
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 07/11] unprivileged mounts: add sysctl tunable for "safe" property
-Content-Disposition: inline; filename=unprivileged-mounts-add-sysctl-tunable-for-safe-property.patch
+Subject: [patch 08/11] unprivileged mounts: make fuse safe
+Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-fuse-mounts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add the following:
+Don't require the "user_id=" and "group_id=" options for unprivileged mounts,
+but if they are present, verify them for sanity.
 
-  /proc/sys/fs/types/${FS_TYPE}/usermount_safe
+Disallow the "allow_other" option for unprivileged mounts.
+
+Document new way of enabling unprivileged mounts for fuse.
+
+Document problems with unprivileged mounts.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- Documentation/filesystems/proc.txt |   31 +++++++++++++++++++
- fs/filesystems.c                   |   60 +++++++++++++++++++++++++++++++++++++
- include/linux/fs.h                 |    1 
- 3 files changed, 92 insertions(+)
+ Documentation/filesystems/fuse.txt |   88 ++++++++++++++++++++++++++++++++++---
+ fs/fuse/inode.c                    |   21 ++++++++
+ 2 files changed, 103 insertions(+), 6 deletions(-)
 
-Index: linux/fs/filesystems.c
+Index: linux/fs/fuse/inode.c
 ===================================================================
---- linux.orig/fs/filesystems.c	2008-03-17 20:55:30.000000000 +0100
-+++ linux/fs/filesystems.c	2008-03-17 20:55:50.000000000 +0100
-@@ -12,6 +12,7 @@
- #include <linux/kmod.h>
- #include <linux/init.h>
- #include <linux/module.h>
-+#include <linux/sysctl.h>
- #include <asm/uaccess.h>
+--- linux.orig/fs/fuse/inode.c	2008-03-17 20:55:30.000000000 +0100
++++ linux/fs/fuse/inode.c	2008-03-17 20:55:51.000000000 +0100
+@@ -373,6 +373,19 @@ static int parse_fuse_opt(char *opt, str
+ 	d->max_read = ~0;
+ 	d->blksize = FUSE_DEFAULT_BLKSIZE;
  
- /*
-@@ -51,6 +52,57 @@ static struct file_system_type **find_fi
- 	return p;
- }
- 
-+#define MAX_FILESYSTEM_VARS 1
++	/*
++	 * For unprivileged mounts use current uid/gid.  Still allow
++	 * "user_id" and "group_id" options for compatibility, but
++	 * only if they match these values.
++	 */
++	if (!capable(CAP_SYS_ADMIN)) {
++		d->user_id = current->uid;
++		d->user_id_present = 1;
++		d->group_id = current->gid;
++		d->group_id_present = 1;
 +
-+struct filesystem_sysctl_table {
-+	struct ctl_table_header *header;
-+	struct ctl_table table[MAX_FILESYSTEM_VARS + 1];
-+};
-+
-+/*
-+ * Create /sys/fs/types/${FSNAME} directory with per fs-type tunables.
-+ */
-+static int filesystem_sysctl_register(struct file_system_type *fs)
-+{
-+	struct filesystem_sysctl_table *t;
-+	struct ctl_path path[] = {
-+		{ .procname = "fs", .ctl_name = CTL_FS },
-+		{ .procname = "types", .ctl_name = CTL_UNNUMBERED },
-+		{ .procname = fs->name, .ctl_name = CTL_UNNUMBERED },
-+		{ }
-+	};
-+
-+	t = kzalloc(sizeof(*t), GFP_KERNEL);
-+	if (!t)
-+		return -ENOMEM;
-+
-+
-+	t->table[0].ctl_name = CTL_UNNUMBERED;
-+	t->table[0].procname = "usermount_safe";
-+	t->table[0].maxlen = sizeof(int);
-+	t->table[0].data = &fs->fs_safe;
-+	t->table[0].mode = 0644;
-+	t->table[0].proc_handler = &proc_dointvec;
-+
-+	t->header = register_sysctl_paths(path, t->table);
-+	if (!t->header) {
-+		kfree(t);
-+		return -ENOMEM;
 +	}
 +
-+	fs->sysctl_table = t;
-+
-+	return 0;
-+}
-+
-+static void filesystem_sysctl_unregister(struct file_system_type *fs)
-+{
-+	struct filesystem_sysctl_table *t = fs->sysctl_table;
-+
-+	unregister_sysctl_table(t->header);
-+	kfree(t);
-+}
-+
- /**
-  *	register_filesystem - register a new filesystem
-  *	@fs: the file system structure
-@@ -80,6 +132,13 @@ int register_filesystem(struct file_syst
- 	else
- 		*p = fs;
- 	write_unlock(&file_systems_lock);
-+
-+	if (res == 0) {
-+		res = filesystem_sysctl_register(fs);
-+		if (res != 0)
-+			unregister_filesystem(fs);
-+	}
-+
- 	return res;
- }
+ 	while ((p = strsep(&opt, ",")) != NULL) {
+ 		int token;
+ 		int value;
+@@ -401,6 +414,8 @@ static int parse_fuse_opt(char *opt, str
+ 		case OPT_USER_ID:
+ 			if (match_int(&args[0], &value))
+ 				return 0;
++			if (d->user_id_present && d->user_id != value)
++				return 0;
+ 			d->user_id = value;
+ 			d->user_id_present = 1;
+ 			break;
+@@ -408,6 +423,8 @@ static int parse_fuse_opt(char *opt, str
+ 		case OPT_GROUP_ID:
+ 			if (match_int(&args[0], &value))
+ 				return 0;
++			if (d->group_id_present && d->group_id != value)
++				return 0;
+ 			d->group_id = value;
+ 			d->group_id_present = 1;
+ 			break;
+@@ -630,6 +647,10 @@ static int fuse_fill_super(struct super_
+ 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
+ 		return -EINVAL;
  
-@@ -108,6 +167,7 @@ int unregister_filesystem(struct file_sy
- 			*tmp = fs->next;
- 			fs->next = NULL;
- 			write_unlock(&file_systems_lock);
-+			filesystem_sysctl_unregister(fs);
- 			return 0;
- 		}
- 		tmp = &(*tmp)->next;
-Index: linux/include/linux/fs.h
++	/* This is a privileged option */
++	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
+ 	if (is_bdev) {
+ #ifdef CONFIG_BLOCK
+ 		if (!sb_set_blocksize(sb, d.blksize))
+Index: linux/Documentation/filesystems/fuse.txt
 ===================================================================
---- linux.orig/include/linux/fs.h	2008-03-17 20:55:49.000000000 +0100
-+++ linux/include/linux/fs.h	2008-03-17 20:55:50.000000000 +0100
-@@ -1491,6 +1491,7 @@ struct file_system_type {
- 	struct module *owner;
- 	struct file_system_type * next;
- 	struct list_head fs_supers;
-+	struct filesystem_sysctl_table *sysctl_table;
+--- linux.orig/Documentation/filesystems/fuse.txt	2008-03-17 20:55:30.000000000 +0100
++++ linux/Documentation/filesystems/fuse.txt	2008-03-17 20:55:51.000000000 +0100
+@@ -215,11 +215,87 @@ the filesystem.  There are several ways 
+   - Abort filesystem through the FUSE control filesystem.  Most
+     powerful method, always works.
  
- 	struct lock_class_key s_lock_key;
- 	struct lock_class_key s_umount_key;
-Index: linux/Documentation/filesystems/proc.txt
-===================================================================
---- linux.orig/Documentation/filesystems/proc.txt	2008-03-17 20:55:47.000000000 +0100
-+++ linux/Documentation/filesystems/proc.txt	2008-03-17 20:55:50.000000000 +0100
-@@ -44,6 +44,7 @@ Table of Contents
-   2.14	/proc/<pid>/io - Display the IO accounting fields
-   2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
-   2.16	/proc/<pid>/mountinfo - Information about mounts
-+  2.17	/proc/sys/fs/types - File system type specific parameters
+-How do non-privileged mounts work?
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Unprivileged fuse mounts
++~~~~~~~~~~~~~~~~~~~~~~~~
  
- ------------------------------------------------------------------------------
- Preface
-@@ -2392,4 +2393,34 @@ For more information see:
+-Since the mount() system call is a privileged operation, a helper
+-program (fusermount) is needed, which is installed setuid root.
++Possible problems with unprivileged fuse mounts
++-----------------------------------------------
++
++FUSE was designed from the beginning to be safe for unprivileged
++users.  This has also been verified in practice over many years, with
++some distributions enabling unprivileged FUSE mounts by default.
++
++However, there are cases when unprivileged mounting a fuse filesystem
++may be problematic, particularly for multi-user systems with untrusted
++users.  So here are few words of warning:
++
++Due to the design of the process freezer, a hanging (due to network
++problems, etc) or malicious filesystem may prevent suspending to ram
++or hibernation to succeed.  This is not actually unique to FUSE, as
++any hanging network filesystem will have the same affect.
++
++It is not always possible to use kill(2) (not even with SIGKILL) to
++terminate a process using a FUSE filesystem (see section "Interrupting
++filesystem operations" above).  As a special case of the above,
++killing a self-deadlocked FUSE process is not possible, and even
++killall5 will not terminate it.
++
++If the above could pose a threat to the system, it is recommended,
++that unprivileged fuse mounts are not enabled.
++
++Ways of enabling user mounts
++----------------------------
++
++Now there are two different ways of allowing unprivileged fuse mounts:
++
++ 1) new way: unprivileged mount syscall
++
++ 2) old way: suid-root fusermount utility
++
++Unprivileged mount syscall
++--------------------------
++
++To enable this do
++
++  echo 1 > /proc/sys/fs/types/fuse/usermount_safe
++
++or add this line to /etc/sysctl.conf:
++
++  fs.types.fuse.usermount_safe = 1
++
++More information can be found in Documentation/filesystems/proc.txt
++under the /proc/sys/fs/types/ heading.  Also see description of
++nr_user_mounts and max_user_mounts under /proc/sys/fs.
++
++This doesn't in itself allow users to create mounts, first root needs
++to create a mount owned by the user, under which the user can create
++submounts.
++
++For example to enable submounts under /home/xyz/mnt do:
++
++  mount --bind -ouser=xyz /home/xyz/mnt /home/xyz/mnt
++
++or add this line to /etc/fstab:
++
++  /home/xyz/mnt  /home/xyz/mnt  none  bind,user=xyz  0 0
++
++And finally, make sure, that the user has read and write permissions
++on /dev/fuse (installing fuse should have already taken care of this):
++
++  chmod 0666 /dev/fuse
++
++or create a file under /etc/udev/rules.d/ containing:
++
++  KERNEL=="fuse", MODE="0666"
++
++After this, mounting fuse filesystems under ~xyz/mnt should work, even
++if fusermount is not installed setuid-root.
++
++Suid-root fusermount utility
++----------------------------
++
++[Some of the details described here apply to the new, unprivileged
++mount system call as well].
  
-   Documentation/filesystems/sharedsubtree.txt
+ The implication of providing non-privileged mounts is that the mount
+ owner must not be able to use this capability to compromise the
+@@ -235,7 +311,7 @@ system.  Obvious requirements arising fr
+     other users' or the super user's processes
  
-+2.17 /proc/sys/fs/types/ - File system type specific parameters
-+----------------------------------------------------------------
-+
-+There's a separate directory /proc/sys/fs/types/<type>/ for each
-+filesystem type, containing the following files:
-+
-+usermount_safe
-+--------------
-+
-+Setting this to non-zero will allow filesystems of this type to be
-+mounted by unprivileged users (note, that there are other
-+prerequisites as well).
-+
-+Fuse has been designed to be as safe as possible, and some
-+distributions already ship with unprivileged fuse mounts enabled by
-+default.  There are still some situations (multi-user systems with
-+untrusted users in particular), where enabling this for fuse might not
-+be appropriate.  For more details, see Documentation/filesystems/fuse.txt
-+
-+Procfs is also safe, but unprivileged mounting of it is not usually
-+necessary (bind mounting is equivalent).
-+
-+Most other filesystems are unsafe.  Here are just some of the issues,
-+that must be resolved before a filesystem can be declared safe:
-+
-+ - no strict input checking (buffer overruns, directory loops, etc)
-+ - network filesystem deadlocks when mounting from localhost
-+ - no permission checking when opening the device
-+ - changing mount options when mounting a new instance of a filesystem
-+
- ------------------------------------------------------------------------------
+ How are requirements fulfilled?
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++- - - - - - - - - - - - - - - -
+ 
+  A) The mount owner could gain elevated privileges by either:
+ 
+@@ -300,7 +376,7 @@ How are requirements fulfilled?
+ 	filesystem, since SIGSTOP can be used to get a similar effect.
+ 
+ I think these limitations are unacceptable?
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++- - - - - - - - - - - - - - - - - - - - - -
+ 
+ If a sysadmin trusts the users enough, or can ensure through other
+ measures, that system processes will never enter non-privileged
 
 --
