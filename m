@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbYCQTGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYCQTI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbYCQTGf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 15:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYCQTGZ
+	id S1755636AbYCQTI4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 15:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYCQTIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 15:06:25 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39524 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbYCQTGY (ORCPT
+	Mon, 17 Mar 2008 15:08:49 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:45504 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYCQTIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 15:06:24 -0400
-Date: Mon, 17 Mar 2008 12:06:05 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org, mingo@elte.hu, ego@in.ibm.com,
-       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       akpm@linux-foundation.org, josh@freedesktop.org, tglx@linutronix.de,
-       niv@us.ibm.com
-Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
-Message-ID: <20080317190605.GG10955@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080317010821.GA29875@linux.vnet.ibm.com> <20080317183047.GA188@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080317183047.GA188@tv-sign.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 17 Mar 2008 15:08:48 -0400
+X-Greylist: delayed 1730 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Mar 2008 15:08:48 EDT
+Date: Mon, 17 Mar 2008 19:39:41 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.25-rc6
+Message-ID: <20080317193941.6f247ea1@hyperion.delvare>
+In-Reply-To: <47DE815C.4060906@googlemail.com>
+References: <alpine.LFD.1.00.0803161651350.3020@woody.linux-foundation.org>
+	<47DE815C.4060906@googlemail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 09:30:47PM +0300, Oleg Nesterov wrote:
-> On 03/16, Paul E. McKenney wrote:
-> > 
-> > In the process of writing up the mechanical proof of correctness for the
-> > dynticks/preemptable-RCU interface, I noticed misplaced memory barriers
-> > in rcu_enter_nohz() and rcu_exit_nohz().
+Hi Gabriel,
+
+On Mon, 17 Mar 2008 15:34:04 +0100, Gabriel C wrote:
+> Linus Torvalds wrote:
 > 
-> Can't comment this patch, there is no rcu_enter_nohz() in my rcupreempt.h ;)
-
-It is in 2.6.25-rc4 and later.  ;-)
-
-> I'm not sure the code below is up to date, but what I have in
-> arch/s390/kernel/time.c is:
+> > Zhang, Rui (2):
+> >       thermal: fix generic thermal I/F for hwmon
 > 
-> 	stop_hz_timer:
+> That commit broke lmsensros here ( found by bisect ). 
+> ...
 > 
-> 		cpu_set(cpu, nohz_cpu_mask);
-> 		
-> 		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
-> 			cpu_clear(cpu, nohz_cpu_mask);
-> 			return;
-> 		}
+> Can't access procfs/sysfs file
+> Kernel interface access error
+> For 2.6 kernels, make sure you have mounted sysfs and libsensors
+> was compiled with sysfs support!
 > 
-> Don't we need smp_mb() after cpu_set() ?
+> ...
+> 
+> Of course proc and sysfs is mounted and the lib has that support :)
 
-S390's memory model is quite strong, so it might not be needed.  In any
-case, if needed, it goes -before- the cpu_set(), because the problems
-would arise if prior RCU read-side critical sections were to be reordered
-to follow this cpu_set(), right?
+This has been reported as:
+http://bugzilla.kernel.org/show_bug.cgi?id=10259
+https://bugzilla.redhat.com/show_bug.cgi?id=437637
 
-Let's see...  In S390, a store cannot be reordered to precede any prior
-load or store, so any preceding RCU read-side critical section would be
-seen by all CPUs as preceding the shift to nohz mode.  Might be trouble
-for the opposite transition...
+The generic thermal zone device does something which is not
+fundamentally incorrect but that libsensors doesn't expect, and
+unfortunately libsensors was not made robust enough and dies instead of
+just ignoring the new unexpected device. libsensors 2.10.x is already
+fixed in lm-sensors' SVN [1] and a tentative patch is available for
+libsensors 3.0.x [2], however I am worried that kernel 2.6.25 will be
+released before any new version of lm-sensors so pretty much every user
+of lm-sensors will hit the problem if they upgrade to the new kernel.
+For this reason, I think we really should let the new generic thermal
+zone driver build as a module, and make it's hwmon support optional and
+disabled by default for 2.6.25 [3]. This will help mitigate the risk of
+massive breakage and complaints.
 
-But last I heard, the s390 guys were thinking in terms of moving to the
-generic dynticks model.  If they really are doing so, then the above
-code goes away in any case.
+[1] http://www.lm-sensors.org/changeset/5147
+[2] https://bugzilla.redhat.com/attachment.cgi?id=298270
+[3] http://lists.lm-sensors.org/pipermail/lm-sensors/2008-March/022724.html
 
-							Thanx, Paul
+-- 
+Jean Delvare
