@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYCQTxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYCQTx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbYCQTxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 15:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYCQTxH
+	id S1756402AbYCQTx3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 15:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbYCQTxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 15:53:07 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15237 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751646AbYCQTxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 15:53:06 -0400
-Date: Mon, 17 Mar 2008 20:53:01 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com
-Subject: Re: [Patch (block.git) 2/2] Ensure single IPI generation for SMP call  single
-Message-ID: <20080317195301.GL17940@kernel.dk>
-References: <47DE9E3F.7010600@hp.com> <20080317192615.GI17940@kernel.dk>
+	Mon, 17 Mar 2008 15:53:19 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:23061 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755912AbYCQTxS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 15:53:18 -0400
+Date: Mon, 17 Mar 2008 13:53:17 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Mark Lord <mlord@pobox.com>
+Cc: kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [regression] pciehp hang on hp ia64 rx6600
+Message-ID: <20080317195317.GE6808@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Mark Lord <mlord@pobox.com>, kristen.c.accardi@intel.com,
+	linux-kernel@vger.kernel.org
+References: <20080312064755.GA31493@ldl.fc.hp.com> <47D8142E.6060305@pobox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080317192615.GI17940@kernel.dk>
+In-Reply-To: <47D8142E.6060305@pobox.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17 2008, Jens Axboe wrote:
-> On Mon, Mar 17 2008, Alan D. Brunelle wrote:
-> > diff --git a/kernel/smp.c b/kernel/smp.c
-> > index 7232e1c..f7ec401 100644
-> > --- a/kernel/smp.c
-> > +++ b/kernel/smp.c
-> > @@ -23,28 +23,34 @@ void __cpuinit generic_init_call_single_data(void)
-> >  
-> >  void generic_smp_call_function_single_interrupt(void)
-> >  {
-> > -	struct call_single_queue *q;
-> >  	unsigned long flags;
-> >  	LIST_HEAD(list);
-> > +	struct call_single_queue *q = &__get_cpu_var(call_single_queue);
-> >  
-> > -	q = &__get_cpu_var(call_single_queue);
-> >  	spin_lock_irqsave(&q->lock, flags);
-> > -	list_replace_init(&q->list, &list);
-> > -	spin_unlock_irqrestore(&q->lock, flags);
-> > +	while (!list_empty(&q->list)) {
-> > +		list_replace_init(&q->list, &list);
-> > +		spin_unlock_irqrestore(&q->lock, flags);
-> >  
-> > -	while (!list_empty(&list)) {
-> > -		struct call_single_data *data;
-> > +		do {
-> > +			struct call_single_data *data;
-> >  
-> > -		data = list_entry(list.next, struct call_single_data, list);
-> > -		list_del(&data->list);
-> > +			data = list_entry(list.next, struct call_single_data,
-> > +						list);
-> > +			list_del(&data->list);
-> >  
-> > -		data->func(data->info);
-> > -		if (data->flags & CSD_FLAG_WAIT) {
-> > -			smp_wmb();
-> > -			data->flags = 0;
-> > -		} else if (data->flags & CSD_FLAG_ALLOC)
-> > -			kfree(data);
-> > +			data->func(data->info);
-> > +			if (data->flags & CSD_FLAG_WAIT) {
-> > +				smp_wmb();
-> > +				data->flags = 0;
-> > +			} else if (data->flags & CSD_FLAG_ALLOC)
-> > +				kfree(data);
-> > +		} while (!list_empty(&list));
-> > +
-> > +		spin_lock_irqsave(&q->lock, flags);
-> >  	}
-> > +	q->activated = 0;
-> > +	spin_unlock_irqrestore(&q->lock, flags);
-> >  }
-> 
-> I agree with doing it this way, re-checking and doing another run (or
-> more). However I think we can improve it a bit so we don't always have
-> to grab the dst lock at least twice - it should be safe enough to
-> include the lock only inside the first loop, doing an smp_mb() before
-> the list_empty() check and again at the bottom before looping around and
-> doing the list_empty() check again.
-> 
-> I've rolled a new patch series here:
-> 
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=io-cpu-affinity
-> 
-> (or just pull the io-cpu-affinity branch), it also includes a bunch of
-> other cleanups like porting the faster smp_call_function() to ia64 and
-> powerpc as well. So the kernel/smp.c generic helpers have grown a bit,
-> while the arch bits are smaller.
-> 
-> I'm curious if it now boots on ia64, since I killed the hack to manually
-> call the __init manually there. If you could check, I would appreciate
-> it ;-)
-> 
-> I've built all 4 supported archs and they compile and link fine, but
-> nothing has been booted yet.
+Hi Mark,
 
-x86 and x86-64 boot just fine, so powerpc should work as well (will do
-performance testing on a 4-way ppc tomorrow). ia64 should also work, as
-long as the init_call_single_data() gets called correctly.
+* Mark Lord <mlord@pobox.com>:
+> Alex Chiang wrote:
+>> Hi Mark, Kristin,
+>> On my hp ia64 rx6600, 'modprobe pciehp' causes lockups and a
+>> system hang on 2.6.25-rc4. My system often hangs when only pciehp
+>> is loaded and my console is sitting idle, but I can accelerate
+>> the hang 100% of the time by immediately doing a 'modprobe
+>> acpiphp' right afterwards.
+> ..
+>
+> Does this patch fix things for you?
 
-If it doesn't work on tha ia64, try and change the core_initcall() to a
-postcore_initcall() or even an arch_initcall(). It now resides in
-kernel/smp.c.
+Yes, this patch does revert back to previously working 2.6.24
+behavior and fixes the problem for me.
 
--- 
-Jens Axboe
+Thanks.
 
+> * * *
+>
+> Invoke pciehp_enable_slot() at startup only when pciehp_force=1.
+> Some HP equipment apparently cannot cope with it otherwise.
+>
+> This restores the (previously working) 2.6.24 behaviour here,
+> while allowing machines that need a kick to use pciehp_force=1.
+>
+
+Acked-by: Alex Chiang <achiang@hp.com>
+
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> ---
+>
+> --- linux-2.6.25-rc5-git2/drivers/pci/hotplug/pciehp_core.c	2008-03-12 
+> 13:21:46.000000000 -0400
+> +++ linux/drivers/pci/hotplug/pciehp_core.c	2008-03-12 13:23:54.000000000 
+> -0400
+> @@ -467,7 +467,7 @@
+> 	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+> 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is 
+> occupied */
+> -	if (value) {
+> +	if (value && pciehp_force) {
+> 		rc = pciehp_enable_slot(t_slot);
+> 		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
+> 			value = 0;
+>
