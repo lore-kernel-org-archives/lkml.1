@@ -1,150 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYCQXdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYCQXe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbYCQXdr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 19:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYCQXdk
+	id S1753197AbYCQXe3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 19:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYCQXeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 19:33:40 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:52289 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbYCQXdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 19:33:40 -0400
-Date: Mon, 17 Mar 2008 16:32:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Frank Mayhar <fmayhar@google.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25-rc6] Add a "show workqueues" SYSRQ knob.
-Message-Id: <20080317163225.479069ce.randy.dunlap@oracle.com>
-In-Reply-To: <1205795950.15714.39.camel@bobble.smo.corp.google.com>
-References: <1205795950.15714.39.camel@bobble.smo.corp.google.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 17 Mar 2008 19:34:21 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34104 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752461AbYCQXeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 19:34:20 -0400
+Date: Tue, 18 Mar 2008 10:31:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: =?UTF-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] arch/powerpc/platforms/iseries/pci.c: Use time_* macros
+Message-Id: <20080318103105.9482a8d4.sfr@canb.auug.org.au>
+In-Reply-To: <1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
+References: <1205746593-24820-1-git-send-email-caglar@pardus.org.tr>
+	<1205746593-24820-2-git-send-email-caglar@pardus.org.tr>
+	<1205746593-24820-3-git-send-email-caglar@pardus.org.tr>
+	<1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008 16:19:10 -0700 Frank Mayhar wrote:
+--Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> This patch adds a convenient function to show all workqueues using the
-> magic SYSRQ handling.  It uses the 'z' key to invoke the function as the
-> 'w' key was already gone.
-> 
-> I've found this very useful in debugging; hopefully others will find it
-> as useful.
+On Mon, 17 Mar 2008 11:36:26 +0200 S.=C3=87a=C4=9Flar Onur <caglar@pardus.o=
+rg.tr> wrote:
+>
+> The functions time_before, time_before_eq, time_after, and time_after_eq =
+are more robust for comparing jiffies against other values.
+>=20
+> So following patch implements usage of the time_after() macro, defined at=
+ linux/jiffies.h, which deals with wrapping correctly
+>=20
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
 
-Missing update to Documentation/sysrq.txt.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Patch description, diffstat, & sob should come before the patch.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-And I propose that we reserve sysrq-j for extending sysrq keys in the
-(probably near) future.
+--Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
-> index de60e1e..733d625 100644
-> --- a/drivers/char/sysrq.c
-> +++ b/drivers/char/sysrq.c
-> @@ -243,6 +243,18 @@ static struct sysrq_key_op sysrq_showmem_op = {
->  	.enable_mask	= SYSRQ_ENABLE_DUMP,
->  };
->  
-> +static void sysrq_handle_showwq(int key, struct pt_regs *pt_regs,
-> +				   struct tty_struct *tty)
-> +{
-> +	show_workqueues();
-> +}
-> +static struct sysrq_key_op sysrq_showwq_op = {
-> +	.handler	= sysrq_handle_showwq,
-> +	.help_msg	= "showworkqueueZ",
-> +	.action_msg	= "Show Workqueues",
-> +	.enable_mask	= SYSRQ_ENABLE_DUMP,
-> +};
-> +
->  /*
->   * Signal sysrq helper function.  Sends a signal to all user processes.
->   */
-> @@ -358,7 +370,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
->  	/* x: May be registered on ppc/powerpc for xmon */
->  	NULL,				/* x */
->  	NULL,				/* y */
-> -	NULL				/* z */
-> +	&sysrq_showwq_op		/* z */
->  };
->  
->  /* key2index calculation, -1 on invalid index */
-> diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-> index 542526c..6ae9ebb 100644
-> --- a/include/linux/workqueue.h
-> +++ b/include/linux/workqueue.h
-> @@ -195,6 +195,7 @@ extern int schedule_on_each_cpu(work_func_t func);
->  extern int current_is_keventd(void);
->  extern int keventd_up(void);
->  
-> +extern void show_workqueues(void);
->  extern void init_workqueues(void);
->  int execute_in_process_context(work_func_t fn, struct execute_work *);
->  
-> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> index ff06611..c97d35d 100644
-> --- a/kernel/workqueue.c
-> +++ b/kernel/workqueue.c
-> @@ -33,6 +33,7 @@
->  #include <linux/kallsyms.h>
->  #include <linux/debug_locks.h>
->  #include <linux/lockdep.h>
-> +#include <linux/kallsyms.h>
->  
->  /*
->   * The per-CPU workqueue (if single thread, we always use the first
-> @@ -867,6 +868,31 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
->  	return NOTIFY_OK;
->  }
->  
-> +void show_workqueues(void)
-> +{
-> +	struct workqueue_struct *wq;
-> +	int cpu;
-> +
-> +	spin_lock(&workqueue_lock);
-> +	list_for_each_entry(wq, &workqueues, list) {
-> +		printk("\n");
-> +		printk("Workqueue %s:\n", wq->name);
-> +		for_each_online_cpu(cpu) {
-> +			struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-> +			struct work_struct *work;
-> +
-> +			printk("\tCPU %d ", cpu);
-> +			list_for_each_entry(work, &(cwq->worklist), entry) {
-> +				print_symbol("function %s", (unsigned long)work->func);
-> +			}
-> +			printk("\n");
-> +		}
-> +	}
-> +	spin_unlock(&workqueue_lock);
-> +	
-> +}
-> +EXPORT_SYMBOL(show_workqueues);
-> +
->  void __init init_workqueues(void)
->  {
->  	cpu_populated_map = cpu_online_map;
-> ---
-> 
-> diffstat wq.patch 
->  drivers/char/sysrq.c      |   14 +++++++++++++-
->  include/linux/workqueue.h |    1 +
->  kernel/workqueue.c        |   26 ++++++++++++++++++++++++++
->  3 files changed, 40 insertions(+), 1 deletion(-)
-> 
-> Signed-off-by:  Frank Mayhar <fmayhar@google.com>
+iD8DBQFH3v89TgG2atn1QN8RAsVjAKCJa01WiUaCCNbzwXoytMojbA+gUACfcUY5
+SciRyIAq5SDecolsmmJkECE=
+=/qD6
+-----END PGP SIGNATURE-----
 
----
-~Randy
+--Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr--
