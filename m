@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYCQCeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYCQCmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYCQCeV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 22:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYCQCeM
+	id S1755399AbYCQCmZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 22:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYCQCmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 22:34:12 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4546 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751625AbYCQCeL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 22:34:11 -0400
-Date: Sun, 16 Mar 2008 22:34:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-cc: discuss@LessWatts.org,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       <venkatesh.pallipadi@intel.com>, <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, <suresh.b.siddha@intel.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Chanda Sethia <chanda.sethia@in.ibm.com>
-Subject: Re: [linux-pm] Too many timer interrupts in NO_HZ
-In-Reply-To: <20080316181711.GK18923@dirshya.in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0803162224460.2108-100000@netrider.rowland.org>
+	Sun, 16 Mar 2008 22:42:16 -0400
+Received: from phunq.net ([64.81.85.152]:40784 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752590AbYCQCmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Mar 2008 22:42:15 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: David Newall <davidn@davidnewall.com>
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+Date: Sun, 16 Mar 2008 18:42:01 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Willy Tarreau <w@1wt.eu>,
+       linux-kernel@vger.kernel.org
+References: <200803092346.17556.phillips@phunq.net> <200803161457.04580.phillips@phunq.net> <47DDC9EC.4060208@davidnewall.com>
+In-Reply-To: <47DDC9EC.4060208@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803161942.01944.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Mar 2008, Vaidyanathan Srinivasan wrote:
-
-> > The problem:
-> > 
-> > There are way too many timer interrupts even though the CPUs have
-> > entered tickless idle loop.  Timer interrupts basically bring the CPU
-> > out of idle, and then return to tickless idle.  There are very few
-> > try_to_wake_up()s or need_resched() in between the timer interrupts.
-> > 
-> > What can happen in an idle system in the timer interrupt context that
-> > does not invoke a need_resched() or try_to_wake_up()?
-
-> Function        Count                   Name
-> Address
+On Sunday 16 March 2008 18:31, David Newall wrote:
+> Daniel Phillips wrote:
+> > The UPS provides a guarantee of commit to stable storage.  No amount of
+> > FUD will change that.
 > 
-> c0219922        : 5		blk_unplug_timeout
-> c014f464        : 55		wb_timer_fn
-> c02b2e67        : 350		bnx2_timer
-> c03efcbc        : 115		neigh_periodic_timer
-> c012894a        : 220		process_timeout
-> c027d1c4        : 2		hangcheck_fire
-> c03fe232        : 3		peer_check_expire
-> c012e830        : 25		delayed_work_timer_fn
-> c03afe92        : 2783		ehci_watchdog
-> c03f1a35        : 10		neigh_timer_handler
-> c01d7456        : 110		commit_timeout
-> c04381e9        : 2		addrconf_verify
-> c03f6d39        : 365		dev_watchdog
-> c04126bc        : 114		tcp_write_timer
+> What about system crashes?  They guarantee that data will be lost.  I
 
-> These are device driver timers that we need to investigate.  We should
-> try to migrate them to CPU0 (or some other package) to get really long
-> uninterrupted CPU sleep time.  
+Not if it is mirrored and replicated.  Also nice if crashes are very
+rare, which they are unless you work at it.
 
-The largest entry is for ehci_watchdog.  This timer won't run at all if
-your EHCI controllers are allowed to autosuspend, which will happen
-automatically if
+> know opinions are divided on the subject of crashes: You say Linux
+> doesn't; everybody else says it does.  I side with experience.  (It does.)
 
-	(1) You enable CONFIG_USB_SUSPEND, and
+I say it does not crash often, to the point where I have not seen it
+crash once for any reason I did not create myself (I tend to wait for
+the occasional brown bag release to fade away before shifting development  We do get quite a few
+reports of less mature systems like hald and usb causing problems, and
+not too long ago NFS client was very crash happy.  I did see some of
+those myself two years ago, and fixed them.
 
-	(2) You have no high-speed USB devices attached, or the
-	    ones that are attached have all been suspended.
+On the whole, Linux is very reliable.  Very very reliable.  Now mirror
+that, replicate it, add in 2 x 2 redundant power supplies backed by
+independent UPS units so you can do regular preemptive maintenance on
+the batteries, and you have a sweet enterprise transaction processing
+system.  All set for a faster than light moon shot :-)
 
-On the other hand, if you were actively using some high-speed USB 
-device during the test then it's understandable that there should be 
-lots of timer interrupts as a result.
-
-Alan Stern
-
+Daniel
