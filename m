@@ -1,61 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYCQB4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbYCQB5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYCQB4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 21:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYCQB4M
+	id S1755745AbYCQB5S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 21:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYCQB5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 21:56:12 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:14401 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbYCQB4L (ORCPT
+	Sun, 16 Mar 2008 21:57:04 -0400
+Received: from mail.areca.com.tw ([220.130.178.143]:61636 "EHLO areca.com.tw"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751594AbYCQB5B convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 21:56:11 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Kp4jVGpAINO6mDRy2rozi5lyaQH1/r4p770AZZh1N0dYezzu2p4uvOnQd1vSnUBjn
-	ac76p2vXw0rBNaIBoET6w==
-Message-ID: <6599ad830803161855y1ceb8aa8t2f486434b521bd81@mail.gmail.com>
-Date: Mon, 17 Mar 2008 09:55:59 +0800
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [RFC][0/3] Virtual address space control for cgroups
-Cc: linux-mm@kvack.org, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       "David Rientjes" <rientjes@google.com>,
-       "Pavel Emelianov" <xemul@openvz.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47DDCE5E.9020104@linux.vnet.ibm.com>
+	Sun, 16 Mar 2008 21:57:01 -0400
+Reply-To: <nick.cheng@areca.com.tw>
+From: "nickcheng" <nick.cheng@areca.com.tw>
+To: "'Aron Stansvik'" <elvstone@gmail.com>
+Cc: <akpm@linux-foundation.org>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1
+Date: Mon, 17 Mar 2008 09:56:50 +0800
+Organization: areca
+Message-ID: <003c01c887d2$2ada2340$9a00a8c0@Nick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain>
-	 <6599ad830803161626q1fcf261bta52933bb5e7a6bdd@mail.gmail.com>
-	 <47DDCE5E.9020104@linux.vnet.ibm.com>
+Content-Type: text/plain;
+	charset="big5"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AciF96+gcbBuX3oASmS2HWi+CRSWjwB2BohQ
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+In-Reply-To: <751a4f870803141025r2cb6bf88hdee3cf9583d9ad44@mail.gmail.com>
+X-OriginalArrivalTime: 17 Mar 2008 01:51:05.0578 (UTC) FILETIME=[5CDA3CA0:01C887D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 9:50 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Hi Aron,
+We have two WDWD1500ADFD and a MSI motherboard which is not exactly the same
+as what you have. 
+I have tested your case two weeks ago, and do it with copy-compare test
+program but I find nothing as you describe.
+Could you give me your experimental directory to let me try again?? 
+BTW, what is your FW version?
+The latest FW version is v1.44. 
+Please check it out,
+-----Original Message-----
+From: Aron Stansvik [mailto:elvstone@gmail.com] 
+Sent: Saturday, March 15, 2008 1:26 AM
+To: nick.cheng@areca.com.tw
+Cc: erich; akpm@linux-foundation.org; linux-scsi@vger.kernel.org;
+linux-kernel@vger.kernel.org
+Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1
+
+2008/2/26, nickcheng <nick.cheng@areca.com.tw>:
+> Hi Aron,
+>  Thanks for your patience.
+>  If you still got into trouble, please let me know.
+>  Thank you again,
+
+I have now tried:
+
+* Turning on/off NCQ in the Areca RAID.
+* Turning on/off read-ahead cache in the Areca RAID.
+* Putting the disks in anti-vibration mounts in 5.25" slots.
+* Switching SATA cables.
+* Using legacy ATA power connectors instead of the SATA ones.
+
+But I still have the problem. The power supply is 650W so there should
+be plenty of power. There's only two Raptor disks, an Opteron CPU and
+an nVidia 6600GT in the machine.
+
+The Raptor two Raptor disks have different firmware on them, could
+that cause any problem?
+
+Two people who had read my post here on LKML have contacted me on
+e-mail and have the same problem, but they have Seagate and Samsung
+disks, and use the 1220 controller.
+
+The problem is hard to trigger, I've not been able to trigger it with
+any benchmarking tool, but in ~95% of the cases I can trigger it by
+just copying a directory with lots of small files (around 500 MB).
+
+Anyone else seeing this? I'd really like to get it to work since this
+is my only computer :(
+
+Should I try with XFS or ReiserFS instead of EXT3?
+
+Regards,
+Aron
+
 >
->  I am yet to measure the performance overhead of the accounting checks. I'll try
->  and get started on that today. I did not consider making it a separate system,
->  because I suspect that anybody wanting memory control would also want address
->  space control (for the advantages listed in the documentation).
+> -----Original Message-----
+>  From: Aron Stansvik [mailto:elvstone@gmail.com]
+>
+> Sent: Tuesday, February 26, 2008 6:52 AM
+>  To: erich
+>  Cc: nick.cheng@areca.com.tw; akpm@linux-foundation.org;
+>  linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org
+>  Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1
+>
+>  Hi Erich.
+>
+>  2008/2/25, nickcheng <nick.cheng@areca.com.tw>:
+>  > Hi Aron,
+>  >  From our field experiences and customers' feedbacks, all of them
+direct
+>  to
+>  >  vibration and power issues.
+>  >  The vibration could be caused by FANs not only by themselves.
+>
+>  Okay. I have a chassi fan that is quite close to the drives, I will
+>  try disabling it. I've also ordered two Nexus TwinDisk anti vibration
+>  harddrive mounts with which I'll place the disks in my 5.25" slots
+>  instead, away from any fans.
+>
+>  If this doesn't work, I'm stumped, as I really don't think it's the
+>  power supply and I don't have the money to buy a new one.
+>
+>  >  You mentioned it could be the F/W issue.
+>  >  If the environment does not meet the prerequisite, FW could not work
+>  >  correctly.
+>  >  Actually FW just reacts to the situations not it causes the issue.
+>
+>  Of course, I understand this. Just trying to figure this problem out..
+>
+>  >  Please check it out!!
+>
+>  I'll report back with my findings with moving disk away from fans and
+>  using anti-vibrations mounts.
+>
+>  Thanks for taking your time to reply.
+>
+>  Aron
+>
+>  >  Thank you,
+>  >
+>  >
+>  >  -----Original Message-----
+>  >  From: Aron Stansvik [mailto:elvstone@gmail.com]
+>  >  Sent: Sunday, February 24, 2008 1:54 AM
+>  >  To: nick.cheng@areca.com.tw
+>  >  Cc: erich; akpm@linux-foundation.org; linux-scsi@vger.kernel.org;
+>  >  linux-kernel@vger.kernel.org
+>  >
+>  > Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in RAID1
+>  >
+>  >  Hello again Areca and LKML hackers.
+>  >
+>  >  2008/2/18, Aron Stansvik <elvstone@gmail.com>:
+>  >  > Hello Nick.
+>  >  >
+>  >  >  Sorry that I'm not answering until now. I've been busy.
+>  >  >
+>  >  >  2008/2/13, nickcheng <nick.cheng@areca.com.tw>:
+>  >  >
+>  >  > > Hi Aron,
+>  >  >  >  From our experience and some customers' feedback, your issue
+could
+>  be
+>  >  caused
+>  >  >  >  by power instability or vibration to your HDs.
+>  >  >  >  Please check step by step:
+>  >  >  >  (1).under your original environment, increase the SCSI command
+>  value,
+>  >  >  >  default=30, with the shell script, set_scsicmd_timeout(). 90 or
+120
+>  is
+>  >  >  >  enough.
+>  >  >  >  (2).if method 1 does not work, find out the vibration source or
+>  change
+>  >  the
+>  >  >  >  power supply
+>  >  >
+>  >  >
+>  >  > I will try to increase that value. I don't think it's vibration; the
+>  >  >  disks are firmly in place in a very heavy chassi (Silverstone
+>  >  >  SST-TJ05B-T). And I really don't think there's something wrong with
+>  >  >  the power supply, it's a pretty new Silverstone ST65ZF 650W. This
+is
+>  >  >  my own personal workstation, so I don't just have another power
+supply
+>  >  >  to test with :/
+>  >  >
+>  >  >  I will report back on my success/failure. Thanks for your answer.
+>  >
+>  >  I've now tried with both 90 and 120 for the timeout value, and the
+>  >  problem still persists. It seems to happen when lots of small writes
+>  >  are occuring, e.g. when installing something.
+>  >
+>  >  I really don't think the disks are vibrating, I don't see how they
+>  >  could. One more thing I'm going to test is to use the legacy ATA power
+>  >  connector instead of the SATA power connector. This was what I was
+>  >  using before when I only had a single drive and no RAID controller.
+>  >  Maybe my power supply is malfunctioning and not giving enough power on
+>  >  the SATA power connectors.. but I doubt it.
+>  >
+>  >  Is there anything else that could cause this? Have you guys at Areca
+>  >  tested the ARC-1200 with Raptors in RAID1?
+>  >
+>  >  :(
+>  >
+>  >  Regards,
+>  >  Aron
+>  >
+>  >  >
+>  >  >
+>  >  >  Aron
+>  >  >
+>  >  >
+>  >  >  >  If your still have any questions, please feel free to let me
+know.
+>  >  >  >
+>  >  >  >  P.S. The attached driver source, arcmsr-1.20.00.15-71224, has
+been
+>  >  >  >  upstreamed to kernel.org and will be released in kernel 2.6.25.
+If
+>  you
+>  >  like,
+>  >  >  >  you could update your driver with it.
+>  >  >  >  It fixes some minor bugs, but these bugs are nothing to do with
+>  your
+>  >  issue.
+>  >  >  >
+>  >  >  >
+>  >  >  >  -----Original Message-----
+>  >  >  >  From: erich [mailto:erich@areca.com.tw]
+>  >  >  >  Sent: Wednesday, February 13, 2008 4:33 PM
+>  >  >  >  To: (廣安科技)鄭守謙
+>  >  >  >  Subject: Fw: Aborted commands with arcmsr and 2xWD1500ADFD in
+RAID1
+>  >  >  >
+>  >  >  >
+>  >  >  >
+>  >  >  >  ----- Original Message -----
+>  >  >  >  From: "Andrew Morton" <akpm@linux-foundation.org>
+>  >  >  >  To: "Aron Stansvik" <elvstone@gmail.com>
+>  >  >  >  Cc: <linux-kernel@vger.kernel.org>;
+<linux-scsi@vger.kernel.org>;
+>  >  "erich"
+>  >  >  >  <erich@areca.com.tw>
+>  >  >  >  Sent: Wednesday, February 13, 2008 4:03 PM
+>  >  >  >  Subject: Re: Aborted commands with arcmsr and 2xWD1500ADFD in
+RAID1
+>  >  >  >
+>  >  >  >
+>  >  >  >  >
+>  >  >  >  > (cc's added)
+>  >  >  >  >
+>  >  >  >  > On Mon, 11 Feb 2008 17:44:08 +0100 "Aron Stansvik"
+>  >  <elvstone@gmail.com>
+>  >  >  >  > wrote:
+>  >  >  >  >
+>  >  >  >  >> Hello LKML.
+>  >  >  >  >>
+>  >  >  >  >> Under semi-high disk I/O (e.g. installing a compiled KDE), I
+get
+>  >  the
+>  >  >  >  >> following (accompanied by seconds of lock-ups on the
+machine):
+>  >  >  >  >>
+>  >  >  >  >> [ 7727.345183] arcmsr0: abort device command of scsi id = 0
+lun
+>  = 0
+>  >  >  >  >> [ 7730.348776] arcmsr0:                 scsi id = 0 lun = 0
+ccb
+>  =
+>  >  >  >  >> '0xdfb461c0' poll command abort successfully
+>  >  >  >  >> [ 8053.795943] arcmsr0: abort device command of scsi id = 0
+lun
+>  = 0
+>  >  >  >  >> [ 8056.799528] arcmsr0:                 scsi id = 0 lun = 0
+ccb
+>  =
+>  >  >  >  >> '0xdfb595e0' poll command abort successfully
+>  >  >  >  >> [ 8884.592810] arcmsr0: abort device command of scsi id = 0
+lun
+>  = 0
+>  >  >  >  >> [ 8887.596392] arcmsr0:                 scsi id = 0 lun = 0
+ccb
+>  =
+>  >  >  >  >> '0xdfb56d80' poll command abort successfully
+>  >  >  >  >> [ 8917.760216] arcmsr0: abort device command of scsi id = 0
+lun
+>  = 0
+>  >  >  >  >> [ 8920.763797] arcmsr0:                 scsi id = 0 lun = 0
+ccb
+>  =
+>  >  >  >  >> '0xdfb472c0' poll command abort successfully
+>  >  >  >  >> [ 9074.106547] arcmsr0: abort device command of scsi id = 0
+lun
+>  = 0
+>  >  >  >  >>
+>  >  >  >  >> This is my setup:
+>  >  >  >  >>
+>  >  >  >  >> 1 x MSI K8N Master2-FAR
+>  >  >  >  >> 1 x Opteron 252
+>  >  >  >  >> 1 x Areca ARC1200 (sitting in a PCIe x4 socket)
+>  >  >  >  >> 2 x WD1500ADFD in RAID1
+>  >  >  >  >>
+>  >  >  >  >> astan@rubik:~$ uname -a
+>  >  >  >  >> Linux rubik 2.6.24-7-generic #1 SMP Thu Feb 7 01:29:58 UTC
+2008
+>  >  i686
+>  >  >  >  >> GNU/Linux
+>  >  >  >  >> astan@rubik:~$ modinfo arcmsr
+>  >  >  >  >> filename:
+>  >  >  >  >>
+/lib/modules/2.6.24-7-generic/kernel/drivers/scsi/arcmsr/arcmsr.
+>  ko
+>  >  >  >  >> version:        Driver Version 1.20.00.15 2007/08/30
+>  >  >  >  >> license:        Dual BSD/GPL
+>  >  >  >  >> description:    ARECA (ARC11xx/12xx/13xx/16xx) SATA/SAS RAID
+>  HOST
+>  >  Adapter
+>  >  >  >  >> author:         Erich Chen <support@areca.com.tw>
+>  >  >  >  >> srcversion:     28EAD6AB49D4491CA04D465
+>  >  >  >  >> [...]
+>  >  >  >  >>
+>  >  >  >  >> I've read some previous posts here on LKML that it could be
+the
+>  >  Areca
+>  >  >  >  >> firmware who doesn't like my WD disks. Anyone know if this is
+an
+>  >  IRQ
+>  >  >  >  >> handling problem in the kernel, or if it's a problem with the
+>  RAID
+>  >  >  >  >> controller firmware?
+>  >  >  >  >>
+>  >  >  >  >> Erich Chen (of Areca); have you tried the new ARC1200 in
+RAID1
+>  >  >  >  >> configuration with Raptor disks on Linux?
+>  >  >  >  >>
+>  >  >  >  >> As a side note, I can tell you that I first tried running
+>  FreeBSD
+>  >  6.3
+>  >  >  >  >> (RELENG_6) on this machine, but got random reboots during
+disk
+>  I/O
+>  >  >  >  >> (even with a kernel with KDB debugging turned on). This leads
+me
+>  to
+>  >  >  >  >> believe that it might be a firmware issue, and that Linux
+just
+>  >  handles
+>  >  >  >  >> it more gracefully than FreeBSD.
+>  >  >  >  >>
+>  >  >  >  >> Any ideas or advice is appriciated. This is my first post to
+the
+>  >  LKML,
+>  >  >  >  >> so please instruct me if you want more information or if you
+>  want
+>  >  me
+>  >  >  >  >> to take further debugging actions.
+>  >  >  >  >>
+>  >  >  >  >> Best regards,
+>  >  >  >  >> Aron Stansvik
+>  >  >  >  >
+>  >  >  >
+>  >  >  >
+>  >  >
+>  >
+>  >
+>
+>
 
-I'm a counter-example to your suspicion :-)
-
-Trying to control virtual address space is a complete nightmare in the
-presence of anything that uses large sparsely-populated mappings
-(mmaps of large files, or large sparse heaps such as the JVM uses.)
-
-If we want to control the effect of swapping, the right way to do it
-is to control disk I/O, and ensure that the swapping is accounted to
-that. Or simply just not give apps much swap space.
-
-Paul
