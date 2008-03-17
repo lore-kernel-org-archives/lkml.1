@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbYCQFxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYCQFys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbYCQFxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 01:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYCQFxO
+	id S1754660AbYCQFys (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 01:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYCQFyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 01:53:14 -0400
-Received: from phunq.net ([64.81.85.152]:33618 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751408AbYCQFxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 01:53:14 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: david@lang.hm
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Date: Sun, 16 Mar 2008 21:52:57 -0800
-User-Agent: KMail/1.9.5
-Cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-References: <200803092346.17556.phillips@phunq.net> <200803161942.01944.phillips@phunq.net> <alpine.DEB.1.00.0803162052160.14887@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.00.0803162052160.14887@asgard.lang.hm>
+	Mon, 17 Mar 2008 01:54:40 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48754 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbYCQFyj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 01:54:39 -0400
+Date: Sun, 16 Mar 2008 22:54:34 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, mingo@elte.hu, ego@in.ibm.com,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       oleg@tv-sign.ru, akpm@linux-foundation.org, josh@freedesktop.org,
+       tglx@linutronix.de, niv@us.ibm.com
+Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
+Message-ID: <20080317055434.GI24652@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080317010821.GA29875@linux.vnet.ibm.com> <200803171409.08148.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803162252.58274.phillips@phunq.net>
+In-Reply-To: <200803171409.08148.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 March 2008 20:59, david@lang.hm wrote:
-> On Sun, 16 Mar 2008, Daniel Phillips wrote:
-> > On Sunday 16 March 2008 18:31, David Newall wrote:
-> >> Daniel Phillips wrote:
-> >>> The UPS provides a guarantee of commit to stable storage.  No amount of
-> >>> FUD will change that.
-> >>
-> >> What about system crashes?  They guarantee that data will be lost.  I
+On Mon, Mar 17, 2008 at 02:09:06PM +1100, Nick Piggin wrote:
+> On Monday 17 March 2008 12:08, Paul E. McKenney wrote:
+> > Hello!
 > >
-> > Not if it is mirrored and replicated.  Also nice if crashes are very
-> > rare, which they are unless you work at it.
+> > In the process of writing up the mechanical proof of correctness for the
+> > dynticks/preemptable-RCU interface, I noticed misplaced memory barriers
+> > in rcu_enter_nohz() and rcu_exit_nohz().  This patch puts them in the
+> > right place and adds a comment.  The key thing to keep in mind is that
+> > rcu_enter_nohz() is -exiting- the mode that can legally execute RCU
+> > read-side critical sections.  The memory barrier must be between any
+> > potential RCU read-side critical sections and the increment of the per-CPU
+> > dynticks_progress_counter, and thus must come -before- this increment.
+> > And vice versa for rcu_exit_nohz().
+> >
+> > The locking in the scheduler is probably saving us for the moment.
+> >
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> >
+> >  rcupreempt.h |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff -urpNa -X dontdiff linux-2.6.25-rc6/include/linux/rcupreempt.h
+> > linux-2.6.25-rc6-rcu_nohz-fix/include/linux/rcupreempt.h ---
+> > linux-2.6.25-rc6/include/linux/rcupreempt.h	2008-03-16 17:45:16.000000000
+> > -0700 +++
+> > linux-2.6.25-rc6-rcu_nohz-fix/include/linux/rcupreempt.h	2008-03-16
+> > 17:59:24.000000000 -0700 @@ -87,15 +87,15 @@ DECLARE_PER_CPU(long,
+> > dynticks_progress_
+> >
+> >  static inline void rcu_enter_nohz(void)
+> >  {
+> > +	mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+> >  	__get_cpu_var(dynticks_progress_counter)++;
+> >  	WARN_ON(__get_cpu_var(dynticks_progress_counter) & 0x1);
+> > -	mb();
+> >  }
+> >
+> >  static inline void rcu_exit_nohz(void)
+> >  {
+> > -	mb();
+> >  	__get_cpu_var(dynticks_progress_counter)++;
+> > +	mb(); /* CPUs seeing ++ must see subsequent RCU read-side crit sects */
+> >  	WARN_ON(!(__get_cpu_var(dynticks_progress_counter) & 0x1));
+> >  }
 > 
-> if you are depending on replication over the network you have just limited 
-> your throughput to your network speed and latency.
+> Can you make these smp_mb() as well?
 
-Replication does not work that way.  On each replication cycle, the
-differences between the most recent two volume snapshots go over the
-network.  This strategy has the nice effect of consolidating rewrites.
-There are also excellent delta compression opportunities.
+Can't see why not, now that you mention it.  Steve, anything Nick and
+I are missing here?  (See updated patch below.)
 
-In the worst case, with insufficient bandwidth for the churn rate of
-the volume, replication rate increases to the time for replicating the
-full volume.  Again, at worst, this would require extra storage for the
-snapshot to be replicated equivalent to the original volume size, so
-that the primary volume is not forced to wait synchronously for a
-replication cycle to complete.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-Mirroring on the other hand, makes a realtime copy of a volume, that is
-never out of date.
+ rcupreempt.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I hope this helps.
-
-> on an enterprise level  
-> machine the network can frequently be significantly slower than the disk 
-> array that you are so frantic to avoid waiting for.
-
-Frantic... your word.  Designing for dependably high transaction rates
-requires a different mode of thinking that some traditionalists seem to
-be having some trouble with.
-
-Daniel
+diff -urpNa -X dontdiff linux-2.6.25-rc6/include/linux/rcupreempt.h linux-2.6.25-rc6-rcu_nohz-fix/include/linux/rcupreempt.h
+--- linux-2.6.25-rc6/include/linux/rcupreempt.h	2008-03-16 17:45:16.000000000 -0700
++++ linux-2.6.25-rc6-rcu_nohz-fix/include/linux/rcupreempt.h	2008-03-16 22:53:07.000000000 -0700
+@@ -87,15 +87,15 @@ DECLARE_PER_CPU(long, dynticks_progress_
+ 
+ static inline void rcu_enter_nohz(void)
+ {
++	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+ 	__get_cpu_var(dynticks_progress_counter)++;
+ 	WARN_ON(__get_cpu_var(dynticks_progress_counter) & 0x1);
+-	mb();
+ }
+ 
+ static inline void rcu_exit_nohz(void)
+ {
+-	mb();
+ 	__get_cpu_var(dynticks_progress_counter)++;
++	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ 	WARN_ON(!(__get_cpu_var(dynticks_progress_counter) & 0x1));
+ }
+ 
