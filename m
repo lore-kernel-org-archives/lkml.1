@@ -1,95 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbYCQQPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbYCQQQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbYCQQPy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 12:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYCQQPp
+	id S1753306AbYCQQQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 12:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYCQQQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 12:15:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:39816 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbYCQQPo (ORCPT
+	Mon, 17 Mar 2008 12:16:44 -0400
+Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:46758 "HELO
+	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751736AbYCQQQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 12:15:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AdaAdf+cpwW+qZGvaO81uaOnDy/Wf5te+QgCs5b0RKjKAHYw/fqyD18Sek8StDny8nJBySc/osLg+v3DQd/TVA9QmmfVEpiMgrrv5c/ijaheGHqsMLwS+eqQf6sunh2h4YD/qrVLqKLWf1s6L2v39Zxm6dIaJN6pZNhX08bbwHo=
-Message-ID: <5a4c581d0803170915r73a9c6e5nbba264936af583ff@mail.gmail.com>
-Date: Mon, 17 Mar 2008 17:15:33 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-Subject: Re: ehci-hcd affects hda speed
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Rene Herman" <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.00.0803160054360.23451@nev.ubzr>
+	Mon, 17 Mar 2008 12:16:43 -0400
+X-YMail-OSG: fEGTjJwVM1mRdlL.RsDb0r5pxVnGc3Arde_DFhe9EA6ZPqVxyIt3thM7E37wUYV1fpUCnjVWtA--
+X-RocketYMMF: rancidfat
+Date: Mon, 17 Mar 2008 09:16:42 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] cgroups: implement device whitelist lsm (v3)
+To: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Cc: Stephen Smalley <sds@epoch.ncsc.mil>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>, Greg KH <greg@kroah.com>,
+       Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <20080317140853.GC5875@sergelap.austin.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr>
-	 <47CEC816.6000808@keyaccess.nl>
-	 <5a4c581d0803051203s1a0048c2u5f10b3eb442cfafb@mail.gmail.com>
-	 <200803051303.46275.david-b@pacbell.net>
-	 <alpine.LFD.1.00.0803062244010.10693@nev.ubzr>
-	 <alpine.LFD.1.00.0803101303240.4772@nev.ubzr>
-	 <alpine.LFD.1.00.0803160054360.23451@nev.ubzr>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <784599.23478.qm@web36615.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 15, 2008 at 11:46 PM, Lev A. Melnikovsky
-<melnikovsky@mail.ru> wrote:
->
->  LAM> Also, does anyone have a VT6212L datasheet? Unfortunately, Google
->  I have eventually found it. An enlightening reading, really. If I
->  understood all words, I mean :-). Particularly, what does "MAC turn around
->  time" stand for with respect to EHCI? I would appreciate some reference,
->  thanks.
->
->   On Wed, 5 Mar 2008 at 5:19pm, Rene Herman wrote:
->
->  RH> It was diagnosed to the VT6212L doing decidedly weird things with
->  RH> toggling the Async bit and tying up the bus.
->  Yes, it really looks like the chip owns the bus when it shouldn't. Suppose
->  VT6212L has damaged its brains somehow. Can we fix this by ignoring its
->  requests unless they are legitimate? I mean make the driver enable bus
->  mastering only for short periods when the controller is expected to do
->  something useful. It is easy (I have already done myself) to implement for
->  asynchronous schedule, but there's still periodic schedule. Is it
->  possible? How? Please advise.
->
->  Being positive, I didn't have much time to play with it yet, but changing
->  the bit 5 (EHCI sleep time select:  0=1us 1=10us) of register 0x4B seems
->  to resolve my own problem. I wonder if this is going to help others
->  (Alessandro?):
->
->  setpci -s 00:09.2 4b.b=29
->
->  [don't forget to adjust the device address].
 
-00:09.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 63)
+--- "Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-heh, I don't even have to...
+> Quoting Casey Schaufler (casey@schaufler-ca.com):
+> ...
+> > In particular, capabilities are not an access control mechanism,
+> > they are a privilege mechanism. A lot of discussion about LSM has
+> > centered around the appropriate charactoristics of an LSM, and
+> > these discussions always assume that the LSM in question is
+> > exactly an access control mechanism. If we split the LSM into
+> > a LACM for access control and an LPM for privilege management
+> > maybe we can eliminate the most contentious issues.
+> > 
+> > Does anyone know why that would be stoopid before I whack out
+> > patches?
+> 
+> No I'd like to see those patches.  It would ideally allow LSM to become
+> *purely* restrictive and LPM to be purely empowering, presumably making
+> the resulting hook sets easier to review and maintain.  The LPM wouldn't
+> (I assume) gain any *new* hook points so we wouldn't be adding any new
+> places for hooks to be overriden by a rootkit.
 
-[root@donkey ~]# hdparm -t /dev/hda
+I don't expect to put in any additional hooks points, although
+it's safe to bet that someone will want to pretty quickly. What
+I see as the big concern is our old friend the granularity question.
+I can pretty well predict that we'll have quite a bruhaha over
+whether each hook point should have it's own hook or if they should
+be shared based on the privilege supported. For example, in namei.c
+the function generic_permission() currently calls
+capable(CAP_DAC_OVERRIDE). The privilege supported approach would
+be to create a hook that gets used in many places that is a drop-in
+replacement for that,
 
-/dev/hda:
- Timing buffered disk reads:   54 MB in  3.03 seconds =  17.83 MB/sec
-[root@donkey ~]# setpci -s 00:09.2 4b.b=29
-[root@donkey ~]# hdparm -t /dev/hda
+        if (capable(CAP_DAC_OVERRIDE))
+becomes
+        if (lpm_dac_override())
 
-/dev/hda:
- Timing buffered disk reads:   78 MB in  3.06 seconds =  25.53 MB/sec
+The alternative is to go the same route as the LSM, where it
+becomes
 
-Well, that does look much better. Not on par with the non-EHCI case,
- but way better ! Thanks a lot !
+        if (lpm_generic_permission_may_exec())
 
-Of course if you wish me to run anything else, just say so :)
+The former scheme is much easier to implement. It also would
+mean that if would wanted to implement a finer granularity on
+DAC overrides (e.g. CAP_DAC_READ, CAP_DAC_WRITE, CAP_DAC_EXECUTE)
+you would have to introduce new hooks. That wouldn't be any worse
+than today's situation where you would have to change the argument
+passed to capable as far as the calling (e.g. generic_permission)
+code is concerned, but it would mean updating all the LPMs. I
+currently count 1084 calls to capable (sloppy grep method) and that's
+way too many hooks in my mind. But, if there's anyone who thinks
+that the way to go is for each existing capable call to be a hook,
+feel free to make a convincing argument.
 
---alessandro
+This should be fun.
 
- "We act as though comfort and luxury were the chief requirements
- of life, when all that we need to make us really happy is
- something to be enthusiastic about."
 
- (Charles Kingsley)
+Casey Schaufler
+casey@schaufler-ca.com
