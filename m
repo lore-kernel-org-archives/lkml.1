@@ -1,101 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYCQIIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYCQIJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbYCQIIy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 04:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYCQIIo
+	id S1756198AbYCQIJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 04:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYCQIJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 04:08:44 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:13374 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752718AbYCQIIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 04:08:43 -0400
-Date: Mon, 17 Mar 2008 09:08:37 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christof Schmitt <christof.schmitt@de.ibm.com>
-Cc: David Wilder <dwilder@us.ibm.com>, linux-btrace@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080317080836.GZ17940@kernel.dk>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <47DA97DF.6010008@us.ibm.com> <20080314162807.GA4488@schmichrtp.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080314162807.GA4488@schmichrtp.de.ibm.com>
+	Mon, 17 Mar 2008 04:09:48 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39739 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752781AbYCQIJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 04:09:47 -0400
+Date: Mon, 17 Mar 2008 03:09:42 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [4/18] Add basic support for more than one hstate in
+ hugetlbfs
+Message-Id: <20080317030942.8465b09e.pj@sgi.com>
+In-Reply-To: <20080317015817.DE00E1B41E0@basil.firstfloor.org>
+References: <20080317258.659191058@firstfloor.org>
+	<20080317015817.DE00E1B41E0@basil.firstfloor.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14 2008, Christof Schmitt wrote:
-> On Fri, Mar 14, 2008 at 08:21:03AM -0700, David Wilder wrote:
-> > Christof Schmitt wrote:
-> > >On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> > >>On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > >>>On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > >>>>That is indeed a bug, does this work for you?
-> > >>>>
-> > >>>>diff --git a/kernel/relay.c b/kernel/relay.c
-> > >>>>index d080b9d..39d1fa8 100644
-> > >>>>--- a/kernel/relay.c
-> > >>>>+++ b/kernel/relay.c
-> > >>>>@@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > >>>> 			       unsigned int flags,
-> > >>>> 			       int *nonpad_ret)
-> > >>>> {
-> > >>>>-	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > >>>>+	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > >>>> 	struct rchan_buf *rbuf = in->private_data;
-> > >>>> 	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > >>>> 	uint64_t pos = (uint64_t) *ppos;
-> > >>>>@@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > >>>> 	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > >>>> 	poff = read_start & ~PAGE_MASK;
-> > >>>>
-> > >>>>-	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > >>>>+	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > >>>>+
-> > >>>>+	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > >>>> 		unsigned int this_len, this_end, private;
-> > >>>> 		unsigned int cur_pos = read_start + total_len;
-> > >>>With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > >>>oops. But the output from blktrace only contains only zeros and no
-> > >>>usable data for blkparse. Using blktrace to write the data directly to
-> > >>>disk, without using the blktrace server works. Is there anything i
-> > >>>should look for to help debugging the problem?
-> > >>We should probably get Tom in the loop, as he is the relay expert. I'll
-> > >>make sure the above patch gets into 2.6.25, as it is definitely a bug
-> > >>that needs fixing.
-> > >
-> > >http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> > >his email address seems to be no longer valid. I copy Dave Wilder
-> > >here, since he is mentioned as relay maintainer on the web page.
-> > >
-> > >Dave, can you have a look at this? I can easily reproduce the problem
-> > >on s390 Linux for testing and getting more debug information.
-> > >
-> > >Christof
-> > >--
-> > >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > >the body of a message to majordomo@vger.kernel.org
-> > >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > >Please read the FAQ at  http://www.tux.org/lkml/
-> > >
-> > 
-> > I will take a look at the problem.
-> > Any thing special about the test you are running I need to know?
-> 
-> The test is about using the blktrace network feature on a 64 bit s390
-> guest on z/VM. I don't know if 64 bit and z/VM are related to the
-> problem scenario, it is the only setup i tested. To reproduce, start
-> somewhere 'blktrace -l' as a server and issue 
-> blktrace -h tracehostname
-> dd if=/dev/sda of=/dev/null
-> to start blktrace and some I/O load.
+Andi,
 
-If the problem is in the splice part of relay, then the problem will
-likely go away if you add the -s parameter to blktrace. Might be handy
-to know if you are experimenting.
+Seems to me that both patches 2/18 and 4/18 are called:
+
+  Add basic support for more than one hstate in hugetlbfs
+
+You probably want to change this detail.
 
 -- 
-Jens Axboe
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
