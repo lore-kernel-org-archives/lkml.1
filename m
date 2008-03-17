@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYCQQn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYCQQrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbYCQQn4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 12:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYCQQnt
+	id S1753172AbYCQQrl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 12:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYCQQrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 12:43:49 -0400
-Received: from ihemail3.lucent.com ([135.245.0.37]:59169 "EHLO
-	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbYCQQns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 12:43:48 -0400
-Message-ID: <47DE9FB0.5030801@alcatel-lucent.com>
-Date: Mon, 17 Mar 2008 11:43:28 -0500
-From: Nebojsa Miljanovic <neb@alcatel-lucent.com>
-Organization: Lucent Technologies
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.0.1) Gecko/20020823 Netscape/7.0 (CK-LucentTPES)
-X-Accept-Language: sr, hr, en, zh, zh-cn, zh-hk, z
+	Mon, 17 Mar 2008 12:47:32 -0400
+Received: from mga11.intel.com ([192.55.52.93]:8875 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751935AbYCQQrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 12:47:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,513,1199692800"; 
+   d="scan'208";a="306989103"
+Message-ID: <47DE9E5C.6080603@intel.com>
+Date: Mon, 17 Mar 2008 09:37:48 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org,
-       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
-       asweeney@alcatel-lucent.com,
-       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
-Subject: Re: SO_REUSEADDR not allowing server and client to use same port
-References: <47C6FA2A.5030302@alcatel-lucent.com>	<20080228201926.558c4e7c@core>	<47D97DF7.8000702@alcatel-lucent.com> <20080315133426.1f48c99c@the-village.bc.nu>
-Content-Type: text/plain; charset=us-ascii
+To: Julia Lawall <julia@diku.dk>
+CC: jeffrey.t.kirsher@intel.com, ayyappan.veeraiyan@intel.com,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com,
+       auke-jan.h.kok@intel.com, e1000-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/7] drivers/net/ixgb/ixgb_main.c: remove unused variable
+References: <Pine.LNX.4.64.0803151703520.24178@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0803151703520.24178@ask.diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Mar 2008 16:38:45.0248 (UTC) FILETIME=[5E16F000:01C8884D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
-thanks. With that additional INFO, I was able to find detailed description of
-this denial of service attack (attached below).
-Just to clarify. Having this port re-use check prevents folks from launching
-this attack as opposed to being victim of it?
 
+OK, i'll pass it along. ty
 
-2.4 Simultaneous Connections
-Occasionally, it is possible that hosts XX and YY both wish to establish a
-connection and both of them simultaneously initiate the handshake.  This is
-called simultaneous connection establishment [RFC 793]. Both hosts XX and YY
-send out SYN's to each other. When the SYN's are received, each receiver sends
-out a SYN+ACK. Both hosts XX and YY must detect that the SYN and SYN+ACK
-actually refer to the same connection. If both hosts XX and YY detect that the
-SYN+ACK belongs to the SYN that was recently sent, they switch off the
-connection establishment timer and move directly to the SYN_RECVD state. This
-flaw could be used to stall a port on a host, using protocols such as FTP where
-the server initiates a connection to the client.
-
-As an example, consider (malicious) host XX which has started an (active) FTP
-connection to a server YY. XX and YY are connected using the control-port (21 on
-YY). YY initiates the connection establishment procedure to initiate data
-transfer with XX.
-
-YY sends a SYN to XX, and makes a transition to SYN_SENT state. YY also starts
-the connection establishment timer.
-XX receives the SYN, and responds with another SYN.
-When YY receives the SYN, it assumes that this is a case of a simultaneous open
-connection. So, it sends out SYN_ACK to XX, switches off the connection
-establishment timer, and transitions to the state SYN_RCVD.
-XX receives the SYN_ACK from YY, but does not send a reply.
-Since YY is expecting a SYN_ACK in the SYN_RCVD state, and there is no timer, YY
-gets stalled in SYN_RCVD state.
-XX was able to create a denial-of-service attack.
-
-
-Neb
-
-
-On 3/15/2008 8:34 AM, Alan Cox wrote:
-> On Thu, 13 Mar 2008 14:18:15 -0500
-> Nebojsa Miljanovic <neb@alcatel-lucent.com> wrote:
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
+> The variable num_group_tail_writes is initialized but never used otherwise.
 > 
->>Alan,
->>I would appreciate it if you could elaborate on the security issue. Can you
->>describe the simultaneous connect scenario?
->>
->>We have a system we are migrating to Linux from Lynx. We have always had the
->>ability to re-use ports. We are wondering if this security issue is something we
->>should take seriously. Or, maybe it is not likely to be seen with our system
->>running well defined set of applications (i.e. not a PC where anybody could run
->>anything).
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
+> // <smpl>
+> @@
+> type T;
+> identifier i;
+> constant C;
+> @@
 > 
-> See RFC 793. It is permissible for a connection to be created between two
-> end points both making a connection (crossing SYN frames are both
-> acked). Thus if you allow such reuse it is possible (although usually
-> very very hard) to mount a timing based attack.
+> (
+> extern T i;
+> |
+> - T i;
+>   <+... when != i
+> - i = C;
+>   ...+>
+> )
+> // </smpl>
 > 
-> It's not a very practical attack in most scenarios so we block it out of
-> correctness and concerns for completely robust and proper behaviour
-> rather than because it is seen in the wild.
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+>  drivers/net/ixgb/ixgb_main.c |    2 --
+>  1 file changed, 2 deletions(-)
 > 
-> Alan
-
+> diff -u -p a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+> --- a/drivers/net/ixgb/ixgb_main.c 2008-03-12 14:13:13.000000000 +0100
+> +++ b/drivers/net/ixgb/ixgb_main.c 2008-03-15 11:16:23.000000000 +0100
+> @@ -2088,14 +2088,12 @@ ixgb_alloc_rx_buffers(struct ixgb_adapte
+>  	struct ixgb_buffer *buffer_info;
+>  	struct sk_buff *skb;
+>  	unsigned int i;
+> -	int num_group_tail_writes;
+>  	long cleancount;
+>  
+>  	i = rx_ring->next_to_use;
+>  	buffer_info = &rx_ring->buffer_info[i];
+>  	cleancount = IXGB_DESC_UNUSED(rx_ring);
+>  
+> -	num_group_tail_writes = IXGB_RX_BUFFER_WRITE;
+>  
+>  	/* leave three descriptors unused */
+>  	while(--cleancount > 2) {
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
