@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYCQV30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbYCQVd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbYCQV30 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbYCQV3O
+	id S1755379AbYCQVd6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYCQVdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:29:14 -0400
-Received: from mga11.intel.com ([192.55.52.93]:1616 "EHLO mga11.intel.com"
+	Mon, 17 Mar 2008 17:33:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52838 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753213AbYCQV3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:29:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,514,1199692800"; 
-   d="scan'208";a="535349106"
-Date: Mon, 17 Mar 2008 14:13:41 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Alex Chiang <achiang@hp.com>, Linus Torvalds <torvalds@osdl.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] pciehp dont enable slot unless forced
-Message-ID: <20080317141341.1efebb7b@appleyard>
-In-Reply-To: <47DECEC7.6070005@rtr.ca>
-References: <20080312064755.GA31493@ldl.fc.hp.com>
-	<47D8142E.6060305@pobox.com>
-	<20080317195317.GE6808@ldl.fc.hp.com>
-	<47DECEC7.6070005@rtr.ca>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752632AbYCQVdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 17:33:50 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>,
+       Ravikiran Thirumalai <kiran@scalemp.com>
+Subject: [PATCH] vsmp build fixes
+Date: Mon, 17 Mar 2008 18:30:12 -0300
+Message-Id: <1205789412-26851-1-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008 16:04:23 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+VSMP depends on PCI, but the file is now compiled conditionally
+on PARAVIRT, no VSMP, so enclose everything in an ifdef CONFIG_PCI.
 
-> This fixes a 2.6.25 regression reported by Alex Chiang.
-> 
-> Invoke pciehp_enable_slot() at startup only when pciehp_force=1.
-> Some HP equipment apparently cannot cope with it otherwise.
-> 
-> This restores the (previously working) 2.6.24 behaviour here,
-> while allowing machines that need a kick to use pciehp_force=1.
-> 
-> This was the original design back in October 2007,
-> but Kristen suggested we try without it first:
-> 
->    Kristen Carlson Accardi wrote:
->    >I think it would be ok to try allowing the slot to be enabled
->    >when not using pciehp_force mode.  We can wrap it later if it
->    >proves to break things
-> 
-> This ended up breaking one of Alex's setups,
-> so it's time to put the wrapper back in now.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> Acked-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
-> --- old/drivers/pci/hotplug/pciehp_core.c	2008-03-12
-> 13:21:46.000000000 -0400 +++
-> linux/drivers/pci/hotplug/pciehp_core.c	2008-03-12
-> 13:23:54.000000000 -0400 @@ -467,7 +467,7 @@ t_slot =
-> pciehp_find_slot(ctrl, ctrl->slot_device_offset); 
->  	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /*
-> Check if slot is occupied */
-> -	if (value) {
-> +	if (value && pciehp_force) {
->  		rc = pciehp_enable_slot(t_slot);
->  		if (rc)	/* -ENODEV: shouldn't happen, but
-> deal with it */ value = 0;
-> 
+We have to be careful enough to let is_vsmp_box and vsmp_init defined,
+since they are used outside this file
 
-Acked-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+CC: Ravikiran Thirumalai <kiran@scalemp.com>
+---
+ arch/x86/kernel/vsmp_64.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/vsmp_64.c b/arch/x86/kernel/vsmp_64.c
+index a00961d..ccf23ae 100644
+--- a/arch/x86/kernel/vsmp_64.c
++++ b/arch/x86/kernel/vsmp_64.c
+@@ -19,6 +19,7 @@ #include <asm/pci-direct.h>
+ #include <asm/io.h>
+ #include <asm/paravirt.h>
+ 
++#ifdef CONFIG_PCI
+ /*
+  * Interrupt control on vSMPowered systems:
+  * ~AC is a shadow of IF.  If IF is 'on' AC should be 'off'
+@@ -87,12 +88,18 @@ int is_vsmp_box(void)
+ 	if (read_pci_config(0, 0x1f, 0, PCI_VENDOR_ID) ==
+ 	     (PCI_VENDOR_ID_SCALEMP || (PCI_DEVICE_ID_SCALEMP_VSMP_CTL << 16)))
+ 		vsmp = 1;
+-
+ 	return vsmp;
+ }
++#else
++int is_vsmp_box(void)
++{
++	return 0;
++}
++#endif
+ 
+ void __init vsmp_init(void)
+ {
++#ifdef CONFIG_PCI
+ 	void *address;
+ 	unsigned int cap, ctl, cfg;
+ 
+@@ -125,5 +132,6 @@ void __init vsmp_init(void)
+ 	}
+ 
+ 	early_iounmap(address, 8);
++#endif
+ 	return;
+ }
+-- 
+1.4.2
+
