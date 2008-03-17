@@ -1,87 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYCQUoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYCQUxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbYCQUoR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbYCQUoD
+	id S1755190AbYCQUxn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYCQUxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:44:03 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:49464 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbYCQUoB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:44:01 -0400
-Date: Mon, 17 Mar 2008 13:43:57 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org, mingo@elte.hu, ego@in.ibm.com,
-       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       akpm@linux-foundation.org, josh@freedesktop.org, tglx@linutronix.de,
-       niv@us.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
-Message-ID: <20080317204357.GI10955@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080317010821.GA29875@linux.vnet.ibm.com> <20080317183047.GA188@tv-sign.ru> <20080317190605.GG10955@linux.vnet.ibm.com> <20080317201741.GA92@tv-sign.ru>
+	Mon, 17 Mar 2008 16:53:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56999 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751835AbYCQUxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 16:53:33 -0400
+Message-ID: <47DEDA20.30006@redhat.com>
+Date: Mon, 17 Mar 2008 16:52:48 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080317201741.GA92@tv-sign.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com,
+       jkenisto@us.ibm.com, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com, prasanna@in.ibm.com, shaohua.li@intel.com,
+       davem@davemloft.net, fche@redhat.com
+Subject: [PATCH -mm] list.h: rename list_singleton to list_is_singular
+References: <47DAE2C4.2060303@redhat.com>	 <20080314140007.a7b495d7.akpm@linux-foundation.org>	 <47DAFAA2.20302@redhat.com> <1205620596.6422.8.camel@lappy>	 <47DE8870.1020503@redhat.com> <1205766798.8514.318.camel@twins>
+In-Reply-To: <1205766798.8514.318.camel@twins>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 11:17:41PM +0300, Oleg Nesterov wrote:
-> (to clarify: my question is completely offtopic to this patch)
-> On 03/17, Paul E. McKenney wrote:
-> > On Mon, Mar 17, 2008 at 09:30:47PM +0300, Oleg Nesterov wrote:
-> > > I'm not sure the code below is up to date, but what I have in
-> > > arch/s390/kernel/time.c is:
-> > > 
-> > > 	stop_hz_timer:
-> > > 
-> > > 		cpu_set(cpu, nohz_cpu_mask);
-> > > 		
-> > > 		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
-> > > 			cpu_clear(cpu, nohz_cpu_mask);
-> > > 			return;
-> > > 		}
-> > > 
-> > > Don't we need smp_mb() after cpu_set() ?
-> > 
-> > S390's memory model is quite strong, so it might not be needed.
-> 
-> OK, in that case we shouldn't worry.
+Rename list_singleton to list_is_singular.
 
-I don't know if I would go -that- far.  ;-)
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
+Peter Zijlstra wrote:
+> I think list_has_one() or list_is_singular() are good names, they convey
+> they are a test for a condition by using a form of be.
 
-> > In any
-> > case, if needed, it goes -before- the cpu_set(), because the problems
-> > would arise if prior RCU read-side critical sections were to be reordered
-> > to follow this cpu_set(), right?
-> 
-> No, but it is very possible I missed something.
-> 
-> What if rcu_needs_cpu(cpu) is executed before cpu_set(cpu, nohz_cpu_mask)?
-> It can miss rcu_start_batch() -> rcp->cur++ and return false, but at the
-> same time rcu_start_batch() may see nohz_cpu_mask without this CPU.
+OK, I picked up list_is_singular().
 
-If you mean that the rcu_needs_cpu() executes before the cpu_set() in
-the code fragment above, while the rcu_start_batch() executes on some
-other CPU?
+Thanks,
 
-Hmmm....  Can't see why this wouldn't be a problem, right off-hand,
-though I cannot claim to be an s390 expert.
+ include/linux/list.h |    4 ++--
+ kernel/kprobes.c     |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Heiko, thoughts?
+Index: 2.6.25-rc5-mm1/include/linux/list.h
+===================================================================
+--- 2.6.25-rc5-mm1.orig/include/linux/list.h
++++ 2.6.25-rc5-mm1/include/linux/list.h
+@@ -212,10 +212,10 @@ static inline int list_empty_careful(con
+ }
 
-							Thanx, Paul
+ /**
+- * list_singleton - tests whether a list has just one entry.
++ * list_is_singular - tests whether a list has just one entry.
+  * @head: the list to test.
+  */
+-static inline int list_singleton(const struct list_head *head)
++static inline int list_is_singular(const struct list_head *head)
+ {
+ 	return !list_empty(head) && (head->next == head->prev);
+ }
+Index: 2.6.25-rc5-mm1/kernel/kprobes.c
+===================================================================
+--- 2.6.25-rc5-mm1.orig/kernel/kprobes.c
++++ 2.6.25-rc5-mm1/kernel/kprobes.c
+@@ -643,7 +643,7 @@ static int __kprobes __unregister_kprobe
+ valid_p:
+ 	if (old_p == p ||
+ 	    (old_p->pre_handler == aggr_pre_handler &&
+-	     list_singleton(&old_p->list))) {
++	     list_is_singular(&old_p->list))) {
+ 		/*
+ 		 * Only probe on the hash list. Disarm only if kprobes are
+ 		 * enabled - otherwise, the breakpoint would already have
+@@ -679,7 +679,7 @@ static void __kprobes __unregister_kprob
+ 			module_put(mod);
+ 	}
 
-> No?
-> 
-> Oleg.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-	if (list_empty(&p->list) || list_singleton(&p->list)) {
++	if (list_empty(&p->list) || list_is_singular(&p->list)) {
+ 		if (!list_empty(&p->list)) {
+ 			/* "p" is the last child of an aggr_kprobe */
+ 			old_p = list_entry(p->list.next, struct kprobe, list);
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
