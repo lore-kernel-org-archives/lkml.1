@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbYCRF3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbYCRF3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbYCRF3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 01:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYCRFYW
+	id S1755657AbYCRF3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 01:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYCRFYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 01:24:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:37856 "EHLO mail.goop.org"
+	Tue, 18 Mar 2008 01:24:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:37850 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938AbYCRFYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751081AbYCRFYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Mar 2008 01:24:10 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 11 of 31] x86: add pud_alloc for 4-level pagetables
-X-Mercurial-Node: 0c545f2790ac5388d9b30b69be133f8bb434a657
-Message-Id: <0c545f2790ac5388d9b3.1205797022@localhost>
+Subject: [PATCH 17 of 31] xen: make use of pte_t union
+X-Mercurial-Node: 8355eaf061e8fd74996c18de3d7cfe697cf16eb8
+Message-Id: <8355eaf061e8fd74996c.1205797028@localhost>
 In-Reply-To: <patchbomb.1205797011@localhost>
-Date: Mon, 17 Mar 2008 16:37:02 -0700
+Date: Mon, 17 Mar 2008 16:37:08 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
@@ -24,89 +24,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+pte_t always contains a "pte" field for the whole pte value, so make
+use of it.
+
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/paravirt.c |    2 ++
- arch/x86/mm/pgtable.c      |    1 +
- include/asm-x86/paravirt.h |   11 +++++++++++
- include/asm-x86/pgalloc.h  |    3 +++
- 4 files changed, 17 insertions(+)
+ arch/x86/xen/mmu.c |   26 ++++++++++++--------------
+ 1 file changed, 12 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -385,8 +385,10 @@
- 	.alloc_pte = paravirt_nop,
- 	.alloc_pmd = paravirt_nop,
- 	.alloc_pmd_clone = paravirt_nop,
-+	.alloc_pud = paravirt_nop,
- 	.release_pte = paravirt_nop,
- 	.release_pmd = paravirt_nop,
-+	.release_pud = paravirt_nop,
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -216,12 +216,10 @@
  
- 	.set_pte = native_set_pte,
- 	.set_pte_at = native_set_pte_at,
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -38,6 +38,7 @@
- #if PAGETABLE_LEVELS > 3
- void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
+ pteval_t xen_pte_val(pte_t pte)
  {
-+	paravirt_release_pud(__pa(pud) >> PAGE_SHIFT);
- 	tlb_remove_page(tlb, virt_to_page(pud));
- }
- #endif	/* PAGETABLE_LEVELS > 3 */
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -223,8 +223,10 @@
- 	void (*alloc_pte)(struct mm_struct *mm, u32 pfn);
- 	void (*alloc_pmd)(struct mm_struct *mm, u32 pfn);
- 	void (*alloc_pmd_clone)(u32 pfn, u32 clonepfn, u32 start, u32 count);
-+	void (*alloc_pud)(struct mm_struct *mm, u32 pfn);
- 	void (*release_pte)(u32 pfn);
- 	void (*release_pmd)(u32 pfn);
-+	void (*release_pud)(u32 pfn);
+-	pteval_t ret = 0;
++	pteval_t ret = pte.pte;
  
- 	/* Pagetable manipulation functions */
- 	void (*set_pte)(pte_t *ptep, pte_t pteval);
-@@ -918,6 +920,15 @@
- 	PVOP_VCALL1(pv_mmu_ops.release_pmd, pfn);
+-	if (pte.pte_low) {
+-		ret = ((pteval_t)pte.pte_high << 32) | pte.pte_low;
+-		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
+-	}
++	if (ret & _PAGE_PRESENT)
++		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
+ 
+ 	return ret;
+ }
+@@ -229,16 +227,16 @@
+ pmdval_t xen_pmd_val(pmd_t pmd)
+ {
+ 	pmdval_t ret = pmd.pmd;
+-	if (ret)
+-		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	if (ret & _PAGE_PRESENT)
++		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
+ 	return ret;
  }
  
-+static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned pfn)
-+{
-+	PVOP_VCALL2(pv_mmu_ops.alloc_pud, mm, pfn);
-+}
-+static inline void paravirt_release_pud(unsigned pfn)
-+{
-+	PVOP_VCALL1(pv_mmu_ops.release_pud, pfn);
-+}
-+
- #ifdef CONFIG_HIGHPTE
- static inline void *kmap_atomic_pte(struct page *page, enum km_type type)
+ pgdval_t xen_pgd_val(pgd_t pgd)
  {
-diff --git a/include/asm-x86/pgalloc.h b/include/asm-x86/pgalloc.h
---- a/include/asm-x86/pgalloc.h
-+++ b/include/asm-x86/pgalloc.h
-@@ -11,8 +11,10 @@
- #define paravirt_alloc_pte(mm, pfn) do { } while (0)
- #define paravirt_alloc_pmd(mm, pfn) do { } while (0)
- #define paravirt_alloc_pmd_clone(pfn, clonepfn, start, count) do { } while (0)
-+#define paravirt_alloc_pud(mm, pfn) do { } while (0)
- #define paravirt_release_pte(pfn) do { } while (0)
- #define paravirt_release_pmd(pfn) do { } while (0)
-+#define paravirt_release_pud(pfn) do { } while (0)
- #endif
+ 	pgdval_t ret = pgd.pgd;
+-	if (ret)
+-		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	if (ret & _PAGE_PRESENT)
++		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
+ 	return ret;
+ }
  
- /*
-@@ -101,6 +103,7 @@
- #if PAGETABLE_LEVELS > 3
- static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
+@@ -254,7 +252,7 @@
+ 
+ pmd_t xen_make_pmd(pmdval_t pmd)
  {
-+	paravirt_alloc_pud(mm, __pa(pud) >> PAGE_SHIFT);
- 	set_pgd(pgd, __pgd(_PAGE_TABLE | __pa(pud)));
+-	if (pmd & 1)
++	if (pmd & _PAGE_PRESENT)
+ 		pmd = phys_to_machine(XPADDR(pmd)).maddr;
+ 
+ 	return (pmd_t){ pmd };
+@@ -275,7 +273,7 @@
+ 
+ pteval_t xen_pte_val(pte_t pte)
+ {
+-	pteval_t ret = pte.pte_low;
++	pteval_t ret = pte.pte;
+ 
+ 	if (ret & _PAGE_PRESENT)
+ 		ret = machine_to_phys(XMADDR(ret)).paddr;
+@@ -286,8 +284,8 @@
+ pgdval_t xen_pgd_val(pgd_t pgd)
+ {
+ 	pteval_t ret = pgd.pgd;
+-	if (ret)
+-		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	if (ret & _PAGE_PRESENT)
++		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
+ 	return ret;
  }
  
 
