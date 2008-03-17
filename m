@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbYCQLZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYCQL2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbYCQLZX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 07:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYCQLZM
+	id S1754019AbYCQL2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 07:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYCQL2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 07:25:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46786 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751874AbYCQLZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 07:25:11 -0400
-Date: Mon, 17 Mar 2008 22:21:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 17
-Message-Id: <20080317222159.e1cca8e2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__17_Mar_2008_22_21_59_+1100_9ki=vGZ.=uXQb0QK"
+	Mon, 17 Mar 2008 07:28:31 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1163 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752114AbYCQL2a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 07:28:30 -0400
+Date: Mon, 17 Mar 2008 11:25:48 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] Move memory controller allocations to their own slabs (v3)
+Message-ID: <20080317112548.GA3835@shadowen.org>
+References: <20080313140307.20133.30405.sendpatchset@localhost.localdomain> <20080314115645.e78b7f5c.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080314115645.e78b7f5c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__17_Mar_2008_22_21_59_+1100_9ki=vGZ.=uXQb0QK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Mar 14, 2008 at 11:56:45AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 13 Mar 2008 19:33:07 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > 
+> > 
+> > Changelog v3
+> > 
+> > 1. Remove HWCACHE_ALIGN
+> > 
+> > Changelog v2
+> > 
+> > 1. Remove extra slab for mem_cgroup_per_zone
+> > 
+> > Move the memory controller data structure page_cgroup to its own slab cache.
+> > It saves space on the system, allocations are not necessarily pushed to order
+> > of 2 and should provide performance benefits. Users who disable the memory
+> > controller can also double check that the memory controller is not allocating
+> > page_cgroup's.
+> > 
+> > NOTE: Hugh Dickins brought up the issue of whether we want to mark page_cgroup
+> > as __GFP_MOVABLE or __GFP_RECLAIMABLE. I don't think there is an easy
+> > answer at the moment. page_cgroup's are associated with user pages,
+> > they can be reclaimed once the user page has been reclaimed, so it might
+> > make sense to mark them as __GFP_RECLAIMABLE. For now, I am leaving the
+> > marking to default values that the slab allocator uses.
+> > 
+> > Comments?
+> > 
+> At first, in my understanding,
+> - MOVABLE is for migratable pages. (so, not for kernel objects.)
+> - RECLAIMABLE is for reclaimable kernel objects. (for slab etc..)
 
-Hi all,
+Yes, MOVABLE is for things which are very easily moved out, whether that
+is migrated to another page, or paged out to swap, or trivially freed as
+it can be re-read from somewhere such as text from a binary; generally
+this is things on the LRU.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+RECLAIMABLE, is things which are harder to get rid of, but for which
+there is some hope of evicting their contents; as you say things like
+those slab caches with shrinkers.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-allmodconfig for both powerpc and x86_64.
+> All reclaimable objects are not necessary to be always reclaimable but
+> some amount of RECLAIMABLE objects (not all) should be recraimable easily.
+> For example, some of dentry-cache, inode-cache is reclaimable because *unused*
+> objects are cached.
+> 
+> When it comes to page_cgroup, *all* objects has dependency to pages which are
+> assigned to.  And user pages are reclaimable.
+> There is a similar object....the radix tree. radix-tree's node is allocated as
+> RECLAIMABLE object.
+> 
+> So I think it makes sense to changing page_cgroup to be reclaimable.
 
-There were a few merge conflicts (mostly trivial) and one build breakage.
-I didn't bother reporting them today I will do so tomorrow.
+That sounds correct to me.
 
-We are up to 48 trees, more are welcome (even if they are currently
-empty).  The influx of new trees has been underwhelming.  Thanks to those
-who have contributed, and to those who haven't, please do.
+> But final decision should be done by how fragmentation avoidance works.
+> It's good to test "how many hugepages can be allocated dynamically" when we
+> make page_cgroup to be GFP_RECAIMABLE 
 
-In particular, I have very few of the architecture trees ....
-
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/kisskb/branch/9/.  If maintainers want to
-give advice about cross compilers/configs that work, we are always open
-to add more builds.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__17_Mar_2008_22_21_59_+1100_9ki=vGZ.=uXQb0QK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH3lRdTgG2atn1QN8RAofUAJ9eLALJm3KTDwi5TA4lZ1nm+ZURTACeO5TL
-bDBv22JGRz0bZQR7g+riG/o=
-=Dt45
------END PGP SIGNATURE-----
-
---Signature=_Mon__17_Mar_2008_22_21_59_+1100_9ki=vGZ.=uXQb0QK--
+-apw
