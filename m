@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYCQPqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYCQPq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbYCQPqP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 11:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYCQPqA
+	id S1754336AbYCQPq7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 11:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYCQPqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 11:46:00 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:51536 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbYCQPp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 11:45:59 -0400
-Date: Mon, 17 Mar 2008 16:45:57 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mm-commits@vger.kernel.org, agk@redhat.com, jbrassow@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: + dm-raid1-bitops-bug.patch added to -mm tree
-Message-ID: <20080317154557.GD6500@osiris.boeblingen.de.ibm.com>
-References: <200802230732.m1N7Wdmr018088@imap1.linux-foundation.org>
-MIME-Version: 1.0
+	Mon, 17 Mar 2008 11:46:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1182 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751992AbYCQPqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 11:46:51 -0400
+Date: Mon, 17 Mar 2008 16:46:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Joel K. Greene" <joel.greene@catapult.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Timer interrupt stops, causes soft lockup
+Message-ID: <20080317154639.GA4102@ucw.cz>
+References: <1205235450.18463.45.camel@linuxdt036.nc.catapult.com> <47D6423D.1E6F.00AA.0@novell.com> <1205255048.18463.60.camel@linuxdt036.nc.catapult.com> <1205260328.18463.67.camel@linuxdt036.nc.catapult.com> <47D68B9D.1E6F.00AA.0@novell.com> <1205265642.18463.82.camel@linuxdt036.nc.catapult.com> <1205322793.20205.9.camel@linuxdt036.nc.catapult.com> <1205326713.20205.27.camel@linuxdt036.nc.catapult.com> <1205332212.20205.33.camel@linuxdt036.nc.catapult.com> <1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802230732.m1N7Wdmr018088@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1205510009.29658.83.camel@linuxdt036.nc.catapult.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: dm raid1: bitops bug
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> Commit 8f0205b798f926e2745de5fdebf0a8605c621de6
-> "dm raid1: handle recovery failures" introduces a test_bit on an
-> integer. test_bit is only defined to do something useful on arrays
-> of long. Remove the test_bit code and use hand coded test bit
-> instead.
-> 
-> Cc: Jonathan Brassow <jbrassow@redhat.com>
-> Cc: Alasdair G Kergon <agk@redhat.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/md/dm-raid1.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff -puN drivers/md/dm-raid1.c~dm-raid1-bitops-bug drivers/md/dm-raid1.c
-> --- a/drivers/md/dm-raid1.c~dm-raid1-bitops-bug
-> +++ a/drivers/md/dm-raid1.c
-> @@ -758,7 +758,8 @@ static void recovery_complete(int read_e
->  {
->  	struct region *reg = (struct region *)context;
->  	struct mirror_set *ms = reg->rh->ms;
-> -	int m, bit = 0;
-> +	unsigned int mask = 1;
-> +	int m;
-> 
->  	if (read_err) {
->  		/* Read error means the failure of default mirror. */
-> @@ -776,10 +777,10 @@ static void recovery_complete(int read_e
->  		for (m = 0; m < ms->nr_mirrors; m++) {
->  			if (&ms->mirror[m] == get_default_mirror(ms))
->  				continue;
-> -			if (test_bit(bit, &write_err))
-> +			if (write_err & mask)
->  				fail_mirror(ms->mirror + m,
->  					    DM_RAID1_SYNC_ERROR);
-> -			bit++;
-> +			mask <<= 1;
->  		}
->  	}
+Hi!
 
-Could we have this patch or something similar in 2.6.25, please?
-It's broken doing a test_bit() on an int since the result is random
-whenever sizeof(int) != sizeof(long).
-It might also lead to exceptions if an architecture requires a
-sizeof(long) alignment for test_bit().
+> Of course when time stops progessing forward at a steady pace all
+> sorts of Bad Things happen.  
+> 
+> The clock loop is caused by jiffies not incrementing. It seems that wall
+> time updates itself and then resync's with jiffies every ~4s.
+> 
+> We verified that all spinlocks ( xtime_lock in particular ) were not
+> being held, and that the kernel had no reason not to update jiffies.
+> Other interrupts continue to fire, so we're not stuck in the timer
+> handler.
+> 
+> So, we went on to look at the PIC. We threw together a little kernel
+> module to get some debug info.
+
+Nice debugging.
+
+> We have over 10 systems demonstrating the problem, many in customer
+> sites. 
+
+Does nosmp help?
+
+Does noapic/nolapic help?
+
+You may want to try testing with HZ=4000... to show the problem
+faster.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
