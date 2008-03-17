@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbYCQUy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbYCQU4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbYCQUy7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYCQUyu
+	id S1756465AbYCQU4X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYCQU4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:54:50 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40660 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751717AbYCQUyt (ORCPT
+	Mon, 17 Mar 2008 16:56:16 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:34160 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbYCQU4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:54:49 -0400
-Subject: Re: [PATCH 4/4] scsi: megaraid_sas - Update the Version and
-	Changelog
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: bo yang <bo.yang@lsi.com>
-Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>, neela.kolli@lsi.com
-In-Reply-To: <1205741897.7479.22.camel@pcp021067pcs.se.lsil.com>
-References: <9738BCBE884FDB42801FAD8A7769C26501CE50E4@NAMAIL1.ad.lsil.com>
-	 <1195251505.3407.30.camel@localhost.localdomain>
-	 <9738BCBE884FDB42801FAD8A7769C26501C9A4AF@NAMAIL1.ad.lsil.com>
-	 <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
-	 <1205741897.7479.22.camel@pcp021067pcs.se.lsil.com>
-Content-Type: text/plain
-Date: Mon, 17 Mar 2008 15:54:45 -0500
-Message-Id: <1205787285.6767.185.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Mar 2008 16:56:15 -0400
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
+       general@lists.openfabrics.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>
+Subject: Re: [PATCH 1/3] Infiniband: make ehca_pd use struct pid pointer rather than pid_t
+X-Message-Flag: Warning: May contain useful information
+References: <47DE683E.3050005@openvz.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 17 Mar 2008 13:56:14 -0700
+In-Reply-To: <47DE683E.3050005@openvz.org> (Pavel Emelyanov's message of "Mon, 17 Mar 2008 15:46:54 +0300")
+Message-ID: <adatzj5f4sx.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Mar 2008 20:56:14.0387 (UTC) FILETIME=[567E7830:01C88871]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-17 at 04:18 -0400, bo yang wrote:
-> Update the Version and ChangeLog
-> 
-> Signed-off-by Bo Yang<bo.yang@lsi.com>
-> 
-> ---
->  Documentation/scsi/ChangeLog.megaraid_sas |   22 ++++++++++++++++++++
->  drivers/scsi/megaraid/megaraid_sas.c      |    2 -
->  drivers/scsi/megaraid/megaraid_sas.h      |    6 ++---
->  3 files changed, 26 insertions(+), 4 deletions(-)
-> 
-> diff -rupN linux-2.6.24_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.24_new/Documentation/scsi/ChangeLog.megaraid_sas
-> --- linux-2.6.24_orig/Documentation/scsi/ChangeLog.megaraid_sas	2008-03-10 10:17:25.000000000 -0400
-> +++ linux-2.6.24_new/Documentation/scsi/ChangeLog.megaraid_sas	2008-03-10 10:41:39.000000000 -0400
-> @@ -3,6 +3,28 @@
->  			Sumant Patro
->  			Bo Yang
->  
-> +2 Current Version : 00.00.03.20
-> +3 Older Version   : 00.00.03.16
-> +
-> +1. Sense buffer ptr data type in the ioctl path is reverted  back to
-> +	u32 * as in previous versions of driver.
-> +
-> +2. Fixed the driver frame count.
-> +	When Driver sent wrong frame count to firmware.  As this particular
-> +	command is sent to drive, FW is seeing continuous chip resets and so
-> +	the command will timeout.
-> +
-> +3. Add the new controller(1078DE) support to the driver.
+ > The task_struct->tgid field is about to become deprecated, due to
+ > pid namespaces make tasks have many pids, not one. The infiniband
+ > driver is one of the code, that still uses it in some places.
 
-It would be nice if the git change log were this detailed, as well
-please.
+Looks fine in terms of the changes it makes, but actually it seems
+that the ehca use of this is completely bogus and the ownership
+checking should be removed.
 
-> +4. Increase the max_wait to 60 from 10 in the controller operational status.
-> +	With this max_wait increase, driver will make sure the FW will finish
-> +	the pending cmd for KDUMP case.   
+The core ib_uverbs module has checks that make sure that objects can
+only be accessed through the file that they were created through; of
+course there are tricky ways a file can be passed from one process to
+another, but I don't think we want to disallow userspace processes
+from trying to do interesting stuff as long as it doesn't hurt anything.
 
-Where did this change come from?  It's not in any of this change set
-that I can see.
+In other words-- ehca shouldn't be looking at tgids or anything like
+that at all.  If there are missing checks then they should be in the
+core userspace verbs stuff; but I think what we have is actually OK.
 
-James
+ehca guys, what do you think?
 
-
+ - R.
