@@ -1,103 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbYCQIBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbYCQICh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbYCQIBb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 04:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYCQIBT
+	id S1756146AbYCQICh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 04:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYCQICV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 04:01:19 -0400
-Received: from sacred.ru ([62.205.161.221]:34301 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752419AbYCQIBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 04:01:18 -0400
-Message-ID: <47DE254A.5070608@openvz.org>
-Date: Mon, 17 Mar 2008 11:01:14 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Thomas Graf <tgraf@suug.ch>, David Woodhouse <dwmw2@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Audit vs netlink interaction problem
-References: <47DAA660.90401@openvz.org> <20080314163929.GP20815@postel.suug.ch> <47DAB065.6060804@openvz.org> <20080314182927.GQ20815@postel.suug.ch> <20080314184052.GR20815@postel.suug.ch>
-In-Reply-To: <20080314184052.GR20815@postel.suug.ch>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 17 Mar 2008 04:02:21 -0400
+Received: from mga10.intel.com ([192.55.52.92]:65137 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752579AbYCQICU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 04:02:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,511,1199692800"; 
+   d="scan'208";a="534985721"
+Subject: Re: hackbench regression since 2.6.25-rc
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0803141400170.28115@schroedinger.engr.sgi.com>
+References: <1205394417.3215.85.camel@ymzhang>
+	 <20080313014808.f8d25c2a.akpm@linux-foundation.org>
+	 <1205400538.3215.148.camel@ymzhang>
+	 <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
+	 <1205463842.3215.188.camel@ymzhang> <1205465447.3215.195.camel@ymzhang>
+	 <Pine.LNX.4.64.0803132333020.24204@schroedinger.engr.sgi.com>
+	 <1205479398.3215.284.camel@ymzhang>
+	 <Pine.LNX.4.64.0803141400170.28115@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 17 Mar 2008 15:50:04 +0800
+Message-Id: <1205740204.3215.520.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Mar 2008 11:01:09 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Graf wrote:
-> * Thomas Graf <tgraf@suug.ch> 2008-03-14 19:29
->> * Pavel Emelyanov <xemul@openvz.org> 2008-03-14 20:05
->>> Hmmm... I'm afraid, that this can break the audit filtering and signal
->>> auditing. I haven't yet looked deep into it, but it compares the 
->>> task->tgid with this audit_pid for different purposes. If audit_pid
->>> changes this code will be broken.
->> OK, then both pids have to be stored. audit_pid remains as-is but is
->> no longer used as destination netlink pid. A second pid is stored and
->> updated whenever a netlink message is received from userspace.
+On Fri, 2008-03-14 at 14:06 -0700, Christoph Lameter wrote:
+> On Fri, 14 Mar 2008, Zhang, Yanmin wrote:
 > 
-> The following patch represents what I mean. Untested!
-
-Looks great, all the more so I created very similar patch.
-David, can we have this in mainline some day?
-
-Thanks,
-Pavel
-
-> Index: net-2.6.26/kernel/audit.c
-> ===================================================================
-> --- net-2.6.26.orig/kernel/audit.c	2008-03-14 19:31:53.000000000 +0100
-> +++ net-2.6.26/kernel/audit.c	2008-03-14 19:38:35.000000000 +0100
-> @@ -82,6 +82,9 @@
->   * contains the (non-zero) pid. */
->  int		audit_pid;
->  
-> +/* Actual netlink pid of the userspace process */
-> +static int	audit_nlk_pid;
-> +
->  /* If audit_rate_limit is non-zero, limit the rate of sending audit records
->   * to that number per second.  This prevents DoS attacks, but results in
->   * audit records being dropped. */
-> @@ -347,12 +350,12 @@
->  		skb = skb_dequeue(&audit_skb_queue);
->  		wake_up(&audit_backlog_wait);
->  		if (skb) {
-> -			if (audit_pid) {
-> -				int err = netlink_unicast(audit_sock, skb, audit_pid, 0);
-> +			if (audit_nlk_pid) {
-> +				int err = netlink_unicast(audit_sock, skb, audit_nlk_pid, 0);
->  				if (err < 0) {
->  					BUG_ON(err != -ECONNREFUSED); /* Shoudn't happen */
-> -					printk(KERN_ERR "audit: *NO* daemon at audit_pid=%d\n", audit_pid);
-> -					audit_pid = 0;
-> +					printk(KERN_ERR "audit: *NO* daemon at audit_nlk_pid=%d\n", audit_nlk_pid);
-> +					audit_nlk_pid = 0;
->  				}
->  			} else {
->  				if (printk_ratelimit())
-> @@ -623,6 +626,12 @@
->  							sid, 1);
->  
->  			audit_pid = new_pid;
-> +
-> +			/*
-> +			 * Netlink pid is only updated here to avoid overwrites
-> +			 * from potential processes only querying the interface.
-> +			 */
-> +			audit_nlk_pid = NETLINK_CB(skb).pid;
->  		}
->  		if (status_get->mask & AUDIT_STATUS_RATE_LIMIT)
->  			err = audit_set_rate_limit(status_get->rate_limit,
-> @@ -1350,7 +1359,7 @@
->  	if (!audit_rate_check()) {
->  		audit_log_lost("rate limit exceeded");
->  	} else {
-> -		if (audit_pid) {
-> +		if (audit_nlk_pid) {
->  			struct nlmsghdr *nlh = nlmsg_hdr(ab->skb);
->  			nlh->nlmsg_len = ab->skb->len - NLMSG_SPACE(0);
->  			skb_queue_tail(&audit_skb_queue, ab->skb);
+> > On my 8-core stoakley, there is no such regression. Below data is after 
+> > testing.
 > 
+> I was looking for the details on two slab caches. The comparison of the 
+> details statistics is likely very interesting because we will be able to
+> see how the doubling of processor counts affects the internal behavior of 
+> slub.
+I collected more data on 16-p tigerton to try to find the possible relationship
+between slub_min_objects and processor number. Kernel is 2.6.25-rc5.
+
+Command\slub_min_objects	|	slub_min_objects=8  |   16  |   32   |  64
+-------------------------------------------------------------------------------------
+./hackbench 100 process 2000    |  		250second   |	23  |   18.6 |  17.5
+./hackbench 200 process 2000	|	      	532         |	44  |   35.6 |  33.5
+
+                                
+The first command line will start 4000 processes and the second will start 8000 processes.
+
+As the problemtic slab is kmalloc-512, slub_min_objects=8 is just the default configuration.
+
+Oprofile data shows the ratio of __slab_alloc+__slab_free+add_partial has no difference
+between the 2 commandline with the same kernel boot parameters.
+
+
+slub_min_objects	                                   | 8      |   16   |   32   |  64
+--------------------------------------------------------------------------------------------
+slab(__slab_alloc+__slab_free+add_partial) cpu utilization | 88.00% | 44.00% | 13.00% | 12%
+
+
+When slub_min_objects=32, we could get a reasonable value. Beyond 32, the improvement
+is very small. 32 is just possible_cpu_number*2 on my tigerton.
+
+It's hard to say hackbench simulates real applications closely. But it discloses a possible
+performance bottlebeck. Last year, we once captured the kmalloc-2048 issue by tbench. So the
+default slub_min_objects need to be revised. In the other hand, slab is allocated by alloc_page
+when its size is equal to or more than a half page, so enlarging slub_min_objects won't create
+too many slab page buffers.
+
+As for NUMA, perhaps we could define slub_min_objects to 2*max_cpu_number_per_node.
+
+-yanmin
+
 
