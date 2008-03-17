@@ -1,94 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYCQCCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbYCQCDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbYCQCCm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Mar 2008 22:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYCQB6a
+	id S1758345AbYCQCDi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Mar 2008 22:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbYCQB6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Mar 2008 21:58:30 -0400
+	Sun, 16 Mar 2008 21:58:33 -0400
 Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:23330 "EHLO
 	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755973AbYCQB63 (ORCPT
+	with ESMTP id S1756075AbYCQB6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Mar 2008 21:58:29 -0400
+	Sun, 16 Mar 2008 21:58:32 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080317258.659191058@firstfloor.org>
 In-Reply-To: <20080317258.659191058@firstfloor.org>
 To: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
        nickpiggin@yahoo.com.au
-Subject: [PATCH] [13/18] Add support to allocate hugepages of different size with hugepages=...
-Message-Id: <20080317015827.15E811B41E0@basil.firstfloor.org>
-Date: Mon, 17 Mar 2008 02:58:27 +0100 (CET)
-X-OriginalArrivalTime: 17 Mar 2008 01:51:52.0814 (UTC) FILETIME=[7901E0E0:01C887D1]
+Subject: [PATCH] [16/18] Add huge pud support to hugetlbfs
+Message-Id: <20080317015830.2473A1B41E0@basil.firstfloor.org>
+Date: Mon, 17 Mar 2008 02:58:30 +0100 (CET)
+X-OriginalArrivalTime: 17 Mar 2008 01:51:55.0877 (UTC) FILETIME=[7AD54150:01C887D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Straight forward extensions for huge pages located in the PUD
+instead of PMDs.
+
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/linux/hugetlb.h |    1 +
- mm/hugetlb.c            |   23 ++++++++++++++++++-----
- 2 files changed, 19 insertions(+), 5 deletions(-)
+ arch/ia64/mm/hugetlbpage.c    |    6 ++++++
+ arch/powerpc/mm/hugetlbpage.c |    5 +++++
+ arch/sh/mm/hugetlbpage.c      |    5 +++++
+ arch/sparc64/mm/hugetlbpage.c |    5 +++++
+ arch/x86/mm/hugetlbpage.c     |   25 ++++++++++++++++++++++++-
+ include/linux/hugetlb.h       |    5 +++++
+ mm/hugetlb.c                  |    9 +++++++++
+ 7 files changed, 59 insertions(+), 1 deletion(-)
 
-Index: linux/mm/hugetlb.c
-===================================================================
---- linux.orig/mm/hugetlb.c
-+++ linux/mm/hugetlb.c
-@@ -552,19 +552,23 @@ static int __init hugetlb_init_hstate(st
- {
- 	unsigned long i;
- 
--	for (i = 0; i < MAX_NUMNODES; ++i)
--		INIT_LIST_HEAD(&h->hugepage_freelists[i]);
-+	/* Don't reinitialize lists if they have been already init'ed */
-+	if (!h->hugepage_freelists[0].next) {
-+		for (i = 0; i < MAX_NUMNODES; ++i)
-+			INIT_LIST_HEAD(&h->hugepage_freelists[i]);
- 
--	h->hugetlb_next_nid = first_node(node_online_map);
-+		h->hugetlb_next_nid = first_node(node_online_map);
-+	}
- 
--	for (i = 0; i < max_huge_pages[h - hstates]; ++i) {
-+	while (h->parsed_hugepages < max_huge_pages[h - hstates]) {
- 		if (h->order > MAX_ORDER) {
- 			if (!alloc_bm_huge_page(h))
- 				break;
- 		} else if (!alloc_fresh_huge_page(h))
- 			break;
-+		h->parsed_hugepages++;
- 	}
--	max_huge_pages[h - hstates] = h->free_huge_pages = h->nr_huge_pages = i;
-+	max_huge_pages[h - hstates] = h->parsed_hugepages;
- 
- 	printk(KERN_INFO "Total HugeTLB memory allocated, %ld %dMB pages\n",
- 			h->free_huge_pages,
-@@ -602,6 +606,15 @@ static int __init hugetlb_setup(char *s)
- 	unsigned long *mhp = &max_huge_pages[parsed_hstate - hstates];
- 	if (sscanf(s, "%lu", mhp) <= 0)
- 		*mhp = 0;
-+	/*
-+	 * Global state is always initialized later in hugetlb_init.
-+	 * But we need to allocate > MAX_ORDER hstates here early to still
-+	 * use the bootmem allocator.
-+	 * If you add additional hstates <= MAX_ORDER you'll need
-+	 * to fix that.
-+	 */
-+	if (parsed_hstate != &global_hstate)
-+		hugetlb_init_hstate(parsed_hstate);
- 	return 1;
- }
- __setup("hugepages=", hugetlb_setup);
 Index: linux/include/linux/hugetlb.h
 ===================================================================
 --- linux.orig/include/linux/hugetlb.h
 +++ linux/include/linux/hugetlb.h
-@@ -212,6 +212,7 @@ struct hstate {
- 	unsigned int nr_huge_pages_node[MAX_NUMNODES];
- 	unsigned int free_huge_pages_node[MAX_NUMNODES];
- 	unsigned int surplus_huge_pages_node[MAX_NUMNODES];
-+	unsigned long parsed_hugepages;
- };
+@@ -45,7 +45,10 @@ struct page *follow_huge_addr(struct mm_
+ 			      int write);
+ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 				pmd_t *pmd, int write);
++struct page *follow_huge_pud(struct mm_struct *mm, unsigned long address,
++				pud_t *pud, int write);
+ int pmd_huge(pmd_t pmd);
++int pud_huge(pud_t pmd);
+ void hugetlb_change_protection(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned long end, pgprot_t newprot);
  
- void __init huge_add_hstate(unsigned order);
+@@ -112,8 +115,10 @@ static inline unsigned long hugetlb_tota
+ #define hugetlb_report_meminfo(buf)		0
+ #define hugetlb_report_node_meminfo(n, buf)	0
+ #define follow_huge_pmd(mm, addr, pmd, write)	NULL
++#define follow_huge_pud(mm, addr, pud, write)	NULL
+ #define prepare_hugepage_range(addr,len)	(-EINVAL)
+ #define pmd_huge(x)	0
++#define pud_huge(x)	0
+ #define is_hugepage_only_range(mm, addr, len)	0
+ #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
+ #define hugetlb_fault(mm, vma, addr, write)	({ BUG(); 0; })
+Index: linux/arch/ia64/mm/hugetlbpage.c
+===================================================================
+--- linux.orig/arch/ia64/mm/hugetlbpage.c
++++ linux/arch/ia64/mm/hugetlbpage.c
+@@ -106,6 +106,12 @@ int pmd_huge(pmd_t pmd)
+ {
+ 	return 0;
+ }
++
++int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
+ struct page *
+ follow_huge_pmd(struct mm_struct *mm, unsigned long address, pmd_t *pmd, int write)
+ {
+Index: linux/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- linux.orig/arch/powerpc/mm/hugetlbpage.c
++++ linux/arch/powerpc/mm/hugetlbpage.c
+@@ -368,6 +368,11 @@ int pmd_huge(pmd_t pmd)
+ 	return 0;
+ }
+ 
++int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
+ struct page *
+ follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 		pmd_t *pmd, int write)
+Index: linux/arch/sh/mm/hugetlbpage.c
+===================================================================
+--- linux.orig/arch/sh/mm/hugetlbpage.c
++++ linux/arch/sh/mm/hugetlbpage.c
+@@ -78,6 +78,11 @@ int pmd_huge(pmd_t pmd)
+ 	return 0;
+ }
+ 
++int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
+ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 			     pmd_t *pmd, int write)
+ {
+Index: linux/arch/sparc64/mm/hugetlbpage.c
+===================================================================
+--- linux.orig/arch/sparc64/mm/hugetlbpage.c
++++ linux/arch/sparc64/mm/hugetlbpage.c
+@@ -294,6 +294,11 @@ int pmd_huge(pmd_t pmd)
+ 	return 0;
+ }
+ 
++int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
+ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 			     pmd_t *pmd, int write)
+ {
+Index: linux/arch/x86/mm/hugetlbpage.c
+===================================================================
+--- linux.orig/arch/x86/mm/hugetlbpage.c
++++ linux/arch/x86/mm/hugetlbpage.c
+@@ -196,6 +196,11 @@ int pmd_huge(pmd_t pmd)
+ 	return 0;
+ }
+ 
++int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
+ struct page *
+ follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 		pmd_t *pmd, int write)
+@@ -216,6 +221,11 @@ int pmd_huge(pmd_t pmd)
+ 	return !!(pmd_val(pmd) & _PAGE_PSE);
+ }
+ 
++int pud_huge(pud_t pud)
++{
++	return !!(pud_val(pud) & _PAGE_PSE);
++}
++
+ struct page *
+ follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 		pmd_t *pmd, int write)
+@@ -224,9 +234,22 @@ follow_huge_pmd(struct mm_struct *mm, un
+ 
+ 	page = pte_page(*(pte_t *)pmd);
+ 	if (page)
+-		page += ((address & ~HPAGE_MASK) >> PAGE_SHIFT);
++		page += ((address & ~PMD_MASK) >> PAGE_SHIFT);
++	return page;
++}
++
++struct page *
++follow_huge_pud(struct mm_struct *mm, unsigned long address,
++		pud_t *pud, int write)
++{
++	struct page *page;
++
++	page = pte_page(*(pte_t *)pud);
++	if (page)
++		page += ((address & ~PUD_MASK) >> PAGE_SHIFT);
+ 	return page;
+ }
++
+ #endif
+ 
+ /* x86_64 also uses this file */
+Index: linux/mm/hugetlb.c
+===================================================================
+--- linux.orig/mm/hugetlb.c
++++ linux/mm/hugetlb.c
+@@ -1206,6 +1206,15 @@ int hugetlb_fault(struct mm_struct *mm, 
+ 	return ret;
+ }
+ 
++/* Can be overriden by architectures */
++__attribute__((weak)) struct page *
++follow_huge_pud(struct mm_struct *mm, unsigned long address,
++	       pud_t *pud, int write)
++{
++	BUG();
++	return NULL;
++}
++
+ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			struct page **pages, struct vm_area_struct **vmas,
+ 			unsigned long *position, int *length, int i,
