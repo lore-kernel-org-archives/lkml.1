@@ -1,116 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYCQVS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYCQVVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbYCQVS6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 17:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbYCQVSs
+	id S1755147AbYCQVVp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 17:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYCQVVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 17:18:48 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:37889 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYCQVSr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 17:18:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=eAMqNOcOXqnzlDNe8VBTlCV6vxNm11hyw+K/+J8jKk53tz3Dgd7G8kj0VaXTa8prqE+9UcYrO6Ks8K4FRcX3WbpIo7K2SOOsfPr4tY7o5fXMxhNIb15oP0190HZlDfiVVNcz6XF6IXoAddKZf7PcjN+HRlaZbN0eEbosZK+mqDk=
-Message-ID: <86802c440803171418j583a7735r86550382c1ce230@mail.gmail.com>
-Date: Mon, 17 Mar 2008 14:18:46 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Johannes Weiner" <hannes@saeurebad.de>
-Subject: [PATCH] mm: make reserve_bootmem can crossed the nodes v2
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Andi Kleen" <ak@suse.de>, "Christoph Lameter" <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, "Yasunori Goto" <y-goto@jp.fujitsu.com>
+	Mon, 17 Mar 2008 17:21:38 -0400
+Received: from styx.suse.cz ([82.119.242.94]:54300 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752632AbYCQVVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 17:21:37 -0400
+Date: Mon, 17 Mar 2008 22:21:36 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+cc: linux-kernel@vger.kernel.org, michel@tungstengraphics.com
+Subject: Re: [PATCH] Update key codes for Apple aluminium keyboards
+In-Reply-To: <20080317201852.GA30667@hansmi.ch>
+Message-ID: <Pine.LNX.4.64.0803172220190.30831@jikos.suse.cz>
+References: <20080317161826.GA29601@hansmi.ch> <Pine.LNX.4.64.0803171759390.30831@jikos.suse.cz>
+ <20080317201852.GA30667@hansmi.ch>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_18670_15617296.1205788726346"
+Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-2041315493-1205788896=:30831"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_18670_15617296.1205788726346
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-new version about boundary check.
+--336216065-2041315493-1205788896=:30831
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-------=_Part_18670_15617296.1205788726346
-Content-Type: text/x-patch; name=reserve_bootmem_cross_nodes.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdxjhelj0
-Content-Disposition: attachment; filename=reserve_bootmem_cross_nodes.patch
+On Mon, 17 Mar 2008, Michael Hanselmann wrote:
 
-W1BBVENIXSBtbTogbWFrZSByZXNlcnZlX2Jvb3RtZW0gY2FuIGNyb3NzZWQgdGhlIG5vZGVzIHYy
-CgpzcGxpdCByZXNlcnZlX2Jvb3RtZW1fY29yZSB0byB0d28gZnVuY3Rpb24sIG9uZSBjaGVjayBj
-b25mbGljdHMsIGFuZCBvbmUgc2V0IGJpdHMuCgphbmQgbWFrZSByZXNlcnZlX2Jvb3RtZW0gdG8g
-bG9vcCBiZGF0YV9saXN0IHRvIGNyb3NzIHRoZSBub2Rlcy4KCnVzZXIgY291bGQgYmUgY3Jhc2hr
-ZXJuZWwgYW5kIHJhbWRpc2suLi4sIGluIGNhc2UgdGhlIHJhbmdlIGNyb3NzIHRoZSBub2RlcwoK
-djIsIGZpeCBvdXQgb2YgcmFuZ2UgY2hlY2sKClNpZ25lZC1vZmYtYnk6IFlpbmdoYWkgTHUgPHlo
-bHUua2VybmVsQGdtYWlsLmNvbT4KCkluZGV4OiBsaW51eC0yLjYvbW0vYm9vdG1lbS5jCj09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL21tL2Jvb3RtZW0uYworKysgbGludXgtMi42L21tL2Jv
-b3RtZW0uYwpAQCAtMTExLDQ0ICsxMTEsNzEgQEAgc3RhdGljIHVuc2lnbmVkIGxvbmcgX19pbml0
-IGluaXRfYm9vdG1lbQogICogbWlnaHQgYmUgdXNlZCBmb3IgYm9vdC10aW1lIGFsbG9jYXRpb25z
-IC0gb3IgaXQgbWlnaHQgZ2V0IGFkZGVkCiAgKiB0byB0aGUgZnJlZSBwYWdlIHBvb2wgbGF0ZXIg
-b24uCiAgKi8KLXN0YXRpYyBpbnQgX19pbml0IHJlc2VydmVfYm9vdG1lbV9jb3JlKGJvb3RtZW1f
-ZGF0YV90ICpiZGF0YSwKK3N0YXRpYyBpbnQgX19pbml0IGNhbl9yZXNlcnZlX2Jvb3RtZW1fY29y
-ZShib290bWVtX2RhdGFfdCAqYmRhdGEsCiAJCQl1bnNpZ25lZCBsb25nIGFkZHIsIHVuc2lnbmVk
-IGxvbmcgc2l6ZSwgaW50IGZsYWdzKQogewogCXVuc2lnbmVkIGxvbmcgc2lkeCwgZWlkeDsKIAl1
-bnNpZ25lZCBsb25nIGk7Ci0JaW50IHJldDsKKworCUJVR19PTighc2l6ZSk7CisKKwkvKiBvdXQg
-b2YgcmFuZ2UsIGRvbid0IGhvbGQgb3RoZXIgKi8KKwlpZiAoYWRkciArIHNpemUgPCBiZGF0YS0+
-bm9kZV9ib290X3N0YXJ0IHx8CisJCVBGTl9ET1dOKGFkZHIpID4gYmRhdGEtPm5vZGVfbG93X3Bm
-bikKKwkJcmV0dXJuIDA7CiAKIAkvKgotCSAqIHJvdW5kIHVwLCBwYXJ0aWFsbHkgcmVzZXJ2ZWQg
-cGFnZXMgYXJlIGNvbnNpZGVyZWQKLQkgKiBmdWxseSByZXNlcnZlZC4KKwkgKiBSb3VuZCB1cCB0
-byBpbmRleCB0byB0aGUgcmFuZ2UuCiAJICovCisJaWYgKGFkZHIgPiBiZGF0YS0+bm9kZV9ib290
-X3N0YXJ0KQorCQlzaWR4PSBQRk5fRE9XTihhZGRyIC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7
-CisJZWxzZQorCQlzaWR4ID0gMDsKKworCWVpZHggPSBQRk5fVVAoYWRkciArIHNpemUgLSBiZGF0
-YS0+bm9kZV9ib290X3N0YXJ0KTsKKwlpZiAoZWlkeCA+IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQ
-Rk5fRE9XTihiZGF0YS0+bm9kZV9ib290X3N0YXJ0KSkKKwkJZWlkeCA9IGJkYXRhLT5ub2RlX2xv
-d19wZm4gLSBQRk5fRE9XTihiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKKworCWZvciAoaSA9IHNp
-ZHg7IGkgPCBlaWR4OyBpKyspCisJCWlmICh0ZXN0X2JpdChpLCBiZGF0YS0+bm9kZV9ib290bWVt
-X21hcCkpIHsKKwkJCWlmIChmbGFncyAmIEJPT1RNRU1fRVhDTFVTSVZFKQorCQkJCXJldHVybiAt
-RUJVU1k7CisJCX0KKworCXJldHVybiAwOworCit9CitzdGF0aWMgdm9pZCBfX2luaXQgcmVzZXJ2
-ZV9ib290bWVtX2NvcmUoYm9vdG1lbV9kYXRhX3QgKmJkYXRhLAorCQkJdW5zaWduZWQgbG9uZyBh
-ZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsIGludCBmbGFncykKK3sKKwl1bnNpZ25lZCBsb25nIHNp
-ZHgsIGVpZHg7CisJdW5zaWduZWQgbG9uZyBpOworCiAJQlVHX09OKCFzaXplKTsKLQlCVUdfT04o
-UEZOX0RPV04oYWRkcikgPj0gYmRhdGEtPm5vZGVfbG93X3Bmbik7Ci0JQlVHX09OKFBGTl9VUChh
-ZGRyICsgc2l6ZSkgPiBiZGF0YS0+bm9kZV9sb3dfcGZuKTsKLQlCVUdfT04oYWRkciA8IGJkYXRh
-LT5ub2RlX2Jvb3Rfc3RhcnQpOwogCi0Jc2lkeCA9IFBGTl9ET1dOKGFkZHIgLSBiZGF0YS0+bm9k
-ZV9ib290X3N0YXJ0KTsKKwkvKiBvdXQgb2YgcmFuZ2UgKi8KKwlpZiAoYWRkciArIHNpemUgPCBi
-ZGF0YS0+bm9kZV9ib290X3N0YXJ0IHx8CisJCVBGTl9ET1dOKGFkZHIpID4gYmRhdGEtPm5vZGVf
-bG93X3BmbikKKwkJcmV0dXJuOworCisJLyoKKwkgKiBSb3VuZCB1cCB0byBpbmRleCB0byB0aGUg
-cmFuZ2UuCisJICovCisJaWYgKGFkZHIgPiBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KQorCQlzaWR4
-PSBQRk5fRE9XTihhZGRyIC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCk7CisJZWxzZQorCQlzaWR4
-ID0gMDsKKwogCWVpZHggPSBQRk5fVVAoYWRkciArIHNpemUgLSBiZGF0YS0+bm9kZV9ib290X3N0
-YXJ0KTsKKwlpZiAoZWlkeCA+IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQRk5fRE9XTihiZGF0YS0+
-bm9kZV9ib290X3N0YXJ0KSkKKwkJZWlkeCA9IGJkYXRhLT5ub2RlX2xvd19wZm4gLSBQRk5fRE9X
-TihiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKIAogCWZvciAoaSA9IHNpZHg7IGkgPCBlaWR4OyBp
-KyspCiAJCWlmICh0ZXN0X2FuZF9zZXRfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKSkg
-ewogI2lmZGVmIENPTkZJR19ERUJVR19CT09UTUVNCiAJCQlwcmludGsoImhtLCBwYWdlICUwOGx4
-IHJlc2VydmVkIHR3aWNlLlxuIiwgaSpQQUdFX1NJWkUpOwogI2VuZGlmCi0JCQlpZiAoZmxhZ3Mg
-JiBCT09UTUVNX0VYQ0xVU0lWRSkgewotCQkJCXJldCA9IC1FQlVTWTsKLQkJCQlnb3RvIGVycjsK
-LQkJCX0KIAkJfQotCi0JcmV0dXJuIDA7Ci0KLWVycjoKLQkvKiB1bnJlc2VydmUgbWVtb3J5IHdl
-IGFjY2lkZW50YWxseSByZXNlcnZlZCAqLwotCWZvciAoaS0tOyBpID49IHNpZHg7IGktLSkKLQkJ
-Y2xlYXJfYml0KGksIGJkYXRhLT5ub2RlX2Jvb3RtZW1fbWFwKTsKLQotCXJldHVybiByZXQ7CiB9
-CiAKIHN0YXRpYyB2b2lkIF9faW5pdCBmcmVlX2Jvb3RtZW1fY29yZShib290bWVtX2RhdGFfdCAq
-YmRhdGEsIHVuc2lnbmVkIGxvbmcgYWRkciwKQEAgLTQxNCw2ICs0NDEsMTEgQEAgdW5zaWduZWQg
-bG9uZyBfX2luaXQgaW5pdF9ib290bWVtX25vZGUocAogdm9pZCBfX2luaXQgcmVzZXJ2ZV9ib290
-bWVtX25vZGUocGdfZGF0YV90ICpwZ2RhdCwgdW5zaWduZWQgbG9uZyBwaHlzYWRkciwKIAkJCQkg
-dW5zaWduZWQgbG9uZyBzaXplLCBpbnQgZmxhZ3MpCiB7CisJaW50IHJldDsKKworCXJldCA9IGNh
-bl9yZXNlcnZlX2Jvb3RtZW1fY29yZShwZ2RhdC0+YmRhdGEsIHBoeXNhZGRyLCBzaXplLCBmbGFn
-cyk7CisJaWYgKHJldCA8IDApCisJCXJldHVybjsKIAlyZXNlcnZlX2Jvb3RtZW1fY29yZShwZ2Rh
-dC0+YmRhdGEsIHBoeXNhZGRyLCBzaXplLCBmbGFncyk7CiB9CiAKQEAgLTQzOSw3ICs0NzEsMTYg
-QEAgdW5zaWduZWQgbG9uZyBfX2luaXQgaW5pdF9ib290bWVtKHVuc2lnbgogaW50IF9faW5pdCBy
-ZXNlcnZlX2Jvb3RtZW0odW5zaWduZWQgbG9uZyBhZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsCiAJ
-CQkgICAgaW50IGZsYWdzKQogewotCXJldHVybiByZXNlcnZlX2Jvb3RtZW1fY29yZShOT0RFX0RB
-VEEoMCktPmJkYXRhLCBhZGRyLCBzaXplLCBmbGFncyk7CisJaW50IHJldDsKKwlib290bWVtX2Rh
-dGFfdCAqYmRhdGE7CisJbGlzdF9mb3JfZWFjaF9lbnRyeShiZGF0YSwgJmJkYXRhX2xpc3QsIGxp
-c3QpIHsKKwkJcmV0ID0gY2FuX3Jlc2VydmVfYm9vdG1lbV9jb3JlKGJkYXRhLCBhZGRyLCBzaXpl
-LCBmbGFncyk7CisJCWlmIChyZXQgPCAwKQorCQkJcmV0dXJuIHJldDsKKwl9CisJbGlzdF9mb3Jf
-ZWFjaF9lbnRyeShiZGF0YSwgJmJkYXRhX2xpc3QsIGxpc3QpCisJCXJlc2VydmVfYm9vdG1lbV9j
-b3JlKGJkYXRhLCBhZGRyLCBzaXplLCBmbGFncyk7CisJcmV0dXJuIDA7CiB9CiAjZW5kaWYgLyog
-IUNPTkZJR19IQVZFX0FSQ0hfQk9PVE1FTV9OT0RFICovCiAK
-------=_Part_18670_15617296.1205788726346--
+> ---
+> F5 and F6 have no second function printed on them. Thus their
+> definitions have been removed from the table.
+>=20
+> KEY_CYCLEWINDOWS doesn't name the function of Mac OS X' Expos=E9 properly
+> and because we couldn't find a better key code, we decided to use
+> KEY_FN_F4 instead.
+>=20
+> We also changed KEY_BACK and KEY_FORWARD, which apply to browser
+> functions, to KEY_PREVIOUSSONG and KEY_NEXTSONG, since the keys are
+> intended to control a music player.
+> ---
+> Does this contain enough details?
+
+It indeed does. I will queue it in my tree, thanks a lot.
+
+--=20
+Jiri Kosina
+SUSE Labs
+--336216065-2041315493-1205788896=:30831--
