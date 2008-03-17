@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbYCQUbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbYCQUeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbYCQUbQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 16:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYCQUa6
+	id S1757745AbYCQUeI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 16:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYCQUdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 16:30:58 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:54392 "EHLO smtp6.pp.htv.fi"
+	Mon, 17 Mar 2008 16:33:55 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:51264 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753121AbYCQUa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 16:30:57 -0400
-Date: Mon, 17 Mar 2008 22:30:38 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Thomas Meyer <thomas@m3y3r.de>, lenb@kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, htejun@gmail.com,
-       jeff@garzik.org, linux-acpi@vger.kernel.org
-Subject: [2.6.25 patch] acpi_drivers.h: fix dock dummy functions
-Message-ID: <20080317203038.GE9550@cs181133002.pp.htv.fi>
-References: <47DEC970.2050402@m3y3r.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47DEC970.2050402@m3y3r.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1752400AbYCQUdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 16:33:54 -0400
+Subject: [PATCH 3/4] scsi: megaraid_sas - Add the new controller Support to
+	Driver
+From: bo yang <bo.yang@lsi.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>, neela.kolli@lsi.com,
+       bo.yang@lsi.com
+In-Reply-To: <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
+References: <9738BCBE884FDB42801FAD8A7769C26501CE50E4@NAMAIL1.ad.lsil.com>
+	 <1195251505.3407.30.camel@localhost.localdomain>
+	 <9738BCBE884FDB42801FAD8A7769C26501C9A4AF@NAMAIL1.ad.lsil.com>
+	 <1205824386.7238.7.camel@pcp021067pcs.se.lsil.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Mar 2008 04:13:07 -0400
+Message-Id: <1205741587.7479.17.camel@pcp021067pcs.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
+X-OriginalArrivalTime: 17 Mar 2008 20:32:55.0218 (UTC) FILETIME=[14863920:01C8886E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Built-in code can't use functions in a modular ACPI dock driver.
+Add the new Controller (ID: 007C) support to driver.
 
-This patch fixes the following build error reported by Thomas Meyer:
-
-<--  snip  -->
-
-...
- LD      .tmp_vmlinux1
-drivers/built-in.o: In function `ata_acpi_associate':
-(.text+0x7106a): undefined reference to `register_hotplug_dock_device'
-drivers/built-in.o: In function `ata_acpi_associate':
-(.text+0x710bd): undefined reference to `register_hotplug_dock_device'
-make: *** [.tmp_vmlinux1] Fehler 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
 ---
-74baa78e04fe0f1aa04d3f09ab63a15da4d92fbd diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index 9757a04..f70b246 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -113,7 +113,7 @@ int acpi_processor_set_thermal_limit(acpi_handle handle, int type);
- /*--------------------------------------------------------------------------
-                                   Dock Station
-   -------------------------------------------------------------------------- */
--#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
-+#if defined(CONFIG_ACPI_DOCK) || (defined(CONFIG_ACPI_DOCK_MODULE) && defined (MODULE))
- extern int is_dock_device(acpi_handle handle);
- extern int register_dock_notifier(struct notifier_block *nb);
- extern void unregister_dock_notifier(struct notifier_block *nb);
+ drivers/scsi/megaraid/megaraid_sas.c |    7 +++++--
+ drivers/scsi/megaraid/megaraid_sas.h |    1 +
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:53:49.000000000 -0400
++++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.c	2008-03-17 13:53:10.000000000 -0400
+@@ -68,6 +68,8 @@ static struct pci_device_id megasas_pci_
+ 	/* xscale IOP */
+ 	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1078R)},
+ 	/* ppc IOP */
++	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1078DE)},
++	/* ppc IOP */
+ 	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_VERDE_ZCR)},
+ 	/* xscale IOP, vega */
+ 	{PCI_DEVICE(PCI_VENDOR_ID_DELL, PCI_DEVICE_ID_DELL_PERC5)},
+@@ -1471,7 +1473,7 @@ megasas_transition_to_ready(struct megas
+ 			instance->instancet->disable_intr(instance->reg_set);
+ 			writel(MFI_RESET_FLAGS, &instance->reg_set->inbound_doorbell);
+ 
+-			max_wait = 10;
++			max_wait = 60;
+ 			cur_state = MFI_STATE_OPERATIONAL;
+ 			break;
+ 
+@@ -1991,7 +1993,8 @@ static int megasas_init_mfi(struct megas
+ 
+ 	switch(instance->pdev->device)
+ 	{
+-		case PCI_DEVICE_ID_LSI_SAS1078R:	
++		case PCI_DEVICE_ID_LSI_SAS1078R:
++		case PCI_DEVICE_ID_LSI_SAS1078DE:
+ 			instance->instancet = &megasas_instance_template_ppc;
+ 			break;
+ 		case PCI_DEVICE_ID_LSI_SAS1064R:
+diff -rupN linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.24_orig/drivers/scsi/megaraid/megaraid_sas.h	2008-03-07 14:29:14.000000000 -0500
++++ linux-2.6.24_new/drivers/scsi/megaraid/megaraid_sas.h	2008-03-07 14:10:12.000000000 -0500
+@@ -26,6 +26,7 @@
+  * Device IDs
+  */
+ #define	PCI_DEVICE_ID_LSI_SAS1078R		0x0060
++#define	PCI_DEVICE_ID_LSI_SAS1078DE		0x007C
+ #define	PCI_DEVICE_ID_LSI_VERDE_ZCR		0x0413
+ 
+ /*
 
