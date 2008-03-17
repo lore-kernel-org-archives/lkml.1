@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYCQRkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbYCQRpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbYCQRkb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 13:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYCQRkW
+	id S1754772AbYCQRpW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 13:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYCQRpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 13:40:22 -0400
-Received: from mga11.intel.com ([192.55.52.93]:18471 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752652AbYCQRkV convert rfc822-to-8bit (ORCPT
+	Mon, 17 Mar 2008 13:45:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43446 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752075AbYCQRpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 13:40:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,513,1199692800"; 
-   d="scan'208";a="535241280"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Mon, 17 Mar 2008 13:45:10 -0400
+Date: Mon, 17 Mar 2008 17:30:21 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nebojsa Miljanovic <neb@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org,
+       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
+       asweeney@alcatel-lucent.com,
+       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
+Subject: Re: SO_REUSEADDR not allowing server and client to use same port
+Message-ID: <20080317173021.28e6fd97@core>
+In-Reply-To: <47DE9FB0.5030801@alcatel-lucent.com>
+References: <47C6FA2A.5030302@alcatel-lucent.com>
+	<20080228201926.558c4e7c@core>
+	<47D97DF7.8000702@alcatel-lucent.com>
+	<20080315133426.1f48c99c@the-village.bc.nu>
+	<47DE9FB0.5030801@alcatel-lucent.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish >12 hour
-Date: Mon, 17 Mar 2008 10:38:18 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECD412F8@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080317200924.7B4C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish >12 hour
-Thread-Index: AciIIJvFGspUDoU9S0ikYQ6cfhFB1gANLwcw
-References: <20080317200924.7B4C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 17 Mar 2008 17:38:24.0974 (UTC) FILETIME=[B3C5C6E0:01C88855]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> % ./hackbench 130 process 500
+On Mon, 17 Mar 2008 11:43:28 -0500
+Nebojsa Miljanovic <neb@alcatel-lucent.com> wrote:
 
-I'd like to reproduce your results so I can make a new
-version of the ptc.g patch that doesn't have this regression.
+> Alan,
+> thanks. With that additional INFO, I was able to find detailed description of
+> this denial of service attack (attached below).
+> Just to clarify. Having this port re-use check prevents folks from launching
+> this attack as opposed to being victim of it?
 
-I found this version (that claims to be the latest) of hackbench.c
+Different issue. I can hijack a connection.
 
-http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
-
-Is this the one you used?
-
-
-What was the configuration of your machine (how many cpus, how
-much memory)?
-
-Thanks
-
--Tony
+Imagine I have a server bound to *.5000, and someone is about to connect.
+If on the server box I am able to bind and issue a connect outwards
+matching the inbound connection I will get the connection not the server.
