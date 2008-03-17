@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYCQOjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYCQOlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbYCQOjv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 10:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYCQOjo
+	id S1754951AbYCQOlX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 10:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYCQOlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 10:39:44 -0400
-Received: from mail.lang.hm ([64.81.33.126]:50596 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752395AbYCQOjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 10:39:43 -0400
-Date: Mon, 17 Mar 2008 07:42:59 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Daniel Phillips <phillips@phunq.net>
-cc: David Newall <davidn@davidnewall.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-In-Reply-To: <200803170116.19546.phillips@phunq.net>
-Message-ID: <alpine.DEB.1.00.0803170740440.14887@asgard.lang.hm>
-References: <200803092346.17556.phillips@phunq.net> <200803162252.58274.phillips@phunq.net> <alpine.DEB.1.00.0803162341340.14887@asgard.lang.hm> <200803170116.19546.phillips@phunq.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 17 Mar 2008 10:41:15 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50087 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbYCQOlP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 10:41:15 -0400
+Message-ID: <47DE82A6.3050604@linux.vnet.ibm.com>
+Date: Mon, 17 Mar 2008 20:09:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+References: <20080316172942.8812.56051.sendpatchset@localhost.localdomain> <20080316173005.8812.88290.sendpatchset@localhost.localdomain> <47DE57C2.5060206@openvz.org> <47DE640F.3070601@linux.vnet.ibm.com> <47DE66BE.30904@openvz.org> <47DE695D.3080605@linux.vnet.ibm.com> <47DE6B8D.5090302@openvz.org>
+In-Reply-To: <47DE6B8D.5090302@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008, Daniel Phillips wrote:
+Pavel Emelyanov wrote:
+> Balbir Singh wrote:
+>> Pavel Emelyanov wrote:
+>>> Balbir Singh wrote:
+>>>> Pavel Emelyanov wrote:
+>>>>> [snip]
+>>>>>
+>>>>>> +int mem_cgroup_update_as(struct mm_struct *mm, long nr_pages)
+>>>>>> +{
+>>>>>> +	int ret = 0;
+>>>>>> +	struct mem_cgroup *mem;
+>>>>>> +	if (mem_cgroup_subsys.disabled)
+>>>>>> +		return ret;
+>>>>>> +
+>>>>>> +	rcu_read_lock();
+>>>>>> +	mem = rcu_dereference(mm->mem_cgroup);
+>>>>>> +	css_get(&mem->css);
+>>>>>> +	rcu_read_unlock();
+>>>>>> +
+>>>>>> +	if (nr_pages > 0) {
+>>>>>> +		if (res_counter_charge(&mem->as_res, (nr_pages * PAGE_SIZE)))
+>>>>>> +			ret = 1;
+>>>>>> +	} else
+>>>>>> +		res_counter_uncharge(&mem->as_res, (-nr_pages * PAGE_SIZE));
+>>>>> No, please, no. Let's make two calls - mem_cgroup_charge_as and mem_cgroup_uncharge_as.
+>>>>>
+>>>>> [snip]
+>>>>>
+>>>> Yes, sure :)
+>>> Thanks :)
+>>>
+>>>>>> @@ -1117,6 +1117,9 @@ munmap_back:
+>>>>>>  		}
+>>>>>>  	}
+>>>>>>  
+>>>>>> +	if (mem_cgroup_update_as(mm, len >> PAGE_SHIFT))
+>>>>>> +		return -ENOMEM;
+>>>>>> +
+>>>>> Why not use existintg cap_vm_enough_memory and co?
+>>>>>
+>>>> I thought about it and almost used may_expand_vm(), but there is a slight catch
+>>>> there. With cap_vm_enough_memory() or security_vm_enough_memory(), they are
+>>>> called after total_vm has been calculated. In our case we need to keep the
+>>>> cgroups equivalent of total_vm up to date, and we do this in mem_cgorup_update_as.
+>>> So? What prevents us from using these hooks? :)
+>> 1. We need to account total_vm usage of the task anyway. So why have two places,
+>>    one for accounting and second for control?
+> 
+> We still have two of them even placing hooks in each place manually.
+> 
+> Besides, putting the mem_cgroup_(un)charge_as() in these vm hooks will
+> 1. save the number of places to patch
+> 2. help keeping memcgroup consistent in case someone adds more places
+>    that expand tasks vm (arches, drivers) - in case we have our hooks
+>    celled from inside vm ones, we won't have to patch more.
+> 
 
-> On Sunday 16 March 2008 23:49, david@lang.hm wrote:
->>> Mirroring on the other hand, makes a realtime copy of a volume, that is
->>> never out of date.
->>
->> so just mirror to a local disk array then.
->
-> Great idea.  Except that the disk array has millisecond level latency,
-> when what we trying to achieve is microsecond level latency.
->
->> a local disk array has more write bandwidth than a network connection to a
->> remote machine, so if you can mirror to a remote machine you can mirror to
->> a local disk array.
->
-> So you could potentially connect to a _huge_ disk array and write deltas
-> to it.  The disk array would have to support roughly 3 Gbytes/second of
-> write bandwidth to keep up with the Violin ramdisk.  Doable, but you are
-> now in the serious heavy iron zone.
+I am not sure I understand your proposal. Without manually placing these hooks
+how do we track
 
-your network will do less then 1 Gbit/sec, so to mirror in real-time (what 
-you claim is trivial) you would need at least 24 network connections in 
-parallel. that's a LOT harder to setup then a high performance disk array.
+1. When the vm size has increased/decreased
+2. In case due to some reason, the call following these hooks fail, how do we
+   undo it, without placing hooks?
 
-David Lang
+
+>> 2. These hooks are activated for conditionally invoked for vma's with VM_ACCOUNT
+>>    set.
+> 
+> This is a good point against. But, wrt my previous comment, can we handle 
+> this somehow?
+
+Not sure I understand
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
