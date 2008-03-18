@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbYCRKlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbYCRKuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbYCRKlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 06:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYCRKla
+	id S1752520AbYCRKuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 06:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYCRKuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 06:41:30 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34654 "EHLO mx2.suse.de"
+	Tue, 18 Mar 2008 06:50:07 -0400
+Received: from ns.suse.de ([195.135.220.2]:45476 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751804AbYCRKl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 06:41:29 -0400
-Date: Tue, 18 Mar 2008 11:15:53 +0100
-Message-ID: <s5hwso0nxra.wl%tiwai@suse.de>
+	id S1750713AbYCRKuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 06:50:06 -0400
+Date: Tue, 18 Mar 2008 11:50:02 +0100
+Message-ID: <s5hiqzknw6d.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: "Adam J. Richter" <adam@yggdrasil.com>
 Cc: pshou@realtek.com.tw, matt.jared@intel.com, andy.kopp@intel.com,
        dan.d.kogan@intel.com, linux-kernel@vger.kernel.org
 Subject: Re: intel-hda sound too quiet in linux-2.6.25-rc6
-In-Reply-To: <20080318062359.GA19453@freya.yggdrasil.com>
+In-Reply-To: <20080318074158.GA1924@freya.yggdrasil.com>
 References: <20080318062359.GA19453@freya.yggdrasil.com>
+	<20080318074158.GA1924@freya.yggdrasil.com>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,36 +28,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 17 Mar 2008 23:23:59 -0700,
+At Tue, 18 Mar 2008 00:41:58 -0700,
 Adam J. Richter wrote:
 > 
->         I have a motherboard that uses the AMD am690g chip set,
-> which has a sound hardware called "azalia", which apparently is
-> controlled by linux/sound/pci/hda/hda_intel.c.
+> On Mon, Mar 17, 2008 at 11:23:59PM -0700, Adam J. Richter wrote:
+> >         I have a motherboard that uses the AMD am690g chip set,
+> > which has a sound hardware called "azalia", which apparently is
+> > controlled by linux/sound/pci/hda/hda_intel.c.
+> > 
+> > 	The audio works fine under linux-2.6.24.2.  However, in
+> > linux-2.6.25-rc3 (haven't tried earlier ones) through 2.6.25-rc6
+> > (released a couple of hours ago), the audio is barely audible unless I
+> > crank up my speakers to the maximum volume, at which point I can hear
+> > the music playing relatively quietly.  In comparison, if I were to do
+> > that with 2.6.24.2, it would wake the neighbors.  In both cases,
+> > this is with the volume set in aumix to 100 in both left and right
+> > (the maximum values).
+> > 
+> >         I haven't attempted to look through kernel changes from
+> > 2.6.24.2 to 2.5.25-rc3 yet, although I expect to over the weekend if
+> > nobody beats me to it.
+> > 
+> > Adam Richter
 > 
-> 	The audio works fine under linux-2.6.24.2.  However, in
-> linux-2.6.25-rc3 (haven't tried earlier ones) through 2.6.25-rc6
-> (released a couple of hours ago), the audio is barely audible unless I
-> crank up my speakers to the maximum volume, at which point I can hear
-> the music playing relatively quietly.  In comparison, if I were to do
-> that with 2.6.24.2, it would wake the neighbors.  In both cases,
-> this is with the volume set in aumix to 100 in both left and right
-> (the maximum values).
+> 	I want to add the results of a few simple tests:
+> 
+> 	1. Reverting only linux-2.6.25-rc6/sound/pci/hda/hda_intel.c to the
+> 	   2.6.24.2 version had no effect (sound was still very quiet).
+> 
+> 	2. Reverting linux-2.6.25-rc6/sound/pci/hda/*.[ch] to their
+> 	   2.6.24.2 versions worked (i.e., sound was lound again).
+> 
+> 	3. Other quick attempts at reverting various subsets of
+>  	   linux/sound/pci/hda/*.[ch] have resulted only in compilation
+> 	   errors.
 
-This is likely a missing volume setting.  With the upgrade to 2.6.25,
-you may have a different mixer representation and the udev or init
-script didn't restore the old mixer setting properly (typicall missing
--F option to alsactl).  Also note that aumix doesn't cover all volume
-controls since it's an OSS app.
+That's vital to know which codec is used.  lspci shows only the
+controller chip and it doesn't help debugging at all.
 
-Anyway, there is too little hardware information here.  Please show
-the output of alsa-info.sh:
-	http://hg.alsa-project.org/alsa/raw-file/tip/alsa-info.sh
+Please show the alsa-info.sh output.  At best, get the alsa-info.sh
+outputs on both 2.6.24 and 2.6.25 kernels to compare.
 
-In most cases, running the following commands solves the mixer issue:
 
-	% amixer set Master unmute 80%
-	% amixer set Front unmute 100%
-	% amixer set Headphone unmute 100%
+thanks,
 
 Takashi
