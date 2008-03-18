@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYCRDFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbYCRDMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbYCRDFa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 23:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbYCRDFX
+	id S1754427AbYCRDMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 23:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYCRDMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 23:05:23 -0400
-Received: from smtp105.sbc.mail.re2.yahoo.com ([68.142.229.100]:49120 "HELO
-	smtp105.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751391AbYCRDFW (ORCPT
+	Mon, 17 Mar 2008 23:12:46 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:54548 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbYCRDMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 23:05:22 -0400
-X-YMail-OSG: G0pfnbEVM1mmYDdK3_HONBybW0Ls8NXU9HbqXE67CtqLk7_9x6_QTrTDLrAJF_7c5B9aqwVy90irWgtZahlyFpj1IUseW_Yp3oKP5g9EBsBG56LkPUv9SOI8FsiLVmWJOwPeYLT7NgzYrPI-
-X-Yahoo-Newman-Property: ymail-3
-Date: Mon, 17 Mar 2008 22:02:16 -0500
-From: serge@hallyn.com
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morgan <morgan@kernel.org>
-Subject: Re: capability.h
-Message-ID: <20080318030216.GA20103@vino.hallyn.com>
-References: <dd18b0c30803171106m55670b2fg557b23e4e2285ba1@mail.gmail.com>
+	Mon, 17 Mar 2008 23:12:45 -0400
+Message-ID: <47DF3366.8080502@keyaccess.nl>
+Date: Tue, 18 Mar 2008 04:13:42 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dd18b0c30803171106m55670b2fg557b23e4e2285ba1@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: David Brownell <david-b@pacbell.net>
+CC: "Lev A. Melnikovsky" <melnikovsky@mail.ru>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ehci-hcd affects hda speed
+References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200803171700.26274.david-b@pacbell.net> <47DF19AD.405@keyaccess.nl> <200803171855.44552.david-b@pacbell.net>
+In-Reply-To: <200803171855.44552.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Justin Mattock (justinmattock@gmail.com):
-> Hello; I seem to be very confused on how to install fglrx on 2.6.25-*
-> below is the warnings and errors,
-> 
-> 
-> cleaning...
-> patching 'highmem.h'...
-> assuming new VMA API since we do have kernel 2.6.x...
-> def_vma_api_version=-DFGL_LINUX253P1_VMA_API
->  Assuming default VMAP API
->  Assuming default munmap API
-> doing Makefile based build for kernel 2.6.x and higher
-> make -C /lib/modules/2.6.25-rc6/build
-> SUBDIRS=/lib/modules/fglrx/build_mod/2.6.x modules
-> make[1]: Entering directory `/home/kernel/linux-2.6.25-rc6'
->   CC [M]  /lib/modules/fglrx/build_mod/2.6.x/firegl_public.o
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c: In function
-> 'KCL_SetPageNoCache':
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c:1161: warning:
-> 'change_page_attr' is deprecated (declared at
-> include/asm/cacheflush.h:28)
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c: In function
-> 'KCL_PosixSecurityCapGetEffectiveVector':
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c:1888: error:
-> implicit declaration of function 'cap_t'
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c: In function
-> 'KCL_PosixSecurityCapSetEffectiveVector':
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c:1896: error:
-> invalid lvalue in assignment
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c: In function
-> '__ke_check_pci':
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c:1951: warning:
-> 'pci_find_slot' is deprecated (declared at include/linux/pci.h:508)
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c: In function
-> '__ke_pci_find_slot':
-> /lib/modules/fglrx/build_mod/2.6.x/firegl_public.c:2840: warning:
-> 'pci_find_slot' is deprecated (declared at include/linux/pci.h:508)
-> make[2]: *** [/lib/modules/fglrx/build_mod/2.6.x/firegl_public.o] Error 1
-> make[1]: *** [_module_/lib/modules/fglrx/build_mod/2.6.x] Error 2
-> make[1]: Leaving directory `/home/kernel/linux-2.6.25-rc6'
-> make: *** [kmod_build] Error 2
-> build failed with return value 2
-> 
-> 
-> Under firegl_public.c it seems the module is requesting a cap_t  get
-> and receive an effective vector.
-> With the new capability.h file, what is the capability that replaces cap_t?
+On 18-03-08 02:55, David Brownell wrote:
 
-cap_t() appears to be defined under ifdef __KERNEL__.  Which makes
-sense since it takes a struct kernel_cap_t :)  I don't have the
-source code you're compiling, and don't know what would be the "right"
-way to fix it, but to get your code to compile I'd just put a
-#define cap(x) (x).cap
-at the top of the .c files needing it.
+> On Monday 17 March 2008, Rene Herman wrote:
 
--serge
+>> The thing is -- you don't necesarily immediately notice this problem. I 
+>> noticed it earlier on an old system, as did Lev, but even if on a modern 
+>> system you may not immediately see an IDE throughput drop, you may still 
+>> have a sucky system.
+> 
+> True, and bothersome.  All VIA would have to do is adopt a design
+> and production methodology different than they've used for many
+> years now, and this problem wouldn't appear.  ;)
+
+I just concluded that buying anything with the word VIA on it is a 
+spectacularly bad idea.
+
+>> Do you want one with 0x6x?
+> 
+> I'd take that.  Thing is, someone sent me a vt8235 datasheet
+> which explicitly says "do not write that register", which
+> makes the ">= 0x60" test a lose.
+
+Ah yes, if it's explicit, never mind the VT8235/37 thing then.
+
+>> Version with 0x6x and the somewhat more expansive comment. I'd like to be 
+>> able to test VT8235/VT8237 first though...
+> 
+> OK, I'll leave this in my mailbox for a few days waiting more
+> testing results, and if nothing goes wrong I'll send it along
+> for a post-2.6.25 merge.
+
+It'll mean that the problem will be much less visible and as such you might 
+not get (as) many new testers anymore to get to the root problem so if one 
+of the current reporters can test somewhat freely, this would probably be 
+the time...
+
+But I'll just stick with my NEC controller now and consider myself not 
+interested anymore :-)
+
+Rene.
