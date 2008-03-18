@@ -1,348 +1,339 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYCSTwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbYCSTsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbYCSTwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbYCSTgT
+	id S1754063AbYCSTsi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbYCSTcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:36:19 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37281 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752990AbYCSTgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:36:04 -0400
-Message-Id: <20080318222827.519656153@sgi.com>
-References: <20080318222701.788442216@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 15:27:03 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [2/2] vmallocinfo: Add caller information
-Content-Disposition: inline; filename=trace
+	Wed, 19 Mar 2008 15:32:45 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53754 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755695AbYCSTcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:32:43 -0400
+Date: Tue, 18 Mar 2008 15:02:18 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [6/18] Add support to have individual hstates for each hugetlbfs mount
+Message-ID: <20080318150218.GF23866@csn.ul.ie>
+References: <20080317258.659191058@firstfloor.org> <20080317015819.E7ECB1B41E0@basil.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080317015819.E7ECB1B41E0@basil.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add caller information so that /proc/vmallocinfo shows where the allocation
-request for a slice of vmalloc memory originated.
+On (17/03/08 02:58), Andi Kleen didst pronounce:
+> - Add a new pagesize= option to the hugetlbfs mount that allows setting
+> the page size
+> - Set up pointers to a suitable hstate for the set page size option
+> to the super block and the inode and the vma.
+> - Change the hstate accessors to use this information
+> - Add code to the hstate init function to set parsed_hstate for command
+> line processing
+> - Handle duplicated hstate registrations to the make command line user proof
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  fs/hugetlbfs/inode.c    |   50 ++++++++++++++++++++++++++++++++++++++----------
+>  include/linux/hugetlb.h |   12 ++++++++---
+>  mm/hugetlb.c            |   22 +++++++++++++++++----
+>  3 files changed, 67 insertions(+), 17 deletions(-)
+> 
+> Index: linux/include/linux/hugetlb.h
+> ===================================================================
+> --- linux.orig/include/linux/hugetlb.h
+> +++ linux/include/linux/hugetlb.h
+> @@ -134,6 +134,7 @@ struct hugetlbfs_config {
+>  	umode_t mode;
+>  	long	nr_blocks;
+>  	long	nr_inodes;
+> +	struct hstate *hstate;
+>  };
+>  
+>  struct hugetlbfs_sb_info {
+> @@ -142,12 +143,14 @@ struct hugetlbfs_sb_info {
+>  	long	max_inodes;   /* inodes allowed */
+>  	long	free_inodes;  /* inodes free */
+>  	spinlock_t	stat_lock;
+> +	struct hstate *hstate;
 
-Result in output like this:
+Minor nit. the other parameters are tabbed out.
 
-0xffffc20000000000-0xffffc20000801000 8392704 alloc_large_system_hash+0x127/0x246 pages=2048 vmalloc vpages
-0xffffc20000801000-0xffffc20000806000   20480 alloc_large_system_hash+0x127/0x246 pages=4 vmalloc
-0xffffc20000806000-0xffffc20000c07000 4198400 alloc_large_system_hash+0x127/0x246 pages=1024 vmalloc vpages
-0xffffc20000c07000-0xffffc20000c0a000   12288 alloc_large_system_hash+0x127/0x246 pages=2 vmalloc
-0xffffc20000c0a000-0xffffc20000c0c000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c0c000-0xffffc20000c0f000   12288 acpi_os_map_memory+0x13/0x1c phys=cff64000 ioremap
-0xffffc20000c10000-0xffffc20000c15000   20480 acpi_os_map_memory+0x13/0x1c phys=cff65000 ioremap
-0xffffc20000c16000-0xffffc20000c18000    8192 acpi_os_map_memory+0x13/0x1c phys=cff69000 ioremap
-0xffffc20000c18000-0xffffc20000c1a000    8192 acpi_os_map_memory+0x13/0x1c phys=fed1f000 ioremap
-0xffffc20000c1a000-0xffffc20000c1c000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c1c000-0xffffc20000c1e000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c1e000-0xffffc20000c20000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c20000-0xffffc20000c22000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c22000-0xffffc20000c24000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c24000-0xffffc20000c26000    8192 acpi_os_map_memory+0x13/0x1c phys=e0081000 ioremap
-0xffffc20000c26000-0xffffc20000c28000    8192 acpi_os_map_memory+0x13/0x1c phys=e0080000 ioremap
-0xffffc20000c28000-0xffffc20000c2d000   20480 alloc_large_system_hash+0x127/0x246 pages=4 vmalloc
-0xffffc20000c2d000-0xffffc20000c31000   16384 tcp_init+0xd5/0x31c pages=3 vmalloc
-0xffffc20000c31000-0xffffc20000c34000   12288 alloc_large_system_hash+0x127/0x246 pages=2 vmalloc
-0xffffc20000c34000-0xffffc20000c36000    8192 init_vdso_vars+0xde/0x1f1
-0xffffc20000c36000-0xffffc20000c38000    8192 pci_iomap+0x8a/0xb4 phys=d8e00000 ioremap
-0xffffc20000c38000-0xffffc20000c3a000    8192 usb_hcd_pci_probe+0x139/0x295 [usbcore] phys=d8e00000 ioremap
-0xffffc20000c3a000-0xffffc20000c3e000   16384 sys_swapon+0x509/0xa15 pages=3 vmalloc
-0xffffc20000c40000-0xffffc20000c61000  135168 e1000_probe+0x1c4/0xa32 phys=d8a20000 ioremap
-0xffffc20000c61000-0xffffc20000c6a000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20000c6a000-0xffffc20000c73000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20000c73000-0xffffc20000c7c000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20000c7c000-0xffffc20000c7f000   12288 e1000e_setup_tx_resources+0x29/0xbe pages=2 vmalloc
-0xffffc20000c80000-0xffffc20001481000 8392704 pci_mmcfg_arch_init+0x90/0x118 phys=e0000000 ioremap
-0xffffc20001481000-0xffffc20001682000 2101248 alloc_large_system_hash+0x127/0x246 pages=512 vmalloc
-0xffffc20001682000-0xffffc20001e83000 8392704 alloc_large_system_hash+0x127/0x246 pages=2048 vmalloc vpages
-0xffffc20001e83000-0xffffc20002204000 3674112 alloc_large_system_hash+0x127/0x246 pages=896 vmalloc vpages
-0xffffc20002204000-0xffffc2000220d000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc2000220d000-0xffffc20002216000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20002216000-0xffffc2000221f000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc2000221f000-0xffffc20002228000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20002228000-0xffffc20002231000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20002231000-0xffffc20002234000   12288 e1000e_setup_rx_resources+0x35/0x122 pages=2 vmalloc
-0xffffc20002240000-0xffffc20002261000  135168 e1000_probe+0x1c4/0xa32 phys=d8a60000 ioremap
-0xffffc20002261000-0xffffc2000270c000 4894720 sys_swapon+0x509/0xa15 pages=1194 vmalloc vpages
-0xffffffffa0000000-0xffffffffa0022000  139264 module_alloc+0x4f/0x55 pages=33 vmalloc
-0xffffffffa0022000-0xffffffffa0029000   28672 module_alloc+0x4f/0x55 pages=6 vmalloc
-0xffffffffa002b000-0xffffffffa0034000   36864 module_alloc+0x4f/0x55 pages=8 vmalloc
-0xffffffffa0034000-0xffffffffa003d000   36864 module_alloc+0x4f/0x55 pages=8 vmalloc
-0xffffffffa003d000-0xffffffffa0049000   49152 module_alloc+0x4f/0x55 pages=11 vmalloc
-0xffffffffa0049000-0xffffffffa0050000   28672 module_alloc+0x4f/0x55 pages=6 vmalloc
+>  };
+>  
+>  
+>  struct hugetlbfs_inode_info {
+>  	struct shared_policy policy;
+>  	struct inode vfs_inode;
+> +	struct hstate *hstate;
+>  };
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+I'm somewhat surprised it is necessary for the hstate to be on a
+per-inode basis when it's already in the hugetlbfs_sb_info. Would
+HUGETLBFS_SB(inode->i_sb)->hstate not work?
 
----
- arch/x86/mm/ioremap.c   |   12 +++++----
- include/linux/vmalloc.h |    3 ++
- mm/vmalloc.c            |   61 +++++++++++++++++++++++++++++++++++-------------
- 3 files changed, 55 insertions(+), 21 deletions(-)
+>  
+>  static inline struct hugetlbfs_inode_info *HUGETLBFS_I(struct inode *inode)
+> @@ -212,6 +215,7 @@ struct hstate {
+>  };
+>  
+>  void __init huge_add_hstate(unsigned order);
+> +struct hstate *huge_lookup_hstate(unsigned long pagesize);
+>  
 
-Index: linux-2.6.25-rc5-mm1/include/linux/vmalloc.h
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/include/linux/vmalloc.h	2008-03-18 12:20:12.283837064 -0700
-+++ linux-2.6.25-rc5-mm1/include/linux/vmalloc.h	2008-03-18 12:20:12.295837331 -0700
-@@ -31,6 +31,7 @@ struct vm_struct {
- 	struct page		**pages;
- 	unsigned int		nr_pages;
- 	unsigned long		phys_addr;
-+	void			*caller;
- };
- 
- /*
-@@ -66,6 +67,8 @@ static inline size_t get_vm_area_size(co
- }
- 
- extern struct vm_struct *get_vm_area(unsigned long size, unsigned long flags);
-+extern struct vm_struct *get_vm_area_caller(unsigned long size,
-+					unsigned long flags, void *caller);
- extern struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
- 					unsigned long start, unsigned long end);
- extern struct vm_struct *get_vm_area_node(unsigned long size,
-Index: linux-2.6.25-rc5-mm1/mm/vmalloc.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/mm/vmalloc.c	2008-03-18 12:20:12.283837064 -0700
-+++ linux-2.6.25-rc5-mm1/mm/vmalloc.c	2008-03-18 13:48:56.344025498 -0700
-@@ -16,6 +16,7 @@
- #include <linux/interrupt.h>
- #include <linux/seq_file.h>
- #include <linux/vmalloc.h>
-+#include <linux/kallsyms.h>
- 
- #include <asm/uaccess.h>
- #include <asm/tlbflush.h>
-@@ -25,7 +26,7 @@ DEFINE_RWLOCK(vmlist_lock);
- struct vm_struct *vmlist;
- 
- static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
--			    int node);
-+			    int node, void *caller);
- 
- static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
- {
-@@ -206,7 +207,7 @@ EXPORT_SYMBOL(vmalloc_to_pfn);
- 
- static struct vm_struct *__get_vm_area_node(unsigned long size, unsigned long flags,
- 					    unsigned long start, unsigned long end,
--					    int node, gfp_t gfp_mask)
-+					    int node, gfp_t gfp_mask, void *caller)
- {
- 	struct vm_struct **p, *tmp, *area;
- 	unsigned long align = 1;
-@@ -269,6 +270,7 @@ found:
- 	area->pages = NULL;
- 	area->nr_pages = 0;
- 	area->phys_addr = 0;
-+	area->caller = caller;
- 	write_unlock(&vmlist_lock);
- 
- 	return area;
-@@ -284,7 +286,8 @@ out:
- struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
- 				unsigned long start, unsigned long end)
- {
--	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL);
-+	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL,
-+						__builtin_return_address(0));
- }
- EXPORT_SYMBOL_GPL(__get_vm_area);
- 
-@@ -299,14 +302,22 @@ EXPORT_SYMBOL_GPL(__get_vm_area);
-  */
- struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
- {
--	return __get_vm_area(size, flags, VMALLOC_START, VMALLOC_END);
-+	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END,
-+				-1, GFP_KERNEL, __builtin_return_address(0));
-+}
-+
-+struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
-+				void *caller)
-+{
-+	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END,
-+						-1, GFP_KERNEL, caller);
- }
- 
- struct vm_struct *get_vm_area_node(unsigned long size, unsigned long flags,
- 				   int node, gfp_t gfp_mask)
- {
- 	return __get_vm_area_node(size, flags, VMALLOC_START, VMALLOC_END, node,
--				  gfp_mask);
-+				  gfp_mask, __builtin_return_address(0));
- }
- 
- /* Caller must hold vmlist_lock */
-@@ -455,9 +466,11 @@ void *vmap(struct page **pages, unsigned
- 	if (count > num_physpages)
- 		return NULL;
- 
--	area = get_vm_area((count << PAGE_SHIFT), flags);
-+	area = get_vm_area_caller((count << PAGE_SHIFT), flags,
-+					__builtin_return_address(0));
- 	if (!area)
- 		return NULL;
-+
- 	if (map_vm_area(area, prot, &pages)) {
- 		vunmap(area->addr);
- 		return NULL;
-@@ -468,7 +481,7 @@ void *vmap(struct page **pages, unsigned
- EXPORT_SYMBOL(vmap);
- 
- static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
--				 pgprot_t prot, int node)
-+				 pgprot_t prot, int node, void *caller)
- {
- 	struct page **pages;
- 	unsigned int nr_pages, array_size, i;
-@@ -480,7 +493,7 @@ static void *__vmalloc_area_node(struct 
- 	/* Please note that the recursion is strictly bounded. */
- 	if (array_size > PAGE_SIZE) {
- 		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
--					PAGE_KERNEL, node);
-+				PAGE_KERNEL, node, caller);
- 		area->flags |= VM_VPAGES;
- 	} else {
- 		pages = kmalloc_node(array_size,
-@@ -488,6 +501,7 @@ static void *__vmalloc_area_node(struct 
- 				node);
- 	}
- 	area->pages = pages;
-+	area->caller = caller;
- 	if (!area->pages) {
- 		remove_vm_area(area->addr);
- 		kfree(area);
-@@ -521,7 +535,8 @@ fail:
- 
- void *__vmalloc_area(struct vm_struct *area, gfp_t gfp_mask, pgprot_t prot)
- {
--	return __vmalloc_area_node(area, gfp_mask, prot, -1);
-+	return __vmalloc_area_node(area, gfp_mask, prot, -1,
-+					__builtin_return_address(0));
- }
- 
- /**
-@@ -536,7 +551,7 @@ void *__vmalloc_area(struct vm_struct *a
-  *	kernel virtual space, using a pagetable protection of @prot.
-  */
- static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
--			    int node)
-+						int node, void *caller)
- {
- 	struct vm_struct *area;
- 
-@@ -544,16 +559,19 @@ static void *__vmalloc_node(unsigned lon
- 	if (!size || (size >> PAGE_SHIFT) > num_physpages)
- 		return NULL;
- 
--	area = get_vm_area_node(size, VM_ALLOC, node, gfp_mask);
-+	area = __get_vm_area_node(size, VM_ALLOC, VMALLOC_START, VMALLOC_END,
-+						node, gfp_mask, caller);
-+
- 	if (!area)
- 		return NULL;
- 
--	return __vmalloc_area_node(area, gfp_mask, prot, node);
-+	return __vmalloc_area_node(area, gfp_mask, prot, node, caller);
- }
- 
- void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
- {
--	return __vmalloc_node(size, gfp_mask, prot, -1);
-+	return __vmalloc_node(size, gfp_mask, prot, -1,
-+				__builtin_return_address(0));
- }
- EXPORT_SYMBOL(__vmalloc);
- 
-@@ -568,7 +586,8 @@ EXPORT_SYMBOL(__vmalloc);
-  */
- void *vmalloc(unsigned long size)
- {
--	return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL);
-+	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
-+					-1, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(vmalloc);
- 
-@@ -608,7 +627,8 @@ EXPORT_SYMBOL(vmalloc_user);
-  */
- void *vmalloc_node(unsigned long size, int node)
- {
--	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL, node);
-+	return __vmalloc_node(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL,
-+					node, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(vmalloc_node);
- 
-@@ -841,7 +861,8 @@ struct vm_struct *alloc_vm_area(size_t s
- {
- 	struct vm_struct *area;
- 
--	area = get_vm_area(size, VM_IOREMAP);
-+	area = get_vm_area_caller(size, VM_IOREMAP,
-+				__builtin_return_address(0));
- 	if (area == NULL)
- 		return NULL;
- 
-@@ -912,6 +933,14 @@ static int s_show(struct seq_file *m, vo
- 	seq_printf(m, "0x%p-0x%p %7ld",
- 		v->addr, v->addr + v->size, v->size);
- 
-+	if (v->caller) {
-+		char buff[2 * KSYM_NAME_LEN];
-+
-+		seq_putc(m, ' ');
-+		sprint_symbol(buff, (unsigned long)v->caller);
-+		seq_puts(m, buff);
-+	}
-+
- 	if (v->nr_pages)
- 		seq_printf(m, " pages=%d", v->nr_pages);
- 
-Index: linux-2.6.25-rc5-mm1/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/arch/x86/mm/ioremap.c	2008-03-18 12:20:10.803827969 -0700
-+++ linux-2.6.25-rc5-mm1/arch/x86/mm/ioremap.c	2008-03-18 12:22:09.744570798 -0700
-@@ -118,8 +118,8 @@ static int ioremap_change_attr(unsigned 
-  * have to convert them into an offset in a page-aligned mapping, but the
-  * caller shouldn't need to know that small detail.
-  */
--static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
--			       enum ioremap_mode mode)
-+static void __iomem *__ioremap_caller(unsigned long phys_addr,
-+	unsigned long size, enum ioremap_mode mode, void *caller)
- {
- 	unsigned long pfn, offset, last_addr, vaddr;
- 	struct vm_struct *area;
-@@ -176,7 +176,7 @@ static void __iomem *__ioremap(unsigned 
- 	/*
- 	 * Ok, go for it..
- 	 */
--	area = get_vm_area(size, VM_IOREMAP);
-+	area = get_vm_area_caller(size, VM_IOREMAP, caller);
- 	if (!area)
- 		return NULL;
- 	area->phys_addr = phys_addr;
-@@ -217,13 +217,15 @@ static void __iomem *__ioremap(unsigned 
-  */
- void __iomem *ioremap_nocache(unsigned long phys_addr, unsigned long size)
- {
--	return __ioremap(phys_addr, size, IOR_MODE_UNCACHED);
-+	return __ioremap_caller(phys_addr, size, IOR_MODE_UNCACHED,
-+						__builtin_return_address(0));
- }
- EXPORT_SYMBOL(ioremap_nocache);
- 
- void __iomem *ioremap_cache(unsigned long phys_addr, unsigned long size)
- {
--	return __ioremap(phys_addr, size, IOR_MODE_CACHED);
-+	return __ioremap_caller(phys_addr, size, IOR_MODE_CACHED,
-+						__builtin_return_address(0));
- }
- EXPORT_SYMBOL(ioremap_cache);
- 
+lookup_hstate_pagesize() maybe?  The name as-is told me nothing about what
+it might do. It was the parameter name that gave it away.
+
+>  #ifndef HUGE_MAX_HSTATE
+>  #define HUGE_MAX_HSTATE 1
+> @@ -223,17 +227,19 @@ extern struct hstate hstates[HUGE_MAX_HS
+>  
+>  static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
+>  {
+> -	return &global_hstate;
+> +	return (struct hstate *)vma->vm_private_data;
+>  }
+
+It does appear that vm_private_data is currently unused and this is safe.
+
+>  
+>  static inline struct hstate *hstate_file(struct file *f)
+>  {
+> -	return &global_hstate;
+> +	struct dentry *d = f->f_dentry;
+> +	struct inode *i = d->d_inode;
+> +	return HUGETLBFS_I(i)->hstate;
+
+HUGETLBFS_SB(HUGETLBFS_I(i)->i_sb)->hstate ?
+
+Pretty fugly I'll admit, but it's contained in a helper and keeps the
+inode size down.
+
+>  }
+>  
+>  static inline struct hstate *hstate_inode(struct inode *i)
+>  {
+> -	return &global_hstate;
+> +	return HUGETLBFS_I(i)->hstate;
+>  }
+>  
+>  static inline unsigned huge_page_size(struct hstate *h)
+> Index: linux/fs/hugetlbfs/inode.c
+> ===================================================================
+> --- linux.orig/fs/hugetlbfs/inode.c
+> +++ linux/fs/hugetlbfs/inode.c
+> @@ -53,6 +53,7 @@ int sysctl_hugetlb_shm_group;
+>  enum {
+>  	Opt_size, Opt_nr_inodes,
+>  	Opt_mode, Opt_uid, Opt_gid,
+> +	Opt_pagesize,
+>  	Opt_err,
+>  };
+>  
+> @@ -62,6 +63,7 @@ static match_table_t tokens = {
+>  	{Opt_mode,	"mode=%o"},
+>  	{Opt_uid,	"uid=%u"},
+>  	{Opt_gid,	"gid=%u"},
+> +	{Opt_pagesize,	"pagesize=%s"},
+>  	{Opt_err,	NULL},
+>  };
+>  
+> @@ -92,6 +94,7 @@ static int hugetlbfs_file_mmap(struct fi
+>  	 */
+>  	vma->vm_flags |= VM_HUGETLB | VM_RESERVED;
+>  	vma->vm_ops = &hugetlb_vm_ops;
+> +	vma->vm_private_data = h;
+>  
+>  	if (vma->vm_pgoff & ~(huge_page_mask(h) >> PAGE_SHIFT))
+>  		return -EINVAL;
+> @@ -530,6 +533,7 @@ static struct inode *hugetlbfs_get_inode
+>  			inode->i_op = &page_symlink_inode_operations;
+>  			break;
+>  		}
+> +		info->hstate = HUGETLBFS_SB(sb)->hstate;
+>  	}
+>  	return inode;
+>  }
+> @@ -750,6 +754,8 @@ hugetlbfs_parse_options(char *options, s
+>  	char *p, *rest;
+>  	substring_t args[MAX_OPT_ARGS];
+>  	int option;
+> +	unsigned long long size = 0;
+> +	enum { NO_SIZE, SIZE_STD, SIZE_PERCENT } setsize = NO_SIZE;
+>  
+>  	if (!options)
+>  		return 0;
+> @@ -780,17 +786,13 @@ hugetlbfs_parse_options(char *options, s
+>  			break;
+>  
+>  		case Opt_size: {
+> - 			unsigned long long size;
+>  			/* memparse() will accept a K/M/G without a digit */
+>  			if (!isdigit(*args[0].from))
+>  				goto bad_val;
+>  			size = memparse(args[0].from, &rest);
+> -			if (*rest == '%') {
+> -				size <<= HPAGE_SHIFT;
+> -				size *= max_huge_pages;
+> -				do_div(size, 100);
+> -			}
+> -			pconfig->nr_blocks = (size >> HPAGE_SHIFT);
+> +			setsize = SIZE_STD;
+> +			if (*rest == '%')
+> +				setsize = SIZE_PERCENT;
+>  			break;
+>  		}
+>  
+> @@ -801,6 +803,19 @@ hugetlbfs_parse_options(char *options, s
+>  			pconfig->nr_inodes = memparse(args[0].from, &rest);
+>  			break;
+>  
+> +		case Opt_pagesize: {
+> +			unsigned long ps;
+> +			ps = memparse(args[0].from, &rest);
+> +			pconfig->hstate = huge_lookup_hstate(ps);
+> +			if (!pconfig->hstate) {
+> +				printk(KERN_ERR
+> +				"hugetlbfs: Unsupported page size %lu MB\n",
+> +					ps >> 20);
+> +				return -EINVAL;
+> +			}
+> +			break;
+> +		}
+> +
+>  		default:
+>  			printk(KERN_ERR "hugetlbfs: Bad mount option: \"%s\"\n",
+>  				 p);
+> @@ -808,6 +823,18 @@ hugetlbfs_parse_options(char *options, s
+>  			break;
+>  		}
+>  	}
+> +
+> +	/* Do size after hstate is set up */
+> +	if (setsize > NO_SIZE) {
+> +		struct hstate *h = pconfig->hstate;
+> +		if (setsize == SIZE_PERCENT) {
+> +			size <<= huge_page_shift(h);
+> +			size *= max_huge_pages[h - hstates];
+> +			do_div(size, 100);
+> +		}
+> +		pconfig->nr_blocks = (size >> huge_page_shift(h));
+> +	}
+> +
+>  	return 0;
+>  
+>  bad_val:
+> @@ -832,6 +859,7 @@ hugetlbfs_fill_super(struct super_block 
+>  	config.uid = current->fsuid;
+>  	config.gid = current->fsgid;
+>  	config.mode = 0755;
+> +	config.hstate = &global_hstate;
+>  	ret = hugetlbfs_parse_options(data, &config);
+>  	if (ret)
+>  		return ret;
+> @@ -840,14 +868,15 @@ hugetlbfs_fill_super(struct super_block 
+>  	if (!sbinfo)
+>  		return -ENOMEM;
+>  	sb->s_fs_info = sbinfo;
+> +	sbinfo->hstate = config.hstate;
+>  	spin_lock_init(&sbinfo->stat_lock);
+>  	sbinfo->max_blocks = config.nr_blocks;
+>  	sbinfo->free_blocks = config.nr_blocks;
+>  	sbinfo->max_inodes = config.nr_inodes;
+>  	sbinfo->free_inodes = config.nr_inodes;
+>  	sb->s_maxbytes = MAX_LFS_FILESIZE;
+> -	sb->s_blocksize = HPAGE_SIZE;
+> -	sb->s_blocksize_bits = HPAGE_SHIFT;
+> +	sb->s_blocksize = huge_page_size(config.hstate);
+> +	sb->s_blocksize_bits = huge_page_shift(config.hstate);
+>  	sb->s_magic = HUGETLBFS_MAGIC;
+>  	sb->s_op = &hugetlbfs_ops;
+>  	sb->s_time_gran = 1;
+> @@ -949,7 +978,8 @@ struct file *hugetlb_file_setup(const ch
+>  		goto out_dentry;
+>  
+>  	error = -ENOMEM;
+> -	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
+> +	if (hugetlb_reserve_pages(inode, 0,
+> +			size >> huge_page_shift(hstate_inode(inode))))
+>  		goto out_inode;
+>  
+>  	d_instantiate(dentry, inode);
+> Index: linux/mm/hugetlb.c
+> ===================================================================
+> --- linux.orig/mm/hugetlb.c
+> +++ linux/mm/hugetlb.c
+> @@ -143,7 +143,7 @@ static void update_and_free_page(struct 
+>  
+>  static void free_huge_page(struct page *page)
+>  {
+> -	struct hstate *h = &global_hstate;
+> +	struct hstate *h = huge_lookup_hstate(PAGE_SIZE << compound_order(page));
+>  	int nid = page_to_nid(page);
+>  	struct address_space *mapping;
+>  
+> @@ -519,7 +519,11 @@ module_init(hugetlb_init);
+>  /* Should be called on processing a hugepagesz=... option */
+>  void __init huge_add_hstate(unsigned order)
+>  {
+> -	struct hstate *h;
+> +	struct hstate *h = huge_lookup_hstate(PAGE_SIZE << order);
+> +	if (h) {
+> +		parsed_hstate = h;
+> +		return;
+> +	}
+>  	BUG_ON(max_hstate >= HUGE_MAX_HSTATE);
+>  	BUG_ON(order <= HPAGE_SHIFT - PAGE_SHIFT);
+>  	h = &hstates[max_hstate++];
+> @@ -538,6 +542,16 @@ static int __init hugetlb_setup(char *s)
+>  }
+>  __setup("hugepages=", hugetlb_setup);
+>  
+> +struct hstate *huge_lookup_hstate(unsigned long pagesize)
+> +{
+> +	struct hstate *h;
+> +	for_each_hstate (h) {
+> +		if (huge_page_size(h) == pagesize)
+> +			return h;
+> +	}
+> +	return NULL;
+> +}
+> +
+>  static unsigned int cpuset_mems_nr(unsigned int *array)
+>  {
+>  	int node;
+> @@ -1345,7 +1359,7 @@ out:
+>  int hugetlb_reserve_pages(struct inode *inode, long from, long to)
+>  {
+>  	long ret, chg;
+> -	struct hstate *h = &global_hstate;
+> +	struct hstate *h = hstate_inode(inode);
+>  
+>  	chg = region_chg(&inode->i_mapping->private_list, from, to);
+>  	if (chg < 0)
+> @@ -1364,7 +1378,7 @@ int hugetlb_reserve_pages(struct inode *
+>  
+>  void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed)
+>  {
+> -	struct hstate *h = &global_hstate;
+> +	struct hstate *h = hstate_inode(inode);
+>  	long chg = region_truncate(&inode->i_mapping->private_list, offset);
+>  
+>  	spin_lock(&inode->i_lock);
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
 -- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
