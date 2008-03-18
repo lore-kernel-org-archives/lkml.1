@@ -1,80 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYCTLQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYCTLVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbYCTLQr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 07:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYCTLQj
+	id S1755525AbYCTLVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 07:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYCTLVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 07:16:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:51712 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbYCTLQi (ORCPT
+	Thu, 20 Mar 2008 07:21:09 -0400
+Received: from agminet02.oracle.com ([141.146.126.229]:26141 "EHLO
+	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752232AbYCTLVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 07:16:38 -0400
-Date: Thu, 20 Mar 2008 12:16:37 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: USB-audio strange problems
-Message-ID: <20080320111637.GB24304@atrey.karlin.mff.cuni.cz>
-References: <20070203131014.GA4231@elf.ucw.cz> <s5htzy0y2rx.wl%tiwai@suse.de> <20080319211247.GA2659@elf.ucw.cz> <s5h63vhver6.wl%tiwai@suse.de>
+	Thu, 20 Mar 2008 07:21:08 -0400
+Message-ID: <47E026DC.6020603@oracle.com>
+Date: Tue, 18 Mar 2008 13:32:28 -0700
+From: Randy Dunlap <randy.dunlap@Oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5h63vhver6.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] kernel: add bit rotation helpers for 16 and 8 bit
+References: <1205871841.17607.10.camel@brick>
+In-Reply-To: <1205871841.17607.10.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> At Wed, 19 Mar 2008 22:12:47 +0100,
-> Pavel Machek wrote:
-> > 
-> > Hi!
-> > 
-> > Ok, so it took me a year to get back to this bug. Oops.
+Harvey Harrison wrote:
+> Will replace open-coded variants elsewhere.  Done in the same
+> style as the 32-bit versions.
 > 
-> Oh well, I don't remember what was the exactly problem...
-
-Yes, sorry about that.
-
-> > > Yep, let's fix it.  Just to make sure (ane debugging easy atm), could
-> > > you attach the following?
-> > > 
-> > > - content of /proc/asound/cards
-> > > - content of /proc/asound/card*/stream*
-> > > - the output of "lsusb -v"
-> > > - the generated file via "alsactl -f store somefile"
-> > > 
-> > > If I remember correctly, alsamixer at least doesn't break if you build
-> > > snd-usb-audio driver with IGNORE_CTL_ERR enabled, right?
-> > 
-> > I got the usb soundcard to work. I still have IGNORE_CTL_ERR enabled.
-> > 
-> > Problem was not mixer after all... somehow it expects me to play sound
-> > as 8-bit, and then I can play 16-bit mono and actually hear
-> > it. _Strange_.
-> > 
-> > So:
-> > 
-> > mplayer -ao alsa:device=hw=0 -af format=u8  KDE_Startup.wav
-> > mplayer -ao alsa:device=hw=0 -af format=s16le -af resample=48000  -af channels=1 KDE_Logout_1.ogg
-> > 
-> > ...plays both files. 
-> > 
-> > Forget about the first mplayer, and it will play nothing.
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Andrew, these will be used to replace some open-coded variants in the
+> mac80211 code, there are currently no users so it can go in with little
+> risk.
 > 
-> Dalls DS4201 has a known bug that it doesn't handle U8 format but only
-> S8 format.  The driver changes the supported format flags from U8 to
-> S8 when this USB ID is detected.  So you cannot play U8 format
-> natively.  (Still strange that it is accepted by mplayer.)
+> Randy, CC'd in case I screwed up the kerneldoc.
 
-But problem is: I have to. Otherwise the second mplayer will produce
-just silence.
+Looks good.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Also, even with that treatment, I'm unable to play stereo :-(.
 
-How to debug this?
-									Pavel
+>  include/linux/bitops.h |   40 ++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 40 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+> index 69c1edb..40d5473 100644
+> --- a/include/linux/bitops.h
+> +++ b/include/linux/bitops.h
+> @@ -65,6 +65,46 @@ static inline __u32 ror32(__u32 word, unsigned int shift)
+>  	return (word >> shift) | (word << (32 - shift));
+>  }
+>  
+> +/**
+> + * rol16 - rotate a 16-bit value left
+> + * @word: value to rotate
+> + * @shift: bits to roll
+> + */
+> +static inline __u16 rol16(__u16 word, unsigned int shift)
+> +{
+> +	return (word << shift) | (word >> (16 - shift));
+> +}
+> +
+> +/**
+> + * ror16 - rotate a 16-bit value right
+> + * @word: value to rotate
+> + * @shift: bits to roll
+> + */
+> +static inline __u16 ror16(__u16 word, unsigned int shift)
+> +{
+> +	return (word >> shift) | (word << (16 - shift));
+> +}
+> +
+> +/**
+> + * rol8 - rotate an 8-bit value left
+> + * @word: value to rotate
+> + * @shift: bits to roll
+> + */
+> +static inline __u8 rol8(__u8 word, unsigned int shift)
+> +{
+> +	return (word << shift) | (word >> (8 - shift));
+> +}
+> +
+> +/**
+> + * ror8 - rotate an 8-bit value right
+> + * @word: value to rotate
+> + * @shift: bits to roll
+> + */
+> +static inline __u8 ror8(__u8 word, unsigned int shift)
+> +{
+> +	return (word >> shift) | (word << (8 - shift));
+> +}
+> +
+>  static inline unsigned fls_long(unsigned long l)
+>  {
+>  	if (sizeof(l) == 4)
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+~Randy
