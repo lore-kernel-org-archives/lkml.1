@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYCSTaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYCST2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbYCSTaj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYCST0U
+	id S1753394AbYCST2d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYCSTZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:26:20 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:56441 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbYCST0R (ORCPT
+	Wed, 19 Mar 2008 15:25:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39313 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753409AbYCSTZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:26:17 -0400
-In-Reply-To: <adatzj5f4sx.fsf@cisco.com>
-Subject: Re: [PATCH 1/3] Infiniband: make ehca_pd use struct pid pointer rather than
- pid_t
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>, general@lists.openfabrics.org,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OFCEB1A067.C70D2E66-ONC1257410.0055A0B0-C1257410.005729C4@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Tue, 18 Mar 2008 16:52:27 +0100
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2FP2HF322 | September
- 26, 2007) at 18/03/2008 16:52:28
+	Wed, 19 Mar 2008 15:25:41 -0400
+Date: Tue, 18 Mar 2008 10:31:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
+ patchset against -rc6)
+In-Reply-To: <20080318130710.GB1609@elf.ucw.cz>
+Message-ID: <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roland!
->  > The task_struct->tgid field is about to become deprecated, due to
->  > pid namespaces make tasks have many pids, not one. The infiniband
->  > driver is one of the code, that still uses it in some places.
->
-> Looks fine in terms of the changes it makes, but actually it seems
-> that the ehca use of this is completely bogus and the ownership
-> checking should be removed.
->
-> The core ib_uverbs module has checks that make sure that objects can
-> only be accessed through the file that they were created through; of
-> course there are tricky ways a file can be passed from one process to
-> another, but I don't think we want to disallow userspace processes
-> from trying to do interesting stuff as long as it doesn't hurt anything.
->
-> In other words-- ehca shouldn't be looking at tgids or anything like
-> that at all.  If there are missing checks then they should be in the
-> core userspace verbs stuff; but I think what we have is actually OK.
->
-> ehca guys, what do you think?
-Reason for above checking is to prevent a child process releasing
-a resource that the parent process has created and still wants to use.
-Do you think that's something we can generalize into ib_core?
-Regards
-Nam
 
+
+On Tue, 18 Mar 2008, Pavel Machek wrote:
+>
+> On Tue 2008-03-18 14:06:42, Pavel Machek wrote:
+> > 
+> > Confirmed, suspend slowness is in 2.6.25-rc6, too. It takes 15 seconds
+> > to suspend/resume, while 2.6.24 takes 9. Thinkpad x60.
+> 
+> IIRC 2.6.25-rc5 was "fast".
+
+Can you bisect it? There's only 343 commits between -rc5 and -rc6, so it 
+should not take too long to check which commit it is. Even if it should 
+take 9 reboots to bisect it entirely, going just five or six will likely 
+narrow it down sufficiently that we can probably guess fairly well what 
+it's about.
+
+		Linus
