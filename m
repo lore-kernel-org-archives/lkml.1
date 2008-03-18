@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYCRCZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYCRC2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbYCRCZg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 22:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYCRCZ0
+	id S1754823AbYCRC2A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 22:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbYCRC1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 22:25:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59040 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbYCRCZ0 (ORCPT
+	Mon, 17 Mar 2008 22:27:52 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:41723 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751882AbYCRC1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 22:25:26 -0400
-Date: Mon, 17 Mar 2008 19:25:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] thermal: fix Kconfig dependencies
-In-Reply-To: <200803171459.10656.lenb@kernel.org>
-Message-ID: <alpine.LFD.1.00.0803171920320.3020@woody.linux-foundation.org>
-References: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0803170953210.3020@woody.linux-foundation.org> <20080317184339.GA3754@osiris.boeblingen.de.ibm.com> <200803171459.10656.lenb@kernel.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Mar 2008 22:27:52 -0400
+Subject: Re: [PATCH 2/5] introduce CLOCK_MONOTONIC_RAW
+From: john stultz <johnstul@us.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1205805818.28128.91.camel@localhost>
+References: <1205553852.6122.76.camel@localhost.localdomain>
+	 <1205553938.6122.79.camel@localhost.localdomain>
+	 <1205554018.6122.81.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0803150536290.1791@scrub.home>
+	 <1205805818.28128.91.camel@localhost>
+Content-Type: text/plain
+Date: Mon, 17 Mar 2008 19:27:50 -0700
+Message-Id: <1205807270.28128.96.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Mon, 17 Mar 2008, Len Brown wrote:
+On Mon, 2008-03-17 at 19:03 -0700, john stultz wrote:
+> On Sat, 2008-03-15 at 05:50 +0100, Roman Zippel wrote:
+> > > @@ -439,6 +475,7 @@ static void clocksource_adjust(s64 offset)
+> > >  void update_wall_time(void)
+> > >  {
+> > >  	cycle_t offset;
+> > > +	static u64 raw_snsec; /* shifted raw nanosecnds */
+> > >  
+> > >  	/* Make sure we're fully resumed: */
+> > >  	if (unlikely(timekeeping_suspended))
+> > 
+> > IMO that's really a clock property, so this belongs in the clock 
+> > structure.
+> > (Some day we may want to have multiple active clocks for various purposes 
+> > and thus export multiple raw clocks.)
 > 
-> Similarly, ACPI_THERMAL should not depend on THERMAL,
-> instead the code that registers with THERMAL should
-> simply depend on if THERMAL is selected or not.
-> 
-> Also, the "default y" should go.
-> 
-> I'll tinker with this a bit after lunch.
+> I disagree. I think that crufts up the clocksource structure (which is
+> ideally just a simple hw counter abstraction), with timekeeping state.
 
-Hmm.. It looks like the same commit that caused these Kconfig issues is 
-also the one that causes the problems with lmsensors (I didn't immediately 
-realize that it's the exact same commit).
+Bah. Ok, I've talked myself out of this one. 
 
-I think that right now the right thing to do is to just revert it, since 
-apparently there won't be a released lmsensors version by the time 2.6.25 
-gets released that can handle the new sysfs layout, and that we should 
-give this some more time to be resolved.
+I still think it crufts up the clocksource structure, but its more
+consistent that we follow the established cruft (such as the
+pre-calculated cycle_interval/xtime_interval/raw_interval combo) rather
+then me trying to arbitrarily draw the line in the sand at this
+variable.
 
-So I'm inclined to revert commit 3152fb9f11cdd2fd8688c2c5cb805e5c09b53dd9 
-and plan on revisiting this for 2.6.26. I already got an ack for that from 
-Jean Delvare, but I thought I'd mention it in this thread too before I 
-actually do the final revert.
 
-Any really strong objections?
+> I'm still not sold on the multiple clocks with multiple notions of time
+> idea you keep on bringing up. But if/when we cross that bridge, maybe it
+> would be better to add a timekeeping_clock mid-layer abstraction that
+> keeps the clocksource specific timekeeping state. That way we don't add
+> lots of complexity for the clocksource driver writers to deal with and
+> we allow the clocksources to be better re-purposed (for maybe more sane
+> things like performance counters) without getting too bloated.
 
-		Linus
+I still think pulling out all of the non-counter-abstraction bits out of
+the clocksource and into a mid-level timekeeping_clock structure would
+still be ideal here, but I'll save our time/energy on that one for
+another day. :)
+
+thanks
+-john
+
+
