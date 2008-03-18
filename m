@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760169AbYCSTv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYCSTuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760169AbYCSTv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYCSTgQ
+	id S1759622AbYCSTuR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbYCSTdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:36:16 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37307 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754001AbYCSTgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:36:06 -0400
-Message-Id: <20080318222701.788442216@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 15:27:01 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [0/2] vmalloc: Add /proc/vmallocinfo to display mappings
+	Wed, 19 Mar 2008 15:33:22 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:27544 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755850AbYCSTdT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:33:19 -0400
+Subject: Re: [BUG?] 2.6.25-rc[23]-mm1 cgroup list corruption under load
+	with VM Scalability patches
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Paul Menage <menage@google.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <6599ad830803051309g22d5b746ta30c4f28a394572c@mail.gmail.com>
+References: <1204745828.6244.31.camel@localhost>
+	 <6599ad830803051309g22d5b746ta30c4f28a394572c@mail.gmail.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 18 Mar 2008 14:10:11 -0400
+Message-Id: <1205863811.5032.26.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following two patches implement /proc/vmallocinfo. /proc/vmallocinfo
-displays data about the vmalloc allocations. The second patch introduces
-a tracing feature that allows to display the function that allocated the
-vmalloc area.
+On Wed, 2008-03-05 at 13:09 -0800, Paul Menage wrote:
+> On Wed, Mar 5, 2008 at 11:37 AM, Lee Schermerhorn
+> <Lee.Schermerhorn@hp.com> wrote:
+> > list_del corruption in cgroup_exit() on 16 cpu, 32GB ia64 NUMA platform.
+> >
+> >  I've been seeing this for a while now, but we've had known problems
+> >  [page leaks, ...] with the VM scalability series.  Now the system
+> >  appears to be running very well with these patches under stress loads
+> >  that would hang it or cause OOM kill of tests with plenty of swap space
+> >  left.  Eventually, [after 40-45 minutes], I hit a list corruption in
+> >  cgroup_exit().
+> >
+> >  I can't say for sure that our patches aren't causing this, but I've been
+> >  unable to keep the system up long enough under the stress load w/o the
+> >  splitlru+noreclaim patches to hit the problem.
+> >
+> >  I looked in the mailing lists and found one other thread related to
+> >  cgroup list corruption:
+> >
+> >         http://marc.info/?l=linux-kernel&m=119263666823236&w=4
+> >
+> >  Paul looked into this and couldn't see anywhere that the lists are
+> >  manipulate w/o holding the css set lock.  I concur.  I did find one
+> >  possible race in enabling the task cg_lists [see patch below], but this
+> >  did not solve the problem.  And I did not hit the printk in the patch.
+> 
+> No, that's not a (malign) race - cgroup_enable_task_cg_lists() is
+> idempotent. In the case that you see, every thread seen in the
+> do_each_thread() loop will already have a non-empty cg_list field, so
+> it will be a no-op. So adding the additional check isn't wrong but
+> it's not needed.
+> 
+> I'll look again at the code to try to figure out where the problem is.
 
-Example:
+Paul:
 
-cat /proc/vmallocinfo
+just wanted to let you know that I did manage to hit this list
+corruption--same stack trace:  cgroup_exit() from do_exit() ...--on
+25-rc3-mm1 WITHOUT any of the vm scalability [split-lru/noreclaim-mlock]
+patches applied.  This occurred ~9 minutes into a fairly heavy 'usex'
+load on my 16 cpu ia64 platform.
 
-0xffffc20000000000-0xffffc20000801000 8392704 alloc_large_system_hash+0x127/0x246 pages=2048 vmalloc vpages
-0xffffc20000801000-0xffffc20000806000   20480 alloc_large_system_hash+0x127/0x246 pages=4 vmalloc
-0xffffc20000806000-0xffffc20000c07000 4198400 alloc_large_system_hash+0x127/0x246 pages=1024 vmalloc vpages
-0xffffc20000c07000-0xffffc20000c0a000   12288 alloc_large_system_hash+0x127/0x246 pages=2 vmalloc
-0xffffc20000c0a000-0xffffc20000c0c000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c0c000-0xffffc20000c0f000   12288 acpi_os_map_memory+0x13/0x1c phys=cff64000 ioremap
-0xffffc20000c10000-0xffffc20000c15000   20480 acpi_os_map_memory+0x13/0x1c phys=cff65000 ioremap
-0xffffc20000c16000-0xffffc20000c18000    8192 acpi_os_map_memory+0x13/0x1c phys=cff69000 ioremap
-0xffffc20000c18000-0xffffc20000c1a000    8192 acpi_os_map_memory+0x13/0x1c phys=fed1f000 ioremap
-0xffffc20000c1a000-0xffffc20000c1c000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c1c000-0xffffc20000c1e000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c1e000-0xffffc20000c20000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c20000-0xffffc20000c22000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c22000-0xffffc20000c24000    8192 acpi_os_map_memory+0x13/0x1c phys=cff68000 ioremap
-0xffffc20000c24000-0xffffc20000c26000    8192 acpi_os_map_memory+0x13/0x1c phys=e0081000 ioremap
-0xffffc20000c26000-0xffffc20000c28000    8192 acpi_os_map_memory+0x13/0x1c phys=e0080000 ioremap
-0xffffc20000c28000-0xffffc20000c2d000   20480 alloc_large_system_hash+0x127/0x246 pages=4 vmalloc
-0xffffc20000c2d000-0xffffc20000c31000   16384 tcp_init+0xd5/0x31c pages=3 vmalloc
-0xffffc20000c31000-0xffffc20000c34000   12288 alloc_large_system_hash+0x127/0x246 pages=2 vmalloc
-0xffffc20000c34000-0xffffc20000c36000    8192 init_vdso_vars+0xde/0x1f1
-0xffffc20000c36000-0xffffc20000c38000    8192 pci_iomap+0x8a/0xb4 phys=d8e00000 ioremap
-0xffffc20000c38000-0xffffc20000c3a000    8192 usb_hcd_pci_probe+0x139/0x295 [usbcore] phys=d8e00000 ioremap
-0xffffc20000c3a000-0xffffc20000c3e000   16384 sys_swapon+0x509/0xa15 pages=3 vmalloc
-0xffffc20000c40000-0xffffc20000c61000  135168 e1000_probe+0x1c4/0xa32 phys=d8a20000 ioremap
-0xffffc20000c61000-0xffffc20000c6a000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20000c6a000-0xffffc20000c73000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20000c73000-0xffffc20000c7c000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20000c7c000-0xffffc20000c7f000   12288 e1000e_setup_tx_resources+0x29/0xbe pages=2 vmalloc
-0xffffc20000c80000-0xffffc20001481000 8392704 pci_mmcfg_arch_init+0x90/0x118 phys=e0000000 ioremap
-0xffffc20001481000-0xffffc20001682000 2101248 alloc_large_system_hash+0x127/0x246 pages=512 vmalloc
-0xffffc20001682000-0xffffc20001e83000 8392704 alloc_large_system_hash+0x127/0x246 pages=2048 vmalloc vpages
-0xffffc20001e83000-0xffffc20002204000 3674112 alloc_large_system_hash+0x127/0x246 pages=896 vmalloc vpages
-0xffffc20002204000-0xffffc2000220d000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc2000220d000-0xffffc20002216000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20002216000-0xffffc2000221f000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc2000221f000-0xffffc20002228000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20002228000-0xffffc20002231000   36864 _xfs_buf_map_pages+0x8e/0xc0 vmap
-0xffffc20002231000-0xffffc20002234000   12288 e1000e_setup_rx_resources+0x35/0x122 pages=2 vmalloc
-0xffffc20002240000-0xffffc20002261000  135168 e1000_probe+0x1c4/0xa32 phys=d8a60000 ioremap
-0xffffc20002261000-0xffffc2000270c000 4894720 sys_swapon+0x509/0xa15 pages=1194 vmalloc vpages
-0xffffffffa0000000-0xffffffffa0022000  139264 module_alloc+0x4f/0x55 pages=33 vmalloc
-0xffffffffa0022000-0xffffffffa0029000   28672 module_alloc+0x4f/0x55 pages=6 vmalloc
-0xffffffffa002b000-0xffffffffa0034000   36864 module_alloc+0x4f/0x55 pages=8 vmalloc
-0xffffffffa0034000-0xffffffffa003d000   36864 module_alloc+0x4f/0x55 pages=8 vmalloc
-0xffffffffa003d000-0xffffffffa0049000   49152 module_alloc+0x4f/0x55 pages=11 vmalloc
-0xffffffffa0049000-0xffffffffa0050000   28672 module_alloc+0x4f/0x55 pages=6 vmalloc
+An x86_64 version [w/ prebuilt binaries of the tools used] of the stress
+load is available here:
 
+	http://free.linux.hp.com/~lts/Temp/
 
--- 
+There's a README there describing the contents of the tarball.  I
+haven't tried this load on an x86_64 recently, so I don't know if it
+will trigger the problem there.   
+
+Lee
+
