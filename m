@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbYCST3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYCST3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbYCST3M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYCSTZl
+	id S1754801AbYCST3c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYCST0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:25:41 -0400
+	Wed, 19 Mar 2008 15:26:00 -0400
 Received: from smtp1.linux-foundation.org ([140.211.169.13]:39313 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753384AbYCSTZj (ORCPT
+	by vger.kernel.org with ESMTP id S1753389AbYCSTZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Mar 2008 15:25:39 -0400
-Date: Tue, 18 Mar 2008 10:44:37 -0700
+Date: Tue, 18 Mar 2008 09:57:15 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-Id: <20080318104437.966c10ec.akpm@linux-foundation.org>
-In-Reply-To: <20080318172045.GI11966@one.firstfloor.org>
+Message-Id: <20080318095715.27120788.akpm@linux-foundation.org>
+In-Reply-To: <20080318141828.GD11966@one.firstfloor.org>
 References: <20080318209.039112899@firstfloor.org>
 	<20080318003620.d84efb95.akpm@linux-foundation.org>
 	<20080318141828.GD11966@one.firstfloor.org>
-	<20080318095715.27120788.akpm@linux-foundation.org>
-	<20080318172045.GI11966@one.firstfloor.org>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,34 +28,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 18:20:45 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+On Tue, 18 Mar 2008 15:18:28 +0100 Andi Kleen <andi@firstfloor.org> wrote:
 
-> > What's the permission problem?  executable-but-not-readable files?  Could
+> On Tue, Mar 18, 2008 at 12:36:20AM -0700, Andrew Morton wrote:
+> > On Tue, 18 Mar 2008 02:09:34 +0100 (CET) Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > This patchkit is an experimental optimization I played around with 
+> > > some time ago.
+> > > 
+> > > This is more a prototype still, but I wanted to push it out 
+> > > so that other people can play with it.
+> > > 
+> > > The basic idea is that most programs have the same working set
+> > > over multiple runs. So instead of demand paging all the text pages
+> > > in the order the program runs save the working set to disk and prefetch
+> > > it at program start and then save it at program exit.
+> > > 
+> > > This allows some optimizations: 
+> > > - it can avoid unnecessary disk seeks because the blocks will be fetched in 
+> > > sorted offset order instead of program execution order. 
+> > > - batch kernel entries (each demand page exception has some
+> > > overhead just for entering the kernel). This keeps the caches hot too.
+> > > - The prefetch could be in theory done in the background while the program 
+> > > runs (although that is not implemented currently)
+> > 
+> > Should be worthwhile for some things.
+> > 
+> > > Some details on the implementation:
+> > 
+> > Can't this all be done in userspace?  Hook into exit() with an LD_PRELOAD,
 > 
-> Not writable. 
+> In theory yes, but it would have much more overhead.
 
-Oh.
+s/much/slightly/.  The main win will be in optimising disk patterns.  We
+can fault in cached pages at, what?  A few GB/sec?
 
-I doubt if a userspace implementation would even try to alter the ELF
-files, really - there seems to be no point in it.   This is just complexity
-which was added by trying to do it in the kernel.
+> Also I think prefetching
+> algorithms like this really belong in the kernel.
 
-> > be handled by passing your request to a suitable-privileged server process,
-> > I guess.
+hrmph.
+
+> > > - Executable files have to be writable by the user executing it
+> > > currently to get bitmap updates. It would be possible to let the 
+> > > kernel bypass this, but I haven't thought too much about the security 
+> > > implications of it.
+> > > However any user can use the bitmap data written by a user with
+> > > write rights.
+> > 
+> > Those all get fixed with the userspace version?
 > 
-> Yes it could, but i dont even want to thi nk about all the issues of
-> doing such an interface. It is basically an microkernelish approach.
-> I prefer monolithic simplicity.
+> No in fact the permission problem is much harder to fix in user space.
 
-It's not complex at all.  Pass a null-terminated pathname to the server and
-keep running.  The server will asynchronously read your pages for you.
+What's the permission problem?  executable-but-not-readable files?  Could
+be handled by passing your request to a suitable-privileged server process,
+I guess.
 
-That's assuming executable+unreadable libraries and binaries actually need
-to be handled.  If not: no server needed.
-
-> e.g. i am pretty sure your user space implementation would be far
-> more complicated than a nicely streamlined kernel implementation. 
-> And I am really not a friend of unnecessary complexity. In the end
-> complexity hurts you, no matter if it is in ring 3 or ring 0.
-
-There is no complexity here.
