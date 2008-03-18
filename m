@@ -1,131 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbYCRJr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYCRJsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbYCRJr3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 05:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYCRJrV
+	id S1754052AbYCRJsA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 05:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbYCRJrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 05:47:21 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53124 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbYCRJrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 05:47:20 -0400
-Date: Tue, 18 Mar 2008 09:41:32 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <clameter@sgi.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] mm: allocate section_map for sparse_init
-Message-ID: <20080318094132.GB11587@csn.ul.ie>
-References: <86802c440803121051q20023badsf8e6e0571f4bb92e@mail.gmail.com> <20080313111934.GA12351@csn.ul.ie> <86802c440803131102u79fcc774j440eef4356083b56@mail.gmail.com>
+	Tue, 18 Mar 2008 05:47:51 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45234 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbYCRJru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 05:47:50 -0400
+Date: Tue, 18 Mar 2008 18:46:58 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6.25-rc5-mm1][regression?] BUG: spinlock wrong CPU, modprobe
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080318001720.9b6aea83.akpm@linux-foundation.org>
+References: <20080317120848.7B3F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080318001720.9b6aea83.akpm@linux-foundation.org>
+Message-Id: <20080318182845.0E0D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <86802c440803131102u79fcc774j440eef4356083b56@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (13/03/08 11:02), Yinghai Lu didst pronounce:
-> On Thu, Mar 13, 2008 at 4:19 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > On (12/03/08 10:51), Yinghai Lu didst pronounce:
-> >
-> >
-> > > [PATCH] mm: allocate section_map for sparse_init
-> >  >
-> >  > allocate section_map in bootmem instead of using __initdata.
-> >  >
-> >  > need to apply it after
-> >  >         [PATCH] mm: fix boundary checking in free_bootmem_core
-> >  >         [PATCH] mm: make mem_map allocation continuous.
-> >  >
-> >  >
-> >  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
-> >  > Index: linux-2.6/mm/sparse.c
-> >  > ===================================================================
-> >  > --- linux-2.6.orig/mm/sparse.c
-> >  > +++ linux-2.6/mm/sparse.c
-> >  > @@ -285,8 +285,6 @@ struct page __init *sparse_early_mem_map
-> >  >       return NULL;
-> >  >  }
-> >  >
-> >  > -/* section_map pointer array is 64k */
-> >  > -static __initdata struct page *section_map[NR_MEM_SECTIONS];
-> >  >  /*
-> >  >   * Allocate the accumulated non-linear sections, allocate a mem_map
-> >  >   * for each and record the physical to section mapping.
-> >  > @@ -296,6 +294,9 @@ void __init sparse_init(void)
-> >  >       unsigned long pnum;
-> >  >       struct page *map;
-> >  >       unsigned long *usemap;
-> >  > +     struct page **section_map;
-> >  > +     int size;
-> >  > +     int node;
-> >  >
-> >  >       /*
-> >  >        * map is using big page (aka 2M in x86 64 bit)
-> >  > @@ -305,13 +306,17 @@ void __init sparse_init(void)
-> >  >        * then in big system, the memmory will have a lot hole...
-> >  >        * here try to allocate 2M pages continously.
-> >  >        */
-> >  > +     size = sizeof(struct page *) * NR_MEM_SECTIONS;
-> >  > +     section_map = alloc_bootmem(size);
-> >  > +     if (!section_map)
-> >  > +             panic("can not allocate section_map\n");
-> >  > +
-> >  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-> >  >               if (!present_section_nr(pnum))
-> >  >                       continue;
-> >  >               section_map[pnum] = sparse_early_mem_map_alloc(pnum);
-> >  >       }
-> >  >
-> >  > -
-> >  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-> >  >               if (!present_section_nr(pnum))
-> >  >                       continue;
-> >  > @@ -327,6 +332,9 @@ void __init sparse_init(void)
-> >  >               sparse_init_one_section(__nr_to_section(pnum), pnum, map,
-> >  >                                                               usemap);
-> >  >       }
-> >  > +
-> >  > +     for_each_online_node(node)
-> >  > +             free_bootmem_node(NODE_DATA(node), __pa(section_map), size);
-> >
-> >  Why are you iterating every online node here instead of just calling
-> >  free_bootmem(__pa(section_map), size) ?
+Hi Andrew
+
+> > Call Trace:
+> >  [<a000000100015f00>] show_stack+0x80/0xa0
+> >                                 sp=e00001609262fbd0 bsp=e000016092620fd8
+> >  [<a000000100015f50>] dump_stack+0x30/0x60
+> >                                 sp=e00001609262fda0 bsp=e000016092620fc0
+> >  [<a0000001004674a0>] spin_bug+0x1a0/0x1c0
+> >                                 sp=e00001609262fda0 bsp=e000016092620f90
+> >  [<a000000100467590>] _raw_spin_unlock+0xd0/0x120
+> >                                 sp=e00001609262fda0 bsp=e000016092620f60
+> >  [<a00000010082bfe0>] _spin_unlock+0x20/0x40
+> >                                 sp=e00001609262fda0 bsp=e000016092620f40
+> >  [<a000000100138100>] do_wp_page+0x500/0xfe0
+> >                                 sp=e00001609262fda0 bsp=e000016092620ed8
+> >  [<a00000010013c560>] handle_mm_fault+0xe80/0x10e0
+> >                                 sp=e00001609262fda0 bsp=e000016092620e50
+> >  [<a00000010006c140>] ia64_do_page_fault+0x600/0xa40
+> >                                 sp=e00001609262fda0 bsp=e000016092620df0
+> >  [<a00000010000abe0>] ia64_leave_kernel+0x0/0x270
+> >                                 sp=e00001609262fe30 bsp=e000016092620df0
+> > 
 > 
-> free_bootmem will assume use bdata on NODE_DATA(0).
+> I'm unaware of any other reports of anything like this so yes, please do
+> bisect it if you have the time.
+
+sorry, my report was uncleared.
+I already did bisect and found the bug in git-ia64.patch.
+and already reported Tony Luck.
+
+that mail is quote following.
+
+> Hi
 > 
-
-True. The unwritten assumption is that NODE_DATA(0) always has memory
-for allocate or free.
-
-> some cases: four nodes system: only have memory installed for node 1,
-> and node 3.
-> alloc_bootmem will loop to get bootmem from node1, because there is no
-> ram node0, and not NODE_DATA(0) ...
+> if revert following patch
 > 
-> we may update free_bootmem to loop all bdata or all online nodes to
-> call free_bootmem_core...
+>     [IA64] Multiple outstanding ptc.g instruction support
 > 
+> then this problem doesn't reproduce.
+> 
+> I attached that revert patch.
+> Thanks!
 
-Alternatively, update free_bootmem so that it figures out which node it is
-meant to be freeing to based on the PFN of the page currently being freed.
 
-It still doesn't seem right to try freeing on all online nodes as it looks like
-free_bootmem_core() should flip bits outside the range of its node_bootmem_map
-which could cause tricky bugs.
+Thanks.
 
-As things currently stand with bootmem, what you should be doing is using
-for_each_online_node() to figure out which node you can allocate from,
-remembering that node and calling free_bootmem_node() once. If you fix
-free_bootmem() though, you should only need to call free_bootmem() once
-in this patch.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
