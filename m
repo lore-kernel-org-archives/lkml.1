@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYCRMnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYCRMs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbYCRMnJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 08:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYCRMmz
+	id S1753275AbYCRMs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 08:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYCRMst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 08:42:55 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:4179 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752437AbYCRMmy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 08:42:54 -0400
-Date: Tue, 18 Mar 2008 13:42:48 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, linux-rt-users@vger.kernel.org, mingo@elte.hu,
-       ego@in.ibm.com, dipankar@in.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, akpm@linux-foundation.org, josh@freedesktop.org,
-       tglx@linutronix.de, niv@us.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
-Message-ID: <20080318124248.GB8669@osiris.boeblingen.de.ibm.com>
-References: <20080317010821.GA29875@linux.vnet.ibm.com> <20080317183047.GA188@tv-sign.ru> <20080317190605.GG10955@linux.vnet.ibm.com> <20080317201741.GA92@tv-sign.ru> <20080317204357.GI10955@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080317204357.GI10955@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 18 Mar 2008 08:48:49 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:33988 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752242AbYCRMss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 08:48:48 -0400
+Date: Tue, 18 Mar 2008 13:47:59 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MMC: Card detection through pin CD/DAT3 issue
+Message-ID: <20080318134759.04450604@mjolnir.drzeus.cx>
+In-Reply-To: <83116F0A4FF67A4F97BA0B6E408C48E301DAB4DF@zuerich.BC-Int.NET>
+References: <83116F0A4FF67A4F97BA0B6E408C48E301DAB4AA@zuerich.BC-Int.NET>
+	<20080318122033.020b45b5@mjolnir.drzeus.cx>
+	<83116F0A4FF67A4F97BA0B6E408C48E301DAB4DF@zuerich.BC-Int.NET>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 01:43:57PM -0700, Paul E. McKenney wrote:
-> On Mon, Mar 17, 2008 at 11:17:41PM +0300, Oleg Nesterov wrote:
-> > (to clarify: my question is completely offtopic to this patch)
-> > On 03/17, Paul E. McKenney wrote:
-> > > On Mon, Mar 17, 2008 at 09:30:47PM +0300, Oleg Nesterov wrote:
-> > > > I'm not sure the code below is up to date, but what I have in
-> > > > arch/s390/kernel/time.c is:
-> > > > 
-> > > > 	stop_hz_timer:
-> > > > 
-> > > > 		cpu_set(cpu, nohz_cpu_mask);
-> > > > 		
-> > > > 		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
-> > > > 			cpu_clear(cpu, nohz_cpu_mask);
-> > > > 			return;
-> > > > 		}
-> > > > 
-> > > > Don't we need smp_mb() after cpu_set() ?
-> > > 
-> > > S390's memory model is quite strong, so it might not be needed.
-> > 
-> > OK, in that case we shouldn't worry.
+On Tue, 18 Mar 2008 13:24:33 +0100
+"Wappler Marcel" <Marcel.Wappler@bridgeco.net> wrote:
+
 > 
-> I don't know if I would go -that- far.  ;-)
-
-Not sure if I can follow you here, but for the smp case cpu_set() is
-nothing but a set_bit() which implies both: a memory barrier and a compiler
-barrier on s390. The compare and swap instruction used here ensures that
-all previous memory accesses will be seen by other cpus.
-
-Btw. the code sequence above will go away soon anyway, since I'm converting
-our code to the generic NO_HZ infrastructure.
-
-> > > In any
-> > > case, if needed, it goes -before- the cpu_set(), because the problems
-> > > would arise if prior RCU read-side critical sections were to be reordered
-> > > to follow this cpu_set(), right?
-> > 
-> > No, but it is very possible I missed something.
-> > 
-> > What if rcu_needs_cpu(cpu) is executed before cpu_set(cpu, nohz_cpu_mask)?
-> > It can miss rcu_start_batch() -> rcp->cur++ and return false, but at the
-> > same time rcu_start_batch() may see nohz_cpu_mask without this CPU.
+> I have found this requirement in the SD host controller spec:
+> "The card detect is active regardless of the SD Bus Power."
 > 
-> If you mean that the rcu_needs_cpu() executes before the cpu_set() in
-> the code fragment above, while the rcu_start_batch() executes on some
-> other CPU?
+> I wonder how the card should be able to pull up the CD/DAT3 Pad to VCC
+> if its only VCC pad is not connected to VCC due to the fact that the host
+> controller has switched off the cards power - any idea how this could be
+> managed?
 
-That should never happen because of the compiler and memory barrier semantics
-of cpu_set(). Or... I'm completely misunderstanding you, which wouldn't me
-surprise me too much :)
+It could provide a very low voltage and current, just enough to probe the resistor but not enough to actually power anything on the card.
+
+> 
+> There is a SD card spec section somewhere which statet that:
+> "If one of the supply pins (VDD or VSS) is not connected properly, then
+> the current is drawn through a data line to supply the card."
+> 
+> Maybe this is the key in understanding ho the pull up without VCC connected
+> works?
+> 
+
+I think that's just a warning that the supply pins need to be grounded when power is disabled. I have a controller where they are left floating, and some cards do indeed power up using power from the data line pull-ups. The end results is a heavily malfunctioning card due to insufficient power supply.
+
+Most of this card detection using DAT3 business is unknown to me. The spec that describes how it is supposed to work is not publicly available, so I can only speculate.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
