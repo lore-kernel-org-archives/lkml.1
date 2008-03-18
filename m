@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbYCSVHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936344AbYCSVJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965585AbYCSVHf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYCST5W
+	id S936344AbYCSVJn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761771AbYCST7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:57:22 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:11269 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761270AbYCST5U (ORCPT
+	Wed, 19 Mar 2008 15:59:06 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48571 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761758AbYCST7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:57:20 -0400
-Subject: [PATCH] serial 8250: tighten test for using backup timer
-From: Alex Williamson <alex.williamson@hp.com>
-To: linux-serial <linux-serial@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Koeller <thomas@koeller.dyndns.org>
-Content-Type: text/plain
-Organization: OSLO R&D
-Date: Wed, 19 Mar 2008 10:50:37 -0600
-Message-Id: <1205945437.6881.13.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 15:59:05 -0400
+Date: Tue, 18 Mar 2008 22:48:49 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jan Kara <jack@suse.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Do not allow setting of quota limits to too high
+ values
+In-Reply-To: <20080318164410.GR23104@duck.suse.cz>
+Message-ID: <alpine.LNX.1.00.0803182248390.8851@fbirervta.pbzchgretzou.qr>
+References: <20080312172255.GB21395@duck.suse.cz> <20080313130355.6a84d0c5.akpm@linux-foundation.org> <20080317131138.GA17307@duck.suse.cz> <alpine.LNX.1.00.0803181740300.8851@fbirervta.pbzchgretzou.qr> <20080318164410.GR23104@duck.suse.cz>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-   Thomas Koeller had reported an issue where a device that had been
-making use of the UART_BUG_TXEN code in the 8250 driver was mistakenly
-being caught by the backup timer test, causing the device to work
-improperly.  To fix this, the patch below tightens the test requirements
-to enable the backup timer workaround.  The backup timer is really meant
-to catch UARTs that don't re-assert the THRE interrupt.  The expectation
-is that they do initially assert THRE.  This patch clarifies the test.
-Thanks,
+On Mar 18 2008 17:44, Jan Kara wrote:
+>>>>
+>>>> For 2.6.26, I assume?  I am not able to determine the seriousness of this
+>>>> problem from the changelog nor from the patch itself.
+>>>
+>>>  Not really serious. Nobody complained so far (i.e., for the time quota
+>>> exists) and the limits will just wrap when you try to set them over 4TB
+>>> now. So the patch can wait...
+>> So does quota_v2.c even handle quotas > 4 TB?
+>  Usage yes, limits no. But some Sun guys are already working on a patch
+> for fully 64-bit quota. I already have a decent kernel patch from him but
+> I'd like to see also tools support to really run it before merging the
+> patch :).
 
-	Alex
-
-Signed-off-by: Alex Williamson <alex.williamson@hp.com>
----
-
-diff -r 2202c155b8c3 drivers/serial/8250.c
---- a/drivers/serial/8250.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/drivers/serial/8250.c	Wed Mar 19 10:32:40 2008 -0600
-@@ -1814,6 +1814,7 @@ static int serial8250_startup(struct uar
- 	}
- 
- 	if (is_real_interrupt(up->port.irq)) {
-+		unsigned char iir1;
- 		/*
- 		 * Test for UARTs that do not reassert THRE when the
- 		 * transmitter is idle and the interrupt has already
-@@ -1827,7 +1828,7 @@ static int serial8250_startup(struct uar
- 		wait_for_xmitr(up, UART_LSR_THRE);
- 		serial_out_sync(up, UART_IER, UART_IER_THRI);
- 		udelay(1); /* allow THRE to set */
--		serial_in(up, UART_IIR);
-+		iir1 = serial_in(up, UART_IIR);
- 		serial_out(up, UART_IER, 0);
- 		serial_out_sync(up, UART_IER, UART_IER_THRI);
- 		udelay(1); /* allow a working UART time to re-assert THRE */
-@@ -1840,7 +1841,7 @@ static int serial8250_startup(struct uar
- 		 * If the interrupt is not reasserted, setup a timer to
- 		 * kick the UART on a regular basis.
- 		 */
--		if (iir & UART_IIR_NO_INT) {
-+		if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
- 			pr_debug("ttyS%d - using backup timer\n", port->line);
- 			up->timer.function = serial8250_backup_timeout;
- 			up->timer.data = (unsigned long)up;
-
-
-
+Does this also affect XFS?
