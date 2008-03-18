@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYCRAU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYCRAbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbYCRAU0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 20:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYCRAUO
+	id S1754657AbYCRAbU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 20:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYCRAbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 20:20:14 -0400
-Received: from lixom.net ([66.141.50.11]:40386 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752312AbYCRAUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 20:20:13 -0400
-Date: Mon, 17 Mar 2008 19:27:26 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
-       pasemi-linux@ozlabs.org, linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
-Subject: Re: [PATCH v2] pasemi_dma: Driver for PA Semi PWRficient on-chip
-	DMA engine
-Message-ID: <20080318002726.GA481@lixom.net>
-References: <20080306233900.GA3969@lixom.net> <20080316213002.GA2589@lixom.net> <e9c3a7c20803171146m5a7f0e11m31e074634de22b42@mail.gmail.com>
+	Mon, 17 Mar 2008 20:31:09 -0400
+Received: from gw1.kapitza.umos.ru ([217.67.113.134]:38518 "EHLO ari.home"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752140AbYCRAbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 20:31:08 -0400
+X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Mar 2008 20:31:08 EDT
+Date: Tue, 18 Mar 2008 03:24:59 +0300 (MSK)
+From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+To: David Brownell <david-b@pacbell.net>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ehci-hcd affects hda speed
+In-Reply-To: <200803171700.26274.david-b@pacbell.net>
+Message-ID: <alpine.LFD.1.00.0803180317050.11560@nev.ubzr>
+References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200803171400.40045.david-b@pacbell.net> <47DEFD85.1050706@keyaccess.nl> <200803171700.26274.david-b@pacbell.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9c3a7c20803171146m5a7f0e11m31e074634de22b42@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=KOI8-R
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 11:46:39AM -0700, Dan Williams wrote:
-> Looks good, makes me want to go back and cleanup iop-adma a bit.  A
-> few fyi's below, but no other review comments.
-> 
-> >  Note that this still needs to go on top of the powerpc.git tree due to the
-> >  pasemi_dma.h updates that this driver depends on. I suggest merging this
-> >  through pasemi.git->powerpc.git->linus with an Acked-by from the DMA guys.
-> 
-> Ok, it still may not compile in mainline until after 2.6.26-rc1 due to
-> additional dmaengine cleanups like the ack-to-flags change I posted
-> earlier.  Any better way to handle this?  Go through -mm?
 
-Either go through -mm where Andrew can keep it applied in appropriate
-order and send upstream, or just merge it late. It's a new driver, and
-they're normally OK to go in a little later. That might be the easiest
-solution in this case.
+  On Mon, 17 Mar 2008 at 11:26pm, Rene Herman wrote:
 
-> Acked-by: Dan Williams <dan.j.williams@intel.com>
+RH> And, as usual, I can not reach Lev as some mailer along the way is
+RH> telling me his address is unroutable.
+I'm here, don't worry :-)
 
-Thanks!
+  On Mon, 17 Mar 2008 at 4:00pm, David Brownell wrote:
 
--Olof
+DB> On Monday 17 March 2008, Rene Herman wrote:
+DB> > +šššššššcase PCI_VENDOR_ID_VIA:
+DB> > +šššššššššššššššif (pdev->device == 0x3104 && pdev->revision >= 0x60) {
+DB> Unless you have specific docs from VIA saying that this register
+DB> isn't revision-specific (at least in the sense that all revisions
+DB> after 0x60 define that bit in that way), this should probably be a
+DB> switch on pdev->revision and just include the known-safe revisions.
+May I suggest this should be a module parameter? Because a side effect is 
+a USB slow-down, which may be more important for somebody...
 
+-L
