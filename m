@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162643AbYCSXR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYCSXTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162643AbYCSXR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938440AbYCSVpe
+	id S1757548AbYCSXTK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938545AbYCSVql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:45:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58096 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938434AbYCSVpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:45:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation patchset against -rc6)
-Date: Wed, 19 Mar 2008 22:43:13 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-References: <200803172317.33745.rjw@sisk.pl> <47E178FE.6050500@suse.de> <20080319205812.GC1811@elf.ucw.cz>
-In-Reply-To: <20080319205812.GC1811@elf.ucw.cz>
+	Wed, 19 Mar 2008 17:46:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:47839 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938549AbYCSVqk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:46:40 -0400
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Subject: Re: Linux 2.6.25-rc4
+Date: Tue, 18 Mar 2008 15:48:25 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803181403.37969.bzolnier@gmail.com> <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org>
+In-Reply-To: <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200803181548.25241.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803192243.14520.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 19 of March 2008, Pavel Machek wrote:
-> On Wed 2008-03-19 23:35:10, Alexey Starikovskiy wrote:
-> > Pavel Machek wrote:
-> >> Hi!
-> >>
-> >>>> Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
-> >>>> of drivers/acpi/ec.c patch fixed the
-> >>>> "rc6-breaks-backlight-in-X-over-lid-close", good.
-> >>> Can you clarify a bit?
-> >>>
-> >>> Do you mean that the full revert of 2c81ce4 that already got committed is 
-> >>> sufficient for you, or do you need to totally undo everything we've done 
-> >>> to ec.c since -rc5, and thus also to revert the _other_ revert we did (in 
-> >>> 4af8e10a6c57e7292862bd1703712f0565c7e429)?
-> >>
-> >> I did some more testing, and realized I was wrong. We need to totally
-> >> undo everything we've done to ec.c since -rc5... (that has small
-> >> sideffect of brightness up/down keys no longer working -- regression
-> >> since 2.6.24, but saves us from "backlight gone after
-> >> closing/reopening lid" which is _NASTY_ regression from 2.6.25-rc5).
-> >>
-> >> ACPI sucks.
-> >>
-> >> I.e. this patch:
-> >>
-> >>
-> >> Revert ec.c to 2.6.25-rc5 state:
-> >>
-> >> * this fixes backlight after closing/reopening the lid while in X on
-> >> thinkpad x60
-> >>
-> >> * unfortunately it breaks fn-home/end keyboard brightness control
-> > It should also break volume up/down/mute keys. Essentially all the keys on Thinkpad.
-> > And it would also be regression to 2.6.24 level.
+On Tuesday 18 March 2008, Anders Eriksson wrote:
 > 
-> As I explained above.
+> bzolnier@gmail.com said:
+> > Could you also add printk() to task_in_intr()? 
 > 
-> Unfortunately, applying this means I loose screen as soon as I
-> close/reopen lid. 2.6.24 did not behave like that. And it makes my
-> machine mostly unusable -- as soon as you try to carry it away, you
-> loose video. BAD.
+> Mar 18 14:18:26 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
+> Mar 18 14:18:26 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
+> Mar 18 14:18:26 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
+> Mar 18 14:18:26 tippex task_in_intr: hda: stat=50
 
-Pavel,
+This is quite unexpected status value...
 
-Can you text the current -git (preferably without anything on top) pretty please?
+Please add "#define DEBUG" before ide_tf_load() in ide-taskfile.c
+so we can see which SMART sub-command is causing this.
 
 Thanks,
-Rafael
+Bart
