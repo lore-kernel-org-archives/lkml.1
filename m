@@ -1,137 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYCRCyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbYCRDDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbYCRCyK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 22:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYCRCx7
+	id S1753740AbYCRDDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 23:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbYCRDDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 22:53:59 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:59119 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbYCRCx7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 22:53:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=o4SQSsoyl3T9Gc9hng7y7LIc7C6pFofvdcFjPUpiiS7pnnBrTfuTk3+nOCusb93R+2rSLv0aJUslPdrscE0jBy3PvHfyPQ9c4J5gc9HJ9XgrXTbWaDBHh8zKkKuvl3dCSSl50npj1GZNh3qa7N4pYom1RBRin3k8PeGL75+bYmo=
-Message-ID: <86802c440803171953i5a230cf0pda3a96a173f8707f@mail.gmail.com>
-Date: Mon, 17 Mar 2008 19:53:57 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>
-Subject: [PATCH] mm: offset align in alloc_bootmem v3
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_19488_7845786.1205808837203"
+	Mon, 17 Mar 2008 23:03:42 -0400
+Received: from mga01.intel.com ([192.55.52.88]:35705 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751081AbYCRDDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 23:03:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,516,1199692800"; 
+   d="scan'208";a="535501215"
+Subject: Re: [PATCH] thermal: fix Kconfig dependencies
+From: "Zhang, Rui" <rui.zhang@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <alpine.LFD.1.00.0803171920320.3020@woody.linux-foundation.org>
+References: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.1.00.0803170953210.3020@woody.linux-foundation.org>
+	 <20080317184339.GA3754@osiris.boeblingen.de.ibm.com>
+	 <200803171459.10656.lenb@kernel.org>
+	 <alpine.LFD.1.00.0803171920320.3020@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 10:40:29 +0800
+Message-Id: <1205808029.3171.38.camel@acpi-hp-zz.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_19488_7845786.1205808837203
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+
+On Tue, 2008-03-18 at 10:25 +0800, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 17 Mar 2008, Len Brown wrote:
+> >
+> > Similarly, ACPI_THERMAL should not depend on THERMAL,
+> > instead the code that registers with THERMAL should
+> > simply depend on if THERMAL is selected or not.
+> >
+> > Also, the "default y" should go.
+> >
+> > I'll tinker with this a bit after lunch.
+> 
+> Hmm.. It looks like the same commit that caused these Kconfig issues
+> is
+> also the one that causes the problems with lmsensors
+Yes.
+>  (I didn't immediately
+> realize that it's the exact same commit).
+> 
+> I think that right now the right thing to do is to just revert it,
+> since
+> apparently there won't be a released lmsensors version by the time
+> 2.6.25
+> gets released that can handle the new sysfs layout, and that we should
+> give this some more time to be resolved.
+> 
+> So I'm inclined to revert commit
+> 3152fb9f11cdd2fd8688c2c5cb805e5c09b53dd9
+> and plan on revisiting this for 2.6.26. I already got an ack for that
+> from
+> Jean Delvare, but I thought I'd mention it in this thread too before I
+> actually do the final revert.
+> 
+> Any really strong objections?
+No.
+As we still need some discussions before the problem is solved, please
+revert it. :)
+
+And please apply this patch after reverting the old one.
+
+thanks,
+rui
+
+From: Zhang Rui <rui.zhang@intel.com>
+
+The generic thermal driver shows temperature in millidegree Celsius.
+Update the documentation.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ Documentation/thermal/sysfs-api.txt |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/Documentation/thermal/sysfs-api.txt
+===================================================================
+--- linux-2.6.orig/Documentation/thermal/sysfs-api.txt
++++ linux-2.6/Documentation/thermal/sysfs-api.txt
+@@ -143,10 +143,10 @@ type				Strings which represent the ther
+ 				This is given by thermal zone driver as part of registration.
+ 				Eg: "ACPI thermal zone" indicates it's a ACPI thermal device
+ 				RO
+-				Optional
++				Required
+ 
+ temp				Current temperature as reported by thermal zone (sensor)
+-				Unit: degree Celsius
++				Unit: millidegree Celsius
+ 				RO
+ 				Required
+ 
+@@ -163,7 +163,7 @@ mode				One of the predefined values in 
+ 					  charge of the thermal management.
+ 
+ trip_point_[0-*]_temp		The temperature above which trip point will be fired
+-				Unit: degree Celsius
++				Unit: millidegree Celsius
+ 				RO
+ 				Optional
+ 
+@@ -193,7 +193,7 @@ type				String which represents the type
+ 				eg. For memory controller device on intel_menlow platform:
+ 				this should be "Memory controller"
+ 				RO
+-				Optional
++				Required
+ 
+ max_state			The maximum permissible cooling state of this cooling device.
+ 				RO
+@@ -219,16 +219,16 @@ the sys I/F structure will be built like
+ 
+ |thermal_zone1:
+ 	|-----type:			ACPI thermal zone
+-	|-----temp:			37
++	|-----temp:			37000
+ 	|-----mode:			kernel
+-	|-----trip_point_0_temp:	100
++	|-----trip_point_0_temp:	100000
+ 	|-----trip_point_0_type:	critical
+-	|-----trip_point_1_temp:	80
++	|-----trip_point_1_temp:	80000
+ 	|-----trip_point_1_type:	passive
+-	|-----trip_point_2_temp:	70
+-	|-----trip_point_2_type:	active[0]
+-	|-----trip_point_3_temp:	60
+-	|-----trip_point_3_type:	active[1]
++	|-----trip_point_2_temp:	70000
++	|-----trip_point_2_type:	active0
++	|-----trip_point_3_temp:	60000
++	|-----trip_point_3_type:	active1
+ 	|-----cdev0:			--->/sys/class/thermal/cooling_device0
+ 	|-----cdev0_trip_point:		1	/* cdev0 can be used for passive */
+ 	|-----cdev1:			--->/sys/class/thermal/cooling_device3
 
 
 
-------=_Part_19488_7845786.1205808837203
-Content-Type: text/x-patch; name=offset_alloc_bootmem_v3.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdxvgmvx0
-Content-Disposition: attachment; filename=offset_alloc_bootmem_v3.patch
-
-W1BBVENIXSBtbTogb2Zmc2V0IGFsaWduIGluIGFsbG9jX2Jvb3RtZW0gdjMKCm5lZWQgb2Zmc2V0
-IGFsaWdubWVudCB3aGVuIG5vZGVfYm9vdF9zdGFydCdzIGFsaWdubWVudCBpcyBsZXNzIHRoYW4K
-YWxpZ24gcmVxdWlyZWQKCnVzZSBsb2NhbCBub2RlX2Jvb3Rfc3RhcnQgdG8gbWF0Y2ggYWxpZ24u
-IHNvIGRvbid0IGFkZCBleHRyYSBvcHRlcmF0aW9uIGluCnNlYXJjaCBsb29wLgoKU2lnbmVkLW9m
-Zi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKSW5kZXg6IGxpbnV4LTIu
-Ni9tbS9ib290bWVtLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvbW0vYm9vdG1lbS5j
-CisrKyBsaW51eC0yLjYvbW0vYm9vdG1lbS5jCkBAIC0yMDYsOSArMjA2LDExIEBAIHZvaWQgKiBf
-X2luaXQKIF9fYWxsb2NfYm9vdG1lbV9jb3JlKHN0cnVjdCBib290bWVtX2RhdGEgKmJkYXRhLCB1
-bnNpZ25lZCBsb25nIHNpemUsCiAJICAgICAgdW5zaWduZWQgbG9uZyBhbGlnbiwgdW5zaWduZWQg
-bG9uZyBnb2FsLCB1bnNpZ25lZCBsb25nIGxpbWl0KQogewotCXVuc2lnbmVkIGxvbmcgb2Zmc2V0
-LCByZW1haW5pbmdfc2l6ZSwgYXJlYXNpemUsIHByZWZlcnJlZDsKKwl1bnNpZ25lZCBsb25nIGFy
-ZWFzaXplLCBwcmVmZXJyZWQ7CiAJdW5zaWduZWQgbG9uZyBpLCBzdGFydCA9IDAsIGluY3IsIGVp
-ZHgsIGVuZF9wZm47CiAJdm9pZCAqcmV0OworCXVuc2lnbmVkIGxvbmcgbm9kZV9ib290X3N0YXJ0
-OworCXZvaWQgKm5vZGVfYm9vdG1lbV9tYXA7CiAKIAlpZiAoIXNpemUpIHsKIAkJcHJpbnRrKCJf
-X2FsbG9jX2Jvb3RtZW1fY29yZSgpOiB6ZXJvLXNpemVkIHJlcXVlc3RcbiIpOwpAQCAtMjE2LDIz
-ICsyMTgsMjkgQEAgX19hbGxvY19ib290bWVtX2NvcmUoc3RydWN0IGJvb3RtZW1fZGF0YQogCX0K
-IAlCVUdfT04oYWxpZ24gJiAoYWxpZ24tMSkpOwogCi0JaWYgKGxpbWl0ICYmIGJkYXRhLT5ub2Rl
-X2Jvb3Rfc3RhcnQgPj0gbGltaXQpCi0JCXJldHVybiBOVUxMOwotCiAJLyogb24gbm9kZXMgd2l0
-aG91dCBtZW1vcnkgLSBib290bWVtX21hcCBpcyBOVUxMICovCiAJaWYgKCFiZGF0YS0+bm9kZV9i
-b290bWVtX21hcCkKIAkJcmV0dXJuIE5VTEw7CiAKKwkvKiBiZGF0YS0+bm9kZV9ib290X3N0YXJ0
-IGlzIHN1cHBvc2VkIHRvIGJlICgxMis2KWJpdHMgYWxpZ25tZW50IG9uIHg4Nl82NCA/ICovCisJ
-bm9kZV9ib290X3N0YXJ0ID0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydDsKKwlub2RlX2Jvb3RtZW1f
-bWFwID0gYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXA7CisJaWYgKGFsaWduKSB7CisJCW5vZGVfYm9v
-dF9zdGFydCA9IEFMSUdOKGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQsIGFsaWduKTsKKwkJaWYgKG5v
-ZGVfYm9vdF9zdGFydCA+IGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQpCisJCQlub2RlX2Jvb3RtZW1f
-bWFwID0gKHVuc2lnbmVkIGxvbmcgKiliZGF0YS0+bm9kZV9ib290bWVtX21hcCArCisJCQkgICAg
-UEZOX0RPV04obm9kZV9ib290X3N0YXJ0IC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCkvQklUU19Q
-RVJfTE9ORzsKKwl9CisKKwlpZiAobGltaXQgJiYgbm9kZV9ib290X3N0YXJ0ID49IGxpbWl0KQor
-CQlyZXR1cm4gTlVMTDsKKwogCWVuZF9wZm4gPSBiZGF0YS0+bm9kZV9sb3dfcGZuOwogCWxpbWl0
-ID0gUEZOX0RPV04obGltaXQpOwogCWlmIChsaW1pdCAmJiBlbmRfcGZuID4gbGltaXQpCiAJCWVu
-ZF9wZm4gPSBsaW1pdDsKIAotCWVpZHggPSBlbmRfcGZuIC0gUEZOX0RPV04oYmRhdGEtPm5vZGVf
-Ym9vdF9zdGFydCk7Ci0Jb2Zmc2V0ID0gMDsKLQlpZiAoYWxpZ24gJiYgKGJkYXRhLT5ub2RlX2Jv
-b3Rfc3RhcnQgJiAoYWxpZ24gLSAxVUwpKSAhPSAwKQotCQlvZmZzZXQgPSBhbGlnbiAtIChiZGF0
-YS0+bm9kZV9ib290X3N0YXJ0ICYgKGFsaWduIC0gMVVMKSk7Ci0Jb2Zmc2V0ID0gUEZOX0RPV04o
-b2Zmc2V0KTsKKwllaWR4ID0gZW5kX3BmbiAtIFBGTl9ET1dOKG5vZGVfYm9vdF9zdGFydCk7CiAK
-IAkvKgogCSAqIFdlIHRyeSB0byBhbGxvY2F0ZSBib290bWVtIHBhZ2VzIGFib3ZlICdnb2FsJwpA
-QCAtMjQwLDE1ICsyNDgsMTYgQEAgX19hbGxvY19ib290bWVtX2NvcmUoc3RydWN0IGJvb3RtZW1f
-ZGF0YQogCSAqLwogCXByZWZlcnJlZCA9IDA7CiAJaWYgKGdvYWwgJiYgUEZOX0RPV04oZ29hbCkg
-PCBlbmRfcGZuKSB7Ci0JCWlmIChnb2FsID4gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCkKLQkJCXBy
-ZWZlcnJlZCA9IGdvYWwgLSBiZGF0YS0+bm9kZV9ib290X3N0YXJ0OworCQlpZiAoZ29hbCA+IG5v
-ZGVfYm9vdF9zdGFydCkKKwkJCXByZWZlcnJlZCA9IGdvYWwgLSBub2RlX2Jvb3Rfc3RhcnQ7CiAK
-LQkJaWYgKGJkYXRhLT5sYXN0X3N1Y2Nlc3MgPj0gcHJlZmVycmVkKQorCQlpZiAoYmRhdGEtPmxh
-c3Rfc3VjY2VzcyA+IG5vZGVfYm9vdF9zdGFydCAmJgorCQkJYmRhdGEtPmxhc3Rfc3VjY2VzcyAt
-IG5vZGVfYm9vdF9zdGFydCA+PSBwcmVmZXJyZWQpCiAJCQlpZiAoIWxpbWl0IHx8IChsaW1pdCAm
-JiBsaW1pdCA+IGJkYXRhLT5sYXN0X3N1Y2Nlc3MpKQotCQkJCXByZWZlcnJlZCA9IGJkYXRhLT5s
-YXN0X3N1Y2Nlc3M7CisJCQkJcHJlZmVycmVkID0gYmRhdGEtPmxhc3Rfc3VjY2VzcyAtIG5vZGVf
-Ym9vdF9zdGFydDsKIAl9CiAKLQlwcmVmZXJyZWQgPSBQRk5fRE9XTihBTElHTihwcmVmZXJyZWQs
-IGFsaWduKSkgKyBvZmZzZXQ7CisJcHJlZmVycmVkID0gUEZOX0RPV04oQUxJR04ocHJlZmVycmVk
-LCBhbGlnbikpOwogCWFyZWFzaXplID0gKHNpemUgKyBQQUdFX1NJWkUtMSkgLyBQQUdFX1NJWkU7
-CiAJaW5jciA9IGFsaWduID4+IFBBR0VfU0hJRlQgPyA6IDE7CiAKQEAgLTI1NiwxOCArMjY1LDE4
-IEBAIHJlc3RhcnRfc2NhbjoKIAlmb3IgKGkgPSBwcmVmZXJyZWQ7IGkgPCBlaWR4OykgewogCQl1
-bnNpZ25lZCBsb25nIGo7CiAKLQkJaSA9IGZpbmRfbmV4dF96ZXJvX2JpdChiZGF0YS0+bm9kZV9i
-b290bWVtX21hcCwgZWlkeCwgaSk7CisJCWkgPSBmaW5kX25leHRfemVyb19iaXQobm9kZV9ib290
-bWVtX21hcCwgZWlkeCwgaSk7CiAJCWkgPSBBTElHTihpLCBpbmNyKTsKIAkJaWYgKGkgPj0gZWlk
-eCkKIAkJCWJyZWFrOwotCQlpZiAodGVzdF9iaXQoaSwgYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXAp
-KSB7CisJCWlmICh0ZXN0X2JpdChpLCBub2RlX2Jvb3RtZW1fbWFwKSkgewogCQkJaSArPSBpbmNy
-OwogCQkJY29udGludWU7CiAJCX0KIAkJZm9yIChqID0gaSArIDE7IGogPCBpICsgYXJlYXNpemU7
-ICsraikgewogCQkJaWYgKGogPj0gZWlkeCkKIAkJCQlnb3RvIGZhaWxfYmxvY2s7Ci0JCQlpZiAo
-dGVzdF9iaXQoaiwgYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXApKQorCQkJaWYgKHRlc3RfYml0KGos
-IG5vZGVfYm9vdG1lbV9tYXApKQogCQkJCWdvdG8gZmFpbF9ibG9jazsKIAkJfQogCQlzdGFydCA9
-IGk7CkBAIC0yNzgsMTQgKzI4NywxNCBAQCByZXN0YXJ0X3NjYW46CiAJCQlpICs9IGluY3I7CiAJ
-fQogCi0JaWYgKHByZWZlcnJlZCA+IG9mZnNldCkgewotCQlwcmVmZXJyZWQgPSBvZmZzZXQ7CisJ
-aWYgKHByZWZlcnJlZCA+IDApIHsKKwkJcHJlZmVycmVkID0gMDsKIAkJZ290byByZXN0YXJ0X3Nj
-YW47CiAJfQogCXJldHVybiBOVUxMOwogCiBmb3VuZDoKLQliZGF0YS0+bGFzdF9zdWNjZXNzID0g
-UEZOX1BIWVMoc3RhcnQpOworCWJkYXRhLT5sYXN0X3N1Y2Nlc3MgPSBQRk5fUEhZUyhzdGFydCkg
-KyBub2RlX2Jvb3Rfc3RhcnQ7CiAJQlVHX09OKHN0YXJ0ID49IGVpZHgpOwogCiAJLyoKQEAgLTI5
-NSw2ICszMDQsNyBAQCBmb3VuZDoKIAkgKi8KIAlpZiAoYWxpZ24gPCBQQUdFX1NJWkUgJiYKIAkg
-ICAgYmRhdGEtPmxhc3Rfb2Zmc2V0ICYmIGJkYXRhLT5sYXN0X3BvcysxID09IHN0YXJ0KSB7CisJ
-CXVuc2lnbmVkIGxvbmcgb2Zmc2V0LCByZW1haW5pbmdfc2l6ZTsKIAkJb2Zmc2V0ID0gQUxJR04o
-YmRhdGEtPmxhc3Rfb2Zmc2V0LCBhbGlnbik7CiAJCUJVR19PTihvZmZzZXQgPiBQQUdFX1NJWkUp
-OwogCQlyZW1haW5pbmdfc2l6ZSA9IFBBR0VfU0laRSAtIG9mZnNldDsKQEAgLTMwMywxNCArMzEz
-LDEyIEBAIGZvdW5kOgogCQkJLyogbGFzdF9wb3MgdW5jaGFuZ2VkICovCiAJCQliZGF0YS0+bGFz
-dF9vZmZzZXQgPSBvZmZzZXQgKyBzaXplOwogCQkJcmV0ID0gcGh5c190b192aXJ0KGJkYXRhLT5s
-YXN0X3BvcyAqIFBBR0VfU0laRSArCi0JCQkJCSAgIG9mZnNldCArCi0JCQkJCSAgIGJkYXRhLT5u
-b2RlX2Jvb3Rfc3RhcnQpOworCQkJCQkgICBvZmZzZXQgKyBub2RlX2Jvb3Rfc3RhcnQpOwogCQl9
-IGVsc2UgewogCQkJcmVtYWluaW5nX3NpemUgPSBzaXplIC0gcmVtYWluaW5nX3NpemU7CiAJCQlh
-cmVhc2l6ZSA9IChyZW1haW5pbmdfc2l6ZSArIFBBR0VfU0laRS0xKSAvIFBBR0VfU0laRTsKIAkJ
-CXJldCA9IHBoeXNfdG9fdmlydChiZGF0YS0+bGFzdF9wb3MgKiBQQUdFX1NJWkUgKwotCQkJCQkg
-ICBvZmZzZXQgKwotCQkJCQkgICBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKKwkJCQkJICAgb2Zm
-c2V0ICsgbm9kZV9ib290X3N0YXJ0KTsKIAkJCWJkYXRhLT5sYXN0X3BvcyA9IHN0YXJ0ICsgYXJl
-YXNpemUgLSAxOwogCQkJYmRhdGEtPmxhc3Rfb2Zmc2V0ID0gcmVtYWluaW5nX3NpemU7CiAJCX0K
-QEAgLTMxOCwxNCArMzI2LDE0IEBAIGZvdW5kOgogCX0gZWxzZSB7CiAJCWJkYXRhLT5sYXN0X3Bv
-cyA9IHN0YXJ0ICsgYXJlYXNpemUgLSAxOwogCQliZGF0YS0+bGFzdF9vZmZzZXQgPSBzaXplICYg
-flBBR0VfTUFTSzsKLQkJcmV0ID0gcGh5c190b192aXJ0KHN0YXJ0ICogUEFHRV9TSVpFICsgYmRh
-dGEtPm5vZGVfYm9vdF9zdGFydCk7CisJCXJldCA9IHBoeXNfdG9fdmlydChzdGFydCAqIFBBR0Vf
-U0laRSArIG5vZGVfYm9vdF9zdGFydCk7CiAJfQogCiAJLyoKIAkgKiBSZXNlcnZlIHRoZSBhcmVh
-IG5vdzoKIAkgKi8KIAlmb3IgKGkgPSBzdGFydDsgaSA8IHN0YXJ0ICsgYXJlYXNpemU7IGkrKykK
-LQkJaWYgKHVubGlrZWx5KHRlc3RfYW5kX3NldF9iaXQoaSwgYmRhdGEtPm5vZGVfYm9vdG1lbV9t
-YXApKSkKKwkJaWYgKHVubGlrZWx5KHRlc3RfYW5kX3NldF9iaXQoaSwgbm9kZV9ib290bWVtX21h
-cCkpKQogCQkJQlVHKCk7CiAJbWVtc2V0KHJldCwgMCwgc2l6ZSk7CiAJcmV0dXJuIHJldDsK
-------=_Part_19488_7845786.1205808837203--
