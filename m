@@ -1,93 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYCSWHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939648AbYCSWIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbYCSWHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760611AbYCSUcd
+	id S939648AbYCSWIc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933798AbYCSUdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:32:33 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:50925 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933693AbYCSUcb (ORCPT
+	Wed, 19 Mar 2008 16:33:07 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:58966 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932998AbYCSUdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:32:31 -0400
-Date: Tue, 18 Mar 2008 20:12:13 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: broken access to a USB HID device after suspend
-Message-ID: <20080318191213.GA2290@eazy.amigager.de>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org
-References: <20080313151403.GA5667@dose.home.local> <Pine.LNX.4.44L0.0803131450370.5744-100000@iolanthe.rowland.org> <20080314071336.GA14550@dose.home.local>
+	Wed, 19 Mar 2008 16:33:04 -0400
+Message-ID: <47DFE003.5040205@skyrush.com>
+Date: Tue, 18 Mar 2008 09:30:11 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080314071336.GA14550@dose.home.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: Re: Interactivity degrades with CONFIG_[FAIR]_GROUP_SCHED set in
+ 2.6.24 and later
+References: <47DE0BD7.7020500@skyrush.com>
+In-Reply-To: <47DE0BD7.7020500@skyrush.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 08:13:36 +0100, Tino Keitel wrote:
-> On Thu, Mar 13, 2008 at 14:59:48 -0400, Alan Stern wrote:
-> 
-> [...]
-> 
-> > > Well, it seems to be "fixed" by a suspend/resume cycle. Do you have
-> > > a
-> > > hint how I could try to fix it without suspend/resume, to test if
-> > > it is
-> > > really the LCD's fault?
-> >
-> > Testing has to come before fixing -- you can't fix the problem if you
-> > don't know which component is at fault.  For all we know, the
-> > hardware
-> > could be fine and the problem could lie in your application.
-> 
-> I meant a method other than suspend/resume to fix the broken behaviour,
-> so that we get an indication where the problem exactly is.
-> 
-> >
-> > All I can think of for testing is to use usbmon to record the data
-> > transfers when those -110 errors come up.
-> 
-> Well, I still don't have USB_DEBUG or usbmon enabled, but I just got
-> that error again. I pulled the power plug from the LCD and replugged
-> it, without success. Then I did a suspend/resume cycle, and it worked.
+Joe Peterson wrote:
+> When going from kernel 2.6.23 to 2.6.24, however, I noticed that
+> interactivity (namely the smoothness of mouse motion) was noticeably
+> less smooth under load.  The most obvious case was while pulling down a
+> Subversion repository; the mouse would freeze for quite long periods
+> while being moved (i.e. a large fraction of a second), which never
+> happens under 2.6.23.  I was using ZFS-FUSE on the partition I was
+> writing to, and it uses a lot of CPU at times, but 2.6.23 seems to
+> handle it better.
 
-Hi again,
+I just made a couple of debug output files using the default
+CONFIG_GROUP_SCHED setting in 2.6.25-rc5-git (from 3/16):
 
-I now have CONFIG_USB_DEBUG enabled, and the bug occurred again. Here
-is the kernel log:
+This one was done during a diff between two kernel source dirs:
+http://www.skyrush.com/downloads/linux-cfs-debug/cfs-debug-info-2008.03.18-06.37.44
 
-2008-03-18_19:08:50.59598 kern.debug: usb usb3: usb auto-resume
-2008-03-18_19:08:50.59606 kern.debug: usb usb3: wakeup_rh
-2008-03-18_19:08:50.62971 kern.debug: hub 3-0:1.0: hub_resume
-2008-03-18_19:08:50.62977 kern.debug: hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
-2008-03-18_19:08:50.62994 kern.debug: usb usb4: usb auto-resume
-2008-03-18_19:08:50.62998 kern.debug: usb usb4: wakeup_rh
-2008-03-18_19:08:50.66637 kern.debug: hub 4-0:1.0: hub_resume
-2008-03-18_19:08:50.66644 kern.debug: hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
-2008-03-18_19:08:50.66662 kern.debug: usb usb2: usb auto-resume
-2008-03-18_19:08:50.66666 kern.debug: usb usb2: wakeup_rh
-2008-03-18_19:08:50.70342 kern.debug: hub 2-0:1.0: hub_resume
-2008-03-18_19:08:50.70348 kern.debug: hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0000
-2008-03-18_19:08:51.84851 kern.debug: usb usb3: suspend_rh (auto-stop)
-2008-03-18_19:08:51.84858 kern.debug: usb usb4: suspend_rh (auto-stop)
-2008-03-18_19:08:51.84862 kern.debug: usb usb2: suspend_rh (auto-stop)
-2008-03-18_19:08:53.34640 kern.debug: hub 3-0:1.0: hub_suspend
-2008-03-18_19:08:53.34646 kern.debug: usb usb3: bus auto-suspend
-2008-03-18_19:08:53.34650 kern.debug: usb usb3: suspend_rh
-2008-03-18_19:08:53.34654 kern.debug: hub 4-0:1.0: hub_suspend
-2008-03-18_19:08:53.34658 kern.debug: usb usb4: bus auto-suspend
-2008-03-18_19:08:53.34662 kern.debug: usb usb4: suspend_rh
-2008-03-18_19:08:53.34666 kern.debug: hub 2-0:1.0: hub_suspend
-2008-03-18_19:08:53.34670 kern.debug: usb usb2: bus auto-suspend
-2008-03-18_19:08:53.34674 kern.debug: usb usb2: suspend_rh
-2008-03-18_19:09:00.70316 kern.debug: usb 1-1.3: hidmon timed out on ep0in len=0/9
-2008-03-18_19:09:00.70322 kern.debug: usb 1-1.3: usbfs: USBDEVFS_CONTROL failed cmd hidmon rqt 129 rq 6 len 9 ret -110
-2008-03-18_19:09:00.70339 kern.debug: usb 1-1.3: manual set_interface for iface 0, alt 0
+This one was done during an svn checkout:
+http://www.skyrush.com/downloads/linux-cfs-debug/cfs-debug-info-2008.03.18-06.38.23
 
-Regards,
-Tino
+The latter one was done during a period exhibiting what felt like longer
+and more profound pauses in mouse movement, however, the first debug
+file shows several se.wait_max > 40.  Both cases showed very
+choppy/jerky mouse movement with quite obvious freezes when moving the
+mouse in circles during the tests.
+
+Here is a snippet of the se.wait_max lines from the first file:
+
+se.wait_max                        :             0.000000
+se.wait_max                        :             0.000000
+se.wait_max                        :             7.375852
+se.wait_max                        :             4.875690
+se.wait_max                        :             7.211323
+se.wait_max                        :             3.779489
+se.wait_max                        :             2.770382
+se.wait_max                        :            12.959876
+se.wait_max                        :             3.524036
+se.wait_max                        :            16.625484
+se.wait_max                        :            73.991289
+se.wait_max                        :            18.937293
+se.wait_max                        :             6.955806
+se.wait_max                        :            21.919110
+se.wait_max                        :             6.922932
+se.wait_max                        :            10.432544
+se.wait_max                        :            76.222556
+se.wait_max                        :             7.216472
+se.wait_max                        :            90.987582
+se.wait_max                        :             7.071110
+se.wait_max                        :            16.332227
+se.wait_max                        :             2.261235
+se.wait_max                        :            67.892956
+se.wait_max                        :            25.337064
+se.wait_max                        :            44.180597
+se.wait_max                        :            74.290628
+se.wait_max                        :            12.631292
+se.wait_max                        :             1.389533
+se.wait_max                        :             3.653521
+se.wait_max                        :             2.841697
+se.wait_max                        :            16.234723
+se.wait_max                        :           107.011747
+se.wait_max                        :           110.638560
+se.wait_max                        :             9.677538
+se.wait_max                        :            15.852109
+se.wait_max                        :            23.316106
+se.wait_max                        :            18.428330
+se.wait_max                        :            16.674552
+se.wait_max                        :           110.630411
+se.wait_max                        :            47.906824
+se.wait_max                        :            74.191984
+se.wait_max                        :            12.224021
+se.wait_max                        :             2.184557
+se.wait_max                        :            17.799343
+se.wait_max                        :            17.670697
+se.wait_max                        :             0.000000
+se.wait_max                        :             0.000000
+
+I hope these help; please let me know if I can help further or run more
+tests.
+
+						-Thanks, Joe
