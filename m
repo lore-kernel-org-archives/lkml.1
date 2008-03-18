@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936344AbYCSVJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764599AbYCSVK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936344AbYCSVJn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761771AbYCST7G
+	id S1764599AbYCSVK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761780AbYCST7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:59:06 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48571 "EHLO
+	Wed, 19 Mar 2008 15:59:08 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48569 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761758AbYCST7F (ORCPT
+	with ESMTP id S1761757AbYCST7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Mar 2008 15:59:05 -0400
-Date: Tue, 18 Mar 2008 22:48:49 +0100 (CET)
+Date: Tue, 18 Mar 2008 17:58:58 +0100 (CET)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jan Kara <jack@suse.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Do not allow setting of quota limits to too high
- values
-In-Reply-To: <20080318164410.GR23104@duck.suse.cz>
-Message-ID: <alpine.LNX.1.00.0803182248390.8851@fbirervta.pbzchgretzou.qr>
-References: <20080312172255.GB21395@duck.suse.cz> <20080313130355.6a84d0c5.akpm@linux-foundation.org> <20080317131138.GA17307@duck.suse.cz> <alpine.LNX.1.00.0803181740300.8851@fbirervta.pbzchgretzou.qr> <20080318164410.GR23104@duck.suse.cz>
+To: "Artem S. Tashkinov" <birdie@permonline.ru>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: GIT commit description flag(s)
+In-Reply-To: <47DC4104.1070109@permonline.ru>
+Message-ID: <alpine.LNX.1.00.0803181757020.8851@fbirervta.pbzchgretzou.qr>
+References: <47DC4104.1070109@permonline.ru>
 User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
@@ -27,18 +26,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mar 18 2008 17:44, Jan Kara wrote:
->>>>
->>>> For 2.6.26, I assume?  I am not able to determine the seriousness of this
->>>> problem from the changelog nor from the patch itself.
->>>
->>>  Not really serious. Nobody complained so far (i.e., for the time quota
->>> exists) and the limits will just wrap when you try to set them over 4TB
->>> now. So the patch can wait...
->> So does quota_v2.c even handle quotas > 4 TB?
->  Usage yes, limits no. But some Sun guys are already working on a patch
-> for fully 64-bit quota. I already have a decent kernel patch from him but
-> I'd like to see also tools support to really run it before merging the
-> patch :).
+On Mar 16 2008 02:35, Artem S. Tashkinov wrote:
+> It would be nice if [kernel] git commits had a flag [a char] (or a combination 
+> of) describing their main purpose which could be the following:
+>
+> bug Fix [F]
+> Speed up/Performance [S]
+> Revert [R]
+> New functionality [N]
 
-Does this also affect XFS?
+Usually you already give the type implicitly in the commit:
+
+dfd347f... HID: fix comment in hid_input_report()
+fa331ff... [S390] sclp_vt220: speed up console output for interactive work
+d9452e9... [NETPOLL]: Revert two bogus cleanups that broke netconsole.
+8727e28... m68k{,nommu}: Wire up new timerfd syscalls
+b863ceb... [NET]: Add macvlan driver
+
+So all is well.
