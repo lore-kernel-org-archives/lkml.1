@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYCSX2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbYCSX3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbYCSX2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934498AbYCSWBc
+	id S933152AbYCSX3l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934484AbYCSWBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:01:32 -0400
+	Wed, 19 Mar 2008 18:01:38 -0400
 Received: from pentafluge.infradead.org ([213.146.154.40]:34480 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761515AbYCSWB0 (ORCPT
+	with ESMTP id S934494AbYCSWBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:01:26 -0400
-Date: Tue, 18 Mar 2008 17:53:40 -0700
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
-	hibernation callbacks
-Message-ID: <20080319005340.GC8298@kroah.com>
-References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803170022.30345.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 19 Mar 2008 18:01:31 -0400
+Subject: Re: volanoMark 12% regression with 2.6.25-rc6
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080318195807.GA26887@elte.hu>
+References: <1205831650.3215.569.camel@ymzhang>
+	 <20080318195807.GA26887@elte.hu>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 21:22:12 +0100
+Message-Id: <1205871732.6487.6.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, 2008-03-18 at 20:58 +0100, Ingo Molnar wrote:
+> * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
 > 
-> Introduce 'struct pm_ops' representing a set of suspend and
-> hibernation operations for bus types, device classes and device
-> types.
+> > Comparing with 2.6.25-rc5, volanoMark has 12% regression with 
+> > 2.6.25-rc6 on my 8-core stoakley.
+> 
+> could you try sched/latest please? You can pick it up via:
+> 
+>   http://people.redhat.com/mingo/sched-devel.git/README
 
-Ok, I must have missed the thread describing why we need to do this, so,
-why do we need to do this?  What is this going to buy us in the end
-after everything is changed?
+Yanmin, how do you use volanomark; I got it from:
 
-> +struct pm_ops {
-> +#ifdef CONFIG_PM_SLEEP
-> +	int (*prepare)(struct device *dev);
-> +	void (*complete)(struct device *dev);
-> +#endif
-> +#ifdef CONFIG_SUSPEND
-> +	int (*suspend)(struct device *dev);
-> +	int (*resume)(struct device *dev);
-> +#endif
-> +#ifdef CONFIG_HIBERNATION
-> +	int (*freeze)(struct device *dev);
-> +	int (*thaw)(struct device *dev);
-> +	int (*poweroff)(struct device *dev);
-> +	int (*quiesce)(struct device *dev);
-> +	int (*restore)(struct device *dev);
-> +	int (*recover)(struct device *dev);
-> +#endif
+  http://www.volano.com/benchmarks.html
 
+and am using java-1.6.0-openjdk.x86_64
+I installed it /dev/shm/vmark to avoid disk io ruining anying
 
-Don't ifdef stuff like this, it only causes ifdefs to be needed to the
-.c code as well for all places these structures are defined in
-drivers/busses, right?
+But I'm getting very fluctuating results, from ~43000 msgs/s to 52000
+msgs/s.
 
-thanks,
+This makes it very hard to 'trust' this benchmark, let alone determine a
+regression.
 
-greg k-h
