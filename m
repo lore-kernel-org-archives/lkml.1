@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYCRFJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYCRFKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbYCRFJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 01:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYCRFJE
+	id S1754000AbYCRFKc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 01:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYCRFKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 01:09:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53107 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750942AbYCRFJC (ORCPT
+	Tue, 18 Mar 2008 01:10:19 -0400
+Received: from ag-out-0708.google.com ([72.14.246.245]:36816 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbYCRFKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 01:09:02 -0400
-Date: Mon, 17 Mar 2008 22:08:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch 6/8] fuse: clean up setting i_size in write
-Message-Id: <20080317220821.d0adb692.akpm@linux-foundation.org>
-In-Reply-To: <20080317191947.989369784@szeredi.hu>
-References: <20080317191908.123631326@szeredi.hu>
-	<20080317191947.989369784@szeredi.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Mar 2008 01:10:18 -0400
+Message-ID: <fa686aa40803172210o186e5cb9u113c5c2481c4e730@mail.gmail.com>
+Date: Mon, 17 Mar 2008 23:10:01 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Paul Gortmaker" <paul.gortmaker@windriver.com>
+Subject: Re: powerpc: cuImage.* creation error
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Kumar Gala" <galak@kernel.crashing.org>,
+       "Paul Mackerras" <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <fa686aa40803171622j2183369ei7b384ada72d329d6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080317193652.GA9550@cs181133002.pp.htv.fi>
+	 <20080317200754.GA7383@windriver.com>
+	 <fa686aa40803171541t6357d304i2e7e5292f084d09d@mail.gmail.com>
+	 <20080317224607.GA10732@windriver.com>
+	 <fa686aa40803171622j2183369ei7b384ada72d329d6@mail.gmail.com>
+X-Google-Sender-Auth: 5a21863a77730933
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008 20:19:14 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Mon, Mar 17, 2008 at 5:22 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Mon, Mar 17, 2008 at 4:46 PM, Paul Gortmaker
+>  >     The wrapper script didn't have entries for the TQM8540 board and the
+>  >     SBC8548 or SBC8560 boards.  I've assumed that the TQM8540 console is
+>  >     8250 based and not CPM based by looking at its defconfig.  There was
+>  >     also a trailing * on the TQM8555 entry that I removed too.
+>  >
+>  >
+>  >     Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>  Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Extract common code for setting i_size in write functions into a
-> common helper.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
->  fs/fuse/file.c |   28 +++++++++++++++-------------
->  1 file changed, 15 insertions(+), 13 deletions(-)
-> 
-> Index: linux/fs/fuse/file.c
-> ===================================================================
-> --- linux.orig/fs/fuse/file.c	2008-03-17 18:26:04.000000000 +0100
-> +++ linux/fs/fuse/file.c	2008-03-17 18:26:28.000000000 +0100
-> @@ -610,13 +610,24 @@ static int fuse_write_begin(struct file 
->  	return 0;
->  }
->  
-> +static void fuse_write_update_size(struct inode *inode, loff_t pos)
-> +{
-> +	struct fuse_conn *fc = get_fuse_conn(inode);
-> +	struct fuse_inode *fi = get_fuse_inode(inode);
-> +
-> +	spin_lock(&fc->lock);
-> +	fi->attr_version = ++fc->attr_version;
-> +	if (pos > inode->i_size)
-> +		i_size_write(inode, pos);
-> +	spin_unlock(&fc->lock);
-> +}
->
-> ...
->
-> @@ -766,12 +772,8 @@ static ssize_t fuse_direct_io(struct fil
->  	}
->  	fuse_put_request(fc, req);
->  	if (res > 0) {
-> -		if (write) {
-> -			spin_lock(&fc->lock);
-> -			if (pos > inode->i_size)
-> -				i_size_write(inode, pos);
-> -			spin_unlock(&fc->lock);
-> -		}
-> +		if (write)
-> +			fuse_write_update_size(inode, pos);
+Actually, I looked again and tweaked a few details in the patch (it
+was duplicating an existing clause in the wrapper script).  I'm just
+about to post the edited version which I've tested in my environment.
 
-We require that i_mutex be held here, to prevent i_size_write() deadlocks. 
-Is it held?
+Cheers,
+g.
 
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
