@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYCST2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbYCST3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYCST2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYCSTZ1
+	id S1754706AbYCST3M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYCSTZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:25:27 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:61733 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbYCSTZY (ORCPT
+	Wed, 19 Mar 2008 15:25:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39313 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753384AbYCSTZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:25:24 -0400
-Date: Tue, 18 Mar 2008 15:41:36 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: compilation break
-In-reply-to: <5d6222a80803180930v732405cao8b5465f3842df9b1@mail.gmail.com>
-To: Glauber Costa <glommer@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Message-id: <200803181541.36246.yinghai.lu@sun.com>
-Organization: SUN
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <5d6222a80803180930v732405cao8b5465f3842df9b1@mail.gmail.com>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Wed, 19 Mar 2008 15:25:39 -0400
+Date: Tue, 18 Mar 2008 10:44:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Message-Id: <20080318104437.966c10ec.akpm@linux-foundation.org>
+In-Reply-To: <20080318172045.GI11966@one.firstfloor.org>
+References: <20080318209.039112899@firstfloor.org>
+	<20080318003620.d84efb95.akpm@linux-foundation.org>
+	<20080318141828.GD11966@one.firstfloor.org>
+	<20080318095715.27120788.akpm@linux-foundation.org>
+	<20080318172045.GI11966@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 March 2008 09:30:45 am Glauber Costa wrote:
-> commit 513f484dfe5cbb53e73ef1729703e7030e799487 breaks compilation
-> with X86_VISW.
+On Tue, 18 Mar 2008 18:20:45 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+
+> > What's the permission problem?  executable-but-not-readable files?  Could
 > 
-> I don't have enough knowledge of the subtles of those things, so I'm
-> just reporting it.
-> But my educated guess is that it shouldn't be static, and the answer
-> to the question that goes in the end of the commit log is "yes" ;-)
+> Not writable. 
+
+Oh.
+
+I doubt if a userspace implementation would even try to alter the ELF
+files, really - there seems to be no point in it.   This is just complexity
+which was added by trying to do it in the kernel.
+
+> > be handled by passing your request to a suitable-privileged server process,
+> > I guess.
 > 
+> Yes it could, but i dont even want to thi nk about all the issues of
+> doing such an interface. It is basically an microkernelish approach.
+> I prefer monolithic simplicity.
 
+It's not complex at all.  Pass a null-terminated pathname to the server and
+keep running.  The server will asynchronously read your pages for you.
 
-sent out one patch already...
+That's assuming executable+unreadable libraries and binaries actually need
+to be handled.  If not: no server needed.
 
-YH
+> e.g. i am pretty sure your user space implementation would be far
+> more complicated than a nicely streamlined kernel implementation. 
+> And I am really not a friend of unnecessary complexity. In the end
+> complexity hurts you, no matter if it is in ring 3 or ring 0.
+
+There is no complexity here.
