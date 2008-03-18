@@ -1,267 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYCRJkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYCRJoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbYCRJkm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 05:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYCRJkb
+	id S1753402AbYCRJoW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 05:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYCRJoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 05:40:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56291 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbYCRJk3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 05:40:29 -0400
-Subject: Re: deadlock on 2.6.24.3-rt3
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com>
-References: <47DEB7F0.8040207@ct.jp.nec.com>
-	 <47DF097B.4090200@ct.jp.nec.com>
-	 <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Tue, 18 Mar 2008 10:40:18 +0100
-Message-Id: <1205833218.8514.338.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+	Tue, 18 Mar 2008 05:44:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42470 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751989AbYCRJoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 05:44:13 -0400
+Message-ID: <47DF8E13.6040408@redhat.com>
+Date: Tue, 18 Mar 2008 06:40:35 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       kiran@scalemp.com, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: + x86-vsmp-build-fixes.patch added to -mm tree
+References: <200803180514.m2I5ElVJ015693@imap1.linux-foundation.org> <86802c440803172226yb867326rb595b36b03e6c4b9@mail.gmail.com>
+In-Reply-To: <86802c440803172226yb867326rb595b36b03e6c4b9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-17 at 21:53 -0400, Steven Rostedt wrote:
-> [Added Peter Zijlsta and LKML]
-
-Yeah, patches and such should really go to LKML as LKML is the -rt
-development list.
-
-> Hiroshi, thanks for looking into this!
+Yinghai Lu wrote:
+> On Mon, Mar 17, 2008 at 10:14 PM,  <akpm@linux-foundation.org> wrote:
+>>  The patch titled
+>>      x86: vsmp build fixes
+>>  has been added to the -mm tree.  Its filename is
+>>      x86-vsmp-build-fixes.patch
+>>
+>>  Before you just go and hit "reply", please:
+>>    a) Consider who else should be cc'ed
+>>    b) Prefer to cc a suitable mailing list as well
+>>    c) Ideally: find the original patch on the mailing list and do a
+>>       reply-to-all to that, adding suitable additional cc's
+>>
+>>  *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>>
+>>  See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+>>  out what to do about this
+>>
+>>  The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+>>
+>>  ------------------------------------------------------
+>>  Subject: x86: vsmp build fixes
+>>  From: Glauber Costa <gcosta@redhat.com>
+>>
+>>  VSMP depends on PCI, but the file is now compiled conditionally on PARAVIRT,
+>>  no VSMP, so enclose everything in an ifdef CONFIG_PCI.
+>>
+>>  We have to be careful enough to let is_vsmp_box and vsmp_init defined, since
+>>  they are used outside this file
+>>
+>>  Signed-off-by: Glauber Costa <gcosta@redhat.com>
+>>  Cc: Ravikiran Thirumalai <kiran@scalemp.com>
+>>  Cc: Ingo Molnar <mingo@elte.hu>
+>>  Cc: Thomas Gleixner <tglx@linutronix.de>
+>>  Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>  ---
+>>
+>>   arch/x86/kernel/vsmp_64.c |   10 +++++++++-
+>>   1 file changed, 9 insertions(+), 1 deletion(-)
+>>
+>>  diff -puN arch/x86/kernel/vsmp_64.c~x86-vsmp-build-fixes arch/x86/kernel/vsmp_64.c
+>>  --- a/arch/x86/kernel/vsmp_64.c~x86-vsmp-build-fixes
+>>  +++ a/arch/x86/kernel/vsmp_64.c
+>>  @@ -19,6 +19,7 @@
+>>   #include <asm/io.h>
+>>   #include <asm/paravirt.h>
+>>
+>>  +#ifdef CONFIG_PCI
+>>   /*
+>>   * Interrupt control on vSMPowered systems:
+>>   * ~AC is a shadow of IF.  If IF is 'on' AC should be 'off'
+>>  @@ -87,12 +88,18 @@ int is_vsmp_box(void)
+>>         if (read_pci_config(0, 0x1f, 0, PCI_VENDOR_ID) ==
+>>              (PCI_VENDOR_ID_SCALEMP || (PCI_DEVICE_ID_SCALEMP_VSMP_CTL << 16)))
+>>                 vsmp = 1;
+>>  -
+>>         return vsmp;
+>>   }
+>>  +#else
+>>  +int is_vsmp_box(void)
+>>  +{
+>>  +       return 0;
+>>  +}
+>>  +#endif
+>>
+>>   void __init vsmp_init(void)
+>>   {
+>>  +#ifdef CONFIG_PCI
+>>         void *address;
+>>         unsigned int cap, ctl, cfg;
+>>
+>>  @@ -125,5 +132,6 @@ void __init vsmp_init(void)
+>>         }
+>>
+>>         early_iounmap(address, 8);
+>>  +#endif
+>>         return;
+>>   }
+>>  _
 > 
-> Peter, this looks like a legit fix, could you Ack it.
+> in arch/x86/Kconfig
 > 
+> config PCI
+>         bool "PCI support" if !X86_VISWS && !X86_VSMP
+>         depends on !X86_VOYAGER
+>         default y
+>         select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+>         help
+>           Find out whether you have a PCI motherboard. PCI is the name of a
+>           bus system, i.e. the way the CPU talks to the other stuff inside
+>           your box. Other bus systems are ISA, EISA, MicroChannel (MCA) or
+>           VESA. If you have PCI, say Y, otherwise N.
 > 
-> On Mon, 17 Mar 2008, Hiroshi Shimamoto wrote:
-> 
-> > Hiroshi Shimamoto wrote:
-> > > Hi,
-> > >
-> > > I got a soft lockup message on 2.6.24.3-rt3.
-> > > I attached the .config.
-> > >
-> > > I think there is a deadlock scenario, I explain later.
-> > >
-> > > Here is the console log;
-> > > BUG: soft lockup - CPU#2 stuck for 11s! [bash:2175]
-> > > CPU 2:
-> > > Modules linked in:
-> > > Pid: 2175, comm: bash Not tainted 2.6.24.3-rt3 #1
-> > > RIP: 0010:[<ffffffff8063f052>]  [<ffffffff8063f052>] __spin_lock+0x57/0x67
-> > > RSP: 0000:ffff8100c52a1d48  EFLAGS: 00000202
-> > > RAX: 0000000000000000 RBX: 0000000000004bc5 RCX: 0000000000004bc5
-> > > RDX: 0000000000000002 RSI: 00000000006c3208 RDI: 0000000000000001
-> > > RBP: 000000000000000d R08: ffff8100cbc28018 R09: ffff810007c95458
-> > > R10: 00000000006c3208 R11: 0000000000000246 R12: ffffffff808246e8
-> > > R13: 000284d000000002 R14: ffffffff80387277 R15: 00000000ffffffff
-> > > FS:  00002b28926a2ef0(0000) GS:ffff8100cf8a3940(0000) knlGS:0000000000000000
-> > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > CR2: 00000000006c3208 CR3: 00000000c3cac000 CR4: 00000000000006e0
-> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > Call Trace:
-> > >  [<ffffffff8063f024>] __spin_lock+0x29/0x67
-> > >  [<ffffffff80296597>] swap_info_get+0x65/0xdd
-> > >  [<ffffffff80296c0c>] can_share_swap_page+0x39/0x84
-> > >  [<ffffffff8028ae6e>] do_wp_page+0x2f9/0x519
-> > >  [<ffffffff8028c8d2>] handle_mm_fault+0x615/0x7cf
-> > >  [<ffffffff802db823>] proc_flush_task+0x171/0x29c
-> > >  [<ffffffff8024a64d>] recalc_sigpending+0xe/0x3c
-> > >  [<ffffffff8022645e>] do_page_fault+0x162/0x754
-> > >  [<ffffffff8026fe81>] audit_syscall_exit+0x31c/0x37a
-> > >  [<ffffffff8063f449>] error_exit+0x0/0x51
-> > > ---------------------------
-> > > | preempt count: 00010002 ]
-> > > | 2-level deep critical section nesting:
-> > > ----------------------------------------
-> > > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > > BUG: soft lockup - CPU#3 stuck for 11s! [stress:9460]
-> > > CPU 3:
-> > > Modules linked in:
-> > > Pid: 9460, comm: stress Not tainted 2.6.24.3-rt3 #1
-> > > RIP: 0010:[<ffffffff8027c974>]  [<ffffffff8027c974>] find_get_page+0xad/0xbe
-> > > RSP: 0018:ffff8100cbf25b88  EFLAGS: 00000202
-> > >  0000000000002009 RBX: ffffffff80824bc8 RCX: 0000000000000002
-> > > RDX: 0000000000000002 RSI: ffff8100cbfcf298 RDI: ffff810005ad8910
-> > > RBP: ffffffff80383a57 R08: ffff810005ad8918 R09: 0000000000000003
-> > > R10: ffff810005ad88d8 R11: 0000000000000001 R12: ffffffff80822880
-> > > R13: ffff81000799ce48 R14: ffffffff8028921c R15: ffffffff80822880
-> > > FS:  00002acaa373bb00(0000) GS:ffff8100cf8a32c0(0000) knlGS:0000000000000000
-> > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > CR2: 00002b9b2827c530 CR3: 000000006cc90000 CR4: 00000000000006e0
-> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > Call Trace:
-> > >  [<ffffffff8027c8ea>] find_get_page+0x23/0xbe
-> > >  [<ffffffff80296f83>] free_swap_and_cache+0x46/0xdd
-> > >  [<ffffffff8028b9b7>] unmap_vmas+0x626/0x8ce
-> > >  [<ffffffff8028fa4c>] exit_mmap+0xac/0x147
-> > >  [<ffffffff8023ced7>] mmput+0x32/0xae
-> > >  [<ffffffff80242f00>] do_exit+0x199/0x914
-> > >  [<ffffffff8024ab3b>] __dequeue_signal+0x19/0x1b7
-> > >  [<ffffffff802436a7>] do_group_exit+0x2c/0x7e
-> > >  [<ffffffff8024c47b>] get_signal_to_deliver+0x2ef/0x4aa
-> > >  [<ffffffff8020b5dc>] do_notify_resume+0xa8/0x7cd
-> > >  [<ffffffff80239320>] add_preempt_count+0x14/0x111
-> > >  [<ffffffff8038b292>] __up_read+0x13/0x8d
-> > >  [<ffffffff80226483>] do_page_fault+0x187/0x754
-> > >  [<ffffffff802335ae>] __dequeue_entity+0x2d/0x34
-> > >  [<ffffffff8020a6d5>] __switch_to+0x27/0x2c9
-> > >  [<ffffffff802264f0>] do_page_fault+0x1f4/0x754
-> > >  [<ffffffff8020c7be>] retint_signal+0x3d/0x7f
-> > > ---------------------------
-> > > | preempt count: 00010005 ]
-> > > | 5-level deep critical section nesting:
-> > > ----------------------------------------
-> > > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > > .. [<ffffffff8027c8db>] .... find_get_page+0x14/0xbe
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
-> > > .....[<00000000>] ..   ( <= 0x0)
-> > >
-> > >
-> > > I also got a kernel core.
-> > > (gdb) info thr
-> > >   4 process 9460  0xffffffff8027c974 in find_get_page (mapping=<value optimized out>,
-> > >     offset=18446744071570598016) at include/asm/processor_64.h:385
-> > >   3 process 2175  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
-> > >   2 process 9132  __spin_lock (lock=0xffffffff80893f80) at include/asm/spinlock_64.h:22
-> > > * 1 process 9478  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
-> > >
-> > > CPU3(thread 4) is in find_get_page(), and the others in __spin_lock().
-> > > The thread 4 is waiting to turn PG_nonewrefs bit off in wait_on_page_ref() which is
-> > > called from page_cache_get_speculative(), and the thread 4 holds the swap_lock.
-> > > The other threads waiting the swap_lock.
-> > > On the other hand, the thread 1 turned PG_nonewrefs bit on by calling
-> > > lock_page_ref_irq() in remove_mapping(), and then waiting the swap_lock.
-> > > So if the target page of remove_mapping() is in the exiting process memory,
-> > > the kernel is deadlock.
-> > >
-> > > (gdb) bt
-> > > #0  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
-> > > #1  0xffffffff80296597 in swap_info_get (entry=<value optimized out>)
-> > >     at mm/swapfile.c:253
-> > > #2  0xffffffff80296618 in swap_free (entry={val = 1}) at mm/swapfile.c:300
-> > > #3  0xffffffff80286acd in remove_mapping (mapping=<value optimized out>,
-> > >     page=0xffff810005ad8910) at mm/vmscan.c:423
-> > > ...
-> > >
-> > > (gdb) thr 2
-> > > (gdb) bt
-> > > #0  __spin_lock (lock=0xffffffff80893f80) at include/asm/spinlock_64.h:22
-> > > #1  0xffffffff80296374 in valid_swaphandles (entry=<value optimized out>,
-> > >     offset=0xffff81001e22bc78) at mm/swapfile.c:1783
-> > > #2  0xffffffff8028b0af in swapin_readahead (entry={val = 1}, addr=0, vma=0x1)
-> > >     at mm/memory.c:2054
-> > > #3  0xffffffff8029a6af in shmem_getpage (inode=0xffff8100cdf4fd48, idx=0,
-> > >     pagep=0xffff81001e22bd80, sgp=SGP_FAULT, type=0xffff81001e22bd34) at mm/shmem.c:1089
-> > > ...
-> > >
-> > > (gdb) thr 3
-> > > (gdb) bt
-> > > #0  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
-> > > #1  0xffffffff80296597 in swap_info_get (entry=<value optimized out>)
-> > >     at mm/swapfile.c:253
-> > > #2  0xffffffff80296c0c in can_share_swap_page (page=<value optimized out>)
-> > >     at mm/swapfile.c:317
-> > > #3  0xffffffff8028ae6e in do_wp_page (mm=0xffff8100ce772f40, vma=0xffff8100cd212f00,
-> > >     address=7090696, page_table=0xffff8100cbcef618, pmd=0xffff8100cbc28018,
-> > >     ptl=0xffff810007c95458, orig_pte=<value optimized out>) at mm/memory.c:1606
-> > > ...
-> > >
-> > > (gdb) thr 4
-> > > (gdb) bt
-> > > #0  0xffffffff8027c974 in find_get_page (mapping=<value optimized out>,
-> > >     offset=18446744071570598016) at include/asm/processor_64.h:385
-> > > #1  0xffffffff80296f83 in free_swap_and_cache (entry={val = 4032}) at mm/swapfile.c:403
-> > > #2  0xffffffff8028b9b7 in unmap_vmas (tlbp=0xffff8100cbf25cd8, vma=0xffff8100cde5c678,
-> > >     start_addr=0, end_addr=18446744073709551615, nr_accounted=0xffff8100cbf25cd0,
-> > >     details=0x0) at mm/memory.c:728
-> > > #3  0xffffffff8028fa4c in exit_mmap (mm=0xffff8100cd093600) at mm/mmap.c:2048
-> > > #4  0xffffffff8023ced7 in mmput (mm=0xffff8100cd093600) at kernel/fork.c:443
-> > > #5  0xffffffff80242f00 in do_exit (code=14) at kernel/exit.c:997
-> > > ...
-> > >
-> > >
-> > > I think it came from the lockless speculative get page patch.
-> > > I found the newer version of this patch in linux-mm.
-> > > http://marc.info/?l=linux-mm&m=119477111927364&w=2
-> > >
-> > > I haven't tested it because it looks big change and hard to apply.
-> > > But it seems to fix this deadlock issue.
-> > > Any other patch to fix this issue is welcome.
+> will make sure if X86_VSMP, the PCI=y
+Unfortunately, as said in the changelog, this file is compiled in 
+conditionaly with PARAVIRT, not VSMP.
 
-Yeah, in the latest lockless pagecache patches Nick got rid of
-PG_nonewrefs as suggested by Hugh, however -rt also has my concurrent
-pagecache patches and those need PG_nonewrefs on their own, so I hadn't
-bothered to update to Nick's latest.
-
-Perhaps I ought to, as you point out, page_cache_get_speculative() is
-cleaner in his latest.. /me puts it on his overlong TODO list.
-
-> > Is this patch good?
-
-Yes, it does look good. Doesn't remove_exclusice_swap_page() also nest
-PG_nonewrefs inside of swap_lock?
-
-Looks to me that also needs fixing..
-
-> > ---
-> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> > Subject: [PATCH] avoid deadlock related with PG_nonewrefs and swap_lock
-> >
-> > There is a deadlock scenario; remove_mapping() vs free_swap_and_cache().
-> > remove_mapping() turns PG_nonewrefs bit on, then locks swap_lock.
-> > free_swap_and_cache() locks swap_lock, then wait to turn PG_nonewrefs bit
-> > off in find_get_page().
-> >
-> > swap_lock can be unlocked before calling find_get_page().
-> >
-> > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> > ---
-> >  mm/swapfile.c |    5 +++--
-> >  1 files changed, 3 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/mm/swapfile.c b/mm/swapfile.c
-> > index 5036b70..581afee 100644
-> > --- a/mm/swapfile.c
-> > +++ b/mm/swapfile.c
-> > @@ -400,13 +400,14 @@ void free_swap_and_cache(swp_entry_t entry)
-> >  	p = swap_info_get(entry);
-> >  	if (p) {
-> >  		if (swap_entry_free(p, swp_offset(entry)) == 1) {
-> > +			spin_unlock(&swap_lock);
-> >  			page = find_get_page(&swapper_space, entry.val);
-> >  			if (page && unlikely(TestSetPageLocked(page))) {
-> >  				page_cache_release(page);
-> >  				page = NULL;
-> >  			}
-> > -		}
-> > -		spin_unlock(&swap_lock);
-> > +		} else
-> > +			spin_unlock(&swap_lock);
-> >  	}
-> >  	if (page) {
-> >  		int one_user;
-> > --
-> > 1.5.4.1
-> >
+That's precisely the reason for the discovery code. Finding out wheter 
+or not we're running under vsmp.
 
