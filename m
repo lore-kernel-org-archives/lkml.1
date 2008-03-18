@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYCRLul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYCRL4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbYCRLul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 07:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYCRLue
+	id S1753141AbYCRL4t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 07:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYCRL4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 07:50:34 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51724 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153AbYCRLud (ORCPT
+	Tue, 18 Mar 2008 07:56:39 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47945 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752114AbYCRL4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 07:50:33 -0400
-Date: Tue, 18 Mar 2008 20:55:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hirokazu Takahashi <taka@valinux.co.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH 2/4] Block I/O tracking
-Message-Id: <20080318205501.59877972.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080318.203422.45236787.taka@valinux.co.jp>
-References: <20080318.182251.93858044.taka@valinux.co.jp>
-	<20080318.182906.104806991.taka@valinux.co.jp>
-	<20080318192233.89c5cc3e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080318.203422.45236787.taka@valinux.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Mar 2008 07:56:38 -0400
+To: peterz@infradead.org
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <1205839896.8514.344.camel@twins> (message from Peter Zijlstra on
+	Tue, 18 Mar 2008 12:31:36 +0100)
+Subject: Re: [patch 3/8] mm: rotate_reclaimable_page() cleanup
+References: <20080317191908.123631326@szeredi.hu>
+	 <20080317191944.208962764@szeredi.hu> <1205839896.8514.344.camel@twins>
+Message-Id: <E1JbaQk-0005iw-67@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 18 Mar 2008 12:56:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 20:34:22 +0900 (JST)
-Hirokazu Takahashi <taka@valinux.co.jp> wrote:
-
->
-> > And, blist seems to be just used for force_empty.
-> > Do you really need this ? no alternative ?
+> > -int rotate_reclaimable_page(struct page *page)
+> > +void  rotate_reclaimable_page(struct page *page)
+> >  {
+> > -	struct pagevec *pvec;
+> > -	unsigned long flags;
+> > -
+> > -	if (PageLocked(page))
+> > -		return 1;
+> > -	if (PageDirty(page))
+> > -		return 1;
+> > -	if (PageActive(page))
+> > -		return 1;
+> > -	if (!PageLRU(page))
+> > -		return 1;
 > 
-> I selected this approach because it was the simplest way for the
-> first implementation.
+> Might be me, but I find the above easier to read than
 > 
-> I've been also thinking about what you pointed.
-> If you don't mind taking a long time to remove a bio cgroup, it will be
-> the easiest way that you can scan all pages to find the pages which
-> belong to the cgroup and delete them. It may be enough since you may
-> say it will rarely happen. But it might cause some trouble on machines
-> with huge memory.
-> 
-Hmm, force_empty itself is necessary ?
+> > +	if (!PageLocked(page) && !PageDirty(page) && !PageActive(page) &&
+> > +	    PageLRU(page)) {
+> >  
 
-Thanks,
--Kame
+Matter of taste, returning from a middle of a function is generally to
+be avoided (unless not).  Anyway, this is just a side effect of the
+main cleanup, so I think I'm entitled to choose the style I prefer ;)
 
+Miklos
