@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbYCSV5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939143AbYCSVwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbYCSV5e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbYCSUWq
+	id S939143AbYCSVwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbYCSUUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:22:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59726 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754249AbYCSUWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:22:43 -0400
-Date: Tue, 18 Mar 2008 16:46:10 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [13/18] Add support to allocate hugepages of different size with hugepages=...
-Message-ID: <20080318164610.GO23866@csn.ul.ie>
-References: <20080317258.659191058@firstfloor.org> <20080317015827.15E811B41E0@basil.firstfloor.org> <20080318163225.GM23866@csn.ul.ie> <20080318164550.GF11966@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080318164550.GF11966@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 19 Mar 2008 16:20:25 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:36409 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759156AbYCSUUU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:20:20 -0400
+Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
+From: Zachary Amsden <zach@vmware.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Ian Campbell <ijc@hellion.org.uk>
+In-Reply-To: <patchbomb.1205797011@localhost>
+References: <patchbomb.1205797011@localhost>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 14:33:44 -0700
+Message-Id: <1205876024.28104.17.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (18/03/08 17:45), Andi Kleen didst pronounce:
-> > hmm, it's not very clear to me how hugetlb_init_hstate() would get
-> > called twice for the same hstate. Should it be VM_BUG_ON() if a hstate
->
-> It is called from a __setup function and the user can specify them multiple
-> times.  Also when the user specified the HPAGE_SIZE already and it got set up
-> it should not be called again.
+I looked over these and everything looks fine to me.  I didn't test them
+though, since I'm not working on a git tree right now, but be sure to do
+a whole slew of compile testing - those demacroizations can trip up in
+random places hidden under config options like HIGHPTE.
+
+Zach
+
+Acked-by: Zachary Amsden <zach@vmware.com>
+
+On Mon, 2008-03-17 at 16:36 -0700, Jeremy Fitzhardinge wrote:
+> Hi Ingo,
 > 
+> This is a great big pile of x86 unification and Xen bugfix patches.
+> They build and boot for me on 64-bit and 32-bit (PAE and non-PAE).
+> 
+> Patches are based on x86.git#testing as of this morning.
+> 
+> The overview:
+> 
+>  - a couple of Xen bugfixes, which are 2.6.24 and 2.6.25 material
+>  - a bunch of x86 cleanups and unifications, mostly around pgalloc
+>  - some Xen fixes and improvements:
+>    - unify PAE/non-PAE pagetable handling
+>    - implement sysenter where applicable
+> 
+> Thanks,
+> 	J
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Ok, that is a fair explanation. Thanks.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
