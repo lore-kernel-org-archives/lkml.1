@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYCRAbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbYCRAfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbYCRAbU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 20:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYCRAbJ
+	id S1755372AbYCRAfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 20:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYCRAfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 20:31:09 -0400
-Received: from gw1.kapitza.umos.ru ([217.67.113.134]:38518 "EHLO ari.home"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752140AbYCRAbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 20:31:08 -0400
-X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Mar 2008 20:31:08 EDT
-Date: Tue, 18 Mar 2008 03:24:59 +0300 (MSK)
-From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-To: David Brownell <david-b@pacbell.net>
-cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ehci-hcd affects hda speed
-In-Reply-To: <200803171700.26274.david-b@pacbell.net>
-Message-ID: <alpine.LFD.1.00.0803180317050.11560@nev.ubzr>
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200803171400.40045.david-b@pacbell.net> <47DEFD85.1050706@keyaccess.nl> <200803171700.26274.david-b@pacbell.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 17 Mar 2008 20:35:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:60957 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752121AbYCRAfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 20:35:34 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] fix verify_export_symbols()
+Date: Tue, 18 Mar 2008 11:29:32 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <47D8FC21.76E4.0078.0@novell.com> <200803180936.04586.rusty@rustcorp.com.au>
+In-Reply-To: <200803180936.04586.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=KOI8-R
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803181129.32399.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 18 March 2008 09:36:04 Rusty Russell wrote:
+> On Thursday 13 March 2008 20:04:17 you wrote:
+> > When the newer export flavors were added, it was apparently forgotten
+> > to add respective code here.
+> > In order to not double the (source) size of the function, add some
+> > abstraction to reduce code duplication.
+>
+> Hi Jan,
+>
+>    Actually, the others did exist, they just weren't checked.
 
-  On Mon, 17 Mar 2008 at 11:26pm, Rene Herman wrote:
+No, my bad, you're right (GPL-only existed, but they were covered already).  
+The problem with this is that we'll get a bogus unused warning in the case of 
+doing a __find_symbol on an unused symbol.
 
-RH> And, as usual, I can not reach Lev as some mailer along the way is
-RH> telling me his address is unroutable.
-I'm here, don't worry :-)
+It's time for a general cleanup of the __find_symbol logic.  I'll post when 
+it's done.
 
-  On Mon, 17 Mar 2008 at 4:00pm, David Brownell wrote:
-
-DB> On Monday 17 March 2008, Rene Herman wrote:
-DB> > +šššššššcase PCI_VENDOR_ID_VIA:
-DB> > +šššššššššššššššif (pdev->device == 0x3104 && pdev->revision >= 0x60) {
-DB> Unless you have specific docs from VIA saying that this register
-DB> isn't revision-specific (at least in the sense that all revisions
-DB> after 0x60 define that bit in that way), this should probably be a
-DB> switch on pdev->revision and just include the known-safe revisions.
-May I suggest this should be a module parameter? Because a side effect is 
-a USB slow-down, which may be more important for somebody...
-
--L
+Thanks!
+Rusty.
