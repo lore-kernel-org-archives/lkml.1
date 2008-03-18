@@ -1,65 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYCSVap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbYCSVbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbYCSVap (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbYCSUD3
+	id S932602AbYCSVbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762737AbYCSUDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:03:29 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:34614 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755163AbYCSUDY (ORCPT
+	Wed, 19 Mar 2008 16:03:50 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:29137 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762725AbYCSUDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:03:24 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Anders Eriksson <aeriksson@fastmail.fm>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-reply-to: <200803181548.25241.bzolnier@gmail.com> 
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803181403.37969.bzolnier@gmail.com> <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org> <200803181548.25241.bzolnier@gmail.com>
-Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-   message dated "Tue, 18 Mar 2008 15:48:25 +0100."
-Mime-Version: 1.0
+	Wed, 19 Mar 2008 16:03:48 -0400
+Date: Tue, 18 Mar 2008 15:08:32 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Greg KH <gregkh@suse.de>
+Cc: Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: [PATCH 1/3] Construct one fakephp slot per pci slot
+Message-ID: <20080318210832.GB30421@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080318210539.GA30421@ldl.fc.hp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 18 Mar 2008 16:10:59 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080318151059.F1D6A2DC044@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-ACL-Warn: Too high rate of unknown addresses received from you
-X-Scan-Result: No virus found in message 1JbdSw-0005n2-4m.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JbdSw-0005n2-4m 2797a4f303ecb7c576d7fc0ea0b43bfb
+Content-Disposition: inline
+In-Reply-To: <20080318210539.GA30421@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Register one slot per slot, rather than one slot per function.
+Change the name of the slot to fake%d instead of the pci address.
 
-bzolnier@gmail.com said:
-> Please add "#define DEBUG" before ide_tf_load() in ide-taskfile.c so we can
-> see which SMART sub-command is causing this. 
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+---
+ drivers/pci/hotplug/fakephp.c |   85 ++++++++++++++--------------------------
+ 1 files changed, 30 insertions(+), 55 deletions(-)
 
-Mar 18 16:02:13 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
-Mar 18 16:02:13 tippex hda: tf: feat 0xda nsect 0x00 lbal 0x00 lbam 0x4f lbah 0xc2 dev 0x00 cmd 0xb0
-Mar 18 16:02:13 tippex hda: hob: nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00
-Mar 18 16:02:14 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-Mar 18 16:02:14 tippex hda: tf: feat 0xd0 nsect 0x01 lbal 0x00 lbam 0x4f lbah 0xc2 dev 0x00 cmd 0xb0
-Mar 18 16:02:14 tippex hda: hob: nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00
-Mar 18 16:02:14 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-Mar 18 16:02:14 tippex hda: tf: feat 0xd1 nsect 0x01 lbal 0x01 lbam 0x4f lbah 0xc2 dev 0x00 cmd 0xb0
-Mar 18 16:02:14 tippex hda: hob: nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00
-Mar 18 16:02:14 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
-Mar 18 16:02:14 tippex hda: tf: feat 0x00 nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00 dev 0x00 cmd 0xec
-Mar 18 16:02:14 tippex hda: hob: nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00
-Mar 18 16:02:14 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
-Mar 18 16:02:14 tippex hda: tf: feat 0xd8 nsect 0x00 lbal 0x01 lbam 0x4f lbah 0xc2 dev 0x00 cmd 0xb0
-Mar 18 16:02:14 tippex hda: hob: nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00
-Mar 18 16:02:14 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-Mar 18 16:02:14 tippex hda: tf: feat 0xd2 nsect 0xf1 lbal 0x00 lbam 0x4f lbah 0xc2 dev 0x00 cmd 0xb0
-Mar 18 16:02:14 tippex hda: hob: nsect 0x00 lbal 0x00 lbam 0x00 lbah 0x00
-Mar 18 16:02:14 tippex task_in_intr: hda: stat=50
-
-
-
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 94b6401..6c14b4d 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -66,6 +66,7 @@ struct dummy_slot {
+ 	struct pci_dev *dev;
+ 	struct work_struct remove_work;
+ 	unsigned long removed;
++	char name[8];
+ };
+ 
+ static int debug;
+@@ -100,6 +101,7 @@ static int add_slot(struct pci_dev *dev)
+ 	struct dummy_slot *dslot;
+ 	struct hotplug_slot *slot;
+ 	int retval = -ENOMEM;
++	static int count = 1;
+ 
+ 	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
+ 	if (!slot)
+@@ -113,13 +115,14 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
+ 	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+ 
+-	slot->name = &dev->dev.bus_id[0];
+-	dbg("slot->name = %s\n", slot->name);
+-
+ 	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+ 
++	slot->name = dslot->name;
++	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
++	dbg("slot->name = %s\n", slot->name);
++
+ 	slot->ops = &dummy_hotplug_slot_ops;
+ 	slot->release = &dummy_release;
+ 	slot->private = dslot;
+@@ -148,17 +151,17 @@ error:
+ static int __init pci_scan_buses(void)
+ {
+ 	struct pci_dev *dev = NULL;
+-	int retval = 0;
++	int lastslot = 0;
+ 
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+-		retval = add_slot(dev);
+-		if (retval) {
+-			pci_dev_put(dev);
+-			break;
+-		}
++		if (PCI_FUNC(dev->devfn) > 0 &&
++				lastslot == PCI_SLOT(dev->devfn))
++			continue;
++		lastslot = PCI_SLOT(dev->devfn);
++		add_slot(dev);
+ 	}
+ 
+-	return retval;
++	return 0;
+ }
+ 
+ static void remove_slot(struct dummy_slot *dslot)
+@@ -296,23 +299,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ 	return -ENODEV;
+ }
+ 
+-/* find the hotplug_slot for the pci_dev */
+-static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
+-{
+-	struct dummy_slot *dslot;
+-
+-	list_for_each_entry(dslot, &slot_list, node) {
+-		if (dslot->dev == dev)
+-			return dslot->slot;
+-	}
+-	return NULL;
+-}
+-
+-
+ static int disable_slot(struct hotplug_slot *slot)
+ {
+ 	struct dummy_slot *dslot;
+-	struct hotplug_slot *hslot;
+ 	struct pci_dev *dev;
+ 	int func;
+ 
+@@ -322,41 +311,27 @@ static int disable_slot(struct hotplug_slot *slot)
+ 
+ 	dbg("%s - physical_slot = %s\n", __FUNCTION__, slot->name);
+ 
+-	/* don't disable bridged devices just yet, we can't handle them easily... */
+-	if (dslot->dev->subordinate) {
+-		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+-		return -ENODEV;
+-	}
+-	if (test_and_set_bit(0, &dslot->removed)) {
+-		dbg("Slot already scheduled for removal\n");
+-		return -ENODEV;
+-	}
+-	/* search for subfunctions and disable them first */
+-	if (!(dslot->dev->devfn & 7)) {
+-		for (func = 1; func < 8; func++) {
+-			dev = pci_get_slot(dslot->dev->bus,
+-					dslot->dev->devfn + func);
+-			if (dev) {
+-				hslot = get_slot_from_dev(dev);
+-				if (hslot)
+-					disable_slot(hslot);
+-				else {
+-					err("Hotplug slot not found for subfunction of PCI device\n");
+-					return -ENODEV;
+-				}
+-				pci_dev_put(dev);
+-			} else
+-				dbg("No device in slot found\n");
++	for (func = 7; func >= 0; func--) {
++		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
++		if (!dev)
++			continue;
++
++		if (test_and_set_bit(0, &dslot->removed)) {
++			dbg("Slot already scheduled for removal\n");
++			return -ENODEV;
+ 		}
+-	}
+ 
+-	/* remove the device from the pci core */
+-	pci_remove_bus_device(dslot->dev);
++		/* queue work item to blow away this sysfs entry and other
++		 * parts.
++		 */
++		INIT_WORK(&dslot->remove_work, remove_slot_worker);
++		queue_work(dummyphp_wq, &dslot->remove_work);
+ 
+-	/* queue work item to blow away this sysfs entry and other parts. */
+-	INIT_WORK(&dslot->remove_work, remove_slot_worker);
+-	queue_work(dummyphp_wq, &dslot->remove_work);
++		/* blow away this sysfs entry and other parts. */
++		remove_slot(dslot);
+ 
++		pci_dev_put(dev);
++	}
+ 	return 0;
+ }
+ 
+-- 
+1.5.3.1.g1e61
 
