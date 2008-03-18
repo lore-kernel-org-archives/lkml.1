@@ -1,35 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935176AbYCSUtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935527AbYCSU5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935176AbYCSUtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYCSTqF
+	id S935527AbYCSU5h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759447AbYCSTt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:46:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:63347 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755506AbYCSTqC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:46:02 -0400
-Message-ID: <7783925d0803181914n16b0a221l179cc350bc2f3f89@mail.gmail.com>
-Date: Wed, 19 Mar 2008 07:44:33 +0530
-From: "Rick Brown" <rick.brown.3@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: preempt_disable() question
+	Wed, 19 Mar 2008 15:49:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38416 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759448AbYCSTtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:49:24 -0400
+Date: Tue, 18 Mar 2008 16:18:21 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
+Message-ID: <20080318161821.GK23866@csn.ul.ie>
+References: <20080317258.659191058@firstfloor.org> <20080317015825.0C0171B41E0@basil.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
+In-Reply-To: <20080317015825.0C0171B41E0@basil.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On (17/03/08 02:58), Andi Kleen didst pronounce:
+> Without this fix bootmem can return unaligned addresses when the start of a
+> node is not aligned to the align value. Needed for reliably allocating
+> gigabyte pages.
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-I've asked this on kernel newbies before, but not enough responses.
+Seems like something that should be fixed anyway independently of your
+patchset. If moved to the start of the set, it can be treated in batch with
+the cleanups as well.
 
-Does preempt_disable() disable preemption on all the processors, or
-just the local processor?
+> 
+> ---
+>  mm/bootmem.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux/mm/bootmem.c
+> ===================================================================
+> --- linux.orig/mm/bootmem.c
+> +++ linux/mm/bootmem.c
+> @@ -197,6 +197,7 @@ __alloc_bootmem_core(struct bootmem_data
+>  {
+>  	unsigned long offset, remaining_size, areasize, preferred;
+>  	unsigned long i, start = 0, incr, eidx, end_pfn;
+> +	unsigned long pfn;
+>  	void *ret;
+>  
+>  	if (!size) {
+> @@ -239,12 +240,13 @@ __alloc_bootmem_core(struct bootmem_data
+>  	preferred = PFN_DOWN(ALIGN(preferred, align)) + offset;
+>  	areasize = (size + PAGE_SIZE-1) / PAGE_SIZE;
+>  	incr = align >> PAGE_SHIFT ? : 1;
+> +	pfn = PFN_DOWN(bdata->node_boot_start);
+>  
 
-TIA,
+hmm, preferred is already been aligned above and it appears that "offset"
+was meant to handle the situation you are dealing with here. Is the caller
+passing in "goal" (to avoid DMA32 for example) and messing up how "offset"
+is calculated?
 
-Rick
+>  restart_scan:
+>  	for (i = preferred; i < eidx; i += incr) {
+>  		unsigned long j;
+>  		i = find_next_zero_bit(bdata->node_bootmem_map, eidx, i);
+> -		i = ALIGN(i, incr);
+> +		i = ALIGN(pfn + i, incr) - pfn;
+>  		if (i >= eidx)
+>  			break;
+>  		if (test_bit(i, bdata->node_bootmem_map))
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
