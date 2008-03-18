@@ -1,85 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYCST3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYCST3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYCST3c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYCST0A
+	id S1754925AbYCST3p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYCST0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:26:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39313 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753389AbYCSTZj (ORCPT
+	Wed, 19 Mar 2008 15:26:11 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:38409 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753551AbYCST0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:25:39 -0400
-Date: Tue, 18 Mar 2008 09:57:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-Id: <20080318095715.27120788.akpm@linux-foundation.org>
-In-Reply-To: <20080318141828.GD11966@one.firstfloor.org>
-References: <20080318209.039112899@firstfloor.org>
-	<20080318003620.d84efb95.akpm@linux-foundation.org>
-	<20080318141828.GD11966@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 15:26:07 -0400
+Date: Tue, 18 Mar 2008 11:04:39 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Michael Tokarev <mjt@tls.msk.ru>, Andreas Schwab <schwab@suse.de>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: /dev/stdin, symlinks & permissions
+Message-ID: <20080318150439.GB27000@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Al Viro <viro@ZenIV.linux.org.uk>, Michael Tokarev <mjt@tls.msk.ru>,
+	Andreas Schwab <schwab@suse.de>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <47DEFE26.80101@msgid.tls.msk.ru> <jeabkwaou7.fsf@sykes.suse.de> <47DF6E13.5050709@msgid.tls.msk.ru> <20080318125445.GS8368@mit.edu> <20080318143222.GF10722@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318143222.GF10722@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 15:18:28 +0100 Andi Kleen <andi@firstfloor.org> wrote:
-
-> On Tue, Mar 18, 2008 at 12:36:20AM -0700, Andrew Morton wrote:
-> > On Tue, 18 Mar 2008 02:09:34 +0100 (CET) Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > This patchkit is an experimental optimization I played around with 
-> > > some time ago.
-> > > 
-> > > This is more a prototype still, but I wanted to push it out 
-> > > so that other people can play with it.
-> > > 
-> > > The basic idea is that most programs have the same working set
-> > > over multiple runs. So instead of demand paging all the text pages
-> > > in the order the program runs save the working set to disk and prefetch
-> > > it at program start and then save it at program exit.
-> > > 
-> > > This allows some optimizations: 
-> > > - it can avoid unnecessary disk seeks because the blocks will be fetched in 
-> > > sorted offset order instead of program execution order. 
-> > > - batch kernel entries (each demand page exception has some
-> > > overhead just for entering the kernel). This keeps the caches hot too.
-> > > - The prefetch could be in theory done in the background while the program 
-> > > runs (although that is not implemented currently)
-> > 
-> > Should be worthwhile for some things.
-> > 
-> > > Some details on the implementation:
-> > 
-> > Can't this all be done in userspace?  Hook into exit() with an LD_PRELOAD,
+On Tue, Mar 18, 2008 at 02:32:22PM +0000, Al Viro wrote:
+> The real issue is that it was not Plan 9 semantics to start with.
 > 
-> In theory yes, but it would have much more overhead.
-
-s/much/slightly/.  The main win will be in optimising disk patterns.  We
-can fault in cached pages at, what?  A few GB/sec?
-
-> Also I think prefetching
-> algorithms like this really belong in the kernel.
-
-hrmph.
-
-> > > - Executable files have to be writable by the user executing it
-> > > currently to get bitmap updates. It would be possible to let the 
-> > > kernel bypass this, but I haven't thought too much about the security 
-> > > implications of it.
-> > > However any user can use the bitmap data written by a user with
-> > > write rights.
-> > 
-> > Those all get fixed with the userspace version?
+> See 9/port/devproc.c and 9/port/devdup.c; the former is procfs and
+> while it does have <pid>/fd, the sucker is not a directory - it's
+> a text file containing (more or less) the pathnames of opened files
+> of that process.  The latter is an entirely different thing - it's
+> a separate filesystem (#d instead of #p, FWIW).  There you have
+> per-descriptor files to open and yes, that'll give you dup().  What
+> you do not have there is per-process part.
 > 
-> No in fact the permission problem is much harder to fix in user space.
+> IOW, you can get pathnames of opened files for other processes via
+> procfs *AND* you can get open-that-does-only-dup for files in your
+> descriptor table - on a separate filesystem.
 
-What's the permission problem?  executable-but-not-readable files?  Could
-be handled by passing your request to a suitable-privileged server process,
-I guess.
+Well, what we did was to make readlink() return the pathname, and
+open() return a dup of the filesystem.  I thought that was pretty
+clever at the time, actually.
 
+Yes, it wasn't completely the plan 9 semantics, but in terms of what
+happened with when you opened the filesystem, it was equivalent to
+dupfs.
+
+Maybe our mistake was to make /dev/fd a symlink to /proc/self/fd, and
+/dev/stdin a symlink to /proc/self/fd/0, et. al, since we don't get
+the semantics exactly right compard to other operating systems.
+
+> 1.2 tried to mix both.  I'm not actually sure that it was a good idea wrt
+> security, while we are at it...
+
+What is the security problem that you are worried about?  That it
+might leak the pathname to someone who had an open file handle to the
+file?  That doesn't seem like a huge deal to me....
+
+> We could implement Plan 9 style dupfs, but to do that without excessive
+> ugliness we'd need to change prototype of ->open() - it must be able to
+> return a reference to struct file different from anything it got from
+> caller; probably the least painful way would be to make it return
+> 	NULL => success, use struct file passed to ->open()
+> 	ERR_PTR(-err) => error
+> 	pointer to struct file => success, caller should drop the
+> reference to struct file it had passed to ->open() and use the return value.
+> Still a mind-boggling amount of churn - probably too much to bother with.
+
+Yeah, ouch.  The only other way to do it would be to add a new
+function pointer to the file_operations() field which would only be
+used filled in by procfs inodes, and then have the sys_open() routine
+call that function pointer if open() was zero.  But that would be
+quite ugly....
+
+					- Ted
