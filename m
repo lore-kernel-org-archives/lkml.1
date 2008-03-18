@@ -1,236 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934368AbYCSUj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934565AbYCSUmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934368AbYCSUj5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbYCSTm3
+	id S934565AbYCSUmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYCSTnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:42:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:19341 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753954AbYCSTmQ (ORCPT
+	Wed, 19 Mar 2008 15:43:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43244 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758055AbYCSTnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:42:16 -0400
-Message-ID: <47DFF8AB.5090207@ct.jp.nec.com>
-Date: Tue, 18 Mar 2008 10:15:23 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: deadlock on 2.6.24.3-rt3
-References: <47DEB7F0.8040207@ct.jp.nec.com>	 <47DF097B.4090200@ct.jp.nec.com>	 <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com> <1205833218.8514.338.camel@twins>
-In-Reply-To: <1205833218.8514.338.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Mar 2008 15:43:08 -0400
+Date: Tue, 18 Mar 2008 13:07:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: hmh@hmh.eng.br, rpurdie@rpsys.net, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+Message-Id: <20080318130701.63e354a9.akpm@linux-foundation.org>
+In-Reply-To: <200803181206.14162.david-b@pacbell.net>
+References: <20080316184349.GA28543@khazad-dum.debian.net>
+	<200803161246.23909.david-b@pacbell.net>
+	<20080318001429.896acf51.akpm@linux-foundation.org>
+	<200803181206.14162.david-b@pacbell.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-03-17 at 21:53 -0400, Steven Rostedt wrote:
->> [Added Peter Zijlsta and LKML]
-> 
-> Yeah, patches and such should really go to LKML as LKML is the -rt
-> development list.
+On Tue, 18 Mar 2008 11:06:13 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Sorry, I missed to add LKML. It's written in RT wiki.
-I'm not sure about BUG report too. Should I send it to LKML?
+> On Tuesday 18 March 2008, Andrew Morton wrote:
+> > On Sun, 16 Mar 2008 11:46:23 -0800 David Brownell <david-b@pacbell.net> wrote:
+> > 
+> > > On Sunday 16 March 2008, Henrique de Moraes Holschuh wrote:
+> > > > Is the use of "if (preempt_count())" to know when to defer led gpio work to
+> > > > a workqueue needed? __Shouldn't "if (in_atomic())" be enough?
+> > > 
+> > > At this point, I don't know of any such reason.
+> > > 
+> > > I remember hunting for the right heuristic, and settling on
+> > > that one for reasons that I can't recall now.  They may even
+> > > be no longer applicable.
+> > 
+> > Both are incorrect. 
+> 
+> So something like the appended patch would seem "better"?
+> 
+> 
+> > <greps for in_atomic>
+> > 
+> > omigawd, what have we done, and how can we fix it? :(
+> 
+>  
+> ==============
+> It appears that we can't just check to see if we're in a task
+> context ... so instead of trying that, just make the relevant
+> leds always schedule a little worklet.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  drivers/leds/leds-gpio.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> --- g26.orig/drivers/leds/leds-gpio.c	2008-03-18 01:32:08.000000000 -0700
+> +++ g26/drivers/leds/leds-gpio.c	2008-03-18 02:01:23.000000000 -0700
+> @@ -49,13 +49,13 @@ static void gpio_led_set(struct led_clas
+>  	if (led_dat->active_low)
+>  		level = !level;
+>  
+> -	/* setting GPIOs with I2C/etc requires a preemptible task context */
+> +	/* Setting GPIOs with I2C/etc requires a task context, and we don't
+> +	 * seem to have a reliable way to know if we're already in one; so
+> +	 * let's just assume the worst.
+> +	 */
+>  	if (led_dat->can_sleep) {
+> -		if (preempt_count()) {
+> -			led_dat->new_level = level;
+> -			schedule_work(&led_dat->work);
+> -		} else
+> -			gpio_set_value_cansleep(led_dat->gpio, level);
+> +		led_dat->new_level = level;
+> +		schedule_work(&led_dat->work);
+>  	} else
+>  		gpio_set_value(led_dat->gpio, level);
+>  }
+> 
 
-> 
->> Hiroshi, thanks for looking into this!
->>
->> Peter, this looks like a legit fix, could you Ack it.
->>
->>
->> On Mon, 17 Mar 2008, Hiroshi Shimamoto wrote:
->>
->>> Hiroshi Shimamoto wrote:
->>>> Hi,
->>>>
->>>> I got a soft lockup message on 2.6.24.3-rt3.
->>>> I attached the .config.
->>>>
->>>> I think there is a deadlock scenario, I explain later.
->>>>
->>>> Here is the console log;
->>>> BUG: soft lockup - CPU#2 stuck for 11s! [bash:2175]
->>>> CPU 2:
->>>> Modules linked in:
->>>> Pid: 2175, comm: bash Not tainted 2.6.24.3-rt3 #1
->>>> RIP: 0010:[<ffffffff8063f052>]  [<ffffffff8063f052>] __spin_lock+0x57/0x67
->>>> RSP: 0000:ffff8100c52a1d48  EFLAGS: 00000202
->>>> RAX: 0000000000000000 RBX: 0000000000004bc5 RCX: 0000000000004bc5
->>>> RDX: 0000000000000002 RSI: 00000000006c3208 RDI: 0000000000000001
->>>> RBP: 000000000000000d R08: ffff8100cbc28018 R09: ffff810007c95458
->>>> R10: 00000000006c3208 R11: 0000000000000246 R12: ffffffff808246e8
->>>> R13: 000284d000000002 R14: ffffffff80387277 R15: 00000000ffffffff
->>>> FS:  00002b28926a2ef0(0000) GS:ffff8100cf8a3940(0000) knlGS:0000000000000000
->>>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->>>> CR2: 00000000006c3208 CR3: 00000000c3cac000 CR4: 00000000000006e0
->>>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>>> Call Trace:
->>>>  [<ffffffff8063f024>] __spin_lock+0x29/0x67
->>>>  [<ffffffff80296597>] swap_info_get+0x65/0xdd
->>>>  [<ffffffff80296c0c>] can_share_swap_page+0x39/0x84
->>>>  [<ffffffff8028ae6e>] do_wp_page+0x2f9/0x519
->>>>  [<ffffffff8028c8d2>] handle_mm_fault+0x615/0x7cf
->>>>  [<ffffffff802db823>] proc_flush_task+0x171/0x29c
->>>>  [<ffffffff8024a64d>] recalc_sigpending+0xe/0x3c
->>>>  [<ffffffff8022645e>] do_page_fault+0x162/0x754
->>>>  [<ffffffff8026fe81>] audit_syscall_exit+0x31c/0x37a
->>>>  [<ffffffff8063f449>] error_exit+0x0/0x51
->>>> ---------------------------
->>>> | preempt count: 00010002 ]
->>>> | 2-level deep critical section nesting:
->>>> ----------------------------------------
->>>> .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>> .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>> BUG: soft lockup - CPU#3 stuck for 11s! [stress:9460]
->>>> CPU 3:
->>>> Modules linked in:
->>>> Pid: 9460, comm: stress Not tainted 2.6.24.3-rt3 #1
->>>> RIP: 0010:[<ffffffff8027c974>]  [<ffffffff8027c974>] find_get_page+0xad/0xbe
->>>> RSP: 0018:ffff8100cbf25b88  EFLAGS: 00000202
->>>>  0000000000002009 RBX: ffffffff80824bc8 RCX: 0000000000000002
->>>> RDX: 0000000000000002 RSI: ffff8100cbfcf298 RDI: ffff810005ad8910
->>>> RBP: ffffffff80383a57 R08: ffff810005ad8918 R09: 0000000000000003
->>>> R10: ffff810005ad88d8 R11: 0000000000000001 R12: ffffffff80822880
->>>> R13: ffff81000799ce48 R14: ffffffff8028921c R15: ffffffff80822880
->>>> FS:  00002acaa373bb00(0000) GS:ffff8100cf8a32c0(0000) knlGS:0000000000000000
->>>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->>>> CR2: 00002b9b2827c530 CR3: 000000006cc90000 CR4: 00000000000006e0
->>>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>>> Call Trace:
->>>>  [<ffffffff8027c8ea>] find_get_page+0x23/0xbe
->>>>  [<ffffffff80296f83>] free_swap_and_cache+0x46/0xdd
->>>>  [<ffffffff8028b9b7>] unmap_vmas+0x626/0x8ce
->>>>  [<ffffffff8028fa4c>] exit_mmap+0xac/0x147
->>>>  [<ffffffff8023ced7>] mmput+0x32/0xae
->>>>  [<ffffffff80242f00>] do_exit+0x199/0x914
->>>>  [<ffffffff8024ab3b>] __dequeue_signal+0x19/0x1b7
->>>>  [<ffffffff802436a7>] do_group_exit+0x2c/0x7e
->>>>  [<ffffffff8024c47b>] get_signal_to_deliver+0x2ef/0x4aa
->>>>  [<ffffffff8020b5dc>] do_notify_resume+0xa8/0x7cd
->>>>  [<ffffffff80239320>] add_preempt_count+0x14/0x111
->>>>  [<ffffffff8038b292>] __up_read+0x13/0x8d
->>>>  [<ffffffff80226483>] do_page_fault+0x187/0x754
->>>>  [<ffffffff802335ae>] __dequeue_entity+0x2d/0x34
->>>>  [<ffffffff8020a6d5>] __switch_to+0x27/0x2c9
->>>>  [<ffffffff802264f0>] do_page_fault+0x1f4/0x754
->>>>  [<ffffffff8020c7be>] retint_signal+0x3d/0x7f
->>>> ---------------------------
->>>> | preempt count: 00010005 ]
->>>> | 5-level deep critical section nesting:
->>>> ----------------------------------------
->>>> .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>> .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>> .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>> .. [<ffffffff8027c8db>] .... find_get_page+0x14/0xbe
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>> .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
->>>> .....[<00000000>] ..   ( <= 0x0)
->>>>
->>>>
->>>> I also got a kernel core.
->>>> (gdb) info thr
->>>>   4 process 9460  0xffffffff8027c974 in find_get_page (mapping=<value optimized out>,
->>>>     offset=18446744071570598016) at include/asm/processor_64.h:385
->>>>   3 process 2175  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
->>>>   2 process 9132  __spin_lock (lock=0xffffffff80893f80) at include/asm/spinlock_64.h:22
->>>> * 1 process 9478  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
->>>>
->>>> CPU3(thread 4) is in find_get_page(), and the others in __spin_lock().
->>>> The thread 4 is waiting to turn PG_nonewrefs bit off in wait_on_page_ref() which is
->>>> called from page_cache_get_speculative(), and the thread 4 holds the swap_lock.
->>>> The other threads waiting the swap_lock.
->>>> On the other hand, the thread 1 turned PG_nonewrefs bit on by calling
->>>> lock_page_ref_irq() in remove_mapping(), and then waiting the swap_lock.
->>>> So if the target page of remove_mapping() is in the exiting process memory,
->>>> the kernel is deadlock.
->>>>
->>>> (gdb) bt
->>>> #0  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
->>>> #1  0xffffffff80296597 in swap_info_get (entry=<value optimized out>)
->>>>     at mm/swapfile.c:253
->>>> #2  0xffffffff80296618 in swap_free (entry={val = 1}) at mm/swapfile.c:300
->>>> #3  0xffffffff80286acd in remove_mapping (mapping=<value optimized out>,
->>>>     page=0xffff810005ad8910) at mm/vmscan.c:423
->>>> ...
->>>>
->>>> (gdb) thr 2
->>>> (gdb) bt
->>>> #0  __spin_lock (lock=0xffffffff80893f80) at include/asm/spinlock_64.h:22
->>>> #1  0xffffffff80296374 in valid_swaphandles (entry=<value optimized out>,
->>>>     offset=0xffff81001e22bc78) at mm/swapfile.c:1783
->>>> #2  0xffffffff8028b0af in swapin_readahead (entry={val = 1}, addr=0, vma=0x1)
->>>>     at mm/memory.c:2054
->>>> #3  0xffffffff8029a6af in shmem_getpage (inode=0xffff8100cdf4fd48, idx=0,
->>>>     pagep=0xffff81001e22bd80, sgp=SGP_FAULT, type=0xffff81001e22bd34) at mm/shmem.c:1089
->>>> ...
->>>>
->>>> (gdb) thr 3
->>>> (gdb) bt
->>>> #0  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
->>>> #1  0xffffffff80296597 in swap_info_get (entry=<value optimized out>)
->>>>     at mm/swapfile.c:253
->>>> #2  0xffffffff80296c0c in can_share_swap_page (page=<value optimized out>)
->>>>     at mm/swapfile.c:317
->>>> #3  0xffffffff8028ae6e in do_wp_page (mm=0xffff8100ce772f40, vma=0xffff8100cd212f00,
->>>>     address=7090696, page_table=0xffff8100cbcef618, pmd=0xffff8100cbc28018,
->>>>     ptl=0xffff810007c95458, orig_pte=<value optimized out>) at mm/memory.c:1606
->>>> ...
->>>>
->>>> (gdb) thr 4
->>>> (gdb) bt
->>>> #0  0xffffffff8027c974 in find_get_page (mapping=<value optimized out>,
->>>>     offset=18446744071570598016) at include/asm/processor_64.h:385
->>>> #1  0xffffffff80296f83 in free_swap_and_cache (entry={val = 4032}) at mm/swapfile.c:403
->>>> #2  0xffffffff8028b9b7 in unmap_vmas (tlbp=0xffff8100cbf25cd8, vma=0xffff8100cde5c678,
->>>>     start_addr=0, end_addr=18446744073709551615, nr_accounted=0xffff8100cbf25cd0,
->>>>     details=0x0) at mm/memory.c:728
->>>> #3  0xffffffff8028fa4c in exit_mmap (mm=0xffff8100cd093600) at mm/mmap.c:2048
->>>> #4  0xffffffff8023ced7 in mmput (mm=0xffff8100cd093600) at kernel/fork.c:443
->>>> #5  0xffffffff80242f00 in do_exit (code=14) at kernel/exit.c:997
->>>> ...
->>>>
->>>>
->>>> I think it came from the lockless speculative get page patch.
->>>> I found the newer version of this patch in linux-mm.
->>>> http://marc.info/?l=linux-mm&m=119477111927364&w=2
->>>>
->>>> I haven't tested it because it looks big change and hard to apply.
->>>> But it seems to fix this deadlock issue.
->>>> Any other patch to fix this issue is welcome.
-> 
-> Yeah, in the latest lockless pagecache patches Nick got rid of
-> PG_nonewrefs as suggested by Hugh, however -rt also has my concurrent
-> pagecache patches and those need PG_nonewrefs on their own, so I hadn't
-> bothered to update to Nick's latest.
-> 
-> Perhaps I ought to, as you point out, page_cache_get_speculative() is
-> cleaner in his latest.. /me puts it on his overlong TODO list.
-> 
->>> Is this patch good?
-> 
-> Yes, it does look good. Doesn't remove_exclusice_swap_page() also nest
-> PG_nonewrefs inside of swap_lock?
+Better, I guess.
 
-I'm not sure about it. I haven't noticed it and I haven't checked all PG_nonewrefs.
-Will look into it.
+There's a design problem in the LED interface, though.  If callers really
+do want to be able to call led_classdev.brightness_set() from atomic
+contexts then we should either
 
-By the way, unfortunately, I got another BUG message w/ my patch... I'll report it.
-The new issue is related with SLAB.
-kernel BUG at mm/slab.c:3125!
+a) make that function atomic (as you've done).  But that's inefficient.
 
-thanks,
-Hiroshi Shimamoto
+b) pass in a mode flag to tell the callee whether it is allowed to
+   sleep.  Ugly, but there's lots of precedent: GFP_ATOMIC-vs-GFP_KERNEL.
+
+c) create a separate led_classdev.brightness_set_atomic() which callers
+   should use when they're in atomic contexts.
+
+
+Option c) would be best from a cleanness and efficiency POV.
