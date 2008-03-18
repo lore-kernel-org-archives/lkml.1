@@ -1,179 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbYCREBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYCREIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbYCREBe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 00:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbYCREB1
+	id S1753147AbYCREIY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 00:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYCREIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 00:01:27 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:26485 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750713AbYCREB0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 00:01:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=kO0lUpeqG+1QfiFYXk6TxjH6dHyePJNfYdjua5IErdwEad87U0hLIyGN7zzqaG4z5smYV2l4asBs20sEvsdZ3u9LTUYjOiF3u2mjkPEjD+DzQesR/YRgbQIReVIVdDSSN0kv6BkyQxL6W9aaVUaf6C/WwHZbxdCwoCZhXg8iaB0=
-Message-ID: <47DF3E8B.6040502@googlemail.com>
-Date: Tue, 18 Mar 2008 05:01:15 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
+	Tue, 18 Mar 2008 00:08:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44573 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751097AbYCREIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 00:08:10 -0400
+Message-ID: <47DF400F.5080606@redhat.com>
+Date: Tue, 18 Mar 2008 05:07:43 +0100
+From: Milan Broz <mbroz@redhat.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Gabriel C <crazy@frugalware.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com>
-In-Reply-To: <47DEB65A.9080907@googlemail.com>
-Content-Type: text/plain; charset=US-ASCII
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Christian Kujau <lists@nerdbynature.de>, Chr <chunkeey@web.de>,
+       David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, dm-devel@redhat.com, dm-crypt@saout.de,
+       Ritesh Raj Sarraf <rrs@researchut.com>
+Subject: Re: [dm-crypt] INFO: task mount:11202 blocked for more than 120 seconds
+References: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de> <200803150108.04008.chunkeey@web.de> <200803151432.11125.chunkeey@web.de> <200803152234.53199.chunkeey@web.de> <alpine.DEB.1.00.0803161406040.6213@sheep.housecafe.de> <20080317173609.GD29322@agk.fab.redhat.com> <20080318005653.GA14575@gondor.apana.org.au>
+In-Reply-To: <20080318005653.GA14575@gondor.apana.org.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Thomas Gleixner wrote:
->> On Mon, 17 Mar 2008, Gabriel C wrote:
->>>> Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
->>>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
->>>> Date		: 2008-02-24 01:31 (22 days old)
->>>> References	: http://lkml.org/lkml/2008/2/23/380
->>>> 		  http://lkml.org/lkml/2008/2/24/281
->>>> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
->>>>
->>> Thomas do you want me to bisect ? 
->> That'd be great.
+Herbert Xu wrote:
+> On Mon, Mar 17, 2008 at 05:36:09PM +0000, Alasdair G Kergon wrote:
+>> Latest version for everyone to try:
+>>
+>> From: Milan Broz <mbroz@redhat.com>
+>>
+>> Fix regression in dm-crypt introduced in commit
+>> 3a7f6c990ad04e6f576a159876c602d14d6f7fef
+>> (dm crypt: use async crypto).
+>>
+>> If write requests need to be split into pieces, the code must not
+>> process them in parallel because the crypto context cannot be shared.
+>> So there can be parallel crypto operations on one part of the write,
+>> but only one write bio can be processed at a time.
 > 
-> Ok I'll start doing that later on today.
-> 
+> Could you explain this part please? Crypto tfm objects are meant
+> to be reentrant, synchronous or not.
 
-I managed to bisect 'one of the bugs' down , I got some problems and used skip once because a revision didn't compiled , 
-but it seems bisect got the right commit still. Sadly it seems there are 2 different bugs.
+Ah, sorry - I mean dm-crypt convert context (with crypto context included).
 
-Also before I've started the bisect I've tested linux-next to be sure the bug(s) still exists and while rc1 got that already
-I've started to bisect 2.6.24 ->  2.6.25-rc1.
+Context is reentrant in the sense of crypto operations. But we need also
+sometimes split bio in writes (not only because of low memory,
+but also new memory layout of cloned bio can be different and we
+must not violate hardware restrictions - spec. XFS generates such
+highly optimized bio requests - it's why it discovers so many dm-crypt problems ;-)
 
-cat .git/refs/bisect/bad
-1ada5cba6a0318f90e45b38557e7b5206a9cba38
+see problematic dm-crypt bio write path
 
-git show 1ada5cba6a0318f90e45b38557e7b5206a9cba38
-commit 1ada5cba6a0318f90e45b38557e7b5206a9cba38
-Author: Andi Kleen <ak@suse.de>
-Date:   Wed Jan 30 13:30:02 2008 +0100
+	while (remaining) {
+		clone = crypt_alloc_buffer(io, remaining);
+		...
+		io->ctx.bio_out = clone;
+		io->ctx.idx_out = 0;
+		remaining -= clone->bi_size;
+		...
+		r = crypt_convert(cc, &io->ctx);
+			-> fire sync or (multiple) async crypto operation
 
-    clocksource: make clocksource watchdog cycle through online CPUs
+		if (atomic_dec_and_test(&io->ctx.pending))
+			-> sync mode, submit clone direclty
+		...
+		if (unlikely(remaining))
+			congestion_wait(WRITE, HZ/100);
+	}
 
-    This way it checks if the clocks are synchronized between CPUs too.
-    This might be able to detect slowly drifting TSCs which only
-    go wrong over longer time.
+and in async crypto completion callback (because async callback cannot
+call in its context generic_make_request directly) is called:
 
-    Signed-off-by: Andi Kleen <ak@suse.de>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+	struct convert_context *ctx = async_req->data;
+	...
+	if (!atomic_dec_and_test(&ctx->pending))
+		return;
+	...
+	INIT_WORK(&io->work, kcryptd_io);
+	queue_work(cc->io_queue, &io->work);
+	...
+	(and from io thread later)
+	struct bio *clone = io->ctx.bio_out;
+	generic_make_request(clone);
 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index cabfa19..edd5ef8 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -142,8 +142,13 @@ static void clocksource_watchdog(unsigned long data)
-        }
+problems:
+1) we cannot use io->work struct in parallel
+2) io->ctx.pending is shared here between multiple sub-bio clones
+... 
 
-        if (!list_empty(&watchdog_list)) {
--               __mod_timer(&watchdog_timer,
--                           watchdog_timer.expires + WATCHDOG_INTERVAL);
-+               /* Cycle through CPUs to check if the CPUs stay synchronized to
-+                * each other. */
-+               int next_cpu = next_cpu(raw_smp_processor_id(), cpu_online_map);
-+               if (next_cpu >= NR_CPUS)
-+                       next_cpu = first_cpu(cpu_online_map);
-+               watchdog_timer.expires += WATCHDOG_INTERVAL;
-+               add_timer_on(&watchdog_timer, next_cpu);
-        }
-        spin_unlock(&watchdog_lock);
- }
-@@ -165,7 +170,7 @@ static void clocksource_check_watchdog(struct clocksource *cs)
-                if (!started && watchdog) {
-                        watchdog_last = watchdog->read();
-                        watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
--                       add_timer(&watchdog_timer);
-+                       add_timer_on(&watchdog_timer, first_cpu(cpu_online_map));
-                }
-        } else {
-                if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
-@@ -186,7 +191,8 @@ static void clocksource_check_watchdog(struct clocksource *cs)
-                                watchdog_last = watchdog->read();
-                                watchdog_timer.expires =
-                                        jiffies + WATCHDOG_INTERVAL;
--                               add_timer(&watchdog_timer);
-+                               add_timer_on(&watchdog_timer,
-+                                               first_cpu(cpu_online_map));
-                        }
-                }
-        }
+(there was no problems in sync crypto mode. and dm-crypt io struct is
+already allocated from mempool in crypt_map allocation, so changing this
+to per cloned sub-bio allocation can cause new problems in low-memory situations,
+not good idea change it in this development phase...)
 
-
- git bisect log
-git-bisect start
-# bad: [19af35546de68c872dcb687613e0902a602cb20e] Linux 2.6.25-rc1
-git-bisect bad 19af35546de68c872dcb687613e0902a602cb20e
-# good: [49914084e797530d9baaf51df9eda77babc98fa8] Linux 2.6.24
-git-bisect good 49914084e797530d9baaf51df9eda77babc98fa8
-# bad: [d2e626f45cc450c00f5f98a89b8b4c4ac3c9bf5f] x86: add PAGE_KERNEL_EXEC_NOCACHE
-git-bisect bad d2e626f45cc450c00f5f98a89b8b4c4ac3c9bf5f
-# good: [fb46990dba94866462e90623e183d02ec591cf8f] [NETFILTER]: nf_queue: remove unnecessary hook existance check
-git-bisect good fb46990dba94866462e90623e183d02ec591cf8f
-# good: [936722922f6d2366378de606a40c14f96915474d] [IPV4] fib_trie: compute size when needed
-git-bisect good 936722922f6d2366378de606a40c14f96915474d
-# bad: [ff14c6164bd532a6dc9025c07d3b562f839f00a9] x86: x86-64 ia32 ptrace pt_regs cleanup
-git-bisect bad ff14c6164bd532a6dc9025c07d3b562f839f00a9
-# good: [c087567d3ffb2c7c61e091982e6ca45478394f1a] SUNRPC: Remove the obsolete RPC_WAITQ macro
-git-bisect good c087567d3ffb2c7c61e091982e6ca45478394f1a
-# bad: [af7a78e9258ffcca681e080cbc857f854869144f] x86: move mce related declarations
-git-bisect bad af7a78e9258ffcca681e080cbc857f854869144f
-# good: [34f5b4662bf4b54f22b32ce76ce70eccd7ebc68a] SUNRPC: Don't bother changing the sigmask for asynchronous RPC calls
-git-bisect good 34f5b4662bf4b54f22b32ce76ce70eccd7ebc68a
-# bad: [83bd01024b1fdfc41d9b758e5669e80fca72df66] x86: protect against sigaltstack wraparound
-git-bisect bad 83bd01024b1fdfc41d9b758e5669e80fca72df66
-# good: [efd9ac8630e89b9ee7ce64008bd7783952374f37] time: fold __get_realtime_clock_ts() into getnstimeofday()
-git-bisect good efd9ac8630e89b9ee7ce64008bd7783952374f37
-# bad: [37a47db8d7f0f38dac5acf5a13abbc8f401707fa] x86: assign IRQs to HPET timers, fix
-git-bisect bad 37a47db8d7f0f38dac5acf5a13abbc8f401707fa
-# skip: [316da3b3fc8efa9a5d2c99e0d449f01ff38c6aba] x86: restrict PIT clocksource usage
-git-bisect skip 316da3b3fc8efa9a5d2c99e0d449f01ff38c6aba
-# bad: [4713e22ce81eb8b3353e16435362eb3d0ec95640] clocksource: add unregister function to disable unusable clocksources
-git-bisect bad 4713e22ce81eb8b3353e16435362eb3d0ec95640
-# bad: [1ada5cba6a0318f90e45b38557e7b5206a9cba38] clocksource: make clocksource watchdog cycle through online CPUs
-git-bisect bad 1ada5cba6a0318f90e45b38557e7b5206a9cba38
-# good: [1077f5a917b7c630231037826b344b2f7f5b903f] clocksource.c: use init_timer_deferrable for clocksource_watchdog
-git-bisect good 1077f5a917b7c630231037826b344b2f7f5b903f
-
-
-Also the broken revision died with that :
-
-arch/x86/kernel/i8253.c: In function 'init_pit_clocksource':
-arch/x86/kernel/i8253.c:207: error: implicit declaration of function 'is_hpet_enabled'
-make[1]: *** [arch/x86/kernel/i8253.o] Error 1
-make: *** [arch/x86/kernel] Error 2
-
-If you tell me on how to fix that I'll restart the bisect from there , just in case ..
-
-
-Also reverting the commit from 2.6.25-rc1 fixes the 'Tsc being unstable thing' but it does not fix the hang
-when I boot with clocksource=acpi_pm so that seems to be introduced in a different commit.
-
-I will try to bisect this hang also , most probably on weekend.
-
-
-Also I reverted that commit from git head and an kernel compiles right now, I'll let you know in a bit if that worked out.
-
-Please let me know if you need more informations.
-
-
-Best Regards,
-
-Gabriel
+Milan
+--
+mbroz@redhat.com
