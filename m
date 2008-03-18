@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbYCRHSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYCRHYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbYCRHSG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 03:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYCRHR4
+	id S1753304AbYCRHYR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 03:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbYCRHYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 03:17:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33465 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751456AbYCRHRz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 03:17:55 -0400
-Date: Tue, 18 Mar 2008 00:17:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.25-rc5-mm1][regression?] BUG: spinlock wrong CPU, modprobe
-Message-Id: <20080318001720.9b6aea83.akpm@linux-foundation.org>
-In-Reply-To: <20080317120848.7B3F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080317120848.7B3F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Mar 2008 03:24:07 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:24117 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751504AbYCRHYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 03:24:06 -0400
+Message-ID: <47DF6E13.5050709@msgid.tls.msk.ru>
+Date: Tue, 18 Mar 2008 10:24:03 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@suse.de>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: /dev/stdin, symlinks & permissions
+References: <47DEFE26.80101@msgid.tls.msk.ru> <jeabkwaou7.fsf@sykes.suse.de>
+In-Reply-To: <jeabkwaou7.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Mar 2008 13:25:26 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Andreas Schwab wrote:
+> Michael Tokarev <mjt@tls.msk.ru> writes:
+> 
+>>   # ls -l /dev/pts/0
+>>   crw--w---- 1 root tty 136, 0 Mar 18 02:19 /dev/pts/0
+>>
+>> So far so good.  Now, I change uid to something else, --
+>> doing su(8) to "mjt".  /proc/self changed obviously,
+>> but stdin &Co is still here, and points to the same
+>> /dev/pts/0.  But *its* permissions/ownership did not
+>> change!  So now I can't, for example,
+>>
+>>  $ echo x > /dev/stdout
+>>  bash: /dev/stdout: Permission denied
+>>
+>> which is quite unexpected - I for one expect /dev/stdout
+>> to work the way very similar to /dev/tty, to mean "current
+>> standard output regardless of any permissions etc".
+> 
+> This has nothing to do with /dev/stdout.  Your terminal simply does not
+> allow access by anyone except user root or group tty.  You need to open
+> it up first, or mount /dev/pts with broader permissions (which is a bad
+> idea however).
 
-> Hi
-> 
-> I found strange message at 2.6.25-rc5-mm1 booting.
-> and it is always reproduce.
-> 
-> 
-> and, Eric Piel's spinlock related patch(below URL) can't fixed my problem.
-> http://marc.info/?l=linux-kernel&m=120561027011749&w=2
-> 
-> Is this known bug?
-> or should i do bisect?
-> 
-> 
-> 
-> -------------------------------------------------------------------
-> BUG: spinlock wrong CPU on CPU#3, udevd/2495
->  lock: a040000058246510, .magic: dead4ead, .owner: udevd/2495, .owner_cpu: 2
-> 
-> Call Trace:
->  [<a000000100015f00>] show_stack+0x80/0xa0
->                                 sp=e00001609262fbd0 bsp=e000016092620fd8
->  [<a000000100015f50>] dump_stack+0x30/0x60
->                                 sp=e00001609262fda0 bsp=e000016092620fc0
->  [<a0000001004674a0>] spin_bug+0x1a0/0x1c0
->                                 sp=e00001609262fda0 bsp=e000016092620f90
->  [<a000000100467590>] _raw_spin_unlock+0xd0/0x120
->                                 sp=e00001609262fda0 bsp=e000016092620f60
->  [<a00000010082bfe0>] _spin_unlock+0x20/0x40
->                                 sp=e00001609262fda0 bsp=e000016092620f40
->  [<a000000100138100>] do_wp_page+0x500/0xfe0
->                                 sp=e00001609262fda0 bsp=e000016092620ed8
->  [<a00000010013c560>] handle_mm_fault+0xe80/0x10e0
->                                 sp=e00001609262fda0 bsp=e000016092620e50
->  [<a00000010006c140>] ia64_do_page_fault+0x600/0xa40
->                                 sp=e00001609262fda0 bsp=e000016092620df0
->  [<a00000010000abe0>] ia64_leave_kernel+0x0/0x270
->                                 sp=e00001609262fe30 bsp=e000016092620df0
-> 
+No, you don't understand.  It has nothing to do with permissions
+to the actual file /dev/stdin refers to, be it a tty or something
+else.
 
-I'm unaware of any other reports of anything like this so yes, please do
-bisect it if you have the time.
+In the exact same situation, I don't have to do anything with
+/dev/tty (which refers to the same tty at the end) - it
+Just Works (tm).  Ditto on Solaris for example, --
+/dev/stdin etc Just Works too.  But not on Linux.
 
+Without digging into implementation details (in this case it's
+the fact that /dev/stdin in linux is implemented using a symlink
+to - f.e. - /dev/tty/0 etc), I expect /dev/stdin to always work
+as far as filedescriptor 0 is open, regardless of any permissions
+on the actual tty (if it's a tty in the first place, which is
+not necessary the case) -- exactly the same as /dev/tty works.
+
+It's more:  I can redirect stdout of a process to some file,
+and at that point /dev/stdout will return ENOENT on open.
+
+The question is:
+
+Are /dev/stdin &Co on linux are just convenience symlinks to
+know where your std* files are (if so, why they're in /dev
+and why they're so INconvenient - so many levels of symlinks), --
+ie, the only thing I can do with them is ls/readlink them,
+or are they supposed to actually WORK, ie, I'm able to open
+them, as on other systems?
+
+Thanks.
+
+/mjt
