@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYCRCHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYCRCZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYCRCHA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 22:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYCRCGw
+	id S1754504AbYCRCZg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 22:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYCRCZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 22:06:52 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:43256 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbYCRCGv (ORCPT
+	Mon, 17 Mar 2008 22:25:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751081AbYCRCZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 22:06:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xQuKEu1qDp9Gx8ZuntTjwHkAKeDVTDfobNALFVNs7qZY7OH9ofaXcg98VfbWLjFFb0N9qVZ6lOZZSxTc+DYt5z86wk/f2Wf5oWxV0tNLiZ8z/EoqKWhMSu1b+WVlOnVDCKNsb0vN7kRDMX/8eTqEJGYi/8Uu9mhU1Acle7DVSa0=
-Message-ID: <86802c440803171906h30e3955bkb02441a99a93f85f@mail.gmail.com>
-Date: Mon, 17 Mar 2008 19:06:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH] [11/18] Fix alignment bug in bootmem allocator
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-In-Reply-To: <86802c440803171427y7c9b2a54nacb0603916713033@mail.gmail.com>
+	Mon, 17 Mar 2008 22:25:26 -0400
+Date: Mon, 17 Mar 2008 19:25:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] thermal: fix Kconfig dependencies
+In-Reply-To: <200803171459.10656.lenb@kernel.org>
+Message-ID: <alpine.LFD.1.00.0803171920320.3020@woody.linux-foundation.org>
+References: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0803170953210.3020@woody.linux-foundation.org> <20080317184339.GA3754@osiris.boeblingen.de.ibm.com> <200803171459.10656.lenb@kernel.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080317258.659191058@firstfloor.org>
-	 <86802c440803161919h20ed9f78k6e3798ef56668638@mail.gmail.com>
-	 <20080317070208.GC27015@one.firstfloor.org>
-	 <86802c440803170017r622114bdpede8625d1a8ff585@mail.gmail.com>
-	 <86802c440803170031u75167e5m301f65049b6d62ff@mail.gmail.com>
-	 <20080317074146.GG27015@one.firstfloor.org>
-	 <86802c440803170053n32a1c918h2ff2a32abef44050@mail.gmail.com>
-	 <20080317085604.GA12405@basil.nowhere.org>
-	 <86802c440803171152y379560dfp1296aefb0b86b54b@mail.gmail.com>
-	 <86802c440803171427y7c9b2a54nacb0603916713033@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 2:27 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> On Mon, Mar 17, 2008 at 11:52 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  > On Mon, Mar 17, 2008 at 1:56 AM, Andi Kleen <andi@firstfloor.org> wrote:
->  >  > > only happen when align is large than alignment of node_boot_start.
->  >  >
->  >  >  Here's an updated version of the patch with this addressed.
->  >  >  Please review. The patch is somewhat more complicated, but
->  >  >  actually makes the code a little cleaner now.
->  >  >
->  >  >  -Andi
->  >  >
->  >  >
->  >  >  Fix alignment bug in bootmem allocator
->  >  >
->  >  >
->  >  >  Without this fix bootmem can return unaligned addresses when the start of a
->  >  >  node is not aligned to the align value. Needed for reliably allocating
->  >  >  gigabyte pages.
->  >  >
->  >  >  I removed the offset variable because all tests should align themself correctly
->  >  >  now. Slight drawback might be that the bootmem allocator will spend
->  >  >  some more time skipping bits in the bitmap initially, but that shouldn't
->  >  >  be a big issue.
->  >  >
->  >  >
->  >  >  Signed-off-by: Andi Kleen <ak@suse.de>
->  >  >
->  >  how about create local node_boot_start and node_bootmem_map that make
->  >  sure node_boot_start has bigger alignment than align input.
->
->  please check it
->
 
-please don't use v2... it doesn't work.
 
-YH
+On Mon, 17 Mar 2008, Len Brown wrote:
+> 
+> Similarly, ACPI_THERMAL should not depend on THERMAL,
+> instead the code that registers with THERMAL should
+> simply depend on if THERMAL is selected or not.
+> 
+> Also, the "default y" should go.
+> 
+> I'll tinker with this a bit after lunch.
+
+Hmm.. It looks like the same commit that caused these Kconfig issues is 
+also the one that causes the problems with lmsensors (I didn't immediately 
+realize that it's the exact same commit).
+
+I think that right now the right thing to do is to just revert it, since 
+apparently there won't be a released lmsensors version by the time 2.6.25 
+gets released that can handle the new sysfs layout, and that we should 
+give this some more time to be resolved.
+
+So I'm inclined to revert commit 3152fb9f11cdd2fd8688c2c5cb805e5c09b53dd9 
+and plan on revisiting this for 2.6.26. I already got an ack for that from 
+Jean Delvare, but I thought I'd mention it in this thread too before I 
+actually do the final revert.
+
+Any really strong objections?
+
+		Linus
