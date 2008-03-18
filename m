@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYCRFvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbYCRGQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYCRFvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 01:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYCRFvj
+	id S1753016AbYCRGQo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 02:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYCRGQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 01:51:39 -0400
-Received: from 1wt.eu ([62.212.114.60]:2526 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751030AbYCRFvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 01:51:38 -0400
-Date: Tue, 18 Mar 2008 06:48:19 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Nebojsa Miljanovic <neb@alcatel-lucent.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
-       asweeney@alcatel-lucent.com,
-       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
-Subject: Re: SO_REUSEADDR not allowing server and client to use same port
-Message-ID: <20080318054819.GE13012@1wt.eu>
-References: <47C6FA2A.5030302@alcatel-lucent.com> <20080228201926.558c4e7c@core> <47D97DF7.8000702@alcatel-lucent.com> <20080315133426.1f48c99c@the-village.bc.nu> <47DE9FB0.5030801@alcatel-lucent.com> <20080317173021.28e6fd97@core> <47DEB5B9.4030905@alcatel-lucent.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47DEB5B9.4030905@alcatel-lucent.com>
-User-Agent: Mutt/1.5.11
+	Tue, 18 Mar 2008 02:16:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:4914 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbYCRGQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 02:16:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gnnkqDr5fAUl1K6q4U2SeNiheMZeJMJ92Sw7xCjFFWwBmtzbsNMSYQDBFWR0qYAyyt0xfkLLI9/dfIMhLuHNL4ecdiTLceDEq/sQaTp/HWiMV1rPv7RMGSm1ipMURZ3LN1ugGA6CidShJ/qZpTBsAM9C8vddcxwXt+gmduUu9nY=
+Message-ID: <47DF5E38.3030007@gmail.com>
+Date: Tue, 18 Mar 2008 15:16:24 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+CC: Thomas Meyer <thomas@m3y3r.de>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-acpi@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jeff@garzik.org
+Subject: Re: [PATCH] Re: In function `ata_acpi_associate': undefined reference
+ to `register_hotplug_dock_device'
+References: <47DEC970.2050402@m3y3r.de> <47DECD54.5060202@m3y3r.de> <200803172357.54253.lenb@kernel.org> <200803180011.49190.lenb@kernel.org>
+In-Reply-To: <200803180011.49190.lenb@kernel.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 01:17:29PM -0500, Nebojsa Miljanovic wrote:
-> OK. I see. So, it would have to be some malicious application running together
-> with the server (i.e. on the same CPU). I do see now why you said it would be
-> very very hard to make this happen.
+Len Brown wrote:
+> Subject: fix ATA_ACPI build
+> From: Len Brown <len.brown@intel.com>
 > 
-> Still, it would be nice to introduce SO_REUSEPORT socket options so secure
-> servers (who happen to be clients as well) can re-use ports when necessary.
+> drivers/ata/libata-acpi.c fails to build
 > 
-> Another option would be to check if port re-use is happening inside same
-> application and allow it. That may make half of the folks happy, so I am not
-> sure if I like it as much as I like SO_REUSEPORT option.
+> drivers/built-in.o: In function `ata_acpi_associate':
+> (.text+0x7106a): undefined reference to `register_hotplug_dock_device'
+> 
+> When CONFIG_ATA_ACPI=y and CONFIG_ACPI_DOCK=m
+> But if dock is selected from ata_acpi, dock will =y
+> when ata_acpi=y, avoiding this problem.
+> 
+> Signed-off-by: Len Brown <len.brown@intel.com>
 
-It is most often useful for hot-restart without interrupting service.
-As an example, when I update a config in haproxy, I restart a new instance
-which does everything and binds to the ports, and then signals the old one
-it may go. That way, there is a complete continuity of service. This is
-possible by default on *BSD, and with a (very) little patch on linux.
+Acked-by: Tejun Heo <htejun@gmail.com>
 
-And I agree with Alan about the security implications. If a service binds
-itself with SO_REUSEPORT, it definitely says "I agree to share my connection".
-So this is not to be used by default in any random application. But for
-servers, it's really useful.
+I think this one will be more straight forward for users.
 
-Willy
+Thanks.
 
+-- 
+tejun
