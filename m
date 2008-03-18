@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYCRM3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYCRMnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753780AbYCRM3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 08:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYCRM3p
+	id S1753297AbYCRMnJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 08:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYCRMmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 08:29:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37302 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbYCRM3n (ORCPT
+	Tue, 18 Mar 2008 08:42:55 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:4179 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752437AbYCRMmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 08:29:43 -0400
-Subject: Re: [patch 4/8] mm: allow not updating BDI stats in
-	end_page_writeback()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <E1JbaTH-0005jN-4r@pomaz-ex.szeredi.hu>
-References: <20080317191908.123631326@szeredi.hu>
-	 <20080317191945.122011759@szeredi.hu> <1205840031.8514.346.camel@twins>
-	 <E1JbaTH-0005jN-4r@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 18 Mar 2008 13:29:35 +0100
-Message-Id: <1205843375.8514.357.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Mar 2008 08:42:54 -0400
+Date: Tue, 18 Mar 2008 13:42:48 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org, mingo@elte.hu,
+       ego@in.ibm.com, dipankar@in.ibm.com, tytso@us.ibm.com,
+       dvhltc@us.ibm.com, akpm@linux-foundation.org, josh@freedesktop.org,
+       tglx@linutronix.de, niv@us.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] fix misplaced mb() in rcu_enter/exit_nohz()
+Message-ID: <20080318124248.GB8669@osiris.boeblingen.de.ibm.com>
+References: <20080317010821.GA29875@linux.vnet.ibm.com> <20080317183047.GA188@tv-sign.ru> <20080317190605.GG10955@linux.vnet.ibm.com> <20080317201741.GA92@tv-sign.ru> <20080317204357.GI10955@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080317204357.GI10955@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-18 at 12:59 +0100, Miklos Szeredi wrote:
-> > On Mon, 2008-03-17 at 20:19 +0100, Miklos Szeredi wrote:
-> > > plain text document attachment (end_page_writeback_nobdi.patch)
-> > > From: Miklos Szeredi <mszeredi@suse.cz>
+On Mon, Mar 17, 2008 at 01:43:57PM -0700, Paul E. McKenney wrote:
+> On Mon, Mar 17, 2008 at 11:17:41PM +0300, Oleg Nesterov wrote:
+> > (to clarify: my question is completely offtopic to this patch)
+> > On 03/17, Paul E. McKenney wrote:
+> > > On Mon, Mar 17, 2008 at 09:30:47PM +0300, Oleg Nesterov wrote:
+> > > > I'm not sure the code below is up to date, but what I have in
+> > > > arch/s390/kernel/time.c is:
+> > > > 
+> > > > 	stop_hz_timer:
+> > > > 
+> > > > 		cpu_set(cpu, nohz_cpu_mask);
+> > > > 		
+> > > > 		if (rcu_needs_cpu(cpu) || local_softirq_pending()) {
+> > > > 			cpu_clear(cpu, nohz_cpu_mask);
+> > > > 			return;
+> > > > 		}
+> > > > 
+> > > > Don't we need smp_mb() after cpu_set() ?
 > > > 
-> > > Fuse's writepage will need to clear page writeback separately from
-> > > updating the per BDI counters.
+> > > S390's memory model is quite strong, so it might not be needed.
 > > 
-> > This is because of the juggling with temporary pages, right?
-> > 
-> > Would be nice to have some comments in the code explaining this.
+> > OK, in that case we shouldn't worry.
 > 
-> Yup, well it will go through a bigger cleanup, as discussed with
-> Andrew, if that's OK with you?
+> I don't know if I would go -that- far.  ;-)
 
-Well, I was pondering that - it hadn't made its way out to the other
-side of my brain yet.. but I'll dump have I have:
+Not sure if I can follow you here, but for the smp case cpu_set() is
+nothing but a set_bit() which implies both: a memory barrier and a compiler
+barrier on s390. The compare and swap instruction used here ensures that
+all previous memory accesses will be seen by other cpus.
 
-Yes, it does two things, _however_ those two things are very much
-related. Your use-case that breaks this relation is an execption - and I
-haven't really grasped it yet..
+Btw. the code sequence above will go away soon anyway, since I'm converting
+our code to the generic NO_HZ infrastructure.
 
-I'm in general not too keen about you having to export the BDI
-accounting stuff and using it explicitly like this, but I'm afraid I
-don't see a way around it - the danger is that other filesystems will
-get creative (hence the req for GPL - that excludes the most creative
-ones).
+> > > In any
+> > > case, if needed, it goes -before- the cpu_set(), because the problems
+> > > would arise if prior RCU read-side critical sections were to be reordered
+> > > to follow this cpu_set(), right?
+> > 
+> > No, but it is very possible I missed something.
+> > 
+> > What if rcu_needs_cpu(cpu) is executed before cpu_set(cpu, nohz_cpu_mask)?
+> > It can miss rcu_start_batch() -> rcp->cur++ and return false, but at the
+> > same time rcu_start_batch() may see nohz_cpu_mask without this CPU.
+> 
+> If you mean that the rcu_needs_cpu() executes before the cpu_set() in
+> the code fragment above, while the rcu_start_batch() executes on some
+> other CPU?
 
-Yes, it makes sense to delay the write completion accounting until its
-actually completed.. but I would suggest all writeback accounting.
-
-So the thing that's in your way is that removing a page from the radix
-tree doesn't imply its done writing. So perhaps we should make that
-distinction instead?
-
-So instead of conditionally do part of the accounting, never do it and
-require something like: page_writeback_complete() to be called after a
-successfull test_clear_page_writeback().
-
-
+That should never happen because of the compiler and memory barrier semantics
+of cpu_set(). Or... I'm completely misunderstanding you, which wouldn't me
+surprise me too much :)
