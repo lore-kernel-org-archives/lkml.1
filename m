@@ -1,68 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966723AbYCSWnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966806AbYCSWnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966723AbYCSWnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761924AbYCSVN6
+	id S966806AbYCSWnj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965670AbYCSVOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:13:58 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:40044 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965655AbYCSVN4 (ORCPT
+	Wed, 19 Mar 2008 17:14:07 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:42095 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965668AbYCSVOG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:13:56 -0400
-Date: Wed, 19 Mar 2008 19:48:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ak@suse.de
-Subject: Re: [PATCH 0/79] smpboot integration
-Message-ID: <20080319184812.GA7646@elte.hu>
-References: <12059475744092-git-send-email-gcosta@redhat.com>
+	Wed, 19 Mar 2008 17:14:06 -0400
+Date: Tue, 18 Mar 2008 17:40:53 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jan Kara <jack@suse.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Do not allow setting of quota limits to too high
+ values
+In-Reply-To: <20080317131138.GA17307@duck.suse.cz>
+Message-ID: <alpine.LNX.1.00.0803181740300.8851@fbirervta.pbzchgretzou.qr>
+References: <20080312172255.GB21395@duck.suse.cz> <20080313130355.6a84d0c5.akpm@linux-foundation.org> <20080317131138.GA17307@duck.suse.cz>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12059475744092-git-send-email-gcosta@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-the small fix below was needed - it is possible to build ACPI on 32-bit 
-with APIC support disabled. Otherwise it's looking good in my testing.
+On Mar 17 2008 14:11, Jan Kara wrote:
+>>
+>> For 2.6.26, I assume?  I am not able to determine the seriousness of this
+>> problem from the changelog nor from the patch itself.
+>
+>  Not really serious. Nobody complained so far (i.e., for the time quota
+> exists) and the limits will just wrap when you try to set them over 4TB
+> now. So the patch can wait...
 
-	Ingo
-
------------------
-Subject: x86: smp unify2 include mach apic h in smpboot 64 c and smpboot c fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed Mar 19 19:25:58 CET 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/acpi/boot.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-x86.q/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-x86.q/arch/x86/kernel/acpi/boot.c
-@@ -40,7 +40,9 @@
- #include <asm/io.h>
- #include <asm/mpspec.h>
- 
--#include <mach_apic.h>
-+#ifdef CONFIG_X86_LOCAL_APIC
-+# include <mach_apic.h>
-+#endif
- 
- static int __initdata acpi_force = 0;
- 
+So does quota_v2.c even handle quotas > 4 TB?
