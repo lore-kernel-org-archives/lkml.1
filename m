@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965382AbYCSVDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965457AbYCSVEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965382AbYCSVDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760642AbYCSTyB
+	id S965457AbYCSVEG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760695AbYCSTyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:54:01 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:41946 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754402AbYCSTx7 (ORCPT
+	Wed, 19 Mar 2008 15:54:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56789 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760686AbYCSTyS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:53:59 -0400
-X-IronPort-AV: E=Sophos;i="4.25,519,1199692800"; 
-   d="scan'208";a="17846670"
-To: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>, general@lists.openfabrics.org,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 1/3] Infiniband: make ehca_pd use struct pid pointer rather than pid_t
-X-Message-Flag: Warning: May contain useful information
-References: <OF4F7C6111.9AA26F4F-ONC1257410.00599780-C1257410.005E3475@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 18 Mar 2008 11:27:00 -0700
-In-Reply-To: <OF4F7C6111.9AA26F4F-ONC1257410.00599780-C1257410.005E3475@de.ibm.com> (Hoang-Nam Nguyen's message of "Tue, 18 Mar 2008 18:09:22 +0100")
-Message-ID: <adazlsvopl7.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Wed, 19 Mar 2008 15:54:18 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18D0/Y0qEoDw14HcnHD4WVoBxGjHEfpkZSt5o83vh
+	9qKauQCDgJubt+
+Date: Tue, 18 Mar 2008 17:31:16 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+Subject: Re: gpio patches in mmotm
+In-Reply-To: <20080318160316.GA31588@digi.com>
+Message-ID: <Pine.LNX.4.64.0803181717240.5022@axis700.grange>
+References: <20080317173134.GA27282@digi.com> <Pine.LNX.4.64.0803171915020.8640@axis700.grange>
+ <20080318160316.GA31588@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Mar 2008 18:27:01.0018 (UTC) FILETIME=[A84887A0:01C88925]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=KOI8-R
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Right, above checking is based on a very simple policy "creator of a
- > resource is also the owner in term of releasing it" and will not cover
- > other customized patterns. We had a case - believe on sles9, in which
- > a child process manipulated/released resources from parent one, and
- > it was not easy to find the bug.
+Please, do not trim the CC: list. I've also added lkml.
 
-Hmm, I can see how that might be ugly.  On the other hand it doesn't
-seem like the unix way for a process not to be able to do something
-with a file if it has a valid fd.
+On Tue, 18 Mar 2008, Uwe Kleine-König wrote:
 
- > Wrt/ your actual question: we can remove the tgid stuff from ehca kernel
- > code. When do you expect me to send a patch at latest?
+> Guennadi Liakhovetski wrote:
+> > On Mon, 17 Mar 2008, Uwe Kleine-König wrote:
+> > 
+> > > I'm nure sure if I like gpio_is_valid().  When do you think it should be
+> > > used?  (i.e. in which situations gpio_request doesn't do the right
+> > > thing?)
+> > 
+> > For example, in situations similar to what I have in mt9m001 and mt9v022 
+> > camera drivers. Those cameras can be built with an i2c gpio extender, 
+> > which can be used to switch between 8 and 10 bit data bus widths. But that 
+> > extender is not always available. So, those drivers request a gpio, and if 
+> > it is not available on the system, the gpio_is_valid() test fails.
+> I found your patch, but no tree where it applies.  Can you point me to a
+> tree where it applies?
 
-I don't think it's super-urgent.  If you can't do it, say, by the end
-of this week, then I'll apply Pavel's patch so we don't block his
-progress on namespace stuff.  But I would still like to get a patch to
-move this out of ehca at some point, so please don't drop it.
+These drivers are currently in the v4l-dvb tree 
+http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=summary in 
+the devel branch.
 
-If you guys think there is value in having the checks, then please
-send a patch to add the ownership stuff to the uverbs core and we can
-argue about it then.
+> Why isn't it enough that gpio_request fails in such a situation?
 
-Thanks,
-  Roland
+I'm storing the GPIO number locally, and if the system doesn't have a 
+valid GPIO for me, I'm storing an invalid GPIO number. Then at any time if 
+the GPIO has to be used, I just verify if gpio_is_valid(), and if not, 
+return an error code for this request, but the driver remains otherwise 
+functional.
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
