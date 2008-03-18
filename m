@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYCSTbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYCSTc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbYCSTbH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYCST0W
+	id S1755721AbYCSTc5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYCST01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:26:22 -0400
-Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:48493 "EHLO
-	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753077AbYCST0R convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:26:17 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <patchbomb.1205797011@localhost>
-References: <patchbomb.1205797011@localhost>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 19 Mar 2008 09:22:45 +0000
-Message-Id: <1205918565.4112.61.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 8BIT
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Wed, 19 Mar 2008 15:26:27 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2105 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752284AbYCSTZM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:25:12 -0400
+Date: Tue, 18 Mar 2008 15:24:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: Jiri Kosina <jkosina@suse.cz>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: broken access to a USB HID device after suspend
+In-Reply-To: <20080318191213.GA2290@eazy.amigager.de>
+Message-ID: <Pine.LNX.4.44L0.0803181522180.18346-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 18 Mar 2008, Tino Keitel wrote:
 
-On Mon, 2008-03-17 at 16:36 -0700, Jeremy Fitzhardinge wrote:
-> Hi Ingo,
+> Hi again,
 > 
-> This is a great big pile of x86 unification and Xen bugfix patches.
-> They build and boot for me on 64-bit and 32-bit (PAE and non-PAE).
+> I now have CONFIG_USB_DEBUG enabled, and the bug occurred again. Here
+> is the kernel log:
+> 
+> 2008-03-18_19:08:50.59598 kern.debug: usb usb3: usb auto-resume
+> 2008-03-18_19:08:50.59606 kern.debug: usb usb3: wakeup_rh
+> 2008-03-18_19:08:50.62971 kern.debug: hub 3-0:1.0: hub_resume
+> 2008-03-18_19:08:50.62977 kern.debug: hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
+> 2008-03-18_19:08:50.62994 kern.debug: usb usb4: usb auto-resume
+> 2008-03-18_19:08:50.62998 kern.debug: usb usb4: wakeup_rh
+> 2008-03-18_19:08:50.66637 kern.debug: hub 4-0:1.0: hub_resume
+> 2008-03-18_19:08:50.66644 kern.debug: hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
+> 2008-03-18_19:08:50.66662 kern.debug: usb usb2: usb auto-resume
+> 2008-03-18_19:08:50.66666 kern.debug: usb usb2: wakeup_rh
+> 2008-03-18_19:08:50.70342 kern.debug: hub 2-0:1.0: hub_resume
+> 2008-03-18_19:08:50.70348 kern.debug: hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0000
+> 2008-03-18_19:08:51.84851 kern.debug: usb usb3: suspend_rh (auto-stop)
+> 2008-03-18_19:08:51.84858 kern.debug: usb usb4: suspend_rh (auto-stop)
+> 2008-03-18_19:08:51.84862 kern.debug: usb usb2: suspend_rh (auto-stop)
+> 2008-03-18_19:08:53.34640 kern.debug: hub 3-0:1.0: hub_suspend
+> 2008-03-18_19:08:53.34646 kern.debug: usb usb3: bus auto-suspend
+> 2008-03-18_19:08:53.34650 kern.debug: usb usb3: suspend_rh
+> 2008-03-18_19:08:53.34654 kern.debug: hub 4-0:1.0: hub_suspend
+> 2008-03-18_19:08:53.34658 kern.debug: usb usb4: bus auto-suspend
+> 2008-03-18_19:08:53.34662 kern.debug: usb usb4: suspend_rh
+> 2008-03-18_19:08:53.34666 kern.debug: hub 2-0:1.0: hub_suspend
+> 2008-03-18_19:08:53.34670 kern.debug: usb usb2: bus auto-suspend
+> 2008-03-18_19:08:53.34674 kern.debug: usb usb2: suspend_rh
+> 2008-03-18_19:09:00.70316 kern.debug: usb 1-1.3: hidmon timed out on ep0in len=0/9
+> 2008-03-18_19:09:00.70322 kern.debug: usb 1-1.3: usbfs: USBDEVFS_CONTROL failed cmd hidmon rqt 129 rq 6 len 9 ret -110
+> 2008-03-18_19:09:00.70339 kern.debug: usb 1-1.3: manual set_interface for iface 0, alt 0
 
-FWIW I tested in a PAE Xen guest on 32 and 64 bit h/v and it was fine
-including running ddcprobe which was my most recent issue. I can't see
-why this would fix it though.
+This isn't enough.  I need the log starting from before the suspend,
+including _all_ the kernel messages, not just the debugging messages.  
+I also need the usbmon trace.
 
-I thought for a second when you said it booted on 64 bit you meant 64
-bit Xen guest, do you know how that stuff ﻿is going?
-
-Ian.
-
-> 
-> Patches are based on x86.git#testing as of this morning.
-> 
-> The overview:
-> 
->  - a couple of Xen bugfixes, which are 2.6.24 and 2.6.25 material
->  - a bunch of x86 cleanups and unifications, mostly around pgalloc
->  - some Xen fixes and improvements:
->    - unify PAE/non-PAE pagetable handling
->    - implement sysenter where applicable
-> 
-> Thanks,
-> 	J
-> 
-> 
-> 
--- 
-Ian Campbell
-
-  Evil isn't all bad.
+Alan Stern
 
