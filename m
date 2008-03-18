@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYCRONH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYCSRwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbYCRONH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 10:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYCROMz
+	id S1753370AbYCSRwA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 13:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYCROP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 10:12:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41056 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752631AbYCROMy (ORCPT
+	Tue, 18 Mar 2008 10:15:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39241 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbYCROP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 10:12:54 -0400
-Date: Tue, 18 Mar 2008 13:57:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: david@lang.hm, David Newall <davidn@davidnewall.com>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080318135725.425f63df@core>
-In-Reply-To: <200803180233.10156.phillips@phunq.net>
-References: <200803092346.17556.phillips@phunq.net>
-	<alpine.DEB.1.00.0803170740440.14887@asgard.lang.hm>
-	<alpine.DEB.1.00.0803171021300.17640@asgard.lang.hm>
-	<200803180233.10156.phillips@phunq.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 18 Mar 2008 10:15:58 -0400
+Date: Tue, 18 Mar 2008 15:18:28 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Message-ID: <20080318141828.GD11966@one.firstfloor.org>
+References: <20080318209.039112899@firstfloor.org> <20080318003620.d84efb95.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318003620.d84efb95.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If the primary server goes down then we lose exactly one interesting
-> data element stored only in its memory: the ramdisk dirty map.  Though
-> we could be much cleverer, the backup server will simply set its entire
-> map to dirty when it takes over, and will duly sync back the entire
-> ramdisk to media a few minutes later.
+On Tue, Mar 18, 2008 at 12:36:20AM -0700, Andrew Morton wrote:
+> On Tue, 18 Mar 2008 02:09:34 +0100 (CET) Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > This patchkit is an experimental optimization I played around with 
+> > some time ago.
+> > 
+> > This is more a prototype still, but I wanted to push it out 
+> > so that other people can play with it.
+> > 
+> > The basic idea is that most programs have the same working set
+> > over multiple runs. So instead of demand paging all the text pages
+> > in the order the program runs save the working set to disk and prefetch
+> > it at program start and then save it at program exit.
+> > 
+> > This allows some optimizations: 
+> > - it can avoid unnecessary disk seeks because the blocks will be fetched in 
+> > sorted offset order instead of program execution order. 
+> > - batch kernel entries (each demand page exception has some
+> > overhead just for entering the kernel). This keeps the caches hot too.
+> > - The prefetch could be in theory done in the background while the program 
+> > runs (although that is not implemented currently)
+> 
+> Should be worthwhile for some things.
+> 
+> > Some details on the implementation:
+> 
+> Can't this all be done in userspace?  Hook into exit() with an LD_PRELOAD,
 
-Assuming the 1010 has proper power isolation that makes sense and would
-give you pretty much what was wanted. Especially as you can replace the
-secondary server with a small system which does *nothing* but sync the
-ramdisk back and so is far less likely to crash.
+In theory yes, but it would have much more overhead. Also I think prefetching
+algorithms like this really belong in the kernel.
 
-Does make you wonder why its not built into the violin ;)
+> > - Executable files have to be writable by the user executing it
+> > currently to get bitmap updates. It would be possible to let the 
+> > kernel bypass this, but I haven't thought too much about the security 
+> > implications of it.
+> > However any user can use the bitmap data written by a user with
+> > write rights.
+> 
+> Those all get fixed with the userspace version?
 
-Alan
+No in fact the permission problem is much harder to fix in user space.
+
+The shared libraries would need some user support. Basically just a way
+how the ld.so can tell the kernel about the offsets/locations of new 
+bitmaps to add to the pbitmap list
+
+-Andi
+
+> 
