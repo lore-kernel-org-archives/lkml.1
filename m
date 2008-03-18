@@ -1,168 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYCRMXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbYCRMYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbYCRMXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 08:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYCRMXI
+	id S1753549AbYCRMYs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 08:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYCRMYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 08:23:08 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44296 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbYCRMXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 08:23:07 -0400
-Date: Tue, 18 Mar 2008 12:23:02 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [2/18] Add basic support for more than one hstate in hugetlbfs
-Message-ID: <20080318122302.GB23866@csn.ul.ie>
-References: <20080317258.659191058@firstfloor.org> <20080317015815.D43991B41E0@basil.firstfloor.org>
+	Tue, 18 Mar 2008 08:24:41 -0400
+Received: from mx.bridgeco.net ([213.173.191.47]:1351 "EHLO
+	mailgate57.bridgeco.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752061AbYCRMYk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 08:24:40 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080317015815.D43991B41E0@basil.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: MMC: Card detection through pin CD/DAT3 issue
+Date: Tue, 18 Mar 2008 13:24:33 +0100
+Message-ID: <83116F0A4FF67A4F97BA0B6E408C48E301DAB4DF@zuerich.BC-Int.NET>
+In-Reply-To: <20080318122033.020b45b5@mjolnir.drzeus.cx>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: MMC: Card detection through pin CD/DAT3 issue
+Thread-Index: AciI6jPX7I/PkEJmSoy49MsreeApSgAB7Mvw
+References: <83116F0A4FF67A4F97BA0B6E408C48E301DAB4AA@zuerich.BC-Int.NET> <20080318122033.020b45b5@mjolnir.drzeus.cx>
+From: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Mar 2008 12:24:39.0862 (UTC) FILETIME=[098B6560:01C888F3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (17/03/08 02:58), Andi Kleen didst pronounce:
-> - Convert hstates to an array
-> - Add a first default entry covering the standard huge page size
-> - Add functions for architectures to register new hstates
-> - Add basic iterators over hstates
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  include/linux/hugetlb.h |   10 +++++++++-
->  mm/hugetlb.c            |   46 +++++++++++++++++++++++++++++++++++++---------
->  2 files changed, 46 insertions(+), 10 deletions(-)
-> 
-> Index: linux/mm/hugetlb.c
-> ===================================================================
-> --- linux.orig/mm/hugetlb.c
-> +++ linux/mm/hugetlb.c
-> @@ -27,7 +27,15 @@ unsigned long sysctl_overcommit_huge_pag
->  static gfp_t htlb_alloc_mask = GFP_HIGHUSER;
->  unsigned long hugepages_treat_as_movable;
->  
-> -struct hstate global_hstate;
-> +static int max_hstate = 1;
-> +
-> +struct hstate hstates[HUGE_MAX_HSTATE];
-> +
-> +/* for command line parsing */
-> +struct hstate *parsed_hstate __initdata = &global_hstate;
-> +
+Hi Pierre,
 
-global_hstate becomes a misleading name in this patch. default_hstate
-minimally
+>> With this detection scheme I have some dificulties togehter
+>> with the internal working of the current MMC stack:
+>> The controller cannot detect a newly inserted card if the card power 
+>> is switched of. This is due to the fact that the SD card applies the 
+>> internal card detection pull up after it powered up. If there is no 
+>> power -> no powering up -> no pull up. (besides the fact that a pull 
+>> up needs power to for doing its work :-) )
+>> 
 
-> +#define for_each_hstate(h) \
-> +	for ((h) = hstates; (h) < &hstates[max_hstate]; (h)++)
->  
->  /*
->   * Protects updates to hugepage_freelists, nr_huge_pages, and free_huge_pages
-> @@ -474,15 +482,11 @@ static struct page *alloc_huge_page(stru
->  	return page;
->  }
->  
-> -static int __init hugetlb_init(void)
-> +static int __init hugetlb_init_hstate(struct hstate *h)
->  {
->  	unsigned long i;
-> -	struct hstate *h = &global_hstate;
->  
-> -	if (HPAGE_SHIFT == 0)
-> -		return 0;
-> -
+> Then you have broken hardware. The specs clearly state that the 
+> controller must be able to detect cards without powering up the
+> cards. Also, the cards must implement the pull-up in a way that
+> behaves like a resistor. So there should be no requirement for 
+> full power there either.
 
-Why is there no need for
+I have found this requirement in the SD host controller spec:
+"The card detect is active regardless of the SD Bus Power."
 
-if (huge_page_shift(h) == 0)
-	return 0;
-?
+I wonder how the card should be able to pull up the CD/DAT3 Pad to VCC
+if its only VCC pad is not connected to VCC due to the fact that the host
+controller has switched off the cards power - any idea how this could be
+managed?
 
-ah, it's because of what you do to hugetlb_init().
+There is a SD card spec section somewhere which statet that:
+"If one of the supply pins (VDD or VSS) is not connected properly, then
+the current is drawn through a data line to supply the card."
 
-> -	if (!h->order) {
-> +	if (h == &global_hstate && !h->order) {
->  		h->order = HPAGE_SHIFT - PAGE_SHIFT;
->  		h->mask = HPAGE_MASK;
->  	}
-> @@ -497,11 +501,34 @@ static int __init hugetlb_init(void)
->  			break;
->  	}
->  	max_huge_pages = h->free_huge_pages = h->nr_huge_pages = i;
-> -	printk("Total HugeTLB memory allocated, %ld\n", h->free_huge_pages);
-> +
-> +	printk(KERN_INFO "Total HugeTLB memory allocated, %ld %dMB pages\n",
-> +			h->free_huge_pages,
-> +			1 << (h->order + PAGE_SHIFT - 20));
+Maybe this is the key in understanding ho the pull up without VCC connected
+works?
 
-Ah, you partially fix up my whinge from the previous patch here.
-
-page_alloc.c has a helper called K() for conversions. Perhaps move it to
-internal.h and add one for M instead of the - 20 here? Not a big deal as
-it doesn't take long to figure out.
-
->  	return 0;
->  }
-> +
-> +static int __init hugetlb_init(void)
-> +{
-> +	if (HPAGE_SHIFT == 0)
-> +		return 0;
-> +	return hugetlb_init_hstate(&global_hstate);
-> +}
->  module_init(hugetlb_init);
->  
-> +/* Should be called on processing a hugepagesz=... option */
-> +void __init huge_add_hstate(unsigned order)
-> +{
-> +	struct hstate *h;
-> +	BUG_ON(max_hstate >= HUGE_MAX_HSTATE);
-> +	BUG_ON(order <= HPAGE_SHIFT - PAGE_SHIFT);
-> +	h = &hstates[max_hstate++];
-> +	h->order = order;
-> +	h->mask = ~((1ULL << (order + PAGE_SHIFT)) - 1);
-> +	hugetlb_init_hstate(h);
-> +	parsed_hstate = h;
-> +}
-
-It's not clear in this patch what parsed_hstate is for as it is not used
-elsewhere. I've made a note to check if parsed_hstate makes an unwritten
-assumption that there is only "one other" huge page size in the system.
-
-> +
->  static int __init hugetlb_setup(char *s)
->  {
->  	if (sscanf(s, "%lu", &max_huge_pages) <= 0)
-> Index: linux/include/linux/hugetlb.h
-> ===================================================================
-> --- linux.orig/include/linux/hugetlb.h
-> +++ linux/include/linux/hugetlb.h
-> @@ -213,7 +213,15 @@ struct hstate {
->  	unsigned int surplus_huge_pages_node[MAX_NUMNODES];
->  };
->  
-> -extern struct hstate global_hstate;
-> +void __init huge_add_hstate(unsigned order);
-> +
-> +#ifndef HUGE_MAX_HSTATE
-> +#define HUGE_MAX_HSTATE 1
-> +#endif
-> +
-> +extern struct hstate hstates[HUGE_MAX_HSTATE];
-> +
-> +#define global_hstate (hstates[0])
->  
->  static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
->  {
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+marcel
