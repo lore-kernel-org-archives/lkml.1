@@ -1,93 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYCRLYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYCRL2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbYCRLYQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 07:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYCRLYA
+	id S1752939AbYCRL2A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 07:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYCRL1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 07:24:00 -0400
-Received: from saeurebad.de ([85.214.36.134]:35243 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751522AbYCRLYA convert rfc822-to-8bit (ORCPT
+	Tue, 18 Mar 2008 07:27:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34751 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751596AbYCRL1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 07:24:00 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: vfree with spin_lock_bh
-References: <Pine.LNX.4.64.0803180019470.18817@fbirervta.pbzchgretzou.qr>
-Date: Tue, 18 Mar 2008 12:21:39 +0100
-In-Reply-To: <Pine.LNX.4.64.0803180019470.18817@fbirervta.pbzchgretzou.qr>
-	(Jan Engelhardt's message of "Tue, 18 Mar 2008 00:30:35 +0100 (CET)")
-Message-ID: <87wso0wa4c.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Tue, 18 Mar 2008 07:27:50 -0400
+Subject: Re: [patch 1/8] mm: bdi: export bdi_writeout_inc()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20080317191941.332720129@szeredi.hu>
+References: <20080317191908.123631326@szeredi.hu>
+	 <20080317191941.332720129@szeredi.hu>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 12:27:40 +0100
+Message-Id: <1205839660.8514.340.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+On Mon, 2008-03-17 at 20:19 +0100, Miklos Szeredi wrote:
+> plain text document attachment (export_bdi_writeout_inc.patch)
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> Fuse needs this for writable mmap support.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+>  include/linux/backing-dev.h |    2 ++
+>  mm/page-writeback.c         |   10 ++++++++++
+>  2 files changed, 12 insertions(+)
+> 
+> Index: linux/include/linux/backing-dev.h
+> ===================================================================
+> --- linux.orig/include/linux/backing-dev.h	2008-03-17 18:24:13.000000000 +0100
+> +++ linux/include/linux/backing-dev.h	2008-03-17 18:24:36.000000000 +0100
+> @@ -134,6 +134,8 @@ static inline s64 bdi_stat_sum(struct ba
+>  	return sum;
+>  }
+>  
+> +extern void bdi_writeout_inc(struct backing_dev_info *bdi);
+> +
+>  /*
+>   * maximal error of a stat counter.
+>   */
+> Index: linux/mm/page-writeback.c
+> ===================================================================
+> --- linux.orig/mm/page-writeback.c	2008-03-17 18:24:13.000000000 +0100
+> +++ linux/mm/page-writeback.c	2008-03-17 18:24:36.000000000 +0100
+> @@ -168,6 +168,16 @@ static inline void __bdi_writeout_inc(st
+>  			      bdi->max_prop_frac);
+>  }
+>  
+> +void bdi_writeout_inc(struct backing_dev_info *bdi)
+> +{
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +	__bdi_writeout_inc(bdi);
+> +	local_irq_restore(flags);
+> +}
+> +EXPORT_SYMBOL(bdi_writeout_inc);
+> +
 
-Jan Engelhardt <jengelh@computergmbh.de> writes:
+May I ask to make this a _GPL export, please? 
 
-> while transforming some code with big allocations (like 120 KB) from 
-> kmalloc to vmalloc — virtual contiguity is sufficient — I hit a
-> BUG_ON in mm/vmalloc.c a number of times:
->
-> 	void vfree(const void *addr)
-> 	{
-> 	        BUG_ON(in_interrupt());
-> 	        __vunmap(addr, 1);
-> 	}
->
-> First I was thinking “how could iptables -F run in interrupt context?”,
-> but apparently, it does seem to make a difference:
->
-> 	...
-> 	spin_lock_bh(&a_local_spinlock);
-> 	list_del_rcu(&node->list);
-> 	printk(KERN_INFO "Interrupt? %lu\n", in_interrupt());
-> 	/* vfree not worky here */
-> 	spin_unlock_bh(&a_local_spinlock);
-> 	printk(KERN_INFO "Interrupt? %lu\n", in_interrupt());
-> 	/* now possible */
-> 	vfree(node);
-> 	...
->
-> and this gives (x86_32)
->
-> 	Interrupt? 256
-> 	Interrupt? 0
->
-> So this may be a "property" of spinlocks, but it is a bit strange to me.
-> Why should not I be able to call vfree() when I am, in fact, in
-> user context (but with a bh spinlock held...).
-
-in_interrupt() checks for both, hard- and softirqs.  Since
-spin_lock_bh() disables softirq's you have to be as fast as possible to
-avoid softirq latency.
-
-> Do I perhaps need a non-bh spinlock? There's RCU going on on that 
-> linked list so I am not sure whether I could just call the normal 
-> spin_lock() function.
-
-Perhaps a call_rcu() which vfree()s the node?  But I am just guessing
-wildly here.
-
-> Looking at the code of _spin_lock_bh in kernel/spinlock.c reveals that 
-> it is actually disabling preempt instead of being in an interrupt. 
-> Making an uneducated guess, would
->
-> 	BUG_ON(in_interrupt() != 0 && in_interrupt() != 256)
-
-That's basically a lacky in_irq().  The 256 you see here is
-1<<SOFTIRQ_SHIFT but softirq disabling can be nested and you can not
-check for 256 directly.
-
-> in vfree() be safe?
-
-Can not judge that.
-
-	Hannes
