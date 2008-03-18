@@ -1,197 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbYCSVbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937494AbYCSVb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932602AbYCSVbZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762737AbYCSUDu
+	id S937494AbYCSVb7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762792AbYCSUED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:03:50 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:29137 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762725AbYCSUDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:03:48 -0400
-Date: Tue, 18 Mar 2008 15:08:32 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Greg KH <gregkh@suse.de>
-Cc: Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: [PATCH 1/3] Construct one fakephp slot per pci slot
-Message-ID: <20080318210832.GB30421@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080318210539.GA30421@ldl.fc.hp.com>
+	Wed, 19 Mar 2008 16:04:03 -0400
+Received: from styx.suse.cz ([82.119.242.94]:52942 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762791AbYCSUEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:04:02 -0400
+Date: Tue, 18 Mar 2008 17:44:10 +0100
+From: Jan Kara <jack@suse.cz>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Do not allow setting of quota limits to too high values
+Message-ID: <20080318164410.GR23104@duck.suse.cz>
+References: <20080312172255.GB21395@duck.suse.cz> <20080313130355.6a84d0c5.akpm@linux-foundation.org> <20080317131138.GA17307@duck.suse.cz> <alpine.LNX.1.00.0803181740300.8851@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080318210539.GA30421@ldl.fc.hp.com>
+In-Reply-To: <alpine.LNX.1.00.0803181740300.8851@fbirervta.pbzchgretzou.qr>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Register one slot per slot, rather than one slot per function.
-Change the name of the slot to fake%d instead of the pci address.
+On Tue 18-03-08 17:40:53, Jan Engelhardt wrote:
+>
+> On Mar 17 2008 14:11, Jan Kara wrote:
+>>>
+>>> For 2.6.26, I assume?  I am not able to determine the seriousness of this
+>>> problem from the changelog nor from the patch itself.
+>>
+>>  Not really serious. Nobody complained so far (i.e., for the time quota
+>> exists) and the limits will just wrap when you try to set them over 4TB
+>> now. So the patch can wait...
+> So does quota_v2.c even handle quotas > 4 TB?
+  Usage yes, limits no. But some Sun guys are already working on a patch
+for fully 64-bit quota. I already have a decent kernel patch from him but
+I'd like to see also tools support to really run it before merging the
+patch :).
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Matthew Wilcox <matthew@wil.cx>
----
- drivers/pci/hotplug/fakephp.c |   85 ++++++++++++++--------------------------
- 1 files changed, 30 insertions(+), 55 deletions(-)
-
-diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
-index 94b6401..6c14b4d 100644
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -66,6 +66,7 @@ struct dummy_slot {
- 	struct pci_dev *dev;
- 	struct work_struct remove_work;
- 	unsigned long removed;
-+	char name[8];
- };
- 
- static int debug;
-@@ -100,6 +101,7 @@ static int add_slot(struct pci_dev *dev)
- 	struct dummy_slot *dslot;
- 	struct hotplug_slot *slot;
- 	int retval = -ENOMEM;
-+	static int count = 1;
- 
- 	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
- 	if (!slot)
-@@ -113,13 +115,14 @@ static int add_slot(struct pci_dev *dev)
- 	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
- 	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
- 
--	slot->name = &dev->dev.bus_id[0];
--	dbg("slot->name = %s\n", slot->name);
--
- 	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
- 	if (!dslot)
- 		goto error_info;
- 
-+	slot->name = dslot->name;
-+	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
-+	dbg("slot->name = %s\n", slot->name);
-+
- 	slot->ops = &dummy_hotplug_slot_ops;
- 	slot->release = &dummy_release;
- 	slot->private = dslot;
-@@ -148,17 +151,17 @@ error:
- static int __init pci_scan_buses(void)
- {
- 	struct pci_dev *dev = NULL;
--	int retval = 0;
-+	int lastslot = 0;
- 
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--		retval = add_slot(dev);
--		if (retval) {
--			pci_dev_put(dev);
--			break;
--		}
-+		if (PCI_FUNC(dev->devfn) > 0 &&
-+				lastslot == PCI_SLOT(dev->devfn))
-+			continue;
-+		lastslot = PCI_SLOT(dev->devfn);
-+		add_slot(dev);
- 	}
- 
--	return retval;
-+	return 0;
- }
- 
- static void remove_slot(struct dummy_slot *dslot)
-@@ -296,23 +299,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
- 	return -ENODEV;
- }
- 
--/* find the hotplug_slot for the pci_dev */
--static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
--{
--	struct dummy_slot *dslot;
--
--	list_for_each_entry(dslot, &slot_list, node) {
--		if (dslot->dev == dev)
--			return dslot->slot;
--	}
--	return NULL;
--}
--
--
- static int disable_slot(struct hotplug_slot *slot)
- {
- 	struct dummy_slot *dslot;
--	struct hotplug_slot *hslot;
- 	struct pci_dev *dev;
- 	int func;
- 
-@@ -322,41 +311,27 @@ static int disable_slot(struct hotplug_slot *slot)
- 
- 	dbg("%s - physical_slot = %s\n", __FUNCTION__, slot->name);
- 
--	/* don't disable bridged devices just yet, we can't handle them easily... */
--	if (dslot->dev->subordinate) {
--		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
--		return -ENODEV;
--	}
--	if (test_and_set_bit(0, &dslot->removed)) {
--		dbg("Slot already scheduled for removal\n");
--		return -ENODEV;
--	}
--	/* search for subfunctions and disable them first */
--	if (!(dslot->dev->devfn & 7)) {
--		for (func = 1; func < 8; func++) {
--			dev = pci_get_slot(dslot->dev->bus,
--					dslot->dev->devfn + func);
--			if (dev) {
--				hslot = get_slot_from_dev(dev);
--				if (hslot)
--					disable_slot(hslot);
--				else {
--					err("Hotplug slot not found for subfunction of PCI device\n");
--					return -ENODEV;
--				}
--				pci_dev_put(dev);
--			} else
--				dbg("No device in slot found\n");
-+	for (func = 7; func >= 0; func--) {
-+		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
-+		if (!dev)
-+			continue;
-+
-+		if (test_and_set_bit(0, &dslot->removed)) {
-+			dbg("Slot already scheduled for removal\n");
-+			return -ENODEV;
- 		}
--	}
- 
--	/* remove the device from the pci core */
--	pci_remove_bus_device(dslot->dev);
-+		/* queue work item to blow away this sysfs entry and other
-+		 * parts.
-+		 */
-+		INIT_WORK(&dslot->remove_work, remove_slot_worker);
-+		queue_work(dummyphp_wq, &dslot->remove_work);
- 
--	/* queue work item to blow away this sysfs entry and other parts. */
--	INIT_WORK(&dslot->remove_work, remove_slot_worker);
--	queue_work(dummyphp_wq, &dslot->remove_work);
-+		/* blow away this sysfs entry and other parts. */
-+		remove_slot(dslot);
- 
-+		pci_dev_put(dev);
-+	}
- 	return 0;
- }
- 
+									Honza
 -- 
-1.5.3.1.g1e61
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
