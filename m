@@ -1,59 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbYCRD6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbYCREBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbYCRD6h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 23:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYCRD63
+	id S1753181AbYCREBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 00:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbYCREB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 23:58:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42665 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbYCRD62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 23:58:28 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Thomas Meyer <thomas@m3y3r.de>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       linux-acpi@vger.kernel.org
-Subject: Re: In function `ata_acpi_associate': undefined reference =?utf-8?q?to=09=60register=5Fhotplug=5Fdock=5Fdevice=27?=
-Date: Mon, 17 Mar 2008 23:57:53 -0400
-User-Agent: KMail/1.9.9
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       htejun@gmail.com, jeff@garzik.org
-References: <47DEC970.2050402@m3y3r.de> <20080317194809.GB9550@cs181133002.pp.htv.fi> <47DECD54.5060202@m3y3r.de>
-In-Reply-To: <47DECD54.5060202@m3y3r.de>
+	Tue, 18 Mar 2008 00:01:27 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:26485 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbYCREB0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 00:01:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=kO0lUpeqG+1QfiFYXk6TxjH6dHyePJNfYdjua5IErdwEad87U0hLIyGN7zzqaG4z5smYV2l4asBs20sEvsdZ3u9LTUYjOiF3u2mjkPEjD+DzQesR/YRgbQIReVIVdDSSN0kv6BkyQxL6W9aaVUaf6C/WwHZbxdCwoCZhXg8iaB0=
+Message-ID: <47DF3E8B.6040502@googlemail.com>
+Date: Tue, 18 Mar 2008 05:01:15 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Gabriel C <crazy@frugalware.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com>
+In-Reply-To: <47DEB65A.9080907@googlemail.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803172357.54253.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> drivers/built-in.o: In function `ata_acpi_associate':
-> (.text+0x7106a): undefined reference to `register_hotplug_dock_device'
+Gabriel C wrote:
+> Thomas Gleixner wrote:
+>> On Mon, 17 Mar 2008, Gabriel C wrote:
+>>>> Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
+>>>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
+>>>> Date		: 2008-02-24 01:31 (22 days old)
+>>>> References	: http://lkml.org/lkml/2008/2/23/380
+>>>> 		  http://lkml.org/lkml/2008/2/24/281
+>>>> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+>>>>
+>>> Thomas do you want me to bisect ? 
+>> That'd be great.
+> 
+> Ok I'll start doing that later on today.
+> 
 
-CONFIG_ACPI_DOCK=m
-CONFIG_ATA_ACPI=y
+I managed to bisect 'one of the bugs' down , I got some problems and used skip once because a revision didn't compiled , 
+but it seems bisect got the right commit still. Sadly it seems there are 2 different bugs.
 
-don't work together.
+Also before I've started the bisect I've tested linux-next to be sure the bug(s) still exists and while rc1 got that already
+I've started to bisect 2.6.24 ->  2.6.25-rc1.
 
-particularly this:
+cat .git/refs/bisect/bad
+1ada5cba6a0318f90e45b38557e7b5206a9cba38
 
-drivers/ata/libata-acpi.c
-...
-#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
-                        /* we might be on a docking station */
-                        register_hotplug_dock_device(ap->acpi_handle,
-                                                     ata_acpi_ap_notify, ap);
-#endif
+git show 1ada5cba6a0318f90e45b38557e7b5206a9cba38
+commit 1ada5cba6a0318f90e45b38557e7b5206a9cba38
+Author: Andi Kleen <ak@suse.de>
+Date:   Wed Jan 30 13:30:02 2008 +0100
 
-does not link with an EXPORT_SYMBOL_GPL in dock.c when that is a module.
+    clocksource: make clocksource watchdog cycle through online CPUs
 
-you can change them both to be =y (or either to be =n) to work around it.
-however, this is a 2.6.25 regression, since 2.6.24 could make ATA=y
-and make dock=m
+    This way it checks if the clocks are synchronized between CPUs too.
+    This might be able to detect slowly drifting TSCs which only
+    go wrong over longer time.
 
--Len
+    Signed-off-by: Andi Kleen <ak@suse.de>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index cabfa19..edd5ef8 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -142,8 +142,13 @@ static void clocksource_watchdog(unsigned long data)
+        }
+
+        if (!list_empty(&watchdog_list)) {
+-               __mod_timer(&watchdog_timer,
+-                           watchdog_timer.expires + WATCHDOG_INTERVAL);
++               /* Cycle through CPUs to check if the CPUs stay synchronized to
++                * each other. */
++               int next_cpu = next_cpu(raw_smp_processor_id(), cpu_online_map);
++               if (next_cpu >= NR_CPUS)
++                       next_cpu = first_cpu(cpu_online_map);
++               watchdog_timer.expires += WATCHDOG_INTERVAL;
++               add_timer_on(&watchdog_timer, next_cpu);
+        }
+        spin_unlock(&watchdog_lock);
+ }
+@@ -165,7 +170,7 @@ static void clocksource_check_watchdog(struct clocksource *cs)
+                if (!started && watchdog) {
+                        watchdog_last = watchdog->read();
+                        watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
+-                       add_timer(&watchdog_timer);
++                       add_timer_on(&watchdog_timer, first_cpu(cpu_online_map));
+                }
+        } else {
+                if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
+@@ -186,7 +191,8 @@ static void clocksource_check_watchdog(struct clocksource *cs)
+                                watchdog_last = watchdog->read();
+                                watchdog_timer.expires =
+                                        jiffies + WATCHDOG_INTERVAL;
+-                               add_timer(&watchdog_timer);
++                               add_timer_on(&watchdog_timer,
++                                               first_cpu(cpu_online_map));
+                        }
+                }
+        }
+
+
+ git bisect log
+git-bisect start
+# bad: [19af35546de68c872dcb687613e0902a602cb20e] Linux 2.6.25-rc1
+git-bisect bad 19af35546de68c872dcb687613e0902a602cb20e
+# good: [49914084e797530d9baaf51df9eda77babc98fa8] Linux 2.6.24
+git-bisect good 49914084e797530d9baaf51df9eda77babc98fa8
+# bad: [d2e626f45cc450c00f5f98a89b8b4c4ac3c9bf5f] x86: add PAGE_KERNEL_EXEC_NOCACHE
+git-bisect bad d2e626f45cc450c00f5f98a89b8b4c4ac3c9bf5f
+# good: [fb46990dba94866462e90623e183d02ec591cf8f] [NETFILTER]: nf_queue: remove unnecessary hook existance check
+git-bisect good fb46990dba94866462e90623e183d02ec591cf8f
+# good: [936722922f6d2366378de606a40c14f96915474d] [IPV4] fib_trie: compute size when needed
+git-bisect good 936722922f6d2366378de606a40c14f96915474d
+# bad: [ff14c6164bd532a6dc9025c07d3b562f839f00a9] x86: x86-64 ia32 ptrace pt_regs cleanup
+git-bisect bad ff14c6164bd532a6dc9025c07d3b562f839f00a9
+# good: [c087567d3ffb2c7c61e091982e6ca45478394f1a] SUNRPC: Remove the obsolete RPC_WAITQ macro
+git-bisect good c087567d3ffb2c7c61e091982e6ca45478394f1a
+# bad: [af7a78e9258ffcca681e080cbc857f854869144f] x86: move mce related declarations
+git-bisect bad af7a78e9258ffcca681e080cbc857f854869144f
+# good: [34f5b4662bf4b54f22b32ce76ce70eccd7ebc68a] SUNRPC: Don't bother changing the sigmask for asynchronous RPC calls
+git-bisect good 34f5b4662bf4b54f22b32ce76ce70eccd7ebc68a
+# bad: [83bd01024b1fdfc41d9b758e5669e80fca72df66] x86: protect against sigaltstack wraparound
+git-bisect bad 83bd01024b1fdfc41d9b758e5669e80fca72df66
+# good: [efd9ac8630e89b9ee7ce64008bd7783952374f37] time: fold __get_realtime_clock_ts() into getnstimeofday()
+git-bisect good efd9ac8630e89b9ee7ce64008bd7783952374f37
+# bad: [37a47db8d7f0f38dac5acf5a13abbc8f401707fa] x86: assign IRQs to HPET timers, fix
+git-bisect bad 37a47db8d7f0f38dac5acf5a13abbc8f401707fa
+# skip: [316da3b3fc8efa9a5d2c99e0d449f01ff38c6aba] x86: restrict PIT clocksource usage
+git-bisect skip 316da3b3fc8efa9a5d2c99e0d449f01ff38c6aba
+# bad: [4713e22ce81eb8b3353e16435362eb3d0ec95640] clocksource: add unregister function to disable unusable clocksources
+git-bisect bad 4713e22ce81eb8b3353e16435362eb3d0ec95640
+# bad: [1ada5cba6a0318f90e45b38557e7b5206a9cba38] clocksource: make clocksource watchdog cycle through online CPUs
+git-bisect bad 1ada5cba6a0318f90e45b38557e7b5206a9cba38
+# good: [1077f5a917b7c630231037826b344b2f7f5b903f] clocksource.c: use init_timer_deferrable for clocksource_watchdog
+git-bisect good 1077f5a917b7c630231037826b344b2f7f5b903f
+
+
+Also the broken revision died with that :
+
+arch/x86/kernel/i8253.c: In function 'init_pit_clocksource':
+arch/x86/kernel/i8253.c:207: error: implicit declaration of function 'is_hpet_enabled'
+make[1]: *** [arch/x86/kernel/i8253.o] Error 1
+make: *** [arch/x86/kernel] Error 2
+
+If you tell me on how to fix that I'll restart the bisect from there , just in case ..
+
+
+Also reverting the commit from 2.6.25-rc1 fixes the 'Tsc being unstable thing' but it does not fix the hang
+when I boot with clocksource=acpi_pm so that seems to be introduced in a different commit.
+
+I will try to bisect this hang also , most probably on weekend.
+
+
+Also I reverted that commit from git head and an kernel compiles right now, I'll let you know in a bit if that worked out.
+
+Please let me know if you need more informations.
+
+
+Best Regards,
+
+Gabriel
