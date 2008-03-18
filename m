@@ -1,171 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYCSTyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbYCSTxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbYCSTyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYCSTgq
+	id S1760596AbYCSTxi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYCSTgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:36:46 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:57680 "EHLO relay.sgi.com"
+	Wed, 19 Mar 2008 15:36:37 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:37289 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756667AbYCSTgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:36:01 -0400
-Message-Id: <20080318222827.291587297@sgi.com>
-References: <20080318222701.788442216@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 15:27:02 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [1/2] vmalloc: Show vmalloced areas via /proc/vmallocinfo
-Content-Disposition: inline; filename=vmalloc_status
+	id S1752451AbYCSTgE (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:36:04 -0400
+Date: Wed, 19 Mar 2008 07:46:46 +1100
+From: David Chinner <dgc@sgi.com>
+To: Jan Kara <jack@suse.cz>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: BUG: drop_pagecache_sb vs kjournald lockup
+Message-ID: <20080318204646.GY155407@sgi.com>
+References: <20080318112843.GJ95344431@sgi.com> <20080318134326.GA6558@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318134326.GA6558@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement a new proc file that allows the display of the currently allocated vmalloc
-memory.
+On Tue, Mar 18, 2008 at 02:43:26PM +0100, Jan Kara wrote:
+> > 2.6.25-rc3, 4p ia64, ext3 root drive.
+> > 
+> > I was running an XFS stress test on one of the XFS partitions on
+> > the machine (zero load on the root ext3 drive), when the system
+> > locked up in kjournald with this on the console:
+> > 
+> > BUG: spinlock lockup on CPU#2, kjournald/2150, a000000100e022e0
+> > 
+>   <snip traces>
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+<snip other stuff>
 
----
- fs/proc/proc_misc.c     |   14 ++++++++
- include/linux/vmalloc.h |    2 +
- mm/vmalloc.c            |   76 +++++++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 91 insertions(+), 1 deletion(-)
+> > Anyone know the reason why drop_pagecache_sb() uses such a brute-force
+> > mechanism to free up clean page cache pages?
+>   Yes, we know that drop_pagecache_sb() has locking issues but since it
+> is intended to be used for debugging purposes only, nobody cared enough
+> to fix it. Completely untested patch below if you dare to try ;)
 
-Index: linux-2.6.25-rc5-mm1/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/fs/proc/proc_misc.c	2008-03-17 15:42:00.731811666 -0700
-+++ linux-2.6.25-rc5-mm1/fs/proc/proc_misc.c	2008-03-18 12:11:19.104438620 -0700
-@@ -456,6 +456,18 @@ static const struct file_operations proc
- #endif
- #endif
- 
-+static int vmalloc_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &vmalloc_op);
-+}
-+
-+static const struct file_operations proc_vmalloc_operations = {
-+	.open		= vmalloc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release,
-+};
-+
- static int show_stat(struct seq_file *p, void *v)
- {
- 	int i;
-@@ -990,6 +1002,8 @@ void __init proc_misc_init(void)
- 	proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
- #endif
- #endif
-+	proc_create("vmallocinfo",S_IWUSR|S_IRUGO, NULL,
-+						&proc_vmalloc_operations);
- 	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
- 	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
- 	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
-Index: linux-2.6.25-rc5-mm1/include/linux/vmalloc.h
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/include/linux/vmalloc.h	2008-03-09 22:22:27.000000000 -0700
-+++ linux-2.6.25-rc5-mm1/include/linux/vmalloc.h	2008-03-18 12:08:41.507241390 -0700
-@@ -87,4 +87,6 @@ extern void free_vm_area(struct vm_struc
- extern rwlock_t vmlist_lock;
- extern struct vm_struct *vmlist;
- 
-+extern const struct seq_operations vmalloc_op;
-+
- #endif /* _LINUX_VMALLOC_H */
-Index: linux-2.6.25-rc5-mm1/mm/vmalloc.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/mm/vmalloc.c	2008-03-09 22:22:27.000000000 -0700
-+++ linux-2.6.25-rc5-mm1/mm/vmalloc.c	2008-03-18 12:10:15.995956807 -0700
-@@ -14,7 +14,7 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/interrupt.h>
--
-+#include <linux/seq_file.h>
- #include <linux/vmalloc.h>
- 
- #include <asm/uaccess.h>
-@@ -871,3 +871,77 @@ void free_vm_area(struct vm_struct *area
- 	kfree(area);
- }
- EXPORT_SYMBOL_GPL(free_vm_area);
-+
-+
-+#ifdef CONFIG_PROC_FS
-+static void *s_start(struct seq_file *m, loff_t *pos)
-+{
-+	loff_t n = *pos;
-+	struct vm_struct *v;
-+
-+	read_lock(&vmlist_lock);
-+	v = vmlist;
-+	while (n > 0 && v) {
-+		n--;
-+		v = v->next;
-+	}
-+	if (!n)
-+		return v;
-+
-+	return NULL;
-+
-+}
-+
-+static void *s_next(struct seq_file *m, void *p, loff_t *pos)
-+{
-+	struct vm_struct *v = p;
-+
-+	++*pos;
-+	return v->next;
-+}
-+
-+static void s_stop(struct seq_file *m, void *p)
-+{
-+	read_unlock(&vmlist_lock);
-+}
-+
-+static int s_show(struct seq_file *m, void *p)
-+{
-+	struct vm_struct *v = p;
-+
-+	seq_printf(m, "0x%p-0x%p %7ld",
-+		v->addr, v->addr + v->size, v->size);
-+
-+	if (v->nr_pages)
-+		seq_printf(m, " pages=%d", v->nr_pages);
-+
-+	if (v->phys_addr)
-+		seq_printf(m, " phys=%lx", v->phys_addr);
-+
-+	if (v->flags & VM_IOREMAP)
-+		seq_printf(m, " ioremap");
-+
-+	if (v->flags & VM_ALLOC)
-+		seq_printf(m, " vmalloc");
-+
-+	if (v->flags & VM_MAP)
-+		seq_printf(m, " vmap");
-+
-+	if (v->flags & VM_USERMAP)
-+		seq_printf(m, " user");
-+
-+	if (v->flags & VM_VPAGES)
-+		seq_printf(m, " vpages");
-+
-+	seq_putc(m, '\n');
-+	return 0;
-+}
-+
-+const struct seq_operations vmalloc_op = {
-+	.start = s_start,
-+	.next = s_next,
-+	.stop = s_stop,
-+	.show = s_show,
-+};
-+#endif
-+
+It may be intended for debuging purposes, but it does get used in
+production HPC environments (a lot!). I guess I've never seen this
+lockup before because SGI customers don't use ext3, but they have
+complained about the system "stopping" while drop_caches is executed.
+This locking ..... strategy would explain it, though.
 
+I'll try the patch, but I can't guarantee anything - I only saw this
+lockup once in about 18 hours when dropping caches every 2 seconds.
+
+Cheers,
+
+Dave.
 -- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
