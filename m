@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYCRNcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbYCRNdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbYCRNcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 09:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYCRNbe
+	id S1752638AbYCRNdQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 09:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYCRNc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 09:31:34 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51146 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbYCRNba (ORCPT
+	Tue, 18 Mar 2008 09:32:57 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2424 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752722AbYCRNcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 09:31:30 -0400
-Date: Tue, 18 Mar 2008 13:07:04 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Suspend and hibernation patchset against -rc6
-Message-ID: <20080318120704.GA1841@elf.ucw.cz>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl>
+	Tue, 18 Mar 2008 09:32:55 -0400
+Date: Tue, 18 Mar 2008 13:31:10 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, stern@rowland.harvard.edu,
+       lenb@kernel.org, greg@kroah.com, akpm@linux-foundation.org, rjw@sisk.pl
+Subject: Re: [Build Failure] linux-next: Tree for March 18
+Message-ID: <20080318132550.GB30500@shadowen.org>
+References: <20080318205259.13726d23.sfr@canb.auug.org.au> <47DFA49D.4000007@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803172317.33745.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <47DFA49D.4000007@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > For everyone interested, I have put together a patchset containing some "fresh"
-> > patches related to suspend and hibernation, on top of 2.6.25-rc5, located at:
-> > 
-> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc5/patches/
+On Tue, Mar 18, 2008 at 04:46:45PM +0530, Kamalesh Babulal wrote:
+> Hi Stephen,
 > 
-> There's a new patchset against 2.6.25-rc6 at:
+> The kernel build of linux-next tree(s) have been failing from 20080314 with
+> the build failure
 > 
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.25-rc6/patches/
+> drivers/serial/serial_core.c: In function `uart_add_one_port':
+> drivers/serial/serial_core.c:2359: error: invalid lvalue in assignment
+> make[2]: *** [drivers/serial/serial_core.o] Error 1
 > 
-> It contains some more patches, specifically the "legacy PM removal" series, the
-> fixed "PM: make wakeup flags available whenever CONFIG_PM is set" series posted
-> recently by Alan (the second patch rebased by me), the Johannes' apm-emulation
-> patch and the patches introducing the new suspend/hibernation callbacks I sent
-> yesterday.
+> And the patch was submitted for the same http://marc.info/?l=linux-next&m=120561799422065&w=2
 
-Ok, I ran basic tests on thinkpad x60, and they seem to work.
+This breakage is shown up when compiled with a config which doesn't have
+CONFIG_PM set.  It is a common error to only test with that turned on
+and I am sure that this is just one of a number of bugs that have been
+picked up by real machine configs.
 
-...one strange thing is I'm seeing some delays, I'll investigate a bit
-more.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+Perhaps it would be worth having one of your integration test runs be
+with a configuration with CONFIG_PM disabled so that they get detected
+earlier in the process.
+
+-apw
