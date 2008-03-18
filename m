@@ -1,60 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939143AbYCSXTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYCSXUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939143AbYCSXTv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763393AbYCSVq4
+	id S1754497AbYCSXUu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938594AbYCSVrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:46:56 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2300 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933620AbYCSVqz (ORCPT
+	Wed, 19 Mar 2008 17:47:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:49834 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938586AbYCSVrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:46:55 -0400
-Date: Wed, 19 Mar 2008 17:46:53 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: + pm-convert-wakeup-flag-accessors-to-inline-functions-fix.patch
- added to -mm tree
-In-Reply-To: <20080319185755.GA18464@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0803191736550.2504-100000@netrider.rowland.org>
+	Wed, 19 Mar 2008 17:47:14 -0400
+Reply-To: yhlu.kernel@gmail.com
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: trim mtrr don't close gap for resource allocation.
+Date: Tue, 18 Mar 2008 16:44:19 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: steve@lobefin.net, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <200803181237.33861.yhlu.kernel@gmail.com> <200803181255.10402.yhlu.kernel@gmail.com>
+In-Reply-To: <200803181255.10402.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803181644.20356.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008, Greg KH wrote:
+[PATCH] x86: trim mtrr don't close gap for resource allocation.
 
-> On Wed, Mar 19, 2008 at 11:48:29AM -0700, Andrew Morton wrote:
-> > I'll drop everything, let's start again.
-> > 
-> > Only how?  umm, please review Greg's driver tree, let us know which patches
-> > shoudl be dropped from that then send new ones, I guess.
-> 
-> Yes, please do, I'm confused as well :)
+for
+	http://bugzilla.kernel.org/show_bug.cgi?id=10232
 
-Okay.  No doubt Rafael will correct me if I get something wrong.
+use update_memory_range instead of add_memory_range directly
+to avoid closing that gap.
 
-Greg's tree still contains the original, wrong version of 
-pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch.  It 
-should be reverted.  In its place should be substituted this series of 
-patches (URLs for 0/3 ... 3/3):
+Signed-off-by: Yinghai Lu <yhlu.kenrel@gmail.com>
 
-	http://marc.info/?l=linux-kernel&m=120561808422302&w=2
-	http://marc.info/?l=linux-kernel&m=120561808522316&w=2
-	http://marc.info/?l=linux-kernel&m=120561808522322&w=2
-	http://marc.info/?l=linux-kernel&m=120561808622328&w=2
-
-There is likely to be a conflict in applying the 2/3 patch, because its 
-first hunk touches a region of code also affected by work Rafael has 
-been doing.  The important aspect of that hunk is that it moves the 
-should_wakeup flag definition outside the region protected by "#ifdef 
-CONFIG_PM_SLEEP".
-
-Alan Stern
-
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -711,7 +711,8 @@ int __init mtrr_trim_uncached_memory(uns
+ 		trim_size = end_pfn;
+ 		trim_size <<= PAGE_SHIFT;
+ 		trim_size -= trim_start;
+-		add_memory_region(trim_start, trim_size, E820_RESERVED);
++		update_memory_range(trim_start, trim_size, E820_RAM,
++					E820_RESERVED);
+ 		update_e820();
+ 		return 1;
+ 	}
+Index: linux-2.6/arch/x86/kernel/e820_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820_32.c
++++ linux-2.6/arch/x86/kernel/e820_32.c
+@@ -749,6 +749,32 @@ static int __init parse_memmap(char *arg
+ 	return 0;
+ }
+ early_param("memmap", parse_memmap);
++void __init update_memory_range(u64 start, u64 size, unsigned old_type,
++				unsigned new_type)
++{
++	int i;
++
++	BUG_ON(old_type == new_type);
++
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++		u64 final_start, final_end;
++		if (ei->type != old_type)
++			continue;
++		/* totally covered? */
++		if (ei->addr >= start && ei->size <= size) {
++			ei->type = new_type;
++			continue;
++		}
++		/* partially covered */
++		final_start = max(start, ei->addr);
++		final_end = min(start + size, ei->addr + ei->size);
++		if (final_start >= final_end)
++			continue;
++		add_memory_region(final_start, final_end - final_start,
++					 new_type);
++	}
++}
+ void __init update_e820(void)
+ {
+ 	u8 nr_map;
+Index: linux-2.6/arch/x86/kernel/e820_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820_64.c
++++ linux-2.6/arch/x86/kernel/e820_64.c
+@@ -735,6 +735,33 @@ void __init finish_e820_parsing(void)
+ 	}
+ }
+ 
++void __init update_memory_range(u64 start, u64 size, unsigned old_type,
++				unsigned new_type)
++{
++	int i;
++
++	BUG_ON(old_type == new_type);
++
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++		u64 final_start, final_end;
++		if (ei->type != old_type)
++			continue;
++		/* totally covered? */
++		if (ei->addr >= start && ei->size <= size) {
++			ei->type = new_type;
++			continue;
++		}
++		/* partially covered */
++		final_start = max(start, ei->addr);
++		final_end = min(start + size, ei->addr + ei->size);
++		if (final_start >= final_end)
++			continue;
++		add_memory_region(final_start, final_end - final_start,
++					 new_type);
++	}
++}
++
+ void __init update_e820(void)
+ {
+ 	u8 nr_map;
+Index: linux-2.6/include/asm-x86/e820_32.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/e820_32.h
++++ linux-2.6/include/asm-x86/e820_32.h
+@@ -28,6 +28,8 @@ extern void find_max_pfn(void);
+ extern void register_bootmem_low_pages(unsigned long max_low_pfn);
+ extern void add_memory_region(unsigned long long start,
+ 			      unsigned long long size, int type);
++extern void update_memory_range(u64 start, u64 size, unsigned old_type,
++				unsigned new_type);
+ extern void e820_register_memory(void);
+ extern void limit_regions(unsigned long long size);
+ extern void print_memory_map(char *who);
+Index: linux-2.6/include/asm-x86/e820_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/e820_64.h
++++ linux-2.6/include/asm-x86/e820_64.h
+@@ -18,6 +18,8 @@ extern unsigned long find_e820_area(unsi
+ 				    unsigned long size, unsigned long align);
+ extern void add_memory_region(unsigned long start, unsigned long size, 
+ 			      int type);
++extern void update_memory_range(u64 start, u64 size, unsigned old_type,
++				unsigned new_type);
+ extern void setup_memory_region(void);
+ extern void contig_e820_setup(void); 
+ extern unsigned long e820_end_of_ram(void);
