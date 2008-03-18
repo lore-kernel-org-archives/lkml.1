@@ -1,64 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYCRBpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYCRBxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbYCRBpl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 21:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYCRBpc
+	id S1754352AbYCRBxe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 21:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYCRBxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 21:45:32 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:43251 "HELO
-	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752380AbYCRBpb (ORCPT
+	Mon, 17 Mar 2008 21:53:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35609 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbYCRBxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 21:45:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qm3ufyqPvVt5etiFR8Mw8IBoUur1VKktufWNrZk070OLOnySsGxwaRM2vIpWD261Z3Y4zCFceBosyOFJ+G2Fnn4DsgecqCaIBJhdhKjwvOV8Uo5qharRfOMO/KDG/tp/Na3jpphhg9Kuu1/sJfGOUp575Sis+9np/I27L1dBWAo=  ;
-X-YMail-OSG: MDey7WwVM1l1c8em.rSFpHFuF6p7.XNEkoL9XwEGMKDGj18lWUEKAZRBq4SLCV7L6zEx1wh8YA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: ehci-hcd affects hda speed
-Date: Mon, 17 Mar 2008 17:45:28 -0800
-User-Agent: KMail/1.9.6
-Cc: "Lev A. Melnikovsky" <melnikovsky@mail.ru>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <alpine.LFD.1.00.0803180317050.11560@nev.ubzr> <47DF1A7E.30809@keyaccess.nl>
-In-Reply-To: <47DF1A7E.30809@keyaccess.nl>
+	Mon, 17 Mar 2008 21:53:22 -0400
+Date: Mon, 17 Mar 2008 21:53:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: deadlock on 2.6.24.3-rt3
+In-Reply-To: <47DF097B.4090200@ct.jp.nec.com>
+Message-ID: <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com>
+References: <47DEB7F0.8040207@ct.jp.nec.com> <47DF097B.4090200@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803171845.29232.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 March 2008, Rene Herman wrote:
-> On 18-03-08 01:24, Lev A. Melnikovsky wrote:
-> 
-> > DB> On Monday 17 March 2008, Rene Herman wrote:
-> > DB> > +       case PCI_VENDOR_ID_VIA:
-> > DB> > +               if (pdev->device == 0x3104 && pdev->revision >= 0x60) {
+[Added Peter Zijlsta and LKML]
+
+Hiroshi, thanks for looking into this!
+
+Peter, this looks like a legit fix, could you Ack it.
+
+
+On Mon, 17 Mar 2008, Hiroshi Shimamoto wrote:
+
+> Hiroshi Shimamoto wrote:
+> > Hi,
 > >
-> > DB> Unless you have specific docs from VIA saying that this register
-> > DB> isn't revision-specific (at least in the sense that all revisions
-> > DB> after 0x60 define that bit in that way), this should probably be a
-> > DB> switch on pdev->revision and just include the known-safe revisions.
+> > I got a soft lockup message on 2.6.24.3-rt3.
+> > I attached the .config.
+> >
+> > I think there is a deadlock scenario, I explain later.
+> >
+> > Here is the console log;
+> > BUG: soft lockup - CPU#2 stuck for 11s! [bash:2175]
+> > CPU 2:
+> > Modules linked in:
+> > Pid: 2175, comm: bash Not tainted 2.6.24.3-rt3 #1
+> > RIP: 0010:[<ffffffff8063f052>]  [<ffffffff8063f052>] __spin_lock+0x57/0x67
+> > RSP: 0000:ffff8100c52a1d48  EFLAGS: 00000202
+> > RAX: 0000000000000000 RBX: 0000000000004bc5 RCX: 0000000000004bc5
+> > RDX: 0000000000000002 RSI: 00000000006c3208 RDI: 0000000000000001
+> > RBP: 000000000000000d R08: ffff8100cbc28018 R09: ffff810007c95458
+> > R10: 00000000006c3208 R11: 0000000000000246 R12: ffffffff808246e8
+> > R13: 000284d000000002 R14: ffffffff80387277 R15: 00000000ffffffff
+> > FS:  00002b28926a2ef0(0000) GS:ffff8100cf8a3940(0000) knlGS:0000000000000000
+> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > CR2: 00000000006c3208 CR3: 00000000c3cac000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Call Trace:
+> >  [<ffffffff8063f024>] __spin_lock+0x29/0x67
+> >  [<ffffffff80296597>] swap_info_get+0x65/0xdd
+> >  [<ffffffff80296c0c>] can_share_swap_page+0x39/0x84
+> >  [<ffffffff8028ae6e>] do_wp_page+0x2f9/0x519
+> >  [<ffffffff8028c8d2>] handle_mm_fault+0x615/0x7cf
+> >  [<ffffffff802db823>] proc_flush_task+0x171/0x29c
+> >  [<ffffffff8024a64d>] recalc_sigpending+0xe/0x3c
+> >  [<ffffffff8022645e>] do_page_fault+0x162/0x754
+> >  [<ffffffff8026fe81>] audit_syscall_exit+0x31c/0x37a
+> >  [<ffffffff8063f449>] error_exit+0x0/0x51
+> > ---------------------------
+> > | preempt count: 00010002 ]
+> > | 2-level deep critical section nesting:
+> > ----------------------------------------
+> > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
+> > .....[<00000000>] ..   ( <= 0x0)
+> > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
+> > .....[<00000000>] ..   ( <= 0x0)
+> > BUG: soft lockup - CPU#3 stuck for 11s! [stress:9460]
+> > CPU 3:
+> > Modules linked in:
+> > Pid: 9460, comm: stress Not tainted 2.6.24.3-rt3 #1
+> > RIP: 0010:[<ffffffff8027c974>]  [<ffffffff8027c974>] find_get_page+0xad/0xbe
+> > RSP: 0018:ffff8100cbf25b88  EFLAGS: 00000202
+> >  0000000000002009 RBX: ffffffff80824bc8 RCX: 0000000000000002
+> > RDX: 0000000000000002 RSI: ffff8100cbfcf298 RDI: ffff810005ad8910
+> > RBP: ffffffff80383a57 R08: ffff810005ad8918 R09: 0000000000000003
+> > R10: ffff810005ad88d8 R11: 0000000000000001 R12: ffffffff80822880
+> > R13: ffff81000799ce48 R14: ffffffff8028921c R15: ffffffff80822880
+> > FS:  00002acaa373bb00(0000) GS:ffff8100cf8a32c0(0000) knlGS:0000000000000000
+> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > CR2: 00002b9b2827c530 CR3: 000000006cc90000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Call Trace:
+> >  [<ffffffff8027c8ea>] find_get_page+0x23/0xbe
+> >  [<ffffffff80296f83>] free_swap_and_cache+0x46/0xdd
+> >  [<ffffffff8028b9b7>] unmap_vmas+0x626/0x8ce
+> >  [<ffffffff8028fa4c>] exit_mmap+0xac/0x147
+> >  [<ffffffff8023ced7>] mmput+0x32/0xae
+> >  [<ffffffff80242f00>] do_exit+0x199/0x914
+> >  [<ffffffff8024ab3b>] __dequeue_signal+0x19/0x1b7
+> >  [<ffffffff802436a7>] do_group_exit+0x2c/0x7e
+> >  [<ffffffff8024c47b>] get_signal_to_deliver+0x2ef/0x4aa
+> >  [<ffffffff8020b5dc>] do_notify_resume+0xa8/0x7cd
+> >  [<ffffffff80239320>] add_preempt_count+0x14/0x111
+> >  [<ffffffff8038b292>] __up_read+0x13/0x8d
+> >  [<ffffffff80226483>] do_page_fault+0x187/0x754
+> >  [<ffffffff802335ae>] __dequeue_entity+0x2d/0x34
+> >  [<ffffffff8020a6d5>] __switch_to+0x27/0x2c9
+> >  [<ffffffff802264f0>] do_page_fault+0x1f4/0x754
+> >  [<ffffffff8020c7be>] retint_signal+0x3d/0x7f
+> > ---------------------------
+> > | preempt count: 00010005 ]
+> > | 5-level deep critical section nesting:
+> > ----------------------------------------
+> > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
+> > .....[<00000000>] ..   ( <= 0x0)
+> > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
+> > .....[<00000000>] ..   ( <= 0x0)
+> > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
+> > .....[<00000000>] ..   ( <= 0x0)
+> > .. [<ffffffff8027c8db>] .... find_get_page+0x14/0xbe
+> > .....[<00000000>] ..   ( <= 0x0)
+> > .. [<ffffffff8063f009>] .... __spin_lock+0xe/0x67
+> > .....[<00000000>] ..   ( <= 0x0)
+> >
+> >
+> > I also got a kernel core.
+> > (gdb) info thr
+> >   4 process 9460  0xffffffff8027c974 in find_get_page (mapping=<value optimized out>,
+> >     offset=18446744071570598016) at include/asm/processor_64.h:385
+> >   3 process 2175  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
+> >   2 process 9132  __spin_lock (lock=0xffffffff80893f80) at include/asm/spinlock_64.h:22
+> > * 1 process 9478  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
+> >
+> > CPU3(thread 4) is in find_get_page(), and the others in __spin_lock().
+> > The thread 4 is waiting to turn PG_nonewrefs bit off in wait_on_page_ref() which is
+> > called from page_cache_get_speculative(), and the thread 4 holds the swap_lock.
+> > The other threads waiting the swap_lock.
+> > On the other hand, the thread 1 turned PG_nonewrefs bit on by calling
+> > lock_page_ref_irq() in remove_mapping(), and then waiting the swap_lock.
+> > So if the target page of remove_mapping() is in the exiting process memory,
+> > the kernel is deadlock.
+> >
+> > (gdb) bt
+> > #0  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
+> > #1  0xffffffff80296597 in swap_info_get (entry=<value optimized out>)
+> >     at mm/swapfile.c:253
+> > #2  0xffffffff80296618 in swap_free (entry={val = 1}) at mm/swapfile.c:300
+> > #3  0xffffffff80286acd in remove_mapping (mapping=<value optimized out>,
+> >     page=0xffff810005ad8910) at mm/vmscan.c:423
+> > ...
+> >
+> > (gdb) thr 2
+> > (gdb) bt
+> > #0  __spin_lock (lock=0xffffffff80893f80) at include/asm/spinlock_64.h:22
+> > #1  0xffffffff80296374 in valid_swaphandles (entry=<value optimized out>,
+> >     offset=0xffff81001e22bc78) at mm/swapfile.c:1783
+> > #2  0xffffffff8028b0af in swapin_readahead (entry={val = 1}, addr=0, vma=0x1)
+> >     at mm/memory.c:2054
+> > #3  0xffffffff8029a6af in shmem_getpage (inode=0xffff8100cdf4fd48, idx=0,
+> >     pagep=0xffff81001e22bd80, sgp=SGP_FAULT, type=0xffff81001e22bd34) at mm/shmem.c:1089
+> > ...
+> >
+> > (gdb) thr 3
+> > (gdb) bt
+> > #0  __spin_lock (lock=0xffffffff80893f80) at kernel/spinlock.c:333
+> > #1  0xffffffff80296597 in swap_info_get (entry=<value optimized out>)
+> >     at mm/swapfile.c:253
+> > #2  0xffffffff80296c0c in can_share_swap_page (page=<value optimized out>)
+> >     at mm/swapfile.c:317
+> > #3  0xffffffff8028ae6e in do_wp_page (mm=0xffff8100ce772f40, vma=0xffff8100cd212f00,
+> >     address=7090696, page_table=0xffff8100cbcef618, pmd=0xffff8100cbc28018,
+> >     ptl=0xffff810007c95458, orig_pte=<value optimized out>) at mm/memory.c:1606
+> > ...
+> >
+> > (gdb) thr 4
+> > (gdb) bt
+> > #0  0xffffffff8027c974 in find_get_page (mapping=<value optimized out>,
+> >     offset=18446744071570598016) at include/asm/processor_64.h:385
+> > #1  0xffffffff80296f83 in free_swap_and_cache (entry={val = 4032}) at mm/swapfile.c:403
+> > #2  0xffffffff8028b9b7 in unmap_vmas (tlbp=0xffff8100cbf25cd8, vma=0xffff8100cde5c678,
+> >     start_addr=0, end_addr=18446744073709551615, nr_accounted=0xffff8100cbf25cd0,
+> >     details=0x0) at mm/memory.c:728
+> > #3  0xffffffff8028fa4c in exit_mmap (mm=0xffff8100cd093600) at mm/mmap.c:2048
+> > #4  0xffffffff8023ced7 in mmput (mm=0xffff8100cd093600) at kernel/fork.c:443
+> > #5  0xffffffff80242f00 in do_exit (code=14) at kernel/exit.c:997
+> > ...
+> >
+> >
+> > I think it came from the lockless speculative get page patch.
+> > I found the newer version of this patch in linux-mm.
+> > http://marc.info/?l=linux-mm&m=119477111927364&w=2
+> >
+> > I haven't tested it because it looks big change and hard to apply.
+> > But it seems to fix this deadlock issue.
+> > Any other patch to fix this issue is welcome.
+> >
 >
-> > May I suggest this should be a module parameter? Because a side effect is 
-> > a USB slow-down, which may be more important for somebody...
-> 
-> If the 10us is a EHCI specification, I'd personally think not. But if need 
-> be...
-
-It's not exactly a specification, but it's what they use as an
-example of a "reasonable" value.  I think pretty much everyone
-except VIA uses it as-is.  Since 1 usec is such a broken value,
-I see no reason to support anything except 10 usec.
-
-- Dave
-
-
+> Is this patch good?
+>
+> ---
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Subject: [PATCH] avoid deadlock related with PG_nonewrefs and swap_lock
+>
+> There is a deadlock scenario; remove_mapping() vs free_swap_and_cache().
+> remove_mapping() turns PG_nonewrefs bit on, then locks swap_lock.
+> free_swap_and_cache() locks swap_lock, then wait to turn PG_nonewrefs bit
+> off in find_get_page().
+>
+> swap_lock can be unlocked before calling find_get_page().
+>
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  mm/swapfile.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/mm/swapfile.c b/mm/swapfile.c
+> index 5036b70..581afee 100644
+> --- a/mm/swapfile.c
+> +++ b/mm/swapfile.c
+> @@ -400,13 +400,14 @@ void free_swap_and_cache(swp_entry_t entry)
+>  	p = swap_info_get(entry);
+>  	if (p) {
+>  		if (swap_entry_free(p, swp_offset(entry)) == 1) {
+> +			spin_unlock(&swap_lock);
+>  			page = find_get_page(&swapper_space, entry.val);
+>  			if (page && unlikely(TestSetPageLocked(page))) {
+>  				page_cache_release(page);
+>  				page = NULL;
+>  			}
+> -		}
+> -		spin_unlock(&swap_lock);
+> +		} else
+> +			spin_unlock(&swap_lock);
+>  	}
+>  	if (page) {
+>  		int one_user;
+> --
+> 1.5.4.1
+>
