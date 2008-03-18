@@ -1,94 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759125AbYCSWMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYCSWNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759125AbYCSWMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964800AbYCSUio
+	id S1760155AbYCSWNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761184AbYCSUj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:38:44 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37786 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756873AbYCSUin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:38:43 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 19 Mar 2008 21:37:42 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: fw-ohci: add self ID error check
-To: Jarod Wilson <jwilson@redhat.com>
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.a46eb70f34367db6@s5r6.in-berlin.de>
-Message-ID: <tkrat.463115f5f3763a98@s5r6.in-berlin.de>
-References: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
- <tkrat.00038248cbf40b77@s5r6.in-berlin.de>
- <tkrat.a46eb70f34367db6@s5r6.in-berlin.de>
+	Wed, 19 Mar 2008 16:39:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57666 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761166AbYCSUj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:39:26 -0400
+Date: Tue, 18 Mar 2008 16:37:15 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [14/18] Clean up hugetlb boot time printk
+Message-ID: <20080318163715.GN23866@csn.ul.ie>
+References: <20080317258.659191058@firstfloor.org> <20080317015828.1AB091B41E0@basil.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080317015828.1AB091B41E0@basil.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19 Mar, Stefan Richter wrote:
-> Discard self ID buffer contents if
->   - the selfIDError flag is set,
->   - any of the self ID packets has bit errors.
+On (17/03/08 02:58), Andi Kleen didst pronounce:
+> - Reword sentence to clarify meaning with multiple options
+> - Add support for using GB prefixes for the page size
+> - Add extra printk to delayed > MAX_ORDER allocation code
 > 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+Scratch earlier comments about this printk. If the printk fix
+was broken out, it could be moved to the start of the set so it can be
+tested/merged separetly. The remainder of this patch could then be
+folded into the patch allowing 1GB pages to be reserved at boot-time.
+
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
 > ---
->  drivers/firewire/fw-ohci.c |   12 +++++++++---
->  drivers/firewire/fw-ohci.h |    1 +
->  2 files changed, 10 insertions(+), 3 deletions(-)
+>  mm/hugetlb.c |   33 ++++++++++++++++++++++++++++++---
+>  1 file changed, 30 insertions(+), 3 deletions(-)
 > 
-> Index: linux/drivers/firewire/fw-ohci.c
+> Index: linux/mm/hugetlb.c
 > ===================================================================
-> --- linux.orig/drivers/firewire/fw-ohci.c
-> +++ linux/drivers/firewire/fw-ohci.c
-> @@ -1060,20 +1060,26 @@ static void bus_reset_tasklet(unsigned l
->  	ohci->node_id = reg & (OHCI1394_NodeID_busNumber |
->  			       OHCI1394_NodeID_nodeNumber);
+> --- linux.orig/mm/hugetlb.c
+> +++ linux/mm/hugetlb.c
+> @@ -510,6 +510,15 @@ static struct page *alloc_huge_page(stru
+>  	return page;
+>  }
 >  
-> +	reg = reg_read(ohci, OHCI1394_SelfIDCount);
-> +	if (reg & OHCI1394_SelfIDCount_selfIDError) {
-> +		fw_error("inconsistent self IDs\n");
-> +		return;
-> +	}
->  	/*
->  	 * The count in the SelfIDCount register is the number of
->  	 * bytes in the self ID receive buffer.  Since we also receive
->  	 * the inverted quadlets and a header quadlet, we shift one
->  	 * bit extra to get the actual number of self IDs.
->  	 */
-> -
-> -	self_id_count = (reg_read(ohci, OHCI1394_SelfIDCount) >> 3) & 0x3ff;
-> +	self_id_count = (reg >> 3) & 0x3ff;
->  	generation = (cond_le32_to_cpu(ohci->self_id_cpu[0]) >> 16) & 0xff;
->  	rmb();
+> +static __init char *memfmt(char *buf, unsigned long n)
+> +{
+> +	if (n >= (1UL << 30))
+> +		sprintf(buf, "%lu GB", n >> 30);
+> +	else
+> +		sprintf(buf, "%lu MB", n >> 20);
+> +	return buf;
+> +}
+> +
+>  static __initdata LIST_HEAD(huge_boot_pages);
 >  
->  	for (i = 1, j = 0; j < self_id_count; i += 2, j++) {
-> -		if (ohci->self_id_cpu[i] != ~ohci->self_id_cpu[i + 1])
-> +		if (ohci->self_id_cpu[i] != ~ohci->self_id_cpu[i + 1]) {
->  			fw_error("inconsistent self IDs\n");
-> +			return;
-> +		}
->  		ohci->self_id_buffer[j] =
->  				cond_le32_to_cpu(ohci->self_id_cpu[i]);
+>  struct huge_bm_page {
+> @@ -536,14 +545,28 @@ static int __init alloc_bm_huge_page(str
+>  /* Put bootmem huge pages into the standard lists after mem_map is up */
+>  static int __init huge_init_bm(void)
+>  {
+> +	unsigned long pages = 0;
+>  	struct huge_bm_page *m;
+> +	struct hstate *h = NULL;
+> +	char buf[32];
+> +
+>  	list_for_each_entry (m, &huge_boot_pages, list) {
+>  		struct page *page = virt_to_page(m);
+> -		struct hstate *h = m->hstate;
+> +		h = m->hstate;
+>  		__ClearPageReserved(page);
+>  		prep_compound_page(page, h->order);
+>  		huge_new_page(h, page);
+> +		pages++;
 >  	}
-> Index: linux/drivers/firewire/fw-ohci.h
-> ===================================================================
-> --- linux.orig/drivers/firewire/fw-ohci.h
-> +++ linux/drivers/firewire/fw-ohci.h
-> @@ -30,6 +30,7 @@
->  #define  OHCI1394_HCControl_softReset		0x00010000
->  #define OHCI1394_SelfIDBuffer                 0x064
->  #define OHCI1394_SelfIDCount                  0x068
-> +#define  OHCI1394_SelfIDCount_selfIDError	0x80000000
->  #define OHCI1394_IRMultiChanMaskHiSet         0x070
->  #define OHCI1394_IRMultiChanMaskHiClear       0x074
->  #define OHCI1394_IRMultiChanMaskLoSet         0x078
+> +
+> +	/*
+> +	 * This only prints for a single hstate. This works for x86-64,
+> +	 * but if you do multiple > MAX_ORDER hstates you'll need to fix it.
+> +	 */
+> +	if (pages > 0)
+> +		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
+> +				h->free_huge_pages,
+> +				memfmt(buf, huge_page_size(h)));
+>  	return 0;
+>  }
+>  __initcall(huge_init_bm);
+> @@ -551,6 +574,8 @@ __initcall(huge_init_bm);
+>  static int __init hugetlb_init_hstate(struct hstate *h)
+>  {
+>  	unsigned long i;
+> +	char buf[32];
+> +	unsigned long pages = 0;
+>  
+>  	/* Don't reinitialize lists if they have been already init'ed */
+>  	if (!h->hugepage_freelists[0].next) {
+> @@ -567,12 +592,14 @@ static int __init hugetlb_init_hstate(st
+>  		} else if (!alloc_fresh_huge_page(h))
+>  			break;
+>  		h->parsed_hugepages++;
+> +		pages++;
+>  	}
+>  	max_huge_pages[h - hstates] = h->parsed_hugepages;
+>  
+> -	printk(KERN_INFO "Total HugeTLB memory allocated, %ld %dMB pages\n",
+> +	if (pages > 0)
+> +		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
+>  			h->free_huge_pages,
+> -			1 << (h->order + PAGE_SHIFT - 20));
+> +			memfmt(buf, huge_page_size(h)));
+>  	return 0;
+>  }
+>  
 > 
 
 -- 
-Stefan Richter
--=====-==--- --== =--==
-http://arcgraph.de/sr/
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
