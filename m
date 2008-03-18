@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYCREzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYCRE6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYCREzm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 00:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYCREze
+	id S1753510AbYCRE6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 00:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYCRE6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 00:55:34 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47628 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752419AbYCREze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 00:55:34 -0400
-X-Sasl-enc: oYztGAjDygpivTKRXPjE/RlpnwOd6oXXigyJNc/Qxl+J 1205816132
-Date: Tue, 18 Mar 2008 01:55:28 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: LED naming standard for LED class
-Message-ID: <20080318045528.GB17147@khazad-dum.debian.net>
-References: <1202380503.9519.21.camel@dax.rpnet.com> <20080207213845.GA27862@khazad-dum.debian.net> <1202422388.9519.123.camel@dax.rpnet.com> <20080316181840.GG19825@khazad-dum.debian.net> <1205695756.4524.20.camel@dax.rpnet.com> <20080316194823.GA31782@khazad-dum.debian.net> <20080317033458.GA20486@khazad-dum.debian.net> <1205747515.4552.15.camel@dax.rpnet.com> <20080318033501.GA17147@khazad-dum.debian.net>
+	Tue, 18 Mar 2008 00:58:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34759 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752241AbYCRE6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 00:58:12 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: Linux 2.6.25-rc6
+Date: Tue, 18 Mar 2008 00:57:09 -0400
+User-Agent: KMail/1.9.9
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>,
+       Gabriel C <crazy@frugalware.org>
+References: <alpine.LFD.1.00.0803161651350.3020@woody.linux-foundation.org> <47DEC7FC.2060003@googlemail.com> <20080317213330.27d47382@hyperion.delvare>
+In-Reply-To: <20080317213330.27d47382@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080318033501.GA17147@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803180057.09769.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008, Henrique de Moraes Holschuh wrote:
-> Now that we have it clear that a widespread ABI break took place, the
-> above reasoning doesn't hold anymore, and there is no reason to fix the
-> "past mistake" in the led class documentation.
 
-... there is no reason to NOT fix the ..., I mean.
+> > IMO that should be just reverted from 2.6.25 and pushed again in the next merge window.
+> 
+> This would be totally fine with me, yes.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I'll disable it in 2.6.25 and we can hopefully get it right in 2.6.26.
+
+thanks,
+-Len
+
+
+
