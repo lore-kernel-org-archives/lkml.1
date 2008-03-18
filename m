@@ -1,113 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934464AbYCSUk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761597AbYCSUmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934464AbYCSUk7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbYCSTmo
+	id S1761597AbYCSUmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757993AbYCSTms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:42:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:33088 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757871AbYCSTmd (ORCPT
+	Wed, 19 Mar 2008 15:42:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43244 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752274AbYCSTmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:42:33 -0400
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.25-rc4
-Date: Wed, 19 Mar 2008 05:03:27 +0100
-User-Agent: KMail/1.9.9
-Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803190424.30971.bzolnier@gmail.com> <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803190503.27719.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 19 Mar 2008 15:42:43 -0400
+Date: Tue, 18 Mar 2008 13:54:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: axboe@suse.de, linux-kernel@vger.kernel.org, Laurent.Vivier@bull.net
+Subject: Re: [PATCH][RESEND][v3] Modify loop device to be able to manage
+ partitions of the disk image
+Message-Id: <20080318135423.6c7b745f.akpm@linux-foundation.org>
+In-Reply-To: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 March 2008, Linus Torvalds wrote:
-> 
-> On Wed, 19 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Please take a closer look - my "real fix" _only_ affects WIN_SMART command
-> > and _not_ vendor special ones (no, there are none vendor special commands
-> > using the same opcode).
-> 
-> Oh, trust me, I understand your fix.
-> 
-> But the point is that your fix
-> 
->  - doesn't fix any other commands (and there are tons of other commands 
->    people may be using)
-> 
->  - and is totally pointless and isn't *needed* if we just fix this 
->    properly (ie we've never cared before, so why should we start caring 
->    now?).
-> 
-> See?
-> 
-> Fixing this properly is exactly what my patch did - it made the whole core 
-> engine not really even care. Just like it used to.
-> 
-> > Call taskfile crap all you want [ ... ]
-> 
-> You're totally not listening or understanding.
-> 
-> I'm not calling taskfile crap as a concept.
-> 
-> I'm calling fragile code that fails unnecessarily crap.
-> 
-> See the difference?
-> 
-> The old "drive_cmd_intr()" code (that you deleted) was fundamentally more 
-> robust than the taskfile code you replaced it with. 
-> 
-> And that's not just an opinion. It's a *fact*. It's why this bug showed up 
-> in the first place. Code that used to work because it didn't even care all 
-> that deeply about every single detail being set up just the way it wanted 
-> got replaced by code that was fragile.
-> 
-> Do you see the difference?
-> 
-> If we have a choice between robust code that just "does the right thing" 
-> even in the face of problems, and code that "stops working when you look 
-> at it wrong", which one should we choose? Which one is the better code? 
-> Which one is crap, and which one isn't?
-> 
-> The fact is, the old "drive_cmd_intr()" code was simply more robust.
-> 
-> So this is why I feel so strongly about this. Robust code is just about 
-> the most important thing we can have in the kernel. Bugs will always 
-> happen, but when they happen, we shouldn't just fall over dead. And that's 
-> exactly what code robustness is all about.
-> 
-> So we should make the DRQ/ERR status bit handling robust in the face of 
-> hardware and software that does odd things. Because we definitely have 
-> seen cases of both. Sometimes it is hw that doesn't work the way the spec 
-> requires, sometimes it's software that doesn't follow the spec 100%. It 
-> doesn't matter.
-> 
-> And once the status bit handling is robust (like it _used_ to be!), only 
-> *then* should we even ask ourself if we even care about having some random 
-> tfargs.data_phase value for specific SMART command sub-cases.
-> 
-> My personal opinion is obviously that we simply shouldn't even care (since 
-> we should now know that the driver doesn't care one way or the other), but 
-> if you want to apply your patch despite it having absolutely no meaning, 
-> that's your choice.
-> 
-> But the absolute first thing we should do is to make the code at least as 
-> robust as it used to be, and preferably aim _higher_ in robustness rather 
-> than lower!
+On Tue, 18 Mar 2008 13:19:20 +0100
+Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 
-OK, I got the point.
+> v3 is an updated version of v2, replacing a "%d" by a "%lu".
+> 
+> This patch allows to use loop device with partitionned disk image.
+> 
+> Original behavior of loop is not modified.
+> 
+> A new parameter is introduced to define how many partition we want to be
+> able to manage per loop device. This parameter is "loop_max_part".
+> 
+> For instance, to manage 63 partitions / loop device, we will do:
+> # modprobe loop loop_max_part=63
+> # ls -l /dev/loop?
+> brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> 
+> And to attach a raw partitionned disk image, the original losetup is used:
+> 
+> # losetup -f etch.img
+> EXT3 FS on loop0p1, internal journal
+> EXT3-fs: mounted filesystem with ordered data mode.
+> loop: module loaded
+>  loop0: p1 p2 < p5 >
+> # ls -l /dev/loop?*
+> brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+> brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+> brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+> brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> # mount /dev/loop0p1 /mnt
+> kjournald starting.  Commit interval 5 seconds
+> EXT3 FS on loop0p1, internal journal
+> EXT3-fs: mounted filesystem with ordered data mode.
+> # ls /mnt
+> bench  cdrom  home        lib         mnt   root     srv  usr
+> bin    dev    initrd      lost+found  opt   sbin     sys  var
+> boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+> # umount /mnt
+> # losetup -d /dev/loop0
+> 
+> Of course, the same behavior can be done using kpartx on a loop device,
+> but modifying loop avoids to stack several layers of block device (loop +
+> device mapper), this is a very light modification (40% of modifications
+> are to manage the new parameter).
+> 
+> ...
+>
+> index 9a5b665..7f2fd52 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			be mounted
+>  			Format: <1-256>
+>  
+> +	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
+> +			Should be greater than 0, the maximum value depends
+> +			on max_loop.
+> +
 
-Your patch is more robust and we should go with it
-(and thanks for fixing this bug!).
+This shouldn't be needed.
 
-Bart
+> @@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
+>  static int max_loop;
+>  module_param(max_loop, int, 0);
+>  MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
+> +module_param(loop_max_part, int, 0);
+> +MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
+
+Because this module_param() gives us the loop.loop_max_part=N kernel boot
+parameter.
+
+Given which, I think we could rename it to just "max_part":
+
+	modprobe loop max_part=4
+
+	kernel vmlinuz-... loop.max_part=4
+
+?
+
+>  __setup("max_loop=", max_loop_setup);
+
+That could go away in the same way, but we have a back-compat problem.
+
+> +
+> +static int __init max_part_setup(char *str)
+> +{
+> +	loop_max_part = simple_strtol(str, NULL, 0);
+> +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
+> +		/* we must keep at least one bit for loop device number */
+> +		printk(KERN_ERR
+> +			"loop: loop_max_part cannot be greater than %lu\n",
+> +			1UL << (MINORBITS - 1));
+> +		return 0;
+> +	}
+> +	return 1;
+> +}
+> +
+> +__setup("loop_max_part=", max_part_setup);
+
