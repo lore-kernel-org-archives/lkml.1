@@ -1,103 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbYCRBJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYCRBKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbYCRBJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 21:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYCRBJo
+	id S1755978AbYCRBKV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 21:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbYCRBJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 21:09:44 -0400
+	Mon, 17 Mar 2008 21:09:45 -0400
 Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:29992 "EHLO
 	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754315AbYCRBJh (ORCPT
+	with ESMTP id S1754335AbYCRBJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 21:09:37 -0400
+	Mon, 17 Mar 2008 21:09:38 -0400
 From: Andi Kleen <andi@firstfloor.org>
-Message-Id: <20080318209.039112899@firstfloor.org>
+References: <20080318209.039112899@firstfloor.org>
+In-Reply-To: <20080318209.039112899@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Date: Tue, 18 Mar 2008 02:09:34 +0100 (CET)
-X-OriginalArrivalTime: 18 Mar 2008 01:02:59.0939 (UTC) FILETIME=[CF4A6B30:01C88893]
+Subject: [PATCH prototype] [2/8] Add support to override mmap exec write protection with O_FORCEWRITE
+Message-Id: <20080318010936.489811B41E1@basil.firstfloor.org>
+Date: Tue, 18 Mar 2008 02:09:36 +0100 (CET)
+X-OriginalArrivalTime: 18 Mar 2008 01:03:01.0580 (UTC) FILETIME=[D044D0C0:01C88893]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patchkit is an experimental optimization I played around with 
-some time ago.
+pbitmaps need to write to files mapped as executable, so add 
+a way to bypass the normal write protection using a new O_FORCEWRITE
+flag.
 
-This is more a prototype still, but I wanted to push it out 
-so that other people can play with it.
+Right now the flag can be set from user space too. If have not
+made up my mind if that is a good or a bad thing (I don't think
+it has any real security implications). Probably it's more bad
+than good. 
 
-The basic idea is that most programs have the same working set
-over multiple runs. So instead of demand paging all the text pages
-in the order the program runs save the working set to disk and prefetch
-it at program start and then save it at program exit.
+Signed-off-by: Andi Kleen <andi@firstfloor.org>
 
-This allows some optimizations: 
-- it can avoid unnecessary disk seeks because the blocks will be fetched in 
-sorted offset order instead of program execution order. 
-- batch kernel entries (each demand page exception has some
-overhead just for entering the kernel). This keeps the caches hot too.
-- The prefetch could be in theory done in the background while the program 
-runs (although that is not implemented currently)
+---
+ fs/namei.c                  |    9 +++++++--
+ fs/open.c                   |    2 +-
+ include/asm-generic/fcntl.h |    4 ++++
+ include/linux/fs.h          |    1 +
+ 4 files changed, 13 insertions(+), 3 deletions(-)
 
-Some details on the implementation:
-
-To do all this we need a bitmap space somewhere in the ELF executable. I originally
-hoped to use a standard ELF PHDR for this, which are already parsed by the
-Linux ELF loader. However the problem is that PHDRs are part of the 
-mapped program image and inserting any new ones requires relinking
-the program. Since relinking programs just to get this would be 
-rather heavy-handed I used a hack by setting another bitflag 
-in the gnu_execstack header and when it is set let the kernel
-look for ELF SHDRs at the end of the file. Disadvantage is that
-this costs a seek, but it allows easily to update existing 
-executables with a simple too.
-
-The seek overhead would be gone if the linkers are taught to 
-always generate a PBITMAP bitmap header.
-
-I also considered external bitmap files, but just putting it into the ELF
-files and keeping it all together seemed much nicer policywise.
-
-Then there is some probability of thrashing the bitmap, e.g. when
-a program runs in different modi with totally different working sets
-(a good example of this would be busybox). I haven't found
-a good heuristic to handle this yet (e.g. one possibility would
-be to or the bitmap instead of rewriting it on exit) this is something
-that could need further experimentation. Also one doesn't want
-too many bitmap updates of course so there is a simple heuristic 
-to not update bitmaps more often than a sysctl configurable 
-interval.  
-
-User tools:
-ftp://ftp.firstfloor.org/pub/ak/pbitmap/pbitmap.c 
-is a simple program to a pbitmap shdrs to an existing ELF executable.
-
-Base kernel:
-Again 2.6.25-rc6
-
-Drawbacks: 
-- No support for dynamic libraries right now (except very clumpsily
-through the mmap_slurp hack). This is the main reason it is not 
-very useful for speed up desktops currently. 
-
-- Executable files have to be writable by the user executing it
-currently to get bitmap updates. It would be possible to let the 
-kernel bypass this, but I haven't thought too much about the security 
-implications of it.
-However any user can use the bitmap data written by a user with
-write rights.
-
-That's currently one of the bigger usability issues (together
-with the missing shared library support) and why it is more 
-a prototype than a fully usable solution.
-
-Possible areas of improvements if anybody is interested:
-- Background prefetch
-- Tune all the sysctl defaults
-- Implement shared library support (will require glibc support)
-- Do something about the executable access problem
-- Experiment with more fancy heuristics to update bitmaps (like OR
-or do aging etc.) 
-
--Andi 
+Index: linux/fs/namei.c
+===================================================================
+--- linux.orig/fs/namei.c
++++ linux/fs/namei.c
+@@ -334,10 +334,10 @@ int file_permission(struct file *file, i
+  * the inode->i_lock spinlock.
+  */
+ 
+-int get_write_access(struct inode * inode)
++int __get_write_access(struct inode * inode, int flags)
+ {
+ 	spin_lock(&inode->i_lock);
+-	if (atomic_read(&inode->i_writecount) < 0) {
++	if (atomic_read(&inode->i_writecount) < 0 && !(flags&O_FORCEWRITE)) {
+ 		spin_unlock(&inode->i_lock);
+ 		return -ETXTBSY;
+ 	}
+@@ -347,6 +347,11 @@ int get_write_access(struct inode * inod
+ 	return 0;
+ }
+ 
++int get_write_access(struct inode * inode)
++{
++	return __get_write_access(inode, 0);
++}
++
+ int deny_write_access(struct file * file)
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+Index: linux/fs/open.c
+===================================================================
+--- linux.orig/fs/open.c
++++ linux/fs/open.c
+@@ -742,7 +742,7 @@ static struct file *__dentry_open(struct
+ 				FMODE_PREAD | FMODE_PWRITE;
+ 	inode = dentry->d_inode;
+ 	if (f->f_mode & FMODE_WRITE) {
+-		error = get_write_access(inode);
++		error = __get_write_access(inode, f->f_flags & O_FORCEWRITE);
+ 		if (error)
+ 			goto cleanup_file;
+ 	}
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h
++++ linux/include/linux/fs.h
+@@ -1720,6 +1720,7 @@ extern int generic_permission(struct ino
+ 		int (*check_acl)(struct inode *, int));
+ 
+ extern int get_write_access(struct inode *);
++extern int __get_write_access(struct inode *i, int flags);
+ extern int deny_write_access(struct file *);
+ static inline void put_write_access(struct inode * inode)
+ {
+Index: linux/include/asm-generic/fcntl.h
+===================================================================
+--- linux.orig/include/asm-generic/fcntl.h
++++ linux/include/asm-generic/fcntl.h
+@@ -54,6 +54,10 @@
+ #ifndef O_NDELAY
+ #define O_NDELAY	O_NONBLOCK
+ #endif
++/* ignore ETXTBSY -- should probably hide it from user space */
++#ifndef O_FORCEWRITE
++#define O_FORCEWRITE    02000000
++#endif
+ 
+ #define F_DUPFD		0	/* dup */
+ #define F_GETFD		1	/* get close_on_exec */
