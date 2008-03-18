@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYCRATR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYCRAU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbYCRATR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 20:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbYCRATF
+	id S1756045AbYCRAU0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 20:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYCRAUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 20:19:05 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:49727 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751355AbYCRATE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 20:19:04 -0400
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Anders Eriksson <aeriksson@fastmail.fm>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-reply-to: <alpine.LFD.1.00.0803171548480.3020@woody.linux-foundation.org> 
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803161907.04581.bzolnier@gmail.com> <alpine.LFD.1.00.0803161111000.3020@woody.linux-foundation.org> <200803162054.04757.bzolnier@gmail.com> <20080316225921.CAA082DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803161618480.3020@woody.linux-foundation.org> <20080317210901.0135A93C911@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803171548480.3020@woody.linux-foundation.org>
-Comments: In-reply-to Linus Torvalds <torvalds@linux-foundation.org>
-   message dated "Mon, 17 Mar 2008 15:52:57 -0700."
-Mime-Version: 1.0
+	Mon, 17 Mar 2008 20:20:14 -0400
+Received: from lixom.net ([66.141.50.11]:40386 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752312AbYCRAUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Mar 2008 20:20:13 -0400
+Date: Mon, 17 Mar 2008 19:27:26 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
+       pasemi-linux@ozlabs.org, linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
+Subject: Re: [PATCH v2] pasemi_dma: Driver for PA Semi PWRficient on-chip
+	DMA engine
+Message-ID: <20080318002726.GA481@lixom.net>
+References: <20080306233900.GA3969@lixom.net> <20080316213002.GA2589@lixom.net> <e9c3a7c20803171146m5a7f0e11m31e074634de22b42@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 18 Mar 2008 01:18:31 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080318001831.575D093C911@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JbPXF-0007m5-64.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JbPXF-0007m5-64 2fd1a3318e0f71db60cf4936b7483880
+Content-Disposition: inline
+In-Reply-To: <e9c3a7c20803171146m5a7f0e11m31e074634de22b42@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 17, 2008 at 11:46:39AM -0700, Dan Williams wrote:
+> Looks good, makes me want to go back and cleanup iop-adma a bit.  A
+> few fyi's below, but no other review comments.
+> 
+> >  Note that this still needs to go on top of the powerpc.git tree due to the
+> >  pasemi_dma.h updates that this driver depends on. I suggest merging this
+> >  through pasemi.git->powerpc.git->linus with an Acked-by from the DMA guys.
+> 
+> Ok, it still may not compile in mainline until after 2.6.26-rc1 due to
+> additional dmaengine cleanups like the ack-to-flags change I posted
+> earlier.  Any better way to handle this?  Go through -mm?
 
-torvalds@linux-foundation.org said:
-> So try to see if you get to ide_error(), which is where Bartlomiejs latest
-> patch was in effect - but add a few printk's there to print out the 'stat'
-> variable etc to see if it actually triggers. And maybe a WARN_ON(1) to get
-> the trace.. 
+Either go through -mm where Andrew can keep it applied in appropriate
+order and send upstream, or just merge it late. It's a new driver, and
+they're normally OK to go in a little later. That might be the easiest
+solution in this case.
 
-Seems we don't. At least this addition didn't yield anything:
+> Acked-by: Dan Williams <dan.j.williams@intel.com>
 
-ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
-{
-        ide_hwif_t *hwif = drive->hwif;
-        struct request *rq = hwif->hwgroup->rq;
-        u8 err;
+Thanks!
 
-              printk("ide_error(msg=%s, stat=%i)\n",msg,stat);
-              WARN_ON(1);
-               if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
-
-Going to bed...
-
-/A
+-Olof
 
