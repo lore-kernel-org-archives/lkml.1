@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbYCSWW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbYCSWXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755016AbYCSWW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935826AbYCSVAM
+	id S1762998AbYCSWXi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763450AbYCSVAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:00:12 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:55963 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935827AbYCSVAG (ORCPT
+	Wed, 19 Mar 2008 17:00:18 -0400
+Received: from rn-out-0910.google.com ([64.233.170.191]:20449 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763443AbYCSVAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:00:06 -0400
-Date: Wed, 19 Mar 2008 16:13:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, andi@firstfloor.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: iommu: it could use some documentation
-Message-ID: <20080319151346.GA28798@elte.hu>
-References: <20080319145811.GA27113@elf.ucw.cz>
+	Wed, 19 Mar 2008 17:00:15 -0400
+Message-ID: <1ba2fa240803181043v511df0b6tbe43174feb2f7537@mail.gmail.com>
+Date: Tue, 18 Mar 2008 19:43:40 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Pierre Ossman" <drzeus@drzeus.cx>
+Subject: Re: SDIO: IO-Ready Bit
+Cc: lkml <linux-kernel@vger.kernel.org>, benzizbit@gmail.com
+In-Reply-To: <20080318123325.0843b854@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080319145811.GA27113@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0155]
+References: <1ba2fa240803180400y1d7a2740t2c21b8b73a755016@mail.gmail.com>
+	 <20080318123325.0843b854@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 18, 2008 at 1:33 PM, Pierre Ossman <drzeus@drzeus.cx> wrote:
+> On Tue, 18 Mar 2008 13:00:34 +0200
+>  "Tomas Winkler" <tomasw@gmail.com> wrote:
+>
+>  > I'm working on SDIO multi function device.  One of the subdevices  a
+>  > system device (SYS) who's  purpose among the others is to initialize
+>  > the whole combo, mainly it's loads the firmware of the devices and
+>  > kick the sub devices. Each of the sub devices has it's own driver.
+>  > This dictates the order of the driver initialization and SYS device
+>  > has to compete it's work before other subdeivces drivers can access
+>  > the hardware. From hardware perspective device is ready when IO-Ready
+>  > bit in SDIO is set.
+>
+>  What a delightfully unfriendly design...
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+Yes, but it's damage is already done.
 
-> Fix coding style in pci-dma_64.c and add stubs for documentation. I 
-> hope someone fills the rest, I understand maybe off and soft...
+>
+>  > The first problem is that currently there is hard code timeout  in
+>  > sdio_enable_func instead of using TPLFE_ENABLE_TIMEOUT_VAL
+>  > /*
+>  >        * FIXME: This should timeout based on information in the CIS,
+>  >        * but we don't have card to parse that yet.
+>  >        */
+>  >       timeout = jiffies + HZ
+>  >
+>  > This can be probably easily fixed. The significant issue is that this
+>  > is done in busy wait loop and that probe functions are called in
+>  > serially.
+>
+>  The SDIO spec doesn't really allow such a card to exist. So it's not surprising that things break.
 
-> +	iommu=		[x86]
-> +		off
-> +		force
-> +		noforce
-> +		biomerge
-> +		panic
-> +		nopanic
-> +		merge
-> +		nomerge
-> +		forcesac
-> +		soft
+Not sure to which part of the above paragraph you refer here. The
+timeout is defined by spec.
 
-these are mostly quirks to get boards booting - few people use these for 
-performance tuning. SAC has an address space limit (40 bits) but is 
-faster, DAC can cover the physical address range but is slower. The 
-softiotlb we better forget about ;-)
+> Does any stack support this odd-ball card?
 
-if you are interested in fixing this, the descriptions from 
-Documentation/x86_64/boot-options.txt should/could be merged into 
-Documentation/kernel-parameters.txt.
+>
+>
+>  >
+>  > Since we cannot ensure that enumeration of SYS devices will be first
+>  > the other sub devices will fail in their probe functions while calling
+>  > sido_enable_func
+>  >
+>  > One option is to move the sdio_enable_func to be called from a work
+>  > queue kicked from probe. This still requires non-busy wait timeout on
+>  > IO-Ready bit and we cannot fail probe func
+>  > if something goes wrong.
+>  > Second option would be somehow split the sdio probe function across
+>  > the enabled timeout.
+>
+>  I think it's a bit more complex than that. There are likely locks all over the place, both in the relevant driver and the driver model core, that makes this very difficult. Not to mention the fact that the correct timeout will be finite, and you never know how long it will take you to load the firmware.
 
-	Ingo
+Good point but IMHO the timeout can got to minutes so it's converging
+to infinite in this case.
+
+
+
+>
+>  A better approach is to simply have the drivers for your subfunctions synchronize things. Make sure noone calls sdio_enable_func() until the firmware has been loaded.
+
+This could even be done from user space in case you want to use a
+standard driver.
+
+Won't this prevent us from compiling the drivers into kernel?
+Second how this possible especially with standard driver as they are
+loaded. I know you can enforce module loading but how can you enforce
+probing order form user space?
+
+Thanks
+Tomas
+
+>  Rgds
+>  Pierre
+>
+>
