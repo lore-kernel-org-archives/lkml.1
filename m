@@ -1,67 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936889AbYCSVR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765377AbYCSVR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936889AbYCSVR2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761956AbYCST7t
+	id S1765377AbYCSVR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761962AbYCST7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:59:49 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36154 "EHLO
+	Wed, 19 Mar 2008 15:59:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36158 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761902AbYCST7e (ORCPT
+	with ESMTP id S1761911AbYCST7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:59:34 -0400
-Date: Wed, 19 Mar 2008 00:54:57 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
+	Wed, 19 Mar 2008 15:59:38 -0400
+Date: Tue, 18 Mar 2008 23:52:03 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        pm list <linux-pm@lists.linux-foundation.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
        Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
-	hibernation callbacks
-Message-ID: <20080318235457.GA1936@elf.ucw.cz>
-References: <20080318100106.GA10830@elf.ucw.cz> <Pine.LNX.4.44L0.0803181103410.1476-100000@netrider.rowland.org>
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
+	patchset against -rc6)
+Message-ID: <20080318225201.GA2115@elf.ucw.cz>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0803181103410.1476-100000@netrider.rowland.org>
+In-Reply-To: <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > So... we do prepare() but it detects new child, so it returns -EAGAIN.
-> >   so we call complete() based on description above
-> > ...and then we call prepare() to suspend again?
+On Tue 2008-03-18 10:31:28, Linus Torvalds wrote:
 > 
-> You misunderstood (maybe the comment needs to be clarified as above).  
-
-Yes, please :-).
-
-> If prepare() returns any error (including -EAGAIN) then complete() does
-> not get called.  If prepare() returns successfully but the PM core
-> detects that a new child was added while prepare() was running, then we
-> call complete(), suspend the child, and call prepare() again.
-
-Ok.
-
-> > > + * @suspend: Executed before putting the system into a sleep state in which the
-> > > + *	contents of main memory are preserved.  Quiesce the device, put it into
+> 
+> On Tue, 18 Mar 2008, Pavel Machek wrote:
+> >
+> > On Tue 2008-03-18 14:06:42, Pavel Machek wrote:
+> > > 
+> > > Confirmed, suspend slowness is in 2.6.25-rc6, too. It takes 15 seconds
+> > > to suspend/resume, while 2.6.24 takes 9. Thinkpad x60.
 > > 
-> > content....is?
+> > IIRC 2.6.25-rc5 was "fast".
 > 
-> It's okay to use "contents" -- analogous to the table of contents in a
-> book.  It's one of those weird corner cases where either alternative is
-> acceptable.
+> Can you bisect it? There's only 343 commits between -rc5 and -rc6,
+> so it 
 
-Ok -- I guess I should get that english course ;-).
-									Pavel
+It will take a while. My .git directory is 7G, and I'd like to do a
+backup before playing with git.
+
+git gc does not exist here, so I guess I need to update git, too :-(.
+
+> should not take too long to check which commit it is. Even if it should 
+> take 9 reboots to bisect it entirely, going just five or six will likely 
+> narrow it down sufficiently that we can probably guess fairly well what 
+> it's about.
+
+Hmm, it gets weirder. 2.6.25-rc5 was fast, and had small problem with
+backlight hotkeys did not work.
+
+2.6.25-rc6 has backlight hotkeys somehow working, but closing/opening lid in X
+kills the backlight, making machine unusable.
+
+Hmm...
+
+commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
+tree 0822ef23606a733e00bbf75d3e218b1e92abdd78
+parent 2f44bbb495dd3e6d0209eff2257438ab9c570e5b
+author Zhao Yakui <yakui.zhao@intel.com> Tue, 11 Mar 2008 16:56:47
++0800
+committer Len Brown <len.brown@intel.com> Tue, 11 Mar 2008 22:20:19
+-0400
+
+    ACPI: Ignore _BQC object when registering backlight device
+
+    According to acpi spec , the objects of  _BCL and _BCM are
+required if
+    integrated LCD is present and supports brightness level .The _BQC
+is
+    the optional object. So the _BQC object is ignored when the
+backlight device
+    is registered in ACPI video driver.
+
+    http://bugzilla.kernel.org/show_bug.cgi?id=10206
+
+    Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+    Signed-off-by: Zhang Rui  <rui.zhang@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+
+when did this go in? Pretty recently, right? And that means that ACPI
+backlight driver is now used on machines where it was not used
+before...?
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
