@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYCRMs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYCRMt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbYCRMs5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 08:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYCRMst
+	id S1753592AbYCRMt6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 08:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYCRMtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 08:48:49 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:33988 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752242AbYCRMss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 08:48:48 -0400
-Date: Tue, 18 Mar 2008 13:47:59 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: MMC: Card detection through pin CD/DAT3 issue
-Message-ID: <20080318134759.04450604@mjolnir.drzeus.cx>
-In-Reply-To: <83116F0A4FF67A4F97BA0B6E408C48E301DAB4DF@zuerich.BC-Int.NET>
-References: <83116F0A4FF67A4F97BA0B6E408C48E301DAB4AA@zuerich.BC-Int.NET>
-	<20080318122033.020b45b5@mjolnir.drzeus.cx>
-	<83116F0A4FF67A4F97BA0B6E408C48E301DAB4DF@zuerich.BC-Int.NET>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Mar 2008 08:49:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:36868 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752497AbYCRMtt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 08:49:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=I6+fyDTJPCaSlzWM73lETpXTvJm0iM+BSrOIlV5S3RTDlEzo/OcYWZu7qaOzsPovjsaIR7fi20Bz2ewq/cx+5xP2hdqzGE3MF8qwt4MMN5SvVYhzT996W+FTVBE9XGpTQV3cCLL8nO72hcXU9FbH08f3J4q3uQgGq6OjMXzuw3s=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Subject: Re: Linux 2.6.25-rc4
+Date: Tue, 18 Mar 2008 14:03:36 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <alpine.LFD.1.00.0803171548480.3020@woody.linux-foundation.org> <20080318001831.575D093C911@tippex.mynet.homeunix.org>
+In-Reply-To: <20080318001831.575D093C911@tippex.mynet.homeunix.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803181403.37969.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 13:24:33 +0100
-"Wappler Marcel" <Marcel.Wappler@bridgeco.net> wrote:
-
+On Tuesday 18 March 2008, Anders Eriksson wrote:
 > 
-> I have found this requirement in the SD host controller spec:
-> "The card detect is active regardless of the SD Bus Power."
+> torvalds@linux-foundation.org said:
+> > So try to see if you get to ide_error(), which is where Bartlomiejs latest
+> > patch was in effect - but add a few printk's there to print out the 'stat'
+> > variable etc to see if it actually triggers. And maybe a WARN_ON(1) to get
+> > the trace.. 
 > 
-> I wonder how the card should be able to pull up the CD/DAT3 Pad to VCC
-> if its only VCC pad is not connected to VCC due to the fact that the host
-> controller has switched off the cards power - any idea how this could be
-> managed?
-
-It could provide a very low voltage and current, just enough to probe the resistor but not enough to actually power anything on the card.
-
+> Seems we don't. At least this addition didn't yield anything:
 > 
-> There is a SD card spec section somewhere which statet that:
-> "If one of the supply pins (VDD or VSS) is not connected properly, then
-> the current is drawn through a data line to supply the card."
+> ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
+> {
+>         ide_hwif_t *hwif = drive->hwif;
+>         struct request *rq = hwif->hwgroup->rq;
+>         u8 err;
 > 
-> Maybe this is the key in understanding ho the pull up without VCC connected
-> works?
+>               printk("ide_error(msg=%s, stat=%i)\n",msg,stat);
+>               WARN_ON(1);
+>                if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
 > 
 
-I think that's just a warning that the supply pins need to be grounded when power is disabled. I have a controller where they are left floating, and some cards do indeed power up using power from the data line pull-ups. The end results is a heavily malfunctioning card due to insufficient power supply.
+Could you also add printk() to task_in_intr()?
 
-Most of this card detection using DAT3 business is unknown to me. The spec that describes how it is supposed to work is not publicly available, so I can only speculate.
+---
+ drivers/ide/ide-taskfile.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Rgds
--- 
-     -- Pierre Ossman
+Index: b/drivers/ide/ide-taskfile.c
+===================================================================
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -433,6 +433,8 @@ static ide_startstop_t task_in_intr(ide_
+ 
+ 	/* new way for dealing with premature shared PCI interrupts */
+ 	if (!OK_STAT(stat, DRQ_STAT, BAD_R_STAT)) {
++		printk(KERN_INFO "%s: %s: stat=%02x\n",
++				 __func__, drive->name, stat);
+ 		if (stat & (ERR_STAT | DRQ_STAT))
+ 			return task_error(drive, rq, __FUNCTION__, stat);
+ 		/* No data yet, so wait for another IRQ. */
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
