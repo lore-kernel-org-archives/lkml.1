@@ -1,78 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYCRC2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYCRCyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbYCRC2A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 22:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbYCRC1w
+	id S1753449AbYCRCyK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 22:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYCRCx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 22:27:52 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:41723 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbYCRC1w (ORCPT
+	Mon, 17 Mar 2008 22:53:59 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:59119 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751946AbYCRCx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 22:27:52 -0400
-Subject: Re: [PATCH 2/5] introduce CLOCK_MONOTONIC_RAW
-From: john stultz <johnstul@us.ibm.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1205805818.28128.91.camel@localhost>
-References: <1205553852.6122.76.camel@localhost.localdomain>
-	 <1205553938.6122.79.camel@localhost.localdomain>
-	 <1205554018.6122.81.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0803150536290.1791@scrub.home>
-	 <1205805818.28128.91.camel@localhost>
-Content-Type: text/plain
-Date: Mon, 17 Mar 2008 19:27:50 -0700
-Message-Id: <1205807270.28128.96.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Mar 2008 22:53:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=o4SQSsoyl3T9Gc9hng7y7LIc7C6pFofvdcFjPUpiiS7pnnBrTfuTk3+nOCusb93R+2rSLv0aJUslPdrscE0jBy3PvHfyPQ9c4J5gc9HJ9XgrXTbWaDBHh8zKkKuvl3dCSSl50npj1GZNh3qa7N4pYom1RBRin3k8PeGL75+bYmo=
+Message-ID: <86802c440803171953i5a230cf0pda3a96a173f8707f@mail.gmail.com>
+Date: Mon, 17 Mar 2008 19:53:57 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>
+Subject: [PATCH] mm: offset align in alloc_bootmem v3
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_19488_7845786.1205808837203"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-03-17 at 19:03 -0700, john stultz wrote:
-> On Sat, 2008-03-15 at 05:50 +0100, Roman Zippel wrote:
-> > > @@ -439,6 +475,7 @@ static void clocksource_adjust(s64 offset)
-> > >  void update_wall_time(void)
-> > >  {
-> > >  	cycle_t offset;
-> > > +	static u64 raw_snsec; /* shifted raw nanosecnds */
-> > >  
-> > >  	/* Make sure we're fully resumed: */
-> > >  	if (unlikely(timekeeping_suspended))
-> > 
-> > IMO that's really a clock property, so this belongs in the clock 
-> > structure.
-> > (Some day we may want to have multiple active clocks for various purposes 
-> > and thus export multiple raw clocks.)
-> 
-> I disagree. I think that crufts up the clocksource structure (which is
-> ideally just a simple hw counter abstraction), with timekeeping state.
-
-Bah. Ok, I've talked myself out of this one. 
-
-I still think it crufts up the clocksource structure, but its more
-consistent that we follow the established cruft (such as the
-pre-calculated cycle_interval/xtime_interval/raw_interval combo) rather
-then me trying to arbitrarily draw the line in the sand at this
-variable.
+------=_Part_19488_7845786.1205808837203
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-> I'm still not sold on the multiple clocks with multiple notions of time
-> idea you keep on bringing up. But if/when we cross that bridge, maybe it
-> would be better to add a timekeeping_clock mid-layer abstraction that
-> keeps the clocksource specific timekeeping state. That way we don't add
-> lots of complexity for the clocksource driver writers to deal with and
-> we allow the clocksources to be better re-purposed (for maybe more sane
-> things like performance counters) without getting too bloated.
 
-I still think pulling out all of the non-counter-abstraction bits out of
-the clocksource and into a mid-level timekeeping_clock structure would
-still be ideal here, but I'll save our time/energy on that one for
-another day. :)
+------=_Part_19488_7845786.1205808837203
+Content-Type: text/x-patch; name=offset_alloc_bootmem_v3.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdxvgmvx0
+Content-Disposition: attachment; filename=offset_alloc_bootmem_v3.patch
 
-thanks
--john
-
-
+W1BBVENIXSBtbTogb2Zmc2V0IGFsaWduIGluIGFsbG9jX2Jvb3RtZW0gdjMKCm5lZWQgb2Zmc2V0
+IGFsaWdubWVudCB3aGVuIG5vZGVfYm9vdF9zdGFydCdzIGFsaWdubWVudCBpcyBsZXNzIHRoYW4K
+YWxpZ24gcmVxdWlyZWQKCnVzZSBsb2NhbCBub2RlX2Jvb3Rfc3RhcnQgdG8gbWF0Y2ggYWxpZ24u
+IHNvIGRvbid0IGFkZCBleHRyYSBvcHRlcmF0aW9uIGluCnNlYXJjaCBsb29wLgoKU2lnbmVkLW9m
+Zi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKSW5kZXg6IGxpbnV4LTIu
+Ni9tbS9ib290bWVtLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvbW0vYm9vdG1lbS5j
+CisrKyBsaW51eC0yLjYvbW0vYm9vdG1lbS5jCkBAIC0yMDYsOSArMjA2LDExIEBAIHZvaWQgKiBf
+X2luaXQKIF9fYWxsb2NfYm9vdG1lbV9jb3JlKHN0cnVjdCBib290bWVtX2RhdGEgKmJkYXRhLCB1
+bnNpZ25lZCBsb25nIHNpemUsCiAJICAgICAgdW5zaWduZWQgbG9uZyBhbGlnbiwgdW5zaWduZWQg
+bG9uZyBnb2FsLCB1bnNpZ25lZCBsb25nIGxpbWl0KQogewotCXVuc2lnbmVkIGxvbmcgb2Zmc2V0
+LCByZW1haW5pbmdfc2l6ZSwgYXJlYXNpemUsIHByZWZlcnJlZDsKKwl1bnNpZ25lZCBsb25nIGFy
+ZWFzaXplLCBwcmVmZXJyZWQ7CiAJdW5zaWduZWQgbG9uZyBpLCBzdGFydCA9IDAsIGluY3IsIGVp
+ZHgsIGVuZF9wZm47CiAJdm9pZCAqcmV0OworCXVuc2lnbmVkIGxvbmcgbm9kZV9ib290X3N0YXJ0
+OworCXZvaWQgKm5vZGVfYm9vdG1lbV9tYXA7CiAKIAlpZiAoIXNpemUpIHsKIAkJcHJpbnRrKCJf
+X2FsbG9jX2Jvb3RtZW1fY29yZSgpOiB6ZXJvLXNpemVkIHJlcXVlc3RcbiIpOwpAQCAtMjE2LDIz
+ICsyMTgsMjkgQEAgX19hbGxvY19ib290bWVtX2NvcmUoc3RydWN0IGJvb3RtZW1fZGF0YQogCX0K
+IAlCVUdfT04oYWxpZ24gJiAoYWxpZ24tMSkpOwogCi0JaWYgKGxpbWl0ICYmIGJkYXRhLT5ub2Rl
+X2Jvb3Rfc3RhcnQgPj0gbGltaXQpCi0JCXJldHVybiBOVUxMOwotCiAJLyogb24gbm9kZXMgd2l0
+aG91dCBtZW1vcnkgLSBib290bWVtX21hcCBpcyBOVUxMICovCiAJaWYgKCFiZGF0YS0+bm9kZV9i
+b290bWVtX21hcCkKIAkJcmV0dXJuIE5VTEw7CiAKKwkvKiBiZGF0YS0+bm9kZV9ib290X3N0YXJ0
+IGlzIHN1cHBvc2VkIHRvIGJlICgxMis2KWJpdHMgYWxpZ25tZW50IG9uIHg4Nl82NCA/ICovCisJ
+bm9kZV9ib290X3N0YXJ0ID0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydDsKKwlub2RlX2Jvb3RtZW1f
+bWFwID0gYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXA7CisJaWYgKGFsaWduKSB7CisJCW5vZGVfYm9v
+dF9zdGFydCA9IEFMSUdOKGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQsIGFsaWduKTsKKwkJaWYgKG5v
+ZGVfYm9vdF9zdGFydCA+IGJkYXRhLT5ub2RlX2Jvb3Rfc3RhcnQpCisJCQlub2RlX2Jvb3RtZW1f
+bWFwID0gKHVuc2lnbmVkIGxvbmcgKiliZGF0YS0+bm9kZV9ib290bWVtX21hcCArCisJCQkgICAg
+UEZOX0RPV04obm9kZV9ib290X3N0YXJ0IC0gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCkvQklUU19Q
+RVJfTE9ORzsKKwl9CisKKwlpZiAobGltaXQgJiYgbm9kZV9ib290X3N0YXJ0ID49IGxpbWl0KQor
+CQlyZXR1cm4gTlVMTDsKKwogCWVuZF9wZm4gPSBiZGF0YS0+bm9kZV9sb3dfcGZuOwogCWxpbWl0
+ID0gUEZOX0RPV04obGltaXQpOwogCWlmIChsaW1pdCAmJiBlbmRfcGZuID4gbGltaXQpCiAJCWVu
+ZF9wZm4gPSBsaW1pdDsKIAotCWVpZHggPSBlbmRfcGZuIC0gUEZOX0RPV04oYmRhdGEtPm5vZGVf
+Ym9vdF9zdGFydCk7Ci0Jb2Zmc2V0ID0gMDsKLQlpZiAoYWxpZ24gJiYgKGJkYXRhLT5ub2RlX2Jv
+b3Rfc3RhcnQgJiAoYWxpZ24gLSAxVUwpKSAhPSAwKQotCQlvZmZzZXQgPSBhbGlnbiAtIChiZGF0
+YS0+bm9kZV9ib290X3N0YXJ0ICYgKGFsaWduIC0gMVVMKSk7Ci0Jb2Zmc2V0ID0gUEZOX0RPV04o
+b2Zmc2V0KTsKKwllaWR4ID0gZW5kX3BmbiAtIFBGTl9ET1dOKG5vZGVfYm9vdF9zdGFydCk7CiAK
+IAkvKgogCSAqIFdlIHRyeSB0byBhbGxvY2F0ZSBib290bWVtIHBhZ2VzIGFib3ZlICdnb2FsJwpA
+QCAtMjQwLDE1ICsyNDgsMTYgQEAgX19hbGxvY19ib290bWVtX2NvcmUoc3RydWN0IGJvb3RtZW1f
+ZGF0YQogCSAqLwogCXByZWZlcnJlZCA9IDA7CiAJaWYgKGdvYWwgJiYgUEZOX0RPV04oZ29hbCkg
+PCBlbmRfcGZuKSB7Ci0JCWlmIChnb2FsID4gYmRhdGEtPm5vZGVfYm9vdF9zdGFydCkKLQkJCXBy
+ZWZlcnJlZCA9IGdvYWwgLSBiZGF0YS0+bm9kZV9ib290X3N0YXJ0OworCQlpZiAoZ29hbCA+IG5v
+ZGVfYm9vdF9zdGFydCkKKwkJCXByZWZlcnJlZCA9IGdvYWwgLSBub2RlX2Jvb3Rfc3RhcnQ7CiAK
+LQkJaWYgKGJkYXRhLT5sYXN0X3N1Y2Nlc3MgPj0gcHJlZmVycmVkKQorCQlpZiAoYmRhdGEtPmxh
+c3Rfc3VjY2VzcyA+IG5vZGVfYm9vdF9zdGFydCAmJgorCQkJYmRhdGEtPmxhc3Rfc3VjY2VzcyAt
+IG5vZGVfYm9vdF9zdGFydCA+PSBwcmVmZXJyZWQpCiAJCQlpZiAoIWxpbWl0IHx8IChsaW1pdCAm
+JiBsaW1pdCA+IGJkYXRhLT5sYXN0X3N1Y2Nlc3MpKQotCQkJCXByZWZlcnJlZCA9IGJkYXRhLT5s
+YXN0X3N1Y2Nlc3M7CisJCQkJcHJlZmVycmVkID0gYmRhdGEtPmxhc3Rfc3VjY2VzcyAtIG5vZGVf
+Ym9vdF9zdGFydDsKIAl9CiAKLQlwcmVmZXJyZWQgPSBQRk5fRE9XTihBTElHTihwcmVmZXJyZWQs
+IGFsaWduKSkgKyBvZmZzZXQ7CisJcHJlZmVycmVkID0gUEZOX0RPV04oQUxJR04ocHJlZmVycmVk
+LCBhbGlnbikpOwogCWFyZWFzaXplID0gKHNpemUgKyBQQUdFX1NJWkUtMSkgLyBQQUdFX1NJWkU7
+CiAJaW5jciA9IGFsaWduID4+IFBBR0VfU0hJRlQgPyA6IDE7CiAKQEAgLTI1NiwxOCArMjY1LDE4
+IEBAIHJlc3RhcnRfc2NhbjoKIAlmb3IgKGkgPSBwcmVmZXJyZWQ7IGkgPCBlaWR4OykgewogCQl1
+bnNpZ25lZCBsb25nIGo7CiAKLQkJaSA9IGZpbmRfbmV4dF96ZXJvX2JpdChiZGF0YS0+bm9kZV9i
+b290bWVtX21hcCwgZWlkeCwgaSk7CisJCWkgPSBmaW5kX25leHRfemVyb19iaXQobm9kZV9ib290
+bWVtX21hcCwgZWlkeCwgaSk7CiAJCWkgPSBBTElHTihpLCBpbmNyKTsKIAkJaWYgKGkgPj0gZWlk
+eCkKIAkJCWJyZWFrOwotCQlpZiAodGVzdF9iaXQoaSwgYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXAp
+KSB7CisJCWlmICh0ZXN0X2JpdChpLCBub2RlX2Jvb3RtZW1fbWFwKSkgewogCQkJaSArPSBpbmNy
+OwogCQkJY29udGludWU7CiAJCX0KIAkJZm9yIChqID0gaSArIDE7IGogPCBpICsgYXJlYXNpemU7
+ICsraikgewogCQkJaWYgKGogPj0gZWlkeCkKIAkJCQlnb3RvIGZhaWxfYmxvY2s7Ci0JCQlpZiAo
+dGVzdF9iaXQoaiwgYmRhdGEtPm5vZGVfYm9vdG1lbV9tYXApKQorCQkJaWYgKHRlc3RfYml0KGos
+IG5vZGVfYm9vdG1lbV9tYXApKQogCQkJCWdvdG8gZmFpbF9ibG9jazsKIAkJfQogCQlzdGFydCA9
+IGk7CkBAIC0yNzgsMTQgKzI4NywxNCBAQCByZXN0YXJ0X3NjYW46CiAJCQlpICs9IGluY3I7CiAJ
+fQogCi0JaWYgKHByZWZlcnJlZCA+IG9mZnNldCkgewotCQlwcmVmZXJyZWQgPSBvZmZzZXQ7CisJ
+aWYgKHByZWZlcnJlZCA+IDApIHsKKwkJcHJlZmVycmVkID0gMDsKIAkJZ290byByZXN0YXJ0X3Nj
+YW47CiAJfQogCXJldHVybiBOVUxMOwogCiBmb3VuZDoKLQliZGF0YS0+bGFzdF9zdWNjZXNzID0g
+UEZOX1BIWVMoc3RhcnQpOworCWJkYXRhLT5sYXN0X3N1Y2Nlc3MgPSBQRk5fUEhZUyhzdGFydCkg
+KyBub2RlX2Jvb3Rfc3RhcnQ7CiAJQlVHX09OKHN0YXJ0ID49IGVpZHgpOwogCiAJLyoKQEAgLTI5
+NSw2ICszMDQsNyBAQCBmb3VuZDoKIAkgKi8KIAlpZiAoYWxpZ24gPCBQQUdFX1NJWkUgJiYKIAkg
+ICAgYmRhdGEtPmxhc3Rfb2Zmc2V0ICYmIGJkYXRhLT5sYXN0X3BvcysxID09IHN0YXJ0KSB7CisJ
+CXVuc2lnbmVkIGxvbmcgb2Zmc2V0LCByZW1haW5pbmdfc2l6ZTsKIAkJb2Zmc2V0ID0gQUxJR04o
+YmRhdGEtPmxhc3Rfb2Zmc2V0LCBhbGlnbik7CiAJCUJVR19PTihvZmZzZXQgPiBQQUdFX1NJWkUp
+OwogCQlyZW1haW5pbmdfc2l6ZSA9IFBBR0VfU0laRSAtIG9mZnNldDsKQEAgLTMwMywxNCArMzEz
+LDEyIEBAIGZvdW5kOgogCQkJLyogbGFzdF9wb3MgdW5jaGFuZ2VkICovCiAJCQliZGF0YS0+bGFz
+dF9vZmZzZXQgPSBvZmZzZXQgKyBzaXplOwogCQkJcmV0ID0gcGh5c190b192aXJ0KGJkYXRhLT5s
+YXN0X3BvcyAqIFBBR0VfU0laRSArCi0JCQkJCSAgIG9mZnNldCArCi0JCQkJCSAgIGJkYXRhLT5u
+b2RlX2Jvb3Rfc3RhcnQpOworCQkJCQkgICBvZmZzZXQgKyBub2RlX2Jvb3Rfc3RhcnQpOwogCQl9
+IGVsc2UgewogCQkJcmVtYWluaW5nX3NpemUgPSBzaXplIC0gcmVtYWluaW5nX3NpemU7CiAJCQlh
+cmVhc2l6ZSA9IChyZW1haW5pbmdfc2l6ZSArIFBBR0VfU0laRS0xKSAvIFBBR0VfU0laRTsKIAkJ
+CXJldCA9IHBoeXNfdG9fdmlydChiZGF0YS0+bGFzdF9wb3MgKiBQQUdFX1NJWkUgKwotCQkJCQkg
+ICBvZmZzZXQgKwotCQkJCQkgICBiZGF0YS0+bm9kZV9ib290X3N0YXJ0KTsKKwkJCQkJICAgb2Zm
+c2V0ICsgbm9kZV9ib290X3N0YXJ0KTsKIAkJCWJkYXRhLT5sYXN0X3BvcyA9IHN0YXJ0ICsgYXJl
+YXNpemUgLSAxOwogCQkJYmRhdGEtPmxhc3Rfb2Zmc2V0ID0gcmVtYWluaW5nX3NpemU7CiAJCX0K
+QEAgLTMxOCwxNCArMzI2LDE0IEBAIGZvdW5kOgogCX0gZWxzZSB7CiAJCWJkYXRhLT5sYXN0X3Bv
+cyA9IHN0YXJ0ICsgYXJlYXNpemUgLSAxOwogCQliZGF0YS0+bGFzdF9vZmZzZXQgPSBzaXplICYg
+flBBR0VfTUFTSzsKLQkJcmV0ID0gcGh5c190b192aXJ0KHN0YXJ0ICogUEFHRV9TSVpFICsgYmRh
+dGEtPm5vZGVfYm9vdF9zdGFydCk7CisJCXJldCA9IHBoeXNfdG9fdmlydChzdGFydCAqIFBBR0Vf
+U0laRSArIG5vZGVfYm9vdF9zdGFydCk7CiAJfQogCiAJLyoKIAkgKiBSZXNlcnZlIHRoZSBhcmVh
+IG5vdzoKIAkgKi8KIAlmb3IgKGkgPSBzdGFydDsgaSA8IHN0YXJ0ICsgYXJlYXNpemU7IGkrKykK
+LQkJaWYgKHVubGlrZWx5KHRlc3RfYW5kX3NldF9iaXQoaSwgYmRhdGEtPm5vZGVfYm9vdG1lbV9t
+YXApKSkKKwkJaWYgKHVubGlrZWx5KHRlc3RfYW5kX3NldF9iaXQoaSwgbm9kZV9ib290bWVtX21h
+cCkpKQogCQkJQlVHKCk7CiAJbWVtc2V0KHJldCwgMCwgc2l6ZSk7CiAJcmV0dXJuIHJldDsK
+------=_Part_19488_7845786.1205808837203--
