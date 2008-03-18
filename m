@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941823AbYCSXjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161041AbYCSXkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941823AbYCSXjj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939753AbYCSWJW
+	id S1161041AbYCSXkT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939759AbYCSWJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:09:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53499 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939746AbYCSWJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:09:20 -0400
-Date: Wed, 19 Mar 2008 18:09:40 -0500 (EST)
-Message-Id: <20080319.180940.107944704.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
-       linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: [RFC PATCH 05/13] dm: remove dead codes
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 18:09:25 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2339 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S939754AbYCSWJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:09:23 -0400
+Date: Tue, 18 Mar 2008 11:10:05 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
+ hibernation callbacks
+In-Reply-To: <20080318100106.GA10830@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0803181103410.1476-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes dead codes for the noflush suspend.
-No functional change.
+On Tue, 18 Mar 2008, Pavel Machek wrote:
 
-This patch is just a clean up of the codes and not functionally
-related to request-based dm.  But included here due to literal
-dependency.
+> > + * @complete: Undo the changes made by @prepare().  This method is executed for
+> > + *	all kinds of resume transitions, immediately following one of the resume
+> > + *	callbacks: @resume(), @thaw(), @restore(), or @recover().  Also executed
+> > + *	if a suspend callback (@suspend(), @freeze(), @poweroff(), @quiesce())
+> > + *	immediately following a successful @prepare() fails OR if a new child
+> > + *	of the device has been registered during @prepare().
 
-The dm_queue_flush(md, DM_WQ_FLUSH_ALL, NULL) in dm_suspend()
-is never invoked because:
-  - The 'goto flush_and_out' is same as 'goto out', because
-    the 'goto flush_and_out' is called only when '!noflush'
-  - If the 'r && noflush' is true, the interrupt check code above
-    is invoked and 'goto out'
+"during a successful call to @prepare()"?
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/md/dm.c |   10 +---------
- 1 files changed, 1 insertion(+), 9 deletions(-)
+> So... we do prepare() but it detects new child, so it returns -EAGAIN.
+>   so we call complete() based on description above
+> ...and then we call prepare() to suspend again?
 
-Index: 2.6.25-rc5/drivers/md/dm.c
-===================================================================
---- 2.6.25-rc5.orig/drivers/md/dm.c
-+++ 2.6.25-rc5/drivers/md/dm.c
-@@ -1472,7 +1472,7 @@ int dm_suspend(struct mapped_device *md,
- 		if (!md->suspended_bdev) {
- 			DMWARN("bdget failed in dm_suspend");
- 			r = -ENOMEM;
--			goto flush_and_out;
-+			goto out;
- 		}
- 
- 		/*
-@@ -1523,14 +1523,6 @@ int dm_suspend(struct mapped_device *md,
- 
- 	set_bit(DMF_SUSPENDED, &md->flags);
- 
--flush_and_out:
--	if (r && noflush)
--		/*
--		 * Because there may be already I/Os in the pushback list,
--		 * flush them before return.
--		 */
--		dm_queue_flush(md, DM_WQ_FLUSH_ALL, NULL);
--
- out:
- 	if (r && md->suspended_bdev) {
- 		bdput(md->suspended_bdev);
+You misunderstood (maybe the comment needs to be clarified as above).  
+
+If prepare() returns any error (including -EAGAIN) then complete() does
+not get called.  If prepare() returns successfully but the PM core
+detects that a new child was added while prepare() was running, then we
+call complete(), suspend the child, and call prepare() again.
+
+> > + * @suspend: Executed before putting the system into a sleep state in which the
+> > + *	contents of main memory are preserved.  Quiesce the device, put it into
+> 
+> content....is?
+
+It's okay to use "contents" -- analogous to the table of contents in a
+book.  It's one of those weird corner cases where either alternative is
+acceptable.
+
+Alan Stern
+
