@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965525AbYCSVGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbYCSVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965525AbYCSVGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbYCST5V
+	id S1764284AbYCSVIS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761381AbYCST5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:57:21 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36813 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761272AbYCST5S (ORCPT
+	Wed, 19 Mar 2008 15:57:51 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:37211 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761369AbYCST5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:57:18 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 19 Mar 2008 20:56:26 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2/2] firewire: insist on successive self ID complete events
-To: Jarod Wilson <jwilson@redhat.com>
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
-Message-ID: <tkrat.00038248cbf40b77@s5r6.in-berlin.de>
-References: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
+	Wed, 19 Mar 2008 15:57:49 -0400
+X-Greylist: delayed 898 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 15:57:48 EDT
+Date: Tue, 18 Mar 2008 14:14:50 -0700
+From: Bryce Harrington <bryce@canonical.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Justin Madru <jdm64@gawab.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+Message-ID: <20080318211450.GU7206@bryceharrington.org>
+References: <47D828BB.2000702@gawab.com> <47DDC92A.7000703@gawab.com> <20080318190752.GS7206@bryceharrington.org> <200803181300.39857.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803181300.39857.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-HELO: localhost
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The whole topology code only works if the old and new topologies which
-are compared come from immediately successive self ID complete events.
+On Tue, Mar 18, 2008 at 01:00:39PM -0700, Jesse Barnes wrote:
+> > I could get it to build by ifdefing out th pci_device_map_range call,
+> > and then adding -lpciaccess to the linker, however it segfaults without
+> > that call.
+> >
+> > Does LIBPCIACCESS require xserver 1.4?  (We have 1.3 in Hardy).
+(Obviously I meant 1.5 / 1.4 above.  Dah.)
 
-If there happened bus resets without self ID complete events in the
-meantime, or self ID complete events with invalid selfIDs, the topology
-comparison could identify nodes wrongly, or more likely just corrupt
-kernel memory or panic right away.
+> No, libpciaccess should be standalone, but the Intel driver requires 0.10 or 
+> better... Which version are you building against?
 
-We new discard all nodes of the old topology and treat all current nodes
-as new ones if the current self ID generation is not the previous one
-plus 1.  This should fix another aspect of
-http://bugzilla.kernel.org/show_bug.cgi?id=10128
+I've put in a sync request for this to get updated for hardy.  (It still
+will only be in universe, so won't be built automatically with -intel,
+but at least users will be able to more easily compile it by hand.)
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-topology.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+Meanwhile, here is a Ubuntu Hardy build of Debian's package:
 
-Index: linux/drivers/firewire/fw-topology.c
-===================================================================
---- linux.orig/drivers/firewire/fw-topology.c
-+++ linux/drivers/firewire/fw-topology.c
-@@ -518,6 +518,17 @@ fw_core_handle_bus_reset(struct fw_card 
- 		return;
- 	}
- 
-+	/*
-+	 * If the selfID buffer is not the immediate successor of the
-+	 * previously processed one, we cannot reliably compare the
-+	 * old and new topologies.
-+	 */
-+	if ((generation & 0xff) != ((card->generation + 1) & 0xff)) {
-+		fw_notify("skipped bus generations, destroying all nodes\n");
-+		fw_destroy_nodes(card);
-+		card->bm_retries = 0;
-+	}
-+
- 	spin_lock_irqsave(&card->lock, flags);
- 
- 	/*
+  http://people.ubuntu.com/~bryce/Testing/libpciaccess/libpciaccess-dev_0.10-1_i386.deb
+  http://people.ubuntu.com/~bryce/Testing/libpciaccess/libpciaccess0_0.10-1_i386.deb
 
--- 
-Stefan Richter
--=====-==--- --== =--==
-http://arcgraph.de/sr/
+Bryce
 
