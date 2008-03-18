@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYCRMt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYCRMvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753592AbYCRMt6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 08:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYCRMtu
+	id S1753635AbYCRMvf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 08:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYCRMvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 08:49:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:36868 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbYCRMtt (ORCPT
+	Tue, 18 Mar 2008 08:51:25 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:37658 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbYCRMvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 08:49:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=I6+fyDTJPCaSlzWM73lETpXTvJm0iM+BSrOIlV5S3RTDlEzo/OcYWZu7qaOzsPovjsaIR7fi20Bz2ewq/cx+5xP2hdqzGE3MF8qwt4MMN5SvVYhzT996W+FTVBE9XGpTQV3cCLL8nO72hcXU9FbH08f3J4q3uQgGq6OjMXzuw3s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Subject: Re: Linux 2.6.25-rc4
-Date: Tue, 18 Mar 2008 14:03:36 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <alpine.LFD.1.00.0803171548480.3020@woody.linux-foundation.org> <20080318001831.575D093C911@tippex.mynet.homeunix.org>
-In-Reply-To: <20080318001831.575D093C911@tippex.mynet.homeunix.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803181403.37969.bzolnier@gmail.com>
+	Tue, 18 Mar 2008 08:51:24 -0400
+To: peterz@infradead.org
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <1205843375.8514.357.camel@twins> (message from Peter Zijlstra on
+	Tue, 18 Mar 2008 13:29:35 +0100)
+Subject: Re: [patch 4/8] mm: allow not updating BDI stats in
+	end_page_writeback()
+References: <20080317191908.123631326@szeredi.hu>
+	 <20080317191945.122011759@szeredi.hu> <1205840031.8514.346.camel@twins>
+	 <E1JbaTH-0005jN-4r@pomaz-ex.szeredi.hu> <1205843375.8514.357.camel@twins>
+Message-Id: <E1JbbHf-0005rm-R5@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 18 Mar 2008 13:51:15 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 March 2008, Anders Eriksson wrote:
+> Yes, it does two things, _however_ those two things are very much
+> related. Your use-case that breaks this relation is an execption - and I
+> haven't really grasped it yet..
 > 
-> torvalds@linux-foundation.org said:
-> > So try to see if you get to ide_error(), which is where Bartlomiejs latest
-> > patch was in effect - but add a few printk's there to print out the 'stat'
-> > variable etc to see if it actually triggers. And maybe a WARN_ON(1) to get
-> > the trace.. 
+> I'm in general not too keen about you having to export the BDI
+> accounting stuff and using it explicitly like this, but I'm afraid I
+> don't see a way around it - the danger is that other filesystems will
+> get creative (hence the req for GPL - that excludes the most creative
+> ones).
 > 
-> Seems we don't. At least this addition didn't yield anything:
-> 
-> ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
-> {
->         ide_hwif_t *hwif = drive->hwif;
->         struct request *rq = hwif->hwgroup->rq;
->         u8 err;
-> 
->               printk("ide_error(msg=%s, stat=%i)\n",msg,stat);
->               WARN_ON(1);
->                if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
-> 
+> Yes, it makes sense to delay the write completion accounting until its
+> actually completed.. but I would suggest all writeback accounting.
 
-Could you also add printk() to task_in_intr()?
+Doesn't work, as long as we have throttle_vm_writeout() waiting for
+NR_WRITEBACK to go below a threshold, delaying the NR_WRITEBACK
+accounting could lead to a deadlock.
 
----
- drivers/ide/ide-taskfile.c |    2 ++
- 1 file changed, 2 insertions(+)
+So at least until that's resolved NR_WRITEBACK_TEMP needs to be
+separate from NR_WRITEBACK_TEMP.  And it makes sense possibly even
+after that, as they are fundamentally different things.  The first one
+is page cache pages being under writeout, the second is just kernel
+buffers (mostly) unrelated to the page cache.
 
-Index: b/drivers/ide/ide-taskfile.c
-===================================================================
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -433,6 +433,8 @@ static ide_startstop_t task_in_intr(ide_
- 
- 	/* new way for dealing with premature shared PCI interrupts */
- 	if (!OK_STAT(stat, DRQ_STAT, BAD_R_STAT)) {
-+		printk(KERN_INFO "%s: %s: stat=%02x\n",
-+				 __func__, drive->name, stat);
- 		if (stat & (ERR_STAT | DRQ_STAT))
- 			return task_error(drive, rq, __FUNCTION__, stat);
- 		/* No data yet, so wait for another IRQ. */
+> So the thing that's in your way is that removing a page from the radix
+> tree doesn't imply its done writing. So perhaps we should make that
+> distinction instead?
+> 
+> So instead of conditionally do part of the accounting, never do it and
+> require something like: page_writeback_complete() to be called after a
+> successfull test_clear_page_writeback().
 
+Yes, that's a possibility, but then normal filesystems miss out on the
+small optimization provided by doing the BDI accounting functions
+inside the same IRQ disabled region as the radix tree operation.
+Would that have any significant performance impact?
+
+Miklos
