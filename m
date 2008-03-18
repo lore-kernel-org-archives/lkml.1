@@ -1,125 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYCSUQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbYCSUqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753583AbYCSUQY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbYCSTjD
+	id S1761971AbYCSUqd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYCSToN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:39:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754862AbYCSTiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:38:54 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
-       Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 33/79] [PATCH] do smp tainting checks in a separate function
-Date: Wed, 19 Mar 2008 14:25:28 -0300
-Message-Id: <12059477234148-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <1205947719906-git-send-email-gcosta@redhat.com>
-References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
- costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com>
+	Wed, 19 Mar 2008 15:44:13 -0400
+Received: from mfo32.po.2iij.NET ([210.128.50.15]:13237 "EHLO
+	mfo32.po.2iij.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755556AbYCSToA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:44:00 -0400
+Message-Id: <200803182251.m2IMphMF024820@po-mbox303.hop.2iij.net>
+Date: Wed, 19 Mar 2008 07:51:01 +0900
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: yoichi_yuasa@tripeaks.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: [PATCH 2/2] add  VR41xx SIU setup for serial console
+Organization: TriPeaks Corporation
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber Costa <gcosta@redhat.com>
+Add VR41xx SIU setup for serial console.
 
-It will ease integration for x86_64
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/smpboot.c    |   21 +++++++++++++++++++--
- arch/x86/kernel/smpboot_32.c |   20 ++------------------
- 2 files changed, 21 insertions(+), 20 deletions(-)
-
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 02427d1..ddb94ef 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -45,10 +45,8 @@ unsigned char *trampoline_base = __va(SMP_TRAMPOLINE_BASE);
- /* representing cpus for which sibling maps can be computed */
- static cpumask_t cpu_sibling_setup_map;
- 
--#ifdef CONFIG_X86_32
- /* Set if we find a B stepping CPU */
- int __cpuinitdata smp_b_stepping;
--#endif
- 
- static void __cpuinit smp_apply_quirks(struct cpuinfo_x86 *c)
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/arch/mips/vr41xx/common/init.c linux/arch/mips/vr41xx/common/init.c
+--- linux-orig/arch/mips/vr41xx/common/init.c	2008-03-12 17:03:15.200969168 +0900
++++ linux/arch/mips/vr41xx/common/init.c	2008-03-12 17:03:38.574609820 +0900
+@@ -1,7 +1,7 @@
+ /*
+  *  init.c, Common initialization routines for NEC VR4100 series.
+  *
+- *  Copyright (C) 2003-2005  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *  Copyright (C) 2003-2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -53,6 +53,8 @@ void __init plat_time_init(void)
+ void __init plat_mem_setup(void)
  {
-@@ -105,6 +103,25 @@ valid_k7:
- #endif
+ 	iomem_resource_init();
++
++	vr41xx_siu_setup();
  }
  
-+void smp_checks(void)
-+{
-+	if (smp_b_stepping)
-+		printk(KERN_WARNING "WARNING: SMP operation may be unreliable"
-+				    "with B stepping processors.\n");
+ void __init prom_init(void)
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/arch/mips/vr41xx/common/siu.c linux/arch/mips/vr41xx/common/siu.c
+--- linux-orig/arch/mips/vr41xx/common/siu.c	2008-03-12 17:03:15.200969168 +0900
++++ linux/arch/mips/vr41xx/common/siu.c	2008-03-12 17:05:49.337802432 +0900
+@@ -1,7 +1,7 @@
+ /*
+  *  NEC VR4100 series SIU platform device.
+  *
+- *  Copyright (C) 2007  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *  Copyright (C) 2007-2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -118,3 +118,37 @@ err_free_device:
+ 	return retval;
+ }
+ device_initcall(vr41xx_siu_add);
 +
-+	/*
-+	 * Don't taint if we are running SMP kernel on a single non-MP
-+	 * approved Athlon
-+	 */
-+	if (tainted & TAINT_UNSAFE_SMP) {
-+		if (cpus_weight(cpu_present_map))
-+			printk(KERN_INFO "WARNING: This combination of AMD"
-+				"processors is not suitable for SMP.\n");
-+		else
-+			tainted &= ~TAINT_UNSAFE_SMP;
++void __init vr41xx_siu_setup(void)
++{
++	struct uart_port port;
++	struct resource *res;
++	unsigned int *type;
++	int i;
++
++	switch (current_cpu_type()) {
++	case CPU_VR4111:
++	case CPU_VR4121:
++		type = siu_type1_ports;
++		res = siu_type1_resource;
++		break;
++	case CPU_VR4122:
++	case CPU_VR4131:
++	case CPU_VR4133:
++		type = siu_type2_ports;
++		res = siu_type2_resource;
++		break;
++	default:
++		return;
++	}
++
++	for (i = 0; i < SIU_PORTS_MAX; i++) {
++		port.line = i;
++		port.type = type[i];
++		if (port.type == PORT_UNKNOWN)
++			break;
++		port.mapbase = res[i].start;
++		port.membase = (unsigned char __iomem *)KSEG1ADDR(res[i].start);
++		vr41xx_siu_early_setup(&port);
 +	}
 +}
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/include/asm-mips/vr41xx/vr41xx.h linux/include/asm-mips/vr41xx/vr41xx.h
+--- linux-orig/include/asm-mips/vr41xx/vr41xx.h	2008-03-12 17:04:01.248560582 +0900
++++ linux/include/asm-mips/vr41xx/vr41xx.h	2008-03-12 17:03:38.730540709 +0900
+@@ -7,7 +7,7 @@
+  * Copyright (C) 2001, 2002 Paul Mundt
+  * Copyright (C) 2002 MontaVista Software, Inc.
+  * Copyright (C) 2002 TimeSys Corp.
+- * Copyright (C) 2003-2005 Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ * Copyright (C) 2003-2008 Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the
+@@ -143,4 +143,10 @@ extern void vr41xx_disable_csiint(uint16
+ extern void vr41xx_enable_bcuint(void);
+ extern void vr41xx_disable_bcuint(void);
+ 
++#ifdef CONFIG_SERIAL_VR41XX_CONSOLE
++extern void vr41xx_siu_setup(void);
++#else
++static inline void vr41xx_siu_setup(void) {}
++#endif
 +
+ #endif /* __NEC_VR41XX_H */
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/include/asm-mips/vr41xx/siu.h linux/include/asm-mips/vr41xx/siu.h
+--- linux-orig/include/asm-mips/vr41xx/siu.h	2008-03-12 17:04:01.248560582 +0900
++++ linux/include/asm-mips/vr41xx/siu.h	2008-03-12 17:03:38.730540709 +0900
+@@ -1,7 +1,7 @@
  /*
-  * The bootstrap kernel entry code has set these up. Save them for
-  * a given CPU
-diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index 34493f8..361851c 100644
---- a/arch/x86/kernel/smpboot_32.c
-+++ b/arch/x86/kernel/smpboot_32.c
-@@ -59,8 +59,6 @@
- #include <asm/vmi.h>
- #include <asm/mtrr.h>
+  *  Include file for NEC VR4100 series Serial Interface Unit.
+  *
+- *  Copyright (C) 2005  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *  Copyright (C) 2005-2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+  *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+@@ -49,4 +49,10 @@ typedef enum {
  
--extern int smp_b_stepping;
--
- static cpumask_t smp_commenced_mask;
+ extern void vr41xx_select_irda_module(irda_module_t module, irda_speed_t speed);
  
- /* which logical CPU number maps to which CPU (physical APIC ID) */
-@@ -791,6 +789,7 @@ static int __init smp_sanity_check(unsigned max_cpus)
- }
- 
- extern void impress_friends(void);
-+extern void smp_checks(void);
- /*
-  * Cycle through the processors sending APIC IPIs to boot each.
-  */
-@@ -865,22 +864,7 @@ static void __init smp_boot_cpus(unsigned int max_cpus)
- 
- 	impress_friends();
- 
--	if (smp_b_stepping)
--		printk(KERN_WARNING "WARNING: SMP operation may be unreliable with B stepping processors.\n");
--
--	/*
--	 * Don't taint if we are running SMP kernel on a single non-MP
--	 * approved Athlon
--	 */
--	if (tainted & TAINT_UNSAFE_SMP) {
--		if (cpus_weight(cpu_present_map))
--			printk (KERN_INFO "WARNING: This combination of AMD processors is not suitable for SMP.\n");
--		else
--			tainted &= ~TAINT_UNSAFE_SMP;
--	}
--
--	Dprintk("Boot done.\n");
--
-+	smp_checks();
- 	/*
- 	 * construct cpu_sibling_map, so that we can tell sibling CPUs
- 	 * efficiently.
--- 
-1.5.0.6
-
++#ifdef CONFIG_SERIAL_VR41XX_CONSOLE
++extern void vr41xx_siu_early_setup(struct uart_port *port);
++#else
++static inline void vr41xx_siu_early_setup(struct uart_port *port) {}
++#endif
++
+ #endif /* __NEC_VR41XX_SIU_H */
