@@ -1,47 +1,63 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbYCQMG1 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 17 Mar 2008 08:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYCQMGQ
+	id S1766012AbYCTBgG (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 19 Mar 2008 21:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYCTBf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 08:06:16 -0400
-Received: from mailfilter1.ihug.co.nz ([203.109.136.1]:5994 "EHLO
-	mailfilter1.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbYCQMGP (ORCPT
+	Wed, 19 Mar 2008 21:35:29 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:18124 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753452AbYCTBf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 08:06:15 -0400
-X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Mar 2008 08:06:14 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAC/53UfLbYkg/2dsb2JhbACmdw
-X-IronPort-AV: E=Sophos;i="4.25,512,1199617200"; 
-   d="scan'208";a="79675033"
-Ironport-Content-Filter: send-to-smtp
-Ironport-OCF: send-to-smtp
+	Wed, 19 Mar 2008 21:35:27 -0400
+Message-ID: <29214f5b0803180813p595c943fvb54185e0b8d831d9@mail.gmail.com>
+Date: Tue, 18 Mar 2008 22:13:54 +0700
+From: "NHA DAT SAI GON" <nhadepus04@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: BAN CAN HO CAO CAP V-STAR (SAIGON) -XEM TIEN DO XAY DUNG
 MIME-Version: 1.0
-Date: Mon, 17 Mar 2008 23:53:56 +1200
-From: UK NATIONAL LOTTERY <info@mail.com>
-To: info@uk.com
-Subject: Confirm reciept
-Organization: UK NATIONAL LOTTERY
-Reply-To: info.uknationallotterydept11@yahoo.dk
-Message-ID: <9213343a50a00201657381bfc222b9a0@ihug.co.nz>
-User-Agent: ihug Webmail/0.1b
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753788AbYCQMG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1766012AbYCTBgG@vger.kernel.org>
 
-You won the sum of £1,000,000,00 GBP from our monthly PROGRAM, you are
-hereby advice to get back to us, to claim your prize.Contact Mr.Pinkett
-Brown. Email:info.uknationallotterydept11@yahoo.dk. Claims
-Requirements:1.full name:2.Home Address:3.Age:4.Sex:5.Marital
-Status:7.Phone
-Number:8.occupation:9.Country Of Residence.
-Mrs. Rose Cole
+Chao cac ban,
 
+Ban nhan duoc email nay la do ban hoac mot ai do da dang ky dia chi
+email cua ban tai trang web: http://www.canhocaocap.net de nhan cac
+thong tin nha dat moi nhat cua chung toi.
 
+Nay chung toi han hanh thong bao voi cac ban cac can ho cao cap chung
+toi dang chao ban.
 
+Chung toi can ban mot so can ho cao cap V-Star cua Han Quoc xay dung o
+quan 7 (RAT GAN PHU MY HUNG), TP.HCM
 
+Vi tri tuyet voi, cac can ho thiet ke rat dep, hien dai, tien nghi, an
+ninh...va rat nhieu cac tien ich khac.
 
+Ban co the xem bai viet cua BAO SAI GON GIAI PHONG (20/05/2007) o Website:
 
+http://www.canhocaocap.net/page.asp?nha=21
+
+Can ho rat thich hop voi moi doi tuong, co the dung de o hoac dau tu...
+
+HIEN NAY CHUNG TOI DANG CO CHUONG TRINH GIA DAC BIET TRONG THANG
+
+Moi quy khach vao xem chi tiet cu the o website:
+
+http://www.canhocaocap.net
+
+Ban co the xem cac hinh anh toa nha, phong oc, cac tien ich, ban do...
+va TIEN DO XAY DUNG TOA NHA V-STAR (DANG THI CONG TANG 1- DA THI CONG
+MONG VA TANG HAM)
+
+email: bannha@gmail.com
+
+Ngoai ra ban co the xem cac hinh kien truc nha dep o Sai Gon.
+Xin cam on da xem tin
+
+***********************
+V-Star- Vstar- vstar - vsta - vta - korea
