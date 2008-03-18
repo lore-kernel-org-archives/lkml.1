@@ -1,65 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967090AbYCSWx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967154AbYCSWx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967090AbYCSWx0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765691AbYCSVVa
+	id S967154AbYCSWx6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbYCSVVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:21:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56010 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966025AbYCSVV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:21:27 -0400
+	Wed, 19 Mar 2008 17:21:51 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:40142 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966064AbYCSVVt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:21:49 -0400
+Message-ID: <47E052E3.4000107@suse.de>
+Date: Wed, 19 Mar 2008 02:40:19 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Guillaume Chazarain <guichaz@gmail.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       Tim Elliott <tle@holymonkey.com>
+Subject: Re: ACPI regression in 2.6.25-rc6 (function keys stop working)
+References: <3d8471ca0803171713q31b87939y557f6408543ac881@mail.gmail.com>	 <47DFC0D5.8020104@suse.de> <3d8471ca0803181629h63530825k6087b2a838484dca@mail.gmail.com>
+In-Reply-To: <3d8471ca0803181629h63530825k6087b2a838484dca@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 7/8] x86 ptrace: arch_ptrace -ENOSYS return
-In-Reply-To: Roland McGrath's message of  Wednesday, 19 March 2008 14:17:14 -0700 <20080319211714.8B14226F995@magilla.localdomain>
-References: <20080319211714.8B14226F995@magilla.localdomain>
-Emacs: where editing text is like playing Paganini on a glass harmonica.
-Message-Id: <20080319212050.32AA126F995@magilla.localdomain>
-Date: Wed, 19 Mar 2008 14:20:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return -ENOSYS from arch_ptrace and compat_arch_ptrace
-rather than calling ptrace_request or compat_ptrace_request.
+Hi Guillaume,
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/kernel/ptrace.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Thanks for tests, it looks like call_psw_on_capable_devices.patch does not
+help at all, and we should just revert the offending patch.
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 777d8f9..4d5561c 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1010,7 +1010,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- #endif
- 
- 	default:
--		ret = ptrace_request(child, request, addr, data);
-+		ret = -ENOSYS;
- 		break;
- 	}
- 
-@@ -1266,7 +1266,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 		return arch_ptrace(child, request, addr, data);
- 
- 	default:
--		return compat_ptrace_request(child, request, addr, data);
-+		ret = -ENOSYS;
-+		break;
- 	}
- 
- 	return ret;
+Sorry for the toruble,
+Alex.
+
+Guillaume Chazarain wrote:
+> Hi Alexey,
+> 
+> Thanks for your assistance. Here are the results of various tests:
+> 
+> === vanilla:
+>            CPU0
+>   0:      14637   IO-APIC-edge      timer
+>   1:        213   IO-APIC-edge      i8042
+>   3:          2   IO-APIC-edge
+>   8:          1   IO-APIC-edge      rtc
+>   9:        318   IO-APIC-fasteoi   acpi
+>  12:       3534   IO-APIC-edge      i8042
+>  14:      12481   IO-APIC-edge      ata_piix
+>  15:          0   IO-APIC-edge      ata_piix
+>  16:      14609   IO-APIC-fasteoi   uhci_hcd:usb5, firewire_ohci,
+> radeon@pci:0000:01:00.0
+>  17:       5681   IO-APIC-fasteoi   yenta, ipw2200, Intel ICH6
+>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4, sdhc0:slot0, eth0
+>  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  20:          0   IO-APIC-fasteoi   Intel ICH6 Modem
+>  23:          4   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+> NMI:          0   Non-maskable interrupts
+> LOC:      22742   Local timer interrupts
+> TRM:          0   Thermal event interrupts
+> SPU:          0   Spurious interrupts
+> ERR:          0
+> MIS:          0
+> 
+> ACPI keys don't work at all
+> 
+> === 2c81ce4c9c3 reverted:
+> 
+>            CPU0
+>   0:      13379   IO-APIC-edge      timer
+>   1:        205   IO-APIC-edge      i8042
+>   3:          2   IO-APIC-edge
+>   8:          1   IO-APIC-edge      rtc
+>   9:       3599   IO-APIC-fasteoi   acpi
+>  12:       3654   IO-APIC-edge      i8042
+>  14:      13034   IO-APIC-edge      ata_piix
+>  15:          0   IO-APIC-edge      ata_piix
+>  16:      14073   IO-APIC-fasteoi   uhci_hcd:usb5, firewire_ohci,
+> radeon@pci:0000:01:00.0
+>  17:       7855   IO-APIC-fasteoi   yenta, ipw2200, Intel ICH6
+>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4, eth0, sdhc0:slot0
+>  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  20:          0   IO-APIC-fasteoi   Intel ICH6 Modem
+>  23:          4   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+> NMI:          0   Non-maskable interrupts
+> LOC:      22153   Local timer interrupts
+> TRM:          0   Thermal event interrupts
+> SPU:          0   Spurious interrupts
+> ERR:          0
+> MIS:          0
+> 
+> ACPI keys work fine.
+> 
+> === 2c81ce4c9c3 reverted + call_psw_on_capable_devices.patch
+> 
+>            CPU0
+>   0:      12372   IO-APIC-edge      timer
+>   1:        195   IO-APIC-edge      i8042
+>   3:          2   IO-APIC-edge
+>   8:          1   IO-APIC-edge      rtc
+>   9:       7976   IO-APIC-fasteoi   acpi
+>  12:       1824   IO-APIC-edge      i8042
+>  14:      12168   IO-APIC-edge      ata_piix
+>  15:          0   IO-APIC-edge      ata_piix
+>  16:      11829   IO-APIC-fasteoi   uhci_hcd:usb5, firewire_ohci,
+> radeon@pci:0000:01:00.0
+>  17:       4803   IO-APIC-fasteoi   yenta, ipw2200, Intel ICH6
+>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4, sdhc0:slot0, eth0
+>  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  20:          0   IO-APIC-fasteoi   Intel ICH6 Modem
+>  23:         58   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+> NMI:          0   Non-maskable interrupts
+> LOC:      21962   Local timer interrupts
+> TRM:          0   Thermal event interrupts
+> SPU:          0   Spurious interrupts
+> ERR:          0
+> MIS:          0
+> 
+> ACPI keys work fine.
+> 
+> === dont_disable_ec_gpe_completely_at_storm.patch
+> 
+>            CPU0
+>   0:      19657   IO-APIC-edge      timer
+>   1:        434   IO-APIC-edge      i8042
+>   3:          2   IO-APIC-edge
+>   8:          1   IO-APIC-edge      rtc
+>   9:       3310   IO-APIC-fasteoi   acpi
+>  12:       7224   IO-APIC-edge      i8042
+>  14:      13055   IO-APIC-edge      ata_piix
+>  15:          0   IO-APIC-edge      ata_piix
+>  16:      18637   IO-APIC-fasteoi   uhci_hcd:usb5, firewire_ohci,
+> radeon@pci:0000:01:00.0
+>  17:       7281   IO-APIC-fasteoi   yenta, ipw2200, Intel ICH6
+>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4, eth0, sdhc0:slot0
+>  19:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  20:          0   IO-APIC-fasteoi   Intel ICH6 Modem
+>  23:          4   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+> NMI:          0   Non-maskable interrupts
+> LOC:      26645   Local timer interrupts
+> TRM:          0   Thermal event interrupts
+> SPU:          0   Spurious interrupts
+> ERR:          0
+> MIS:          0
+> 
+> dmesg contains:
+> ACPI: EC: GPE storm detected, throttle EC GPE
+> ACPI: EC: missing write data confirmation, don't expect it any longer.
+> 
+> ACPI keys quite work but are very laggy (in the order of seconds).
+> 
+> 
+> Conclusion: I never experienced acpi interrupts flood in any case, in
+> vanilla the interrupt count is much lower but then there are no
+> interrupts even when I press acpi keys.
+> dont_disable_ec_gpe_completely_at_storm.patch does not correctly fix
+> the problem for me. When 2c81ce4c9c3 is reverted,
+> call_psw_on_capable_devices.patch makes no difference as it still
+> works well.
+> 
+> Thanks.
+> 
+
