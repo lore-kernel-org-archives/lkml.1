@@ -1,195 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935692AbYCSU7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935557AbYCSU6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935692AbYCSU7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYCSTtf
+	id S935557AbYCSU6O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759453AbYCSTt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:49:35 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38417 "EHLO gir.skynet.ie"
+	Wed, 19 Mar 2008 15:49:29 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38431 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759445AbYCSTtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:49:23 -0400
-Date: Tue, 18 Mar 2008 16:27:14 +0000
+	id S1759430AbYCSTtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:49:25 -0400
+Date: Tue, 18 Mar 2008 15:42:09 +0000
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
        nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [12/18] Add support to allocate hugetlb pages that are larger than MAX_ORDER
-Message-ID: <20080318162714.GL23866@csn.ul.ie>
-References: <20080317258.659191058@firstfloor.org> <20080317015826.110AA1B41E0@basil.firstfloor.org>
+Subject: Re: [PATCH] [7/18] Abstract out the NUMA node round robin code into a separate function
+Message-ID: <20080318154209.GG23866@csn.ul.ie>
+References: <20080317258.659191058@firstfloor.org> <20080317015820.ECC861B41E0@basil.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20080317015826.110AA1B41E0@basil.firstfloor.org>
+In-Reply-To: <20080317015820.ECC861B41E0@basil.firstfloor.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On (17/03/08 02:58), Andi Kleen didst pronounce:
-> This is needed on x86-64 to handle GB pages in hugetlbfs, because it is
-> not practical to enlarge MAX_ORDER to 1GB. 
+> Need this as a separate function for a future patch.
 > 
-> Instead the 1GB pages are only allocated at boot using the bootmem
-> allocator using the hugepages=... option.
-> 
-> These 1G bootmem pages are never freed. In theory it would be possible
-> to implement that with some complications, but since it would be a one-way
-> street (> MAX_ORDER pages cannot be allocated later) I decided not to currently.
-> 
-> The > MAX_ORDER code is not ifdef'ed per architecture. It is not very big
-> and the ifdef uglyness seemed not be worth it.
-> 
-> Known problems: /proc/meminfo and "free" do not display the memory 
-> allocated for gb pages in "Total". This is a little confusing for the
-> user.
+> No behaviour change.
 > 
 > Signed-off-by: Andi Kleen <ak@suse.de>
+
+Maybe if you moved this beside patch 1, they could both be tested in
+isolation as a fairly reasonable cleanup that does not alter
+functionality? Not a big deal.
+
 > 
 > ---
->  mm/hugetlb.c |   64 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 62 insertions(+), 2 deletions(-)
+>  mm/hugetlb.c |   37 ++++++++++++++++++++++---------------
+>  1 file changed, 22 insertions(+), 15 deletions(-)
 > 
 > Index: linux/mm/hugetlb.c
 > ===================================================================
 > --- linux.orig/mm/hugetlb.c
 > +++ linux/mm/hugetlb.c
-> @@ -14,6 +14,7 @@
->  #include <linux/mempolicy.h>
->  #include <linux/cpuset.h>
->  #include <linux/mutex.h>
-> +#include <linux/bootmem.h>
->  
->  #include <asm/page.h>
->  #include <asm/pgtable.h>
-> @@ -153,7 +154,7 @@ static void free_huge_page(struct page *
->  	INIT_LIST_HEAD(&page->lru);
->  
->  	spin_lock(&hugetlb_lock);
-> -	if (h->surplus_huge_pages_node[nid]) {
-> +	if (h->surplus_huge_pages_node[nid] && h->order <= MAX_ORDER) {
->  		update_and_free_page(h, page);
->  		h->surplus_huge_pages--;
->  		h->surplus_huge_pages_node[nid]--;
-> @@ -215,6 +216,9 @@ static struct page *alloc_fresh_huge_pag
->  {
->  	struct page *page;
->  
-> +	if (h->order > MAX_ORDER)
-> +		return NULL;
-> +
-
-Should this print out a KERN_INFO message to the effect that pages of
-that size must be reserved at boot-time?
-
->  	page = alloc_pages_node(nid,
->  		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|__GFP_NOWARN,
->  			huge_page_order(h));
-> @@ -271,6 +275,9 @@ static struct page *alloc_buddy_huge_pag
->  	struct page *page;
->  	unsigned int nid;
->  
-> +	if (h->order > MAX_ORDER)
-> +		return NULL;
-> +
->  	/*
->  	 * Assume we will successfully allocate the surplus page to
->  	 * prevent racing processes from causing the surplus to exceed
-> @@ -422,6 +429,10 @@ return_unused_surplus_pages(struct hstat
->  	/* Uncommit the reservation */
->  	h->resv_huge_pages -= unused_resv_pages;
->  
-> +	/* Cannot return gigantic pages currently */
-> +	if (h->order > MAX_ORDER)
-> +		return;
-> +
->  	nr_pages = min(unused_resv_pages, h->surplus_huge_pages);
->  
->  	while (nr_pages) {
-> @@ -499,6 +510,44 @@ static struct page *alloc_huge_page(stru
+> @@ -219,6 +219,27 @@ static struct page *alloc_fresh_huge_pag
 >  	return page;
 >  }
 >  
-> +static __initdata LIST_HEAD(huge_boot_pages);
-> +
-> +struct huge_bm_page {
-> +	struct list_head list;
-> +	struct hstate *hstate;
-> +};
-> +
-> +static int __init alloc_bm_huge_page(struct hstate *h)
+> +/*
+> + * Use a helper variable to find the next node and then
+> + * copy it back to hugetlb_next_nid afterwards:
+> + * otherwise there's a window in which a racer might
+> + * pass invalid nid MAX_NUMNODES to alloc_pages_node.
+> + * But we don't need to use a spin_lock here: it really
+> + * doesn't matter if occasionally a racer chooses the
+> + * same nid as we do.  Move nid forward in the mask even
+> + * if we just successfully allocated a hugepage so that
+> + * the next caller gets hugepages on the next node.
+> + */
+> +static int huge_next_node(struct hstate *h)
 > +{
-> +	struct huge_bm_page *m;
-> +	m = __alloc_bootmem_node_nopanic(NODE_DATA(h->hugetlb_next_nid),
-> +					huge_page_size(h), huge_page_size(h),
-> +					0);
-> +	if (!m)
-> +		return 0;
-> +	BUG_ON((unsigned long)virt_to_phys(m) & (huge_page_size(h) - 1));
-> +	/* Put them into a private list first because mem_map is not up yet */
-> +	list_add(&m->list, &huge_boot_pages);
-> +	m->hstate = h;
-> +	huge_next_node(h);
-> +	return 1;
+> +	int next_nid;
+> +	next_nid = next_node(h->hugetlb_next_nid, node_online_map);
+> +	if (next_nid == MAX_NUMNODES)
+> +		next_nid = first_node(node_online_map);
+> +	h->hugetlb_next_nid = next_nid;
+> +	return next_nid;
 > +}
 > +
-> +/* Put bootmem huge pages into the standard lists after mem_map is up */
-> +static int __init huge_init_bm(void)
-> +{
-> +	struct huge_bm_page *m;
-> +	list_for_each_entry (m, &huge_boot_pages, list) {
-> +		struct page *page = virt_to_page(m);
-> +		struct hstate *h = m->hstate;
-> +		__ClearPageReserved(page);
-> +		prep_compound_page(page, h->order);
-> +		huge_new_page(h, page);
-> +	}
-> +	return 0;
-> +}
-> +__initcall(huge_init_bm);
-> +
->  static int __init hugetlb_init_hstate(struct hstate *h)
+>  static int alloc_fresh_huge_page(struct hstate *h)
 >  {
->  	unsigned long i;
-> @@ -509,7 +558,10 @@ static int __init hugetlb_init_hstate(st
->  	h->hugetlb_next_nid = first_node(node_online_map);
->  
->  	for (i = 0; i < max_huge_pages[h - hstates]; ++i) {
-> -		if (!alloc_fresh_huge_page(h))
-> +		if (h->order > MAX_ORDER) {
-> +			if (!alloc_bm_huge_page(h))
-> +				break;
-> +		} else if (!alloc_fresh_huge_page(h))
->  			break;
->  	}
->  	max_huge_pages[h - hstates] = h->free_huge_pages = h->nr_huge_pages = i;
-> @@ -581,6 +633,9 @@ static void do_try_to_free_low(struct hs
->  {
->  	int i;
->  
-> +	if (h->order > MAX_ORDER)
-> +		return;
-> +
->  	for (i = 0; i < MAX_NUMNODES; ++i) {
->  		struct page *page, *next;
->  		struct list_head *freel = &h->hugepage_freelists[i];
-> @@ -618,6 +673,11 @@ set_max_huge_pages(struct hstate *h, uns
->  
->  	*err = 0;
->  
-> +	if (h->order > MAX_ORDER) {
-> +		*err = -EINVAL;
-> +		return max_huge_pages[h - hstates];
-> +	}
-> +
+>  	struct page *page;
+> @@ -232,21 +253,7 @@ static int alloc_fresh_huge_page(struct 
+>  		page = alloc_fresh_huge_page_node(h, h->hugetlb_next_nid);
+>  		if (page)
+>  			ret = 1;
+> -		/*
+> -		 * Use a helper variable to find the next node and then
+> -		 * copy it back to hugetlb_next_nid afterwards:
+> -		 * otherwise there's a window in which a racer might
+> -		 * pass invalid nid MAX_NUMNODES to alloc_pages_node.
+> -		 * But we don't need to use a spin_lock here: it really
+> -		 * doesn't matter if occasionally a racer chooses the
+> -		 * same nid as we do.  Move nid forward in the mask even
+> -		 * if we just successfully allocated a hugepage so that
+> -		 * the next caller gets hugepages on the next node.
+> -		 */
+> -		next_nid = next_node(h->hugetlb_next_nid, node_online_map);
+> -		if (next_nid == MAX_NUMNODES)
+> -			next_nid = first_node(node_online_map);
+> -		h->hugetlb_next_nid = next_nid;
+> +		next_nid = huge_next_node(h);
 
-Ah, scratch the comment on an earlier patch where I said I cannot see
-where err ever gets updated in set_max_huge_pages().
+hmm, I'm not seeing where next_nid gets declared locally here as it
+should have been removed in an earlier patch. Maybe it's reintroduced
+later but if you do reshuffle the patchset so that the cleanups can be
+merged on their own, it'll show up in a compile test.
 
->  	/*
->  	 * Increase the pool size
->  	 * First take pages out of surplus state.  Then make up the
+>  	} while (!page && h->hugetlb_next_nid != start_nid);
+>  
+>  	return ret;
 > 
+
+Other than the possible gotcha with next_nid declared locally, the move
+seems fine.
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
 -- 
 Mel Gorman
