@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938989AbYCSVv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939159AbYCSVxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938989AbYCSVv2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYCSUUI
+	id S939159AbYCSVxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764716AbYCSUU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:20:08 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:48742 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932290AbYCSUUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:20:05 -0400
-Date: Tue, 18 Mar 2008 14:49:13 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080318204913.GA18797@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Gary Hade <garyhade@us.ibm.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080304230937.GD3694@ldl.fc.hp.com> <47CDF339.3060304@jp.fujitsu.com> <20080305202052.GN3694@ldl.fc.hp.com> <47D684D0.6060200@jp.fujitsu.com> <20080311110403.7db9527c@appleyard> <20080311191406.GB29344@ldl.fc.hp.com> <47D7BF6C.3080306@jp.fujitsu.com> <20080313032410.GA17561@ldl.fc.hp.com> <20080314021646.GC6145@us.ibm.com> <47DA0E77.9010706@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47DA0E77.9010706@jp.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 19 Mar 2008 16:20:26 -0400
+Received: from main.gmane.org ([80.91.229.2]:33111 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932299AbYCSUUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:20:23 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?ISO-8859-1?Q?J=F6rg-Volker_Peetz?= <jvpeetz@web.de>
+Subject: Re: [PATCH 2/4] convert a few do_div user
+Date: Tue, 18 Mar 2008 21:10:33 +0100
+Message-ID: <47E021B9.7030502@web.de>
+References: <20080313002235.351414762@linux-m68k.org> <20080313004902.866970953@linux-m68k.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: p5b374d08.dip.t-dialin.net
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+In-Reply-To: <20080313004902.866970953@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kenji-san,
+zippel@linux-m68k.org wrote:
+> This converts a few users of do_div to div_[su]64 and this demonstrates
+> nicely how it can reduce some expressions to one-liners.
+> 
+> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+> 
+> ---
+>  kernel/time.c     |   29 +++++++++--------------------
+>  kernel/time/ntp.c |   25 ++++++-------------------
+>  2 files changed, 15 insertions(+), 39 deletions(-)
+> 
+<snip>
+> Index: linux-2.6/kernel/time/ntp.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time/ntp.c	2008-03-11 17:15:14.000000000 +0100
+> +++ linux-2.6/kernel/time/ntp.c	2008-03-12 21:21:20.000000000 +0100
+<snip>
+>  /*
+> @@ -53,10 +53,8 @@ static void ntp_update_frequency(void)
+>  
+>  	tick_length_base = second_length;
+>  
+> -	do_div(second_length, HZ);
+> -	tick_nsec = second_length >> TICK_LENGTH_SHIFT;
+> -
+> -	do_div(tick_length_base, NTP_INTERVAL_FREQ);
+> +	tick_nsec = div_u64(second_length, HZ) >> TICK_LENGTH_SHIFT;
+> +	tick_length_base = div_u64(tick_length_base, NTP_INTERVAL_FREQ);
+>  }
+>  
 
-> Ok, I understood what you mean and I agreed both implementations
-> are legal. Also I explained it to our firmware team, and they
-> understood your situation.
+Probably the compiler would optimize it, but maybe its clearer to change it this 
+way:
 
-Great, thanks.
+- 	tick_length_base = second_length;
 
-> I don't know which implementation is more popular. But according
-> to the current score (2 : 1), you win the "majority rule".
+-	do_div(second_length, HZ);
+-	tick_nsec = second_length >> TICK_LENGTH_SHIFT;
+-
+-	do_div(tick_length_base, NTP_INTERVAL_FREQ);
++	tick_nsec = div_u64(second_length, HZ) >> TICK_LENGTH_SHIFT;
++	tick_length_base = div_u64(second_length, NTP_INTERVAL_FREQ);
 
-Yep, and when we get more testing, if it turns out that more
-vendors follow the Fujitsu interpretation, then we can change the
-default behavior.
+-- 
+Regards,
+Jörg-Volker.
 
-> Alex-san, could you send me the updated patches? I'll Ack the
-> patch after adding Fujitsu firmware versions to the DMI list
-> and testing it.
 
-Yes, I'll send out a new patch series today that also fixes the
-shpchp/pciehp naming issue.
 
-Thanks.
-
-/ac
+<snip>
 
