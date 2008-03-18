@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYCREMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbYCRETk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbYCREMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 00:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYCREM2
+	id S1753378AbYCRETk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 00:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbYCRET3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 00:12:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34821 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbYCREM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 00:12:27 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Thomas Meyer <thomas@m3y3r.de>
-Subject: [PATCH] Re: In function `ata_acpi_associate': undefined reference =?utf-8?q?to=09=60register=5Fhotplug=5Fdock=5Fdevice=27?=
-Date: Tue, 18 Mar 2008 00:11:48 -0400
-User-Agent: KMail/1.9.9
-Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       linux-acpi@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       htejun@gmail.com, jeff@garzik.org
-References: <47DEC970.2050402@m3y3r.de> <47DECD54.5060202@m3y3r.de> <200803172357.54253.lenb@kernel.org>
-In-Reply-To: <200803172357.54253.lenb@kernel.org>
+	Tue, 18 Mar 2008 00:19:29 -0400
+Received: from namei.org ([69.55.235.186]:57853 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751496AbYCRET3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 00:19:29 -0400
+Date: Tue, 18 Mar 2008 15:17:53 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       Stephen Smalley <sds@epoch.ncsc.mil>,
+       Pavel Emelianov <xemul@openvz.org>, Greg KH <greg@kroah.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [PATCH] cgroups: implement device whitelist (v4)
+In-Reply-To: <20080317180722.GA17111@sergelap.austin.ibm.com>
+Message-ID: <Xine.LNX.4.64.0803181517260.1898@us.intercode.com.au>
+References: <20080317180722.GA17111@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803180011.49190.lenb@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: fix ATA_ACPI build
-From: Len Brown <len.brown@intel.com>
+On Mon, 17 Mar 2008, Serge E. Hallyn wrote:
 
-drivers/ata/libata-acpi.c fails to build
+> Implement a cgroup to track and enforce open and mknod restrictions on device
+> files.  A device cgroup associates a device access whitelist with each
+> cgroup.  A whitelist entry has 4 fields.  'type' is a (all), c (char), or
+> b (block).  'all' means it applies to all types and all major and minor
+> numbers.  Major and minor are either an integer or * for all.
+> Access is a composition of r (read), w (write), and m (mknod).
 
-drivers/built-in.o: In function `ata_acpi_associate':
-(.text+0x7106a): undefined reference to `register_hotplug_dock_device'
+Acked-by: James Morris <jmorris@namei.org>
 
-When CONFIG_ATA_ACPI=y and CONFIG_ACPI_DOCK=m
-But if dock is selected from ata_acpi, dock will =y
-when ata_acpi=y, avoiding this problem.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index e469647..25aba69 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -30,6 +30,7 @@ config ATA_NONSTANDARD
- config ATA_ACPI
- 	bool
- 	depends on ACPI && PCI
-+	select ACPI_DOCK
- 	default y
- 	help
- 	  This option adds support for ATA-related ACPI objects.
+-- 
+James Morris
+<jmorris@namei.org>
