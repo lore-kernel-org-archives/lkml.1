@@ -1,167 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbYCRFgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYCRFvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759220AbYCRFgk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 01:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbYCRF1w
+	id S1753276AbYCRFvr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 01:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYCRFvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 01:27:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35125 "EHLO hera.kernel.org"
+	Tue, 18 Mar 2008 01:51:39 -0400
+Received: from 1wt.eu ([62.212.114.60]:2526 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756390AbYCRF1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 01:27:51 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: fix Kconfig dependencies
-Date: Tue, 18 Mar 2008 01:27:26 -0400
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brown, Len" <len.brown@intel.com>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <20080317095845.GA6500@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0803171920320.3020@woody.linux-foundation.org> <1205808029.3171.38.camel@acpi-hp-zz.sh.intel.com>
-In-Reply-To: <1205808029.3171.38.camel@acpi-hp-zz.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1751030AbYCRFvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 01:51:38 -0400
+Date: Tue, 18 Mar 2008 06:48:19 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Nebojsa Miljanovic <neb@alcatel-lucent.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
+       asweeney@alcatel-lucent.com,
+       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
+Subject: Re: SO_REUSEADDR not allowing server and client to use same port
+Message-ID: <20080318054819.GE13012@1wt.eu>
+References: <47C6FA2A.5030302@alcatel-lucent.com> <20080228201926.558c4e7c@core> <47D97DF7.8000702@alcatel-lucent.com> <20080315133426.1f48c99c@the-village.bc.nu> <47DE9FB0.5030801@alcatel-lucent.com> <20080317173021.28e6fd97@core> <47DEB5B9.4030905@alcatel-lucent.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803180127.26877.lenb@kernel.org>
+In-Reply-To: <47DEB5B9.4030905@alcatel-lucent.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i've reverted the offending thermal/hwmon commit,
-and re-applied this documentation update to thermal.
+On Mon, Mar 17, 2008 at 01:17:29PM -0500, Nebojsa Miljanovic wrote:
+> OK. I see. So, it would have to be some malicious application running together
+> with the server (i.e. on the same CPU). I do see now why you said it would be
+> very very hard to make this happen.
+> 
+> Still, it would be nice to introduce SO_REUSEPORT socket options so secure
+> servers (who happen to be clients as well) can re-use ports when necessary.
+> 
+> Another option would be to check if port re-use is happening inside same
+> application and allow it. That may make half of the folks happy, so I am not
+> sure if I like it as much as I like SO_REUSEPORT option.
 
-thanks,
--Len
+It is most often useful for hot-restart without interrupting service.
+As an example, when I update a config in haproxy, I restart a new instance
+which does everything and binds to the ports, and then signals the old one
+it may go. That way, there is a complete continuity of service. This is
+possible by default on *BSD, and with a (very) little patch on linux.
 
-On Monday 17 March 2008, Zhang, Rui wrote:
-> 
-> On Tue, 2008-03-18 at 10:25 +0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Mon, 17 Mar 2008, Len Brown wrote:
-> > >
-> > > Similarly, ACPI_THERMAL should not depend on THERMAL,
-> > > instead the code that registers with THERMAL should
-> > > simply depend on if THERMAL is selected or not.
-> > >
-> > > Also, the "default y" should go.
-> > >
-> > > I'll tinker with this a bit after lunch.
-> > 
-> > Hmm.. It looks like the same commit that caused these Kconfig issues
-> > is
-> > also the one that causes the problems with lmsensors
-> Yes.
-> >  (I didn't immediately
-> > realize that it's the exact same commit).
-> > 
-> > I think that right now the right thing to do is to just revert it,
-> > since
-> > apparently there won't be a released lmsensors version by the time
-> > 2.6.25
-> > gets released that can handle the new sysfs layout, and that we should
-> > give this some more time to be resolved.
-> > 
-> > So I'm inclined to revert commit
-> > 3152fb9f11cdd2fd8688c2c5cb805e5c09b53dd9
-> > and plan on revisiting this for 2.6.26. I already got an ack for that
-> > from
-> > Jean Delvare, but I thought I'd mention it in this thread too before I
-> > actually do the final revert.
-> > 
-> > Any really strong objections?
-> No.
-> As we still need some discussions before the problem is solved, please
-> revert it. :)
-> 
-> And please apply this patch after reverting the old one.
-> 
-> thanks,
-> rui
-> 
-> From: Zhang Rui <rui.zhang@intel.com>
-> 
-> The generic thermal driver shows temperature in millidegree Celsius.
-> Update the documentation.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  Documentation/thermal/sysfs-api.txt |   22 +++++++++++-----------
->  1 file changed, 11 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6/Documentation/thermal/sysfs-api.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/thermal/sysfs-api.txt
-> +++ linux-2.6/Documentation/thermal/sysfs-api.txt
-> @@ -143,10 +143,10 @@ type				Strings which represent the ther
->  				This is given by thermal zone driver as part of registration.
->  				Eg: "ACPI thermal zone" indicates it's a ACPI thermal device
->  				RO
-> -				Optional
-> +				Required
->  
->  temp				Current temperature as reported by thermal zone (sensor)
-> -				Unit: degree Celsius
-> +				Unit: millidegree Celsius
->  				RO
->  				Required
->  
-> @@ -163,7 +163,7 @@ mode				One of the predefined values in 
->  					  charge of the thermal management.
->  
->  trip_point_[0-*]_temp		The temperature above which trip point will be fired
-> -				Unit: degree Celsius
-> +				Unit: millidegree Celsius
->  				RO
->  				Optional
->  
-> @@ -193,7 +193,7 @@ type				String which represents the type
->  				eg. For memory controller device on intel_menlow platform:
->  				this should be "Memory controller"
->  				RO
-> -				Optional
-> +				Required
->  
->  max_state			The maximum permissible cooling state of this cooling device.
->  				RO
-> @@ -219,16 +219,16 @@ the sys I/F structure will be built like
->  
->  |thermal_zone1:
->  	|-----type:			ACPI thermal zone
-> -	|-----temp:			37
-> +	|-----temp:			37000
->  	|-----mode:			kernel
-> -	|-----trip_point_0_temp:	100
-> +	|-----trip_point_0_temp:	100000
->  	|-----trip_point_0_type:	critical
-> -	|-----trip_point_1_temp:	80
-> +	|-----trip_point_1_temp:	80000
->  	|-----trip_point_1_type:	passive
-> -	|-----trip_point_2_temp:	70
-> -	|-----trip_point_2_type:	active[0]
-> -	|-----trip_point_3_temp:	60
-> -	|-----trip_point_3_type:	active[1]
-> +	|-----trip_point_2_temp:	70000
-> +	|-----trip_point_2_type:	active0
-> +	|-----trip_point_3_temp:	60000
-> +	|-----trip_point_3_type:	active1
->  	|-----cdev0:			--->/sys/class/thermal/cooling_device0
->  	|-----cdev0_trip_point:		1	/* cdev0 can be used for passive */
->  	|-----cdev1:			--->/sys/class/thermal/cooling_device3
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+And I agree with Alan about the security implications. If a service binds
+itself with SO_REUSEPORT, it definitely says "I agree to share my connection".
+So this is not to be used by default in any random application. But for
+servers, it's really useful.
 
+Willy
 
