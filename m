@@ -1,113 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYCRBMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbYCRBMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYCRBMa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 21:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbYCRBJx
+	id S1756483AbYCRBMq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 21:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbYCRBMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 21:09:53 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:38154 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbYCRBJo (ORCPT
+	Mon, 17 Mar 2008 21:12:06 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:49675 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755808AbYCRBME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 21:09:44 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080318209.039112899@firstfloor.org>
-In-Reply-To: <20080318209.039112899@firstfloor.org>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH prototype] [8/8] Add mmap_full_slurp support
-Message-Id: <20080318010942.64C241B41E1@basil.firstfloor.org>
-Date: Tue, 18 Mar 2008 02:09:42 +0100 (CET)
-X-OriginalArrivalTime: 18 Mar 2008 01:03:07.0689 (UTC) FILETIME=[D3E8F990:01C88893]
+	Mon, 17 Mar 2008 21:12:04 -0400
+Message-ID: <47DF167D.9040405@linux.vnet.ibm.com>
+Date: Tue, 18 Mar 2008 06:40:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+CC: linux-mm@kvack.org, hugh@veritas.com, skumar@linux.vnet.ibm.com,
+       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       taka@valinux.co.jp, rientjes@google.com, xemul@openvz.org,
+       akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [RFC][2/3] Account and control virtual address space allocations
+References: <20080316173005.8812.88290.sendpatchset@localhost.localdomain> <20080317233552.4A7E21E7CE6@siro.lan>
+In-Reply-To: <20080317233552.4A7E21E7CE6@siro.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+YAMAMOTO Takashi wrote:
+>> diff -puN mm/swapfile.c~memory-controller-virtual-address-space-accounting-and-control mm/swapfile.c
+>> diff -puN mm/memory.c~memory-controller-virtual-address-space-accounting-and-control mm/memory.c
+>> --- linux-2.6.25-rc5/mm/memory.c~memory-controller-virtual-address-space-accounting-and-control	2008-03-16 22:57:40.000000000 +0530
+>> +++ linux-2.6.25-rc5-balbir/mm/memory.c	2008-03-16 22:57:40.000000000 +0530
+>> @@ -838,6 +838,11 @@ unsigned long unmap_vmas(struct mmu_gath
+>>  
+>>  		if (vma->vm_flags & VM_ACCOUNT)
+>>  			*nr_accounted += (end - start) >> PAGE_SHIFT;
+>> +		/*
+>> +		 * Unaccount used virtual memory for cgroups
+>> +		 */
+>> +		mem_cgroup_update_as(vma->vm_mm,
+>> +					((long)(start - end)) >> PAGE_SHIFT);
+>>  
+>>  		while (start != end) {
+>>  			if (!tlb_start_valid) {
+> 
+> i think you can sum and uncharge it with a single call.
+> 
 
-This is the non-subtle brother of pbitmaps. Instead of only prefetching
-the pages used last time always prefetch complete mmap areas
-(subject to the max_ra_chunk limits)
+Like nr_accounted? I'll have to duplicate nr_accounted since that depends
+conditionally on VM_ACCOUNT.
 
-Main advantage is that it works for shared libraries too (but
-the prefetching is currently done for all file backed mmaps, 
-not just executable mappings)
-
-Disadvantage is that uses far more memory and does a lot of 
-unnecessary work.
-
-Still is faster in some circumstances.
-
-Experimental.  Mainly added for comparison. Off by default. 
-Probably not a good idea.  
-
-I'm more including it for easier experimentation.
-
-Signed-off-by: Andi Kleen <andi@firstfloor.org>
-
----
- include/linux/mm.h |    2 ++
- kernel/sysctl.c    |   10 ++++++++++
- mm/mmap.c          |   10 ++++++++++
- 3 files changed, 22 insertions(+)
-
-Index: linux/mm/mmap.c
-===================================================================
---- linux.orig/mm/mmap.c
-+++ linux/mm/mmap.c
-@@ -40,6 +40,8 @@
- #define arch_rebalance_pgtables(addr, len)		(addr)
- #endif
- 
-+int mmap_full_slurp __read_mostly;
-+
- static void unmap_region(struct mm_struct *mm,
- 		struct vm_area_struct *vma, struct vm_area_struct *prev,
- 		unsigned long start, unsigned long end);
-@@ -2023,6 +2025,14 @@ out:
- 		mm->locked_vm += len >> PAGE_SHIFT;
- 		make_pages_present(addr, addr + len);
- 	}
-+	if (vma->vm_file && mmap_full_slurp) {
-+		up_write(&mm->mmap_sem);
-+		force_page_cache_readahead(vma->vm_file->f_mapping,
-+					   vma->vm_file,
-+					   vma->vm_pgoff,
-+					   max_sane_readahead(vma_pages(vma)));
-+		down_write(&mm->mmap_sem);
-+	}
- 	return addr;
- }
- 
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h
-+++ linux/include/linux/mm.h
-@@ -1077,6 +1077,8 @@ extern int do_munmap(struct mm_struct *,
- 
- extern unsigned long do_brk(unsigned long, unsigned long);
- 
-+extern int mmap_full_slurp;
-+
- /* filemap.c */
- extern unsigned long page_unuse(struct page *);
- extern void truncate_inode_pages(struct address_space *, loff_t);
-Index: linux/kernel/sysctl.c
-===================================================================
---- linux.orig/kernel/sysctl.c
-+++ linux/kernel/sysctl.c
-@@ -909,6 +909,16 @@ static struct ctl_table vm_table[] = {
- 		.extra2		= &one_hundred,
- 	},
- 	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "mmap_full_slurp",
-+		.data		= &mmap_full_slurp,
-+		.maxlen 	= sizeof(mmap_full_slurp),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec,
-+		.extra1 	= &zero,
-+	},
-+	{
- 		.procname	= "dirty_writeback_centisecs",
- 		.data		= &dirty_writeback_interval,
- 		.maxlen		= sizeof(dirty_writeback_interval),
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
