@@ -1,166 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYCRJDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbYCRJMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYCRJDW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 05:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYCRJDL
+	id S1752915AbYCRJMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 05:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYCRJMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 05:03:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:52910 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbYCRJDI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 05:03:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=LgkzkPsDgDhQR77IfY/19nUlkOA3FKHVWSC//munpXHwfbKAqiFmp3/LHl9DdHHWZ683zNqkR22Y/1SQMYQGV/gnotiujSF6Q5flpc8NB6Gb7Z/02u6zpuXwnqekZUuqEn2yWICpCAuSnI5L8cEU4JYhV9RV5pGUKIrNf6fDl2I=
-Message-ID: <eb3ff54b0803180203h18cda4ceja6ae28033638d338@mail.gmail.com>
-Date: Tue, 18 Mar 2008 11:03:04 +0200
-From: "Rami Rosen" <ramirose@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: [PATCH] [IPV6] remove unused parameter (struct sock parameter) from ip6_route_output()
-Cc: netdev@vger.kernel.org, yoshfuji@linux-ipv6.org,
-       linux-kernel@vger.kernel.org
+	Tue, 18 Mar 2008 05:12:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60645 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751828AbYCRJMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 05:12:08 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: [GIT PATCH] ACPI patches for 2.6.25-rc6
+Date: Tue, 18 Mar 2008 05:10:47 -0400
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_11103_30520649.1205830984684"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803180510.47670.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_11103_30520649.1205830984684
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Linus,
 
-Hi,
-This patch removes the struct sock parameter from ip6_route_output();
-looking at the ip6_route_output() implementation in net/ipv6/route.c
-will show immediately that it is not used in this method.
+please pull from: 
 
-In fact, icmp.c and ip6_output.c are the only places in the kernel
-where the sk (struct sock) parameter passed to ip6_route_output() is not NULL;
-anyhow, as explained above, this parameter is unused; changing
-the ip6_route_output() prototype by omitting the struct sock parameter
-does not break anything.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
+This will update the files shown below.
 
-Regards,
-Rami Rosen
+thanks!
 
+-Len
 
-Signed-off-by: Rami Rosen <ramirose@gmail.com>
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.25/acpi-release-20070126-2.6.25-rc6.diff.gz
 
-------=_Part_11103_30520649.1205830984684
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdy8gshq0
-Content-Disposition: attachment; filename=patch.txt
+ drivers/acpi/asus_acpi.c      |    2 +-
+ drivers/acpi/battery.c        |   11 +--
+ drivers/acpi/processor_idle.c |   12 ++-
+ drivers/acpi/video.c          |   60 +--------------
+ drivers/ata/Kconfig           |    1 +
+ drivers/thermal/Kconfig       |    2 -
+ drivers/thermal/thermal.c     |  169 ++++++----------------------------------
+ 7 files changed, 43 insertions(+), 214 deletions(-)
 
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2lwNl9yb3V0ZS5oIGIvaW5jbHVkZS9uZXQvaXA2X3Jv
-dXRlLmgKaW5kZXggMGUyODk1Yy4uNzgxOTIzYSAxMDA2NDQKLS0tIGEvaW5jbHVkZS9uZXQvaXA2
-X3JvdXRlLmgKKysrIGIvaW5jbHVkZS9uZXQvaXA2X3JvdXRlLmgKQEAgLTQ0LDcgKzQ0LDYgQEAg
-ZXh0ZXJuIHN0cnVjdCBydDZfaW5mbwkqaXA2X2Jsa19ob2xlX2VudHJ5OwogZXh0ZXJuIHZvaWQJ
-CQlpcDZfcm91dGVfaW5wdXQoc3RydWN0IHNrX2J1ZmYgKnNrYik7CiAKIGV4dGVybiBzdHJ1Y3Qg
-ZHN0X2VudHJ5ICoJaXA2X3JvdXRlX291dHB1dChzdHJ1Y3QgbmV0ICpuZXQsCi0JCQkJCQkgc3Ry
-dWN0IHNvY2sgKnNrLAogCQkJCQkJIHN0cnVjdCBmbG93aSAqZmwpOwogCiBleHRlcm4gaW50CQkJ
-aXA2X3JvdXRlX2luaXQodm9pZCk7CmRpZmYgLS1naXQgYS9uZXQvaXB2Ni9pY21wLmMgYi9uZXQv
-aXB2Ni9pY21wLmMKaW5kZXggNmI1MzkxYS4uMTZmOGVhMiAxMDA2NDQKLS0tIGEvbmV0L2lwdjYv
-aWNtcC5jCisrKyBiL25ldC9pcHY2L2ljbXAuYwpAQCAtMTc5LDcgKzE3OSw3IEBAIHN0YXRpYyBp
-bmxpbmUgaW50IGljbXB2Nl94cmxpbV9hbGxvdyhzdHJ1Y3Qgc29jayAqc2ssIGludCB0eXBlLAog
-CSAqIFhYWDogcGVyaGFwcyB0aGUgZXhwaXJlIGZvciByb3V0aW5nIGVudHJpZXMgY2xvbmVkIGJ5
-CiAJICogdGhpcyBsb29rdXAgc2hvdWxkIGJlIG1vcmUgYWdncmVzc2l2ZSAobm90IGxvbmdlciB0
-aGFuIHRpbWVvdXQpLgogCSAqLwotCWRzdCA9IGlwNl9yb3V0ZV9vdXRwdXQobmV0LCBzaywgZmwp
-OworCWRzdCA9IGlwNl9yb3V0ZV9vdXRwdXQobmV0LCBmbCk7CiAJaWYgKGRzdC0+ZXJyb3IpIHsK
-IAkJSVA2X0lOQ19TVEFUUyhpcDZfZHN0X2lkZXYoZHN0KSwKIAkJCSAgICAgIElQU1RBVFNfTUlC
-X09VVE5PUk9VVEVTKTsKZGlmZiAtLWdpdCBhL25ldC9pcHY2L2lwNl9vdXRwdXQuYyBiL25ldC9p
-cHY2L2lwNl9vdXRwdXQuYwppbmRleCA5ODc2MmZkLi42MmM1ZTg3IDEwMDY0NAotLS0gYS9uZXQv
-aXB2Ni9pcDZfb3V0cHV0LmMKKysrIGIvbmV0L2lwdjYvaXA2X291dHB1dC5jCkBAIC05MTUsNyAr
-OTE1LDcgQEAgc3RhdGljIGludCBpcDZfZHN0X2xvb2t1cF90YWlsKHN0cnVjdCBzb2NrICpzaywK
-IAlzdHJ1Y3QgbmV0ICpuZXQgPSBzay0+c2tfbmV0OwogCiAJaWYgKCpkc3QgPT0gTlVMTCkKLQkJ
-KmRzdCA9IGlwNl9yb3V0ZV9vdXRwdXQobmV0LCBzaywgZmwpOworCQkqZHN0ID0gaXA2X3JvdXRl
-X291dHB1dChuZXQsIGZsKTsKIAogCWlmICgoZXJyID0gKCpkc3QpLT5lcnJvcikpCiAJCWdvdG8g
-b3V0X2Vycl9yZWxlYXNlOwpAQCAtOTU2LDcgKzk1Niw3IEBAIHN0YXRpYyBpbnQgaXA2X2RzdF9s
-b29rdXBfdGFpbChzdHJ1Y3Qgc29jayAqc2ssCiAJCQkJZHN0X3JlbGVhc2UoKmRzdCk7CiAJCQkJ
-bWVtY3B5KCZmbF9ndywgZmwsIHNpemVvZihzdHJ1Y3QgZmxvd2kpKTsKIAkJCQltZW1zZXQoJmZs
-X2d3LmZsNl9kc3QsIDAsIHNpemVvZihzdHJ1Y3QgaW42X2FkZHIpKTsKLQkJCQkqZHN0ID0gaXA2
-X3JvdXRlX291dHB1dChuZXQsIHNrLCAmZmxfZ3cpOworCQkJCSpkc3QgPSBpcDZfcm91dGVfb3V0
-cHV0KG5ldCwgJmZsX2d3KTsKIAkJCQlpZiAoKGVyciA9ICgqZHN0KS0+ZXJyb3IpKQogCQkJCQln
-b3RvIG91dF9lcnJfcmVsZWFzZTsKIAkJCX0KZGlmZiAtLWdpdCBhL25ldC9pcHY2L2lwNl90dW5u
-ZWwuYyBiL25ldC9pcHY2L2lwNl90dW5uZWwuYwppbmRleCA2MTUxN2ZlLi5hZmFmOWZlIDEwMDY0
-NAotLS0gYS9uZXQvaXB2Ni9pcDZfdHVubmVsLmMKKysrIGIvbmV0L2lwdjYvaXA2X3R1bm5lbC5j
-CkBAIC04NDcsNyArODQ3LDcgQEAgc3RhdGljIGludCBpcDZfdG5sX3htaXQyKHN0cnVjdCBza19i
-dWZmICpza2IsCiAJaWYgKChkc3QgPSBpcDZfdG5sX2RzdF9jaGVjayh0KSkgIT0gTlVMTCkKIAkJ
-ZHN0X2hvbGQoZHN0KTsKIAllbHNlIHsKLQkJZHN0ID0gaXA2X3JvdXRlX291dHB1dCgmaW5pdF9u
-ZXQsIE5VTEwsIGZsKTsKKwkJZHN0ID0gaXA2X3JvdXRlX291dHB1dCgmaW5pdF9uZXQsIGZsKTsK
-IAogCQlpZiAoZHN0LT5lcnJvciB8fCB4ZnJtX2xvb2t1cCgmZHN0LCBmbCwgTlVMTCwgMCkgPCAw
-KQogCQkJZ290byB0eF9lcnJfbGlua19mYWlsdXJlOwpkaWZmIC0tZ2l0IGEvbmV0L2lwdjYvbmRp
-c2MuYyBiL25ldC9pcHY2L25kaXNjLmMKaW5kZXggMjRlNzZlZC4uNzlmYjU1MSAxMDA2NDQKLS0t
-IGEvbmV0L2lwdjYvbmRpc2MuYworKysgYi9uZXQvaXB2Ni9uZGlzYy5jCkBAIC0xNDI3LDcgKzE0
-MjcsNyBAQCB2b2lkIG5kaXNjX3NlbmRfcmVkaXJlY3Qoc3RydWN0IHNrX2J1ZmYgKnNrYiwgc3Ry
-dWN0IG5laWdoYm91ciAqbmVpZ2gsCiAJaWNtcHY2X2Zsb3dfaW5pdChzaywgJmZsLCBORElTQ19S
-RURJUkVDVCwKIAkJCSAmc2FkZHJfYnVmLCAmaXB2Nl9oZHIoc2tiKS0+c2FkZHIsIGRldi0+aWZp
-bmRleCk7CiAKLQlkc3QgPSBpcDZfcm91dGVfb3V0cHV0KG5ldCwgTlVMTCwgJmZsKTsKKwlkc3Qg
-PSBpcDZfcm91dGVfb3V0cHV0KG5ldCwgJmZsKTsKIAlpZiAoZHN0ID09IE5VTEwpCiAJCXJldHVy
-bjsKIApkaWZmIC0tZ2l0IGEvbmV0L2lwdjYvbmV0ZmlsdGVyLmMgYi9uZXQvaXB2Ni9uZXRmaWx0
-ZXIuYwppbmRleCBhZWQ1MWJjLi4yMjFmYmM4IDEwMDY0NAotLS0gYS9uZXQvaXB2Ni9uZXRmaWx0
-ZXIuYworKysgYi9uZXQvaXB2Ni9uZXRmaWx0ZXIuYwpAQCAtMjMsNyArMjMsNyBAQCBpbnQgaXA2
-X3JvdXRlX21lX2hhcmRlcihzdHJ1Y3Qgc2tfYnVmZiAqc2tiKQogCQkgICAgLnNhZGRyID0gaXBo
-LT5zYWRkciwgfSB9LAogCX07CiAKLQlkc3QgPSBpcDZfcm91dGVfb3V0cHV0KCZpbml0X25ldCwg
-c2tiLT5zaywgJmZsKTsKKwlkc3QgPSBpcDZfcm91dGVfb3V0cHV0KCZpbml0X25ldCwgJmZsKTsK
-IAogI2lmZGVmIENPTkZJR19YRlJNCiAJaWYgKCEoSVA2Q0Ioc2tiKS0+ZmxhZ3MgJiBJUDZTS0Jf
-WEZSTV9UUkFOU0ZPUk1FRCkgJiYKQEAgLTg2LDcgKzg2LDcgQEAgc3RhdGljIGludCBuZl9pcDZf
-cmVyb3V0ZShzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCiBzdGF0aWMgaW50IG5mX2lwNl9yb3V0ZShz
-dHJ1Y3QgZHN0X2VudHJ5ICoqZHN0LCBzdHJ1Y3QgZmxvd2kgKmZsKQogewotCSpkc3QgPSBpcDZf
-cm91dGVfb3V0cHV0KCZpbml0X25ldCwgTlVMTCwgZmwpOworCSpkc3QgPSBpcDZfcm91dGVfb3V0
-cHV0KCZpbml0X25ldCwgZmwpOwogCXJldHVybiAoKmRzdCktPmVycm9yOwogfQogCmRpZmYgLS1n
-aXQgYS9uZXQvaXB2Ni9uZXRmaWx0ZXIvaXA2dF9SRUpFQ1QuYyBiL25ldC9pcHY2L25ldGZpbHRl
-ci9pcDZ0X1JFSkVDVC5jCmluZGV4IGJhZjgyOTAuLmY5NThmYWYgMTAwNjQ0Ci0tLSBhL25ldC9p
-cHY2L25ldGZpbHRlci9pcDZ0X1JFSkVDVC5jCisrKyBiL25ldC9pcHY2L25ldGZpbHRlci9pcDZ0
-X1JFSkVDVC5jCkBAIC05Myw3ICs5Myw3IEBAIHN0YXRpYyB2b2lkIHNlbmRfcmVzZXQoc3RydWN0
-IHNrX2J1ZmYgKm9sZHNrYikKIAlmbC5mbF9pcF9zcG9ydCA9IG90Y3BoLmRlc3Q7CiAJZmwuZmxf
-aXBfZHBvcnQgPSBvdGNwaC5zb3VyY2U7CiAJc2VjdXJpdHlfc2tiX2NsYXNzaWZ5X2Zsb3cob2xk
-c2tiLCAmZmwpOwotCWRzdCA9IGlwNl9yb3V0ZV9vdXRwdXQoJmluaXRfbmV0LCBOVUxMLCAmZmwp
-OworCWRzdCA9IGlwNl9yb3V0ZV9vdXRwdXQoJmluaXRfbmV0LCAmZmwpOwogCWlmIChkc3QgPT0g
-TlVMTCkKIAkJcmV0dXJuOwogCWlmIChkc3QtPmVycm9yIHx8IHhmcm1fbG9va3VwKCZkc3QsICZm
-bCwgTlVMTCwgMCkpCmRpZmYgLS1naXQgYS9uZXQvaXB2Ni9yb3V0ZS5jIGIvbmV0L2lwdjYvcm91
-dGUuYwppbmRleCBhNGI1YWVlLi42ZmNjMTY0IDEwMDY0NAotLS0gYS9uZXQvaXB2Ni9yb3V0ZS5j
-CisrKyBiL25ldC9pcHY2L3JvdXRlLmMKQEAgLTc3Miw4ICs3NzIsNyBAQCBzdGF0aWMgc3RydWN0
-IHJ0Nl9pbmZvICppcDZfcG9sX3JvdXRlX291dHB1dChzdHJ1Y3QgbmV0ICpuZXQsIHN0cnVjdCBm
-aWI2X3RhYmxlCiAJcmV0dXJuIGlwNl9wb2xfcm91dGUobmV0LCB0YWJsZSwgZmwtPm9pZiwgZmws
-IGZsYWdzKTsKIH0KIAotc3RydWN0IGRzdF9lbnRyeSAqIGlwNl9yb3V0ZV9vdXRwdXQoc3RydWN0
-IG5ldCAqbmV0LCBzdHJ1Y3Qgc29jayAqc2ssCi0JCQkJICAgIHN0cnVjdCBmbG93aSAqZmwpCitz
-dHJ1Y3QgZHN0X2VudHJ5ICogaXA2X3JvdXRlX291dHB1dChzdHJ1Y3QgbmV0ICpuZXQsc3RydWN0
-IGZsb3dpICpmbCkKIHsKIAlpbnQgZmxhZ3MgPSAwOwogCkBAIC0yMjYxLDcgKzIyNjAsNyBAQCBz
-dGF0aWMgaW50IGluZXQ2X3J0bV9nZXRyb3V0ZShzdHJ1Y3Qgc2tfYnVmZiAqaW5fc2tiLCBzdHJ1
-Y3Qgbmxtc2doZHIqIG5saCwgdm9pZAogCXNrYl9yZXNldF9tYWNfaGVhZGVyKHNrYik7CiAJc2ti
-X3Jlc2VydmUoc2tiLCBNQVhfSEVBREVSICsgc2l6ZW9mKHN0cnVjdCBpcHY2aGRyKSk7CiAKLQly
-dCA9IChzdHJ1Y3QgcnQ2X2luZm8qKSBpcDZfcm91dGVfb3V0cHV0KG5ldCwgTlVMTCwgJmZsKTsK
-KwlydCA9IChzdHJ1Y3QgcnQ2X2luZm8qKSBpcDZfcm91dGVfb3V0cHV0KG5ldCwgJmZsKTsKIAlz
-a2ItPmRzdCA9ICZydC0+dS5kc3Q7CiAKIAllcnIgPSBydDZfZmlsbF9ub2RlKHNrYiwgcnQsICZm
-bC5mbDZfZHN0LCAmZmwuZmw2X3NyYywgaWlmLApkaWZmIC0tZ2l0IGEvbmV0L2lwdjYvc2l0LmMg
-Yi9uZXQvaXB2Ni9zaXQuYwppbmRleCAxYjgxOTZjLi4xYjg2OTQwIDEwMDY0NAotLS0gYS9uZXQv
-aXB2Ni9zaXQuYworKysgYi9uZXQvaXB2Ni9zaXQuYwpAQCAtMzkzLDcgKzM5Myw3IEBAIGlzYXRh
-cF9zcmNvayhzdHJ1Y3Qgc2tfYnVmZiAqc2tiLCBzdHJ1Y3QgaXBoZHIgKmlwaCwgc3RydWN0IG5l
-dF9kZXZpY2UgKmRldikKIAlmbC5vaWYgPSBkZXYtPmlmaW5kZXg7CiAJc2VjdXJpdHlfc2tiX2Ns
-YXNzaWZ5X2Zsb3coc2tiLCAmZmwpOwogCi0JZHN0ID0gaXA2X3JvdXRlX291dHB1dCgmaW5pdF9u
-ZXQsIE5VTEwsICZmbCk7CisJZHN0ID0gaXA2X3JvdXRlX291dHB1dCgmaW5pdF9uZXQsICZmbCk7
-CiAJaWYgKCFkc3QtPmVycm9yICYmIChkc3QtPmRldiA9PSBkZXYpICYmIChuZWlnaCA9IGRzdC0+
-bmVpZ2hib3VyKSkgewogCiAJCWFkZHI2ID0gKHN0cnVjdCBpbjZfYWRkciopJm5laWdoLT5wcmlt
-YXJ5X2tleTsKZGlmZiAtLWdpdCBhL25ldC9pcHY2L3hmcm02X3BvbGljeS5jIGIvbmV0L2lwdjYv
-eGZybTZfcG9saWN5LmMKaW5kZXggZTk2ZGFmZC4uOGVmNDgyMSAxMDA2NDQKLS0tIGEvbmV0L2lw
-djYveGZybTZfcG9saWN5LmMKKysrIGIvbmV0L2lwdjYveGZybTZfcG9saWN5LmMKQEAgLTM4LDcg
-KzM4LDcgQEAgc3RhdGljIHN0cnVjdCBkc3RfZW50cnkgKnhmcm02X2RzdF9sb29rdXAoaW50IHRv
-cywgeGZybV9hZGRyZXNzX3QgKnNhZGRyLAogCWlmIChzYWRkcikKIAkJbWVtY3B5KCZmbC5mbDZf
-c3JjLCBzYWRkciwgc2l6ZW9mKGZsLmZsNl9zcmMpKTsKIAotCWRzdCA9IGlwNl9yb3V0ZV9vdXRw
-dXQoJmluaXRfbmV0LCBOVUxMLCAmZmwpOworCWRzdCA9IGlwNl9yb3V0ZV9vdXRwdXQoJmluaXRf
-bmV0LCAmZmwpOwogCiAJZXJyID0gZHN0LT5lcnJvcjsKIAlpZiAoZHN0LT5lcnJvcikgewpkaWZm
-IC0tZ2l0IGEvbmV0L3NjdHAvaXB2Ni5jIGIvbmV0L3NjdHAvaXB2Ni5jCmluZGV4IDE5MzdiZTUu
-LjYxZmJjZjYgMTAwNjQ0Ci0tLSBhL25ldC9zY3RwL2lwdjYuYworKysgYi9uZXQvc2N0cC9pcHY2
-LmMKQEAgLTI1OSw3ICsyNTksNyBAQCBzdGF0aWMgc3RydWN0IGRzdF9lbnRyeSAqc2N0cF92Nl9n
-ZXRfZHN0KHN0cnVjdCBzY3RwX2Fzc29jaWF0aW9uICphc29jLAogCQkJTklQNihmbC5mbDZfc3Jj
-KSk7CiAJfQogCi0JZHN0ID0gaXA2X3JvdXRlX291dHB1dCgmaW5pdF9uZXQsIE5VTEwsICZmbCk7
-CisJZHN0ID0gaXA2X3JvdXRlX291dHB1dCgmaW5pdF9uZXQsICZmbCk7CiAJaWYgKCFkc3QtPmVy
-cm9yKSB7CiAJCXN0cnVjdCBydDZfaW5mbyAqcnQ7CiAJCXJ0ID0gKHN0cnVjdCBydDZfaW5mbyAq
-KWRzdDsK
-------=_Part_11103_30520649.1205830984684--
+through these commits:
+
+Alexey Starikovskiy (1):
+      ACPI: battery: Don't return -EFAIL on broken packages.
+
+Julia Lawall (1):
+      asus_acpi: remove misleading mask
+
+Len Brown (5):
+      ACPI: fix ATA_ACPI build
+      Revert "thermal: fix generic thermal I/F for hwmon"
+      thermal: delete "default y"
+      Revert "ACPI: video: Ignore ACPI video devices that aren't present in hardware"
+      Revert "ACPI: video: Ignore devices that aren't present in hardware"
+
+Venki Pallipadi (1):
+      ACPI: lockdep warning on boot, 2.6.25-rc5
+
+Zhang, Rui (1):
+      thermal: re-document thermal units
+
+with this log:
+
+commit d9ea1364d37b53710519909ab125a53b0a8ca64f
+Merge: abc5a87... b8a1bdb... 77321e6... 0ac4a3c... 71e93d1... ece54e2...
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Mar 18 04:52:57 2008 -0400
+
+    Merge branches 'release', 'asus', 'bugzilla-8573', 'bugzilla-9995', 'bugzilla-10272', 'lockdep' and 'thermal' into release
+
+commit 77321e624b64f1e5985a20f3cd16b94c96d0dbb4
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Mar 18 04:04:35 2008 -0400
+
+    Revert "ACPI: video: Ignore devices that aren't present in hardware"
+    
+    This reverts commit 0119509c4fbc9adcef1472817fda295334612976.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=9995
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit abc5a87f4e627e058813a95b112e9f5f21668f9d
+Author: Julia Lawall <julia@diku.dk>
+Date:   Tue Mar 4 15:00:13 2008 -0800
+
+    asus_acpi: remove misleading mask
+    
+    led_out is boolean, so there is no functional change here,
+    but apparently an extra mask with 1 caused some style checkers
+    to flag this as logic bug.
+    
+    Signed-off-by: Julia Lawall <julia@diku.dk>
+    Acked-by: Luca Tettamanti <kronos.it@gmail.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit f0d6752c9fa51d24c86b57c76ec5b2926a716b23
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Mar 18 01:43:53 2008 -0400
+
+    Revert "ACPI: video: Ignore ACPI video devices that aren't present in hardware"
+    
+    This reverts commit 3fa2cdcc45a0176de15cac9dbf4ed2834ebf8932.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=9995
+    
+    Signed-off-by: Len Brown <len.brown>
+
+commit ece54e2ff45062852e4647e85b2bb5f6aee8211c
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Mar 18 01:22:10 2008 -0400
+
+    thermal: delete "default y"
+    
+    The generic thermal I/F gets selected by ACPI_THERMAL --
+    its only current customer.
+    it doesn't need to clutter other configs by default.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 6d7f014e55c5227220da1f021c518487fcfd585a
+Author: Zhang, Rui <rui.zhang@intel.com>
+Date:   Tue Mar 18 10:40:29 2008 +0800
+
+    thermal: re-document thermal units
+    From: Zhang Rui <rui.zhang@intel.com>
+    
+    (reverting the previous sysfs patch also reverted a fix
+     to the thermal units documentation, which is restored by this commit)
+    
+    The generic thermal driver shows temperature in millidegree Celsius.
+    
+    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 91f57fa1215952af579f304821a15cc6c656042c
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Mar 18 01:14:37 2008 -0400
+
+    Revert "thermal: fix generic thermal I/F for hwmon"
+    
+    This reverts commit 3152fb9f11cdd2fd8688c2c5cb805e5c09b53dd9.
+    
+    This broke libsensors.
+    
+    Acked-by: Zhang Rui <rui.zhang@intel.com>
+    Acked-by: Jean Delvare <khali@linux-fr.org>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 0ac4a3c2fbbcadc3e96e4dc47d4ae802d66e6f67
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Mar 18 00:26:07 2008 -0400
+
+    ACPI: fix ATA_ACPI build
+    
+    drivers/ata/libata-acpi.c fails to build
+    
+    drivers/built-in.o: In function `ata_acpi_associate':
+    (.text+0x7106a): undefined reference to `register_hotplug_dock_device'
+    
+    When CONFIG_ATA_ACPI=y and CONFIG_ACPI_DOCK=m
+    But if dock is selected from ata_acpi, dock will =y
+    when ata_acpi=y, avoiding this problem.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=10272
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit b8a1bdb14940946fcf0438a6337b2a6c54294fb8
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Mon Mar 17 22:37:42 2008 -0400
+
+    ACPI: battery: Don't return -EFAIL on broken packages.
+    
+    Acer BIOS has a bug which is exposed when a dead battery is present.
+    
+    The package template that is used to describe battery status is
+    over-written with sane values when the battery is live.
+    But when the batter is dead, a bogus reference in the template
+    is used.  In this case, Linux returns a fault, when instead
+    it should simply return that it doesn't know the missing value.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=8573
+    http://bugzilla.kernel.org/show_bug.cgi?id=10202
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 71e93d15612c61c2e26a169567becf088e71b8ff
+Author: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Date:   Thu Mar 13 17:18:19 2008 -0700
+
+    ACPI: lockdep warning on boot, 2.6.25-rc5
+    
+    This avoids the harmless WARNING by lockdep in acpi_processor_idle().
+    
+    The reason for WARNING is because at the depth of idle handling code,
+    some of the idle handlers disable interrupts, some times, while returning from
+    the idle handler. After return, acpi_processor_idle and few other routines
+    in the file did an unconditional local_irq_enable(). With LOCKDEP, enabling
+    irq when it is already enabled generates the below WARNING.
+    
+    > > [    0.593038] ------------[ cut here ]------------
+    > > [    0.593267] WARNING: at kernel/lockdep.c:2035 trace_hardirqs_on+0xa0/0x115()
+    > > [    0.593596] Modules linked in:
+    > > [    0.593756] Pid: 0, comm: swapper Not tainted 2.6.25-rc5 #8
+    > > [    0.594017]
+    > > [    0.594017] Call Trace:
+    > > [    0.594216]  [<ffffffff80231663>] warn_on_slowpath+0x58/0x6b
+    > > [    0.594495]  [<ffffffff80495966>] ? _spin_unlock_irqrestore+0x38/0x47
+    > > [    0.594809]  [<ffffffff80329a86>] ? acpi_os_release_lock+0x9/0xb
+    > > [    0.595103]  [<ffffffff80337840>] ? acpi_set_register+0x161/0x173
+    > > [    0.595401]  [<ffffffff8034c8d4>] ? acpi_processor_idle+0x1de/0x546
+    > > [    0.595706]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
+    > > [    0.595970]  [<ffffffff8024fc0e>] trace_hardirqs_on+0xa0/0x115
+    > > [    0.596049]  [<ffffffff8034c6f6>] ? acpi_processor_idle+0x0/0x546
+    > > [    0.596346]  [<ffffffff8034c8d4>] acpi_processor_idle+0x1de/0x546
+    > > [    0.596642]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
+    > > [    0.596912]  [<ffffffff8034c6f6>] ? acpi_processor_idle+0x0/0x546
+    > > [    0.597209]  [<ffffffff8020a23b>] ? default_idle+0x0/0x73
+    > > [    0.597472]  [<ffffffff8020a355>] cpu_idle+0xa7/0xd1
+    > > [    0.597717]  [<ffffffff80485fa1>] rest_init+0x55/0x57
+    > > [    0.597957]  [<ffffffff8062fb49>] start_kernel+0x29d/0x2a8
+    > > [    0.598215]  [<ffffffff8062f1da>] _sinittext+0x1da/0x1e1
+    > > [    0.598464]
+    > > [    0.598546] ---[ end trace 778e504de7e3b1e3 ]---
+    
+    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
