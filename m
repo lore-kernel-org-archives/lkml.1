@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965001AbYCSUw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762753AbYCSUyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965001AbYCSUw1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758747AbYCSTqj
+	id S1762753AbYCSUyD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYCSTs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:46:39 -0400
-Received: from mfo32.po.2iij.NET ([210.128.50.15]:12035 "EHLO
-	mfo32.po.2iij.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbYCSTqi (ORCPT
+	Wed, 19 Mar 2008 15:48:28 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:12936 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759225AbYCSTs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:46:38 -0400
-Message-Id: <200803182251.m2IMphhQ013534@po-mbox302.po.2iij.net>
-Date: Wed, 19 Mar 2008 07:49:57 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: yoichi_yuasa@tripeaks.co.jp, Ralf Baechle <ralf@linux-mips.org>,
+	Wed, 19 Mar 2008 15:48:27 -0400
+In-Reply-To: <adaprtsf1ww.fsf@cisco.com>
+Subject: Re: [PATCH 1/3] Infiniband: make ehca_pd use struct pid pointer rather than
+ pid_t
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Christoph Raisch <raisch@de.ibm.com>, general@lists.openfabrics.org,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: [PATCH 1/2] add vr41xx_siu_early_setup() for serial console
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF4F7C6111.9AA26F4F-ONC1257410.00599780-C1257410.005E3475@de.ibm.com>
+From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
+Date: Tue, 18 Mar 2008 18:09:22 +0100
+X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2FP2HF322 | September
+ 26, 2007) at 18/03/2008 18:09:23
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add vr41xx_siu_early_setup() for serial console
+>  > Reason for above checking is to prevent a child process releasing
+>  > a resource that the parent process has created and still wants to use.
+>  > Do you think that's something we can generalize into ib_core?
+> Clearly if we want that check then it should be in the core uverbs
+> module.  But I'm not sure why we would want that check -- I don't see
+> any realistic scenario where that would cause problems, and it seems
+> at least as likely that the check would break an app that
+> intentionally does something clever.
+Right, above checking is based on a very simple policy "creator of a
+resource is also the owner in term of releasing it" and will not cover
+other customized patterns. We had a case - believe on sles9, in which
+a child process manipulated/released resources from parent one, and
+it was not easy to find the bug.
+Wrt/ your actual question: we can remove the tgid stuff from ehca kernel
+code. When do you expect me to send a patch at latest?
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Nam
 
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/serial/vr41xx_siu.c linux/drivers/serial/vr41xx_siu.c
---- linux-orig/drivers/serial/vr41xx_siu.c	2008-03-12 17:03:43.420462106 +0900
-+++ linux/drivers/serial/vr41xx_siu.c	2008-03-12 17:03:38.730540709 +0900
-@@ -1,7 +1,7 @@
- /*
-  *  Driver for NEC VR4100 series Serial Interface Unit.
-  *
-- *  Copyright (C) 2004-2007  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-+ *  Copyright (C) 2004-2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-  *
-  *  Based on drivers/serial/8250.c, by Russell King.
-  *
-@@ -840,6 +840,19 @@ static int __devinit siu_console_init(vo
- 
- console_initcall(siu_console_init);
- 
-+void __init vr41xx_siu_early_setup(struct uart_port *port)
-+{
-+	if (port->type == PORT_UNKNOWN)
-+		return;
-+
-+	siu_uart_ports[port->line].line = port->line;
-+	siu_uart_ports[port->line].type = port->type;
-+	siu_uart_ports[port->line].uartclk = SIU_BAUD_BASE * 16;
-+	siu_uart_ports[port->line].mapbase = port->mapbase;
-+	siu_uart_ports[port->line].mapbase = port->mapbase;
-+	siu_uart_ports[port->line].ops = &siu_uart_ops;
-+}
-+
- #define SERIAL_VR41XX_CONSOLE	&siu_console
- #else
- #define SERIAL_VR41XX_CONSOLE	NULL
