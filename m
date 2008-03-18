@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbYCRLIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbYCRLRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbYCRLIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 07:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYCRLIJ
+	id S1752656AbYCRLRN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 07:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYCRLQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 07:08:09 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15519 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbYCRLII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 07:08:08 -0400
-Date: Tue, 18 Mar 2008 12:08:04 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: petkovbb@gmail.com
-Cc: Nikanth Karthikesan <knikanth@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: ide_cd modifies hard_* members of request
-Message-ID: <20080318110803.GV17940@kernel.dk>
-References: <1205830486.7126.16.camel@nikanth-laptop.blr.novell.com> <9ea470500803180405h5ede15eaqa86515058a632e2b@mail.gmail.com>
+	Tue, 18 Mar 2008 07:16:57 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:40513 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbYCRLQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 07:16:56 -0400
+Message-ID: <47DFA49D.4000007@linux.vnet.ibm.com>
+Date: Tue, 18 Mar 2008 16:46:45 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9ea470500803180405h5ede15eaqa86515058a632e2b@mail.gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       stern@rowland.harvard.edu, Andy Whitcroft <apw@shadowen.org>,
+       lenb@kernel.org, greg@kroah.com, akpm@linux-foundation.org, rjw@sisk.pl
+Subject: [Build Failure] linux-next: Tree for March 18 
+References: <20080318205259.13726d23.sfr@canb.auug.org.au>
+In-Reply-To: <20080318205259.13726d23.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 18 2008, Boris Petkov wrote:
-> (sorry, forgot to cc all)
-> 
-> On Tue, Mar 18, 2008 at 9:54 AM, Nikanth Karthikesan <knikanth@suse.de> wrote:
-> > Hi
-> >
-> >  Despite the warning in blkdev.h, that members of struct request starting
-> >  with hard_* are block layer internals, and no driver should touch them,
-> >  the ide_cd driver seems to fiddle around with it.
-> >
-> >  Is this reqd, or can this be made to work without the need for this?
-> >
-> >  If this reqd, why not provide a helper function for that in block layer
-> >  itself, may be, with a warning about usage?
-> >
-> >  Thanks
-> >  Nikanth Karthikesan
-> 
-> Hi,
-> 
-> the code pieces you're referring to are in there since at least the
-> first git import of the kernel source (i.e. 2005) aka long time so
-> Bart/Jens should know that...
+Hi Stephen,
 
-restore_request(), I'm assuming. It was probably me who modified this
-code, I don't think there's any justification for it. I would suggest
-killing it. And cdrom_read_from_buffer() as well, it's a silly addition.
+The kernel build of linux-next tree(s) have been failing from 20080314 with
+the build failure
+
+drivers/serial/serial_core.c: In function `uart_add_one_port':
+drivers/serial/serial_core.c:2359: error: invalid lvalue in assignment
+make[2]: *** [drivers/serial/serial_core.o] Error 1
+
+And the patch was submitted for the same http://marc.info/?l=linux-next&m=120561799422065&w=2
 
 -- 
-Jens Axboe
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
