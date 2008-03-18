@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYCRBLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYCRBKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbYCRBLe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Mar 2008 21:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYCRBJt
+	id S1756203AbYCRBKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Mar 2008 21:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYCRBJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Mar 2008 21:09:49 -0400
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:40030 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbYCRBJl (ORCPT
+	Mon, 17 Mar 2008 21:09:46 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:38123 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754324AbYCRBJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Mar 2008 21:09:41 -0400
+	Mon, 17 Mar 2008 21:09:37 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080318209.039112899@firstfloor.org>
 In-Reply-To: <20080318209.039112899@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH prototype] [5/8] Add ELF constants for pbitmaps
-Message-Id: <20080318010939.566791B41E1@basil.firstfloor.org>
-Date: Tue, 18 Mar 2008 02:09:39 +0100 (CET)
-X-OriginalArrivalTime: 18 Mar 2008 01:03:04.0674 (UTC) FILETIME=[D21CEC20:01C88893]
+Subject: [PATCH prototype] [1/8] Give ELF shdr types a name
+Message-Id: <20080318010935.4467B1B41E1@basil.firstfloor.org>
+Date: Tue, 18 Mar 2008 02:09:35 +0100 (CET)
+X-OriginalArrivalTime: 18 Mar 2008 01:03:00.0596 (UTC) FILETIME=[CFAEAB40:01C88893]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I made up some numbers for the present bitmap phdrs and shdrs.
-
-For serious use this would probably require an allocation somewhere.
-
+The pbitmap code is the first code in Linux to know
+about ELF shdrs. They were already in the include files, but
+not given a suitable type name. Fix that.
 
 Signed-off-by: Andi Kleen <andi@firstfloor.org>
 
 ---
- include/linux/elf.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/elf.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 Index: linux/include/linux/elf.h
 ===================================================================
 --- linux.orig/include/linux/elf.h
 +++ linux/include/linux/elf.h
-@@ -49,6 +49,7 @@ typedef __s64	Elf64_Sxword;
- #define PT_GNU_EH_FRAME		0x6474e550
+@@ -286,7 +286,7 @@ typedef struct elf64_phdr {
+ #define SHN_COMMON	0xfff2
+ #define SHN_HIRESERVE	0xffff
+  
+-typedef struct {
++typedef struct elf32_shdr {
+   Elf32_Word	sh_name;
+   Elf32_Word	sh_type;
+   Elf32_Word	sh_flags;
+@@ -382,6 +382,7 @@ extern Elf32_Dyn _DYNAMIC [];
+ #define elf_phdr	elf32_phdr
+ #define elf_note	elf32_note
+ #define elf_addr_t	Elf32_Off
++#define elf_shdr	elf32_shdr
  
- #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
-+#define PT_PRESENT_BITMAP (PT_GNU_STACK + 1)
+ #else
  
- /* These constants define the different elf file types */
- #define ET_NONE   0
-@@ -230,6 +231,8 @@ typedef struct elf64_hdr {
- #define PF_W		0x2
- #define PF_X		0x1
+@@ -390,6 +391,7 @@ extern Elf64_Dyn _DYNAMIC [];
+ #define elf_phdr	elf64_phdr
+ #define elf_note	elf64_note
+ #define elf_addr_t	Elf64_Off
++#define elf_shdr	elf64_shdr
  
-+#define PF_PLEASE_LOAD_SHDRS		0x8 /* hack. checked on PT_GNU_STACK */
-+
- typedef struct elf32_phdr{
-   Elf32_Word	p_type;
-   Elf32_Off	p_offset;
-@@ -270,6 +273,7 @@ typedef struct elf64_phdr {
- #define SHT_HIPROC	0x7fffffff
- #define SHT_LOUSER	0x80000000
- #define SHT_HIUSER	0xffffffff
-+#define SHT_PRESENT_BITMAP (SHT_LOPROC - 1000)
+ #endif
  
- /* sh_flags */
- #define SHF_WRITE	0x1
