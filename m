@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbYCSXrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939195AbYCSXru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934212AbYCSXrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934894AbYCSWOj
+	id S939195AbYCSXru (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762579AbYCSWQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:14:39 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:51297 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbYCSWOh (ORCPT
+	Wed, 19 Mar 2008 18:16:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:49645 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S940082AbYCSWQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:14:37 -0400
-To: Jeff Dike <jdike@addtoit.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@timesys.com>
-Subject: Re: [2.6.24.x] UML select()/poll() oversleeping reproducibly
-References: <47B34BA0.30006@club-internet.fr>
-	<20080214003853.GA15952@c2.user-mode-linux.org>
-	<47B4BDCD.4080605@club-internet.fr>
-	<20080215160205.GA6082@c2.user-mode-linux.org>
-	<47B5CE40.9000005@club-internet.fr>
-	<20080215184650.GA8810@c2.user-mode-linux.org>
-	<87y78kx640.fsf_-_@hades.wkstn.nix>
-	<20080317193415.GA12234@c2.user-mode-linux.org>
-	<87k5k112kf.fsf@hades.wkstn.nix>
-	<20080318170019.GA8747@c2.user-mode-linux.org>
-From: Nix <nix@esperi.org.uk>
-Emacs: ... it's not just a way of life, it's a text editor!
-Date: Wed, 19 Mar 2008 22:14:14 +0000
-In-Reply-To: <20080318170019.GA8747@c2.user-mode-linux.org> (Jeff Dike's message of "Tue, 18 Mar 2008 13:00:19 -0400")
-Message-ID: <87od9apdjd.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Wed, 19 Mar 2008 18:16:14 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH 4/5] don't panic if /sbin/init exits or killed
+To: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Tue, 18 Mar 2008 18:41:18 +0100
+References: <a83rs-N7-9@gated-at.bofh.it> <a89wR-8k4-3@gated-at.bofh.it> <a8a9t-1pV-21@gated-at.bofh.it> <a8aCw-2hv-31@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-DCC-INFN-TO-Metrics: hades 1233; Body=4 Fuz1=4 Fuz2=4
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1JbfoM-0003fj-Qz@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19fta4vRxn0CxU9WKbvqYnE7c+Kqb0txqt8dDq
+ EdSSUuhdXzEQX4LO0cIttH8MF8TsyyTffVlJxp6Di01qhXeDqD
+ BXEb0UMlkmG3zCInKX7pw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18 Mar 2008, Jeff Dike told this:
-> This version keeps track of the time between ticks (as reported by the
-> host's gettimeofday) and adjusts its sleeping and reporting ticks
-> accordingly.
+Roland McGrath <roland@redhat.com> wrote:
 
-I can confirm that, as expected, this patch works well enough that
-timing problems don't break dhclient anymore (which requires a 2x
-oversleep, which you're a long way from now).
+>> But panic() isn't better? It doesn't provide any useful info.
+> 
+> It is not misleading in the same way.  It's clear that going to look at the
+> kernel source is not the place to find the root of the problem.
+> 
+>> Well, I think the generic "if we have a chance to survive, we should try
+>> to survive" rule is good.
+>> 
+>> If the boot init dies, at least the admin has a chance to figure out what
+>> has happened, and -o remount,ro /.
+> 
+> For me and you, I agree.  I think the common case is that there is no admin
+> prepared to do any such thing, but just someone expecting a reboot to fix
+> things and preferring that a failing system reboot itself in the middle of
+> the night rather than wedge.
 
-At last I can upgrade my firewall :)
+I think the common case is repairing a system using init=/bin/sh, and
+forgetting to not log out instead of fscking the filesystem after the panic.
+Rebooting on panic= is fine, but not skipping the umount/sync stages.
 
--- 
-`The rest is a tale of post and counter-post.' --- Ian Rawlings
-                                                   describes USENET
