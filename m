@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYCREIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYCREMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbYCREIl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 00:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYCREIc
+	id S1753413AbYCREMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 00:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYCREM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 00:08:32 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:46731 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751788AbYCREIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 00:08:31 -0400
-Date: Mon, 17 Mar 2008 21:07:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: hackbench regression since 2.6.25-rc
-In-Reply-To: <1205810884.3215.543.camel@ymzhang>
-Message-ID: <Pine.LNX.4.64.0803172105520.17771@schroedinger.engr.sgi.com>
-References: <1205394417.3215.85.camel@ymzhang>  <20080313014808.f8d25c2a.akpm@linux-foundation.org>
-  <1205400538.3215.148.camel@ymzhang>  <Pine.LNX.4.64.0803131714130.22519@schroedinger.engr.sgi.com>
-  <1205463842.3215.188.camel@ymzhang> <1205465447.3215.195.camel@ymzhang> 
- <Pine.LNX.4.64.0803132333020.24204@schroedinger.engr.sgi.com> 
- <1205479398.3215.284.camel@ymzhang>  <Pine.LNX.4.64.0803141400170.28115@schroedinger.engr.sgi.com>
-  <1205740204.3215.520.camel@ymzhang>  <Pine.LNX.4.64.0803171027450.7359@schroedinger.engr.sgi.com>
- <1205810884.3215.543.camel@ymzhang>
+	Tue, 18 Mar 2008 00:12:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34821 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750766AbYCREM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Mar 2008 00:12:27 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: [PATCH] Re: In function `ata_acpi_associate': undefined reference =?utf-8?q?to=09=60register=5Fhotplug=5Fdock=5Fdevice=27?=
+Date: Tue, 18 Mar 2008 00:11:48 -0400
+User-Agent: KMail/1.9.9
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-acpi@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       htejun@gmail.com, jeff@garzik.org
+References: <47DEC970.2050402@m3y3r.de> <47DECD54.5060202@m3y3r.de> <200803172357.54253.lenb@kernel.org>
+In-Reply-To: <200803172357.54253.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803180011.49190.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008, Zhang, Yanmin wrote:
+Subject: fix ATA_ACPI build
+From: Len Brown <len.brown@intel.com>
 
-> num_online_cpus as the input parameter is ok. A potential issue is how to consider cpu hot-plug.
+drivers/ata/libata-acpi.c fails to build
 
-Yeah I used nr_cpu_ids instead in the patchset that I cced you on. Maybe 
-continue discussion on that thread?
+drivers/built-in.o: In function `ata_acpi_associate':
+(.text+0x7106a): undefined reference to `register_hotplug_dock_device'
 
+When CONFIG_ATA_ACPI=y and CONFIG_ACPI_DOCK=m
+But if dock is selected from ata_acpi, dock will =y
+when ata_acpi=y, avoiding this problem.
+
+Signed-off-by: Len Brown <len.brown@intel.com>
+
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index e469647..25aba69 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -30,6 +30,7 @@ config ATA_NONSTANDARD
+ config ATA_ACPI
+ 	bool
+ 	depends on ACPI && PCI
++	select ACPI_DOCK
+ 	default y
+ 	help
+ 	  This option adds support for ATA-related ACPI objects.
