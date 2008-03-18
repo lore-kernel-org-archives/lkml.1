@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbYCSTet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbYCSTgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756270AbYCSTet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYCST1c
+	id S1752315AbYCSTgj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbYCST2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:27:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39313 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754080AbYCST1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:27:30 -0400
-Date: Tue, 18 Mar 2008 09:47:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4 
-In-Reply-To: <20080318163004.018332DC044@tippex.mynet.homeunix.org>
-Message-ID: <alpine.LFD.1.00.0803180943300.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <alpine.LFD.1.00.0803171548480.3020@woody.linux-foundation.org> <20080318001831.575D093C911@tippex.mynet.homeunix.org> <200803181403.37969.bzolnier@gmail.com>
- <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803180751200.3020@woody.linux-foundation.org> <20080318163004.018332DC044@tippex.mynet.homeunix.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 19 Mar 2008 15:28:18 -0400
+Received: from mail.lang.hm ([64.81.33.126]:54855 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754271AbYCST2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:28:15 -0400
+Date: Tue, 18 Mar 2008 09:36:28 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Newall <davidn@davidnewall.com>
+cc: Daniel Phillips <phillips@phunq.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
+In-Reply-To: <47DFBD99.2080501@davidnewall.com>
+Message-ID: <alpine.DEB.1.00.0803180933230.21250@asgard.lang.hm>
+References: <200803092346.17556.phillips@phunq.net> <alpine.DEB.1.00.0803170740440.14887@asgard.lang.hm> <alpine.DEB.1.00.0803171021300.17640@asgard.lang.hm> <200803180233.10156.phillips@phunq.net> <47DFBD99.2080501@davidnewall.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 18 Mar 2008, David Newall wrote:
 
+> Daniel Phillips wrote:
+>> You will need:
+>>
+>>   * Two Violin 1010 memory devices
+>>
+>>   * Four UPS units each rated for one hour at 600 Watts
+>>
+>>   * Two servers, each with at least two 8x PCI-e slots
+>>
+>>   * One SAN with a bunch of 15K rpm scsi disks
+>>
+>
+>
+> Honestly, this isn't at all what I understood you to be talking about.
+> In your very first post you described ramback as "a new virtual device
+> with the ability to back a ramdisk by a real disk."  I assumed "ramdisk"
+> to mean the Linux psuedo-device.  I never understood that you meant an
+> external device, in fact I thought ramback was *instead of* a Violin.
+> Since you're talking about external ram, it survives operating system
+> crashes and of course that is not such a big deal as I was thinking.
 
-On Tue, 18 Mar 2008, Anders Eriksson wrote:
-> 
-> Seems we got something here. For all I can tell, it's working!
-> 
-> I had to hand apply the last hunk of your patch, and the other patches are there as 
-> well. Can you respin it vs. -rc6 and I'll try on a clean tree?
+I agree. I didn't think ramback was just an advertising mechanism for 
+violin, I thought it was being presented as something that could be used 
+with enterprise hardware like the Sun x4600 (which can hold 256G of ram) 
+and that talk of the violin was just the claim that lots of ram is 
+available so this was a possibility now.
 
-Actually, the patch I sent you should be against the current -git tree, 
-and I don't think anything has changed since -rc6 in this area.
+David Lang
 
-I suspect the reason you had to hand-apply it may be the other 
-test-patches you had. Can you just undo those? Since it looks like it may 
-be working for you, the debug patches are just adding tons of noise by 
-now, and it would be good to hear whether the status with that last patch 
-is just a simple "ok, it works now".
-
-		Linus
+P.S. 8xPCI-e slots are only able to do 2GB/s of data transfer, in an 
+earlier post Daniel claimed that you needed 3GB/s of disk to mirror to the 
+disk, so the scenerio listed above looses 1/3 of it's performance compared 
+to what was being claimed earlier.
