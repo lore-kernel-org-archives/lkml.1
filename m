@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYCRLWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYCRLYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYCRLWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Mar 2008 07:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYCRLWF
+	id S1753158AbYCRLYQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Mar 2008 07:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYCRLYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 07:22:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:42102 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbYCRLWE convert rfc822-to-8bit (ORCPT
+	Tue, 18 Mar 2008 07:24:00 -0400
+Received: from saeurebad.de ([85.214.36.134]:35243 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751522AbYCRLYA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 07:22:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XI3bocNde+2804PXFjiu6vAWGdA+CFhm8TivP3c2RqBeV7T9N0/ZEb/39iHsdx/1i0ca4Ro0GrjnTS7okngWl5bnt22/n8HsL+gCxomSD5+PzJgU1a/G1yBO46eeE5mbbRSYZK5njZndoSpVnaBoOhpsoiZA+rfQj84lhBizCTs=
-Message-ID: <9ea470500803180422s491622d4i81f8e37796f44313@mail.gmail.com>
-Date: Tue, 18 Mar 2008 12:22:02 +0100
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: ide_cd modifies hard_* members of request
-Cc: "Nikanth Karthikesan" <knikanth@suse.de>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-In-Reply-To: <20080318110803.GV17940@kernel.dk>
+	Tue, 18 Mar 2008 07:24:00 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: vfree with spin_lock_bh
+References: <Pine.LNX.4.64.0803180019470.18817@fbirervta.pbzchgretzou.qr>
+Date: Tue, 18 Mar 2008 12:21:39 +0100
+In-Reply-To: <Pine.LNX.4.64.0803180019470.18817@fbirervta.pbzchgretzou.qr>
+	(Jan Engelhardt's message of "Tue, 18 Mar 2008 00:30:35 +0100 (CET)")
+Message-ID: <87wso0wa4c.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1205830486.7126.16.camel@nikanth-laptop.blr.novell.com>
-	 <9ea470500803180405h5ede15eaqa86515058a632e2b@mail.gmail.com>
-	 <20080318110803.GV17940@kernel.dk>
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 18, 2008 at 12:08 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+Hi Jan,
+
+Jan Engelhardt <jengelh@computergmbh.de> writes:
+
+> while transforming some code with big allocations (like 120 KB) from 
+> kmalloc to vmalloc — virtual contiguity is sufficient — I hit a
+> BUG_ON in mm/vmalloc.c a number of times:
 >
-> On Tue, Mar 18 2008, Boris Petkov wrote:
->  > (sorry, forgot to cc all)
->  >
->  > On Tue, Mar 18, 2008 at 9:54 AM, Nikanth Karthikesan <knikanth@suse.de> wrote:
->  > > Hi
->  > >
->  > >  Despite the warning in blkdev.h, that members of struct request starting
->  > >  with hard_* are block layer internals, and no driver should touch them,
->  > >  the ide_cd driver seems to fiddle around with it.
->  > >
->  > >  Is this reqd, or can this be made to work without the need for this?
->  > >
->  > >  If this reqd, why not provide a helper function for that in block layer
->  > >  itself, may be, with a warning about usage?
->  > >
->  > >  Thanks
->  > >  Nikanth Karthikesan
->  >
->  > Hi,
->  >
->  > the code pieces you're referring to are in there since at least the
->  > first git import of the kernel source (i.e. 2005) aka long time so
->  > Bart/Jens should know that...
+> 	void vfree(const void *addr)
+> 	{
+> 	        BUG_ON(in_interrupt());
+> 	        __vunmap(addr, 1);
+> 	}
 >
->  restore_request(), I'm assuming. It was probably me who modified this
->  code, I don't think there's any justification for it. I would suggest
->  killing it.
-
-I'll conjure up something later wrt above.
-
-> And cdrom_read_from_buffer() as well, it's a silly addition.
-
-This one is already gone, however the patch is still in Bart's tree
-for -mm testing:
-ftp://ftp.fi.kernel.org/pub/linux/kernel/people/bart/pata-2.6/patches/ide-cd-remove-the-internal-64k-buffer.patch
-
+> First I was thinking “how could iptables -F run in interrupt context?”,
+> but apparently, it does seem to make a difference:
 >
->  --
->  Jens Axboe
+> 	...
+> 	spin_lock_bh(&a_local_spinlock);
+> 	list_del_rcu(&node->list);
+> 	printk(KERN_INFO "Interrupt? %lu\n", in_interrupt());
+> 	/* vfree not worky here */
+> 	spin_unlock_bh(&a_local_spinlock);
+> 	printk(KERN_INFO "Interrupt? %lu\n", in_interrupt());
+> 	/* now possible */
+> 	vfree(node);
+> 	...
 >
+> and this gives (x86_32)
 >
+> 	Interrupt? 256
+> 	Interrupt? 0
+>
+> So this may be a "property" of spinlocks, but it is a bit strange to me.
+> Why should not I be able to call vfree() when I am, in fact, in
+> user context (but with a bh spinlock held...).
 
+in_interrupt() checks for both, hard- and softirqs.  Since
+spin_lock_bh() disables softirq's you have to be as fast as possible to
+avoid softirq latency.
 
+> Do I perhaps need a non-bh spinlock? There's RCU going on on that 
+> linked list so I am not sure whether I could just call the normal 
+> spin_lock() function.
 
--- 
-Regards/Gru�,
-Boris
+Perhaps a call_rcu() which vfree()s the node?  But I am just guessing
+wildly here.
+
+> Looking at the code of _spin_lock_bh in kernel/spinlock.c reveals that 
+> it is actually disabling preempt instead of being in an interrupt. 
+> Making an uneducated guess, would
+>
+> 	BUG_ON(in_interrupt() != 0 && in_interrupt() != 256)
+
+That's basically a lacky in_irq().  The 256 you see here is
+1<<SOFTIRQ_SHIFT but softirq disabling can be nested and you can not
+check for 256 directly.
+
+> in vfree() be safe?
+
+Can not judge that.
+
+	Hannes
