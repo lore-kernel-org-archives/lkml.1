@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbYCSWdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161723AbYCSWdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbYCSWdB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763942AbYCSVFP
+	id S1161723AbYCSWdd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763967AbYCSVFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:05:15 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:25581 "EHLO
+	Wed, 19 Mar 2008 17:05:17 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:25580 "EHLO
 	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S936064AbYCSVFK (ORCPT
+	by vger.kernel.org with ESMTP id S936065AbYCSVFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:05:10 -0400
-Date: Wed, 19 Mar 2008 14:55:59 -0600
+	Wed, 19 Mar 2008 17:05:11 -0400
+Date: Wed, 19 Mar 2008 14:55:54 -0600
 From: dougthompson@xmission.com
 To: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 3/3] EDAC Add e752x parameter for sysbus_parity selection
-Message-ID: <47e17ddf.xF+lLzMkHllCZjZq%dougthompson@xmission.com>
+Subject: [PATCH 2/3] EDAC Fix module initialization on several modules
+Message-ID: <47e17dda.Gkad5p5g8/aS4wLG%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,92 +24,407 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Peter Tyser <ptyser@xes-inc.com>
+From: Hitoshi Mitake <h.mitake@gmail.com>
 
-This patch adds a module parameter "sysbus_parity" to allow forcing system bus parity error
- checking on or off.  It also adds support to automatically disable system bus parity errors for
- processors which do not support it.
+I implmented opstate_init() as a inline function in linux/edac.h .
 
-If the sysbus_parity parameter is specified, sysbus parity detection will be forced on or off.  If
- it is not specified, the driver will attempt to look at the CPU identifier string and determine
- if the CPU supports system bus parity.  A blacklist was used instead of a whitelist so that system
- bus parity would be enabled by default and to minimize the chances of breaking things for those
- people already using the driver which for some reason have a processor that does not have a valid
- CPU identifier string.
+added calling opstate_init() to:
+	i82443bxgx_edac.c
+	i82860_edac.c
+	i82875p_edac.c and 
+	i82975x_edac.c .
 
-CC:		Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by:	Peter Tyser <ptyser@xes-inc.com>
+I think modified sources are now polling well.
+
+Hitoshi
+
+This is a good refactor to reduce the initialization code to a single
+point of implementaton, and then just call that code from each of the
+modules to setup proper state
+
+doug t
+
+CC:             Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by:	Hitoshi Mitake <h.mitake@gmail.com>
 Signed-off-by:	Doug Thompson <dougthompson@xmission.com>
 ---
- e752x_edac.c |   40 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 39 insertions(+), 1 deletion(-)
+ drivers/edac/amd76x_edac.c     |    6 ++++++
+ drivers/edac/e752x_edac.c      |   15 +++++----------
+ drivers/edac/e7xxx_edac.c      |   16 ++++++----------
+ drivers/edac/i3000_edac.c      |   13 ++++---------
+ drivers/edac/i5000_edac.c      |   14 ++++----------
+ drivers/edac/i82443bxgx_edac.c |    7 +++++++
+ drivers/edac/i82860_edac.c     |    7 +++++++
+ drivers/edac/i82875p_edac.c    |    9 +++++++++
+ drivers/edac/i82975x_edac.c    |    8 +++++++-
+ drivers/edac/pasemi_edac.c     |    6 ++++++
+ drivers/edac/r82600_edac.c     |    6 ++++++
+ include/linux/edac.h           |   14 +++++++++++++-
+ 12 files changed, 80 insertions(+), 41 deletions(-)
 
+Index: linux-2.6.25-rc5/include/linux/edac.h
+===================================================================
+--- linux-2.6.25-rc5.orig/include/linux/edac.h
++++ linux-2.6.25-rc5/include/linux/edac.h
+@@ -3,7 +3,7 @@
+  *
+  * Author: Dave Jiang <djiang@mvista.com>
+  *
+- * 2006-2007 (c) MontaVista Software, Inc. This file is licensed under
++ * 2006-2008 (c) MontaVista Software, Inc. This file is licensed under
+  * the terms of the GNU General Public License version 2. This program
+  * is licensed "as is" without any warranty of any kind, whether express
+  * or implied.
+@@ -26,4 +26,16 @@ extern atomic_t edac_handlers;
+ extern int edac_handler_set(void);
+ extern void edac_atomic_assert_error(void);
+ 
++static inline void opstate_init(void)
++{
++	switch (edac_op_state) {
++	case EDAC_OPSTATE_POLL:
++	case EDAC_OPSTATE_NMI:
++		break;
++	default:
++		edac_op_state = EDAC_OPSTATE_POLL;
++	}
++	return;
++}
++
+ #endif
+Index: linux-2.6.25-rc5/drivers/edac/i82443bxgx_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/i82443bxgx_edac.c
++++ linux-2.6.25-rc5/drivers/edac/i82443bxgx_edac.c
+@@ -29,6 +29,7 @@
+ 
+ #include <linux/slab.h>
+ 
++#include <linux/edac.h>
+ #include "edac_core.h"
+ 
+ #define I82443_REVISION	"0.1"
+@@ -386,6 +387,9 @@ static struct pci_driver i82443bxgx_edac
+ 
+ static int __init i82443bxgx_edacmc_init(void)
+ {
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	return pci_register_driver(&i82443bxgx_edacmc_driver);
+ }
+ 
+@@ -400,3 +404,6 @@ module_exit(i82443bxgx_edacmc_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Tim Small <tim@buttersideup.com> - WPAD");
+ MODULE_DESCRIPTION("EDAC MC support for Intel 82443BX/GX memory controllers");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/i82860_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/i82860_edac.c
++++ linux-2.6.25-rc5/drivers/edac/i82860_edac.c
+@@ -14,6 +14,7 @@
+ #include <linux/pci.h>
+ #include <linux/pci_ids.h>
+ #include <linux/slab.h>
++#include <linux/edac.h>
+ #include "edac_core.h"
+ 
+ #define  I82860_REVISION " Ver: 2.0.2 " __DATE__
+@@ -294,6 +295,9 @@ static int __init i82860_init(void)
+ 
+ 	debugf3("%s()\n", __func__);
+ 
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	if ((pci_rc = pci_register_driver(&i82860_driver)) < 0)
+ 		goto fail0;
+ 
+@@ -345,3 +349,6 @@ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Red Hat Inc. (http://www.redhat.com) "
+ 		"Ben Woodard <woodard@redhat.com>");
+ MODULE_DESCRIPTION("ECC support for Intel 82860 memory hub controllers");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/i82875p_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/i82875p_edac.c
++++ linux-2.6.25-rc5/drivers/edac/i82875p_edac.c
+@@ -18,6 +18,7 @@
+ #include <linux/pci.h>
+ #include <linux/pci_ids.h>
+ #include <linux/slab.h>
++#include <linux/edac.h>
+ #include "edac_core.h"
+ 
+ #define I82875P_REVISION	" Ver: 2.0.2 " __DATE__
+@@ -393,6 +394,7 @@ static int i82875p_probe1(struct pci_dev
+ 	struct i82875p_error_info discard;
+ 
+ 	debugf0("%s()\n", __func__);
++
+ 	ovrfl_pdev = pci_get_device(PCI_VEND_DEV(INTEL, 82875_6), NULL);
+ 
+ 	if (i82875p_setup_overfl_dev(pdev, &ovrfl_pdev, &ovrfl_window))
+@@ -532,6 +534,10 @@ static int __init i82875p_init(void)
+ 	int pci_rc;
+ 
+ 	debugf3("%s()\n", __func__);
++
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	pci_rc = pci_register_driver(&i82875p_driver);
+ 
+ 	if (pci_rc < 0)
+@@ -586,3 +592,6 @@ module_exit(i82875p_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Linux Networx (http://lnxi.com) Thayne Harbaugh");
+ MODULE_DESCRIPTION("MC support for Intel 82875 memory hub controllers");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/i82975x_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/i82975x_edac.c
++++ linux-2.6.25-rc5/drivers/edac/i82975x_edac.c
+@@ -14,7 +14,7 @@
+ #include <linux/pci.h>
+ #include <linux/pci_ids.h>
+ #include <linux/slab.h>
+-
++#include <linux/edac.h>
+ #include "edac_core.h"
+ 
+ #define I82975X_REVISION	" Ver: 1.0.0 " __DATE__
+@@ -611,6 +611,9 @@ static int __init i82975x_init(void)
+ 
+ 	debugf3("%s()\n", __func__);
+ 
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	pci_rc = pci_register_driver(&i82975x_driver);
+ 	if (pci_rc < 0)
+ 		goto fail0;
+@@ -664,3 +667,6 @@ module_exit(i82975x_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Arvind R. <arvind@acarlab.com>");
+ MODULE_DESCRIPTION("MC support for Intel 82975 memory hub controllers");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/amd76x_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/amd76x_edac.c
++++ linux-2.6.25-rc5/drivers/edac/amd76x_edac.c
+@@ -344,6 +344,9 @@ static struct pci_driver amd76x_driver =
+ 
+ static int __init amd76x_init(void)
+ {
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	return pci_register_driver(&amd76x_driver);
+ }
+ 
+@@ -358,3 +361,6 @@ module_exit(amd76x_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Linux Networx (http://lnxi.com) Thayne Harbaugh");
+ MODULE_DESCRIPTION("MC support for AMD 76x memory controllers");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
 Index: linux-2.6.25-rc5/drivers/edac/e752x_edac.c
 ===================================================================
 --- linux-2.6.25-rc5.orig/drivers/edac/e752x_edac.c
 +++ linux-2.6.25-rc5/drivers/edac/e752x_edac.c
-@@ -29,6 +29,7 @@
- #define EDAC_MOD_STR	"e752x_edac"
+@@ -1083,16 +1083,6 @@ static int e752x_probe1(struct pci_dev *
+ 	debugf0("%s(): mci\n", __func__);
+ 	debugf0("Starting Probe1\n");
  
- static int force_function_unhide;
-+static int sysbus_parity = -1;
+-	/* make sure error reporting method is sane */
+-	switch (edac_op_state) {
+-	case EDAC_OPSTATE_POLL:
+-	case EDAC_OPSTATE_NMI:
+-		break;
+-	default:
+-		edac_op_state = EDAC_OPSTATE_POLL;
+-		break;
+-	}
+-
+ 	/* check to see if device 0 function 1 is enabled; if it isn't, we
+ 	 * assume the BIOS has reserved it for a reason and is expecting
+ 	 * exclusive access, we take care not to violate that assumption and
+@@ -1269,6 +1259,10 @@ static int __init e752x_init(void)
+ 	int pci_rc;
  
- static struct edac_pci_ctl_info *e752x_pci;
- 
-@@ -1049,6 +1050,37 @@ fail:
- 	return 1;
+ 	debugf3("%s()\n", __func__);
++
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	pci_rc = pci_register_driver(&e752x_driver);
+ 	return (pci_rc < 0) ? pci_rc : 0;
  }
- 
-+/* Setup system bus parity mask register.
-+ * Sysbus parity supported on:
-+ *   e7320/e7520/e7525 + Xeon
-+ *   i3100 + Xeon/Celeron
-+ * Sysbus parity not supported on:
-+ *   i3100 + Pentium M/Celeron M/Core Duo/Core2 Duo
-+ */
-+static void e752x_init_sysbus_parity_mask(struct e752x_pvt *pvt)
-+{
-+	char *cpu_id = cpu_data(0).x86_model_id;
-+	struct pci_dev *dev = pvt->dev_d0f1;
-+	int enable = 1;
+@@ -1289,5 +1283,6 @@ MODULE_DESCRIPTION("MC support for Intel
+ module_param(force_function_unhide, int, 0444);
+ MODULE_PARM_DESC(force_function_unhide, "if BIOS sets Dev0:Fun1 up as hidden:"
+ 		 " 1=force unhide and hope BIOS doesn't fight driver for Dev0:Fun1 access");
 +
-+	/* Allow module paramter override, else see if CPU supports parity */
-+	if (sysbus_parity != -1) {
-+		enable = sysbus_parity;
-+	} else if (cpu_id[0] &&
-+		   ((strstr(cpu_id, "Pentium") && strstr(cpu_id, " M ")) ||
-+		    (strstr(cpu_id, "Celeron") && strstr(cpu_id, " M ")) ||
-+		    (strstr(cpu_id, "Core") && strstr(cpu_id, "Duo")))) {
-+		e752x_printk(KERN_INFO, "System Bus Parity not "
-+			     "supported by CPU, disabling\n");
-+		enable = 0;
-+	}
-+
-+	if (enable)
-+		pci_write_config_word(dev, E752X_SYSBUS_ERRMASK, 0x0000);
-+	else
-+		pci_write_config_word(dev, E752X_SYSBUS_ERRMASK, 0x0309);
-+}
-+
- static void e752x_init_error_reporting_regs(struct e752x_pvt *pvt)
- {
- 	struct pci_dev *dev;
-@@ -1062,7 +1094,9 @@ static void e752x_init_error_reporting_r
- 		pci_write_config_byte(dev, E752X_HI_ERRMASK, 0x00);
- 		pci_write_config_byte(dev, E752X_HI_SMICMD, 0x00);
- 	}
--	pci_write_config_word(dev, E752X_SYSBUS_ERRMASK, 0x00);
-+
-+	e752x_init_sysbus_parity_mask(pvt);
-+
- 	pci_write_config_word(dev, E752X_SYSBUS_SMICMD, 0x00);
- 	pci_write_config_byte(dev, E752X_BUF_ERRMASK, 0x00);
- 	pci_write_config_byte(dev, E752X_BUF_SMICMD, 0x00);
-@@ -1286,3 +1320,7 @@ MODULE_PARM_DESC(force_function_unhide, 
- 
  module_param(edac_op_state, int, 0444);
  MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/e7xxx_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/e7xxx_edac.c
++++ linux-2.6.25-rc5/drivers/edac/e7xxx_edac.c
+@@ -414,16 +414,6 @@ static int e7xxx_probe1(struct pci_dev *
+ 
+ 	debugf0("%s(): mci\n", __func__);
+ 
+-	/* make sure error reporting method is sane */
+-	switch (edac_op_state) {
+-	case EDAC_OPSTATE_POLL:
+-	case EDAC_OPSTATE_NMI:
+-		break;
+-	default:
+-		edac_op_state = EDAC_OPSTATE_POLL;
+-		break;
+-	}
+-
+ 	pci_read_config_dword(pdev, E7XXX_DRC, &drc);
+ 
+ 	drc_chan = dual_channel_active(drc, dev_idx);
+@@ -565,6 +555,9 @@ static struct pci_driver e7xxx_driver = 
+ 
+ static int __init e7xxx_init(void)
+ {
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
 +
-+module_param(sysbus_parity, int, 0444);
-+MODULE_PARM_DESC(sysbus_parity, "0=disable system bus parity checking,"
-+                " 1=enable system bus parity checking, default=auto-detect");
+ 	return pci_register_driver(&e7xxx_driver);
+ }
+ 
+@@ -581,4 +574,7 @@ MODULE_AUTHOR("Linux Networx (http://lnx
+ 		"Based on.work by Dan Hollis et al");
+ MODULE_DESCRIPTION("MC support for Intel e7xxx memory controllers");
+ module_param(edac_op_state, int, 0444);
++
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
++module_param(edac_op_state, int, 0444);
+ MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/i3000_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/i3000_edac.c
++++ linux-2.6.25-rc5/drivers/edac/i3000_edac.c
+@@ -326,15 +326,6 @@ static int i3000_probe1(struct pci_dev *
+ 		return -ENODEV;
+ 	}
+ 
+-	switch (edac_op_state) {
+-	case EDAC_OPSTATE_POLL:
+-	case EDAC_OPSTATE_NMI:
+-		break;
+-	default:
+-		edac_op_state = EDAC_OPSTATE_POLL;
+-		break;
+-	}
+-
+ 	c0dra[0] = readb(window + I3000_C0DRA + 0);	/* ranks 0,1 */
+ 	c0dra[1] = readb(window + I3000_C0DRA + 1);	/* ranks 2,3 */
+ 	c1dra[0] = readb(window + I3000_C1DRA + 0);	/* ranks 0,1 */
+@@ -503,6 +494,10 @@ static int __init i3000_init(void)
+ 	int pci_rc;
+ 
+ 	debugf3("MC: %s()\n", __func__);
++
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	pci_rc = pci_register_driver(&i3000_driver);
+ 	if (pci_rc < 0)
+ 		goto fail0;
+Index: linux-2.6.25-rc5/drivers/edac/i5000_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/i5000_edac.c
++++ linux-2.6.25-rc5/drivers/edac/i5000_edac.c
+@@ -1286,16 +1286,6 @@ static int i5000_probe1(struct pci_dev *
+ 	if (PCI_FUNC(pdev->devfn) != 0)
+ 		return -ENODEV;
+ 
+-	/* make sure error reporting method is sane */
+-	switch (edac_op_state) {
+-	case EDAC_OPSTATE_POLL:
+-	case EDAC_OPSTATE_NMI:
+-		break;
+-	default:
+-		edac_op_state = EDAC_OPSTATE_POLL;
+-		break;
+-	}
+-
+ 	/* Ask the devices for the number of CSROWS and CHANNELS so
+ 	 * that we can calculate the memory resources, etc
+ 	 *
+@@ -1478,6 +1468,9 @@ static int __init i5000_init(void)
+ 
+ 	debugf2("MC: " __FILE__ ": %s()\n", __func__);
+ 
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	pci_rc = pci_register_driver(&i5000_driver);
+ 
+ 	return (pci_rc < 0) ? pci_rc : 0;
+@@ -1501,5 +1494,6 @@ MODULE_AUTHOR
+     ("Linux Networx (http://lnxi.com) Doug Thompson <norsk5@xmission.com>");
+ MODULE_DESCRIPTION("MC Driver for Intel I5000 memory controllers - "
+ 		I5000_REVISION);
++
+ module_param(edac_op_state, int, 0444);
+ MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+Index: linux-2.6.25-rc5/drivers/edac/pasemi_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/pasemi_edac.c
++++ linux-2.6.25-rc5/drivers/edac/pasemi_edac.c
+@@ -284,6 +284,9 @@ static struct pci_driver pasemi_edac_dri
+ 
+ static int __init pasemi_edac_init(void)
+ {
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	return pci_register_driver(&pasemi_edac_driver);
+ }
+ 
+@@ -298,3 +301,6 @@ module_exit(pasemi_edac_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Egor Martovetsky <egor@pasemi.com>");
+ MODULE_DESCRIPTION("MC support for PA Semi PWRficient memory controller");
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
++
+Index: linux-2.6.25-rc5/drivers/edac/r82600_edac.c
+===================================================================
+--- linux-2.6.25-rc5.orig/drivers/edac/r82600_edac.c
++++ linux-2.6.25-rc5/drivers/edac/r82600_edac.c
+@@ -393,6 +393,9 @@ static struct pci_driver r82600_driver =
+ 
+ static int __init r82600_init(void)
+ {
++	/* Ensure that the OPSTATE is set correctly for POLL or NMI */
++	opstate_init();
++
+ 	return pci_register_driver(&r82600_driver);
+ }
+ 
+@@ -412,3 +415,6 @@ MODULE_DESCRIPTION("MC support for Radis
+ module_param(disable_hardware_scrub, bool, 0644);
+ MODULE_PARM_DESC(disable_hardware_scrub,
+ 		 "If set, disable the chipset's automatic scrub for CEs");
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
