@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942589AbYCSXKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbYCSXLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942589AbYCSXKW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932967AbYCSVf2
+	id S932967AbYCSXLP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935971AbYCSVgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:35:28 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2271 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S937737AbYCSVfY (ORCPT
+	Wed, 19 Mar 2008 17:36:24 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:36326 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937810AbYCSVgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:35:24 -0400
-Date: Wed, 19 Mar 2008 17:35:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Mark Lord <lkml@rtr.ca>
-cc: Greg Kroah-Hartman <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 6/6] USB: enable USB-PERSIST by default
-In-Reply-To: <47E147CD.3060102@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0803191727030.2504-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 19 Mar 2008 17:36:20 -0400
+Subject: Re: [PATCH][v4]  Modify loop device to be able to manage
+	partitions of the disk image
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: randy.dunlap@oracle.com, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080319142821.73d280f3.akpm@linux-foundation.org>
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+	 <12059301672966-git-send-email-Laurent.Vivier@bull.net>
+	 <20080319131106.61d7fa0c.randy.dunlap@oracle.com>
+	 <1205958281.4758.7.camel@frecb07144>
+	 <20080319142821.73d280f3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Organization: Bull S.A.S.
+Date: Wed, 19 Mar 2008 22:39:10 +0100
+Message-Id: <1205962750.4758.17.camel@frecb07144>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008, Mark Lord wrote:
 
-> Greg Kroah-Hartman wrote:
-> > From: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > This patch (as1052) enables USB-PERSIST for all devices by default.
-> > The user won't have to remember to enable it explicitly for devices
-> > containing mounted filesystems.
-> > 
-> > Eventually userspace tools like hal may be able to set the persist
-> > attribute automatically when a filesystem is mounted on a USB device.
-> > When that time comes this patch can be reverted, if people think it
-> > matters.
-> ..
+Le mercredi 19 mars 2008 à 14:28 -0700, Andrew Morton a écrit :
+> On Wed, 19 Mar 2008 21:24:41 +0100
+> Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 > 
-> Should the next word below be "that", rather than "this" ?
+> > Le mercredi 19 mars 2008 __ 13:11 -0700, Randy Dunlap a __crit :
+> > > On Wed, 19 Mar 2008 13:36:07 +0100 Laurent Vivier wrote:
+> > > 
+> > > > This patch allows to use loop device with partitionned disk image.
+> > > > 
+> > > > Original behavior of loop is not modified.
+> > > > 
+> > > > A new parameter is introduced to define how many partition we want to be
+> > > > able to manage per loop device. This parameter is "max_part".
+> > > 
+> > > What happened to the update to Documentation/kernel-parameters.txt
+> > > that was in v3?
+> > 
+> > Well, perhaps I didn't understand the comment of Andrew:
+> > 
+> > "This shouldn't be needed."
+> > 
+> > I though it means I should remove it. So, Andrew ???
+> 
+> No, given that all module_param() options are available via the boot
+> command line when the module is linked into vmlinux, we don't document them
+> separately.
 
-Yours is a rather obscure grammatical question, especially concerning a
-Changelog entry (which is not even as significant to developers as a
-comment, IMO).  What difference in meaning do you imagine replacing
-"This" with "That" would achieve?
+"No" is "To document max_part is not needed"
 
-> > This approach has the advantage of giving the user the ability to turn
-> > off USB-PERSIST for devices with mounted filesystems, rather than
-> > making the kernel always assume it should be on.
-> ...
+or
 
-What I meant (it probably wasn't very clear from the text) was that the
-approach of leaving USB-PERSIST controlled by the power/persist
-attribute and merely altering the attribute's default value is better
-than having the kernel unilaterally and unconditionally turn
-USB-PERSIST on for every device holding a mounted filesystem.  In other
-words, the approach taken by the patch is better than the approach
-suggested by Linus Torvalds.
+"No" is "you must not remove parameter documentation from your patch" ?
 
-Alan Stern
+> There should be a way of auto-generating all the documentation for all the
+> module parameters from their MODULE_PARM_DESC's.  And there probably is,
+> but I'm not sure how this is done (?)
+> 
+> (does `make help', fails to spot it).
+> 
+> You can do `modinfo loop' but that probably doesn't work if
+> CONFIG_BLK_DEV_LOOP=y?
+> 
+> 
+> 
+> I assume you tested the "loop.max_part=N" option?
+
+Yes, I did (with N=63)
+
+Regards,
+Laurent
+-- 
+------------- Laurent.Vivier@bull.net ---------------
+"The best way to predict the future is to invent it."
+- Alan Kay
 
