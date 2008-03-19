@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYCST0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYCST1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbYCST0i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYCSTYs
+	id S1753981AbYCST1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYCSTY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:24:48 -0400
+	Wed, 19 Mar 2008 15:24:56 -0400
 Received: from smtp1.linux-foundation.org ([140.211.169.13]:35783 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752923AbYCSTYp (ORCPT
+	by vger.kernel.org with ESMTP id S1753011AbYCSTYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:24:45 -0400
-Date: Tue, 18 Mar 2008 21:48:07 -0700 (PDT)
+	Wed, 19 Mar 2008 15:24:50 -0400
+Date: Tue, 18 Mar 2008 20:56:45 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.25-rc4
-In-Reply-To: <200803190503.27719.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.1.00.0803182135570.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803190424.30971.bzolnier@gmail.com> <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org> <200803190503.27719.bzolnier@gmail.com>
+In-Reply-To: <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0803182042430.3020@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803190221.58968.bzolnier@gmail.com> <alpine.LFD.1.00.0803181814170.3020@woody.linux-foundation.org> <200803190424.30971.bzolnier@gmail.com>
+ <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org>
 User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,25 +30,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 19 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
+On Tue, 18 Mar 2008, Linus Torvalds wrote:
 > 
-> Your patch is more robust and we should go with it
-> (and thanks for fixing this bug!).
+> But the absolute first thing we should do is to make the code at least as 
+> robust as it used to be, and preferably aim _higher_ in robustness rather 
+> than lower!
 
-Ok, I committed the patch as-is, since it's what Anders tested, but I'm 
-not at all convinced that it is necessarily the best or final form. The 
-things I am aware of but didn't think about all *that* deeply:
+An example of this "aim higher", I think that we obviously should complete 
+the command if the controller says it's done with it (like the old 
+"drive_cmd_intr()" code used to do), but we might decide that printing a 
+warning would be the proper way to then also inform the user about the 
+fact that we expected the command to want more data, but it never did.
 
- - do we get return values etc right (ie if we complete the command that 
-   didn't give any data, how do we account the size of it?)
+That way, the code not only handles the unexpected situation gracefully, 
+but the very fact that it was unexpected also gets logged.
 
- - what about that remaining old unexpected case? I kept the "wait for it 
-   with timeout" behaviour for the case that wasn't an issue here, but if 
-   it really is a shared interrupt, that seems like it's going to always 
-   reset the timeout to WAIT_WORSTCASE, which doesn't sound really right.
+[ And at that point your patch to make the specific SMART subcommands have 
+  strict logic about the data direction will actually matter - although 
+  maybe it turns out that there are _other_ tools that send other 
+  commands, and we decide that the warning isn't useful after all! ]
 
-so I think this particular bug is fixed and we should be better off, but 
-I'm definitely not claiming that the code shouldn't have people thinking 
-about improving it..
+The thing is, I know for a fact that some system vendors use Linux for 
+burn-in and testing/setup of their components, and I would not be in the 
+least surprised if some of them use HDIO_DRIVE_CMD to do some 
+vendor-specific stuff.
 
-			Linus
+And I think it's a fine thing to try to use just one set of code (the 
+taskfile code) to drive all these special commands, but the fact is, the 
+old HDIO_DRIVE_CMD interface fundamentally doesn't even _have_ the 
+capability to specify the total taskfile state.
+
+So we simply know as a fact that
+ (a) people do use an interface that used to work (HDIO_DRIVE_CMD)
+and
+ (b) it will fundamentally *never* have complete taskfile state, so we 
+     *have* to live with the fact that some of our commands simply don't 
+     have the full state that the taskfile code may have historically 
+     depended on but the old ide_drive_cmd() code didn't and cannot depend 
+     on.
+
+Your patch tries to fix (b), but we also know that it fundamentally simply 
+*cannot* fix it for all cases. So even trying to is really pretty futile, 
+I think (although we can obviously hope that nobody uses HDIO_DRIVE_CMD 
+any more for anything but SMART and really simple commands, but that 
+sounds rather unlikely).
+
+		Linus
