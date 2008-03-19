@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbYCSVh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933035AbYCSVik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbYCSVh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYCSUIt
+	id S933035AbYCSVik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762344AbYCSUJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:08:49 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:31324 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763967AbYCSUIr (ORCPT
+	Wed, 19 Mar 2008 16:09:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41983 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760606AbYCSUJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:08:47 -0400
-Date: Tue, 18 Mar 2008 19:52:06 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Greg KH <gregkh@suse.de>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       warthog19@eaglescrag.net, rick.jones2@hp.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/3, v10] PCI, ACPI: Physical PCI slot objects
-Message-ID: <20080319015206.GE30421@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	warthog19@eaglescrag.net, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-acpi@vger.kernel.org
-References: <20080318210539.GA30421@ldl.fc.hp.com> <20080319005535.GB424@parisc-linux.org>
+	Wed, 19 Mar 2008 16:09:06 -0400
+Date: Wed, 19 Mar 2008 12:48:51 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation patchset against -rc6)
+Message-ID: <20080319114851.GB21270@atrey.karlin.mff.cuni.cz>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz> <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080319005535.GB424@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Willy,
+Hi!
 
-* Matthew Wilcox <matthew@wil.cx>:
-> On Tue, Mar 18, 2008 at 03:05:39PM -0600, Alex Chiang wrote:
-> > Also, v10 should fix the "pci_slot module changes the sysfs
-> > name" issue that Kenji-san was seeing.
+> > commit 7c0ea45be4f114d85ee35caeead8e1660699c46f
+> > 
+> >     ACPI: Ignore _BQC object when registering backlight device
+> > 
+> > when did this go in? Pretty recently, right?
 > 
-> I thought we agreed that the current names are wrong, and we
-> shouldn't consider this 'different name' an issue.
-
-I did see some discussion around this, but wasn't actually sure
-what we decided on. For v10, the little adjustment I made keeps
-the existing userspace names for pciehp, but doesn't affect
-shpchp.
-
-[The example that Kenji-san sent out earlier showed that his
-pciehp slot names changed depending on the order of module
-loading between pciehp and pci_slot; his shpchp slot names did
-not change.]
-
-Injecting my thoughts into the exchange between Kenji-san and
-Kristen earlier on this subject...
-
-> > * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> * Kristen Carlson Accardi <kristen.c.accardi@intel.com>:
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> > >     Though I don't have any specific idea about this,
-> > >     folliwings might be candidates.                                                           
-> > >                                                                              
-> > >     - Override slot names with hotplug driver's slot names                   
-> > I think this should be done - if the pci slot driver detects
-> > that a hotplug driver is controlling a slot, it should allow
-> > that driver to set the name of the slot.                                                     
+> Yes:
 > 
-> Yes, it is what I thought.  But maybe we should try unifying
-> slots names first, I think.
-
-This is the tweak I added in v10.
-
-> > >     - Unify slot names among all hotplug drivers                             
-> > I'm not sure if we can do this, since slot name might depend
-> > on what spec people are implementing.                                                 
+> 	[torvalds@woody linux]$ git describe 7c0ea45be4f114d85ee35caeead8e1660699c46f
+> 	v2.6.25-rc5-89-g7c0ea45
 > 
-> I'm not sure too. But I think we can unify the slot names using
-> the combination of chassis number and slot number among the
-> controllers which is based on PCI Hot-Plug spec.
+> so it happened after -rc5.
+> 
+> > And that means that ACPI backlight driver is now used on machines where 
+> > it was not used before...?
+> 
+> Somebody more into ACPI needs to judge how likely this is to be an issue..
 
-I could take this approach instead, but it will definitely change
-what userspace sees. I'd like to get an ACK from Kristen before
-starting down this path.
-
-Actually, my real preference would be to save it for a future
-patch set, while I work on getting this one into the tree. ;)
-
-> > >     - Stop automatic loading of ACPI PCI slot driver                         
-> > I think we should definitely implement this one ^^^. 
-
-I don't think that should be happening anyway. On my Fedora Core
-8 userspace, pci_slot doesn't get loaded until I modprobe it.
-
-Maybe Kenji-san is building it into his kernel?
-
-/ac
-
+Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
+of drivers/acpi/ec.c patch fixed the
+"rc6-breaks-backlight-in-X-over-lid-close", good.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
