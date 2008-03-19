@@ -1,71 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbYCST5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYCSUEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761389AbYCST5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbYCSTht
+	id S1755543AbYCSUEL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbYCSTiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:37:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
+	Wed, 19 Mar 2008 15:38:20 -0400
+Received: from mga02.intel.com ([134.134.136.20]:16668 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756891AbYCSTho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:37:44 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
-       Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 16/79] [PATCH] use APIC_INTEGRATED tests in x86_64
-Date: Wed, 19 Mar 2008 14:25:11 -0300
-Message-Id: <12059476482875-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12059476441057-git-send-email-gcosta@redhat.com>
-References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com>
+	id S1754668AbYCSTiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:38:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
+   d="scan'208";a="356900587"
+Message-Id: <20080319000058.762921000@intel.com>
+References: <20080319000012.439150000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Mar 2008 17:00:15 -0700
+From: venkatesh.pallipadi@intel.com
+To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 03/13] x86: PAT Avoid aliasing in /dev/mem read/write
+Content-Disposition: inline; filename=x86_xlate_dev_mem_ptr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber Costa <gcosta@redhat.com>
+Add xlate and unxlate around /dev/mem read/write. This sets up the mapping
+that can be used for /dev/mem read and write without aliasing worries.
 
-This patch does not change the behaviour of x86_64, since APIC_INTEGRATED
-is always defined as (1). But the code now matches exactly i386 version
-(well, this part of the code, at least)
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/smpboot_64.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index cfcfd2c..d7b59d6 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -295,6 +295,15 @@ static int __cpuinit wakeup_secondary_via_INIT(int phys_apicid, unsigned int sta
- 	unsigned long send_status, accept_status = 0;
- 	int maxlvt, num_starts, j;
+Index: linux-2.6-x86.git/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-2.6-x86.git.orig/arch/x86/mm/ioremap.c	2008-03-18 02:16:08.000000000 -0700
++++ linux-2.6-x86.git/arch/x86/mm/ioremap.c	2008-03-18 09:20:38.000000000 -0700
+@@ -284,6 +284,35 @@
+ }
+ EXPORT_SYMBOL(iounmap);
  
-+	/*
-+	 * Be paranoid about clearing APIC errors.
-+	 */
-+	if (APIC_INTEGRATED(apic_version[phys_apicid])) {
-+		apic_read_around(APIC_SPIV);
-+		apic_write(APIC_ESR, 0);
-+		apic_read(APIC_ESR);
-+	}
++/*
++ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
++ * access
++ */
++void *xlate_dev_mem_ptr(unsigned long phys)
++{
++	void *addr;
++	unsigned long start = phys & PAGE_MASK;
 +
- 	Dprintk("Asserting INIT.\n");
++	/* If page is RAM, we can use __va. Otherwise ioremap and unmap. */
++	if (page_is_ram(start >> PAGE_SHIFT))
++		return __va(phys);
++
++	addr = (void *)ioremap(start, PAGE_SIZE);
++	if (addr)
++		addr = (void *)((unsigned long)addr | (phys & ~PAGE_MASK));
++
++	return addr;
++}
++
++void unxlate_dev_mem_ptr(unsigned long phys, void *addr)
++{
++	if (page_is_ram(phys >> PAGE_SHIFT))
++		return;
++
++	iounmap((void __iomem *)((unsigned long)addr & PAGE_MASK));
++	return;
++}
++
+ #ifdef CONFIG_X86_32
  
- 	/*
-@@ -327,7 +336,10 @@ static int __cpuinit wakeup_secondary_via_INIT(int phys_apicid, unsigned int sta
- 	mb();
- 	atomic_set(&init_deasserted, 1);
+ int __initdata early_ioremap_debug;
+Index: linux-2.6-x86.git/drivers/char/mem.c
+===================================================================
+--- linux-2.6-x86.git.orig/drivers/char/mem.c	2008-03-18 02:16:08.000000000 -0700
++++ linux-2.6-x86.git/drivers/char/mem.c	2008-03-18 09:20:34.000000000 -0700
+@@ -134,6 +134,10 @@
+ }
+ #endif
  
--	num_starts = 2;
-+	if (APIC_INTEGRATED(apic_version[phys_apicid]))
-+		num_starts = 2;
-+	else
-+		num_starts = 0;
++void __attribute__((weak)) unxlate_dev_mem_ptr(unsigned long phys, void *addr)
++{
++}
++
+ /*
+  * This funcion reads the *physical* memory. The f_pos points directly to the 
+  * memory location. 
+@@ -176,17 +180,25 @@
  
- 	/*
- 	 * Paravirt / VMI wants a startup IPI hook here to set up the
--- 
-1.5.0.6
+ 		sz = min_t(unsigned long, sz, count);
+ 
++		if (!range_is_allowed(p >> PAGE_SHIFT, count))
++			return -EPERM;
++
+ 		/*
+ 		 * On ia64 if a page has been mapped somewhere as
+ 		 * uncached, then it must also be accessed uncached
+ 		 * by the kernel or data corruption may occur
+ 		 */
+ 		ptr = xlate_dev_mem_ptr(p);
++		if (!ptr)
++			return -EFAULT;
+ 
+-		if (!range_is_allowed(p >> PAGE_SHIFT, count))
+-			return -EPERM;
+-		if (copy_to_user(buf, ptr, sz))
++		if (copy_to_user(buf, ptr, sz)) {
++			unxlate_dev_mem_ptr(p, ptr);
+ 			return -EFAULT;
++		}
++
++		unxlate_dev_mem_ptr(p, ptr);
++
+ 		buf += sz;
+ 		p += sz;
+ 		count -= sz;
+@@ -235,22 +247,32 @@
+ 
+ 		sz = min_t(unsigned long, sz, count);
+ 
++		if (!range_is_allowed(p >> PAGE_SHIFT, sz))
++			return -EPERM;
++
+ 		/*
+ 		 * On ia64 if a page has been mapped somewhere as
+ 		 * uncached, then it must also be accessed uncached
+ 		 * by the kernel or data corruption may occur
+ 		 */
+ 		ptr = xlate_dev_mem_ptr(p);
++		if (!ptr) {
++			if (written)
++				break;
++			return -EFAULT;
++		}
+ 
+-		if (!range_is_allowed(p >> PAGE_SHIFT, sz))
+-			return -EPERM;
+ 		copied = copy_from_user(ptr, buf, sz);
+ 		if (copied) {
+ 			written += sz - copied;
++			unxlate_dev_mem_ptr(p, ptr);
+ 			if (written)
+ 				break;
+ 			return -EFAULT;
+ 		}
++
++		unxlate_dev_mem_ptr(p, ptr);
++
+ 		buf += sz;
+ 		p += sz;
+ 		count -= sz;
+Index: linux-2.6-x86.git/include/asm-x86/io_32.h
+===================================================================
+--- linux-2.6-x86.git.orig/include/asm-x86/io_32.h	2008-03-18 02:16:08.000000000 -0700
++++ linux-2.6-x86.git/include/asm-x86/io_32.h	2008-03-18 03:11:12.000000000 -0700
+@@ -49,12 +49,6 @@
+ #include <linux/vmalloc.h>
+ 
+ /*
+- * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+- * access
+- */
+-#define xlate_dev_mem_ptr(p)	__va(p)
+-
+-/*
+  * Convert a virtual cached pointer to an uncached pointer
+  */
+ #define xlate_dev_kmem_ptr(p)	p
+Index: linux-2.6-x86.git/include/asm-x86/io_64.h
+===================================================================
+--- linux-2.6-x86.git.orig/include/asm-x86/io_64.h	2008-03-18 02:16:08.000000000 -0700
++++ linux-2.6-x86.git/include/asm-x86/io_64.h	2008-03-18 03:11:12.000000000 -0700
+@@ -282,12 +282,6 @@
+ #define BIO_VMERGE_BOUNDARY iommu_bio_merge
+ 
+ /*
+- * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+- * access
+- */
+-#define xlate_dev_mem_ptr(p)	__va(p)
+-
+-/*
+  * Convert a virtual cached pointer to an uncached pointer
+  */
+ #define xlate_dev_kmem_ptr(p)	p
+Index: linux-2.6-x86.git/include/asm-x86/io.h
+===================================================================
+--- linux-2.6-x86.git.orig/include/asm-x86/io.h	2008-03-18 02:16:08.000000000 -0700
++++ linux-2.6-x86.git/include/asm-x86/io.h	2008-03-18 09:20:38.000000000 -0700
+@@ -1,5 +1,13 @@
++#ifndef _ASM_X86_IO_H
++#define _ASM_X86_IO_H
++
+ #ifdef CONFIG_X86_32
+ # include "io_32.h"
+ #else
+ # include "io_64.h"
+ #endif
++
++extern void *xlate_dev_mem_ptr(unsigned long phys);
++extern void unxlate_dev_mem_ptr(unsigned long phys, void *addr);
++
++#endif /* _ASM_X86_IO_H */
 
+-- 
