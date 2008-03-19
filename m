@@ -1,120 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbYCSXgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938564AbYCSXgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbYCSXgI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939580AbYCSWGv
+	id S938564AbYCSXgz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938739AbYCSWGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:06:51 -0400
-Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:33184 "HELO
-	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762735AbYCSWGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:06:49 -0400
-X-YMail-OSG: wmeheIYVM1lBABSCSnWys3gP1G1qi4TrnH_o6Nf0CtuWeoKDKNHQJfA_MeRqwV4VxlOB6haC1FwSu3ctUN_kJRU4ag--
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 18 Mar 2008 15:03:04 -0500
-From: serge@hallyn.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>,
-       Roland McGrath <roland@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       Serge Hallyn <serge@hallyn.com>
-Subject: Re: [PATCH] signals: check_kill_permission: check session under
-	tasklist_lock
-Message-ID: <20080318200304.GA23859@vino.hallyn.com>
-References: <20080304185745.GA8482@tv-sign.ru> <47DE5665.2030802@bk.jp.nec.com> <20080317170124.GA115@tv-sign.ru> <20080318144431.GA3384@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080318144431.GA3384@tv-sign.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 19 Mar 2008 18:06:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52371 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939528AbYCSWGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:06:50 -0400
+Date: Wed, 19 Mar 2008 18:07:06 -0500 (EST)
+Message-Id: <20080319.180706.35658194.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
+       linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [RFC PATCH 01/13] block: add request update interface
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@tv-sign.ru):
-> (on top of signals-cleanup-security_task_kill-usage-implementation.patch)
-> 
-> This wasn't documented, but as Atsushi Tsuji <a-tsuji@bk.jp.nec.com> pointed
-> out check_kill_permission() needs tasklist_lock for task_session_nr().
-> I missed this fact when removed tasklist from the callers.
-> 
-> Change check_kill_permission() to take tasklist_lock for the SIGCONT case.
-> Re-order security checks so that we take tasklist_lock only if/when it is
-> actually needed. This is a minimal fix for now, tasklist will be removed
-> later.
-> 
-> Also change the code to use task_session() instead of task_session_nr().
-> 
-> Also, remove the SIGCONT check from cap_task_kill(), it is bogus (and the
-> whole function is bogus. Serge, Eric, why it is still alive?).
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> --- 25/kernel/signal.c~CKP_TAKE_TASKLIST	2008-03-18 14:47:00.000000000 +0300
-> +++ 25/kernel/signal.c	2008-03-18 17:25:19.000000000 +0300
-> @@ -533,6 +533,7 @@ static int rm_from_queue(unsigned long m
->  static int check_kill_permission(int sig, struct siginfo *info,
->  				 struct task_struct *t)
->  {
-> +	struct pid *sid;
->  	int error;
->  
->  	if (!valid_signal(sig))
-> @@ -545,11 +546,24 @@ static int check_kill_permission(int sig
->  	if (error)
->  		return error;
->  
-> -	if (((sig != SIGCONT) || (task_session_nr(current) != task_session_nr(t)))
-> -	    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
-> -	    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
-> -	    && !capable(CAP_KILL))
-> -		return -EPERM;
-> +	if ((current->euid ^ t->suid) && (current->euid ^ t->uid) &&
-> +	    (current->uid  ^ t->suid) && (current->uid  ^ t->uid) &&
-> +	    !capable(CAP_KILL)) {
-> +		switch (sig) {
-> +		case SIGCONT:
-> +			read_lock(&tasklist_lock);
-> +			sid = task_session(t);
-> +			read_unlock(&tasklist_lock);
-> +			/*
-> +			 * We don't return the error if sid == NULL. The
-> +			 * task was unhashed, the caller must notice this.
-> +			 */
-> +			if (!sid || sid == task_session(current))
-> +				break;
+This patch adds an interface to update request information so that
+request stacking drivers can complete only data part of a request
+without completing the request.
+Request stacking drivers can use it for partial completion.
 
-Nice, in addition to a bugfix this is also far more readable.
+Request stacking drivers like request-based dm need to complete
+clone requests from bottom to top on the device stack in that order.
+If request stacking drivers use blk_end_request() to updatethe original
+request during partial completion (in bio->bi_end_io() hook),
+the original request will be completed before the clone request when
+all bios are completed.  It breaks the ordering.
 
-> +		default:
-> +			return -EPERM;
-> +		}
-> +	}
->  
->  	return security_task_kill(t, info, sig, 0);
->  }
-> --- 25/security/commoncap.c~CKP_TAKE_TASKLIST	2008-03-18 17:07:02.000000000 +0300
-> +++ 25/security/commoncap.c	2008-03-18 17:21:10.000000000 +0300
-> @@ -552,10 +552,6 @@ int cap_task_kill(struct task_struct *p,
->  	if (p->uid == current->uid)
->  		return 0;
->  
-> -	/* sigcont is permitted within same session */
-> -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
-> -		return 0;
-> -
->  	if (secid)
->  		/*
->  		 * Signal sent as a particular user.
+blk_update_request() just completes only data part of a request and
+updates information of the request, but doesn't complete the request.
 
-Note that cap_task_kill() should be gone anyway.  What tree were you
-basing this on?
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+---
+ block/blk-core.c       |   59 +++++++++++++++++++++++++++++++++++++++++--------
+ include/linux/blkdev.h |    2 +
+ 2 files changed, 52 insertions(+), 9 deletions(-)
 
-thanks,
--serge
+Index: 2.6.25-rc5/block/blk-core.c
+===================================================================
+--- 2.6.25-rc5.orig/block/blk-core.c
++++ 2.6.25-rc5/block/blk-core.c
+@@ -1853,6 +1853,22 @@ void end_request(struct request *req, in
+ }
+ EXPORT_SYMBOL(end_request);
+ 
++static int end_that_request_data(struct request *rq, int error,
++				 unsigned int nr_bytes, unsigned int bidi_bytes)
++{
++	if (blk_fs_request(rq) || blk_pc_request(rq)) {
++		if (__end_that_request_first(rq, error, nr_bytes))
++			return 1;
++
++		/* Bidi request must be completed as a whole */
++		if (blk_bidi_rq(rq) &&
++		    __end_that_request_first(rq->next_rq, error, bidi_bytes))
++			return 1;
++	}
++
++	return 0;
++}
++
+ /**
+  * blk_end_io - Generic end_io function to complete a request.
+  * @rq:           the request being processed
+@@ -1879,15 +1895,8 @@ static int blk_end_io(struct request *rq
+ 	struct request_queue *q = rq->q;
+ 	unsigned long flags = 0UL;
+ 
+-	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+-		if (__end_that_request_first(rq, error, nr_bytes))
+-			return 1;
+-
+-		/* Bidi request must be completed as a whole */
+-		if (blk_bidi_rq(rq) &&
+-		    __end_that_request_first(rq->next_rq, error, bidi_bytes))
+-			return 1;
+-	}
++	if (end_that_request_data(rq, error, nr_bytes, bidi_bytes))
++		return 1;
+ 
+ 	/* Special feature for tricky drivers */
+ 	if (drv_callback && drv_callback(rq))
+@@ -1972,6 +1981,38 @@ int blk_end_bidi_request(struct request 
+ EXPORT_SYMBOL_GPL(blk_end_bidi_request);
+ 
+ /**
++ * blk_update_request - Special helper function for request stacking drivers
++ * @rq:           the request being processed
++ * @error:        0 for success, < 0 for error
++ * @nr_bytes:     number of bytes to complete @rq
++ *
++ * Description:
++ *     Ends I/O on a number of bytes attached to @rq, but doesn't complete
++ *     the request structure even if @rq doesn't have leftover.
++ *     If @rq has leftover, sets it up for the next range of segments.
++ *
++ *     This special helper function is only for request stacking drivers
++ *     (e.g. request-based dm) so that they can handle partial completion.
++ *     Actual device drivers should use blk_end_request instead.
++ **/
++void blk_update_request(struct request *rq, int error, unsigned int nr_bytes)
++{
++	if (!end_that_request_data(rq, error, nr_bytes, 0)) {
++		/*
++		 * All bios in the request have been completed.
++		 * Then, members of the request are not updated.
++		 * Update those members to avoid double charge of diskstat
++		 * when the stacking driver calls blk_end_request()
++		 * to complete the request actually.
++		 */
++		rq->nr_sectors = rq->hard_nr_sectors = 0;
++		rq->current_nr_sectors = rq->hard_cur_sectors = 0;
++		rq->nr_phys_segments = rq->nr_hw_segments = 0;
++	}
++}
++EXPORT_SYMBOL_GPL(blk_update_request);
++
++/**
+  * blk_end_request_callback - Special helper function for tricky drivers
+  * @rq:           the request being processed
+  * @error:        0 for success, < 0 for error
+Index: 2.6.25-rc5/include/linux/blkdev.h
+===================================================================
+--- 2.6.25-rc5.orig/include/linux/blkdev.h
++++ 2.6.25-rc5/include/linux/blkdev.h
+@@ -673,6 +673,8 @@ extern int blk_end_request_callback(stru
+ 				unsigned int nr_bytes,
+ 				int (drv_callback)(struct request *));
+ extern void blk_complete_request(struct request *);
++extern void blk_update_request(struct request *rq, int error,
++			       unsigned int nr_bytes);
+ 
+ /*
+  * blk_end_request() takes bytes instead of sectors as a complete size.
