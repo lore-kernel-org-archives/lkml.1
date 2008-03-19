@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbYCSUcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933380AbYCSU3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933648AbYCSUcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYCSTjf
+	id S933380AbYCSU3h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYCSTjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:39:35 -0400
+	Wed, 19 Mar 2008 15:39:44 -0400
 Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754877AbYCSTjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:39:06 -0400
+	id S1757314AbYCSTjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:39:16 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
        Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 58/79] [PATCH] include mach_apic.h in smpboot_64.c and smpboot.c
-Date: Wed, 19 Mar 2008 14:25:53 -0300
-Message-Id: <12059478362371-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 76/79] [PATCH] merge native_smp_prepare_cpus
+Date: Wed, 19 Mar 2008 14:26:11 -0300
+Message-Id: <12059479154173-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12059478321396-git-send-email-gcosta@redhat.com>
+In-Reply-To: <12059479112131-git-send-email-gcosta@redhat.com>
 References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
  costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
  -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
@@ -27,207 +27,518 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Glauber Costa <gcosta@redhat.com>
 
-After the inclusion, a lot of files needs fixing for conflicts,
-some of them in the headers themselves, to accomodate for both
-i386 and x86_64 versions.
+With the previous changes, code for native_smp_prepare_cpus()
+in i386 and x86_64 now look very similar. merge them into
+smpboot.c. Minor differences are inside ifdef
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/acpi/boot.c                 |    2 ++
- arch/x86/kernel/mpparse_64.c                |    2 ++
- arch/x86/kernel/smpboot.c                   |    2 ++
- arch/x86/kernel/smpboot_64.c                |    1 +
- arch/x86/vdso/Makefile                      |    2 +-
- include/asm-x86/apic.h                      |    1 -
- include/asm-x86/apicdef.h                   |    6 ------
- include/asm-x86/mach-default/mach_apic.h    |   11 +++++++++++
- include/asm-x86/mach-default/mach_apicdef.h |    5 +++++
- include/asm-x86/smp_64.h                    |    9 +--------
- 10 files changed, 25 insertions(+), 16 deletions(-)
+ arch/x86/kernel/smpboot.c    |  170 ++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/smpboot_32.c |  137 ---------------------------------
+ arch/x86/kernel/smpboot_64.c |  141 ----------------------------------
+ 3 files changed, 170 insertions(+), 278 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index e8c2c47..f1f7d18 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -40,6 +40,8 @@
- #include <asm/io.h>
- #include <asm/mpspec.h>
- 
-+#include <mach_apic.h>
-+
- static int __initdata acpi_force = 0;
- 
- #ifdef	CONFIG_ACPI
-diff --git a/arch/x86/kernel/mpparse_64.c b/arch/x86/kernel/mpparse_64.c
-index 529b1c2..03ef1a8 100644
---- a/arch/x86/kernel/mpparse_64.c
-+++ b/arch/x86/kernel/mpparse_64.c
-@@ -30,6 +30,8 @@
- #include <asm/proto.h>
- #include <asm/acpi.h>
- 
-+#include <mach_apic.h>
-+
- /* Have we found an MP table */
- int smp_found_config;
- unsigned int __cpuinitdata maxcpus = NR_CPUS;
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 6978f1b..253be86 100644
+index 26118b4..45119d3 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -11,6 +11,8 @@
- #include <asm/cpu.h>
- #include <asm/numa.h>
+@@ -7,6 +7,7 @@
+ #include <linux/err.h>
+ #include <linux/nmi.h>
  
-+#include <mach_apic.h>
++#include <asm/acpi.h>
+ #include <asm/desc.h>
+ #include <asm/nmi.h>
+ #include <asm/irq.h>
+@@ -75,6 +76,8 @@ EXPORT_PER_CPU_SYMBOL(cpu_info);
+ 
+ static atomic_t init_deasserted;
+ 
++static int boot_cpu_logical_apicid;
 +
- /* Number of siblings per CPU package */
- int smp_num_siblings = 1;
- EXPORT_SYMBOL(smp_num_siblings);
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 7d1b4cb..8a59fa8 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -61,6 +61,7 @@
- #include <asm/numa.h>
+ /* ready for x86_64, no harm for x86, since it will overwrite after alloc */
+ unsigned char *trampoline_base = __va(SMP_TRAMPOLINE_BASE);
  
- #include <mach_wakecpu.h>
-+#include <mach_apic.h>
- #include <smpboot_hooks.h>
+@@ -1002,6 +1005,173 @@ int __cpuinit native_cpu_up(unsigned int cpu)
+ }
  
- /* Set when the idlers are all forked */
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index 0a8f474..17a6b05 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -39,7 +39,7 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 
- CFL := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
- 
--$(vobjs): KBUILD_CFLAGS = $(CFL)
-+$(vobjs): KBUILD_CFLAGS += $(CFL)
- 
- targets += vdso-syms.lds
- obj-$(VDSO64-y)			+= vdso-syms.lds
-diff --git a/include/asm-x86/apic.h b/include/asm-x86/apic.h
-index 0d6ea74..534af84 100644
---- a/include/asm-x86/apic.h
-+++ b/include/asm-x86/apic.h
-@@ -128,7 +128,6 @@ extern void enable_NMI_through_LVT0(void);
-  * On 32bit this is mach-xxx local
+ /*
++ * Fall back to non SMP mode after errors.
++ *
++ * RED-PEN audit/test this more. I bet there is more state messed up here.
++ */
++static __init void disable_smp(void)
++{
++	cpu_present_map = cpumask_of_cpu(0);
++	cpu_possible_map = cpumask_of_cpu(0);
++#ifdef CONFIG_X86_32
++	smpboot_clear_io_apic_irqs();
++#endif
++	if (smp_found_config)
++		phys_cpu_present_map =
++				physid_mask_of_physid(boot_cpu_physical_apicid);
++	else
++		phys_cpu_present_map = physid_mask_of_physid(0);
++	map_cpu_to_logical_apicid();
++	cpu_set(0, per_cpu(cpu_sibling_map, 0));
++	cpu_set(0, per_cpu(cpu_core_map, 0));
++}
++
++/*
++ * Various sanity checks.
++ */
++static int __init smp_sanity_check(unsigned max_cpus)
++{
++	if (!physid_isset(hard_smp_processor_id(), phys_cpu_present_map)) {
++		printk(KERN_WARNING "weird, boot CPU (#%d) not listed"
++				    "by the BIOS.\n", hard_smp_processor_id());
++		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
++	}
++
++	/*
++	 * If we couldn't find an SMP configuration at boot time,
++	 * get out of here now!
++	 */
++	if (!smp_found_config && !acpi_lapic) {
++		printk(KERN_NOTICE "SMP motherboard not detected.\n");
++		disable_smp();
++		if (APIC_init_uniprocessor())
++			printk(KERN_NOTICE "Local APIC not detected."
++					   " Using dummy APIC emulation.\n");
++		return -1;
++	}
++
++	/*
++	 * Should not be necessary because the MP table should list the boot
++	 * CPU too, but we do it for the sake of robustness anyway.
++	 */
++	if (!check_phys_apicid_present(boot_cpu_physical_apicid)) {
++		printk(KERN_NOTICE
++			"weird, boot CPU (#%d) not listed by the BIOS.\n",
++			boot_cpu_physical_apicid);
++		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
++	}
++
++	/*
++	 * If we couldn't find a local APIC, then get out of here now!
++	 */
++	if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
++	    !cpu_has_apic) {
++		printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
++			boot_cpu_physical_apicid);
++		printk(KERN_ERR "... forcing use of dummy APIC emulation."
++				"(tell your hw vendor)\n");
++		smpboot_clear_io_apic();
++		return -1;
++	}
++
++	verify_local_APIC();
++
++	/*
++	 * If SMP should be disabled, then really disable it!
++	 */
++	if (!max_cpus) {
++		printk(KERN_INFO "SMP mode deactivated,"
++				 "forcing use of dummy APIC emulation.\n");
++		smpboot_clear_io_apic();
++#ifdef CONFIG_X86_32
++		if (nmi_watchdog == NMI_LOCAL_APIC) {
++			printk(KERN_INFO "activating minimal APIC for"
++					 "NMI watchdog use.\n");
++			connect_bsp_APIC();
++			setup_local_APIC();
++			end_local_APIC_setup();
++		}
++#endif
++		return -1;
++	}
++
++	return 0;
++}
++
++static void __init smp_cpu_index_default(void)
++{
++	int i;
++	struct cpuinfo_x86 *c;
++
++	for_each_cpu_mask(i, cpu_possible_map) {
++		c = &cpu_data(i);
++		/* mark all to hotplug */
++		c->cpu_index = NR_CPUS;
++	}
++}
++
++/*
++ * Prepare for SMP bootup.  The MP table or ACPI has been read
++ * earlier.  Just do some sanity checking here and enable APIC mode.
++ */
++void __init native_smp_prepare_cpus(unsigned int max_cpus)
++{
++	nmi_watchdog_default();
++	smp_cpu_index_default();
++	current_cpu_data = boot_cpu_data;
++	cpu_callin_map = cpumask_of_cpu(0);
++	mb();
++	/*
++	 * Setup boot CPU information
++	 */
++	smp_store_cpu_info(0); /* Final full version of the data */
++	boot_cpu_logical_apicid = logical_smp_processor_id();
++	current_thread_info()->cpu = 0;  /* needed? */
++	set_cpu_sibling_map(0);
++
++	if (smp_sanity_check(max_cpus) < 0) {
++		printk(KERN_INFO "SMP disabled\n");
++		disable_smp();
++		return;
++	}
++
++	if (GET_APIC_ID(apic_read(APIC_ID)) != boot_cpu_physical_apicid) {
++		panic("Boot APIC ID in local APIC unexpected (%d vs %d)",
++		     GET_APIC_ID(apic_read(APIC_ID)), boot_cpu_physical_apicid);
++		/* Or can we switch back to PIC here? */
++	}
++
++#ifdef CONFIG_X86_32
++	connect_bsp_APIC();
++#endif
++	/*
++	 * Switch from PIC to APIC mode.
++	 */
++	setup_local_APIC();
++
++#ifdef CONFIG_X86_64
++	/*
++	 * Enable IO APIC before setting up error vector
++	 */
++	if (!skip_ioapic_setup && nr_ioapics)
++		enable_IO_APIC();
++#endif
++	end_local_APIC_setup();
++
++	map_cpu_to_logical_apicid();
++
++	setup_portio_remap();
++
++	smpboot_setup_io_apic();
++	/*
++	 * Set up local APIC timer on boot CPU.
++	 */
++
++	printk(KERN_INFO "CPU%d: ", 0);
++	print_cpu_info(&cpu_data(0));
++	setup_boot_clock();
++}
++/*
+  * Early setup to make printk work.
   */
- #ifdef CONFIG_X86_64
--extern void setup_apic_routing(void);
- extern void early_init_lapic_mapping(void);
+ void __init native_smp_prepare_boot_cpu(void)
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index 5a0f57f..3a1b9e4 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -74,7 +74,6 @@ EXPORT_PER_CPU_SYMBOL(x86_bios_cpu_apicid);
+ 
+ u8 apicid_2_node[MAX_APICID];
+ 
+-extern void map_cpu_to_logical_apicid(void);
+ extern void unmap_cpu_to_logical_apicid(int cpu);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -94,144 +93,8 @@ void cpu_exit_clear(void)
+ }
  #endif
  
-diff --git a/include/asm-x86/apicdef.h b/include/asm-x86/apicdef.h
-index b0c6b28..674a228 100644
---- a/include/asm-x86/apicdef.h
-+++ b/include/asm-x86/apicdef.h
-@@ -12,12 +12,6 @@
- 
- #define	APIC_ID		0x20
- 
--#ifdef CONFIG_X86_64
--# define	APIC_ID_MASK		(0xFFu<<24)
--# define	GET_APIC_ID(x)		(((x)>>24)&0xFFu)
--# define	SET_APIC_ID(x)		(((x)<<24))
--#endif
+-static int boot_cpu_logical_apicid;
+ /* Where the IO area was mapped on multiquad, always 0 otherwise */
+ void *xquad_portio;
+ #ifdef CONFIG_X86_NUMAQ
+ EXPORT_SYMBOL(xquad_portio);
+ #endif
 -
- #define	APIC_LVR	0x30
- #define		APIC_LVR_MASK		0xFF00FF
- #define		GET_APIC_VERSION(x)	((x)&0xFFu)
-diff --git a/include/asm-x86/mach-default/mach_apic.h b/include/asm-x86/mach-default/mach_apic.h
-index e3c2c10..e081bdc 100644
---- a/include/asm-x86/mach-default/mach_apic.h
-+++ b/include/asm-x86/mach-default/mach_apic.h
-@@ -54,21 +54,27 @@ static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
- 	return phys_map;
- }
- 
-+#ifdef CONFIG_X86_64
-+extern void setup_apic_routing(void);
-+#else
- static inline void setup_apic_routing(void)
- {
- 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
- 					"Flat", nr_ioapics);
- }
-+#endif
- 
- static inline int multi_timer_check(int apic, int irq)
- {
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_32
- static inline int apicid_to_node(int logical_apicid)
- {
- 	return 0;
- }
-+#endif
- 
- /* Mapping from cpu number to logical apicid */
- static inline int cpu_to_logical_apicid(int cpu)
-@@ -78,8 +84,13 @@ static inline int cpu_to_logical_apicid(int cpu)
- 
- static inline int cpu_present_to_apicid(int mps_cpu)
- {
-+#ifdef CONFIG_X86_64
-+	if (cpu_present(mps_cpu))
-+		return (int)per_cpu(x86_bios_cpu_apicid, mps_cpu);
-+#else
- 	if (mps_cpu < get_physical_broadcast())
- 		return  mps_cpu;
-+#endif
- 	else
- 		return BAD_APICID;
- }
-diff --git a/include/asm-x86/mach-default/mach_apicdef.h b/include/asm-x86/mach-default/mach_apicdef.h
-index ae98413..7b78275 100644
---- a/include/asm-x86/mach-default/mach_apicdef.h
-+++ b/include/asm-x86/mach-default/mach_apicdef.h
-@@ -3,7 +3,12 @@
- 
- #include <asm/apic.h>
- 
-+#ifdef CONFIG_X86_64
-+#define	APIC_ID_MASK		(0xFFu<<24)
-+#define	SET_APIC_ID(x)		(((x)<<24))
-+#else
- #define		APIC_ID_MASK		(0xF<<24)
-+#endif
- 
- static inline unsigned get_apic_id(unsigned long x) 
- { 
-diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
-index 1b3c0f1..be870a4 100644
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -19,14 +19,6 @@ extern cpumask_t cpu_callin_map;
- extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
- 				  void *info, int wait);
- 
--static inline int cpu_present_to_apicid(int mps_cpu)
+-static void __init disable_smp(void)
 -{
--	if (cpu_present(mps_cpu))
--		return (int)per_cpu(x86_bios_cpu_apicid, mps_cpu);
+-	cpu_possible_map = cpumask_of_cpu(0);
+-	cpu_present_map = cpumask_of_cpu(0);
+-	smpboot_clear_io_apic_irqs();
+-	if (smp_found_config)
+-		phys_cpu_present_map =
+-				physid_mask_of_physid(boot_cpu_physical_apicid);
 -	else
--		return BAD_APICID;
+-		phys_cpu_present_map = physid_mask_of_physid(0);
+-	map_cpu_to_logical_apicid();
+-	cpu_set(0, per_cpu(cpu_sibling_map, 0));
+-	cpu_set(0, per_cpu(cpu_core_map, 0));
 -}
 -
- #ifdef CONFIG_SMP
+-static int __init smp_sanity_check(unsigned max_cpus)
+-{
+-	if (!physid_isset(hard_smp_processor_id(), phys_cpu_present_map)) {
+-		printk(KERN_WARNING "weird, boot CPU (#%d) not listed"
+-				    "by the BIOS.\n", hard_smp_processor_id());
+-		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
+-	}
+-
+-	/*
+-	 * If we couldn't find an SMP configuration at boot time,
+-	 * get out of here now!
+-	 */
+-	if (!smp_found_config && !acpi_lapic) {
+-		printk(KERN_NOTICE "SMP motherboard not detected.\n");
+-		disable_smp();
+-		if (APIC_init_uniprocessor())
+-			printk(KERN_NOTICE "Local APIC not detected."
+-					   " Using dummy APIC emulation.\n");
+-		return -1;
+-	}
+-
+-	/*
+-	 * Should not be necessary because the MP table should list the boot
+-	 * CPU too, but we do it for the sake of robustness anyway.
+-	 * Makes no sense to do this check in clustered apic mode, so skip it
+-	 */
+-	if (!check_phys_apicid_present(boot_cpu_physical_apicid)) {
+-		printk("weird, boot CPU (#%d) not listed by the BIOS.\n",
+-				boot_cpu_physical_apicid);
+-		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
+-	}
+-
+-	/*
+-	 * If we couldn't find a local APIC, then get out of here now!
+-	 */
+-	if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) && !cpu_has_apic) {
+-		printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
+-			boot_cpu_physical_apicid);
+-		printk(KERN_ERR "... forcing use of dummy APIC emulation. (tell your hw vendor)\n");
+-		smpboot_clear_io_apic();
+-		return -1;
+-	}
+-
+-	verify_local_APIC();
+-
+-	/*
+-	 * If SMP should be disabled, then really disable it!
+-	 */
+-	if (!max_cpus) {
+-		smp_found_config = 0;
+-		printk(KERN_INFO "SMP mode deactivated, forcing use of dummy APIC emulation.\n");
+-
+-		if (nmi_watchdog == NMI_LOCAL_APIC) {
+-			printk(KERN_INFO "activating minimal APIC for NMI watchdog use.\n");
+-			connect_bsp_APIC();
+-			setup_local_APIC();
+-			end_local_APIC_setup();
+-		}
+-		smpboot_clear_io_apic();
+-		return -1;
+-	}
+-	return 0;
+-}
+-
+-static void __init smp_cpu_index_default(void)
+-{
+-	int i;
+-	struct cpuinfo_x86 *c;
+-
+-	for_each_cpu_mask(i, cpu_possible_map) {
+-		c = &cpu_data(i);
+-		/* mark all to hotplug */
+-		c->cpu_index = NR_CPUS;
+-	}
+-}
+-
+-void __init native_smp_prepare_cpus(unsigned int max_cpus)
+-{
+- 	nmi_watchdog_default();
+- 	smp_cpu_index_default();
+- 	current_cpu_data = boot_cpu_data;
+- 	cpu_callin_map = cpumask_of_cpu(0);
+- 	mb();
+-
+-	/*
+-	 * Setup boot CPU information
+-	 */
+-	smp_store_cpu_info(0); /* Final full version of the data */
+-	boot_cpu_logical_apicid = logical_smp_processor_id();
+-	current_thread_info()->cpu = 0;
+-
+-	set_cpu_sibling_map(0);
+-
+-	if (smp_sanity_check(max_cpus) < 0) {
+-		printk(KERN_INFO "SMP disabled\n");
+-		disable_smp();
+-		return;
+-	}
+-
+-	if (GET_APIC_ID(apic_read(APIC_ID)) != boot_cpu_physical_apicid) {
+-		panic("Boot APIC ID in local APIC unexpected (%d vs %d)",
+-		     GET_APIC_ID(apic_read(APIC_ID)), boot_cpu_physical_apicid);
+-		/* Or can we switch back to PIC here? */
+-	}
+-
+-	connect_bsp_APIC();
+-	setup_local_APIC();
+-	end_local_APIC_setup();
+-	map_cpu_to_logical_apicid();
+-
+-	setup_portio_remap();
+-
+-	smpboot_setup_io_apic();
+-
+-	printk(KERN_INFO "CPU%d: ", 0);
+-	print_cpu_info(&cpu_data(0));
+-	setup_boot_clock();
+-}
+-
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 7752445..66b5562 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -71,144 +71,3 @@ int smp_threads_ready;
  
- #define raw_smp_processor_id()	read_pda(cpunumber)
-@@ -64,6 +56,7 @@ static __inline int logical_smp_processor_id(void)
- 	return GET_APIC_LOGICAL_ID(*(u32 *)(APIC_BASE + APIC_LDR));
- }
- 
-+#include <mach_apicdef.h>
- static inline int hard_smp_processor_id(void)
- {
- 	/* we don't want to mark this access volatile - bad code generation */
+ cycles_t cacheflush_time;
+ unsigned long cache_decay_ticks;
+-
+-static int boot_cpu_logical_apicid;
+-/*
+- * Fall back to non SMP mode after errors.
+- *
+- * RED-PEN audit/test this more. I bet there is more state messed up here.
+- */
+-static __init void disable_smp(void)
+-{
+-	cpu_present_map = cpumask_of_cpu(0);
+-	cpu_possible_map = cpumask_of_cpu(0);
+-	if (smp_found_config)
+-		phys_cpu_present_map =
+-				physid_mask_of_physid(boot_cpu_physical_apicid);
+-	else
+-		phys_cpu_present_map = physid_mask_of_physid(0);
+-	cpu_set(0, per_cpu(cpu_sibling_map, 0));
+-	cpu_set(0, per_cpu(cpu_core_map, 0));
+-}
+-
+-/*
+- * Various sanity checks.
+- */
+-static int __init smp_sanity_check(unsigned max_cpus)
+-{
+-	if (!physid_isset(hard_smp_processor_id(), phys_cpu_present_map)) {
+-		printk("weird, boot CPU (#%d) not listed by the BIOS.\n",
+-		       hard_smp_processor_id());
+-		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
+-	}
+-
+-	/*
+-	 * If we couldn't find an SMP configuration at boot time,
+-	 * get out of here now!
+-	 */
+-	if (!smp_found_config && !acpi_lapic) {
+-		printk(KERN_NOTICE "SMP motherboard not detected.\n");
+-		disable_smp();
+-		if (APIC_init_uniprocessor())
+-			printk(KERN_NOTICE "Local APIC not detected."
+-					   " Using dummy APIC emulation.\n");
+-		return -1;
+-	}
+-
+-	/*
+-	 * Should not be necessary because the MP table should list the boot
+-	 * CPU too, but we do it for the sake of robustness anyway.
+-	 */
+-	if (!check_phys_apicid_present(boot_cpu_physical_apicid)) {
+-		printk(KERN_NOTICE
+-			"weird, boot CPU (#%d) not listed by the BIOS.\n",
+-			boot_cpu_physical_apicid);
+-		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
+-	}
+-
+-	/*
+-	 * If we couldn't find a local APIC, then get out of here now!
+-	 */
+-	if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
+-	    !cpu_has_apic) {
+-		printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
+-			boot_cpu_physical_apicid);
+-		printk(KERN_ERR "... forcing use of dummy APIC emulation. (tell your hw vendor)\n");
+-		smpboot_clear_io_apic();
+-		return -1;
+-	}
+-
+-	verify_local_APIC();
+-
+-	/*
+-	 * If SMP should be disabled, then really disable it!
+-	 */
+-	if (!max_cpus) {
+-		printk(KERN_INFO "SMP mode deactivated, forcing use of dummy APIC emulation.\n");
+-		smpboot_clear_io_apic();
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+-
+-static void __init smp_cpu_index_default(void)
+-{
+-	int i;
+-	struct cpuinfo_x86 *c;
+-
+-	for_each_cpu_mask(i, cpu_possible_map) {
+-		c = &cpu_data(i);
+-		/* mark all to hotplug */
+-		c->cpu_index = NR_CPUS;
+-	}
+-}
+-
+-/*
+- * Prepare for SMP bootup.  The MP table or ACPI has been read
+- * earlier.  Just do some sanity checking here and enable APIC mode.
+- */
+-void __init native_smp_prepare_cpus(unsigned int max_cpus)
+-{
+-	nmi_watchdog_default();
+-	smp_cpu_index_default();
+-	cpu_callin_map = cpumask_of_cpu(0);
+-	mb();
+-
+-	current_cpu_data = boot_cpu_data;
+-	boot_cpu_logical_apicid = logical_smp_processor_id();
+-	current_thread_info()->cpu = 0;  /* needed? */
+-	set_cpu_sibling_map(0);
+-
+-	if (smp_sanity_check(max_cpus) < 0) {
+-		printk(KERN_INFO "SMP disabled\n");
+-		disable_smp();
+-		return;
+-	}
+-
+-	if (GET_APIC_ID(apic_read(APIC_ID)) != boot_cpu_physical_apicid) {
+-		panic("Boot APIC ID in local APIC unexpected (%d vs %d)",
+-		     GET_APIC_ID(apic_read(APIC_ID)), boot_cpu_physical_apicid);
+-		/* Or can we switch back to PIC here? */
+-	}
+-
+-	/*
+-	 * Switch from PIC to APIC mode.
+-	 */
+-	setup_local_APIC();
+-
+-	/*
+-	 * Enable IO APIC before setting up error vector
+-	 */
+-	if (!skip_ioapic_setup && nr_ioapics)
+-		enable_IO_APIC();
+-	end_local_APIC_setup();
+-
+-	/*
+-	 * Set up local APIC timer on boot CPU.
+-	 */
+-
+-	setup_boot_clock();
+-	printk(KERN_INFO "CPU%d: ", 0);
+-	print_cpu_info(&cpu_data(0));
+-}
 -- 
 1.5.0.6
 
