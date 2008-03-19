@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbYCTAGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939627AbYCTAHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932994AbYCTAGn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935913AbYCSXM1
+	id S939627AbYCTAHU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbYCSXNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 19:12:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754093AbYCSXMW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 19:12:22 -0400
-Date: Wed, 19 Mar 2008 16:12:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ulrich Drepper" <drepper@gmail.com>
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-Id: <20080319161211.2df88adc.akpm@linux-foundation.org>
-In-Reply-To: <a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com>
-References: <20080318209.039112899@firstfloor.org>
-	<20080318003620.d84efb95.akpm@linux-foundation.org>
-	<20080318141828.GD11966@one.firstfloor.org>
-	<20080318095715.27120788.akpm@linux-foundation.org>
-	<20080318172045.GI11966@one.firstfloor.org>
-	<20080318104437.966c10ec.akpm@linux-foundation.org>
-	<20080319083228.GM11966@one.firstfloor.org>
-	<20080319020440.80379d50.akpm@linux-foundation.org>
-	<a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 19 Mar 2008 19:13:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47794 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161067AbYCSXNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 19:13:32 -0400
+Date: Thu, 20 Mar 2008 10:13:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       stern@rowland.harvard.edu, Andy Whitcroft <apw@shadowen.org>,
+       lenb@kernel.org, greg@kroah.com, akpm@linux-foundation.org, rjw@sisk.pl
+Subject: Re: [Build Failure] linux-next: Tree for March 18
+Message-Id: <20080320101319.0dca1cd3.sfr@canb.auug.org.au>
+In-Reply-To: <47DFA49D.4000007@linux.vnet.ibm.com>
+References: <20080318205259.13726d23.sfr@canb.auug.org.au>
+	<47DFA49D.4000007@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__20_Mar_2008_10_13_19_+1100_fUVsg9JJJ9ma6Dm5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008 15:45:16 -0700
-"Ulrich Drepper" <drepper@gmail.com> wrote:
+--Signature=_Thu__20_Mar_2008_10_13_19_+1100_fUVsg9JJJ9ma6Dm5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, Mar 19, 2008 at 2:04 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >  The requirement to write to an executable sounds like a bit of a
-> >  showstopper.
-> 
-> Agreed.  In addition, it makes all kinds of tools misbehave.  I can
-> see extensions to the ELF format and those would require relinking
-> binaries, but without this you create chaos.  ELF is so nice because
-> it describes the entire file and we can handle everything according to
-> rules.  If you just somehow magically patch some new data structure in
-> this will break things.
-> 
-> Furthermore, by adding all this data to the end of the file you'll
-> normally create unnecessary costs.  The parts of the binaries which
-> are used at runtime start at the front.  At the end there might be a
-> lot of data which isn't needed at runtime and is therefore normally
-> not read.
-> 
-> 
-> >  if it proves useful, build it all into libc..
-> 
-> I could see that.  But to handle it efficiently kernel support is
-> needed.  Especially since I don't think the currently proposed
-> "learning mode" is adequate.  Over many uses of a program all kinds of
-> pages will be needed.  Far more than in most cases.  The prefetching
-> should really only cover the commonly used code paths in the program.
-> If you pull in everything, this will have advantages if you have that
-> much page cache to spare.  In that case just prefetching the entire
-> file is even easier.  No, such an improved method has to be more
-> selective.
+Hi Kamalesh,
 
-yes, ultimately we'd end up pulling in most of the executable that way, and
-a 90%-good-enough solution is perhaps to just suck the whole thing into
-pagecache.
+On Tue, 18 Mar 2008 16:46:45 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
+m.com> wrote:
+>
+> The kernel build of linux-next tree(s) have been failing from 20080314 wi=
+th
+> the build failure
+>=20
+> drivers/serial/serial_core.c: In function `uart_add_one_port':
+> drivers/serial/serial_core.c:2359: error: invalid lvalue in assignment
+> make[2]: *** [drivers/serial/serial_core.o] Error 1
+>=20
+> And the patch was submitted for the same http://marc.info/?l=3Dlinux-next=
+&m=3D120561799422065&w=3D2
 
-I did some work on that many years ago and I do recall that it helped, but
-I forget how much.
+Thanks for the report. I have reverted the patch in Greg's series that
+causes the breakage until it is fixed.
 
-There's a very very easy way of testing this though.  filemap_fault()
-_already_ does readaround when it gets a major fault.  And this is tunable
-via /sys/block/sda/queue/read_ahead_kb.  So set that to "infinity" to pull
-the whole file into pagecache at the first major fault and run some
-benchmarks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-If that proves useful we could look at separating read()'s readahead
-tunable from filemap_fault()'s tunable.
+--Signature=_Thu__20_Mar_2008_10_13_19_+1100_fUVsg9JJJ9ma6Dm5
+Content-Type: application/pgp-signature
 
-Note!  Due to interaction between the linker and common filesystems,
-executables tend to be very poorly laid out on disk: the blocks are
-out-of-order, often grossly.  So one shouldn't do performance testing of
-this form against executable files which were written directly by
-/usr/bin/ld.  First use `cp' to straighten the file out..
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> But if we're selective in the loading of the pages we'll
-> (unfortunately) end up with holes.  Possibly many of them.  This would
-> mean with today's interfaces a large number of madvise() calls.  What
-> would be needed is kernel support which takes a bitmap, each bit
-> representing a page.  This bitmap could be allocated as part of the
-> binary by the linker.  With appropriate ELF data structures supporting
-> it so that strip et.al won't stumble.  To fill in the bitmaps one can
-> have separate a separate tool which is explicitly asked to update the
-> bitmap data. To collect the page fault data one could use systemtap.
-> It's easy enough to write a script which monitors the minor page
-> faults for each binary and writes the data into a file.  The binary
-> update tool and can use the information from that file to generate the
-> bitmap.
+iD8DBQFH4Z4TTgG2atn1QN8RAvRFAJsFprcNX8Suy8vExRS4YeLAn2q7CQCgkrRN
++Y2JEbEd0TyZTfBS1N6ThcE=
+=wu9f
+-----END PGP SIGNATURE-----
 
-bitmap-based madvise() or fadvise() sounds pretty easy to do.
+--Signature=_Thu__20_Mar_2008_10_13_19_+1100_fUVsg9JJJ9ma6Dm5--
