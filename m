@@ -1,79 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163415AbYCTAe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935848AbYCTAgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163415AbYCTAe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161271AbYCTAIV
+	id S935848AbYCTAgB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966010AbYCTAI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:08:21 -0400
-Received: from v320-147-lb.its.uwo.ca ([129.100.74.147]:64640 "EHLO uwo.ca"
+	Wed, 19 Mar 2008 20:08:58 -0400
+Received: from host-71.mics.msu.su ([158.250.28.71]:53581 "EHLO ari.home"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161259AbYCTAIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:08:18 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Message-id: <47DFCEDA.2020307@uwo.ca>
-Date: Tue, 18 Mar 2008 10:16:58 -0400
-From: Tyson Whitehead <twhitehe@uwo.ca>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
-To: Takashi Iwai <tiwai@suse.de>
-Cc: ALSA devel <alsa-devel@alsa-project.org>,
-       Michael Cree <mcree@orcon.net.nz>, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080314131344.62A59DBA2@gherkin.frus.com>
- <200803142118.31974.twhitehe@uwo.ca> <s5hskypnwp8.wl%tiwai@suse.de>
-In-reply-to: <s5hskypnwp8.wl%tiwai@suse.de>
+	id S965893AbYCTAIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 20:08:55 -0400
+X-Greylist: delayed 1283 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 20:08:54 EDT
+Date: Thu, 20 Mar 2008 02:47:39 +0300 (MSK)
+From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+To: David Brownell <david-b@pacbell.net>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ehci-hcd affects hda speed
+In-Reply-To: <200803171855.44552.david-b@pacbell.net>
+Message-ID: <alpine.LFD.1.00.0803200211230.31035@nev.ubzr>
+References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200803171700.26274.david-b@pacbell.net> <47DF19AD.405@keyaccess.nl> <200803171855.44552.david-b@pacbell.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Fri, 14 Mar 2008 21:18:19 -0400,
-> 
->>  Even 
->> then, though, I believe it still only works in 8bit mode.
-> 
-> Maybe the problem is in a different place, then...
+Hi, again
 
-It certainly doesn't work at all without it.  It is definetly not 
-managing to figure out that the generated interupt is for itself.
+Just in case - I do have an A7V8X-based PC in the office and have 
+performed a simple experiment.
 
-> ---
-> 
-> diff -r 82e6201fc907 sound/isa/es18xx.c
-> --- a/sound/isa/es18xx.c	Mon Mar 17 14:36:24 2008 +0100
-> +++ b/sound/isa/es18xx.c	Mon Mar 17 17:32:59 2008 +0100
-> @@ -765,9 +765,10 @@ static irqreturn_t snd_es18xx_interrupt(
->  		/* Read Interrupt status */
->  		status = snd_es18xx_mixer_read(chip, 0x7f) >> 4;
->  	}
-> -#if 0
-> -	else {
-> -		status = 0;
-> +
-> +#ifdef CONFIG_ALPHA
-> +	if (!(status & (AUDIO1_IRQ | AUDIO2_IRQ))) {
-> +		/* status = 0; */
->  		if (inb(chip->port + 0x0C) & 0x01)
->  			status |= AUDIO1_IRQ;
->  		if (snd_es18xx_mixer_read(chip, 0x7A) & 0x80)
-> @@ -777,7 +778,6 @@ static irqreturn_t snd_es18xx_interrupt(
->  			status |= HWV_IRQ;
->  	}
->  #endif
-> -
->  	/* Audio 1 & Audio 2 */
->          if (status & AUDIO2_IRQ) {
->                  if (chip->active & DAC2)
+#1. Idle USB controller has no effect on PCI performance (I again
+measured hda throughput).
 
-This looks like it should accomplish the same thing (assuming not bits 
-get set in status on the initial attempt to read it), without affecting 
-other platforms and possible the alpha if anyone has a card that just 
-works for whatever reason.  A better patch all around.  : )
+#2. Default value for register 4Bh is 09h.
 
-Cheers!  -Tyson
+#3. I have detected no effect of changing [4Bh]=29h. Particularly, USB 
+FLASH read speed is ~8MB/s and hda read speed is ~40MB/s regardless of 
+[4Bh] content. During hda timing, "dd if=/dev/sda of=/dev/null bs=1024" 
+was running in another window (/dev/sda being the USB stick).
 
-PS:  I've managed to recover my disks, and the machine is compiling 
-2.25-rc5 even as I write.
+My interpretation, is that bit5 at offset 4B may _not_ be an "EHCI sleep 
+time select" like it is for VT6212. Am I missing something?
+
+Here's lspci output for the reference:
+
+# lspci -vv
+00:00.0 Host bridge: VIA Technologies, Inc. VT8377 [KT400/KT600 AGP] Host Bridge
+        Subsystem: ASUSTeK Computer Inc. A7V8X motherboard
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR- INTx-
+        Latency: 0
+        Region 0: Memory at f0000000 (32-bit, prefetchable) [size=128M]
+        Capabilities: [80] AGP version 3.5
+                Status: RQ=32 Iso- ArqSz=0 Cal=2 SBA+ ITACoh- GART64- HTrans- 64bit- FW+ AGP3+ Rate=x4,x8
+                Command: RQ=32 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=<none>
+        Capabilities: [c0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:01.0 PCI bridge: VIA Technologies, Inc. VT8235 PCI Bridge (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR- INTx-
+        Latency: 0
+        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+        Memory behind bridge: e6000000-e7dfffff
+        Prefetchable memory behind bridge: e7f00000-efffffff
+        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity- SERR- NoISA- VGA+ MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+...
+
+00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 80) (prog-if 00 [UHCI])
+        Subsystem: ASUSTeK Computer Inc. VT6202 USB2.0 4 port controller
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 32, Cache Line Size: 32 bytes
+        Interrupt: pin A routed to IRQ 17
+        Region 4: I/O ports at d800 [size=32]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 80) (prog-if 00 [UHCI])
+        Subsystem: ASUSTeK Computer Inc. VT6202 USB2.0 4 port controller
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 32, Cache Line Size: 32 bytes
+        Interrupt: pin B routed to IRQ 17
+        Region 4: I/O ports at d400 [size=32]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 80) (prog-if 00 [UHCI])
+        Subsystem: ASUSTeK Computer Inc. VT6202 USB2.0 4 port controller
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 32, Cache Line Size: 32 bytes
+        Interrupt: pin C routed to IRQ 17
+        Region 4: I/O ports at d000 [size=32]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82) (prog-if 20 [EHCI])
+        Subsystem: ASUSTeK Computer Inc. A7V8X motherboard
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 32, Cache Line Size: 64 bytes
+        Interrupt: pin D routed to IRQ 17
+        Region 0: Memory at e5000000 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME+
+
+
+DB> > I'm looking at a VIA datasheet which says the revision ID for the "VT6212 / 
+DB> > VT6212L PCI USB2.0 Controller" is simply 0x60. The VT61212L I myself owned 
+The same file here.
+
+DB> > advertised a revision ID of 0x63 and Lev's VT6212L advertises 0x65.
+Yes, it does. And UHCI part has rev.ID=0x62.
+
+HTH
+-L
