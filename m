@@ -1,123 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbYCSVso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938639AbYCSVrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbYCSVso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932094AbYCSUSq
+	id S938639AbYCSVrl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932066AbYCSUSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:18:46 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:53472 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755917AbYCSUSn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:18:43 -0400
-Date: Wed, 19 Mar 2008 10:16:48 +0100
-From: Christof Schmitt <christof.schmitt@de.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: David Wilder <dwilder@us.ibm.com>, linux-btrace@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       wilder@us.ibm.com
-Subject: Re: blktrace/relay/s390: Oops in subbuf_splice_actor
-Message-ID: <20080319091647.GA11369@schmichrtp.de.ibm.com>
-References: <20080314084337.GA9436@schmichrtp.de.ibm.com> <20080314115802.GK17940@kernel.dk> <20080314130552.GA9352@schmichrtp.de.ibm.com> <20080314131007.GQ17940@kernel.dk> <20080314132238.GA9815@schmichrtp.de.ibm.com> <47DA97DF.6010008@us.ibm.com> <20080314162807.GA4488@schmichrtp.de.ibm.com> <20080317080836.GZ17940@kernel.dk> <20080317151915.GA19368@schmichrtp.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080317151915.GA19368@schmichrtp.de.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 19 Mar 2008 16:18:32 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43194 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766009AbYCSUSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:18:30 -0400
+Message-ID: <47E17673.4040302@tmr.com>
+Date: Wed, 19 Mar 2008 16:24:19 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+CC: axboe@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH][RESEND][v3] Modify loop device to be able to manage partitions
+ of the disk image
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+In-Reply-To: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 17, 2008 at 04:19:16PM +0100, Christof Schmitt wrote:
-> On Mon, Mar 17, 2008 at 09:08:37AM +0100, Jens Axboe wrote:
-> > On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > > On Fri, Mar 14, 2008 at 08:21:03AM -0700, David Wilder wrote:
-> > > > Christof Schmitt wrote:
-> > > > >On Fri, Mar 14, 2008 at 02:10:07PM +0100, Jens Axboe wrote:
-> > > > >>On Fri, Mar 14 2008, Christof Schmitt wrote:
-> > > > >>>On Fri, Mar 14, 2008 at 12:58:03PM +0100, Jens Axboe wrote:
-> > > > >>>>That is indeed a bug, does this work for you?
-> > > > >>>>
-> > > > >>>>diff --git a/kernel/relay.c b/kernel/relay.c
-> > > > >>>>index d080b9d..39d1fa8 100644
-> > > > >>>>--- a/kernel/relay.c
-> > > > >>>>+++ b/kernel/relay.c
-> > > > >>>>@@ -1066,7 +1066,7 @@ static int subbuf_splice_actor(struct file *in,
-> > > > >>>> 			       unsigned int flags,
-> > > > >>>> 			       int *nonpad_ret)
-> > > > >>>> {
-> > > > >>>>-	unsigned int pidx, poff, total_len, subbuf_pages, ret;
-> > > > >>>>+	unsigned int pidx, poff, total_len, subbuf_pages, nr_pages, ret;
-> > > > >>>> 	struct rchan_buf *rbuf = in->private_data;
-> > > > >>>> 	unsigned int subbuf_size = rbuf->chan->subbuf_size;
-> > > > >>>> 	uint64_t pos = (uint64_t) *ppos;
-> > > > >>>>@@ -1098,7 +1098,9 @@ static int subbuf_splice_actor(struct file *in,
-> > > > >>>> 	pidx = (read_start / PAGE_SIZE) % subbuf_pages;
-> > > > >>>> 	poff = read_start & ~PAGE_MASK;
-> > > > >>>>
-> > > > >>>>-	for (total_len = 0; spd.nr_pages < subbuf_pages; spd.nr_pages++) {
-> > > > >>>>+	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_BUFFERS);
-> > > > >>>>+
-> > > > >>>>+	for (total_len = 0; spd.nr_pages < nr_pages; spd.nr_pages++) {
-> > > > >>>> 		unsigned int this_len, this_end, private;
-> > > > >>>> 		unsigned int cur_pos = read_start + total_len;
-> > > > >>>With the patch, i can run dd and 'blktrace -h traceserver' without the
-> > > > >>>oops. But the output from blktrace only contains only zeros and no
-> > > > >>>usable data for blkparse. Using blktrace to write the data directly to
-> > > > >>>disk, without using the blktrace server works. Is there anything i
-> > > > >>>should look for to help debugging the problem?
-> > > > >>We should probably get Tom in the loop, as he is the relay expert. I'll
-> > > > >>make sure the above patch gets into 2.6.25, as it is definitely a bug
-> > > > >>that needs fixing.
-> > > > >
-> > > > >http://relayfs.sourceforge.net/contact.html mentions Tom Zanussi, but
-> > > > >his email address seems to be no longer valid. I copy Dave Wilder
-> > > > >here, since he is mentioned as relay maintainer on the web page.
-> > > > >
-> > > > >Dave, can you have a look at this? I can easily reproduce the problem
-> > > > >on s390 Linux for testing and getting more debug information.
-> > > > >
-> > > > >Christof
-> > > > >--
-> > > > >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > > >the body of a message to majordomo@vger.kernel.org
-> > > > >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > > >Please read the FAQ at  http://www.tux.org/lkml/
-> > > > >
-> > > > 
-> > > > I will take a look at the problem.
-> > > > Any thing special about the test you are running I need to know?
-> > > 
-> > > The test is about using the blktrace network feature on a 64 bit s390
-> > > guest on z/VM. I don't know if 64 bit and z/VM are related to the
-> > > problem scenario, it is the only setup i tested. To reproduce, start
-> > > somewhere 'blktrace -l' as a server and issue 
-> > > blktrace -h tracehostname
-> > > dd if=/dev/sda of=/dev/null
-> > > to start blktrace and some I/O load.
-> > 
-> > If the problem is in the splice part of relay, then the problem will
-> > likely go away if you add the -s parameter to blktrace. Might be handy
-> > to know if you are experimenting.
+Laurent Vivier wrote:
+> v3 is an updated version of v2, replacing a "%d" by a "%lu".
 > 
-> I still have your patch applied. blktrace with -s returns the trace
-> data, as expected and blktrace without the -s returns data, but
-> nothing useful for blkparse.
+> This patch allows to use loop device with partitionned disk image.
+> 
+How does this compare in overhead to using nbd?
 
-Two issues i found: First, in subbuf_splice_actor the function pointer
-spd_release is not initialized, but later, splice_to_pipe calls
-	while (page_nr < spd_pages)
-		spd->spd_release(spd, page_nr++);
+> Original behavior of loop is not modified.
+> 
+> A new parameter is introduced to define how many partition we want to be
+> able to manage per loop device. This parameter is "loop_max_part".
+> 
+> For instance, to manage 63 partitions / loop device, we will do:
+> # modprobe loop loop_max_part=63
+> # ls -l /dev/loop?
+> brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> 
+> And to attach a raw partitionned disk image, the original losetup is used:
+> 
+> # losetup -f etch.img
+> EXT3 FS on loop0p1, internal journal
+> EXT3-fs: mounted filesystem with ordered data mode.
+> loop: module loaded
+>  loop0: p1 p2 < p5 >
+> # ls -l /dev/loop?*
+> brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+> brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+> brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+> brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> # mount /dev/loop0p1 /mnt
+> kjournald starting.  Commit interval 5 seconds
+> EXT3 FS on loop0p1, internal journal
+> EXT3-fs: mounted filesystem with ordered data mode.
+> # ls /mnt
+> bench  cdrom  home        lib         mnt   root     srv  usr
+> bin    dev    initrd      lost+found  opt   sbin     sys  var
+> boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+> # umount /mnt
+> # losetup -d /dev/loop0
+> 
+> Of course, the same behavior can be done using kpartx on a loop device,
+> but modifying loop avoids to stack several layers of block device (loop +
+> device mapper), this is a very light modification (40% of modifications
+> are to manage the new parameter).
+> 
+> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+> ---
+>  Documentation/kernel-parameters.txt |    4 +++
+>  drivers/block/loop.c                |   39 ++++++++++++++++++++++++++++++----
+>  2 files changed, 38 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 9a5b665..7f2fd52 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			be mounted
+>  			Format: <1-256>
+>  
+> +	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
+> +			Should be greater than 0, the maximum value depends
+> +			on max_loop.
+> +
+>  	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
+>  			should make use of.  maxcpus=n : n >= 0 limits the
+>  			kernel to using 'n' processors.  n=0 is a special case,
+> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> index 91ebb00..16b2aa6 100644
+> --- a/drivers/block/loop.c
+> +++ b/drivers/block/loop.c
+> @@ -82,6 +82,9 @@
+>  static LIST_HEAD(loop_devices);
+>  static DEFINE_MUTEX(loop_devices_mutex);
+>  
+> +static int loop_max_part;
+> +static int part_shift;
+> +
+>  /*
+>   * Transfer functions
+>   */
+> @@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
+>  		goto out_putf;
+>  
+>  	fput(old_file);
+> +	if (loop_max_part > 0)
+> +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+>  	return 0;
+>  
+>   out_putf:
+> @@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+>  	}
+>  	lo->lo_state = Lo_bound;
+>  	wake_up_process(lo->lo_thread);
+> +	if (loop_max_part > 0)
+> +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+>  	return 0;
+>  
+>  out_clr:
+> @@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
+>  static int max_loop;
+>  module_param(max_loop, int, 0);
+>  MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
+> +module_param(loop_max_part, int, 0);
+> +MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
+>  MODULE_LICENSE("GPL");
+>  MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+>  
+> @@ -1412,7 +1421,7 @@ static struct loop_device *loop_alloc(int i)
+>  	if (!lo->lo_queue)
+>  		goto out_free_dev;
+>  
+> -	disk = lo->lo_disk = alloc_disk(1);
+> +	disk = lo->lo_disk = alloc_disk(1 << part_shift);
+>  	if (!disk)
+>  		goto out_free_queue;
+>  
+> @@ -1422,7 +1431,7 @@ static struct loop_device *loop_alloc(int i)
+>  	init_waitqueue_head(&lo->lo_event);
+>  	spin_lock_init(&lo->lo_lock);
+>  	disk->major		= LOOP_MAJOR;
+> -	disk->first_minor	= i;
+> +	disk->first_minor	= i << part_shift;
+>  	disk->fops		= &lo_fops;
+>  	disk->private_data	= lo;
+>  	disk->queue		= lo->lo_queue;
+> @@ -1502,7 +1511,12 @@ static int __init loop_init(void)
+>  	 *     themselves and have kernel automatically instantiate actual
+>  	 *     device on-demand.
+>  	 */
+> -	if (max_loop > 1UL << MINORBITS)
+> +
+> +	part_shift = 0;
+> +	if (loop_max_part > 0)
+> +		part_shift = fls(loop_max_part);
+> +
+> +	if (max_loop > 1UL << (MINORBITS - part_shift))
+>  		return -EINVAL;
+>  
+>  	if (max_loop) {
+> @@ -1510,7 +1524,7 @@ static int __init loop_init(void)
+>  		range = max_loop;
+>  	} else {
+>  		nr = 8;
+> -		range = 1UL << MINORBITS;
+> +		range = 1UL << (MINORBITS - part_shift);
+>  	}
+>  
+>  	if (register_blkdev(LOOP_MAJOR, "loop"))
+> @@ -1549,7 +1563,7 @@ static void __exit loop_exit(void)
+>  	unsigned long range;
+>  	struct loop_device *lo, *next;
+>  
+> -	range = max_loop ? max_loop :  1UL << MINORBITS;
+> +	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
+>  
+>  	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+>  		loop_del_one(lo);
+> @@ -1569,4 +1583,19 @@ static int __init max_loop_setup(char *str)
+>  }
+>  
+>  __setup("max_loop=", max_loop_setup);
+> +
+> +static int __init max_part_setup(char *str)
+> +{
+> +	loop_max_part = simple_strtol(str, NULL, 0);
+> +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
+> +		/* we must keep at least one bit for loop device number */
+> +		printk(KERN_ERR
+> +			"loop: loop_max_part cannot be greater than %lu\n",
+> +			1UL << (MINORBITS - 1));
+> +		return 0;
+> +	}
+> +	return 1;
+> +}
+> +
+> +__setup("loop_max_part=", max_part_setup);
+>  #endif
 
-I would guess that the function pointer should point to
-spd_release_page or something similar.
 
-The second one: It seems that the loop in splice_direct_to_actor first
-calls do_splice_to to get the trace data into the pipe and then
-actor, to move the data out to the network socket. With some debug
-printks, i see that splice_to_pipe waits on the call pipe_wait(pipe)
-until there is some free space again. But if the same process should
-loop through the read and write parts, the pipe_wait would deadlock
-the process, or am i missing something here?
-
-Christof
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
