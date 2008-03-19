@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941261AbYCSW3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941307AbYCSW3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941261AbYCSW3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbYCSVD2
+	id S941307AbYCSW3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965346AbYCSVDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:03:28 -0400
-Received: from rn-out-0910.google.com ([64.233.170.186]:25008 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754993AbYCSVDV (ORCPT
+	Wed, 19 Mar 2008 17:03:30 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:55319 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965335AbYCSVD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:03:21 -0400
+	Wed, 19 Mar 2008 17:03:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=reply-to:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:x-length:x-uid:date:content-type:content-transfer-encoding:message-id:from;
-        b=AXo56jGcJP4kzEQTHTaF91b3YDNBPGg5KKRzWzgV8D+ahx4mh4qHutr1BI8JtPdts6O5tp6/2i/2Jd9wX1pzFzMNvCRGyXHqE4vSP+QoHpyaf4LjvDvtXbcWNnYp9CL/bor2UUzleZ5xlmHzs7Cgla9o2tHCy3kJT9kvvOXRmdM=
+        b=cJwvOiH8oE8+y8ryCWuwA9qZzu0Nh/Wy7HA+eyi42NhnRxnoEX5JyAQQ8tn0O9ea0gzktGg5x/he/lyNPVzT0E69MqkGpshv6XQTmAJ6jIEs/mF5cdXcqYeTjfJ0KW6c5KzOtlTmRBtaE9bvUpILACCvG6RsIUHTy9kRWlO7V7Y=
 Reply-To: yhlu.kernel@gmail.com
 To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 07/12] mm: offset align in alloc_bootmem v3
+Subject: [PATCH 12/12] x86_64: fix setup_node_bootmem to support big mem excluding with memmap
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Christoph Lameter <clameter@sgi.com>,
        kernel list <linux-kernel@vger.kernel.org>
@@ -24,183 +24,166 @@ References: <200803181237.33861.yhlu.kernel@gmail.com>
 In-Reply-To: <200803181237.33861.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-X-Length: 6243
-Date: Wed, 19 Mar 2008 14:04:23 -0700
+X-Length: 6546
+Date: Wed, 19 Mar 2008 14:05:03 -0700
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200803191404.23430.yhlu.kernel@gmail.com>
+Message-Id: <200803191405.03495.yhlu.kernel@gmail.com>
 From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] mm: offset align in alloc_bootmem v3
+[PATCH] x86_64: fix setup_node_bootmem to support big mem excluding with memmap
 
-need offset alignment when node_boot_start's alignment is less than
-align required
+typical case: four sockets system, every node has 4g ram, and we are using
+	memmap=10g$4g to mask out memory on node1 and node2
 
-use local node_boot_start to match align. so don't add extra opteration in
-search loop.
+when numa is enabled, early_node_mem is used to get node_data and node_bootmap
+
+if it can not get from same node with find_e820_area, it will use alloc_bootmem
+to get buff from previous nodes.
+
+so check it and issue info about it.
+
+need to move early_res_to_bootmem into every setup_node_bootmem.
+and it takes range that node has. otherwise alloc_bootmem could return addr
+that reserved early.
+
+need to apply it after
+	[PATCH] mm: make reserve_bootmem can crossed the nodes
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Index: linux-2.6/mm/bootmem.c
+Index: linux-2.6/arch/x86/mm/numa_64.c
 ===================================================================
---- linux-2.6.orig/mm/bootmem.c
-+++ linux-2.6/mm/bootmem.c
-@@ -206,9 +206,11 @@ void * __init
- __alloc_bootmem_core(struct bootmem_data *bdata, unsigned long size,
- 	      unsigned long align, unsigned long goal, unsigned long limit)
+--- linux-2.6.orig/arch/x86/mm/numa_64.c
++++ linux-2.6/arch/x86/mm/numa_64.c
+@@ -188,6 +188,7 @@ void __init setup_node_bootmem(int nodei
+ 	unsigned long bootmap_start, nodedata_phys;
+ 	void *bootmap;
+ 	const int pgdat_size = round_up(sizeof(pg_data_t), PAGE_SIZE);
++	int nid;
+ 
+ 	start = round_up(start, ZONE_ALIGN);
+ 
+@@ -210,9 +211,20 @@ void __init setup_node_bootmem(int nodei
+ 	NODE_DATA(nodeid)->node_start_pfn = start_pfn;
+ 	NODE_DATA(nodeid)->node_spanned_pages = end_pfn - start_pfn;
+ 
+-	/* Find a place for the bootmem map */
++	/*
++	 * Find a place for the bootmem map
++	 * nodedata_phys could be on other nodes by alloc_bootmem,
++	 * so need to sure bootmap_start not to be small, otherwise
++	 * early_node_mem will get that with find_e820_area instead
++	 * of alloc_bootmem, that could clash with reserved range
++	 */
+ 	bootmap_pages = bootmem_bootmap_pages(end_pfn - start_pfn);
+-	bootmap_start = round_up(nodedata_phys + pgdat_size, PAGE_SIZE);
++	nid = phys_to_nid(nodedata_phys);
++	if (nid == nodeid)
++		bootmap_start = round_up(nodedata_phys + pgdat_size,
++					 PAGE_SIZE);
++	else
++		bootmap_start = round_up(start, PAGE_SIZE);
+ 	/*
+ 	 * SMP_CAHCE_BYTES could be enough, but init_bootmem_node like
+ 	 * to use that to align to PAGE_SIZE
+@@ -237,10 +249,29 @@ void __init setup_node_bootmem(int nodei
+ 
+ 	free_bootmem_with_active_regions(nodeid, end);
+ 
+-	reserve_bootmem_node(NODE_DATA(nodeid), nodedata_phys, pgdat_size,
+-			BOOTMEM_DEFAULT);
+-	reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
+-			bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
++	/*
++	 * convert early reserve to bootmem reserve earlier
++	 * otherwise early_node_mem could use early reserved mem
++	 * on previous node
++	 */
++	early_res_to_bootmem(start, end);
++
++	/*
++	 * in some case early_node_mem could use alloc_bootmem
++	 * to get range on other node, don't reserve that again
++	 */
++	if (nid != nodeid)
++		printk(KERN_INFO "    NODE_DATA(%d) on node %d\n", nodeid, nid);
++	else
++		reserve_bootmem_node(NODE_DATA(nodeid), nodedata_phys,
++					pgdat_size, BOOTMEM_DEFAULT);
++	nid = phys_to_nid(bootmap_start);
++	if (nid != nodeid)
++		printk(KERN_INFO "    bootmap(%d) on node %d\n", nodeid, nid);
++	else
++		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
++				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
++
+ #ifdef CONFIG_ACPI_NUMA
+ 	srat_reserve_add_area(nodeid);
+ #endif
+Index: linux-2.6/arch/x86/kernel/e820_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820_64.c
++++ linux-2.6/arch/x86/kernel/e820_64.c
+@@ -83,14 +83,19 @@ void __init reserve_early(unsigned long 
+ 		strncpy(r->name, name, sizeof(r->name) - 1);
+ }
+ 
+-void __init early_res_to_bootmem(void)
++void __init early_res_to_bootmem(unsigned long start, unsigned long end)
  {
--	unsigned long offset, remaining_size, areasize, preferred;
-+	unsigned long areasize, preferred;
- 	unsigned long i, start = 0, incr, eidx, end_pfn;
- 	void *ret;
-+	unsigned long node_boot_start;
-+	void *node_bootmem_map;
- 
- 	if (!size) {
- 		printk("__alloc_bootmem_core(): zero-sized request\n");
-@@ -216,23 +218,29 @@ __alloc_bootmem_core(struct bootmem_data
+ 	int i;
++	unsigned long final_start, final_end;
+ 	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
+ 		struct early_res *r = &early_res[i];
+-		printk(KERN_INFO "early res: %d [%lx-%lx] %s\n", i,
+-			r->start, r->end - 1, r->name);
+-		reserve_bootmem_generic(r->start, r->end - r->start);
++		final_start = max(start, r->start);
++		final_end = min(end, r->end);
++		if (final_start >= final_end)
++			continue;
++		printk(KERN_INFO "  early res: %d [%lx-%lx] %s\n", i,
++			final_start, final_end - 1, r->name);
++		reserve_bootmem_generic(final_start, final_end - final_start);
  	}
- 	BUG_ON(align & (align-1));
+ }
  
--	if (limit && bdata->node_boot_start >= limit)
--		return NULL;
+Index: linux-2.6/include/asm-x86/e820_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/e820_64.h
++++ linux-2.6/include/asm-x86/e820_64.h
+@@ -41,7 +41,7 @@ extern struct e820map e820;
+ extern void update_e820(void);
+ 
+ extern void reserve_early(unsigned long start, unsigned long end, char *name);
+-extern void early_res_to_bootmem(void);
++extern void early_res_to_bootmem(unsigned long start, unsigned long end);
+ 
+ #endif/*!__ASSEMBLY__*/
+ 
+Index: linux-2.6/arch/x86/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_64.c
++++ linux-2.6/arch/x86/kernel/setup_64.c
+@@ -190,6 +190,7 @@ contig_initmem_init(unsigned long start_
+ 	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, end_pfn);
+ 	e820_register_active_regions(0, start_pfn, end_pfn);
+ 	free_bootmem_with_active_regions(0, end_pfn);
++	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
+ 	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
+ }
+ #endif
+@@ -395,8 +396,6 @@ void __init setup_arch(char **cmdline_p)
+ 	contig_initmem_init(0, end_pfn);
+ #endif
+ 
+-	early_res_to_bootmem();
 -
- 	/* on nodes without memory - bootmem_map is NULL */
- 	if (!bdata->node_bootmem_map)
- 		return NULL;
+ 	dma32_reserve_bootmem();
  
-+	/* bdata->node_boot_start is supposed to be (12+6)bits alignment on x86_64 ? */
-+	node_boot_start = bdata->node_boot_start;
-+	node_bootmem_map = bdata->node_bootmem_map;
-+	if (align) {
-+		node_boot_start = ALIGN(bdata->node_boot_start, align);
-+		if (node_boot_start > bdata->node_boot_start)
-+			node_bootmem_map = (unsigned long *)bdata->node_bootmem_map +
-+			    PFN_DOWN(node_boot_start - bdata->node_boot_start)/BITS_PER_LONG;
-+	}
-+
-+	if (limit && node_boot_start >= limit)
-+		return NULL;
-+
- 	end_pfn = bdata->node_low_pfn;
- 	limit = PFN_DOWN(limit);
- 	if (limit && end_pfn > limit)
- 		end_pfn = limit;
- 
--	eidx = end_pfn - PFN_DOWN(bdata->node_boot_start);
--	offset = 0;
--	if (align && (bdata->node_boot_start & (align - 1UL)) != 0)
--		offset = align - (bdata->node_boot_start & (align - 1UL));
--	offset = PFN_DOWN(offset);
-+	eidx = end_pfn - PFN_DOWN(node_boot_start);
- 
- 	/*
- 	 * We try to allocate bootmem pages above 'goal'
-@@ -240,15 +248,16 @@ __alloc_bootmem_core(struct bootmem_data
- 	 */
- 	preferred = 0;
- 	if (goal && PFN_DOWN(goal) < end_pfn) {
--		if (goal > bdata->node_boot_start)
--			preferred = goal - bdata->node_boot_start;
-+		if (goal > node_boot_start)
-+			preferred = goal - node_boot_start;
- 
--		if (bdata->last_success >= preferred)
-+		if (bdata->last_success > node_boot_start &&
-+			bdata->last_success - node_boot_start >= preferred)
- 			if (!limit || (limit && limit > bdata->last_success))
--				preferred = bdata->last_success;
-+				preferred = bdata->last_success - node_boot_start;
- 	}
- 
--	preferred = PFN_DOWN(ALIGN(preferred, align)) + offset;
-+	preferred = PFN_DOWN(ALIGN(preferred, align));
- 	areasize = (size + PAGE_SIZE-1) / PAGE_SIZE;
- 	incr = align >> PAGE_SHIFT ? : 1;
- 
-@@ -256,18 +265,18 @@ restart_scan:
- 	for (i = preferred; i < eidx;) {
- 		unsigned long j;
- 
--		i = find_next_zero_bit(bdata->node_bootmem_map, eidx, i);
-+		i = find_next_zero_bit(node_bootmem_map, eidx, i);
- 		i = ALIGN(i, incr);
- 		if (i >= eidx)
- 			break;
--		if (test_bit(i, bdata->node_bootmem_map)) {
-+		if (test_bit(i, node_bootmem_map)) {
- 			i += incr;
- 			continue;
- 		}
- 		for (j = i + 1; j < i + areasize; ++j) {
- 			if (j >= eidx)
- 				goto fail_block;
--			if (test_bit(j, bdata->node_bootmem_map))
-+			if (test_bit(j, node_bootmem_map))
- 				goto fail_block;
- 		}
- 		start = i;
-@@ -278,14 +287,14 @@ restart_scan:
- 			i += incr;
- 	}
- 
--	if (preferred > offset) {
--		preferred = offset;
-+	if (preferred > 0) {
-+		preferred = 0;
- 		goto restart_scan;
- 	}
- 	return NULL;
- 
- found:
--	bdata->last_success = PFN_PHYS(start);
-+	bdata->last_success = PFN_PHYS(start) + node_boot_start;
- 	BUG_ON(start >= eidx);
- 
- 	/*
-@@ -295,6 +304,7 @@ found:
- 	 */
- 	if (align < PAGE_SIZE &&
- 	    bdata->last_offset && bdata->last_pos+1 == start) {
-+		unsigned long offset, remaining_size;
- 		offset = ALIGN(bdata->last_offset, align);
- 		BUG_ON(offset > PAGE_SIZE);
- 		remaining_size = PAGE_SIZE - offset;
-@@ -303,14 +313,12 @@ found:
- 			/* last_pos unchanged */
- 			bdata->last_offset = offset + size;
- 			ret = phys_to_virt(bdata->last_pos * PAGE_SIZE +
--					   offset +
--					   bdata->node_boot_start);
-+					   offset + node_boot_start);
- 		} else {
- 			remaining_size = size - remaining_size;
- 			areasize = (remaining_size + PAGE_SIZE-1) / PAGE_SIZE;
- 			ret = phys_to_virt(bdata->last_pos * PAGE_SIZE +
--					   offset +
--					   bdata->node_boot_start);
-+					   offset + node_boot_start);
- 			bdata->last_pos = start + areasize - 1;
- 			bdata->last_offset = remaining_size;
- 		}
-@@ -318,14 +326,14 @@ found:
- 	} else {
- 		bdata->last_pos = start + areasize - 1;
- 		bdata->last_offset = size & ~PAGE_MASK;
--		ret = phys_to_virt(start * PAGE_SIZE + bdata->node_boot_start);
-+		ret = phys_to_virt(start * PAGE_SIZE + node_boot_start);
- 	}
- 
- 	/*
- 	 * Reserve the area now:
- 	 */
- 	for (i = start; i < start + areasize; i++)
--		if (unlikely(test_and_set_bit(i, bdata->node_bootmem_map)))
-+		if (unlikely(test_and_set_bit(i, node_bootmem_map)))
- 			BUG();
- 	memset(ret, 0, size);
- 	return ret;
+ #ifdef CONFIG_ACPI_SLEEP
