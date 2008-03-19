@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYCSTuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbYCSTwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbYCSTuR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbYCSTdW
+	id S1760341AbYCSTwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbYCSTgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:33:22 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:27544 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755850AbYCSTdT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:33:19 -0400
-Subject: Re: [BUG?] 2.6.25-rc[23]-mm1 cgroup list corruption under load
-	with VM Scalability patches
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Paul Menage <menage@google.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <6599ad830803051309g22d5b746ta30c4f28a394572c@mail.gmail.com>
-References: <1204745828.6244.31.camel@localhost>
-	 <6599ad830803051309g22d5b746ta30c4f28a394572c@mail.gmail.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 18 Mar 2008 14:10:11 -0400
-Message-Id: <1205863811.5032.26.camel@localhost>
+	Wed, 19 Mar 2008 15:36:22 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:37291 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752231AbYCSTgE (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:36:04 -0400
+Date: Wed, 19 Mar 2008 23:17:21 +1100
+From: David Chinner <dgc@sgi.com>
+To: Jan Kara <jack@suse.cz>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: BUG: drop_pagecache_sb vs kjournald lockup
+Message-ID: <20080319121721.GH155407@sgi.com>
+References: <20080318112843.GJ95344431@sgi.com> <20080318134326.GA6558@atrey.karlin.mff.cuni.cz> <20080318204646.GY155407@sgi.com> <20080319100805.GB22109@duck.suse.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080319100805.GB22109@duck.suse.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-05 at 13:09 -0800, Paul Menage wrote:
-> On Wed, Mar 5, 2008 at 11:37 AM, Lee Schermerhorn
-> <Lee.Schermerhorn@hp.com> wrote:
-> > list_del corruption in cgroup_exit() on 16 cpu, 32GB ia64 NUMA platform.
-> >
-> >  I've been seeing this for a while now, but we've had known problems
-> >  [page leaks, ...] with the VM scalability series.  Now the system
-> >  appears to be running very well with these patches under stress loads
-> >  that would hang it or cause OOM kill of tests with plenty of swap space
-> >  left.  Eventually, [after 40-45 minutes], I hit a list corruption in
-> >  cgroup_exit().
-> >
-> >  I can't say for sure that our patches aren't causing this, but I've been
-> >  unable to keep the system up long enough under the stress load w/o the
-> >  splitlru+noreclaim patches to hit the problem.
-> >
-> >  I looked in the mailing lists and found one other thread related to
-> >  cgroup list corruption:
-> >
-> >         http://marc.info/?l=linux-kernel&m=119263666823236&w=4
-> >
-> >  Paul looked into this and couldn't see anywhere that the lists are
-> >  manipulate w/o holding the css set lock.  I concur.  I did find one
-> >  possible race in enabling the task cg_lists [see patch below], but this
-> >  did not solve the problem.  And I did not hit the printk in the patch.
-> 
-> No, that's not a (malign) race - cgroup_enable_task_cg_lists() is
-> idempotent. In the case that you see, every thread seen in the
-> do_each_thread() loop will already have a non-empty cg_list field, so
-> it will be a no-op. So adding the additional check isn't wrong but
-> it's not needed.
-> 
-> I'll look again at the code to try to figure out where the problem is.
+On Wed, Mar 19, 2008 at 11:08:05AM +0100, Jan Kara wrote:
+> On Wed 19-03-08 07:46:46, David Chinner wrote:
+> > On Tue, Mar 18, 2008 at 02:43:26PM +0100, Jan Kara wrote:
+> > > > 2.6.25-rc3, 4p ia64, ext3 root drive.
+> > > > 
+> > > > I was running an XFS stress test on one of the XFS partitions on
+> > > > the machine (zero load on the root ext3 drive), when the system
+> > > > locked up in kjournald with this on the console:
+> > > > 
+> > > > BUG: spinlock lockup on CPU#2, kjournald/2150, a000000100e022e0
+> > > > 
+> > >   <snip traces>
+> > 
+> > <snip other stuff>
+> > 
+> > > > Anyone know the reason why drop_pagecache_sb() uses such a brute-force
+> > > > mechanism to free up clean page cache pages?
+> > >   Yes, we know that drop_pagecache_sb() has locking issues but since it
+> > > is intended to be used for debugging purposes only, nobody cared enough
+> > > to fix it. Completely untested patch below if you dare to try ;)
+> > 
+> > It may be intended for debuging purposes, but it does get used in
+> > production HPC environments (a lot!). I guess I've never seen this
+> > lockup before because SGI customers don't use ext3, but they have
+> > complained about the system "stopping" while drop_caches is executed.
+> > This locking ..... strategy would explain it, though.
+>   ;) But in case your customers use it in production, shouldn't you push
+> for a better interface for such feature? Just a thought...
 
-Paul:
+Because it's much less horrible than the thing it replaced, does
+what is needed and mostly does not cause problems? And because it
+usually just works I've never felt the need to look at the
+implementation....
 
-just wanted to let you know that I did manage to hit this list
-corruption--same stack trace:  cgroup_exit() from do_exit() ...--on
-25-rc3-mm1 WITHOUT any of the vm scalability [split-lru/noreclaim-mlock]
-patches applied.  This occurred ~9 minutes into a fairly heavy 'usex'
-load on my 16 cpu ia64 platform.
+/me is off to look at Fengguang's patch
 
-An x86_64 version [w/ prebuilt binaries of the tools used] of the stress
-load is available here:
+> > I'll try the patch, but I can't guarantee anything - I only saw this
+> > lockup once in about 18 hours when dropping caches every 2 seconds.
+>   Well, if you enable lockdep, it should warn you about possible problems
+> much earlier (at least we already got several reports of lockdep warnings
+> when using drop_caches).
 
-	http://free.linux.hp.com/~lts/Temp/
+ia64 - no lockdep :/
 
-There's a README there describing the contents of the tarball.  I
-haven't tried this load on an x86_64 recently, so I don't know if it
-will trigger the problem there.   
+Cheers,
 
-Lee
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
