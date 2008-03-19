@@ -1,51 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYCSXe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938396AbYCSXeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYCSXe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939512AbYCSWGR
+	id S938396AbYCSXeE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161524AbYCSWE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:06:17 -0400
-Received: from el-out-1112.google.com ([209.85.162.178]:4408 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161553AbYCSWGP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:06:15 -0400
-Message-ID: <7e0fb38c0803181635t7b629bc4x707e4083b1c81edf@mail.gmail.com>
-Date: Tue, 18 Mar 2008 19:35:08 -0400
-From: "Eric Paris" <eparis@parisplace.org>
-To: "Pavel Emelyanov" <xemul@openvz.org>
-Subject: Re: [PATCH] Audit: netlink socket can be auto-bound to pid other than current->pid
-Cc: linux-audit@redhat.com, "Thomas Graf" <tgraf@suug.ch>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       aviro@redhat.com, sgrubb@redhat.com, akpm@osdl.org
-In-Reply-To: <7e0fb38c0803181629u4a6ff1d6ye83881ddf0e96d48@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Mar 2008 18:04:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52299 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161516AbYCSWEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:04:54 -0400
+Date: Wed, 19 Mar 2008 18:05:11 -0500 (EST)
+Message-Id: <20080319.180511.70226434.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
+       linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [RFC PATCH 00/13] request stacking and request-based dm-multipath
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47DF8A30.5010602@openvz.org>
-	 <7e0fb38c0803181629u4a6ff1d6ye83881ddf0e96d48@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/18/08, Eric Paris <eparis@parisplace.org> wrote:
-> On 3/18/08, Pavel Emelyanov <xemul@openvz.org> wrote:
+Hi Jens, Mike, Hannes, Alasdair and list,
 
->  >  @@ -626,6 +628,7 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
->  >                                                         sid, 1);
->  >
->  >                         audit_pid = new_pid;
->  >  +                       audit_nlk_pid = NETLINK_CB(skb).pid;
->  >                 }
->  >                 if (status_get->mask & AUDIT_STATUS_RATE_LIMIT)
->  >                         err = audit_set_rate_limit(status_get->rate_limit,
+This is a new version of request-based dm-multipath patches,
+updated based on discussions and comments at LSF'08.
+The patches are created on top of 2.6.25-rc5.
 
-Shouldn't the above be:
+Major changes from the previous version (*) are:
+    - Request stacking drivers clone both request and bio, and
+      use both rq->end_io and bio->bi_end_io for request stacking
+    - Request stacking drivers use blk_complete_request() and
+      complete request in a softirq context, which doesn't have
+      queue lock, to avoid some deadlock issues
+    (*) http://lkml.org/lkml/2008/2/15/411
 
-if (audit_pid)
-    audit_nlk_pid = NETLINK_CB(skb).pid;
-else
-   audit_nlk_pid = 0;
+Some basic function/performance testings are done with NEC iStorage,
+which is active-active multipath, and no problem was found.
 
-otherwise I don't see how you can cleanly stop the userspace auditd.....
+
+Jens,
+The first 4 patches are for the block layer.  Are they acceptable?
+
+
+Alasdair,
+Request stacking design affects dm implementaion a lot.
+If you have any objection on the design of dm side, please let me
+know on this version since I'd like to fix the design and proceed
+further dm implementation.
+
+
+Summary of the patch-set:
+  01/13: block: add request data completion interface
+  02/13: block: add request submission interface
+  03/13: block: export driver's busy state via queue flag (and an example)
+  04/13: block: export blk_register_queue()
+  05/13: dm: remove dead code (preparation for request-based dm)
+  06/13: dm: tidy local_init (preparation for request-based dm)
+  07/13: dm: prepare mempools on module init for request-based dm
+  08/13: dm: add target interface for request-based dm
+  09/13: dm: add core functions for request-based dm
+  10/13: dm: add a switch to enable request-based dm if target is ready
+  11/13: dm: reject bad table load for request-based dm
+  12/13: dm-mpath: add hw-handler interface for request-based dm
+  13/13: dm-mpath: convert to request-based from bio-based
+
+Summary of the design and request-based dm-multipath are below.
+
+
+BACKGROUND
+==========
+Currently, device-mapper (dm) is implemented as a stacking block device
+at bio level.  This bio-based implementation has an issue below
+on dm-multipath.
+
+    Because hook for I/O mapping is above block layer __make_request(),
+    contiguous bios can be mapped to different underlying devices
+    and these bios aren't merged into a request.
+    Dynamic load balancing could happen this situation, though
+    it has not been implemented yet.
+    Therefore, I/O mapping after bio merging is needed for better
+    dynamic load balancing.
+
+The basic idea to resolve the issue is to move multipathing layer
+down below the I/O scheduler, and it was proposed from Mike Christie
+as the block layer (request-based) multipath:
+    http://marc.info/?l=linux-scsi&m=115520444515914&w=2
+
+Mike's patch added new block layer device for multipath and didn't
+have dm interface.  So I modified his patch to be used from dm.
+It is request-based dm-multipath.
+
+
+DESIGN OVERVIEW
+===============
+While currently dm and md stacks block devices at bio level,
+request-based dm stacks at request level and submits/completes
+struct request instead of struct bio.
+
+
+Overview of the request-based dm patch:
+  - Mapping is done in a unit of struct request, instead of struct bio
+  - Hook for I/O mapping is at q->request_fn() after merging and
+    sorting by I/O scheduler, instead of q->make_request_fn().
+  - Hook for I/O completion is at bio->bi_end_io() and rq->end_io(),
+    instead of only bio->bi_end_io()
+                  bio-based (current)     request-based (this patch)
+      ------------------------------------------------------------------
+      submission  q->make_request_fn()    q->request_fn()
+      completion  bio->bi_end_io()        bio->bi_end_io(), rq->end_io()
+  - Whether the dm device is bio-based or request-based is determined
+    at table loading time
+  - Keep user interface same (table/message/status)
+  - Any bio-based devices (like dm/md) can be stacked on request-based
+    dm device.
+    Request-based dm device *cannot* be stacked on any bio-based device.
+
+
+Expected benefit:
+  - better load balancing
+
+
+Additional explanations:
+
+Why does request-based dm use bio->bi_end_io(), too?
+Because:
+  - dm needs to keep not only the request but also bios of the request,
+    if dm target drivers want to retry or do something on the request.
+    For example, dm-multipath has to check errors and retry with other
+    paths if necessary before returning the I/O result to the upper layer.
+
+  - But rq->end_io() is called at the very late stage of completion
+    handling where all bios in the request have been completed and
+    the I/O results are already returned to the upper layer.
+So request-based dm hooks bio->bi_end_io() and doesn't complete the bio
+in error cases, and gives over the error handling to rq->end_io() hook.
+
+
+TODO
+====
+  - dm generic interface for dynamic load balancing
+  - dynamic load balancer using the interface
+
+Thanks,
+Kiyoshi Ueda
