@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbYCSUzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935429AbYCSUyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbYCSUzr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759426AbYCSTtS
+	id S935429AbYCSUyy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbYCSTtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:49:18 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:50065 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759399AbYCSTtQ (ORCPT
+	Wed, 19 Mar 2008 15:49:10 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34756 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756135AbYCSTtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:49:16 -0400
-Message-ID: <47E0312C.3040805@emulex.com>
-Date: Tue, 18 Mar 2008 17:16:28 -0400
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 19 Mar 2008 15:49:08 -0400
+Date: Wed, 19 Mar 2008 01:29:32 -0400
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+To: guilt@josefsipek.net
+Cc: linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: [ANNOUNCE] Guilt v0.29
+Message-ID: <20080319052932.GC11349@josefsipek.net>
 MIME-Version: 1.0
-To: lkml@foss.daxal.com
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Fibre channel network interfaces + Linux SAN
-References: <47E01DB3.90307@emulex.com>
-In-Reply-To: <47E01DB3.90307@emulex.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Mar 2008 21:16:29.0126 (UTC) FILETIME=[54F2AE60:01C8893D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott,
+Guilt v0.29 is available for download (once it mirrors out on kernel.org).
 
-Re: IP networking on FC
-It is possible, and Emulex has had product in the past for this. However, we've
-never had enough interest to warrant the work needed to get it up on 2.6.
-In general, there's very little interest in it anymore.
+Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
+queues-like functionality and interface to git.
 
-Re: LVM on FC
-The LVM on FC scsi disks should be normal. The more interesting part is the boot
-part. Boot support means getting the expansion rom driver configured properly
-(whether that be BIOS, EFI, or OpenBoot). If you go to the Emulex support/download
-page, and look for firmware for your adapter, there is documentation on the setting
-boot devices, etc. You will need to be careful that the disk is either used on its
-own or as a mirror, it can't be used as a raid set.  Further boot specifics should
-defer to grub (or your favorite boot loader) and LVM.  Outside the expansion rom
-driver setup, the fact that it's FC should not matter, and it should look like a
-normal scsi disk.   And now the bad news... the LP8000 is rather old, it may be EOL'd,
-so you may not find the latest boot firmware, and you would be stuck with whatever
-is on the adapter, or find a newer one.
+Tarballs:
+http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
+
+Git repo:
+git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
 
 
--- james s
+This release is quite uneventful.  It is made up of a few fixes here and
+there, and complete regression suite rewrite.  Unfortunately, most of the
+exciting Guilt development went on in a topic branch, but the changes are
+far too invasive for me to include them in v0.29, so I'm going to merge that
+in for v0.30.
 
+As always, patches, and other feedback is welcome.
 
+Josef "Jeff" Sipek.
 
+------------
+Changes since v0.28:
 
-Scott Edwards wrote:
-> Two things I'm trying to solve with my fc hardware.  How do I enable these
-> for IP networking, and how do I offer say lvm logical volumes behind Linux
-> as a SAN? I'd like nodes to be bootable and offer specific volumes as their
-> disks.  I'm using 2.6.28
-
+Josef 'Jeff' Sipek (20):
+      repair: new command to repair repository state
+      patchbomb: Git parses the patch mboxes and extracts Cc lines automatically
+      push: fix whitespace handling
+      regression: rewrote regression suite core
+      regression: test 010: test the init code
+      regression: test 011: test failure of commands on non-init'd repo
+      regression: test 020: test push code
+      regression: test 023: test top code
+      regression: test 021: test pop code
+      regression: test 060: test files code
+      regression: test 022: test applied code
+      regression: test 024: test unapplied code
+      regression: test 025: test new code
+      regression: test 026: test delete code
+      regression: test 027: test refresh code
+      push: output current patch name, not cmd-line argument
+      Use 'git <cmd>' instead of 'git-cmd'
+      header: fix patch name existence in the series
+      regression: add tests for guilt-header
+      Guilt v0.29
