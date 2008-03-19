@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbYCSTqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbYCSTn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758726AbYCSTqd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbYCSTbv
+	id S1753083AbYCSTn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbYCSTbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:31:51 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:33184 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755492AbYCSTbt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:31:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=LhqwROepd2su9UWkZYeIxdPt59DP6U7QGn7FaQmF2lAN6PgoDiuJsZ+QtIcJD9CJ4TsLawVgv8F+4umG7rKHzr3bI23V3S4ALOwihg5AZmRh0gWWQFPFPTGJBRWE/eO36/ekIduW5eO0FHkkViia9DdF20v4540svKEjjnbUqGM=
-From: "Roy Lee" <roylee17@gmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] give elf_check_arch() a chance for checking endian mismatch
-Date: Thu, 20 Mar 2008 03:03:30 +0800
-Message-ID: <000101c889f3$ef5989e0$ce0c9da0$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AciJ8+tA8DXMgPtoSTqggwH1ilCc0w==
-Content-Language: zh-tw
+	Wed, 19 Mar 2008 15:31:00 -0400
+Received: from mga03.intel.com ([143.182.124.21]:25828 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755276AbYCSTax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:30:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
+   d="scan'208";a="220204542"
+Message-Id: <20080319000100.552111000@intel.com>
+References: <20080319000012.439150000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Mar 2008 17:00:23 -0700
+From: venkatesh.pallipadi@intel.com
+To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 11/13] x86: PAT Add set_memory_wc() interface
+Content-Disposition: inline; filename=set_memory_wc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd like to warn for endianess mismatch, or unsupported feature( hardware
-float point support) when loading an ELF file.
-The problem is that if the endianess mismatches happens, the logic inside
-the elf_check_arch() won't have a chance to be executed.
-Because the "elf_ex.e_type" would be misinterpreted and the elf_check_arch()
-will be skipped.
-This patch should give elf_check_arch() more chance to do some machine
-dependent checking.
+Add a set_memory_wc interface(), similar to set_memory_uc interface.
+Callers has to call set_memory_uc, set_memory_wb and
+set_memory_wc, set_memory_wb as pairs.
 
-Roy
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 672a3b9..2ffbe49 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -567,10 +567,10 @@ static int load_elf_binary(struct linux_binprm *bprm,
-struct pt_regs *regs)
-        if (memcmp(loc->elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
-                goto out;
+Index: linux-2.6-x86.git/arch/x86/mm/pageattr.c
+===================================================================
+--- linux-2.6-x86.git.orig/arch/x86/mm/pageattr.c	2008-03-18 03:23:49.000000000 -0700
++++ linux-2.6-x86.git/arch/x86/mm/pageattr.c	2008-03-18 03:53:45.000000000 -0700
+@@ -788,6 +788,25 @@
+ }
+ EXPORT_SYMBOL(set_memory_uc);
+ 
++int _set_memory_wc(unsigned long addr, int numpages)
++{
++	return change_page_attr_set(addr, numpages,
++				    __pgprot(_PAGE_CACHE_WC));
++}
++
++int set_memory_wc(unsigned long addr, int numpages)
++{
++	if (!pat_wc_enabled)
++		return set_memory_uc(addr, numpages);
++
++	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
++		_PAGE_CACHE_WC, NULL))
++		return -EINVAL;
++
++	return _set_memory_wc(addr, numpages);
++}
++EXPORT_SYMBOL(set_memory_wc);
++
+ int _set_memory_wb(unsigned long addr, int numpages)
+ {
+ 	return change_page_attr_clear(addr, numpages,
+Index: linux-2.6-x86.git/include/asm-x86/cacheflush.h
+===================================================================
+--- linux-2.6-x86.git.orig/include/asm-x86/cacheflush.h	2008-03-18 03:21:25.000000000 -0700
++++ linux-2.6-x86.git/include/asm-x86/cacheflush.h	2008-03-18 03:53:45.000000000 -0700
+@@ -35,8 +35,10 @@
+ int set_pages_rw(struct page *page, int numpages);
+ 
+ int _set_memory_uc(unsigned long addr, int numpages);
++int _set_memory_wc(unsigned long addr, int numpages);
+ int _set_memory_wb(unsigned long addr, int numpages);
+ int set_memory_uc(unsigned long addr, int numpages);
++int set_memory_wc(unsigned long addr, int numpages);
+ int set_memory_wb(unsigned long addr, int numpages);
+ int set_memory_x(unsigned long addr, int numpages);
+ int set_memory_nx(unsigned long addr, int numpages);
 
--       if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type != ET_DYN)
--               goto out;
-        if (!elf_check_arch(&loc->elf_ex))
-                goto out;
-+       if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type != ET_DYN)
-+               goto out;
-        if (!bprm->file->f_op||!bprm->file->f_op->mmap)
-                goto out;
-
-
+-- 
