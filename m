@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941642AbYCSWvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941689AbYCSWw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941642AbYCSWvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbYCSVUR
+	id S941689AbYCSWw0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbYCSVUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:20:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55949 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765559AbYCSVUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:20:11 -0400
+	Wed, 19 Mar 2008 17:20:21 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2249 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1765596AbYCSVUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:20:14 -0400
+Date: Tue, 18 Mar 2008 22:33:31 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>, <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+In-Reply-To: <200803190108.05004.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803182228520.10154-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH 5/8] sparc64 ptrace: forced_successful_syscall_return()
-In-Reply-To: Roland McGrath's message of  Wednesday, 19 March 2008 14:17:14 -0700 <20080319211714.8B14226F995@magilla.localdomain>
-References: <20080319211714.8B14226F995@magilla.localdomain>
-X-Windows: let it get in *your* way.
-Message-Id: <20080319212001.2DB8526F995@magilla.localdomain>
-Date: Wed, 19 Mar 2008 14:20:01 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define the forced_successful_syscall_return() macro to
-pair with our force_successful_syscall_return() definition.
+On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- include/asm-sparc64/ptrace.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
+> use S5 instead of entering S4, the fan doesn't work correctly after the
+> resume.  Plain and simple.
+> 
+> Perhaps there's a problem with our ACPI drivers that causes this to happen,
+> but I have no idea what that can be at the moment.
 
-diff --git a/include/asm-sparc64/ptrace.h b/include/asm-sparc64/ptrace.h
-index 6da1978..3f8826e 100644
---- a/include/asm-sparc64/ptrace.h
-+++ b/include/asm-sparc64/ptrace.h
-@@ -100,6 +100,8 @@ struct sparc_trapf {
- #define force_successful_syscall_return()	    \
- do {	current_thread_info()->syscall_noerror = 1; \
- } while (0)
-+#define forced_successful_syscall_return()	\
-+	(current_thread_info()->syscall_noerror != 0)
- #define user_mode(regs) (!((regs)->tstate & TSTATE_PRIV))
- #define instruction_pointer(regs) ((regs)->tpc)
- #define regs_return_value(regs) ((regs)->u_regs[UREG_I0])
+IMO it would be worthwhile to track this down.  It's a clear indication 
+that something is wrong somewhere.
+
+Could it be connected with the way the boot kernel hands control over
+to the image kernel?  Presumably ACPI isn't prepared to deal with that
+sort of thing during a boot from S5.  It would have to be fooled into
+thinking the two kernels were one and the same.
+
+Alan Stern
+
