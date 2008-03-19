@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940492AbYCSWT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940555AbYCSWT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940492AbYCSWT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbYCSUwT
+	id S940555AbYCSWT5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbYCSUwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 19 Mar 2008 16:52:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:64314 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964985AbYCSUwT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Mar 2008 16:52:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57764 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964981AbYCSUwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:52:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: ACPI lockdep warning on boot, 2.6.25-rc5
-Date: Wed, 19 Mar 2008 21:51:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <E1JZOGd-00057d-BU@pomaz-ex.szeredi.hu> <20080315131611.GA4828@ucw.cz> <20080319200931.GA1525@linux-os.sc.intel.com>
-In-Reply-To: <20080319200931.GA1525@linux-os.sc.intel.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.25-rc4
+Date: Wed, 19 Mar 2008 12:14:02 +0100
+User-Agent: KMail/1.9.9
+Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803190503.27719.bzolnier@gmail.com> <alpine.LFD.1.00.0803182135570.3020@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803182135570.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200803191214.03035.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803192151.59720.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 19 of March 2008, Venki Pallipadi wrote:
-> On Sat, Mar 15, 2008 at 02:16:11PM +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > @@ -421,7 +423,9 @@
-> > >  		else
-> > >  			acpi_safe_halt();
-> > >  
-> > > -		local_irq_enable();
-> > > +		if (irqs_disabled())
-> > > +			local_irq_enable();
-> > > +
-> > >  		return;
-> > >  	}
-> > >  
-> > > @@ -530,7 +534,9 @@
-> > >  		 *       skew otherwise.
-> > >  		 */
-> > >  		sleep_ticks = 0xFFFFFFFF;
-> > > -		local_irq_enable();
-> > > +		if (irqs_disabled())
-> > > +			local_irq_enable();
-> > > +
-> > >  		break;
-> > >  
-> > >  	case ACPI_STATE_C2:
-> > 
-> > That's pretty ugly. Could the code be modified to have interrupt
-> > consistent at this point?
-> > 
+On Wednesday 19 March 2008, Linus Torvalds wrote:
 > 
-> Agreed that this is not very clean. The problem is that we cannot be sure
-> about the interrupt state at this point as the low level idle handlers at
-> this point can come from variety of different places like safe_halt, arch
-> dependent pm_idle code (which is different for (32 and 64 bit at this point)
-> and also pm_idle can be somewhere outside the kernel in some module as it is
-> a function pointer.
+> On Wed, 19 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > Your patch is more robust and we should go with it
+> > (and thanks for fixing this bug!).
+> 
+> Ok, I committed the patch as-is, since it's what Anders tested, but I'm 
+> not at all convinced that it is necessarily the best or final form. The 
 
-Well, I'd add a comment that this is to make lockdep happy.  Otherwise it looks
-bizarre.
+Thanks.
 
-Thanks,
-Rafael
+> things I am aware of but didn't think about all *that* deeply:
+> 
+>  - do we get return values etc right (ie if we complete the command that 
+>    didn't give any data, how do we account the size of it?)
+
+Yeah, closer look would be needed there.
+
+>  - what about that remaining old unexpected case? I kept the "wait for it 
+>    with timeout" behaviour for the case that wasn't an issue here, but if 
+>    it really is a shared interrupt, that seems like it's going to always 
+>    reset the timeout to WAIT_WORSTCASE, which doesn't sound really right.
+
+This shared IRQs quirk should no longer be necessary so probably the best
+way to handle BSY there would be to give drive some last chance and if it
+is still BSY treat is as error.
+
+> so I think this particular bug is fixed and we should be better off, but 
+> I'm definitely not claiming that the code shouldn't have people thinking 
+> about improving it..
+
+Definitevely, I'll try to address "old unexpected case" for 2.6.26
+(+ I'll keep looking for other issues as time permits) and of course
+I'll be happy to review/merge any patches improving this area.
+
+Bart
