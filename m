@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161339AbYCTAIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbYCTAKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161339AbYCTAIn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937551AbYCSXRJ
+	id S934633AbYCTAKT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764509AbYCSXVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 19:17:09 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:58617 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S941559AbYCSXRC (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 19:17:02 -0400
-Date: Thu, 20 Mar 2008 10:16:54 +1100
-From: David Chinner <dgc@sgi.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Buffered I/O to block device very slow and other SCSI issues...
-Message-ID: <20080319231654.GA103321673@sgi.com>
+	Wed, 19 Mar 2008 19:21:05 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60256 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965703AbYCSXVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 19:21:01 -0400
+Date: Thu, 20 Mar 2008 10:20:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, stern@rowland.harvard.edu,
+       lenb@kernel.org, greg@kroah.com, akpm@linux-foundation.org, rjw@sisk.pl
+Subject: Re: [Build Failure] linux-next: Tree for March 18
+Message-Id: <20080320102051.dceba604.sfr@canb.auug.org.au>
+In-Reply-To: <20080318132550.GB30500@shadowen.org>
+References: <20080318205259.13726d23.sfr@canb.auug.org.au>
+	<47DFA49D.4000007@linux.vnet.ibm.com>
+	<20080318132550.GB30500@shadowen.org>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__20_Mar_2008_10_20_51_+1100_OQZGzkAw=glLQVLd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-4p ia64, 24GB RAM, 2.6.25-rc3, qla1280, 15krpm scsi disk.
+--Signature=_Thu__20_Mar_2008_10_20_51_+1100_OQZGzkAw=glLQVLd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Direct I/O:
+Hi Andy,
 
-dgc@budgie:~/xfstests$ sudo dd if=/dev/zero of=/dev/sdb6 bs=1024k count=1024 oflag=direct
-1024+0 records in
-1024+0 records out
-1073741824 bytes (1.1 GB) copied, 27.8974 s, 38.5 MB/s
+On Tue, 18 Mar 2008 13:31:10 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
+>
+> This breakage is shown up when compiled with a config which doesn't have
+> CONFIG_PM set.  It is a common error to only test with that turned on
+> and I am sure that this is just one of a number of bugs that have been
+> picked up by real machine configs.
+>=20
+> Perhaps it would be worth having one of your integration test runs be
+> with a configuration with CONFIG_PM disabled so that they get detected
+> earlier in the process.
 
-Doing approximately 80 512k I/os per second (disk bandwidth).
+I have today changed from using powerpc allmodconfig to ppc64_defconfig
+which is faster (it was taking over 7-8 hours to create the linux-tree)
+and has CONFIG_PM disabled.  I am still also doing the x86_64
+allmodconfig build.
 
-Buffered I/O:
-
-dgc@budgie:~/xfstests$ sudo dd if=/dev/zero of=/dev/sdb6 bs=1024k count=4096
-4096+0 records in
-4096+0 records out
-4294967296 bytes (4.3 GB) copied, 427.872 s, 10.0 MB/s
-
-Which was doing about 200 64k I/Os per second for the entire write.
-Interactivity goes to hell, cpu usage is pretty much zero. I can
-barely run anything, I can't ctrl-c out of running programs, etc.
-
-It would appear that the block device is being flushed one sector at
-a time:
-
-  8,22   3     8757    26.699052800 12143  Q   W 9770471 + 1 [sync]
-  8,22   3     8760    26.699058050 12143  Q   W 9770472 + 1 [sync]
-  8,22   3     8763    26.699063300 12143  Q   W 9770473 + 1 [sync]
-  8,22   3     8766    26.699068900 12143  Q   W 9770474 + 1 [sync]
-  8,22   3     8769    26.699074150 12143  Q   W 9770475 + 1 [sync]
-  8,22   3     8772    26.699079400 12143  Q   W 9770476 + 1 [sync]
-  8,22   3     8775    26.699084650 12143  Q   W 9770477 + 1 [sync]
-  8,22   3     8778    26.699090200 12143  Q   W 9770478 + 1 [sync]
-  8,22   3     8781    26.699095600 12143  Q   W 9770479 + 1 [sync]
-  8,22   3     8784    26.699100800 12143  Q   W 9770480 + 1 [sync]
-  8,22   3     8787    26.699106100 12143  Q   W 9770481 + 1 [sync]
-  8,22   3     8790    26.699111700 12143  Q   W 9770482 + 1 [sync]
-  8,22   3     8793    26.699117000 12143  Q   W 9770483 + 1 [sync]
-  8,22   3     8796    26.699122250 12143  Q   W 9770484 + 1 [sync]
-  8,22   3     8799    26.699127500 12143  Q   W 9770485 + 1 [sync]
-  8,22   3     8802    26.699133100 12143  Q   W 9770486 + 1 [sync]
-  8,22   3     8805    26.699138450 12143  Q   W 9770487 + 1 [sync]
-
-And it's only combining into 128 sector I/Os. Something wrong
-with bio merging limiting the I/os to 128 elements? I'm using BSG
-here, so maybe that's a factor.....
-
-I also suspect that CTQ has not been set up correctly on this
-kernel, because:
-
-$ cat /sys/block/sdb/device/queue_depth
-3
-$ ls -l /sys/block/sdb/device/queue_depth
--r--r--r-- 1 root root 0 Mar 20 09:59 /sys/block/sdb/device/queue_depth
-$
-
-It appears to be hard coded to 3 and can't be changed....
-
-Hmmm:
-
-$ sudo sdparm -s WCE=1 /dev/sdb
-SCSI INQUIRY command failed on /dev/sdb
-$
-
-Did I miss some new config option, or are things just generally broken?
-
+--=20
 Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Dave.
+--Signature=_Thu__20_Mar_2008_10_20_51_+1100_OQZGzkAw=glLQVLd
+Content-Type: application/pgp-signature
 
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH4Z/XTgG2atn1QN8RAsKQAJ4xgufopeSF6tgVd3iLidljV/mI8QCbB4bK
+dMpmHqXJTfZQAd2ToYV7h4c=
+=onBh
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__20_Mar_2008_10_20_51_+1100_OQZGzkAw=glLQVLd--
