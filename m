@@ -1,145 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940725AbYCSWVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940793AbYCSWVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940725AbYCSWVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763121AbYCSU5X
+	id S940793AbYCSWVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763094AbYCSU5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:57:23 -0400
-Received: from pilet.ens-lyon.fr ([140.77.167.16]:42387 "EHLO
-	pilet.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763136AbYCSU5U (ORCPT
+	Wed, 19 Mar 2008 16:57:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42598 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935533AbYCSU5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:57:20 -0400
-X-Greylist: delayed 2036 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 16:57:19 EDT
-Date: Wed, 19 Mar 2008 21:23:19 +0100
-From: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: [PATCH] [TRIVIAL] ext*: spelling fix prefered -> preferred
-Message-ID: <20080319202319.GD6935@ens-lyon.fr>
+	Wed, 19 Mar 2008 16:57:45 -0400
+Date: Wed, 19 Mar 2008 21:58:12 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
+	patchset against -rc6)
+Message-ID: <20080319205812.GC1811@elf.ucw.cz>
+References: <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz> <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org> <20080319114851.GB21270@atrey.karlin.mff.cuni.cz> <alpine.LFD.1.00.0803190742450.3020@woody.linux-foundation.org> <20080319202323.GA1811@elf.ucw.cz> <47E178FE.6050500@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <47E178FE.6050500@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fix: prefered -> preferred
+On Wed 2008-03-19 23:35:10, Alexey Starikovskiy wrote:
+> Pavel Machek wrote:
+>> Hi!
+>>
+>>>> Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
+>>>> of drivers/acpi/ec.c patch fixed the
+>>>> "rc6-breaks-backlight-in-X-over-lid-close", good.
+>>> Can you clarify a bit?
+>>>
+>>> Do you mean that the full revert of 2c81ce4 that already got committed is 
+>>> sufficient for you, or do you need to totally undo everything we've done 
+>>> to ec.c since -rc5, and thus also to revert the _other_ revert we did (in 
+>>> 4af8e10a6c57e7292862bd1703712f0565c7e429)?
+>>
+>> I did some more testing, and realized I was wrong. We need to totally
+>> undo everything we've done to ec.c since -rc5... (that has small
+>> sideffect of brightness up/down keys no longer working -- regression
+>> since 2.6.24, but saves us from "backlight gone after
+>> closing/reopening lid" which is _NASTY_ regression from 2.6.25-rc5).
+>>
+>> ACPI sucks.
+>>
+>> I.e. this patch:
+>>
+>>
+>> Revert ec.c to 2.6.25-rc5 state:
+>>
+>> * this fixes backlight after closing/reopening the lid while in X on
+>> thinkpad x60
+>>
+>> * unfortunately it breaks fn-home/end keyboard brightness control
+> It should also break volume up/down/mute keys. Essentially all the keys on Thinkpad.
+> And it would also be regression to 2.6.24 level.
 
-Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
+As I explained above.
 
-diff -r 2202c155b8c3 -r ef957e3033e5 fs/ext2/ialloc.c
---- a/fs/ext2/ialloc.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/fs/ext2/ialloc.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -253,7 +253,7 @@
-  * it has too few free inodes left (min_inodes) or 
-  * it has too few free blocks left (min_blocks) or 
-  * it's already running too large debt (max_debt). 
-- * Parent's group is prefered, if it doesn't satisfy these 
-+ * Parent's group is preferred, if it doesn't satisfy these 
-  * conditions we search cyclically through the rest. If none 
-  * of the groups look good we just look for a group with more 
-  * free inodes than average (starting at parent's group). 
-diff -r 2202c155b8c3 -r ef957e3033e5 fs/ext2/inode.c
---- a/fs/ext2/inode.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/fs/ext2/inode.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -239,7 +239,7 @@
-  *	@inode: owner
-  *	@ind: descriptor of indirect block.
-  *
-- *	This function returns the prefered place for block allocation.
-+ *	This function returns the preferred place for block allocation.
-  *	It is used when heuristic for sequential allocation fails.
-  *	Rules are:
-  *	  + if there is a block to the left of our position - allocate near it.
-@@ -283,7 +283,7 @@
- }
- 
- /**
-- *	ext2_find_goal - find a prefered place for allocation.
-+ *	ext2_find_goal - find a preferred place for allocation.
-  *	@inode: owner
-  *	@block:  block we want
-  *	@partial: pointer to the last triple within a chain
-diff -r 2202c155b8c3 -r ef957e3033e5 fs/ext3/ialloc.c
---- a/fs/ext3/ialloc.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/fs/ext3/ialloc.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -239,7 +239,7 @@
-  * it has too few free inodes left (min_inodes) or
-  * it has too few free blocks left (min_blocks) or
-  * it's already running too large debt (max_debt).
-- * Parent's group is prefered, if it doesn't satisfy these
-+ * Parent's group is preferred, if it doesn't satisfy these
-  * conditions we search cyclically through the rest. If none
-  * of the groups look good we just look for a group with more
-  * free inodes than average (starting at parent's group).
-diff -r 2202c155b8c3 -r ef957e3033e5 fs/ext3/inode.c
---- a/fs/ext3/inode.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/fs/ext3/inode.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -392,7 +392,7 @@
-  *	@inode: owner
-  *	@ind: descriptor of indirect block.
-  *
-- *	This function returns the prefered place for block allocation.
-+ *	This function returns the preferred place for block allocation.
-  *	It is used when heuristic for sequential allocation fails.
-  *	Rules are:
-  *	  + if there is a block to the left of our position - allocate near it.
-@@ -436,12 +436,12 @@
- }
- 
- /**
-- *	ext3_find_goal - find a prefered place for allocation.
-+ *	ext3_find_goal - find a preferred place for allocation.
-  *	@inode: owner
-  *	@block:  block we want
-  *	@partial: pointer to the last triple within a chain
-  *
-- *	Normally this function find the prefered place for block allocation,
-+ *	Normally this function find the preferred place for block allocation,
-  *	returns it.
-  */
- 
-diff -r 2202c155b8c3 -r ef957e3033e5 fs/ext4/ialloc.c
---- a/fs/ext4/ialloc.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/fs/ext4/ialloc.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -305,7 +305,7 @@
-  * it has too few free inodes left (min_inodes) or
-  * it has too few free blocks left (min_blocks) or
-  * it's already running too large debt (max_debt).
-- * Parent's group is prefered, if it doesn't satisfy these
-+ * Parent's group is preferred, if it doesn't satisfy these
-  * conditions we search cyclically through the rest. If none
-  * of the groups look good we just look for a group with more
-  * free inodes than average (starting at parent's group).
-diff -r 2202c155b8c3 -r ef957e3033e5 fs/ext4/inode.c
---- a/fs/ext4/inode.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/fs/ext4/inode.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -382,7 +382,7 @@
-  *	@inode: owner
-  *	@ind: descriptor of indirect block.
-  *
-- *	This function returns the prefered place for block allocation.
-+ *	This function returns the preferred place for block allocation.
-  *	It is used when heuristic for sequential allocation fails.
-  *	Rules are:
-  *	  + if there is a block to the left of our position - allocate near it.
-@@ -432,12 +432,12 @@
- }
- 
- /**
-- *	ext4_find_goal - find a prefered place for allocation.
-+ *	ext4_find_goal - find a preferred place for allocation.
-  *	@inode: owner
-  *	@block:  block we want
-  *	@partial: pointer to the last triple within a chain
-  *
-- *	Normally this function find the prefered place for block allocation,
-+ *	Normally this function find the preferred place for block allocation,
-  *	returns it.
-  */
- static ext4_fsblk_t ext4_find_goal(struct inode *inode, ext4_lblk_t block,
+Unfortunately, applying this means I loose screen as soon as I
+close/reopen lid. 2.6.24 did not behave like that. And it makes my
+machine mostly unusable -- as soon as you try to carry it away, you
+loose video. BAD.
+								Pavel
 
 -- 
-:wq
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
