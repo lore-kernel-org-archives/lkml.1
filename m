@@ -1,125 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYCSVtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938926AbYCSVuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760669AbYCSVtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbYCSUSx
+	id S938926AbYCSVuz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932285AbYCSUUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:18:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57550 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758904AbYCSUSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:18:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
-Date: Wed, 19 Mar 2008 01:08:03 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
-       Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org> <200803140231.39282.rjw@sisk.pl> <m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
+	Wed, 19 Mar 2008 16:20:01 -0400
+Received: from TYO200.gate.nec.co.jp ([210.143.35.50]:62816 "EHLO
+	tyo200.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932283AbYCSUT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:19:59 -0400
+X-Greylist: delayed 2557 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 16:19:58 EDT
+Message-ID: <47E07846.9050707@bk.jp.nec.com>
+Date: Wed, 19 Mar 2008 11:19:50 +0900
+From: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       Serge Hallyn <serge@hallyn.com>
+Subject: Re: [PATCH] signals: check_kill_permission: check session under tasklist_lock
+References: <20080304185745.GA8482@tv-sign.ru> <47DE5665.2030802@bk.jp.nec.com> <20080317170124.GA115@tv-sign.ru> <20080318144431.GA3384@tv-sign.ru>
+In-Reply-To: <20080318144431.GA3384@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803190108.05004.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 18 of March 2008, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Oleg Nesterov wrote:
+> (on top of signals-cleanup-security_task_kill-usage-implementation.patch)
 > 
-> > On Friday, 14 of March 2008, Eric W. Biederman wrote:
-> >
-> >> > Still, it would be sufficient if we disconnected the drivers from the
-> > hardware
-> >> > and thus prevented applications from accessing that hardware.
-> >> 
-> >> My gut feeling is that except for a handful of drivers we could even
-> >> get away with simply implementing hot unplug and hot replug.  Disks
-> >> are the big exception here.
-> >> 
-> >> Which suggests to me that it is at least possible that the methods we
-> >> want for a kexec jump hibernation may be different from an in-kernel
-> >> hibernation and quite possibly are easier to implement.
-> >
-> > I'm not sure about the "easier" part, quite frankly.  Also, with our current
-> > ordering of code the in-kernel hibernation will need the same callbacks
-> > as the kexec-based thing.  However, with the in-kernel approach we can
-> > attempt (in the future) to be more ACPI compliant, so to speak, but with the
-> > kexec-based approach that won't be possible.
-> >
-> > Whether it's a good idea to follow ACPI, as far as hibernation is concerned, is
-> > a separate question, but IMO we won't be able to answer it without _lots_ of
-> > testing on vaious BIOS/firmware configurations.  Our experience so far
-> > indicates that at least some BIOSes expect us to follow ACPI and misbehave
-> > otherwise, so for those systems there should be an "ACPI way" available.
-> > [Others just don't work well if we try to follow ACPI and those may be handled
-> > using the kexec-based approach, but that doesn't mean that we can just ignore
-> > the ACPI compliance issue, at least for now.]
+> This wasn't documented, but as Atsushi Tsuji <a-tsuji@bk.jp.nec.com> pointed
+> out check_kill_permission() needs tasklist_lock for task_session_nr().
+> I missed this fact when removed tasklist from the callers.
 > 
-> If we do use the ACPI S4 state I completely agree we should be at
-> least spec compliant in how we use it.
-> 
-> I took a quick skim through my copy of the ACPI spec so I could get a
-> feel for this issue.  Hibernation maps to the ACPI S4 state.  The only
-> thing we appear to gain from S4 is the ability to tell the BIOS (so it
-> can tell a bootloader) that this was a hibernation power off instead
-> of simply a software power off.
-> 
-> It looks like entering the ACPI S4 state has a few advantages with
-> respect to how the system wakes up.  In general using the ACPI S5
-> state (soft off) appears simpler, and potentially more reliable.
-> 
-> The sequence we appear to want is:
-> - Disconnecting drivers from devices.
-> - Saving the image.
-> - Placing the system in a low power or off state.
-> 
-> - Coming out of the low power state.
-> - Restoring the image.
-> - Reconnecting drivers to devices.
->   (We must assume the device state could have changed here
->    no matter what we do)
-> 
-> It is mostly a matter of where we place the code.
-> 
-> Right now I don't see a limitation either with a kexec based approach
-> or without one.  Especially since the common case would be using
-> the same kernel with the same drivers both before and after the
-> hibernation event.
-> 
-> The low power states for S4 seem to be just so that we can
-> decide which devices have enough life that they can wake up
-> the system.  If we handle all of that as a second pass after
-> we have the system in a state where we have saved it we should
-> be in good shape.
-> 
-> My inclination is to just use S5 (soft off).
-> 
-> One of the cool things about hibernation to disk was that we were
-> supposed to get the BIOS totally out of that path so we could get
-> something that was rock solid and reliable.  I don't see why we should
-> use ACPI S4 when the BIOS doesn't seem to give us anything useful, and
-> causes us headaches we should even consider using S4.
-> 
-> Does using the S4 state have advantages that I currently do not
-> see?
-> 
-> Len? Rafael? Anyone?
+> Change check_kill_permission() to take tasklist_lock for the SIGCONT case.
+> Re-order security checks so that we take tasklist_lock only if/when it is
+> actually needed. This is a minimal fix for now, tasklist will be removed
+> later.
 
-Well, I've been saying that for I-don't-remember-how-long: on my box, if you
-use S5 instead of entering S4, the fan doesn't work correctly after the
-resume.  Plain and simple.
+Thanks, I confirmed the problem is fixed by this patch.
 
-Perhaps there's a problem with our ACPI drivers that causes this to happen,
-but I have no idea what that can be at the moment.
+> 
+> Also change the code to use task_session() instead of task_session_nr().
+> 
+> Also, remove the SIGCONT check from cap_task_kill(), it is bogus (and the
+> whole function is bogus. Serge, Eric, why it is still alive?).
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Thanks,
-Rafael
+Acked-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+
+> 
+> --- 25/kernel/signal.c~CKP_TAKE_TASKLIST	2008-03-18 14:47:00.000000000 +0300
+> +++ 25/kernel/signal.c	2008-03-18 17:25:19.000000000 +0300
+> @@ -533,6 +533,7 @@ static int rm_from_queue(unsigned long m
+>  static int check_kill_permission(int sig, struct siginfo *info,
+>  				 struct task_struct *t)
+>  {
+> +	struct pid *sid;
+>  	int error;
+>  
+>  	if (!valid_signal(sig))
+> @@ -545,11 +546,24 @@ static int check_kill_permission(int sig
+>  	if (error)
+>  		return error;
+>  
+> -	if (((sig != SIGCONT) || (task_session_nr(current) != task_session_nr(t)))
+> -	    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
+> -	    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
+> -	    && !capable(CAP_KILL))
+> -		return -EPERM;
+> +	if ((current->euid ^ t->suid) && (current->euid ^ t->uid) &&
+> +	    (current->uid  ^ t->suid) && (current->uid  ^ t->uid) &&
+> +	    !capable(CAP_KILL)) {
+> +		switch (sig) {
+> +		case SIGCONT:
+> +			read_lock(&tasklist_lock);
+> +			sid = task_session(t);
+> +			read_unlock(&tasklist_lock);
+> +			/*
+> +			 * We don't return the error if sid == NULL. The
+> +			 * task was unhashed, the caller must notice this.
+> +			 */
+> +			if (!sid || sid == task_session(current))
+> +				break;
+> +		default:
+> +			return -EPERM;
+> +		}
+> +	}
+>  
+>  	return security_task_kill(t, info, sig, 0);
+>  }
+> --- 25/security/commoncap.c~CKP_TAKE_TASKLIST	2008-03-18 17:07:02.000000000 +0300
+> +++ 25/security/commoncap.c	2008-03-18 17:21:10.000000000 +0300
+> @@ -552,10 +552,6 @@ int cap_task_kill(struct task_struct *p,
+>  	if (p->uid == current->uid)
+>  		return 0;
+>  
+> -	/* sigcont is permitted within same session */
+> -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+> -		return 0;
+> -
+>  	if (secid)
+>  		/*
+>  		 * Signal sent as a particular user.
