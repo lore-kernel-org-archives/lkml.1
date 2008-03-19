@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbYCSV7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYCSWDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761365AbYCSV7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932746AbYCSUXK
+	id S1761618AbYCSWDR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933026AbYCSUZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:23:10 -0400
-Received: from mga05.intel.com ([192.55.52.89]:1525 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932737AbYCSUXJ (ORCPT
+	Wed, 19 Mar 2008 16:25:45 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37382 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756882AbYCSUZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:23:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,521,1199692800"; 
-   d="scan'208";a="536102596"
-Subject: Re: volanoMark 12% regression with 2.6.25-rc6
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080318195807.GA26887@elte.hu>
-References: <1205831650.3215.569.camel@ymzhang>
-	 <20080318195807.GA26887@elte.hu>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 19 Mar 2008 10:07:00 +0800
-Message-Id: <1205892420.3215.594.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 16:25:42 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 19 Mar 2008 21:24:38 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: catch self_id_count == 0
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.b8cbad37fe2bba7b@s5r6.in-berlin.de>
+Message-ID: <tkrat.58fb745abe20f01d@s5r6.in-berlin.de>
+References: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
+ <tkrat.b8cbad37fe2bba7b@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-18 at 20:58 +0100, Ingo Molnar wrote:
-> * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> I wrote:
+>> --- linux.orig/drivers/firewire/fw-topology.c
+>> +++ linux/drivers/firewire/fw-topology.c
+>> @@ -513,6 +513,11 @@ fw_core_handle_bus_reset(struct fw_card 
+>>  
+>>  	fw_flush_transactions(card);
+>>  
+>> +	if (self_id_count == 0) {
+>> +		fw_destroy_nodes(card);
+>> +		return;
+>> +	}
 > 
-> > Comparing with 2.6.25-rc5, volanoMark has 12% regression with 
-> > 2.6.25-rc6 on my 8-core stoakley.
-> 
-> could you try sched/latest please? You can pick it up via:
-> 
->   http://people.redhat.com/mingo/sched-devel.git/README
-IT disables the git connections. I could use rsync, but it's slow to download from
-China.
+> We may also want to update some other card-> members, pull the topology
+> map down, and whatnot...
 
-Could you send me a patch against 2.6.25-rc6? Or just send me the kernel/sched*.c?
-
-yanmin
-
+Or instead of all this:
+Don't call fw_core_handle_bus_reset at all if self_id_count == 0?
+-- 
+Stefan Richter
+-=====-==--- --== =--==
+http://arcgraph.de/sr/
 
