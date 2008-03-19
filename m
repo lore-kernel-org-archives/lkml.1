@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162828AbYCSXGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbYCSXHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162828AbYCSXGb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935225AbYCSVb2
+	id S932253AbYCSXHK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbYCSVcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:31:28 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2264 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932549AbYCSVb0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:31:26 -0400
-Date: Tue, 18 Mar 2008 22:44:44 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
- hibernation callbacks
-In-Reply-To: <200803190204.07592.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803182233370.10154-100000@netrider.rowland.org>
+	Wed, 19 Mar 2008 17:32:19 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34685 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932651AbYCSVcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:32:15 -0400
+Message-ID: <47E1817D.9040708@suse.de>
+Date: Wed, 19 Mar 2008 22:11:25 +0100
+From: Stefan Seyfried <seife@suse.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20071114 SUSE/2.0.0.12-4 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: MAINTAINERS: bluez-devel is subscribers-only
+References: <20080319142703.GA25773@elf.ucw.cz> <20080319113943.a156e76e.akpm@linux-foundation.org> <20080319200628.GA12066@elf.ucw.cz>
+In-Reply-To: <20080319200628.GA12066@elf.ucw.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
-
-> In the meantime I had an IRC chat with Ben, who wanted a couple of quite
-> substantial changes to be made to this patch.
+Pavel Machek wrote:
+>> bluez-devel is apparently a spamhole too.  linux-bluetooth@vger.kernel.org
+>> has been set up and we're supposed to be migrating to it.
 > 
-> First, Ben thinks that ->prepare() should be called in a separate loop for
-> all devices, before any of them is suspended, so that drivers can assume the
-> availability of the other devices during ->prepare() (for example, so that they
-> can use GFP_KERNEL memory allocations).  Accordingly, ->complete() would
-> be called in a separate loop after calling ->resume() for all devices.
+> Subscribers-only spamhole is the most useless thing in the world, I
+> guess...
 
-In order to make this work, you would have to prevent new children from
-being registered starting from the time just after prepare() returns,
-rather than from the time just before suspend() is called.  Nothing is
-wrong with that, but it requires a redesign of the new flags.  (It's 
-worth mentioning that drivers will want to have a flag that gets set 
-just _before_ prepare() -- just _after_ is too late.)
+It only switched to subscribers-only after the vger list was established, and
+since then there is no spam on bluez-devel ;-)
+-- 
+Stefan Seyfried
+R&D Team Mobile Devices            |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg | "Well, surrounding them's out."
 
-In the other direction, it ought to be okay to allow new children to 
-be registered during resume().  There's no need to wait for complete().
-
-> Next, he wants the number of noirq callbacks to be reduced.
-
-I agree.  For example, there isn't much point in having prepare() and
-complete() entries for noirq.
-
-> Both of the above things make sense, so I'll rework the patch (or maybe even
-> all three patches) to implement them and we'll see how they will look like.
-
-Alan Stern
-
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
