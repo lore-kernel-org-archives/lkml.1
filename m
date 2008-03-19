@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939965AbYCSWLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759125AbYCSWMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939965AbYCSWLx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756574AbYCSUiG
+	id S1759125AbYCSWMd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964800AbYCSUio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:38:06 -0400
-Received: from gateway.drzeus.cx ([85.8.24.16]:35681 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758029AbYCSUiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:38:02 -0400
-Date: Tue, 18 Mar 2008 19:20:18 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: "Tomas Winkler" <tomasw@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, benzizbit@gmail.com
-Subject: Re: SDIO: IO-Ready Bit
-Message-ID: <20080318192018.1815fd57@mjolnir.drzeus.cx>
-In-Reply-To: <1ba2fa240803181043v511df0b6tbe43174feb2f7537@mail.gmail.com>
-References: <1ba2fa240803180400y1d7a2740t2c21b8b73a755016@mail.gmail.com>
-	<20080318123325.0843b854@mjolnir.drzeus.cx>
-	<1ba2fa240803181043v511df0b6tbe43174feb2f7537@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-6176-1205864472-0001-2"
+	Wed, 19 Mar 2008 16:38:44 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37786 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756873AbYCSUin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:38:43 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 19 Mar 2008 21:37:42 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: fw-ohci: add self ID error check
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.a46eb70f34367db6@s5r6.in-berlin.de>
+Message-ID: <tkrat.463115f5f3763a98@s5r6.in-berlin.de>
+References: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
+ <tkrat.00038248cbf40b77@s5r6.in-berlin.de>
+ <tkrat.a46eb70f34367db6@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On 19 Mar, Stefan Richter wrote:
+> Discard self ID buffer contents if
+>   - the selfIDError flag is set,
+>   - any of the self ID packets has bit errors.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>  drivers/firewire/fw-ohci.c |   12 +++++++++---
+>  drivers/firewire/fw-ohci.h |    1 +
+>  2 files changed, 10 insertions(+), 3 deletions(-)
+> 
+> Index: linux/drivers/firewire/fw-ohci.c
+> ===================================================================
+> --- linux.orig/drivers/firewire/fw-ohci.c
+> +++ linux/drivers/firewire/fw-ohci.c
+> @@ -1060,20 +1060,26 @@ static void bus_reset_tasklet(unsigned l
+>  	ohci->node_id = reg & (OHCI1394_NodeID_busNumber |
+>  			       OHCI1394_NodeID_nodeNumber);
+>  
+> +	reg = reg_read(ohci, OHCI1394_SelfIDCount);
+> +	if (reg & OHCI1394_SelfIDCount_selfIDError) {
+> +		fw_error("inconsistent self IDs\n");
+> +		return;
+> +	}
+>  	/*
+>  	 * The count in the SelfIDCount register is the number of
+>  	 * bytes in the self ID receive buffer.  Since we also receive
+>  	 * the inverted quadlets and a header quadlet, we shift one
+>  	 * bit extra to get the actual number of self IDs.
+>  	 */
+> -
+> -	self_id_count = (reg_read(ohci, OHCI1394_SelfIDCount) >> 3) & 0x3ff;
+> +	self_id_count = (reg >> 3) & 0x3ff;
+>  	generation = (cond_le32_to_cpu(ohci->self_id_cpu[0]) >> 16) & 0xff;
+>  	rmb();
+>  
+>  	for (i = 1, j = 0; j < self_id_count; i += 2, j++) {
+> -		if (ohci->self_id_cpu[i] != ~ohci->self_id_cpu[i + 1])
+> +		if (ohci->self_id_cpu[i] != ~ohci->self_id_cpu[i + 1]) {
+>  			fw_error("inconsistent self IDs\n");
+> +			return;
+> +		}
+>  		ohci->self_id_buffer[j] =
+>  				cond_le32_to_cpu(ohci->self_id_cpu[i]);
+>  	}
+> Index: linux/drivers/firewire/fw-ohci.h
+> ===================================================================
+> --- linux.orig/drivers/firewire/fw-ohci.h
+> +++ linux/drivers/firewire/fw-ohci.h
+> @@ -30,6 +30,7 @@
+>  #define  OHCI1394_HCControl_softReset		0x00010000
+>  #define OHCI1394_SelfIDBuffer                 0x064
+>  #define OHCI1394_SelfIDCount                  0x068
+> +#define  OHCI1394_SelfIDCount_selfIDError	0x80000000
+>  #define OHCI1394_IRMultiChanMaskHiSet         0x070
+>  #define OHCI1394_IRMultiChanMaskHiClear       0x074
+>  #define OHCI1394_IRMultiChanMaskLoSet         0x078
+> 
 
---=_hera.drzeus.cx-6176-1205864472-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+-- 
+Stefan Richter
+-=====-==--- --== =--==
+http://arcgraph.de/sr/
 
-On Tue, 18 Mar 2008 19:43:40 +0200
-"Tomas Winkler" <tomasw@gmail.com> wrote:
-
-> On Tue, Mar 18, 2008 at 1:33 PM, Pierre Ossman <drzeus@drzeus.cx> wrote:
-> >
-> >  A better approach is to simply have the drivers for your subfunctions =
-synchronize things. Make sure noone calls sdio_enable_func() until the firm=
-ware has been loaded.
->=20
-> This could even be done from user space in case you want to use a
-> standard driver.
->=20
-> Won't this prevent us from compiling the drivers into kernel?
-> Second how this possible especially with standard driver as they are
-> loaded. I know you can enforce module loading but how can you enforce
-> probing order form user space?
-
-You can tell the kernel to not automatically attach drivers to devices.
-That way you can have a user space process control exactly the order
-and timing of things. I haven't played around with this feature myself
-though, so I can't really provide you with any good information on how
-to use it. You should be able to google up something useful.
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-6176-1205864472-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-
-iEYEARECAAYFAkfgB+gACgkQ7b8eESbyJLhWCgCeJJJoU/ZMMkjYSQjmnJ4Wcogi
-bTkAoMNjHV1QRhJ/PPXDv16Kzme4qdQh
-=sAgd
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-6176-1205864472-0001-2--
