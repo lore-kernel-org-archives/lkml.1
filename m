@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935714AbYCSW1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935739AbYCSW2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935714AbYCSW1x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965328AbYCSVDZ
+	id S935739AbYCSW2b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYCSVD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:03:25 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:25372 "EHLO
+	Wed, 19 Mar 2008 17:03:26 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:25533 "EHLO
 	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757975AbYCSVDU (ORCPT
+	with ESMTP id S1759785AbYCSVDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:03:20 -0400
+	Wed, 19 Mar 2008 17:03:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=reply-to:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:x-length:x-uid:date:content-type:content-transfer-encoding:message-id:from;
-        b=Ga4iTsXV+UldDGHNF3tLZvvCnMDpmBQTBh8I0Z2C7OL2OZ72lnXA0UM1kOiR+PBuqGVVtlon0brVJIwAn3ZGizzpHuh+tpcxkboSvmihifHmwI5K893ZZjdpjxyjDNBQglZYHtFZ6vvVX/AnvHZzsxFt3xHia2S4s/4h7yxAVSw=
+        b=nzJmCWucu0cPf+6eom0gdZl40S1hMxGN3cm56tSrixmPhAB0cMgqWaBg/jz/8951dZpKtO6ZPTPCXB86Ds8AB64+hty0gfkAFQSGzHKOIa11iXwnZF3y3y5sr+VnRg0esjldviJJKZR3WUgq6k99OO7uHWksl6BAAWkw3heYxbQ=
 Reply-To: yhlu.kernel@gmail.com
 To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 06/12] mm: fix alloc_bootmem_core to use fast searching for all nodes
+Subject: [PATCH 08/12] mm: allocate section_map for sparse_init
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Christoph Lameter <clameter@sgi.com>,
        kernel list <linux-kernel@vger.kernel.org>
@@ -24,78 +24,76 @@ References: <200803181237.33861.yhlu.kernel@gmail.com>
 In-Reply-To: <200803181237.33861.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-X-Length: 2934
-Date: Wed, 19 Mar 2008 14:04:10 -0700
+X-Length: 2734
+Date: Wed, 19 Mar 2008 14:04:31 -0700
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200803191404.10282.yhlu.kernel@gmail.com>
+Message-Id: <200803191404.31398.yhlu.kernel@gmail.com>
 From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] mm: fix alloc_bootmem_core to use fast searching for all nodes
+[PATCH] mm: allocate section_map for sparse_init
 
-make the nodes other than node 0 could use bdata->last_success for fast search too.
+allocate section_map in bootmem instead of using __initdata.
 
-we need to use __alloc_bootmem_core for vmemmap allocation for other nodes when
-numa and sparsemem/vmemmap are enabled.
+need to apply after
+	[PATCH] mm: fix boundary checking in free_bootmem_core
+	[PATCH] mm: make mem_map allocation continuous.
 
-also make fail_block path increase i with incr only needed after ALIGN to avoid
-extra increase when size is large than align.
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Index: linux-2.6/mm/bootmem.c
+Index: linux-2.6/mm/sparse.c
 ===================================================================
---- linux-2.6.orig/mm/bootmem.c
-+++ linux-2.6/mm/bootmem.c
-@@ -238,28 +238,32 @@ __alloc_bootmem_core(struct bootmem_data
- 	 * We try to allocate bootmem pages above 'goal'
- 	 * first, then we try to allocate lower pages.
+--- linux-2.6.orig/mm/sparse.c
++++ linux-2.6/mm/sparse.c
+@@ -285,8 +285,6 @@ struct page __init *sparse_early_mem_map
+ 	return NULL;
+ }
+ 
+-/* section_map pointer array is 64k */
+-static __initdata struct page *section_map[NR_MEM_SECTIONS];
+ /*
+  * Allocate the accumulated non-linear sections, allocate a mem_map
+  * for each and record the physical to section mapping.
+@@ -296,6 +294,9 @@ void __init sparse_init(void)
+ 	unsigned long pnum;
+ 	struct page *map;
+ 	unsigned long *usemap;
++	struct page **section_map;
++	int size;
++	int node;
+ 
+ 	/*
+ 	 * map is using big page (aka 2M in x86 64 bit)
+@@ -305,13 +306,17 @@ void __init sparse_init(void)
+ 	 * then in big system, the memmory will have a lot hole...
+ 	 * here try to allocate 2M pages continously.
  	 */
--	if (goal && goal >= bdata->node_boot_start && PFN_DOWN(goal) < end_pfn) {
--		preferred = goal - bdata->node_boot_start;
-+	preferred = 0;
-+	if (goal && PFN_DOWN(goal) < end_pfn) {
-+		if (goal > bdata->node_boot_start)
-+			preferred = goal - bdata->node_boot_start;
- 
- 		if (bdata->last_success >= preferred)
- 			if (!limit || (limit && limit > bdata->last_success))
- 				preferred = bdata->last_success;
--	} else
--		preferred = 0;
-+	}
- 
- 	preferred = PFN_DOWN(ALIGN(preferred, align)) + offset;
- 	areasize = (size + PAGE_SIZE-1) / PAGE_SIZE;
- 	incr = align >> PAGE_SHIFT ? : 1;
- 
- restart_scan:
--	for (i = preferred; i < eidx; i += incr) {
-+	for (i = preferred; i < eidx;) {
- 		unsigned long j;
++	size = sizeof(struct page *) * NR_MEM_SECTIONS;
++	section_map = alloc_bootmem(size);
++	if (!section_map)
++		panic("can not allocate section_map\n");
 +
- 		i = find_next_zero_bit(bdata->node_bootmem_map, eidx, i);
- 		i = ALIGN(i, incr);
- 		if (i >= eidx)
- 			break;
--		if (test_bit(i, bdata->node_bootmem_map))
-+		if (test_bit(i, bdata->node_bootmem_map)) {
-+			i += incr;
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
  			continue;
-+		}
- 		for (j = i + 1; j < i + areasize; ++j) {
- 			if (j >= eidx)
- 				goto fail_block;
-@@ -270,6 +274,8 @@ restart_scan:
- 		goto found;
- 	fail_block:
- 		i = ALIGN(j, incr);
-+		if (i == j)
-+			i += incr;
+ 		section_map[pnum] = sparse_early_mem_map_alloc(pnum);
  	}
  
- 	if (preferred > offset) {
+-
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
+ 			continue;
+@@ -327,6 +332,8 @@ void __init sparse_init(void)
+ 		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
+ 								usemap);
+ 	}
++
++	free_bootmem(__pa(section_map), size);
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
