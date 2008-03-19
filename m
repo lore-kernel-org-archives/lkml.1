@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933408AbYCSVmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938270AbYCSVnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933408AbYCSVmq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764537AbYCSULe
+	id S938270AbYCSVnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758462AbYCSUMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:11:34 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36594 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764517AbYCSULc (ORCPT
+	Wed, 19 Mar 2008 16:12:17 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37216 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764766AbYCSUMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:11:32 -0400
-Message-ID: <47E048F7.6010006@keyaccess.nl>
-Date: Tue, 18 Mar 2008 23:57:59 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 19 Mar 2008 16:12:16 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 19 Mar 2008 21:11:16 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: catch self_id_count == 0
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
+Message-ID: <tkrat.b8cbad37fe2bba7b@s5r6.in-berlin.de>
+References: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Tyson Whitehead <twhitehe@uwo.ca>
-CC: Bob Tracy <rct@frus.com>, Michael Cree <mcree@orcon.net.nz>,
-       Takashi Iwai <tiwai@suse.de>, ALSA devel <alsa-devel@alsa-project.org>,
-       linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080314131344.62A59DBA2@gherkin.frus.com> <200803142118.31974.twhitehe@uwo.ca> <47DEEB07.7010504@keyaccess.nl> <47DFC9E6.5050304@uwo.ca>
-In-Reply-To: <47DFC9E6.5050304@uwo.ca>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18-03-08 14:55, Tyson Whitehead wrote:
+I wrote:
+> --- linux.orig/drivers/firewire/fw-topology.c
+> +++ linux/drivers/firewire/fw-topology.c
+> @@ -513,6 +513,11 @@ fw_core_handle_bus_reset(struct fw_card 
+>  
+>  	fw_flush_transactions(card);
+>  
+> +	if (self_id_count == 0) {
+> +		fw_destroy_nodes(card);
+> +		return;
+> +	}
 
->> Could you attach that patch? Links I'm finding are to
+We may also want to update some other card-> members, pull the topology
+map down, and whatnot...
+-- 
+Stefan Richter
+-=====-==--- --== =--==
+http://arcgraph.de/sr/
 
-Thanks, interesting. I see Bob already tried this without luck though. Also 
-see you guys both have a ES1888, so somewhat odd.
 
-Rene.
