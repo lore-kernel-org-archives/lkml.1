@@ -1,85 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764474AbYCSWLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939899AbYCSWLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764474AbYCSWLH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759278AbYCSUfF
+	id S939899AbYCSWLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYCSUhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:35:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41054 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934088AbYCSUfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:35:01 -0400
-Date: Wed, 19 Mar 2008 19:44:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 19
-Message-Id: <20080319194423.ac73400e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__19_Mar_2008_19_44_23_+1100_Rd3y+OY/Xn0JtfZK"
+	Wed, 19 Mar 2008 16:37:11 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:3259 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760905AbYCSUhI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:37:08 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:to:subject:message-id:date:from;
+	b=aOhCNqb8PiYjqjC/ujXKVvHg+E2hkEpbptOmAB/lntuPE8cibsUzXSZTGWxkJasFo
+	FXwT9z8Ha+MnFzY4o5D2w==
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rossb@google.com
+Subject: [RFC][PATCH 1/2]: MM: Make Page Tables Reloctable: Conditional TLB Flush
+Message-Id: <20080319141829.1F2E4DC98D@localhost>
+Date: Wed, 19 Mar 2008 07:18:29 -0700 (PDT)
+From: rossb@google.com (Ross Biro)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__19_Mar_2008_19_44_23_+1100_Rd3y+OY/Xn0JtfZK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+These Patches make page tables relocatable for numa, memory
+defragmentation, and memory hotblug.  The potential need to rewalk the
+page tables before making any changes causes a 3% peformance
+degredation in the lmbench page miss micro benchmark.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+Signed-off-by:rossb@google.com
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-allmodconfig for both powerpc and x86_64.
+----
 
-I have started this tree by reverting the following:
-driver-core/driver-core-remove-no-longer-used-struct-class_device.patch
-	should be merged late
-driver-core/ib-convert-struct-class_device-to-struct-device.patch
-	conflicts with the infiniband tree
-driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
-	breaks non CONFIG_PM builds of drivers/serial/serial_core.c
+These patches are against 2.6.23 kernel.org kernel.
 
-There were a couple of merge conflicts (fairly trivial).  And four
-build breaks (two of which which actually happened yesterday/Monday but
-not in the configs I build).  Notifications have been sent.
+The lmbech results are available if any wants to see them.  This
+version of the patch is x86_64 specific.  The per archictecture part
+of the patch is limited to allocating new page tables and reloading
+the pgd. The main differences between this version and the previous
+one is that a flag in the MM is used to determine if the page tables
+need to be rewalked, a race when split page table locks were used was
+fixed, and per-arch page table allocation functions were used to
+allocate the new page tables.
 
-We are up to 48 trees, more are welcome (even if they are currently
-empty).  The influx of new trees has slowed completely.  Thanks to those
-who have contributed, and to those who haven't, please do.
+If there are no complaints, I intend to make a new version of these
+patches against the latest mm kernel, put some #ifdefs for supported vs
+unsuportted archs and request inclusion in the mm kernel.
 
-In particular, I have very few of the architecture trees ....
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/arm/kernel/smp.c 2.6.23a/arch/arm/kernel/smp.c
+--- 2.6.23/arch/arm/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/arm/kernel/smp.c	2008-01-24 07:16:31.000000000 -0800
+@@ -713,6 +713,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	cpumask_t mask = mm->cpu_vm_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, 1, mask);
+ }
+ 
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/avr32/mm/tlb.c 2.6.23a/arch/avr32/mm/tlb.c
+--- 2.6.23/arch/avr32/mm/tlb.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/avr32/mm/tlb.c	2008-01-24 07:16:38.000000000 -0800
+@@ -249,6 +249,8 @@ void flush_tlb_kernel_range(unsigned lon
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	/* Invalidate all TLB entries of this process by getting a new ASID */
+ 	if (mm->context != NO_CONTEXT) {
+ 		unsigned long flags;
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/cris/arch-v10/mm/tlb.c 2.6.23a/arch/cris/arch-v10/mm/tlb.c
+--- 2.6.23/arch/cris/arch-v10/mm/tlb.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/cris/arch-v10/mm/tlb.c	2008-01-24 07:16:44.000000000 -0800
+@@ -69,6 +69,8 @@ flush_tlb_mm(struct mm_struct *mm)
+ 
+ 	D(printk("tlb: flush mm context %d (%p)\n", page_id, mm));
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if(page_id == NO_CONTEXT)
+ 		return;
+ 	
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/cris/arch-v32/kernel/smp.c 2.6.23a/arch/cris/arch-v32/kernel/smp.c
+--- 2.6.23/arch/cris/arch-v32/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/cris/arch-v32/kernel/smp.c	2008-01-24 07:16:50.000000000 -0800
+@@ -237,6 +237,7 @@ void flush_tlb_all(void)
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
+ 	__flush_tlb_mm(mm);
+ 	flush_tlb_common(mm, FLUSH_ALL, 0);
+ 	/* No more mappings in other CPUs */
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/i386/kernel/smp.c 2.6.23a/arch/i386/kernel/smp.c
+--- 2.6.23/arch/i386/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/i386/kernel/smp.c	2008-01-24 07:16:55.000000000 -0800
+@@ -410,6 +410,8 @@ void flush_tlb_mm (struct mm_struct * mm
+ {
+ 	cpumask_t cpu_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 	cpu_mask = mm->cpu_vm_mask;
+ 	cpu_clear(smp_processor_id(), cpu_mask);
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/i386/mach-voyager/voyager_smp.c 2.6.23a/arch/i386/mach-voyager/voyager_smp.c
+--- 2.6.23/arch/i386/mach-voyager/voyager_smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/i386/mach-voyager/voyager_smp.c	2008-01-24 07:17:01.000000000 -0800
+@@ -924,6 +924,8 @@ flush_tlb_mm (struct mm_struct * mm)
+ {
+ 	unsigned long cpu_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 
+ 	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/alpha/kernel/smp.c 2.6.23a/arch/alpha/kernel/smp.c
+--- 2.6.23/arch/alpha/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/alpha/kernel/smp.c	2008-01-24 07:16:26.000000000 -0800
+@@ -850,6 +850,8 @@ flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	preempt_disable();
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (mm == current->active_mm) {
+ 		flush_tlb_current(mm);
+ 		if (atomic_read(&mm->mm_users) <= 1) {
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/ia64/kernel/smp.c 2.6.23a/arch/ia64/kernel/smp.c
+--- 2.6.23/arch/ia64/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/ia64/kernel/smp.c	2008-01-24 07:17:05.000000000 -0800
+@@ -325,6 +325,8 @@ smp_flush_tlb_all (void)
+ void
+ smp_flush_tlb_mm (struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 	/* this happens for the common case of a single-threaded fork():  */
+ 	if (likely(mm == current->active_mm && atomic_read(&mm->mm_users) == 1))
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/m32r/kernel/smp.c 2.6.23a/arch/m32r/kernel/smp.c
+--- 2.6.23/arch/m32r/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/m32r/kernel/smp.c	2008-01-24 07:17:10.000000000 -0800
+@@ -280,6 +280,8 @@ void smp_flush_tlb_mm(struct mm_struct *
+ 	unsigned long *mmc;
+ 	unsigned long flags;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 	cpu_id = smp_processor_id();
+ 	mmc = &mm->context[cpu_id];
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/mips/kernel/smp.c 2.6.23a/arch/mips/kernel/smp.c
+--- 2.6.23/arch/mips/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/mips/kernel/smp.c	2008-01-24 07:17:15.000000000 -0800
+@@ -387,6 +387,8 @@ static inline void smp_on_each_tlb(void 
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 
+ 	if ((atomic_read(&mm->mm_users) != 1) || (current->mm != mm)) {
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/powerpc/mm/tlb_32.c 2.6.23a/arch/powerpc/mm/tlb_32.c
+--- 2.6.23/arch/powerpc/mm/tlb_32.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/powerpc/mm/tlb_32.c	2008-01-24 07:17:19.000000000 -0800
+@@ -144,6 +144,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *mp;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (Hash == 0) {
+ 		_tlbia();
+ 		return;
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/ppc/mm/tlb.c 2.6.23a/arch/ppc/mm/tlb.c
+--- 2.6.23/arch/ppc/mm/tlb.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/ppc/mm/tlb.c	2008-01-24 07:17:23.000000000 -0800
+@@ -144,6 +144,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *mp;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (Hash == 0) {
+ 		_tlbia();
+ 		return;
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/sh64/mm/fault.c 2.6.23a/arch/sh64/mm/fault.c
+--- 2.6.23/arch/sh64/mm/fault.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/sh64/mm/fault.c	2008-01-24 07:17:28.000000000 -0800
+@@ -517,6 +517,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ 	++calls_to_flush_tlb_mm;
+ #endif
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (mm->context == NO_CONTEXT)
+ 		return;
+ 
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/sparc/kernel/smp.c 2.6.23a/arch/sparc/kernel/smp.c
+--- 2.6.23/arch/sparc/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/sparc/kernel/smp.c	2008-01-24 07:17:33.000000000 -0800
+@@ -163,6 +163,8 @@ void smp_flush_cache_mm(struct mm_struct
+ 
+ void smp_flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if(mm->context != NO_CONTEXT) {
+ 		cpumask_t cpu_mask = mm->cpu_vm_mask;
+ 		cpu_clear(smp_processor_id(), cpu_mask);
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/sparc64/kernel/smp.c 2.6.23a/arch/sparc64/kernel/smp.c
+--- 2.6.23/arch/sparc64/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/sparc64/kernel/smp.c	2008-01-24 07:17:37.000000000 -0800
+@@ -1112,6 +1112,8 @@ void smp_flush_tlb_mm(struct mm_struct *
+ 	u32 ctx = CTX_HWBITS(mm->context);
+ 	int cpu = get_cpu();
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (atomic_read(&mm->mm_users) == 1) {
+ 		mm->cpu_vm_mask = cpumask_of_cpu(cpu);
+ 		goto local_flush_and_out;
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/um/kernel/tlb.c 2.6.23a/arch/um/kernel/tlb.c
+--- 2.6.23/arch/um/kernel/tlb.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/um/kernel/tlb.c	2008-01-24 07:17:41.000000000 -0800
+@@ -402,6 +402,7 @@ void flush_tlb_range(struct vm_area_stru
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
+ 	CHOOSE_MODE_PROC(flush_tlb_mm_tt, flush_tlb_mm_skas, mm);
+ }
+ 
+diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/xtensa/mm/tlb.c 2.6.23a/arch/xtensa/mm/tlb.c
+--- 2.6.23/arch/xtensa/mm/tlb.c	2007-10-09 13:31:38.000000000 -0700
++++ 2.6.23a/arch/xtensa/mm/tlb.c	2008-01-24 07:17:46.000000000 -0800
+@@ -63,6 +63,8 @@ void flush_tlb_all (void)
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (mm == current->active_mm) {
+ 		int flags;
+ 		local_save_flags(flags);
 
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__19_Mar_2008_19_44_23_+1100_Rd3y+OY/Xn0JtfZK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH4NJvTgG2atn1QN8RAnwJAJ9ggf4CbTuLhL/1UsD2lr5EFLH6cACeP4RQ
-Atmc8+OJ/yLh0/8gcPTeHMw=
-=WBOW
------END PGP SIGNATURE-----
-
---Signature=_Wed__19_Mar_2008_19_44_23_+1100_Rd3y+OY/Xn0JtfZK--
