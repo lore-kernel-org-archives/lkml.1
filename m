@@ -1,318 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbYCSU1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYCSUfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759797AbYCSU1v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbYCSTjj
+	id S1753151AbYCSUfH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757794AbYCSTlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:39:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
+	Wed, 19 Mar 2008 15:41:32 -0400
+Received: from mga11.intel.com ([192.55.52.93]:13573 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757229AbYCSTjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:39:11 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
-       Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 41/79] [PATCH] unify nmi_32.h and nmi_64.h
-Date: Wed, 19 Mar 2008 14:25:36 -0300
-Message-Id: <12059477611736-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12059477561937-git-send-email-gcosta@redhat.com>
-References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
- costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
- -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
+	id S1755168AbYCSTla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:41:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
+   d="scan'208";a="536061933"
+Message-Id: <20080319000059.862269000@intel.com>
+References: <20080319000012.439150000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Mar 2008 17:00:20 -0700
+From: venkatesh.pallipadi@intel.com
+To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 08/13] x86: PAT phys_mem_access_prot_allowed for dev/mem mmap
+Content-Disposition: inline; filename=x86_phys_mem_access_prot.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Glauber Costa <gcosta@redhat.com>
+Introduce phys_mem_access_prot_allowed(), which checks whether the mapping
+is possible, without any conflicts and returns success or failure based on that.
+phys_mem_access_prot() by itself does not allow failure case. This ability
+to return error is needed for PAT where we may have aliasing conflicts.
 
-Two more files goes away. nmi_64.h and nmi_32.h gives birth
-to nmi.h
+x86 setup __HAVE_PHYS_MEM_ACCESS_PROT and move x86 specific code out of
+/dev/mem into arch specific area.
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/nmi_32.c |    2 +-
- include/asm-x86/nmi.h    |   92 ++++++++++++++++++++++++++++++++++++++++++++-
- include/asm-x86/nmi_32.h |   61 ------------------------------
- include/asm-x86/nmi_64.h |   88 --------------------------------------------
- 4 files changed, 90 insertions(+), 153 deletions(-)
- delete mode 100644 include/asm-x86/nmi_32.h
- delete mode 100644 include/asm-x86/nmi_64.h
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index aa6800f..daea273 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -67,7 +67,7 @@ static __init void nmi_cpu_busy(void *data)
+Index: linux-2.6-x86.git/arch/x86/mm/pat.c
+===================================================================
+--- linux-2.6-x86.git.orig/arch/x86/mm/pat.c	2008-03-18 03:11:03.000000000 -0700
++++ linux-2.6-x86.git/arch/x86/mm/pat.c	2008-03-18 09:20:33.000000000 -0700
+@@ -400,3 +400,42 @@
+ 	return err;
  }
- #endif
  
--static int __init check_nmi_watchdog(void)
-+int __init check_nmi_watchdog(void)
- {
- 	unsigned int *prev_nmi_count;
- 	int cpu;
-diff --git a/include/asm-x86/nmi.h b/include/asm-x86/nmi.h
-index 53ccac1..2b94199 100644
---- a/include/asm-x86/nmi.h
-+++ b/include/asm-x86/nmi.h
-@@ -1,5 +1,91 @@
--#ifdef CONFIG_X86_32
--# include "nmi_32.h"
-+#ifndef _ASM_X86_NMI_H_
-+#define _ASM_X86_NMI_H_
 +
-+#include <linux/pm.h>
-+#include <asm/irq.h>
-+#include <asm/io.h>
-+
-+#ifdef ARCH_HAS_NMI_WATCHDOG
-+
-+/**
-+ * do_nmi_callback
-+ *
-+ * Check to see if a callback exists and execute it.  Return 1
-+ * if the handler exists and was handled successfully.
-+ */
-+int do_nmi_callback(struct pt_regs *regs, int cpu);
-+
-+#ifdef CONFIG_PM
-+
-+/** Replace the PM callback routine for NMI. */
-+struct pm_dev *set_nmi_pm_callback(pm_callback callback);
-+
-+/** Unset the PM callback routine back to the default. */
-+void unset_nmi_pm_callback(struct pm_dev *dev);
-+
- #else
--# include "nmi_64.h"
-+
-+static inline struct pm_dev *set_nmi_pm_callback(pm_callback callback)
++/* /dev/mem interface. Use the previous mapping */
++pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++				unsigned long size, pgprot_t vma_prot)
 +{
-+	return 0;
++	return vma_prot;
 +}
 +
-+static inline void unset_nmi_pm_callback(struct pm_dev *dev)
++int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
++				unsigned long size, pgprot_t *vma_prot)
 +{
-+}
 +
-+#endif /* CONFIG_PM */
++	if (file->f_flags & O_SYNC) {
++		*vma_prot = pgprot_noncached(*vma_prot);
++		return 1;
++	}
 +
-+#ifdef CONFIG_X86_64
-+extern void default_do_nmi(struct pt_regs *);
-+extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
++#ifdef CONFIG_X86_32
++	/*
++	 * On the PPro and successors, the MTRRs are used to set
++	 * memory types for physical addresses outside main memory,
++	 * so blindly setting UC or PWT on those pages is wrong.
++	 * For Pentiums and earlier, the surround logic should disable
++	 * caching for the high addresses through the KEN pin, but
++	 * we maintain the tradition of paranoia in this code.
++	 */
++	if (!pat_wc_enabled &&
++	    ! ( test_bit(X86_FEATURE_MTRR, boot_cpu_data.x86_capability) ||
++		test_bit(X86_FEATURE_K6_MTRR, boot_cpu_data.x86_capability) ||
++		test_bit(X86_FEATURE_CYRIX_ARR, boot_cpu_data.x86_capability) ||
++		test_bit(X86_FEATURE_CENTAUR_MCR, boot_cpu_data.x86_capability)) &&
++	   (pfn << PAGE_SHIFT) >= __pa(high_memory)) {
++		*vma_prot = pgprot_noncached(*vma_prot);
++		return 1;
++	}
 +#endif
 +
-+extern int check_nmi_watchdog(void);
-+extern int nmi_watchdog_enabled;
-+extern int unknown_nmi_panic;
-+extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
-+extern int avail_to_resrv_perfctr_nmi(unsigned int);
-+extern int reserve_perfctr_nmi(unsigned int);
-+extern void release_perfctr_nmi(unsigned int);
-+extern int reserve_evntsel_nmi(unsigned int);
-+extern void release_evntsel_nmi(unsigned int);
-+extern void nmi_watchdog_default(void);
-+
-+extern void setup_apic_nmi_watchdog(void *);
-+extern void stop_apic_nmi_watchdog(void *);
-+extern void disable_timer_nmi_watchdog(void);
-+extern void enable_timer_nmi_watchdog(void);
-+extern int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason);
-+
-+extern atomic_t nmi_active;
-+extern unsigned int nmi_watchdog;
-+#define NMI_DISABLED    -1
-+#define NMI_NONE	0
-+#define NMI_IO_APIC	1
-+#define NMI_LOCAL_APIC	2
-+#define NMI_INVALID	3
-+#define NMI_DEFAULT	NMI_DISABLED
-+
-+struct ctl_table;
++	return 1;
++}
+Index: linux-2.6-x86.git/include/asm-x86/pgtable.h
+===================================================================
+--- linux-2.6-x86.git.orig/include/asm-x86/pgtable.h	2008-03-18 02:16:04.000000000 -0700
++++ linux-2.6-x86.git/include/asm-x86/pgtable.h	2008-03-18 09:20:25.000000000 -0700
+@@ -205,6 +205,15 @@
+ 
+ #define canon_pgprot(p) __pgprot(pgprot_val(p) & __supported_pte_mask)
+ 
++#ifndef __ASSEMBLY__
++#define __HAVE_PHYS_MEM_ACCESS_PROT
 +struct file;
-+extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
-+			void __user *, size_t *, loff_t *);
-+extern int unknown_nmi_panic;
-+
-+void __trigger_all_cpu_backtrace(void);
-+#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
-+
++pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++                              unsigned long size, pgprot_t vma_prot);
++int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
++                              unsigned long size, pgprot_t *vma_prot);
 +#endif
 +
-+void lapic_watchdog_stop(void);
-+int lapic_watchdog_init(unsigned nmi_hz);
-+int lapic_wd_event(unsigned nmi_hz);
-+unsigned lapic_adjust_nmi_hz(unsigned hz);
-+int lapic_watchdog_ok(void);
-+void disable_lapic_nmi_watchdog(void);
-+void enable_lapic_nmi_watchdog(void);
-+void stop_nmi(void);
-+void restart_nmi(void);
-+
- #endif
-diff --git a/include/asm-x86/nmi_32.h b/include/asm-x86/nmi_32.h
-deleted file mode 100644
-index 7206c7e..0000000
---- a/include/asm-x86/nmi_32.h
-+++ /dev/null
-@@ -1,61 +0,0 @@
--#ifndef ASM_NMI_H
--#define ASM_NMI_H
--
--#include <linux/pm.h>
--#include <asm/irq.h>
--
--#ifdef ARCH_HAS_NMI_WATCHDOG
--
--/**
-- * do_nmi_callback
-- *
-- * Check to see if a callback exists and execute it.  Return 1
-- * if the handler exists and was handled successfully.
-- */
--int do_nmi_callback(struct pt_regs *regs, int cpu);
--
--extern int nmi_watchdog_enabled;
--extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
--extern int avail_to_resrv_perfctr_nmi(unsigned int);
--extern int reserve_perfctr_nmi(unsigned int);
--extern void release_perfctr_nmi(unsigned int);
--extern int reserve_evntsel_nmi(unsigned int);
--extern void release_evntsel_nmi(unsigned int);
--
--extern void setup_apic_nmi_watchdog (void *);
--extern void stop_apic_nmi_watchdog (void *);
--extern void disable_timer_nmi_watchdog(void);
--extern void enable_timer_nmi_watchdog(void);
--extern int nmi_watchdog_tick (struct pt_regs * regs, unsigned reason);
--
--extern atomic_t nmi_active;
--extern unsigned int nmi_watchdog;
--#define NMI_DISABLED    -1
--#define NMI_NONE	0
--#define NMI_IO_APIC	1
--#define NMI_LOCAL_APIC	2
--#define NMI_INVALID	3
--#define NMI_DEFAULT	NMI_DISABLED
--
--struct ctl_table;
--struct file;
--extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
--			void __user *, size_t *, loff_t *);
--extern int unknown_nmi_panic;
--
--void __trigger_all_cpu_backtrace(void);
--#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
--
--#endif
--
--void lapic_watchdog_stop(void);
--int lapic_watchdog_init(unsigned nmi_hz);
--int lapic_wd_event(unsigned nmi_hz);
--unsigned lapic_adjust_nmi_hz(unsigned hz);
--int lapic_watchdog_ok(void);
--void disable_lapic_nmi_watchdog(void);
--void enable_lapic_nmi_watchdog(void);
--void stop_nmi(void);
--void restart_nmi(void);
--
--#endif /* ASM_NMI_H */
-diff --git a/include/asm-x86/nmi_64.h b/include/asm-x86/nmi_64.h
-deleted file mode 100644
-index 94a5b19..0000000
---- a/include/asm-x86/nmi_64.h
-+++ /dev/null
-@@ -1,88 +0,0 @@
--#ifndef ASM_NMI_H
--#define ASM_NMI_H
--
--#include <linux/pm.h>
--#include <asm/io.h>
-- 
--/**
-- * do_nmi_callback
-- *
-- * Check to see if a callback exists and execute it.  Return 1
-- * if the handler exists and was handled successfully.
-- */
--int do_nmi_callback(struct pt_regs *regs, int cpu);
--
--#ifdef CONFIG_PM
-- 
--/** Replace the PM callback routine for NMI. */
--struct pm_dev * set_nmi_pm_callback(pm_callback callback);
--
--/** Unset the PM callback routine back to the default. */
--void unset_nmi_pm_callback(struct pm_dev * dev);
--
--#else
--
--static inline struct pm_dev * set_nmi_pm_callback(pm_callback callback)
--{
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+ #else  /* !CONFIG_PARAVIRT */
+Index: linux-2.6-x86.git/drivers/char/mem.c
+===================================================================
+--- linux-2.6-x86.git.orig/drivers/char/mem.c	2008-03-18 03:11:12.000000000 -0700
++++ linux-2.6-x86.git/drivers/char/mem.c	2008-03-18 09:20:33.000000000 -0700
+@@ -41,36 +41,7 @@
+  */
+ static inline int uncached_access(struct file *file, unsigned long addr)
+ {
+-#if defined(__i386__) && !defined(__arch_um__)
+-	/*
+-	 * On the PPro and successors, the MTRRs are used to set
+-	 * memory types for physical addresses outside main memory,
+-	 * so blindly setting PCD or PWT on those pages is wrong.
+-	 * For Pentiums and earlier, the surround logic should disable
+-	 * caching for the high addresses through the KEN pin, but
+-	 * we maintain the tradition of paranoia in this code.
+-	 */
+-	if (file->f_flags & O_SYNC)
+-		return 1;
+- 	return !( test_bit(X86_FEATURE_MTRR, boot_cpu_data.x86_capability) ||
+-		  test_bit(X86_FEATURE_K6_MTRR, boot_cpu_data.x86_capability) ||
+-		  test_bit(X86_FEATURE_CYRIX_ARR, boot_cpu_data.x86_capability) ||
+-		  test_bit(X86_FEATURE_CENTAUR_MCR, boot_cpu_data.x86_capability) )
+-	  && addr >= __pa(high_memory);
+-#elif defined(__x86_64__) && !defined(__arch_um__)
+-	/* 
+-	 * This is broken because it can generate memory type aliases,
+-	 * which can cause cache corruptions
+-	 * But it is only available for root and we have to be bug-to-bug
+-	 * compatible with i386.
+-	 */
+-	if (file->f_flags & O_SYNC)
+-		return 1;
+-	/* same behaviour as i386. PAT always set to cached and MTRRs control the
+-	   caching behaviour. 
+-	   Hopefully a full PAT implementation will fix that soon. */	   
 -	return 0;
--} 
-- 
--static inline void unset_nmi_pm_callback(struct pm_dev * dev)
--{
--}
--
--#endif /* CONFIG_PM */
-- 
--extern void default_do_nmi(struct pt_regs *);
--extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
--
--extern int unknown_nmi_panic;
--extern int nmi_watchdog_enabled;
--
--extern int check_nmi_watchdog(void);
--extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
--extern int avail_to_resrv_perfctr_nmi(unsigned int);
--extern int reserve_perfctr_nmi(unsigned int);
--extern void release_perfctr_nmi(unsigned int);
--extern int reserve_evntsel_nmi(unsigned int);
--extern void release_evntsel_nmi(unsigned int);
--
--extern void setup_apic_nmi_watchdog (void *);
--extern void stop_apic_nmi_watchdog (void *);
--extern void disable_timer_nmi_watchdog(void);
--extern void enable_timer_nmi_watchdog(void);
--extern int nmi_watchdog_tick (struct pt_regs * regs, unsigned reason);
--
--extern void nmi_watchdog_default(void);
--
--extern atomic_t nmi_active;
--extern unsigned int nmi_watchdog;
--#define NMI_DISABLED    -1
--#define NMI_NONE	0
--#define NMI_IO_APIC	1
--#define NMI_LOCAL_APIC	2
--#define NMI_INVALID	3
--#define NMI_DEFAULT	NMI_DISABLED
--
--struct ctl_table;
--struct file;
--extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
--			void __user *, size_t *, loff_t *);
--
--extern int unknown_nmi_panic;
--
--void __trigger_all_cpu_backtrace(void);
--#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
--
--
--void lapic_watchdog_stop(void);
--int lapic_watchdog_init(unsigned nmi_hz);
--int lapic_wd_event(unsigned nmi_hz);
--unsigned lapic_adjust_nmi_hz(unsigned hz);
--int lapic_watchdog_ok(void);
--void disable_lapic_nmi_watchdog(void);
--void enable_lapic_nmi_watchdog(void);
--void stop_nmi(void);
--void restart_nmi(void);
--
--#endif /* ASM_NMI_H */
--- 
-1.5.0.6
+-#elif defined(CONFIG_IA64)
++#if defined(CONFIG_IA64)
+ 	/*
+ 	 * On ia64, we ignore O_SYNC because we cannot tolerate memory attribute aliases.
+ 	 */
+@@ -283,6 +254,12 @@
+ 	return written;
+ }
+ 
++int __attribute__((weak)) phys_mem_access_prot_allowed(struct file *file,
++	unsigned long pfn, unsigned long size, pgprot_t *vma_prot)
++{
++	return 1;
++}
++
+ #ifndef __HAVE_PHYS_MEM_ACCESS_PROT
+ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 				     unsigned long size, pgprot_t vma_prot)
+@@ -336,6 +313,10 @@
+ 	if (!range_is_allowed(vma->vm_pgoff, size))
+ 		return -EPERM;
+ 
++	if (!phys_mem_access_prot_allowed(file, vma->vm_pgoff, size,
++						&vma->vm_page_prot))
++		return -EINVAL;
++
+ 	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
+ 						 size,
+ 						 vma->vm_page_prot);
 
+-- 
