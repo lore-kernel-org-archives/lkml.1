@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940068AbYCSX4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943517AbYCSX5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940068AbYCSX4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161298AbYCSWaj
+	id S943517AbYCSX5I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964985AbYCSWc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:30:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:65045 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161196AbYCSWah (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=E6Px/kQ2s/5VDoL00EIcJ74mCWo1781BwX31YERr7RzMswSjZzW1R/FzrUYtC/Esd0+NvvoXV1QW5iZhmT9o6EzoE8blbZ+bsLwx2q4K+vKp3LZDy7FEne0VmCrGY7HqcGJnRxRjkS7x+vD+d8KhNNpq1i5d5bRQzVvvmM9Xk7E=
-Message-ID: <45a44e480803191530p27ec9575l260d6de063a8d6bf@mail.gmail.com>
-Date: Thu, 20 Mar 2008 06:30:37 +0800
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work as advertized
-Cc: "Markus Armbruster" <armbru@redhat.com>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com
-In-Reply-To: <20080319113745.d3873de0.akpm@linux-foundation.org>
+	Wed, 19 Mar 2008 18:32:29 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:39770 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964978AbYCSWc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:32:28 -0400
+Date: Wed, 19 Mar 2008 18:32:21 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Oops in NFSv4 server in 2.6.23.17
+Message-ID: <20080319223221.GL25636@fieldses.org>
+References: <20080312122550.GB8141@ics.muni.cz> <20080312160007.GA10015@fieldses.org> <20080313143631.GH27873@ics.muni.cz> <20080314181413.GF2119@fieldses.org> <20080314193350.GK2119@fieldses.org> <20080314195303.GA4390@ics.muni.cz> <20080314200510.GL2119@fieldses.org> <20080314234205.GO2119@fieldses.org> <18397.43768.705353.514972@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <87tzjx6vj3.fsf@pike.pond.sub.org>
-	 <87k5kt6vd3.fsf@pike.pond.sub.org>
-	 <45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
-	 <871w6z6ajs.fsf@pike.pond.sub.org>
-	 <45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
-	 <87iqzjat6e.fsf@pike.pond.sub.org>
-	 <45a44e480803190424s51b85efbk39ab3bfce4cb924a@mail.gmail.com>
-	 <20080319113745.d3873de0.akpm@linux-foundation.org>
+In-Reply-To: <18397.43768.705353.514972@notabene.brown>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 2:37 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->
->  Do we need some of all of that patch in 2.6.25?  I wasn't aware of such a
->  need.
->
->  If the drivers/video/fb_defio.c hunk of that patch fixes something then I'd
->  be inclined to merge the whole thing - adding a new driver won't hurt
->  anyone.
->
+On Mon, Mar 17, 2008 at 10:19:20AM +1100, Neil Brown wrote:
+> On Friday March 14, bfields@fieldses.org wrote:
+> > On Fri, Mar 14, 2008 at 04:05:10PM -0400, bfields wrote:
+> > > I find that a little contorted.  So I'll go ahead and submit this small
+> > > patch to 2.6.25 and stable now (I have since managed to reproduce what I
+> > > believe is your bug, though my symptoms were a little different), and
+> > > then submit to 2.6.26 some cleanup which makes this more understandable,
+> > 
+> > Here's an attempt.  We could break up fh_verify even more, though.--b.
+> 
+> Looks like a good attempt.
+> 
+> My only suggestion would be to put a comment at the top of
+> nfsd_set_fh_dentry explaining what it does and who calls it.
 
-Yes, the defio hunk is a bugfix. I agree with pushing the whole thing
-to 2.6.25 if there are people who need it in 2.6.25. I believe there
-is no risk of impact on anyone else.
+OK!  I'm planning to just add:
 
-Thanks,
-jaya
++/*
++ * Use the given filehandle to look up the corresponding export and
++ * dentry.  On success, the results are used to set fh_export and
++ * fh_dentry.
++ */
+ static __be32 nfsd_set_fh_dentry(struct svc_rqst *rqstp, struct svc_fh *fhp)
+ {
+ 	struct knfsd_fh	*fh = &fhp->fh_handle;
+
+(Nothing about "who calls it", but it's static and its only caller is
+fh_verify, so that seemed uninteresting.)  Anything else you were
+looking for?
+
+> 
+> It's long past time that code had some spring cleaning !!
+
+If I had a little more time I think it might be clearer to make this:
+
+	fhp->fh_export = nfsd_fh_get_export(rqstp, &fhp->fh_handle);
+	if (IS_ERR(fhp->fh_export))
+		return ERR_PTR(fhp->fh_export);
+	error = nfsd_setuser_and_check_port(rqstp, exp);
+	if (error)
+		goto out;
+	fhp->fh_export = nfsd_fh_get_dentry(rqstp, &fhp->fh_handle);
+	if (IS_ERR(...))
+
+etc., though that's probably not quite right.
+
+--b.
