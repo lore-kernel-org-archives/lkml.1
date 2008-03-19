@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762753AbYCSUyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965089AbYCSUyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762753AbYCSUyD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYCSTs2
+	id S965089AbYCSUyd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759258AbYCSTse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:48:28 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:12936 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759225AbYCSTs1 (ORCPT
+	Wed, 19 Mar 2008 15:48:34 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3044 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759252AbYCSTsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:48:27 -0400
-In-Reply-To: <adaprtsf1ww.fsf@cisco.com>
-Subject: Re: [PATCH 1/3] Infiniband: make ehca_pd use struct pid pointer rather than
- pid_t
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>, general@lists.openfabrics.org,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF4F7C6111.9AA26F4F-ONC1257410.00599780-C1257410.005E3475@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Tue, 18 Mar 2008 18:09:22 +0100
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 7.0.2FP2HF322 | September
- 26, 2007) at 18/03/2008 18:09:23
+	Wed, 19 Mar 2008 15:48:33 -0400
+Date: Wed, 19 Mar 2008 14:13:55 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Daolong Wang <ahlongxp@gmail.com>
+Cc: linux-kernel@vger.kernel.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: [PATCH]CHECKPATCH:fix misleading output on spaces/tabs error
+Message-ID: <20080319141355.GC8590@shadowen.org>
+References: <dc84318c0803182006u46b4ac2aj8d7a127963a0d5f3@mail.gmail.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dc84318c0803182006u46b4ac2aj8d7a127963a0d5f3@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  > Reason for above checking is to prevent a child process releasing
->  > a resource that the parent process has created and still wants to use.
->  > Do you think that's something we can generalize into ib_core?
-> Clearly if we want that check then it should be in the core uverbs
-> module.  But I'm not sure why we would want that check -- I don't see
-> any realistic scenario where that would cause problems, and it seems
-> at least as likely that the check would break an app that
-> intentionally does something clever.
-Right, above checking is based on a very simple policy "creator of a
-resource is also the owner in term of releasing it" and will not cover
-other customized patterns. We had a case - believe on sles9, in which
-a child process manipulated/released resources from parent one, and
-it was not easy to find the bug.
-Wrt/ your actual question: we can remove the tgid stuff from ehca kernel
-code. When do you expect me to send a patch at latest?
+On Wed, Mar 19, 2008 at 11:06:02AM +0800, Daolong Wang wrote:
+> I got confused by this line:
+> 
+>     "ERROR: use tabs not spaces"
+> 
+> It literally means "use tabs but not spaces is WRONG", which
+>  is WRONG.
+> 
+>     "ERROR: do not use spaces when tabs expected"
+> 
+> sounds more appropriate.
 
-Nam
+Except that it says "use tabs not spaces when you should use tabs" and
+doesn't actually tell us what the error was, nor how to correct it.  So
+its not really any better than the original (which is also useless in
+this regard).
 
+How about:
+
+	"code indent should use tabs where possible"
+
+> Signed-off-by: Wang Daolong <ahlongxp@gmail.com>
+> ---
+> --- scripts/checkpatch.pl.org	2008-03-18 23:08:41.000000000 +0800
+> +++ scripts/checkpatch.pl	2008-03-18 23:19:34.000000000 +0800
+> @@ -1064,7 +1064,7 @@ sub process {
+>  		if ($rawline =~ /^\+\s* \t\s*\S/ ||
+>  		    $rawline =~ /^\+\s*        \s*/) {
+>  			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
+> -			ERROR("use tabs not spaces\n" . $herevet);
+> +			ERROR("do not use spaces when tabs expected\n" . $herevet);
+>  		}
+> 
+>  # check for RCS/CVS revision markers
+
+-apw
