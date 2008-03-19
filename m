@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938250AbYCSXbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942908AbYCSXcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938250AbYCSXbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765909AbYCSWDd
+	id S942908AbYCSXcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966436AbYCSWE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:03:33 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52011 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964849AbYCSWDb (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:03:31 -0400
-Date: Thu, 20 Mar 2008 09:03:18 +1100
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] A deadlock free and best try version of drop_caches()
-Message-ID: <20080319220318.GK155407@sgi.com>
-References: <20080318112843.GJ95344431@sgi.com> <E1JbwS9-0008Gq-7h@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JbwS9-0008Gq-7h@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Mar 2008 18:04:29 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2326 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S966439AbYCSWE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:04:27 -0400
+Date: Wed, 19 Mar 2008 18:04:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       <lenb@kernel.org>
+Subject: Re: + pm-convert-wakeup-flag-accessors-to-inline-functions-fix.patch
+ added to -mm tree
+In-Reply-To: <200803192255.29655.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803191803570.2504-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 07:27:29PM +0800, Fengguang Wu wrote:
-> On Tue, Mar 18, 2008 at 10:28:44PM +1100, David Chinner wrote:
-> > Looks like everything is backed up on the inode_lock.  Why? Looks
-> > like drop_pagecache_sb() is doing something ..... suboptimal.
-......
-> > Anyone know the reason why drop_pagecache_sb() uses such a brute-force
-> > mechanism to free up clean page cache pages?
-> 
-> Because extensive use of it(out of testings) is discouraged? ;-)
-> 
-> I have been running a longer but safer version, let's merge it?
+On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
 
-So you walk the inode hash to find inodes? Seems like a nice idea on
-the surface.... Won't it need to hold the iprune_mutex to prevent
-races with prune_icache() and invalidate_list()?
+> I've just resent the three patches, rebased on top of the current tree.
 
-Hmmmm - what about unhashed inodes? We'll never see them with this
-method of traversal. I ask because I'm working on some prototype
-patches for XFS that avoid using the inode hash altogether and drive
-inode lookup from the multitude of radix trees we have per filesystem
-(for parallelised and lockless inode lookup).
+Yep, our messages crossed each other.
 
-The above scanning method would not work at all with that sort of
-filesystem structure. Perhaps combining the bulk get/put with Jan's
-get/put method for walking the sb inode list would be sufficient?
+> Please double check if everytning is right.
 
-Cheers,
+It is.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Alan Stern
+
