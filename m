@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934020AbYCTAP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S944044AbYCTAQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934020AbYCTAP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938348AbYCSXda
+	id S944044AbYCTAQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938468AbYCSXfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 19:33:30 -0400
-Received: from phunq.net ([64.81.85.152]:32838 "EHLO moonbase.phunq.net"
+	Wed, 19 Mar 2008 19:35:16 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:32884 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754663AbYCSXd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 19:33:28 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: "Mike Snitzer" <snitzer@gmail.com>
-Subject: Re: [ANNOUNCE] ddtree: A git kernel tree for storage servers
-Date: Wed, 19 Mar 2008 15:33:19 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200803190102.25491.phillips@phunq.net> <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
-In-Reply-To: <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
+	id S933575AbYCSXfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 19:35:13 -0400
+Date: Wed, 19 Mar 2008 16:33:50 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [0/2] vmalloc: Add /proc/vmallocinfo to display mappings
+In-Reply-To: <20080319150704.d3f090e6.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0803191628480.4070@schroedinger.engr.sgi.com>
+References: <20080318222701.788442216@sgi.com> <20080319111943.0E1B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <20080319150704.d3f090e6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803191633.20922.phillips@phunq.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 March 2008 13:23, Mike Snitzer wrote:
-> >   * Block layer deadlock fixes (Status: production)
+On Wed, 19 Mar 2008, Andrew Morton wrote:
+
+> I was just about to ask whether we actually need the feature - I don't
+> recall ever having needed it, nor do I recall seeing anyone else need it.
 > 
-> Do you happen to have a pointer to where these block layer deadlock
-> fixes are?  Or will you be committing them shortly?
+> Why is it useful?
 
-Hi Mike,
+It allows to see the users of vmalloc. That is important if vmalloc space 
+is scarce (i386 for example).
 
-OK, this is committed now, but caveat: improved, untested except for
-booting.  But what could possibly go wrong? :-/
+And its going to be important for the compound page fallback to vmalloc.
+Many of the current users can be switched to use compound pages with
+fallback. This means that the number of users of vmalloc is reduced and 
+page tables no longer necessary to access the memory.
+/proc/vmallocinfo allows to review how that reduction occurs.
 
-http://phunq.net/ddtree?p=ddtree/.git;a=blob;f=patches/bio-throttle
+If memory becomes fragmented and larger order allocations are no longer 
+possible then /proc/vmallocinfo allows to see which compound 
+page allocations fell back to virtual compound pages. That is important 
+for new users of virtual compound pages. Such as order 1 stack allocation 
+etc that may fallback to virtual compound pages in the future.
 
-The production version is sitting in the code.google.com svn repository
-in ddsnap/patches/2.6.23.8.  That one has a known bug that has somehow
-escaped being stomped with a new commit, since it only manifests if you
-stack one stacking block device on top of another one.  I will post here
-when we have an official, torture tested version of the patch.
-
-The patch above is improved from the most recently posted version by
-using using the ->bi_max_vecs field for throttle accounting instead of
-calling out to a per-driver metric.  This works nicely because the
-max_vecs field cannot change during the life of the bio, and it gives
-a decent upper bound on the resource consumption of the bio, better
-than simply counting bios in flight.  The queue->metric() method is
-still in there as a stub, some more cleanup to do there (and further
-shrinking of the patch).  It does no harm.
-
-This improvement shrinks the throttled version of struct bio by 4
-bytes.
-
-Regards,
-
-Daniel
