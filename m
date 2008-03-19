@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937940AbYCSVkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938427AbYCSVp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937940AbYCSVkr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbYCSUKB
+	id S938427AbYCSVp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765443AbYCSUPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:10:01 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53700 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764230AbYCSUJz (ORCPT
+	Wed, 19 Mar 2008 16:15:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39807 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765440AbYCSUPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:09:55 -0400
-Date: Wed, 19 Mar 2008 13:06:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: venkatesh.pallipadi@intel.com
-Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch 02/13] x86: PAT infrastructure patch
-Message-Id: <20080319130639.819777b7.randy.dunlap@oracle.com>
-In-Reply-To: <20080319000058.541493000@intel.com>
-References: <20080319000012.439150000@intel.com>
-	<20080319000058.541493000@intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 19 Mar 2008 16:15:14 -0400
+Date: Wed, 19 Mar 2008 09:32:28 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Message-ID: <20080319083228.GM11966@one.firstfloor.org>
+References: <20080318209.039112899@firstfloor.org> <20080318003620.d84efb95.akpm@linux-foundation.org> <20080318141828.GD11966@one.firstfloor.org> <20080318095715.27120788.akpm@linux-foundation.org> <20080318172045.GI11966@one.firstfloor.org> <20080318104437.966c10ec.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318104437.966c10ec.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 17:00:14 -0700 venkatesh.pallipadi@intel.com wrote:
+On Tue, Mar 18, 2008 at 10:44:37AM -0700, Andrew Morton wrote:
+> On Tue, 18 Mar 2008 18:20:45 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > What's the permission problem?  executable-but-not-readable files?  Could
+> > 
+> > Not writable. 
+> 
+> Oh.
+> 
+> I doubt if a userspace implementation would even try to alter the ELF
+> files, really - there seems to be no point in it.   This is just complexity
 
-diffstat would be very nice to have.
+Well the information has to be somewhere and i think the ELF file
+is the best location for it. It makes it the most user transparent.
 
+> > Yes it could, but i dont even want to thi nk about all the issues of
+> > doing such an interface. It is basically an microkernelish approach.
+> > I prefer monolithic simplicity.
+> 
+> It's not complex at all.  Pass a null-terminated pathname to the server and
+> keep running.  The server will asynchronously read your pages for you.
 
-> Index: linux-2.6-x86.git/arch/x86/Kconfig
-> ===================================================================
-> --- linux-2.6-x86.git.orig/arch/x86/Kconfig	2008-03-17 11:06:47.000000000 -0700
-> +++ linux-2.6-x86.git/arch/x86/Kconfig	2008-03-17 11:06:51.000000000 -0700
-> @@ -1013,6 +1013,21 @@
->  
->  	  See <file:Documentation/mtrr.txt> for more information.
->  
-> +config X86_PAT
-> +	def_bool y
-> +	prompt "x86 PAT support"
-> +	depends on MTRR && NONPROMISC_DEVMEM
-> +	help
-> +	  Use PAT attributes to setup page level cache control.
-> +	---help---
-> +	  PATs are the modern equivalents of MTRRs and are much more
-> +	  flexible than MTRRs.
-> +
+But how do you update the bitmap in your scheme? 
 
-Do 2 help sections actually work?  We don't usually do that.
-Just change the second one to a blank line.
+> > And I am really not a friend of unnecessary complexity. In the end
+> > complexity hurts you, no matter if it is in ring 3 or ring 0.
+> 
+> There is no complexity here.
 
-> +	  Say N here if you see bootup problems (boot crash, boot hang,
-> +	  spontaneous reboots) or a non-working Xorg.
+I have my doubts on that if you consider update too.
 
-Maybe "a non-working Xorg video driver" ?
-or even omit Xorg and just say video driver?
-
-> +
-> +	  If unsure, say Y.
-> +
->  config EFI
->  	def_bool n
->  	prompt "EFI runtime service support"
-
-
----
-~Randy
+-Andi
+> 
