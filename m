@@ -1,125 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942479AbYCSXEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936977AbYCSXFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942479AbYCSXEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934869AbYCSVbQ
+	id S936977AbYCSXFx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936013AbYCSVb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:31:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49683 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759343AbYCSVbM (ORCPT
+	Wed, 19 Mar 2008 17:31:26 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:45627 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933750AbYCSVbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:31:12 -0400
-Date: Wed, 19 Mar 2008 14:31:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: bugme-daemon@bugzilla.kernel.org, joe@fruitfly.org
-Subject: Re: [Bugme-new] [Bug 10284] New: executables with read bit 'off'
- cannot open /dev/stdin
-Message-Id: <20080319143108.c8f8a544.akpm@linux-foundation.org>
-In-Reply-To: <bug-10284-10286@http.bugzilla.kernel.org/>
-References: <bug-10284-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 17:31:25 -0400
+Date: Wed, 19 Mar 2008 04:49:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] scheduler fixes
+Message-ID: <20080319034952.GB21347@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+Linus, please pull the latest scheduler fixes git tree from:
 
-On Wed, 19 Mar 2008 13:15:36 -0700 (PDT)
-bugme-daemon@bugzilla.kernel.org wrote:
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git for-linus
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10284
-> 
->            Summary: executables with read bit 'off' cannot open /dev/stdin
->            Product: File System
->            Version: 2.5
->      KernelVersion: 2.6.16.27-0.9-smp
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: devfs
->         AssignedTo: fs_devfs@kernel-bugs.osdl.org
->         ReportedBy: joe@fruitfly.org
-> 
-> 
-> Latest working kernel version: 2.6.16.27
-> Earliest failing kernel version: 2.4.21
-> Distribution: suse
-> Hardware Environment: x86_64
-> Software Environment:
-> Problem Description: if the read bit of a binary executable is off, then open()
-> on /dev/stdin fails with a EACCES error.
+[ Note: it touches net/core/sock.c to tweak two socket wakeups there. ]
 
-This is, umm, unexpected?
+this tree improves/fixes lat_ctx/lat_pipe/bw_pipe latency/performance on 
+SMP systems:
 
-> Steps to reproduce:
-> A short program that calls open on /dev/stdin:
-> 
-> cat open_stdin.c
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> 
-> int main(int argc, char **argv) {
->   open("/dev/stdin",O_RDONLY);
->   return 0;
-> }
-> 
-> tracing system calls with normal operation shows that this completes
-> successfully. But: 
-> 
-> chmod -r open_stdin
-> strace ./open_stdin
-> execve("./open_stdin", ["./open_stdin"], [/* 96 vars */]) = 0
-> brk(0)                                  = 0x501000
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-> 0x2b25d01b6000
-> uname({sys="Linux", node="lush", ...})  = 0
-> access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
-> ... (open's on .so's deleted) ...
-> open("/etc/ld.so.cache", O_RDONLY)      = 3
-> fstat(3, {st_mode=S_IFREG|0644, st_size=158841, ...}) = 0
-> mmap(NULL, 158841, PROT_READ, MAP_PRIVATE, 3, 0) = 0x2b25d01b7000
-> close(3)                                = 0
-> open("/lib64/libc.so.6", O_RDONLY)      = 3
-> read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\322\1\0"..., 832) =
-> 832
-> fstat(3, {st_mode=S_IFREG|0755, st_size=1475924, ...}) = 0
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-> 0x2b25d01de000
-> mmap(NULL, 2289896, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =
-> 0x2b25d02b8000
-> madvise(0x2b25d02b8000, 2289896, MADV_SEQUENTIAL|0x1) = 0
-> mprotect(0x2b25d03df000, 1044480, PROT_NONE) = 0
-> mmap(0x2b25d04de000, 20480, PROT_READ|PROT_WRITE,
-> MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x126000) = 0x2b25d04de000
-> mmap(0x2b25d04e3000, 16616, PROT_READ|PROT_WRITE,
-> MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x2b25d04e3000close(3)           
->                     = 0
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-> 0x2b25d04e8000
-> arch_prctl(ARCH_SET_FS, 0x2b25d04e86d0) = 0
-> mprotect(0x2b25d04de000, 12288, PROT_READ) = 0
-> munmap(0x2b25d01b7000, 158841)          = 0
-> open("/dev/stdin", O_RDONLY)            = -1 EACCES (Permission denied)
-> 
-> 
-> The last line shows a Permission denied error on opening /dev/stdin. If a
-> normal filesystem (i.e. not-/dev/) filename is used, the open works normally.
-> 
-> I have reproduced this on 2.4 and 2.6 kernels
-> Just a guess here: is an error flag from attempting to read the binary not
-> getting cleared and is being reported when trying to open stdin?
-> 
+                      .25-rc6            .25-rc6-sched/for-linus
+   -------------------------------------------------------------
+   lat_ctx 2 :        1.93 us                0.69 us
+   lat_pipe  :        4.96 us                2.49 us
+   bw_pipe   :     2841.11 MB/sec         3436.61 MB/sec
 
+it also improves the ramp-up phase of sysbench on a quad:
+
+                      .25-rc6            .25-rc6-sched/for-linus
+   -------------------------------------------------------------
+      1:     ( 836.64 per sec.)         (1216.90 per sec.)
+      2:     (2407.02 per sec.)         (2361.12 per sec.)
+      4:     (4468.59 per sec.)         (4510.14 per sec.)
+
+( similar improvements were measured on an 8-way and on various
+  dual boxes as well - a 16way box was largely unchanged. )
+
+these changes also improved some other workloads as well: mysql, apache 
+and others - and it did not impact some others that we handled well 
+before (such as kbuild, hackbench and others).
+
+Thanks,
+
+	Ingo
+
+------------------>
+Ingo Molnar (8):
+      sched: clean up wakeup balancing, move wake_affine()
+      sched: clean up wakeup balancing, rename variables
+      sched: clean up wakeup balancing, code flow
+      sched, net: socket wakeups are sync
+      sched: improve affine wakeups
+      sched: wakeup-buddy tasks are cache-hot
+      sched: retune wake granularity
+      sched: tune multi-core idle balancing
+
+ include/linux/sched.h    |    3 +
+ include/linux/topology.h |    1 -
+ kernel/sched.c           |   11 +++-
+ kernel/sched_debug.c     |    1 +
+ kernel/sched_fair.c      |  191 ++++++++++++++++++++++++++++------------------
+ net/core/sock.c          |    4 +-
+ 6 files changed, 134 insertions(+), 77 deletions(-)
