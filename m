@@ -1,105 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbYCSWXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763125AbYCSWYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762998AbYCSWXi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763450AbYCSVAS
+	id S1763125AbYCSWYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965200AbYCSVCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:00:18 -0400
-Received: from rn-out-0910.google.com ([64.233.170.191]:20449 "EHLO
+	Wed, 19 Mar 2008 17:02:13 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:23509 "EHLO
 	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763443AbYCSVAP (ORCPT
+	with ESMTP id S1758048AbYCSVCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:00:15 -0400
-Message-ID: <1ba2fa240803181043v511df0b6tbe43174feb2f7537@mail.gmail.com>
-Date: Tue, 18 Mar 2008 19:43:40 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Pierre Ossman" <drzeus@drzeus.cx>
-Subject: Re: SDIO: IO-Ready Bit
-Cc: lkml <linux-kernel@vger.kernel.org>, benzizbit@gmail.com
-In-Reply-To: <20080318123325.0843b854@mjolnir.drzeus.cx>
+	Wed, 19 Mar 2008 17:02:12 -0400
+Message-ID: <47E087DF.7070101@gmail.com>
+Date: Wed, 19 Mar 2008 12:26:23 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1ba2fa240803180400y1d7a2740t2c21b8b73a755016@mail.gmail.com>
-	 <20080318123325.0843b854@mjolnir.drzeus.cx>
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200803181159.48327.volker.armin.hemmann@tu-clausthal.de> <47DFBBE2.7050304@gmail.com> <200803181433.12584.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200803181433.12584.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 18, 2008 at 1:33 PM, Pierre Ossman <drzeus@drzeus.cx> wrote:
-> On Tue, 18 Mar 2008 13:00:34 +0200
->  "Tomas Winkler" <tomasw@gmail.com> wrote:
->
->  > I'm working on SDIO multi function device.  One of the subdevices  a
->  > system device (SYS) who's  purpose among the others is to initialize
->  > the whole combo, mainly it's loads the firmware of the devices and
->  > kick the sub devices. Each of the sub devices has it's own driver.
->  > This dictates the order of the driver initialization and SYS device
->  > has to compete it's work before other subdeivces drivers can access
->  > the hardware. From hardware perspective device is ready when IO-Ready
->  > bit in SDIO is set.
->
->  What a delightfully unfriendly design...
+Volker Armin Hemmann wrote:
+> On Dienstag, 18. März 2008, Tejun Heo wrote:
+>>  failed message on reboots).
+>>
+>>> Of course, I booted and rebooted several times. And it stays.
+>>>
+>>> Maybe it is the hardware. But I replaced the cables already and smart
+>>> says the disk is ok.
+>> Does the attached patch make any difference?
+> 
+> patching file drivers/ata/ahci.c
+> Hunk #1 succeeded at 397 (offset -5 lines).
+> Hunk #2 succeeded at 1819 (offset -45 lines).
 
-Yes, but it's damage is already done.
+It's okay.  It's because I was lazy and generated the patch against
+devel tree.
 
->
->  > The first problem is that currently there is hard code timeout  in
->  > sdio_enable_func instead of using TPLFE_ENABLE_TIMEOUT_VAL
->  > /*
->  >        * FIXME: This should timeout based on information in the CIS,
->  >        * but we don't have card to parse that yet.
->  >        */
->  >       timeout = jiffies + HZ
->  >
->  > This can be probably easily fixed. The significant issue is that this
->  > is done in busy wait loop and that probe functions are called in
->  > serially.
->
->  The SDIO spec doesn't really allow such a card to exist. So it's not surprising that things break.
+> built&booted, same results as allways. With non-raid setting, IDENTIFY error 
+> on cold boot and sofreset error on reboot:
+> (with patch, without nosmi):
 
-Not sure to which part of the above paragraph you refer here. The
-timeout is defined by spec.
+Oh... I see.  I made a mistake.  In ahci.c, what I intended was making
+ahci_softreset NULL not ahci_hardreset.  Can you please change that and
+test again?
 
-> Does any stack support this odd-ball card?
-
->
->
->  >
->  > Since we cannot ensure that enumeration of SYS devices will be first
->  > the other sub devices will fail in their probe functions while calling
->  > sido_enable_func
->  >
->  > One option is to move the sdio_enable_func to be called from a work
->  > queue kicked from probe. This still requires non-busy wait timeout on
->  > IO-Ready bit and we cannot fail probe func
->  > if something goes wrong.
->  > Second option would be somehow split the sdio probe function across
->  > the enabled timeout.
->
->  I think it's a bit more complex than that. There are likely locks all over the place, both in the relevant driver and the driver model core, that makes this very difficult. Not to mention the fact that the correct timeout will be finite, and you never know how long it will take you to load the firmware.
-
-Good point but IMHO the timeout can got to minutes so it's converging
-to infinite in this case.
-
-
-
->
->  A better approach is to simply have the drivers for your subfunctions synchronize things. Make sure noone calls sdio_enable_func() until the firmware has been loaded.
-
-This could even be done from user space in case you want to use a
-standard driver.
-
-Won't this prevent us from compiling the drivers into kernel?
-Second how this possible especially with standard driver as they are
-loaded. I know you can enforce module loading but how can you enforce
-probing order form user space?
-
-Thanks
-Tomas
-
->  Rgds
->  Pierre
->
->
+-- 
+tejun
