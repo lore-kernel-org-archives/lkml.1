@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937627AbYCSVdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937696AbYCSVd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937627AbYCSVdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760871AbYCSUGF
+	id S937696AbYCSVd6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757763AbYCSUGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:06:05 -0400
-Received: from sacred.ru ([62.205.161.221]:37319 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763283AbYCSUGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:06:01 -0400
-Message-ID: <47E0D8AF.1060907@openvz.org>
-Date: Wed, 19 Mar 2008 12:11:11 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 19 Mar 2008 16:06:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50894 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763275AbYCSUGC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:06:02 -0400
+Date: Wed, 19 Mar 2008 21:06:28 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>, ak@suse.de,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: MAINTAINERS: bluez-devel is subscribers-only
+Message-ID: <20080319200628.GA12066@elf.ucw.cz>
+References: <20080319142703.GA25773@elf.ucw.cz> <20080319113943.a156e76e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Eric Paris <eparis@parisplace.org>
-CC: linux-audit@redhat.com, Thomas Graf <tgraf@suug.ch>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       aviro@redhat.com, sgrubb@redhat.com, akpm@osdl.org
-Subject: Re: [PATCH] Audit: netlink socket can be auto-bound to pid other
- than current->pid
-References: <47DF8A30.5010602@openvz.org> <7e0fb38c0803181629u4a6ff1d6ye83881ddf0e96d48@mail.gmail.com>
-In-Reply-To: <7e0fb38c0803181629u4a6ff1d6ye83881ddf0e96d48@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 19 Mar 2008 12:11:13 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080319113943.a156e76e.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> On 3/18/08, Pavel Emelyanov <xemul@openvz.org> wrote:
-> 
-> Can we please just leave audit_pid as the one flag to tell us if
-> auditd is supposedly up there in userspace?  Use audit_nlk_pid to send
-> messages to the right place, but leave everything else to do with
-> audit_pid alone.
 
-OK, point taken ;) Is that patch looks OK? If yes, I'll comment
-it properly and re-send to Andrew.
+> bluez-devel is apparently a spamhole too.  linux-bluetooth@vger.kernel.org
+> has been set up and we're supposed to be migrating to it.
 
-The audit_nlk_pid reset to 0 is not required, since all the
-decisions are taken based on audit_pid value only.
+Subscribers-only spamhole is the most useless thing in the world, I
+guess...
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-diff --git a/kernel/audit.c b/kernel/audit.c
-index ccc7d0e..12a0278 100644
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -77,9 +77,13 @@ static int	audit_default;
- /* If auditing cannot proceed, audit_failure selects what happens. */
- static int	audit_failure = AUDIT_FAIL_PRINTK;
- 
--/* If audit records are to be written to the netlink socket, audit_pid
-- * contains the (non-zero) pid. */
-+/*
-+ * If audit records are to be written to the netlink socket, audit_pid
-+ * contains the pid of the auditd process and audit_nlk_pid contains
-+ * the pid to use to send netlink messages to that process.
-+ */
- int		audit_pid;
-+static int	audit_nlk_pid;
- 
- /* If audit_rate_limit is non-zero, limit the rate of sending audit records
-  * to that number per second.  This prevents DoS attacks, but results in
-@@ -349,7 +353,7 @@ static int kauditd_thread(void *dummy)
- 		wake_up(&audit_backlog_wait);
- 		if (skb) {
- 			if (audit_pid) {
--				int err = netlink_unicast(audit_sock, skb, audit_pid, 0);
-+				int err = netlink_unicast(audit_sock, skb, audit_nlk_pid, 0);
- 				if (err < 0) {
- 					BUG_ON(err != -ECONNREFUSED); /* Shoudn't happen */
- 					printk(KERN_ERR "audit: *NO* daemon at audit_pid=%d\n", audit_pid);
-@@ -626,6 +630,7 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 							sid, 1);
- 
- 			audit_pid = new_pid;
-+			audit_nlk_pid = NETLINK_CB(skb).pid;
- 		}
- 		if (status_get->mask & AUDIT_STATUS_RATE_LIMIT)
- 			err = audit_set_rate_limit(status_get->rate_limit,
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6d628fb..76843d0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -880,7 +880,7 @@ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+-L:	bluez-devel@lists.sf.net
++L:	linux-bluetooth@vger.kernel.org
+ W:	http://bluez.sf.net
+ W:	http://www.bluez.org
+ W:	http://www.holtmann.org/linux/bluetooth/
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
