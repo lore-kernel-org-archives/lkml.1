@@ -1,160 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYCSU2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbYCSUZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbYCSU2j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYCSTjl
+	id S1761570AbYCSUZV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbYCSTjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:39:41 -0400
-Received: from mga02.intel.com ([134.134.136.20]:16659 "EHLO mga02.intel.com"
+	Wed, 19 Mar 2008 15:39:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756993AbYCSTiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:38:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
-   d="scan'208";a="263474521"
-Message-Id: <20080319000100.773690000@intel.com>
-References: <20080319000012.439150000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 17:00:24 -0700
-From: venkatesh.pallipadi@intel.com
-To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 12/13] x86: PAT Add ioremap_wc() interface
-Content-Disposition: inline; filename=ioremap_wc.patch
+	id S1757217AbYCSTjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:39:05 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 50/79] [PATCH] use create_idle struct in do_boot_cpu
+Date: Wed, 19 Mar 2008 14:25:45 -0300
+Message-Id: <12059478013647-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <12059477974089-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
+ costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
+ -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce ioremap_wc for wc remap. There is also a generic ioremap_wc
-aliased to ioremap_uc so that drivers can use this interface transparently.
+From: Glauber Costa <gcosta@redhat.com>
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Use a new worker, with help of the create_idle struct
+to fork the idle thread. We now have two workers, the first
+of them triggered by __smp_prepare_cpu. But the later is
+going away soon.
 
-Index: linux-2.6-x86.git/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6-x86.git.orig/arch/x86/mm/ioremap.c	2008-03-18 03:21:25.000000000 -0700
-+++ linux-2.6-x86.git/arch/x86/mm/ioremap.c	2008-03-18 09:20:21.000000000 -0700
-@@ -98,6 +98,9 @@
- 	default:
- 		err = _set_memory_uc(vaddr, nrpages);
- 		break;
-+	case _PAGE_CACHE_WC:
-+		err = _set_memory_wc(vaddr, nrpages);
-+		break;
- 	case _PAGE_CACHE_WB:
- 		err = _set_memory_wb(vaddr, nrpages);
- 		break;
-@@ -168,8 +171,13 @@
- 		 * Do not fallback to certain memory types with certain
- 		 * requested type:
- 		 * - request is uncached, return cannot be write-back
-+		 * - request is uncached, return cannot be write-combine
-+		 * - request is write-combine, return cannot be write-back
- 		 */
- 		if ((prot_val == _PAGE_CACHE_UC &&
-+		     (new_prot_val == _PAGE_CACHE_WB ||
-+		      new_prot_val == _PAGE_CACHE_WC)) ||
-+		    (prot_val == _PAGE_CACHE_WC &&
- 		     new_prot_val == _PAGE_CACHE_WB)) {
- 			free_memtype(phys_addr, phys_addr + size);
- 			return NULL;
-@@ -182,6 +190,9 @@
- 	default:
- 		prot = PAGE_KERNEL_NOCACHE;
- 		break;
-+	case _PAGE_CACHE_WC:
-+		prot = PAGE_KERNEL_WC;
-+		break;
- 	case _PAGE_CACHE_WB:
- 		prot = PAGE_KERNEL;
- 		break;
-@@ -240,6 +251,25 @@
- }
- EXPORT_SYMBOL(ioremap_nocache);
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot_32.c |   86 ++++++++++++++++++++++++++++-------------
+ 1 files changed, 59 insertions(+), 27 deletions(-)
+
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index c30abed..fc1eb52 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -79,6 +79,24 @@ static void map_cpu_to_logical_apicid(void);
+ /* State of each CPU. */
+ DEFINE_PER_CPU(int, cpu_state) = { 0 };
  
-+/**
-+ * ioremap_wc	-	map memory into CPU space write combined
-+ * @offset:	bus address of the memory
-+ * @size:	size of the resource to map
-+ *
-+ * This version of ioremap ensures that the memory is marked write combining.
-+ * Write combining allows faster writes to some hardware devices.
-+ *
-+ * Must be freed with iounmap.
++/* Store all idle threads, this can be reused instead of creating
++* a new thread. Also avoids complicated thread destroy functionality
++* for idle threads.
++*/
++#ifdef CONFIG_HOTPLUG_CPU
++/*
++ * Needed only for CONFIG_HOTPLUG_CPU because __cpuinitdata is
++ * removed after init for !CONFIG_HOTPLUG_CPU.
 + */
-+void __iomem *ioremap_wc(unsigned long phys_addr, unsigned long size)
-+{
-+	if (pat_wc_enabled)
-+		return __ioremap(phys_addr, size, _PAGE_CACHE_WC);
-+	else
-+		return ioremap_nocache(phys_addr, size);
-+}
-+EXPORT_SYMBOL(ioremap_wc);
-+
- void __iomem *ioremap_cache(unsigned long phys_addr, unsigned long size)
- {
- 	return __ioremap(phys_addr, size, _PAGE_CACHE_WB);
-Index: linux-2.6-x86.git/include/asm-generic/iomap.h
-===================================================================
---- linux-2.6-x86.git.orig/include/asm-generic/iomap.h	2008-03-18 02:16:03.000000000 -0700
-+++ linux-2.6-x86.git/include/asm-generic/iomap.h	2008-03-18 03:54:39.000000000 -0700
-@@ -60,6 +60,10 @@
- extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
- extern void ioport_unmap(void __iomem *);
- 
-+#ifndef ARCH_HAS_IOREMAP_WC
-+#define ioremap_wc ioremap_nocache
++static DEFINE_PER_CPU(struct task_struct *, idle_thread_array);
++#define get_idle_for_cpu(x)      (per_cpu(idle_thread_array, x))
++#define set_idle_for_cpu(x, p)   (per_cpu(idle_thread_array, x) = (p))
++#else
++struct task_struct *idle_thread_array[NR_CPUS] __cpuinitdata ;
++#define get_idle_for_cpu(x)      (idle_thread_array[(x)])
++#define set_idle_for_cpu(x, p)   (idle_thread_array[(x)] = (p))
 +#endif
 +
- /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
- struct pci_dev;
- extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
-Index: linux-2.6-x86.git/include/asm-x86/io.h
-===================================================================
---- linux-2.6-x86.git.orig/include/asm-x86/io.h	2008-03-18 03:14:09.000000000 -0700
-+++ linux-2.6-x86.git/include/asm-x86/io.h	2008-03-18 03:54:39.000000000 -0700
-@@ -1,6 +1,8 @@
- #ifndef _ASM_X86_IO_H
- #define _ASM_X86_IO_H
+ static atomic_t init_deasserted;
  
-+#define ARCH_HAS_IOREMAP_WC
+ static void __cpuinit smp_callin(void)
+@@ -513,30 +531,21 @@ wakeup_secondary_cpu(int phys_apicid, unsigned long start_eip)
+ 
+ extern cpumask_t cpu_initialized;
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-static struct task_struct * __cpuinitdata cpu_idle_tasks[NR_CPUS];
+-static inline struct task_struct * __cpuinit alloc_idle_task(int cpu)
+-{
++struct create_idle {
++	struct work_struct work;
+ 	struct task_struct *idle;
++	struct completion done;
++	int cpu;
++};
+ 
+-	if ((idle = cpu_idle_tasks[cpu]) != NULL) {
+-		/* initialize thread_struct.  we really want to avoid destroy
+-		 * idle tread
+-		 */
+-		idle->thread.sp = (unsigned long)task_pt_regs(idle);
+-		init_idle(idle, cpu);
+-		return idle;
+-	}
+-	idle = fork_idle(cpu);
++static void __cpuinit do_fork_idle(struct work_struct *work)
++{
++	struct create_idle *c_idle =
++		container_of(work, struct create_idle, work);
+ 
+-	if (!IS_ERR(idle))
+-		cpu_idle_tasks[cpu] = idle;
+-	return idle;
++	c_idle->idle = fork_idle(c_idle->cpu);
++	complete(&c_idle->done);
+ }
+-#else
+-#define alloc_idle_task(cpu) fork_idle(cpu)
+-#endif
+-
+ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ /*
+  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+@@ -544,11 +553,15 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+  * Returns zero if CPU booted OK, else error code from wakeup_secondary_cpu.
+  */
+ {
+-	struct task_struct *idle;
+ 	unsigned long boot_error;
+ 	int timeout;
+ 	unsigned long start_eip;
+ 	unsigned short nmi_high = 0, nmi_low = 0;
++	struct create_idle c_idle = {
++		.cpu = cpu,
++		.done = COMPLETION_INITIALIZER_ONSTACK(c_idle.done),
++	};
++	INIT_WORK(&c_idle.work, do_fork_idle);
+ 
+ 	/*
+ 	 * Save current MTRR state in case it was changed since early boot
+@@ -556,19 +569,38 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ 	 */
+ 	mtrr_save_state();
+ 
++	c_idle.idle = get_idle_for_cpu(cpu);
 +
- #ifdef CONFIG_X86_32
- # include "io_32.h"
- #else
-@@ -9,6 +11,7 @@
+ 	/*
+ 	 * We can't use kernel_thread since we must avoid to
+ 	 * reschedule the child.
+ 	 */
+-	idle = alloc_idle_task(cpu);
+-	if (IS_ERR(idle))
+-		panic("failed fork for CPU %d", cpu);
++	if (c_idle.idle) {
++		c_idle.idle->thread.sp = (unsigned long) (((struct pt_regs *)
++			(THREAD_SIZE +  task_stack_page(c_idle.idle))) - 1);
++		init_idle(c_idle.idle, cpu);
++		goto do_rest;
++	}
++
++	if (!keventd_up() || current_is_keventd())
++		c_idle.work.func(&c_idle.work);
++	else {
++		schedule_work(&c_idle.work);
++		wait_for_completion(&c_idle.done);
++	}
++
++	if (IS_ERR(c_idle.idle)) {
++		printk(KERN_ERR "failed fork for CPU %d\n", cpu);
++		return PTR_ERR(c_idle.idle);
++	}
  
- extern int ioremap_change_attr(unsigned long vaddr, unsigned long size,
- 				unsigned long prot_val);
-+extern void __iomem * ioremap_wc(unsigned long offset, unsigned long size);
++	set_idle_for_cpu(cpu, c_idle.idle);
++do_rest:
++	per_cpu(current_task, cpu) = c_idle.idle;
+ 	init_gdt(cpu);
+- 	per_cpu(current_task, cpu) = idle;
+ 	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
  
- extern void *xlate_dev_mem_ptr(unsigned long phys);
- extern void unxlate_dev_mem_ptr(unsigned long phys, void *addr);
-Index: linux-2.6-x86.git/include/asm-x86/pgtable.h
-===================================================================
---- linux-2.6-x86.git.orig/include/asm-x86/pgtable.h	2008-03-18 03:33:01.000000000 -0700
-+++ linux-2.6-x86.git/include/asm-x86/pgtable.h	2008-03-18 03:54:39.000000000 -0700
-@@ -90,6 +90,7 @@
- #define __PAGE_KERNEL_RO		(__PAGE_KERNEL & ~_PAGE_RW)
- #define __PAGE_KERNEL_RX		(__PAGE_KERNEL_EXEC & ~_PAGE_RW)
- #define __PAGE_KERNEL_EXEC_NOCACHE	(__PAGE_KERNEL_EXEC | _PAGE_PCD | _PAGE_PWT)
-+#define __PAGE_KERNEL_WC		(__PAGE_KERNEL | _PAGE_CACHE_WC)
- #define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD | _PAGE_PWT)
- #define __PAGE_KERNEL_VSYSCALL		(__PAGE_KERNEL_RX | _PAGE_USER)
- #define __PAGE_KERNEL_VSYSCALL_NOCACHE	(__PAGE_KERNEL_VSYSCALL | _PAGE_PCD | _PAGE_PWT)
-@@ -106,6 +107,7 @@
- #define PAGE_KERNEL_RO			MAKE_GLOBAL(__PAGE_KERNEL_RO)
- #define PAGE_KERNEL_EXEC		MAKE_GLOBAL(__PAGE_KERNEL_EXEC)
- #define PAGE_KERNEL_RX			MAKE_GLOBAL(__PAGE_KERNEL_RX)
-+#define PAGE_KERNEL_WC			MAKE_GLOBAL(__PAGE_KERNEL_WC)
- #define PAGE_KERNEL_NOCACHE		MAKE_GLOBAL(__PAGE_KERNEL_NOCACHE)
- #define PAGE_KERNEL_EXEC_NOCACHE	MAKE_GLOBAL(__PAGE_KERNEL_EXEC_NOCACHE)
- #define PAGE_KERNEL_LARGE		MAKE_GLOBAL(__PAGE_KERNEL_LARGE)
-
+-	idle->thread.ip = (unsigned long) start_secondary;
++	c_idle.idle->thread.ip = (unsigned long) start_secondary;
+ 	/* start_eip had better be page-aligned! */
+ 	start_eip = setup_trampoline();
+ 
+@@ -577,7 +609,7 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ 	/* So we see what's up   */
+ 	printk("Booting processor %d/%d ip %lx\n", cpu, apicid, start_eip);
+ 	/* Stack for startup_32 can be just as for start_secondary onwards */
+-	stack_start.sp = (void *) idle->thread.sp;
++	stack_start.sp = (void *) c_idle.idle->thread.sp;
+ 
+ 	irq_ctx_init(cpu);
+ 
 -- 
+1.5.0.6
+
