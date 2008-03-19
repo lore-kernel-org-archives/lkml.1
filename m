@@ -1,83 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYCSTeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbYCSTd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbYCSTeG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYCST1N
+	id S1753379AbYCSTd2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYCST0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:27:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57532 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753015AbYCSTYr (ORCPT
+	Wed, 19 Mar 2008 15:26:39 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32862 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753839AbYCST0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:24:47 -0400
-Date: Wed, 19 Mar 2008 02:04:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-Id: <20080319020440.80379d50.akpm@linux-foundation.org>
-In-Reply-To: <20080319083228.GM11966@one.firstfloor.org>
-References: <20080318209.039112899@firstfloor.org>
-	<20080318003620.d84efb95.akpm@linux-foundation.org>
-	<20080318141828.GD11966@one.firstfloor.org>
-	<20080318095715.27120788.akpm@linux-foundation.org>
-	<20080318172045.GI11966@one.firstfloor.org>
-	<20080318104437.966c10ec.akpm@linux-foundation.org>
-	<20080319083228.GM11966@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 15:26:36 -0400
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: akpm@linux-foundation.org
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: [PATCH][v4]  Modify loop device to be able to manage partitions of the disk image
+Date: Wed, 19 Mar 2008 13:36:07 +0100
+Message-Id: <12059301672966-git-send-email-Laurent.Vivier@bull.net>
+X-Mailer: git-send-email 1.5.2.4
+In-Reply-To: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008 09:32:28 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+This patch allows to use loop device with partitionned disk image.
 
-> On Tue, Mar 18, 2008 at 10:44:37AM -0700, Andrew Morton wrote:
-> > On Tue, 18 Mar 2008 18:20:45 +0100 Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > > What's the permission problem?  executable-but-not-readable files?  Could
-> > > 
-> > > Not writable. 
-> > 
-> > Oh.
-> > 
-> > I doubt if a userspace implementation would even try to alter the ELF
-> > files, really - there seems to be no point in it.   This is just complexity
-> 
-> Well the information has to be somewhere and i think the ELF file
-> is the best location for it. It makes it the most user transparent.
+Original behavior of loop is not modified.
 
-Adopt a standard, stick with it.
+A new parameter is introduced to define how many partition we want to be
+able to manage per loop device. This parameter is "max_part".
 
-Assuming that all users have the same access pattern might be inefficient,
-a little bit.  There might be some advantage to making it per-user, dunno.
+For instance, to manage 63 partitions / loop device, we will do:
+# modprobe loop max_part=63
+# ls -l /dev/loop?*
+brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
 
-The requirement to write to an executable sounds like a bit of a
-showstopper.
+And to attach a raw partitionned disk image, the original losetup is used:
 
-> > > Yes it could, but i dont even want to thi nk about all the issues of
-> > > doing such an interface. It is basically an microkernelish approach.
-> > > I prefer monolithic simplicity.
-> > 
-> > It's not complex at all.  Pass a null-terminated pathname to the server and
-> > keep running.  The server will asynchronously read your pages for you.
-> 
-> But how do you update the bitmap in your scheme? 
+# losetup -f etch.img
+# ls -l /dev/loop?*
+brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+# mount /dev/loop0p1 /mnt
+# ls /mnt
+bench  cdrom  home        lib         mnt   root     srv  usr
+bin    dev    initrd      lost+found  opt   sbin     sys  var
+boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+# umount /mnt
+# losetup -d /dev/loop0
 
-umm,
+Of course, the same behavior can be done using kpartx on a loop device,
+but modifying loop avoids to stack several layers of block device (loop +
+device mapper), this is a very light modification (40% of modifications
+are to manage the new parameter).
 
-	BITMAP_TRAINING_RUN=1 /usr/lib64/firefox-2.0.0.12/firefox-bin
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+---
+ drivers/block/loop.c |   26 +++++++++++++++++++++-----
+ 1 files changed, 21 insertions(+), 5 deletions(-)
 
-will write the bitmap to ~/.bitmaps/usr/lib64/firefox-2.0.0.12/firefox-bin ?
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 91ebb00..f7f1635 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -82,6 +82,9 @@
+ static LIST_HEAD(loop_devices);
+ static DEFINE_MUTEX(loop_devices_mutex);
+ 
++static int max_part;
++static int part_shift;
++
+ /*
+  * Transfer functions
+  */
+@@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
+ 		goto out_putf;
+ 
+ 	fput(old_file);
++	if (max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ 
+  out_putf:
+@@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+ 	}
+ 	lo->lo_state = Lo_bound;
+ 	wake_up_process(lo->lo_thread);
++	if (max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ 
+ out_clr:
+@@ -919,6 +926,8 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+ 	fput(filp);
+ 	/* This is safe: open() is still holding a reference. */
+ 	module_put(THIS_MODULE);
++	if (max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ }
+ 
+@@ -1360,6 +1369,8 @@ static struct block_device_operations lo_fops = {
+ static int max_loop;
+ module_param(max_loop, int, 0);
+ MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
++module_param(max_part, int, 0);
++MODULE_PARM_DESC(max_part, "Maximum number of partitions per loop device");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+ 
+@@ -1412,7 +1423,7 @@ static struct loop_device *loop_alloc(int i)
+ 	if (!lo->lo_queue)
+ 		goto out_free_dev;
+ 
+-	disk = lo->lo_disk = alloc_disk(1);
++	disk = lo->lo_disk = alloc_disk(1 << part_shift);
+ 	if (!disk)
+ 		goto out_free_queue;
+ 
+@@ -1422,7 +1433,7 @@ static struct loop_device *loop_alloc(int i)
+ 	init_waitqueue_head(&lo->lo_event);
+ 	spin_lock_init(&lo->lo_lock);
+ 	disk->major		= LOOP_MAJOR;
+-	disk->first_minor	= i;
++	disk->first_minor	= i << part_shift;
+ 	disk->fops		= &lo_fops;
+ 	disk->private_data	= lo;
+ 	disk->queue		= lo->lo_queue;
+@@ -1502,7 +1513,12 @@ static int __init loop_init(void)
+ 	 *     themselves and have kernel automatically instantiate actual
+ 	 *     device on-demand.
+ 	 */
+-	if (max_loop > 1UL << MINORBITS)
++
++	part_shift = 0;
++	if (max_part > 0)
++		part_shift = fls(max_part);
++
++	if (max_loop > 1UL << (MINORBITS - part_shift))
+ 		return -EINVAL;
+ 
+ 	if (max_loop) {
+@@ -1510,7 +1526,7 @@ static int __init loop_init(void)
+ 		range = max_loop;
+ 	} else {
+ 		nr = 8;
+-		range = 1UL << MINORBITS;
++		range = 1UL << (MINORBITS - part_shift);
+ 	}
+ 
+ 	if (register_blkdev(LOOP_MAJOR, "loop"))
+@@ -1549,7 +1565,7 @@ static void __exit loop_exit(void)
+ 	unsigned long range;
+ 	struct loop_device *lo, *next;
+ 
+-	range = max_loop ? max_loop :  1UL << MINORBITS;
++	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
+ 
+ 	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+ 		loop_del_one(lo);
+-- 
+1.5.2.4
 
-if it proves useful, build it all into libc..
-
-
-I'm assuming that the per-page minor fault cost is relatively low and that
-the major benefit is in disk scheduling[*].  If that's false then we'd need
-kernel support I guess - some sort of gang-fault syscall?
-
-
-* solid-state disks are going to put a lot of code out of a job.
