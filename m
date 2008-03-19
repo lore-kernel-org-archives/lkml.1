@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYCST1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYCST1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbYCST1A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYCSTY4
+	id S1754171AbYCST1w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYCSTZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:24:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35783 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753011AbYCSTYu (ORCPT
+	Wed, 19 Mar 2008 15:25:22 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36342 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbYCSTZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:24:50 -0400
-Date: Tue, 18 Mar 2008 20:56:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4
-In-Reply-To: <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0803182042430.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803190221.58968.bzolnier@gmail.com> <alpine.LFD.1.00.0803181814170.3020@woody.linux-foundation.org> <200803190424.30971.bzolnier@gmail.com>
- <alpine.LFD.1.00.0803182013090.3020@woody.linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 19 Mar 2008 15:25:10 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47E0D9A7.1040308@s5r6.in-berlin.de>
+Date: Wed, 19 Mar 2008 10:15:19 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: Adrian Bunk <bunk@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc5: Reported regressions from 2.6.24
+References: <200803110014.52985.rjw@sisk.pl> <47D67992.8010308@s5r6.in-berlin.de> <20080311130449.GA21157@cs181133002.pp.htv.fi> <47DEE282.8060904@m3y3r.de>
+In-Reply-To: <47DEE282.8060904@m3y3r.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Meyer wrote:
+> Adrian Bunk schrieb:
+>> On Tue, Mar 11, 2008 at 01:22:42PM +0100, Stefan Richter wrote:
+>>  
+>>> Rafael J. Wysocki wrote:
+>>>    
+>>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=10080
 
+I have reopened, re-assigned, and slightly renamed that bug now.
 
-On Tue, 18 Mar 2008, Linus Torvalds wrote:
+>>>> Subject        : 2.6.25-rc2: ohci1394 problem
+>>>> Submitter    : Thomas Meyer <thomas@m3y3r.de>
+>>>> Date        : 2008-02-20 08:47
+>>>> References    : http://lkml.org/lkml/2008/2/20/58
+>>>> Handled-By    : Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+This bug is not handled by me.
+
+>>>>       
+>>> Thomas wrote on 2008-02-25:
+>>> ''So i did a "make clean" and a "make" (not a make
+>>> -j3 as i use to do) and recompiled 2.6.25-rc3 and now it works again.
+>>> Case closed under strange error.''
+>>> ...
+>>>     
+>>
+>> Although I don't think this would cause the error, it would be nice if 
+>> Thomas could verify that the -j3 did not cause the problem.
+>>   
+> I still cannot *believe* this bug, but  i just checked out the latest 
+> kernel and did a make distclean and a make (with mr. bunks patch 
+> applied) and there it is again:
+> $ dmesg
 > 
-> But the absolute first thing we should do is to make the code at least as 
-> robust as it used to be, and preferably aim _higher_ in robustness rather 
-> than lower!
+> (cut)
+> [  464.852986] ohci1394: fw-host0: physical posted write error
+[...]
+> [  464.898957] ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+> and so on....
+> 
+> $ git describe
+> v2.6.25-rc6-14-gbde4f8f
+> 
+> As i already wrote: I tried to bisect this behavior, but with no result.
+> 
+> And Stefan didn't change anything in the involved drivers. I have no 
+> idea what could cause this kind of bug!
 
-An example of this "aim higher", I think that we obviously should complete 
-the command if the controller says it's done with it (like the old 
-"drive_cmd_intr()" code used to do), but we might decide that printing a 
-warning would be the proper way to then also inform the user about the 
-fact that we expected the command to want more data, but it never did.
+The messages which Thomas posted result from ohci1394 getting ~0 (i.e. 
+0xffffffff) from some or all MMIO reads.  This is not a FireWire driver bug.
 
-That way, the code not only handles the unexpected situation gracefully, 
-but the very fact that it was unexpected also gets logged.
-
-[ And at that point your patch to make the specific SMART subcommands have 
-  strict logic about the data direction will actually matter - although 
-  maybe it turns out that there are _other_ tools that send other 
-  commands, and we decide that the warning isn't useful after all! ]
-
-The thing is, I know for a fact that some system vendors use Linux for 
-burn-in and testing/setup of their components, and I would not be in the 
-least surprised if some of them use HDIO_DRIVE_CMD to do some 
-vendor-specific stuff.
-
-And I think it's a fine thing to try to use just one set of code (the 
-taskfile code) to drive all these special commands, but the fact is, the 
-old HDIO_DRIVE_CMD interface fundamentally doesn't even _have_ the 
-capability to specify the total taskfile state.
-
-So we simply know as a fact that
- (a) people do use an interface that used to work (HDIO_DRIVE_CMD)
-and
- (b) it will fundamentally *never* have complete taskfile state, so we 
-     *have* to live with the fact that some of our commands simply don't 
-     have the full state that the taskfile code may have historically 
-     depended on but the old ide_drive_cmd() code didn't and cannot depend 
-     on.
-
-Your patch tries to fix (b), but we also know that it fundamentally simply 
-*cannot* fix it for all cases. So even trying to is really pretty futile, 
-I think (although we can obviously hope that nobody uses HDIO_DRIVE_CMD 
-any more for anything but SMART and really simple commands, but that 
-sounds rather unlikely).
-
-		Linus
+MMIO has been broken by something after 2.6.24.
+-- 
+Stefan Richter
+-=====-==--- --== =--==
+http://arcgraph.de/sr/
