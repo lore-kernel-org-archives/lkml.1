@@ -1,129 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbYCSTrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYCSTpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758875AbYCSTrP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbYCSTcT
+	id S1758543AbYCSTpM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbYCSTbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:32:19 -0400
-Received: from over.ny.us.ibm.com ([32.97.182.150]:52910 "EHLO
-	over.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755567AbYCSTcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:32:06 -0400
-Subject: [PATCH 1/2] Keep track of original clocksource frequency
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Content-Type: text/plain
-Date: Tue, 18 Mar 2008 15:11:19 -0700
-Message-Id: <1205878279.28128.114.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 19 Mar 2008 15:31:06 -0400
+Received: from phunq.net ([64.81.85.152]:46290 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755331AbYCSTbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:31:03 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] ddtree: A git kernel tree for storage servers
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Wed, 19 Mar 2008 00:02:24 -0800
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200803190102.25491.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's my earlier mult/adj split patch reworked as suggested by Roman to
-instead just introduce mult_orig.
+Hi all,
 
-Andrew, if there are not major objections, could you add it to your
-2.6.26 pending list?
+I have set up a new git tree to better serve the needs of those 
+interested in advanced storage applications and development.
 
-thanks
--john
+This ddtree git repository aims to provide a congenial forum for 
+development of forward looking storage features such as replication and 
+clustering; and to provide improved kernels for those who consider it 
+important that their storage servers run efficiently under heavy load
+without deadlocking.
 
+What will be in this ddtree?
 
-The clocksource frequency is represented by
-clocksource->mult/2^(clocksource->shift). Currently, when NTP makes
-adjustments to the clock frequency, they are made directly to the mult
-value.
+  * Block layer deadlock fixes (Status: production)
+  * bio allocation optimizations (Status: functional)
+  * bio support for stacking block devices (Status: functional)
+  * vm dirty limit eradication (Status: prototype)
+  * vm dirty rate balancing (Status: prototype)
+  * ddlink generic device driver control library (Status: functional)
+  * ddsetup device mapper frontend rewrite (Status: incomplete)
+  * ddman kernel cluster harness (Status: upcoming)
+  * ddraid distributed raid (Status: prototype)
+  * ddsnap replicating snapshot device (Status: alpha)
 
-This has the drawback that once changed, we cannot know what the orignal
-mult value was, or how much adjustment has been applied.
+Patch set tracking
 
-This property causes problems in calculating proper ntp intervals when
-switching back and forth between clocksources. 
+One task that git does not support well at all is maintaining the 
+identity of patches and patch sets.  This is no doubt due to the fact 
+that Graydon Hoare[1] never implemented the second of my two 
+suggestions for improving Monotone's database schema[2], which is to 
+say that patches and patch sets should be first class, versioned 
+objects in the revision control database.  One could fairly say that 
+git caters more to maintainers than submitters, the latter being 
+largely left to their own devices when it comes to splitting deltas up 
+into the modular form wanted for peer review.  My partial solution to 
+this deficiency is to embed the interesting patches in a directory 
+called "patches", each named in such a way that:
 
-This patch separates the current mult value into a mult and mult_orig
-pair. The mult_orig value stays constant, while the ntp clocksource
-adjustments are done only to the mult value.
+   ls patches/* | sort -r | xargs cat | patch -p1 -RE
 
-This allows for correct ntp interval calculation and additionally lays
-the groundwork for a new notion of time, what I'm calling the
-monotonic-raw time, which is introduced in a following patch.
+will reverse them, and:
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+   cat patches/* | patch -p1
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index cde2b9f..b282b79 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -45,7 +45,8 @@ struct clocksource;
-  * @read:		returns a cycle value
-  * @mask:		bitmask for two's complement
-  *			subtraction of non 64 bit counters
-- * @mult:		cycle to nanosecond multiplier
-+ * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
-+ * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
-  * @shift:		cycle to nanosecond divisor (power of two)
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-@@ -63,6 +64,7 @@ struct clocksource {
- 	cycle_t (*read)(void);
- 	cycle_t mask;
- 	u32 mult;
-+	s32 mult_orig;
- 	u32 shift;
- 	unsigned long flags;
- 	cycle_t (*vread)(void);
-@@ -201,16 +203,17 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
- {
- 	u64 tmp;
- 
--	/* XXX - All of this could use a whole lot of optimization */
-+	/* Do the ns -> cycle conversion first, using original mult */
- 	tmp = length_nsec;
- 	tmp <<= c->shift;
--	tmp += c->mult/2;
--	do_div(tmp, c->mult);
-+	tmp += c->mult_orig/2;
-+	do_div(tmp, c->mult_orig);
- 
- 	c->cycle_interval = (cycle_t)tmp;
- 	if (c->cycle_interval == 0)
- 		c->cycle_interval = 1;
- 
-+	/* Go back from cycles -> shifted ns, this time use ntp adjused mult */
- 	c->xtime_interval = (u64)c->cycle_interval * c->mult;
- }
- 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 548c436..7a4a1b4 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -309,6 +309,9 @@ int clocksource_register(struct clocksource *c)
- 	unsigned long flags;
- 	int ret;
- 
-+	/* save mult_orig on registration */
-+	c->mult_orig = c->mult;
-+
- 	spin_lock_irqsave(&clocksource_lock, flags);
- 	ret = clocksource_enqueue(c);
- 	if (!ret)
-diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-index 4c256fd..1ca9955 100644
---- a/kernel/time/jiffies.c
-+++ b/kernel/time/jiffies.c
-@@ -61,6 +61,7 @@ struct clocksource clocksource_jiffies = {
- 	.read		= jiffies_read,
- 	.mask		= 0xffffffff, /*32bits*/
- 	.mult		= NSEC_PER_JIFFY << JIFFIES_SHIFT, /* details above */
-+	.mult_orig	= NSEC_PER_JIFFY << JIFFIES_SHIFT,
- 	.shift		= JIFFIES_SHIFT,
- };
- 
+will re-apply them.  This is similar to the way Quilt works, less its 
+series file, which is replaced by a naming convention that is obvious 
+from inspection.  No doubt I should really begin using Quilt, but I can 
+always learn that art later.  For now, the important thing is to carry 
+along patch identities in a way that makes life easier for me.
 
+At present, ddtree only carries six patches, all in its main "dd" 
+branch.  These patches are based off of the "ddbase" branch, which is 
+in turn derived from either a two-dot or a three-dot stable kernel 
+release.  Thus, I intend to track Linus's tree at coarse intervals and 
+selected stable releases at finer intervals, which will most likely
+coincide with  significant distributor branch points such as that of
+Ubuntu Hardy (long term stable server release).
 
+So for today:
+
+   $ tree patches
+   patches
+   |-- bio-alloc
+   |-- bio-alloc-hide-endio
+   |-- bio-alloc-stack
+   |-- bio-alloc-stack-reduce-dm-allocs
+   |-- ddlink
+   `-- ddlink-ddsetup
+
+Other patches expected to land here over the next few days:
+
+   * bio.throttle (avoid bio write deadlock)
+   * ddsnap (snapshots and replication)
+   * ramback (backing store for ramdisks)
+
+I am still learning git and developing my workflow, so it will take a 
+few days for that to settle down, during which period I will tear down
+and rebase the content several times.  Currently I have very limited
+bandwidth available, so please be gentle and avoid clone - just clone
+a linus tree and pull into that instead.  (hpa...?)
+
+To browse ddtree:
+
+   http://phunq.net/ddtree
+
+To pull from ddtree:
+
+   http://phunq.net/git/ddtree (please do not clone for now)
+
+For now there is no git:protocol access because git-daemon manifests 
+some strange issue I have not yet had time to track down.  The symptom 
+is this:
+
+   $ tail /var/log/git-daemon/current
+   2008-03-19_03:49:26.67922 [1068] Request upload-pack for '/ddtree'
+   2008-03-19_03:49:26.68142 fatal: packfile ./objects/pack/pack-d37a0c64e9ce1c8b29ad9c02a39636ca9c609c31.pack cannot be mapped.
+
+Invitation
+
+Anybody who wants to participate in the ongoing design, development and 
+debugging of lvm3, among other things: we hang out on irc.oftc.net 
+#zumastor.  Everybody welcome, and see http://zumastor.org.
+
+Regards,
+
+Daniel
+
+[1] Graydon Hoare: see quicksort, then see grandfather.
+
+[2] Fortunately, Graydon did implement the first suggestion, that 
+directories should become first class versioned objects, thus setting 
+the stage for the development of git[3].
+
+[3] Monotone, http://en.wikipedia.org/wiki/Monotone_%28software%29
