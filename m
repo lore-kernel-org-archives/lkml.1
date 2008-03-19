@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYCSTt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYCSTts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYCSTt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYCSTc4
+	id S1759548AbYCSTts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYCSTdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:32:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34817 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752219AbYCSTcz (ORCPT
+	Wed, 19 Mar 2008 15:33:03 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:59782 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755820AbYCSTdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:32:55 -0400
-Date: Wed, 19 Mar 2008 07:42:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
- patchset against -rc6)
-In-Reply-To: <20080319101947.GA2963@elf.ucw.cz>
-Message-ID: <alpine.LFD.1.00.0803190741490.3020@woody.linux-foundation.org>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz>
- <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org> <20080319101947.GA2963@elf.ucw.cz>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 19 Mar 2008 15:33:00 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [PATCH] Fix fsldma.c warning messages when it's compiled underPPC64.
+Date: Wed, 19 Mar 2008 09:52:57 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AED33740@zch01exm26.fsl.freescale.net>
+In-Reply-To: <47E00898.2090009@freescale.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Fix fsldma.c warning messages when it's compiled underPPC64.
+Thread-Index: AciJJSN4nb7NDdKuTuaNMUt6b6P09gAPrLug
+References: <1205146045-17342-1-git-send-email-wei.zhang@freescale.com> <20080311142247.GA18915@lixom.net> <ABF87B0B6A38C0458E319AC973ED68AECE526A@zch01exm26.fsl.freescale.net> <e9c3a7c20803120929l41b9fec8m34db73d6e034461a@mail.gmail.com> <ABF87B0B6A38C0458E319AC973ED68AED32DBF@zch01exm26.fsl.freescale.net> <47E00898.2090009@freescale.com>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Wood Scott" <scottwood@freescale.com>
+Cc: "Dan Williams" <dan.j.williams@intel.com>,
+       "Olof Johansson" <olof@lixom.net>, <sfr@canb.auug.org.au>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m2JKk4nq007452
 
+ 
 
-
-On Wed, 19 Mar 2008, Pavel Machek wrote:
->
-> > > It will take a while. My .git directory is 7G, and I'd like to do a
-> > > backup before playing with git.
-> > 
-> > Ouch, what have you done? It should be about 200MB, not 7GB.
+> -----Original Message-----
+> From: Wood Scott 
 > 
-> And 10 minutes later, .git directory is 200MB. Thanks!
+> >>>  The reason is the val will be assigned to SR register, and 
+> >> SR register
+> >>>   is a 32-bit only register.
+> >> If this is the case then why not disable the driver for PPC_64?
+> 
+> May I point out that SR is a status register, and not an address, and 
+> thus it should never have been dma_addr_t to begin with?
+> 
+Never, thus u32 is good for SR.
 
-It strikes me that the only way I can think of that you could have gotten 
-a 7GB .git directory without really working at it is if you use one of the 
-so-called "dumb" git protocols that just copy whole packfiles from 
-kernel.org when you pull.
-
-So do you happen to perhaps use http:// or rsync:// when you fetch git 
-data? That would not only be horribly slow occasionally (you'd fetch 
-all-new packs and re-download about 200MB of data when I repack the kernel 
-repo on kernel.org, which happens about once or twice every release 
-cycle), but it would also explain how it ballooned to 7GB for you (because 
-you have all these duplicate packs!).
-
-Usign the native git:// protocol would be much faster and avoid the issue 
-in the future.
-
-		Linus
+Cheers!
+Wei.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
