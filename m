@@ -1,60 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933687AbYCSXhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942775AbYCSXiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933687AbYCSXhk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757687AbYCSWHi
+	id S942775AbYCSXiK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939626AbYCSWIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:07:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56010 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754887AbYCSWHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:07:35 -0400
-Date: Wed, 19 Mar 2008 15:07:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: clameter@sgi.com, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+	Wed, 19 Mar 2008 18:08:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53437 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761777AbYCSWIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:08:12 -0400
+Date: Wed, 19 Mar 2008 18:08:33 -0500 (EST)
+Message-Id: <20080319.180833.28392718.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [0/2] vmalloc: Add /proc/vmallocinfo to display mappings
-Message-Id: <20080319150704.d3f090e6.akpm@linux-foundation.org>
-In-Reply-To: <20080319111943.0E1B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080318222701.788442216@sgi.com>
-	<20080319111943.0E1B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [RFC PATCH 02/13] block: add request submission interface
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008 11:23:30 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->
-> > The following two patches implement /proc/vmallocinfo. /proc/vmallocinfo
-> > displays data about the vmalloc allocations. The second patch introduces
-> > a tracing feature that allows to display the function that allocated the
-> > vmalloc area.
-> > 
-> > Example:
-> > 
-> > cat /proc/vmallocinfo
+This patch adds a generic request submission interface for request
+stacking drivers so that request-based dm can use it to submit
+clones to underlying devices.
 
-argh, please don't top-post.
+The request may have been made based on limitations of other queues.
+So generic limitation checks based on the submitting queue are needed.
 
-(undoes it)
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+---
+ block/blk-core.c       |   65 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/blkdev.h |    1 
+ 2 files changed, 66 insertions(+)
 
->
-> Hi
-> 
-> Great.
-> it seems very useful.
-> and, I found no bug.
-> 
-> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-
-I was just about to ask whether we actually need the feature - I don't
-recall ever having needed it, nor do I recall seeing anyone else need it.
-
-Why is it useful?
+Index: 2.6.25-rc5/block/blk-core.c
+===================================================================
+--- 2.6.25-rc5.orig/block/blk-core.c
++++ 2.6.25-rc5/block/blk-core.c
+@@ -1507,6 +1507,71 @@ void submit_bio(int rw, struct bio *bio)
+ }
+ EXPORT_SYMBOL(submit_bio);
+ 
++/*
++ * Check a request for queue limits
++ */
++static int check_queue_limit(struct request_queue *q, struct request *rq)
++{
++	if (rq->nr_sectors > q->max_sectors ||
++	    rq->data_len >> 9 > q->max_hw_sectors) {
++		printk(KERN_ERR "%s: over max size limit.\n", __func__);
++		return 1;
++	}
++
++	/*
++	 * queue's settings related to segment counting like q->bounce_pfn
++	 * may differ from that of other stacking queues.
++	 * Recalculate it to check the request correctly on this queue's
++	 * limitation.
++	 */
++	blk_recalc_rq_segments(rq);
++	if (rq->nr_phys_segments > q->max_phys_segments ||
++	    rq->nr_hw_segments > q->max_hw_segments) {
++		printk(KERN_ERR "%s: over max segments limit.\n", __func__);
++		return 1;
++	}
++
++	return 0;
++}
++
++/**
++ * blk_submit_request - Helper for stacking drivers to submit the request
++ * @q:  the queue to submit the request
++ * @rq: the request being queued
++ **/
++void blk_submit_request(struct request_queue *q, struct request *rq)
++{
++	unsigned long flags;
++
++	if (check_queue_limit(q, rq))
++		goto end_io;
++
++#ifdef CONFIG_FAIL_MAKE_REQUEST
++	if (rq->rq_disk && rq->rq_disk->flags & GENHD_FL_FAIL &&
++	    should_fail(&fail_make_request, blk_rq_bytes(rq)))
++		goto end_io;
++#endif
++
++	spin_lock_irqsave(q->queue_lock, flags);
++
++	/*
++	 * Submitting request must be dequeued before calling this function
++	 * because it will be linked to another request_queue
++	 */
++	BUG_ON(blk_queued_rq(rq));
++
++	drive_stat_acct(rq, 1);
++	__elv_add_request(q, rq, ELEVATOR_INSERT_BACK, 0);
++
++	spin_unlock_irqrestore(q->queue_lock, flags);
++
++	return;
++
++end_io:
++	blk_end_request(rq, -EIO, blk_rq_bytes(rq));
++}
++EXPORT_SYMBOL_GPL(blk_submit_request);
++
+ /**
+  * __end_that_request_first - end I/O on a request
+  * @req:      the request being processed
+Index: 2.6.25-rc5/include/linux/blkdev.h
+===================================================================
+--- 2.6.25-rc5.orig/include/linux/blkdev.h
++++ 2.6.25-rc5/include/linux/blkdev.h
+@@ -582,6 +582,7 @@ extern void blk_end_sync_rq(struct reque
+ extern struct request *blk_get_request(struct request_queue *, int, gfp_t);
+ extern void blk_insert_request(struct request_queue *, struct request *, int, void *);
+ extern void blk_requeue_request(struct request_queue *, struct request *);
++extern void blk_submit_request(struct request_queue *q, struct request *rq);
+ extern void blk_plug_device(struct request_queue *);
+ extern int blk_remove_plug(struct request_queue *);
+ extern void blk_recount_segments(struct request_queue *, struct bio *);
