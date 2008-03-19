@@ -1,71 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760368AbYCSXl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938137AbYCSXmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760368AbYCSXl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762095AbYCSWKj
+	id S938137AbYCSXmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbYCSWKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:10:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58276 "EHLO ogre.sisk.pl"
+	Wed, 19 Mar 2008 18:10:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53579 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939837AbYCSWKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:10:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: ACPI regression in 2.6.25-rc6 (function keys stop working)
-Date: Wed, 19 Mar 2008 23:10:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Tim Elliott <tle@holymonkey.com>, Guillaume Chazarain <guichaz@gmail.com>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lenb@kernel.org
-References: <3d8471ca0803171713q31b87939y557f6408543ac881@mail.gmail.com> <1a25886d0803181023o785efa42w523ea48896a0331c@mail.gmail.com> <47E01C86.9080306@suse.de>
-In-Reply-To: <47E01C86.9080306@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1763699AbYCSWKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:10:40 -0400
+Date: Wed, 19 Mar 2008 18:10:16 -0500 (EST)
+Message-Id: <20080319.181016.66181485.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
+       linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [RFC PATCH 07/13] dm: add memory pool
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803192310.18692.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 18 of March 2008, Alexey Starikovskiy wrote:
-> Tim Elliott wrote:
-> > I am seeing the same problem on my Lenovo 3000 v100. The function keys
-> > stopped working.
-> > 
-> > tim@tim-len:~$ cat /proc/interrupts
-> >            CPU0       CPU1
-> >   0:     164105          0   IO-APIC-edge      timer
-> >   1:      12560          0   IO-APIC-edge      i8042
-> >   9:          6          0   IO-APIC-fasteoi   acpi
-> >  12:     117534          0   IO-APIC-edge      i8042
-> >  14:         51          0   IO-APIC-edge      ide0
-> >  16:         31          0   IO-APIC-fasteoi   uhci_hcd:usb4,
-> > i915@pci:0000:00:02.0
-> >  18:     121892          0   IO-APIC-fasteoi   uhci_hcd:usb3, iwl3945
-> >  19:      36197          0   IO-APIC-fasteoi   uhci_hcd:usb2, ahci
-> >  20:       7931          0   IO-APIC-fasteoi   eth0
-> >  22:      11071          0   IO-APIC-fasteoi   sdhc0:slot0, HDA Intel
-> >  23:          5          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5
-> > NMI:          0          0   Non-maskable interrupts
-> > LOC:      11296      73879   Local timer interrupts
-> > RES:      23199      49164   Rescheduling interrupts
-> > CAL:        297      27033   function call interrupts
-> > TLB:        838       1286   TLB shootdowns
-> > TRM:          0          0   Thermal event interrupts
-> > THR:          0          0   Threshold APIC interrupts
-> > SPU:          0          0   Spurious interrupts
-> > ERR:          0
-> > 
-> > The problem goes away when reverting 2c81ce4c9c37b910210f2640c28e98a0c398dc26
-> > 
-> > Reverting the above and applying the patch in comment #38 of bug #9998
-> > also works (http://bugzilla.kernel.org/show_bug.cgi?id=9998).
-> reverting the above and patch in comment #38 of #9998 are the same thing.
-> I am really interested if after revert (or application of #38) you notice a
-> difference in interrupt count before and after applying #37 from #9998.
+This patch prepares memory pools for request-based dm.
 
-What is the relationship between this problem and bug #10279?
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+---
+ drivers/md/dm.c |   39 ++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 38 insertions(+), 1 deletion(-)
 
-Rafael
+Index: 2.6.25-rc5/drivers/md/dm.c
+===================================================================
+--- 2.6.25-rc5.orig/drivers/md/dm.c
++++ 2.6.25-rc5/drivers/md/dm.c
+@@ -52,6 +52,27 @@ struct dm_target_io {
+ 	union map_info info;
+ };
+ 
++/*
++ * For request based dm.
++ * One of these is allocated per request.
++ *
++ * Since assuming "original request : cloned request = 1 : 1" and
++ * a counter for number of clones like struct dm_io.io_count isn't needed,
++ * struct dm_io and struct target_io can be merged.
++ */
++struct dm_rq_target_io {
++	struct mapped_device *md;
++	struct dm_target *ti;
++	struct request *orig, clone;
++	int error;
++	union map_info info;
++};
++
++struct dm_clone_bio_info {
++	struct bio *orig;
++	struct request *rq;
++};
++
+ union map_info *dm_get_mapinfo(struct bio *bio)
+ {
+ 	if (bio && bio->bi_private)
+@@ -148,6 +169,8 @@ struct mapped_device {
+ #define MIN_IOS 256
+ static struct kmem_cache *_io_cache;
+ static struct kmem_cache *_tio_cache;
++static struct kmem_cache *_rq_tio_cache;
++static struct kmem_cache *_bio_info_cache;
+ 
+ static int __init local_init(void)
+ {
+@@ -163,9 +186,17 @@ static int __init local_init(void)
+ 	if (!_tio_cache)
+ 		goto out_free_io_cache;
+ 
++	_rq_tio_cache = KMEM_CACHE(dm_rq_target_io, 0);
++	if (!_rq_tio_cache)
++		goto out_free_tio_cache;
++
++	_bio_info_cache = KMEM_CACHE(dm_clone_bio_info, 0);
++	if (!_bio_info_cache)
++		goto out_free_rq_tio_cache;
++
+ 	r = dm_uevent_init();
+ 	if (r)
+-		goto out_free_tio_cache;
++		goto out_free_bio_info_cache;
+ 
+ 	_major = major;
+ 	r = register_blkdev(_major, _name);
+@@ -179,6 +210,10 @@ static int __init local_init(void)
+ 
+ out_uevent_exit:
+ 	dm_uevent_exit();
++out_free_bio_info_cache:
++	kmem_cache_destroy(_bio_info_cache);
++out_free_rq_tio_cache:
++	kmem_cache_destroy(_rq_tio_cache);
+ out_free_tio_cache:
+ 	kmem_cache_destroy(_tio_cache);
+ out_free_io_cache:
+@@ -189,6 +224,8 @@ out_free_io_cache:
+ 
+ static void local_exit(void)
+ {
++	kmem_cache_destroy(_bio_info_cache);
++	kmem_cache_destroy(_rq_tio_cache);
+ 	kmem_cache_destroy(_tio_cache);
+ 	kmem_cache_destroy(_io_cache);
+ 	unregister_blkdev(_major, _name);
