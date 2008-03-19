@@ -1,126 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934259AbYCSUgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbYCSUUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934259AbYCSUgq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYCSTli
+	id S932183AbYCSUUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYCSTjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:41:38 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13575 "EHLO mga11.intel.com"
+	Wed, 19 Mar 2008 15:39:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757788AbYCSTlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:41:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
-   d="scan'208";a="536061940"
-Message-Id: <20080319000101.007019000@intel.com>
-References: <20080319000012.439150000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 17:00:25 -0700
-From: venkatesh.pallipadi@intel.com
-To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 13/13] x86: PAT Patch to add PAT related debug prints
-Content-Disposition: inline; filename=debug_reserve_free_memtype.patch
+	id S1757260AbYCSTi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:38:58 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 66/79] [PATCH] merge smp_prepare_boot_cpu
+Date: Wed, 19 Mar 2008 14:26:01 -0300
+Message-Id: <12059478732976-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <12059478682569-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
+ costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
+ -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds debug prints at critical code. Adds enough info in dmesg to allow us to
-do effective first round of analysis of any issues that may result due to PAT
-patch series.
+From: Glauber Costa <gcosta@redhat.com>
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+it is practically the same between arches now, so it is
+moved to smpboot.c. Minor differences (gdt initialization)
+live inside an ifdef
 
-Index: linux-2.6-x86.git/arch/x86/mm/pat.c
-===================================================================
---- linux-2.6-x86.git.orig/arch/x86/mm/pat.c	2008-03-18 03:40:47.000000000 -0700
-+++ linux-2.6-x86.git/arch/x86/mm/pat.c	2008-03-18 03:56:52.000000000 -0700
-@@ -289,6 +289,7 @@
- 		struct memtype *saved_ptr;
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot.c    |   18 ++++++++++++++++++
+ arch/x86/kernel/smpboot_32.c |   14 --------------
+ arch/x86/kernel/smpboot_64.c |   14 --------------
+ 3 files changed, 18 insertions(+), 28 deletions(-)
+
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index a36ae27..b214d8d 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -24,6 +24,9 @@
+ #include <mach_wakecpu.h>
+ #include <smpboot_hooks.h>
  
- 		if (parse->start >= end) {
-+			printk("New Entry\n");
- 			list_add(&new_entry->nd, parse->nd.prev);
- 			new_entry = NULL;
- 			break;
-@@ -338,6 +339,8 @@
- 				break;
- 			}
- 
-+			printk("Overlap at 0x%Lx-0x%Lx\n",
-+			       saved_ptr->start, saved_ptr->end);
- 			/* No conflict. Go ahead and add this new entry */
- 			list_add(&new_entry->nd, saved_ptr->nd.prev);
- 			new_entry = NULL;
-@@ -388,6 +391,8 @@
- 				break;
- 			}
- 
-+			printk("Overlap at 0x%Lx-0x%Lx\n",
-+			       saved_ptr->start, saved_ptr->end);
- 			/* No conflict. Go ahead and add this new entry */
- 			list_add(&new_entry->nd, &saved_ptr->nd);
- 			new_entry = NULL;
-@@ -396,6 +401,10 @@
- 	}
- 
- 	if (err) {
-+		printk(
-+	"reserve_memtype failed 0x%Lx-0x%Lx, track %s, req %s\n",
-+			start, end, cattr_name(new_entry->type),
-+			cattr_name(req_type));
- 		kfree(new_entry);
- 		spin_unlock(&memtype_lock);
- 		return err;
-@@ -404,6 +413,19 @@
- 	if (new_entry) {
- 		/* No conflict. Not yet added to the list. Add to the tail */
- 		list_add_tail(&new_entry->nd, &memtype_list);
-+		printk("New Entry\n");
-+  	}
++/* State of each CPU */
++DEFINE_PER_CPU(int, cpu_state) = { 0 };
 +
-+	if (ret_type) {
-+		printk(
-+	"reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s, ret %s\n",
-+			start, end, cattr_name(actual_type),
-+			cattr_name(req_type), cattr_name(*ret_type));
-+	} else {
-+		printk(
-+	"reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s\n",
-+			start, end, cattr_name(actual_type),
-+			cattr_name(req_type));
- 	}
- 
- 	spin_unlock(&memtype_lock);
-@@ -440,6 +462,8 @@
- 		printk(KERN_DEBUG "%s:%d freeing invalid memtype %Lx-%Lx\n",
- 			current->comm, current->pid, start, end);
- 	}
-+
-+	printk( "free_memtype request 0x%Lx-0x%Lx\n", start, end);
- 	return err;
+ /* Store all idle threads, this can be reused instead of creating
+ * a new thread. Also avoids complicated thread destroy functionality
+ * for idle threads.
+@@ -999,6 +1002,21 @@ int __cpuinit native_cpu_up(unsigned int cpu)
+ 	return 0;
  }
  
-Index: linux-2.6-x86.git/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6-x86.git.orig/arch/x86/mm/ioremap.c	2008-03-18 03:54:39.000000000 -0700
-+++ linux-2.6-x86.git/arch/x86/mm/ioremap.c	2008-03-18 03:56:52.000000000 -0700
-@@ -179,6 +179,10 @@
- 		      new_prot_val == _PAGE_CACHE_WC)) ||
- 		    (prot_val == _PAGE_CACHE_WC &&
- 		     new_prot_val == _PAGE_CACHE_WB)) {
-+			printk(
-+		"ioremap error for 0x%lx-0x%lx, requested 0x%lx, got 0x%lx\n",
-+				phys_addr, phys_addr + size,
-+				prot_val, new_prot_val);
- 			free_memtype(phys_addr, phys_addr + size);
- 			return NULL;
- 		}
-
++/*
++ * Early setup to make printk work.
++ */
++void __init native_smp_prepare_boot_cpu(void)
++{
++	int me = smp_processor_id();
++#ifdef CONFIG_X86_32
++	init_gdt(me);
++	switch_to_new_gdt();
++#endif
++	/* already set me in cpu_online_map in boot_cpu_init() */
++	cpu_set(me, cpu_callout_map);
++	per_cpu(cpu_state, me) = CPU_ONLINE;
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ void remove_siblinginfo(int cpu)
+ {
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index 77b045c..5d27b1d 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -77,9 +77,6 @@ u8 apicid_2_node[MAX_APICID];
+ extern void map_cpu_to_logical_apicid(void);
+ extern void unmap_cpu_to_logical_apicid(int cpu);
+ 
+-/* State of each CPU. */
+-DEFINE_PER_CPU(int, cpu_state) = { 0 };
+-
+ #ifdef CONFIG_HOTPLUG_CPU
+ void cpu_exit_clear(void)
+ {
+@@ -219,17 +216,6 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	smp_boot_cpus(max_cpus);
+ }
+ 
+-void __init native_smp_prepare_boot_cpu(void)
+-{
+-	unsigned int cpu = smp_processor_id();
+-
+-	init_gdt(cpu);
+-	switch_to_new_gdt();
+-
+-	cpu_set(cpu, cpu_callout_map);
+-	__get_cpu_var(cpu_state) = CPU_ONLINE;
+-}
+-
+ extern void impress_friends(void);
+ extern void smp_checks(void);
+ 
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 60cd8cf..f77299b 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -68,9 +68,6 @@
+ /* Set when the idlers are all forked */
+ int smp_threads_ready;
+ 
+-/* State of each CPU */
+-DEFINE_PER_CPU(int, cpu_state) = { 0 };
+-
+ cycles_t cacheflush_time;
+ unsigned long cache_decay_ticks;
+ 
+@@ -216,17 +213,6 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	print_cpu_info(&cpu_data(0));
+ }
+ 
+-/*
+- * Early setup to make printk work.
+- */
+-void __init native_smp_prepare_boot_cpu(void)
+-{
+-	int me = smp_processor_id();
+-	/* already set me in cpu_online_map in boot_cpu_init() */
+-	cpu_set(me, cpu_callout_map);
+-	per_cpu(cpu_state, me) = CPU_ONLINE;
+-}
+-
+ extern void impress_friends(void);
+ extern void smp_checks(void);
+ 
 -- 
+1.5.0.6
+
