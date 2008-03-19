@@ -1,50 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939235AbYCSVza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939271AbYCSVzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939235AbYCSVza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbYCSUVm
+	id S939271AbYCSVzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932544AbYCSUVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:21:42 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:28526 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932504AbYCSUVl (ORCPT
+	Wed, 19 Mar 2008 16:21:52 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45454 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754213AbYCSUVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:21:41 -0400
-X-YMail-OSG: IdeAivwVM1nndusYa3cYcQ6zGS2c0Yoht6TNO8DMKncx0pWKTnEvB7voZlS8EGCjfqpAWG.5SA--
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 18 Mar 2008 15:06:48 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Len Brown <len.brown@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add 'short help text' to ATA_ACPI so it's [de]selectable.
-Message-ID: <20080318220648.GA31208@puku.stupidest.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	Wed, 19 Mar 2008 16:21:50 -0400
+Subject: Re: [PATCH][v4]  Modify loop device to be able to manage
+	partitions of the disk image
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080319131106.61d7fa0c.randy.dunlap@oracle.com>
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+	 <12059301672966-git-send-email-Laurent.Vivier@bull.net>
+	 <20080319131106.61d7fa0c.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Organization: Bull S.A.S.
+Date: Wed, 19 Mar 2008 21:24:41 +0100
+Message-Id: <1205958281.4758.7.camel@frecb07144>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ATA_ACPI isn't selectable right now because it lacks 'short help
-text'.  This means it's always enabled and always enables ACPI_DOCK.
-Add text so it's now [de]selectable.
 
-cc: Jeff Garzik <jeff@garzik.org>
-cc: Tejun Heo <htejun@gmail.com>
-cc: Len Brown <len.brown@intel.com>
-Signed-off-by: Chris Wedgwood <cw@f00f.org>
+Le mercredi 19 mars 2008 à 13:11 -0700, Randy Dunlap a écrit :
+> On Wed, 19 Mar 2008 13:36:07 +0100 Laurent Vivier wrote:
+> 
+> > This patch allows to use loop device with partitionned disk image.
+> > 
+> > Original behavior of loop is not modified.
+> > 
+> > A new parameter is introduced to define how many partition we want to be
+> > able to manage per loop device. This parameter is "max_part".
+> 
+> What happened to the update to Documentation/kernel-parameters.txt
+> that was in v3?
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 25aba69..ea665c2 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -28,7 +28,7 @@ config ATA_NONSTANDARD
-        default n
+Well, perhaps I didn't understand the comment of Andrew:
 
- config ATA_ACPI
--	bool
-+	bool "ATA ACPI Support"
- 	depends on ACPI && PCI
- 	select ACPI_DOCK
- 	default y
+"This shouldn't be needed."
+
+I though it means I should remove it. So, Andrew ???
+
+And to comment the changes between v3 and v4:
+
+- remove modification from kernel-parameters.txt (as you saw)
+- rename the parameter to max_part (according Andrew comments)
+- add an "ioctl_by_bdev(bdev, BLKRRPART, 0);" on loop_clr_fd()
+  (to remove loopXpY from /dev/ on "losetup -d")
+
+Laurent
+
+> 
+> > For instance, to manage 63 partitions / loop device, we will do:
+> > # modprobe loop max_part=63
+> > # ls -l /dev/loop?*
+> > brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> > brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> > brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> > brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> > brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> > brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> > brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> > brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> > 
+> > And to attach a raw partitionned disk image, the original losetup is used:
+> > 
+> > # losetup -f etch.img
+> > # ls -l /dev/loop?*
+> > brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> > brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+> > brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+> > brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+> > brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> > brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> > brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> > brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> > brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> > brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> > brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> > # mount /dev/loop0p1 /mnt
+> > # ls /mnt
+> > bench  cdrom  home        lib         mnt   root     srv  usr
+> > bin    dev    initrd      lost+found  opt   sbin     sys  var
+> > boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+> > # umount /mnt
+> > # losetup -d /dev/loop0
+> > 
+> > Of course, the same behavior can be done using kpartx on a loop device,
+> > but modifying loop avoids to stack several layers of block device (loop +
+> > device mapper), this is a very light modification (40% of modifications
+> > are to manage the new parameter).
+> > 
+> > Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+> > ---
+> >  drivers/block/loop.c |   26 +++++++++++++++++++++-----
+> >  1 files changed, 21 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> > index 91ebb00..f7f1635 100644
+> > --- a/drivers/block/loop.c
+> > +++ b/drivers/block/loop.c
+> > @@ -82,6 +82,9 @@
+> >  static LIST_HEAD(loop_devices);
+> >  static DEFINE_MUTEX(loop_devices_mutex);
+> >  
+> > +static int max_part;
+> > +static int part_shift;
+> > +
+> >  /*
+> >   * Transfer functions
+> >   */
+> > @@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
+> >  		goto out_putf;
+> >  
+> >  	fput(old_file);
+> > +	if (max_part > 0)
+> > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+> >  	return 0;
+> >  
+> >   out_putf:
+> > @@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+> >  	}
+> >  	lo->lo_state = Lo_bound;
+> >  	wake_up_process(lo->lo_thread);
+> > +	if (max_part > 0)
+> > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+> >  	return 0;
+> >  
+> >  out_clr:
+> > @@ -919,6 +926,8 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+> >  	fput(filp);
+> >  	/* This is safe: open() is still holding a reference. */
+> >  	module_put(THIS_MODULE);
+> > +	if (max_part > 0)
+> > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+> >  	return 0;
+> >  }
+> >  
+> > @@ -1360,6 +1369,8 @@ static struct block_device_operations lo_fops = {
+> >  static int max_loop;
+> >  module_param(max_loop, int, 0);
+> >  MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
+> > +module_param(max_part, int, 0);
+> > +MODULE_PARM_DESC(max_part, "Maximum number of partitions per loop device");
+> >  MODULE_LICENSE("GPL");
+> >  MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+> >  
+> > @@ -1412,7 +1423,7 @@ static struct loop_device *loop_alloc(int i)
+> >  	if (!lo->lo_queue)
+> >  		goto out_free_dev;
+> >  
+> > -	disk = lo->lo_disk = alloc_disk(1);
+> > +	disk = lo->lo_disk = alloc_disk(1 << part_shift);
+> >  	if (!disk)
+> >  		goto out_free_queue;
+> >  
+> > @@ -1422,7 +1433,7 @@ static struct loop_device *loop_alloc(int i)
+> >  	init_waitqueue_head(&lo->lo_event);
+> >  	spin_lock_init(&lo->lo_lock);
+> >  	disk->major		= LOOP_MAJOR;
+> > -	disk->first_minor	= i;
+> > +	disk->first_minor	= i << part_shift;
+> >  	disk->fops		= &lo_fops;
+> >  	disk->private_data	= lo;
+> >  	disk->queue		= lo->lo_queue;
+> > @@ -1502,7 +1513,12 @@ static int __init loop_init(void)
+> >  	 *     themselves and have kernel automatically instantiate actual
+> >  	 *     device on-demand.
+> >  	 */
+> > -	if (max_loop > 1UL << MINORBITS)
+> > +
+> > +	part_shift = 0;
+> > +	if (max_part > 0)
+> > +		part_shift = fls(max_part);
+> > +
+> > +	if (max_loop > 1UL << (MINORBITS - part_shift))
+> >  		return -EINVAL;
+> >  
+> >  	if (max_loop) {
+> > @@ -1510,7 +1526,7 @@ static int __init loop_init(void)
+> >  		range = max_loop;
+> >  	} else {
+> >  		nr = 8;
+> > -		range = 1UL << MINORBITS;
+> > +		range = 1UL << (MINORBITS - part_shift);
+> >  	}
+> >  
+> >  	if (register_blkdev(LOOP_MAJOR, "loop"))
+> > @@ -1549,7 +1565,7 @@ static void __exit loop_exit(void)
+> >  	unsigned long range;
+> >  	struct loop_device *lo, *next;
+> >  
+> > -	range = max_loop ? max_loop :  1UL << MINORBITS;
+> > +	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
+> >  
+> >  	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+> >  		loop_del_one(lo);
+> > -- 
+> 
+> 
+> ---
+> ~Randy
+> 
+-- 
+------- Laurent.Vivier@bull.net  -------
+  "The best way to predict the future 
+      is to invent it." - Alan Kay
+
