@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939980AbYCTAOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934020AbYCTAP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939980AbYCTAOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942873AbYCSXcH
+	id S934020AbYCTAP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938348AbYCSXda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 19:32:07 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42890 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756586AbYCSXcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 19:32:04 -0400
-X-Sasl-enc: d/mz85pikkWqkTRe55hiJLIYtPCBQxahnaxVUsaMkAT3 1205969521
-Message-ID: <47E1A266.20500@imap.cc>
-Date: Thu, 20 Mar 2008 00:31:50 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Wed, 19 Mar 2008 19:33:30 -0400
+Received: from phunq.net ([64.81.85.152]:32838 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754663AbYCSXd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 19:33:28 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: "Mike Snitzer" <snitzer@gmail.com>
+Subject: Re: [ANNOUNCE] ddtree: A git kernel tree for storage servers
+Date: Wed, 19 Mar 2008 15:33:19 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200803190102.25491.phillips@phunq.net> <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
+In-Reply-To: <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Benjamin Thery <ben.thery@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, davem@davemloft.net, pekkas@netcore.fi,
-       yoshfuji@linux-ipv6.org, dlezcano@fr.ibm.com, xemul@openvz.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command
- as non-root
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>	<47D98510.60801@imap.cc>	<939d53060803191052o2f43b75cu426d51f9f24e2a46@mail.gmail.com> <20080319141608.ede86a86.akpm@linux-foundation.org>
-In-Reply-To: <20080319141608.ede86a86.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig322D9505A9133F30EF2B7D23"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803191633.20922.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig322D9505A9133F30EF2B7D23
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 19 March 2008 13:23, Mike Snitzer wrote:
+> >   * Block layer deadlock fixes (Status: production)
+> 
+> Do you happen to have a pointer to where these block layer deadlock
+> fixes are?  Or will you be committing them shortly?
 
-Am 19.03.2008 22:16 schrieb Andrew Morton:
-> On Wed, 19 Mar 2008 18:52:41 +0100
-> "Benjamin Thery" <ben.thery@gmail.com> wrote:
->=20
->> I bisected the problem to the commit "[NET]: Make /proc/net a symlink
->> on /proc/self/net (v3)"
-[...]
->> I've attached a tiny test program that can be used to reproduce the pr=
-oblem
->> without Postfix.
+Hi Mike,
 
-Thanks. Works great.
+OK, this is committed now, but caveat: improved, untested except for
+booting.  But what could possibly go wrong? :-/
 
-> Although this is advertised as a 2.6.25-rc5-mm1 problem, I assume the
-> regression is also in mainline? 2.6.25-rc6?
+http://phunq.net/ddtree?p=ddtree/.git;a=blob;f=patches/bio-throttle
 
-My results:
+The production version is sitting in the code.google.com svn repository
+in ddsnap/patches/2.6.23.8.  That one has a known bug that has somehow
+escaped being stomped with a new commit, since it only manifests if you
+stack one stacking block device on top of another one.  I will post here
+when we have an official, torture tested version of the patch.
 
-up to 2.6.25-rc5 -- good
-2.6.25-rc5-mm1 -- bad
-2.6.25-rc6 -- bad
+The patch above is improved from the most recently posted version by
+using using the ->bi_max_vecs field for throttle accounting instead of
+calling out to a per-driver metric.  This works nicely because the
+max_vecs field cannot change during the life of the bio, and it gives
+a decent upper bound on the resource consumption of the bio, better
+than simply counting bios in flight.  The queue->metric() method is
+still in there as a stub, some more cleanup to do there (and further
+shrinking of the patch).  It does no harm.
 
-HTH
-T.
+This improvement shrinks the throttled version of struct bio by 4
+bytes.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+Regards,
 
-
---------------enig322D9505A9133F30EF2B7D23
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFH4aJuMdB4Whm86/kRAoadAJsHwaecacSWR1blDaxJGkDI0ueeGQCZAfzO
-V7ftNLgLj91v8NRfUwHHTp8=
-=LaBb
------END PGP SIGNATURE-----
-
---------------enig322D9505A9133F30EF2B7D23--
+Daniel
