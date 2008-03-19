@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYCSTi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbYCSTi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbYCSTi4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbYCSTaI
+	id S1757102AbYCSTi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbYCST3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:30:08 -0400
-Received: from c-67-188-67-135.hsd1.ca.comcast.net ([67.188.67.135]:40048 "EHLO
-	freya" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755132AbYCSTaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:30:05 -0400
-Date: Wed, 19 Mar 2008 01:11:46 -0700
-From: "Adam J. Richter" <adam@yggdrasil.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "Adam J. Richter" <adam@yggdrasil.com>, pshou@realtek.com.tw,
-       matt.jared@intel.com, andy.kopp@intel.com, dan.d.kogan@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: intel-hda sound too quiet in linux-2.6.25-rc6
-Message-ID: <20080319081146.GA11524@freya.yggdrasil.com>
-References: <20080318062359.GA19453@freya.yggdrasil.com> <s5hwso0nxra.wl%tiwai@suse.de>
-Mime-Version: 1.0
+	Wed, 19 Mar 2008 15:29:05 -0400
+Received: from styx.suse.cz ([82.119.242.94]:51598 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754670AbYCST3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:29:03 -0400
+Date: Wed, 19 Mar 2008 11:08:05 +0100
+From: Jan Kara <jack@suse.cz>
+To: David Chinner <dgc@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: BUG: drop_pagecache_sb vs kjournald lockup
+Message-ID: <20080319100805.GB22109@duck.suse.cz>
+References: <20080318112843.GJ95344431@sgi.com> <20080318134326.GA6558@atrey.karlin.mff.cuni.cz> <20080318204646.GY155407@sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <s5hwso0nxra.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080318204646.GY155407@sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Takashi,
-
-	Thank you for your quick response.  Your suggested alsa
-commands seem to have worked.  Here is a more detailed response in
-case the information contained below might be helpful.
-
-
-On Tue, Mar 18, 2008 at 11:15:53AM +0100, Takashi Iwai wrote:
-[...] 
-> This is likely a missing volume setting.  With the upgrade to 2.6.25,
-> you may have a different mixer representation and the udev or init
-> script didn't restore the old mixer setting properly (typicall missing
-> -F option to alsactl).  Also note that aumix doesn't cover all volume
-> controls since it's an OSS app.
-
-	I would think that these new volume controls should be made to
-default to whatever setting leaves the volume unmodified (usually
-"100%"), to minimize disruption and to preserve support for pure OSS
-systems.  I would be interested to know if there is some consideration
-that outweighs this.
-
-> Anyway, there is too little hardware information here.  Please show
-> the output of alsa-info.sh:
-> 	http://hg.alsa-project.org/alsa/raw-file/tip/alsa-info.sh  
-
-	I ran this script, and it only showed me the dialog program
-getting a segmentation fault (probably my fault), but perhaps the
-following information will be helpful:
-
-% lspci -s 14.2
-00:14.2 Audio device: ATI Technologies Inc SBx00 Azalia
-% lspci -n -s 14.2
-00:14.2 0403: 1002:4383
-
-	Vendor 0x1002, product 0x4383 in sound/pci/hda/hda_intel.c has
-a pci_device_id entry with AZX_DRIVER_ATI in the extra data field.
-
-	Also, Jeff Garzik's posting about having a similar problem
-with a chip described by lspci as "Audio device: Intel Corporation
-82801G (ICH7 Family) High Definition Audio Controller (rev 01)"
-appears to correspond to PCI vendor 0x8086, PCI device ID 0x27d8,
-which has AZX_DRIVER_ICH.
-
-
-> In most cases, running the following commands solves the mixer issue:
+On Wed 19-03-08 07:46:46, David Chinner wrote:
+> On Tue, Mar 18, 2008 at 02:43:26PM +0100, Jan Kara wrote:
+> > > 2.6.25-rc3, 4p ia64, ext3 root drive.
+> > > 
+> > > I was running an XFS stress test on one of the XFS partitions on
+> > > the machine (zero load on the root ext3 drive), when the system
+> > > locked up in kjournald with this on the console:
+> > > 
+> > > BUG: spinlock lockup on CPU#2, kjournald/2150, a000000100e022e0
+> > > 
+> >   <snip traces>
 > 
-> 	% amixer set Master unmute 80%
-> 	% amixer set Front unmute 100%
-> 	% amixer set Headphone unmute 100%
+> <snip other stuff>
+> 
+> > > Anyone know the reason why drop_pagecache_sb() uses such a brute-force
+> > > mechanism to free up clean page cache pages?
+> >   Yes, we know that drop_pagecache_sb() has locking issues but since it
+> > is intended to be used for debugging purposes only, nobody cared enough
+> > to fix it. Completely untested patch below if you dare to try ;)
+> 
+> It may be intended for debuging purposes, but it does get used in
+> production HPC environments (a lot!). I guess I've never seen this
+> lockup before because SGI customers don't use ext3, but they have
+> complained about the system "stopping" while drop_caches is executed.
+> This locking ..... strategy would explain it, though.
+  ;) But in case your customers use it in production, shouldn't you push
+for a better interface for such feature? Just a thought...
 
-	Thank you.  These commands give me approximately the old
-volume levels.  In particular, the middle command seems to be the one
-that effected the volume that I could hear.
+> I'll try the patch, but I can't guarantee anything - I only saw this
+> lockup once in about 18 hours when dropping caches every 2 seconds.
+  Well, if you enable lockdep, it should warn you about possible problems
+much earlier (at least we already got several reports of lockdep warnings
+when using drop_caches).
 
-	I hope the little bit of information about the PCI IDs that I
-was able to provide above will be helpful.  Thanks again for your
-quick response.
-
-Adam J. Richter
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
