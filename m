@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbYCSWaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935912AbYCSWav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763487AbYCSWaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765544AbYCSVDd
+	id S935912AbYCSWav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935969AbYCSVET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:03:33 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38319 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763794AbYCSVDc (ORCPT
+	Wed, 19 Mar 2008 17:04:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51398 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763820AbYCSVEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:03:32 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 19 Mar 2008 22:02:40 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2/2 update] firewire: insist on successive self ID complete
- events
-To: Jarod Wilson <jwilson@redhat.com>
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.00038248cbf40b77@s5r6.in-berlin.de>
-Message-ID: <tkrat.f63ec71babd13755@s5r6.in-berlin.de>
-References: <tkrat.b99824b37365e037@s5r6.in-berlin.de>
- <tkrat.00038248cbf40b77@s5r6.in-berlin.de>
+	Wed, 19 Mar 2008 17:04:16 -0400
+Date: Wed, 19 Mar 2008 01:45:45 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: tick-common.c hack for s390 needed
+Message-ID: <20080319054545.GA18834@infradead.org>
+References: <20080318093119.GA8669@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318093119.GA8669@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The whole topology code only works if the old and new topologies which
-are compared come from immediately successive self ID complete events.
+On Tue, Mar 18, 2008 at 10:31:19AM +0100, Heiko Carstens wrote:
+> Hi Thomas, Ingo,
+> 
+> I'm converting s390 from s390's NO_IDLE_HZ to GENERIC_CLOCKEVENTS and
+> therefore to the generic NO_HZ implementation.
+> One of the problems that need a patch for this is kernel/time/tick-common.c
+> which relies on the irq stuff present in include/linux/irq.h.
+> In particular s390 doesn't have something like irq_set_affinity which
+> causes this build error:
 
-If there happened bus resets without self ID complete events in the
-meantime, or self ID complete events with invalid selfIDs, the topology
-comparison could identify nodes wrongly, or more likely just corrupt
-kernel memory or panic right away.
-
-We new discard all nodes of the old topology and treat all current nodes
-as new ones if the current self ID generation is not the previous one
-plus 1.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
-
-Update:
-  - Doesn't help with http://bugzilla.kernel.org/show_bug.cgi?id=10128.
-  - Suppress spurious "destroying all nodes" if there are none, in
-    particular when loading the driver.
-
- drivers/firewire/fw-topology.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-Index: linux/drivers/firewire/fw-topology.c
-===================================================================
---- linux.orig/drivers/firewire/fw-topology.c
-+++ linux/drivers/firewire/fw-topology.c
-@@ -513,6 +513,18 @@ fw_core_handle_bus_reset(struct fw_card 
- 
- 	fw_flush_transactions(card);
- 
-+	/*
-+	 * If the selfID buffer is not the immediate successor of the
-+	 * previously processed one, we cannot reliably compare the
-+	 * old and new topologies.
-+	 */
-+	if ((generation & 0xff) != ((card->generation + 1) & 0xff) &&
-+	    card->local_node != NULL) {
-+		fw_notify("skipped bus generations, destroying all nodes\n");
-+		fw_destroy_nodes(card);
-+		card->bm_retries = 0;
-+	}
-+
- 	spin_lock_irqsave(&card->lock, flags);
- 
- 	/*
-
--- 
-Stefan Richter
--=====-==--- --== =--==
-http://arcgraph.de/sr/
+Generic code must never use linux/irq.h - it's more like asm-generic
+file predating asm-generic.
 
