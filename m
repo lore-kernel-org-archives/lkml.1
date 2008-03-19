@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936701AbYCSVQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936768AbYCSVQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936701AbYCSVQI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYCST7o
+	id S936768AbYCSVQd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761896AbYCST7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:59:44 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36150 "EHLO
+	Wed, 19 Mar 2008 15:59:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36155 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761896AbYCST7a (ORCPT
+	with ESMTP id S1761901AbYCST7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:59:30 -0400
-Date: Wed, 19 Mar 2008 15:54:48 +0100
+	Wed, 19 Mar 2008 15:59:34 -0400
+Date: Wed, 19 Mar 2008 10:15:27 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        pm list <linux-pm@lists.linux-foundation.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
-	patchset against -rc6)
-Message-ID: <20080319145448.GA26416@elf.ucw.cz>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz> <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org> <20080319114851.GB21270@atrey.karlin.mff.cuni.cz> <alpine.LFD.1.00.0803190742450.3020@woody.linux-foundation.org>
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks
+Message-ID: <20080319091526.GA1938@elf.ucw.cz>
+References: <200803170020.55473.rjw@sisk.pl> <200803170022.30345.rjw@sisk.pl> <20080319005340.GC8298@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803190742450.3020@woody.linux-foundation.org>
+In-Reply-To: <20080319005340.GC8298@kroah.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-03-19 07:47:06, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 19 Mar 2008, Pavel Machek wrote:
+On Tue 2008-03-18 17:53:40, Greg KH wrote:
+> On Mon, Mar 17, 2008 at 12:22:29AM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > Ok, 7c0... is innocent. Reverting not only the mdelay, but also rest
-> > of drivers/acpi/ec.c patch fixed the
-> > "rc6-breaks-backlight-in-X-over-lid-close", good.
+> > Introduce 'struct pm_ops' representing a set of suspend and
+> > hibernation operations for bus types, device classes and device
+> > types.
 > 
-> Can you clarify a bit?
-> 
-> Do you mean that the full revert of 2c81ce4 that already got committed is 
-> sufficient for you, or do you need to totally undo everything we've done 
-> to ec.c since -rc5, and thus also to revert the _other_ revert we did (in 
-> 4af8e10a6c57e7292862bd1703712f0565c7e429)?
+> Ok, I must have missed the thread describing why we need to do this, so,
+> why do we need to do this?  What is this going to buy us in the end
+> after everything is changed?
 
-I believe that current mainline is okay, and will test that theory
-shortly.
-									Pavel
+That was rather long thread where Linus flamed us for having
+everything in one "suspend" callback, selecting what to do by
+pm_message_t parameter. It was kind of hard to miss ;-).
+								Pavel
+
+
+> > +struct pm_ops {
+> > +#ifdef CONFIG_PM_SLEEP
+> > +	int (*prepare)(struct device *dev);
+> > +	void (*complete)(struct device *dev);
+> > +#endif
+> > +#ifdef CONFIG_SUSPEND
+> > +	int (*suspend)(struct device *dev);
+> > +	int (*resume)(struct device *dev);
+> > +#endif
+> > +#ifdef CONFIG_HIBERNATION
+> > +	int (*freeze)(struct device *dev);
+> > +	int (*thaw)(struct device *dev);
+> > +	int (*poweroff)(struct device *dev);
+> > +	int (*quiesce)(struct device *dev);
+> > +	int (*restore)(struct device *dev);
+> > +	int (*recover)(struct device *dev);
+> > +#endif
+> 
+> 
+> Don't ifdef stuff like this, it only causes ifdefs to be needed to the
+> .c code as well for all places these structures are defined in
+> drivers/busses, right?
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
