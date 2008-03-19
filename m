@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbYCSTxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbYCST4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760596AbYCSTxi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYCSTgh
+	id S1757677AbYCST4F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbYCSThh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:36:37 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37289 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752451AbYCSTgE (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:36:04 -0400
-Date: Wed, 19 Mar 2008 07:46:46 +1100
-From: David Chinner <dgc@sgi.com>
-To: Jan Kara <jack@suse.cz>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: BUG: drop_pagecache_sb vs kjournald lockup
-Message-ID: <20080318204646.GY155407@sgi.com>
-References: <20080318112843.GJ95344431@sgi.com> <20080318134326.GA6558@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080318134326.GA6558@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Mar 2008 15:37:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754970AbYCSThe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:37:34 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 01/79] [PATCH] change var types in __inquire_remote_apic
+Date: Wed, 19 Mar 2008 14:24:56 -0300
+Message-Id: <1205947580526-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <12059475744092-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 18, 2008 at 02:43:26PM +0100, Jan Kara wrote:
-> > 2.6.25-rc3, 4p ia64, ext3 root drive.
-> > 
-> > I was running an XFS stress test on one of the XFS partitions on
-> > the machine (zero load on the root ext3 drive), when the system
-> > locked up in kjournald with this on the console:
-> > 
-> > BUG: spinlock lockup on CPU#2, kjournald/2150, a000000100e022e0
-> > 
->   <snip traces>
+change some variables' types in __inquire_remote_apic to
+match x86_64
 
-<snip other stuff>
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> > Anyone know the reason why drop_pagecache_sb() uses such a brute-force
-> > mechanism to free up clean page cache pages?
->   Yes, we know that drop_pagecache_sb() has locking issues but since it
-> is intended to be used for debugging purposes only, nobody cared enough
-> to fix it. Completely untested patch below if you dare to try ;)
-
-It may be intended for debuging purposes, but it does get used in
-production HPC environments (a lot!). I guess I've never seen this
-lockup before because SGI customers don't use ext3, but they have
-complained about the system "stopping" while drop_caches is executed.
-This locking ..... strategy would explain it, though.
-
-I'll try the patch, but I can't guarantee anything - I only saw this
-lockup once in about 18 hours when dropping caches every 2 seconds.
-
-Cheers,
-
-Dave.
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index 2dd95ba..bea2d32 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -368,10 +368,10 @@ static void unmap_cpu_to_logical_apicid(int cpu)
+ 
+ static inline void __inquire_remote_apic(int apicid)
+ {
+-	int i, regs[] = { APIC_ID >> 4, APIC_LVR >> 4, APIC_SPIV >> 4 };
++	unsigned i, regs[] = { APIC_ID >> 4, APIC_LVR >> 4, APIC_SPIV >> 4 };
+ 	char *names[] = { "ID", "VERSION", "SPIV" };
+ 	int timeout;
+-	unsigned long status;
++	u32 status;
+ 
+ 	printk("Inquiring remote APIC #%d...\n", apicid);
+ 
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+1.5.0.6
+
