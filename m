@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936504AbYCSWt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965793AbYCSWud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936504AbYCSWt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765506AbYCSVTI
+	id S965793AbYCSWud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965925AbYCSVTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:19:08 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:64364 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965819AbYCSVTH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:19:07 -0400
-Message-ID: <47E0B46C.6030302@gmail.com>
-Date: Wed, 19 Mar 2008 15:36:28 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 19 Mar 2008 17:19:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55927 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965916AbYCSVTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:19:46 -0400
 MIME-Version: 1.0
-To: Jan Kasprzak <kas@fi.muni.cz>
-CC: =?UTF-8?B?TWFsdGUgU2NocsO2ZGVy?= <maltesch@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot (resend)
-References: <20080214184700.0bd3837d@highlander.home.lan> <47B4D02E.9030101@gmail.com> <20080215191215.430ee2e0@highlander.home.lan> <47BCE71F.2000309@gmail.com> <20080221172757.44882428@highlander.home.lan> <20080317210045.GG3189@fi.muni.cz> <20080318140116.GC8480@fi.muni.cz> <47E08762.9090704@gmail.com> <20080319061958.GK3189@fi.muni.cz>
-In-Reply-To: <20080319061958.GK3189@fi.muni.cz>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 4/8] powerpc ptrace: forced_successful_syscall_return()
+In-Reply-To: Roland McGrath's message of  Wednesday, 19 March 2008 14:17:14 -0700 <20080319211714.8B14226F995@magilla.localdomain>
+References: <20080319211714.8B14226F995@magilla.localdomain>
+X-Zippy-Says: OVER the undertow!  UNDER the overpass!  Around the FUTURE and
+    BEYOND REPAIR!!
+Message-Id: <20080319211936.28E8B26F9A7@magilla.localdomain>
+Date: Wed, 19 Mar 2008 14:19:36 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kasprzak wrote:
-> Tejun Heo wrote:
-> : Hmm... I still wanna know why it got broke in the first place.  The only
-> : thing I can think of is IRQ routing problem in which case pci=nomsi or
-> : irqpoll should help.  Any chance you can test the old BIOS?
-> 
-> 	Yes, I can. What data are you interested in? Boot logs with
-> pci=nomsi and irqpoll ? Anything else?
+Define the forced_successful_syscall_return() macro to
+pair with our force_successful_syscall_return() definition.
 
-pci=nomsi, then, irqpoll should be enough for now.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/asm-powerpc/ptrace.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Thanks.
-
--- 
-tejun
+diff --git a/include/asm-powerpc/ptrace.h b/include/asm-powerpc/ptrace.h
+index 891d689..07dd6fe 100644
+--- a/include/asm-powerpc/ptrace.h
++++ b/include/asm-powerpc/ptrace.h
+@@ -93,6 +93,7 @@ extern unsigned long profile_pc(struct pt_regs *regs);
+ 	do { \
+ 		set_thread_flag(TIF_NOERROR); \
+ 	} while(0)
++#define forced_successful_syscall_return()   (test_thread_flag(TIF_NOERROR))
+ 
+ struct task_struct;
+ extern unsigned long ptrace_get_reg(struct task_struct *task, int regno);
