@@ -1,109 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbYCSUOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765476AbYCSUP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761234AbYCSUOw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757256AbYCSTi6
+	id S1765476AbYCSUP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbYCSTi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:38:58 -0400
+	Wed, 19 Mar 2008 15:38:59 -0400
 Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757215AbYCSTiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:38:46 -0400
+	id S1754848AbYCSTiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:38:51 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de
-Subject: [PATCH 0/79] smpboot integration
-Date: Wed, 19 Mar 2008 14:24:55 -0300
-Message-Id: <12059475744092-git-send-email-gcosta@redhat.com>
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 74/79] [PATCH] change x86_64 sanity checks to match i386.
+Date: Wed, 19 Mar 2008 14:26:09 -0300
+Message-Id: <1205947906258-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <1205947902868-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
+ costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
+ -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Glauber Costa <gcosta@redhat.com>
 
-This is a complement to my last patch series. In this one, I integrate smpboot.c
-The end result is that i386 also uses the new hotplug state machine, and boot cpus
-via cpu_up, instead of booting them in the preparation step, and only activating later.
+They are mostly inocuous. APIC_INTEGRATED will expand to 1,
+check_phys_apicid_present is checking for the same thing it was before,
+etc. But the code is identical to i386 now, and will allow us to
+integrate it.
 
-The final diffstat says:
- 59 files changed, 1974 insertions(+), 2752 deletions(-)
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot_64.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-Leftovers:
-
-smp.h could also be easily integrated. But this series was too big already
-setup64.c could also be completely moved to setup.c
-
-Testing and bisectability:
-
-The end result was tested in all my hardware (which includes qemu ;-). 
-It does not mean it will boot _your_ hardware, but I did my best ;-)
-
-The tree at least compiles in more than 20 randconfigs (for each of x86_64 and i386)
-For i386, each of the subarchitectures was compiled at least once. (By compile, I obviously
-mean, every patch, individually)
-
-Full diffstat:
-
- a/arch/x86/kernel/smpboot_32.c                 |   68 -
- a/arch/x86/kernel/smpboot_64.c                 |   73 -
- a/include/asm-x86/nmi_64.h                     |   89 -
- arch/x86/kernel/Makefile                       |    4 
- arch/x86/kernel/apic_32.c                      |   81 -
- arch/x86/kernel/mpparse_32.c                   |   19 
- arch/x86/kernel/mpparse_64.c                   |   12 
- arch/x86/kernel/nmi_32.c                       |    2 
- arch/x86/kernel/smpboot.c                      | 1071 ++++++++++++++++
- arch/x86/kernel/smpboot_32.c                   | 1617 ++++---------------------
- arch/x86/kernel/smpboot_64.c                   |  949 +-------------
- b/arch/x86/Kconfig                             |    2 
- b/arch/x86/Makefile                            |    2 
- b/arch/x86/kernel/Makefile                     |    2 
- b/arch/x86/kernel/acpi/boot.c                  |    2 
- b/arch/x86/kernel/apic_32.c                    |   23 
- b/arch/x86/kernel/apic_64.c                    |   13 
- b/arch/x86/kernel/bugs_64.c                    |    3 
- b/arch/x86/kernel/mpparse_32.c                 |   12 
- b/arch/x86/kernel/mpparse_64.c                 |    2 
- b/arch/x86/kernel/nmi_32.c                     |    2 
- b/arch/x86/kernel/nmi_64.c                     |    2 
- b/arch/x86/kernel/process_32.c                 |   10 
- b/arch/x86/kernel/setup.c                      |  103 +
- b/arch/x86/kernel/setup64.c                    |   77 -
- b/arch/x86/kernel/setup_32.c                   |   25 
- b/arch/x86/kernel/setup_64.c                   |   15 
- b/arch/x86/kernel/smpboot.c                    |   77 +
- b/arch/x86/kernel/smpboot_32.c                 |    5 
- b/arch/x86/kernel/smpboot_64.c                 |   19 
- b/arch/x86/kernel/traps_64.c                   |    2 
- b/arch/x86/mach-voyager/voyager_smp.c          |    7 
- b/arch/x86/mm/k8topology_64.c                  |    7 
- b/arch/x86/pci/numa.c                          |    8 
- b/arch/x86/vdso/Makefile                       |    2 
- b/include/asm-x86/apic.h                       |    3 
- b/include/asm-x86/apicdef.h                    |    7 
- b/include/asm-x86/mach-bigsmp/mach_apic.h      |    7 
- b/include/asm-x86/mach-default/mach_apic.h     |   11 
- b/include/asm-x86/mach-default/mach_apicdef.h  |    5 
- b/include/asm-x86/mach-default/smpboot_hooks.h |    3 
- b/include/asm-x86/mach-es7000/mach_apic.h      |    8 
- b/include/asm-x86/mach-summit/mach_apic.h      |    4 
- b/include/asm-x86/mach-visws/smpboot_hooks.h   |    5 
- b/include/asm-x86/mmzone_32.h                  |    3 
- b/include/asm-x86/nmi.h                        |   92 +
- b/include/asm-x86/nmi_64.h                     |    3 
- b/include/asm-x86/smp.h                        |    3 
- b/include/asm-x86/smp_32.h                     |    5 
- b/include/asm-x86/smp_64.h                     |   12 
- b/include/asm-x86/topology.h                   |    9 
- include/asm-x86/apic.h                         |    2 
- include/asm-x86/apicdef.h                      |    6 
- include/asm-x86/mach-default/smpboot_hooks.h   |    5 
- include/asm-x86/nmi.h                          |    5 
- include/asm-x86/nmi_32.h                       |   61 
- include/asm-x86/smp.h                          |   29 
- include/asm-x86/smp_32.h                       |   16 
- include/asm-x86/smp_64.h                       |   15 
- 59 files changed, 1974 insertions(+), 2752 deletions(-)
-
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 6679ac5..c66fb15 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -50,6 +50,7 @@
+ #include <linux/smp.h>
+ #include <linux/kdebug.h>
+ 
++#include <asm/acpi.h>
+ #include <asm/mtrr.h>
+ #include <asm/pgalloc.h>
+ #include <asm/desc.h>
+@@ -105,7 +106,7 @@ static int __init smp_sanity_check(unsigned max_cpus)
+ 	 * If we couldn't find an SMP configuration at boot time,
+ 	 * get out of here now!
+ 	 */
+-	if (!smp_found_config) {
++	if (!smp_found_config && !acpi_lapic) {
+ 		printk(KERN_NOTICE "SMP motherboard not detected.\n");
+ 		disable_smp();
+ 		if (APIC_init_uniprocessor())
+@@ -118,7 +119,7 @@ static int __init smp_sanity_check(unsigned max_cpus)
+ 	 * Should not be necessary because the MP table should list the boot
+ 	 * CPU too, but we do it for the sake of robustness anyway.
+ 	 */
+-	if (!physid_isset(boot_cpu_physical_apicid, phys_cpu_present_map)) {
++	if (!check_phys_apicid_present(boot_cpu_physical_apicid)) {
+ 		printk(KERN_NOTICE
+ 			"weird, boot CPU (#%d) not listed by the BIOS.\n",
+ 			boot_cpu_physical_apicid);
+@@ -128,7 +129,8 @@ static int __init smp_sanity_check(unsigned max_cpus)
+ 	/*
+ 	 * If we couldn't find a local APIC, then get out of here now!
+ 	 */
+-	if (!cpu_has_apic) {
++	if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
++	    !cpu_has_apic) {
+ 		printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
+ 			boot_cpu_physical_apicid);
+ 		printk(KERN_ERR "... forcing use of dummy APIC emulation. (tell your hw vendor)\n");
+@@ -136,6 +138,8 @@ static int __init smp_sanity_check(unsigned max_cpus)
+ 		return -1;
+ 	}
+ 
++	verify_local_APIC();
++
+ 	/*
+ 	 * If SMP should be disabled, then really disable it!
+ 	 */
+-- 
+1.5.0.6
 
