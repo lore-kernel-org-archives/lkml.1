@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYCSXTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939143AbYCSXTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbYCSXTK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938545AbYCSVql
+	id S939143AbYCSXTv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763393AbYCSVq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:46:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:47839 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938549AbYCSVqk (ORCPT
+	Wed, 19 Mar 2008 17:46:56 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2300 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933620AbYCSVqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:46:40 -0400
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Subject: Re: Linux 2.6.25-rc4
-Date: Tue, 18 Mar 2008 15:48:25 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803181403.37969.bzolnier@gmail.com> <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org>
-In-Reply-To: <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org>
+	Wed, 19 Mar 2008 17:46:55 -0400
+Date: Wed, 19 Mar 2008 17:46:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: + pm-convert-wakeup-flag-accessors-to-inline-functions-fix.patch
+ added to -mm tree
+In-Reply-To: <20080319185755.GA18464@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0803191736550.2504-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803181548.25241.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 March 2008, Anders Eriksson wrote:
+On Wed, 19 Mar 2008, Greg KH wrote:
+
+> On Wed, Mar 19, 2008 at 11:48:29AM -0700, Andrew Morton wrote:
+> > I'll drop everything, let's start again.
+> > 
+> > Only how?  umm, please review Greg's driver tree, let us know which patches
+> > shoudl be dropped from that then send new ones, I guess.
 > 
-> bzolnier@gmail.com said:
-> > Could you also add printk() to task_in_intr()? 
-> 
-> Mar 18 14:18:26 tippex do_rw_taskfile(task->data_phase=1, tf->command=236
-> Mar 18 14:18:26 tippex do_rw_taskfile(task->data_phase=0, tf->command=176
-> Mar 18 14:18:26 tippex do_rw_taskfile(task->data_phase=1, tf->command=176
-> Mar 18 14:18:26 tippex task_in_intr: hda: stat=50
+> Yes, please do, I'm confused as well :)
 
-This is quite unexpected status value...
+Okay.  No doubt Rafael will correct me if I get something wrong.
 
-Please add "#define DEBUG" before ide_tf_load() in ide-taskfile.c
-so we can see which SMART sub-command is causing this.
+Greg's tree still contains the original, wrong version of 
+pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch.  It 
+should be reverted.  In its place should be substituted this series of 
+patches (URLs for 0/3 ... 3/3):
 
-Thanks,
-Bart
+	http://marc.info/?l=linux-kernel&m=120561808422302&w=2
+	http://marc.info/?l=linux-kernel&m=120561808522316&w=2
+	http://marc.info/?l=linux-kernel&m=120561808522322&w=2
+	http://marc.info/?l=linux-kernel&m=120561808622328&w=2
+
+There is likely to be a conflict in applying the 2/3 patch, because its 
+first hunk touches a region of code also affected by work Rafael has 
+been doing.  The important aspect of that hunk is that it moves the 
+should_wakeup flag definition outside the region protected by "#ifdef 
+CONFIG_PM_SLEEP".
+
+Alan Stern
+
