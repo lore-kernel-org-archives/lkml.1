@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYCSTmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbYCSToq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbYCSTmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYCSTaz
+	id S1758386AbYCSToq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYCSTaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:30:55 -0400
-Received: from mga03.intel.com ([143.182.124.21]:25828 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755269AbYCSTaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Mar 2008 15:30:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
-   d="scan'208";a="220204536"
-Message-Id: <20080319000012.439150000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 17:00:12 -0700
-From: venkatesh.pallipadi@intel.com
-To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 00/13] x86: PAT support updated - v3
+Received: from mx1.redhat.com ([66.187.233.31]:47548 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755249AbYCSTau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:30:50 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 06/79] [PATCH] decouple call to print_cpu_info from smp_store_cpu_info
+Date: Wed, 19 Mar 2008 14:25:01 -0300
+Message-Id: <12059476032561-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <12059475982810-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Glauber Costa <gcosta@redhat.com>
 
-Follow up on earlier PAT patch series here:
-http://lkml.org/lkml/2008/1/10/312
+This will ease integration with i386
 
-This patch series adds Page Attribute Table (PAT) support on x86. There have
-been few changes based on comments for earlier patches and also issues that
-was seen while the earlier patchset was in mm. The main changes include:
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot_64.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-* Unlike earlier patchset, there are no changes to identity mapping of
-  reserved regions.
-* Unlike earlier patches, there are no chanegs to early ioremap.
-* We look at MTRR setting and PAT request and track the resultant type
-  to avoid aliasing.
-* UC_MINUS in PAT to provide backward compatibility to /dem/mem mmap users.
-
-In general, we have tried to make patches more simpler and cleaner. Hope is
-to cause less disruption along the way. The changes/cleaups that went into
-x86/mm (specifically pageattr.c) has helped us along the way.
-
-The patchset is against x86 testing from couple of days back.
-
-The last patch in the series is meant for test-tree only and adds some useful
-printks that can help us debug any potential issues.
-
-There are two issues that we are leaving out at the moment to make the patch
-simple. We will be addressing them with incremental patches soon:
-* FB/DRM drivers using pgprot_val and changing protection on their own
-  without using any proper APIs like ioremap. There are few such usages and
-  each one will be addressed separately.
-* To change attributes from WC to WB in a "perfect way", one has to follow
-  certain sequence like make page non-present etc.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 13ab112..1da28c6 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -97,7 +97,6 @@ static void __cpuinit smp_store_cpu_info(int id)
+ 	*c = boot_cpu_data;
+ 	c->cpu_index = id;
+ 	identify_cpu(c);
+-	print_cpu_info(c);
+ }
+ 
+ static inline void wait_for_init_deassert(atomic_t *deassert)
+@@ -568,6 +567,8 @@ do_rest:
+ 		if (cpu_isset(cpu, cpu_callin_map)) {
+ 			/* number CPUs logically, starting from 1 (BSP is 0) */
+ 			Dprintk("CPU has booted.\n");
++			printk(KERN_INFO "CPU%d: ", cpu);
++			print_cpu_info(&cpu_data(cpu));
+ 		} else {
+ 			boot_error = 1;
+ 			if (*((volatile unsigned char *)phys_to_virt(SMP_TRAMPOLINE_BASE))
+@@ -751,6 +752,8 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	 */
+ 
+ 	setup_boot_clock();
++	printk(KERN_INFO "CPU%d: ", 0);
++	print_cpu_info(&cpu_data(0));
+ }
+ 
+ /*
 -- 
+1.5.0.6
+
