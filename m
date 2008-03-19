@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967369AbYCTA3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163263AbYCTA35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967369AbYCTA3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941506AbYCSXv6
+	id S1163263AbYCTA35 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759926AbYCSXw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 19:51:58 -0400
-Received: from mga02.intel.com ([134.134.136.20]:64411 "EHLO mga02.intel.com"
+	Wed, 19 Mar 2008 19:52:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37533 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S942344AbYCSXv4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 19:51:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,527,1199692800"; 
-   d="scan'208";a="263695626"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S943224AbYCSXw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 19:52:28 -0400
+Date: Thu, 20 Mar 2008 00:52:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
+Message-ID: <20080319235212.GA22786@elte.hu>
+References: <20080319190536.GA11432@elte.hu> <20080319194648.GA20088@elte.hu> <47E17171.9090108@goop.org> <20080319200931.GA24828@elte.hu> <20080319213343.GA2195@elte.hu> <47E18B8E.8080104@goop.org> <20080319220028.GA10480@elte.hu> <47E18C9D.4010007@goop.org> <20080319220431.GA11606@elte.hu> <47E19085.2020308@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish>12 hour
-Date: Wed, 19 Mar 2008 16:50:28 -0700
-Message-ID: <DDF46CB71CB9D647A983FECACF09A886A8AEB4@orsmsx424.amr.corp.intel.com>
-In-reply-to: <1205969039.6437.44.camel@lappy>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish>12 hour
-Thread-Index: AciKGMkrDvVxYApER1CMLGbJBqwfDwAAQ6Dw
-References: <20080318084314.FF0F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <DDF46CB71CB9D647A983FECACF09A886A33019@orsmsx424.amr.corp.intel.com> <20080318094527.FF12.KOSAKI.MOTOHIRO@jp.fujitsu.com> <DDF46CB71CB9D647A983FECACF09A886A8A6B5@orsmsx424.amr.corp.intel.com> <1205969039.6437.44.camel@lappy>
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
-       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 19 Mar 2008 23:50:27.0247 (UTC) FILETIME=[01B5D3F0:01C88A1C]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E19085.2020308@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0017]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->Which makes me wonder, why did you ever use a semaphore here? Looking
-at
->the code its a straight forward mutex. And when you would have used a
->mutex lockdep would have warned about this.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
->There is hardly ever a good reason to use semaphores in new code, we're
->trying very hard to get rid of them.
+>> simple bootup triggered it.
+>
+> Haven't managed to repro it yet, but DEBUG_PAGE_ALLOC turned up 
+> another case of doing tlb flushes with preempt on:
 
-The real issue here is the code path can not go to sleep. If simply 
-replacing semaphore with mutex, the issue still happens. First of all we
+turns out that i have another bug which causes a screaming IRQ#0 that 
+floods the box at 70K irqs/sec. That is what triggered that crash in 
+your patch most likely.
 
-need to have a lock system which doesn't allow the code go to sleep. We
-are 
-working on a new patch now.
+so either figure out the bug by review or try turning your IRQ#0 into a 
+screaming one for debug purposes. (hint: turning irq#0's trigger mode 
+from 'edge' to 'level' in mpparse.c or ioapic.c does wonders to that end 
+;-)
 
-But one step back, if without considering this sleeping issue, I agree
-with 
-you that mutex would be a better approach than semaphore.
-
->Hmm, then again, does ia64 have lockdep?
-
-IA64 doesn't support lockdep yet.
-
-Thanks.
-
--Fenghua
+	Ingo
