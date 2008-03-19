@@ -1,108 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbYCSUen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbYCSU1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbYCSUen (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbYCSTlV
+	id S1759797AbYCSU1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbYCSTjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:41:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757691AbYCSTlT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:41:19 -0400
-Date: Tue, 18 Mar 2008 18:28:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc4
-In-Reply-To: <200803190221.58968.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.1.00.0803181814170.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080318133259.E71EE2DC044@tippex.mynet.homeunix.org> <alpine.LFD.1.00.0803180751200.3020@woody.linux-foundation.org> <200803190221.58968.bzolnier@gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 19 Mar 2008 15:39:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757229AbYCSTjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:39:11 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 41/79] [PATCH] unify nmi_32.h and nmi_64.h
+Date: Wed, 19 Mar 2008 14:25:36 -0300
+Message-Id: <12059477611736-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <12059477561937-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
+ costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
+ -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Glauber Costa <gcosta@redhat.com>
 
+Two more files goes away. nmi_64.h and nmi_32.h gives birth
+to nmi.h
 
-On Wed, 19 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Which is with compliance with PIO-in protocol specification and years of
-> usage of the task_in_intr() code for fs code paths and HDIO_DRIVE_TASKFILE
-> ioctl has proven that real hardware also works this way (please note that
-> the changed code was used only for HDIO_DRIVE_CMD ioctl requests).
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/nmi_32.c |    2 +-
+ include/asm-x86/nmi.h    |   92 ++++++++++++++++++++++++++++++++++++++++++++-
+ include/asm-x86/nmi_32.h |   61 ------------------------------
+ include/asm-x86/nmi_64.h |   88 --------------------------------------------
+ 4 files changed, 90 insertions(+), 153 deletions(-)
+ delete mode 100644 include/asm-x86/nmi_32.h
+ delete mode 100644 include/asm-x86/nmi_64.h
 
-.. and years of drive_cmd_intr() which is much more widely used is *not* 
-in agreement.
+diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
+index aa6800f..daea273 100644
+--- a/arch/x86/kernel/nmi_32.c
++++ b/arch/x86/kernel/nmi_32.c
+@@ -67,7 +67,7 @@ static __init void nmi_cpu_busy(void *data)
+ }
+ #endif
+ 
+-static int __init check_nmi_watchdog(void)
++int __init check_nmi_watchdog(void)
+ {
+ 	unsigned int *prev_nmi_count;
+ 	int cpu;
+diff --git a/include/asm-x86/nmi.h b/include/asm-x86/nmi.h
+index 53ccac1..2b94199 100644
+--- a/include/asm-x86/nmi.h
++++ b/include/asm-x86/nmi.h
+@@ -1,5 +1,91 @@
+-#ifdef CONFIG_X86_32
+-# include "nmi_32.h"
++#ifndef _ASM_X86_NMI_H_
++#define _ASM_X86_NMI_H_
++
++#include <linux/pm.h>
++#include <asm/irq.h>
++#include <asm/io.h>
++
++#ifdef ARCH_HAS_NMI_WATCHDOG
++
++/**
++ * do_nmi_callback
++ *
++ * Check to see if a callback exists and execute it.  Return 1
++ * if the handler exists and was handled successfully.
++ */
++int do_nmi_callback(struct pt_regs *regs, int cpu);
++
++#ifdef CONFIG_PM
++
++/** Replace the PM callback routine for NMI. */
++struct pm_dev *set_nmi_pm_callback(pm_callback callback);
++
++/** Unset the PM callback routine back to the default. */
++void unset_nmi_pm_callback(struct pm_dev *dev);
++
+ #else
+-# include "nmi_64.h"
++
++static inline struct pm_dev *set_nmi_pm_callback(pm_callback callback)
++{
++	return 0;
++}
++
++static inline void unset_nmi_pm_callback(struct pm_dev *dev)
++{
++}
++
++#endif /* CONFIG_PM */
++
++#ifdef CONFIG_X86_64
++extern void default_do_nmi(struct pt_regs *);
++extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
++#endif
++
++extern int check_nmi_watchdog(void);
++extern int nmi_watchdog_enabled;
++extern int unknown_nmi_panic;
++extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
++extern int avail_to_resrv_perfctr_nmi(unsigned int);
++extern int reserve_perfctr_nmi(unsigned int);
++extern void release_perfctr_nmi(unsigned int);
++extern int reserve_evntsel_nmi(unsigned int);
++extern void release_evntsel_nmi(unsigned int);
++extern void nmi_watchdog_default(void);
++
++extern void setup_apic_nmi_watchdog(void *);
++extern void stop_apic_nmi_watchdog(void *);
++extern void disable_timer_nmi_watchdog(void);
++extern void enable_timer_nmi_watchdog(void);
++extern int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason);
++
++extern atomic_t nmi_active;
++extern unsigned int nmi_watchdog;
++#define NMI_DISABLED    -1
++#define NMI_NONE	0
++#define NMI_IO_APIC	1
++#define NMI_LOCAL_APIC	2
++#define NMI_INVALID	3
++#define NMI_DEFAULT	NMI_DISABLED
++
++struct ctl_table;
++struct file;
++extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
++			void __user *, size_t *, loff_t *);
++extern int unknown_nmi_panic;
++
++void __trigger_all_cpu_backtrace(void);
++#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
++
++#endif
++
++void lapic_watchdog_stop(void);
++int lapic_watchdog_init(unsigned nmi_hz);
++int lapic_wd_event(unsigned nmi_hz);
++unsigned lapic_adjust_nmi_hz(unsigned hz);
++int lapic_watchdog_ok(void);
++void disable_lapic_nmi_watchdog(void);
++void enable_lapic_nmi_watchdog(void);
++void stop_nmi(void);
++void restart_nmi(void);
++
+ #endif
+diff --git a/include/asm-x86/nmi_32.h b/include/asm-x86/nmi_32.h
+deleted file mode 100644
+index 7206c7e..0000000
+--- a/include/asm-x86/nmi_32.h
++++ /dev/null
+@@ -1,61 +0,0 @@
+-#ifndef ASM_NMI_H
+-#define ASM_NMI_H
+-
+-#include <linux/pm.h>
+-#include <asm/irq.h>
+-
+-#ifdef ARCH_HAS_NMI_WATCHDOG
+-
+-/**
+- * do_nmi_callback
+- *
+- * Check to see if a callback exists and execute it.  Return 1
+- * if the handler exists and was handled successfully.
+- */
+-int do_nmi_callback(struct pt_regs *regs, int cpu);
+-
+-extern int nmi_watchdog_enabled;
+-extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
+-extern int avail_to_resrv_perfctr_nmi(unsigned int);
+-extern int reserve_perfctr_nmi(unsigned int);
+-extern void release_perfctr_nmi(unsigned int);
+-extern int reserve_evntsel_nmi(unsigned int);
+-extern void release_evntsel_nmi(unsigned int);
+-
+-extern void setup_apic_nmi_watchdog (void *);
+-extern void stop_apic_nmi_watchdog (void *);
+-extern void disable_timer_nmi_watchdog(void);
+-extern void enable_timer_nmi_watchdog(void);
+-extern int nmi_watchdog_tick (struct pt_regs * regs, unsigned reason);
+-
+-extern atomic_t nmi_active;
+-extern unsigned int nmi_watchdog;
+-#define NMI_DISABLED    -1
+-#define NMI_NONE	0
+-#define NMI_IO_APIC	1
+-#define NMI_LOCAL_APIC	2
+-#define NMI_INVALID	3
+-#define NMI_DEFAULT	NMI_DISABLED
+-
+-struct ctl_table;
+-struct file;
+-extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
+-			void __user *, size_t *, loff_t *);
+-extern int unknown_nmi_panic;
+-
+-void __trigger_all_cpu_backtrace(void);
+-#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
+-
+-#endif
+-
+-void lapic_watchdog_stop(void);
+-int lapic_watchdog_init(unsigned nmi_hz);
+-int lapic_wd_event(unsigned nmi_hz);
+-unsigned lapic_adjust_nmi_hz(unsigned hz);
+-int lapic_watchdog_ok(void);
+-void disable_lapic_nmi_watchdog(void);
+-void enable_lapic_nmi_watchdog(void);
+-void stop_nmi(void);
+-void restart_nmi(void);
+-
+-#endif /* ASM_NMI_H */
+diff --git a/include/asm-x86/nmi_64.h b/include/asm-x86/nmi_64.h
+deleted file mode 100644
+index 94a5b19..0000000
+--- a/include/asm-x86/nmi_64.h
++++ /dev/null
+@@ -1,88 +0,0 @@
+-#ifndef ASM_NMI_H
+-#define ASM_NMI_H
+-
+-#include <linux/pm.h>
+-#include <asm/io.h>
+- 
+-/**
+- * do_nmi_callback
+- *
+- * Check to see if a callback exists and execute it.  Return 1
+- * if the handler exists and was handled successfully.
+- */
+-int do_nmi_callback(struct pt_regs *regs, int cpu);
+-
+-#ifdef CONFIG_PM
+- 
+-/** Replace the PM callback routine for NMI. */
+-struct pm_dev * set_nmi_pm_callback(pm_callback callback);
+-
+-/** Unset the PM callback routine back to the default. */
+-void unset_nmi_pm_callback(struct pm_dev * dev);
+-
+-#else
+-
+-static inline struct pm_dev * set_nmi_pm_callback(pm_callback callback)
+-{
+-	return 0;
+-} 
+- 
+-static inline void unset_nmi_pm_callback(struct pm_dev * dev)
+-{
+-}
+-
+-#endif /* CONFIG_PM */
+- 
+-extern void default_do_nmi(struct pt_regs *);
+-extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
+-
+-extern int unknown_nmi_panic;
+-extern int nmi_watchdog_enabled;
+-
+-extern int check_nmi_watchdog(void);
+-extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
+-extern int avail_to_resrv_perfctr_nmi(unsigned int);
+-extern int reserve_perfctr_nmi(unsigned int);
+-extern void release_perfctr_nmi(unsigned int);
+-extern int reserve_evntsel_nmi(unsigned int);
+-extern void release_evntsel_nmi(unsigned int);
+-
+-extern void setup_apic_nmi_watchdog (void *);
+-extern void stop_apic_nmi_watchdog (void *);
+-extern void disable_timer_nmi_watchdog(void);
+-extern void enable_timer_nmi_watchdog(void);
+-extern int nmi_watchdog_tick (struct pt_regs * regs, unsigned reason);
+-
+-extern void nmi_watchdog_default(void);
+-
+-extern atomic_t nmi_active;
+-extern unsigned int nmi_watchdog;
+-#define NMI_DISABLED    -1
+-#define NMI_NONE	0
+-#define NMI_IO_APIC	1
+-#define NMI_LOCAL_APIC	2
+-#define NMI_INVALID	3
+-#define NMI_DEFAULT	NMI_DISABLED
+-
+-struct ctl_table;
+-struct file;
+-extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
+-			void __user *, size_t *, loff_t *);
+-
+-extern int unknown_nmi_panic;
+-
+-void __trigger_all_cpu_backtrace(void);
+-#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
+-
+-
+-void lapic_watchdog_stop(void);
+-int lapic_watchdog_init(unsigned nmi_hz);
+-int lapic_wd_event(unsigned nmi_hz);
+-unsigned lapic_adjust_nmi_hz(unsigned hz);
+-int lapic_watchdog_ok(void);
+-void disable_lapic_nmi_watchdog(void);
+-void enable_lapic_nmi_watchdog(void);
+-void stop_nmi(void);
+-void restart_nmi(void);
+-
+-#endif /* ASM_NMI_H */
+-- 
+1.5.0.6
 
-> If INTRQ is asserted and "BSY is cleared to zero and DRQ is cleared, then
-> the device has completed the command with an error." (thus task_in_intr()
-> assumed ERR bit to be set), otherwise the value ERR may not be defined
-> (however task_in_intr() still assumed that it is OK to check ERR bit).
-
-First off, the patch I sent out _works_.
-
-Secondly, it's a hell of a lot more robust than yours is, exactly because 
-it doesn't get confused if the data direction or size bit disagrees with 
-the particular command in question.
-
-> This is SMART command with SMART ENABLE ATTRIBUTE AUTOSAVE sub-command
-> (feat == 0xd2, nsect == 0xf1) but it should use no-data protocol instead of
-> PIO-in which brings us back to commit 18a056feccabdfa9764016a615121b194828bc72
-> ("ide: don't enable local IRQs for PIO-in in driver_cmd_intr() (take 2)"):
-
-.. and what about all the magic special IDE commands that may be 
-drive-specific? What are we going to do about them?
-
-In other words, we should not try to create an impossible-to-maintain 
-piece of shit code that does the wrong thing if you send a command to the 
-drive that the IDE layer doesn't understand (but the sending code 
-hopefully does).
-
-We should make the core IDE code *robust*. 
-
-Your "real fix" is nothing of the sort. It's just a workaround for the 
-fragility of the code that looks at the drive status. The real fix is to 
-be robust in the face of even unexpected drive status codes, *especially* 
-for the code that handles commands injected by the user!
-
-In other words, you can talk about protocol specifications for things like 
-the regular filesystem READ/WRITE commands. But don't create total crap 
-like this that depends on the code knowing all possible outcomes of every 
-single possible command.
-
-Your patch is utter crap.
-
-You say (about commit 18a056feccabdfa9764016a615121b194828bc72):
-
-> as can be seen before this patch protocol to use was decided basing on DRQ bit
-> being set - what would you call _that_ if taskfile code is horrible, he? ;-)
-
-I would call that *correct*.
-
-And my point is, we used to be better. You made the code buggy and fragile 
-with that crap commit, and with the others like it (ie the already 
-much-mentioned commit 4d977e43d8ae758434e603cf2455d955f71c77c4).
-
-And that is and was *exactly* my point. The reason I called the taskfile 
-code horrible was exactly the fact that it only worked if it thought it 
-knew exactly what was going on.
-
-Deciding what to do based on the DRQ bit (and the READY/BUSY/ERROR bits) 
-is the *right* thing to do. It's the intelligent approach - actually 
-tekign the response of the hardware into account, and being robust. The 
-*stupid* and horrible thing to do is to think that you know better than 
-what the hardware tells you, and think that you can look up every command 
-that the user sends in the spec and use *that* to figure out what to do.
-
-Trust the hardware, not the paper. Don't make the code only work when you 
-think you know what is going on. Make the code work _always_.
-
-In short, there is no way in hell I'll apply a workaround patch for crap 
-code, when we already know what the robust solution is.
-
-		Linus
