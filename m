@@ -1,382 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932976AbYCSXpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939121AbYCSXqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932976AbYCSXpk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940004AbYCSWMm
+	id S939121AbYCSXqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYCSWOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:12:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35617 "EHLO mx1.redhat.com"
+	Wed, 19 Mar 2008 18:14:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58302 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932322AbYCSWMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:12:39 -0400
-Date: Wed, 19 Mar 2008 18:12:12 -0500 (EST)
-Message-Id: <20080319.181212.106439712.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
-       linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: [RFC PATCH 13/13] dm-mpath: convert to request-based
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1762426AbYCSWOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:14:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation patchset against -rc6)
+Date: Wed, 19 Mar 2008 23:13:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+References: <200803172317.33745.rjw@sisk.pl> <200803192259.00091.rjw@sisk.pl> <20080319220210.GG1811@elf.ucw.cz>
+In-Reply-To: <20080319220210.GG1811@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803192313.39664.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts dm-multipath target to request-based from bio-based.
+On Wednesday, 19 of March 2008, Pavel Machek wrote:
+> On Wed 2008-03-19 22:58:59, Rafael J. Wysocki wrote:
+> > On Wednesday, 19 of March 2008, Pavel Machek wrote:
+> > > 
+> > > > > >> Revert ec.c to 2.6.25-rc5 state:
+> > > > > >>
+> > > > > >> * this fixes backlight after closing/reopening the lid while in X on
+> > > > > >> thinkpad x60
+> > > > > >>
+> > > > > >> * unfortunately it breaks fn-home/end keyboard brightness control
+> > > > > > It should also break volume up/down/mute keys. Essentially all the keys on Thinkpad.
+> > > > > > And it would also be regression to 2.6.24 level.
+> > > > > 
+> > > > > As I explained above.
+> > > > > 
+> > > > > Unfortunately, applying this means I loose screen as soon as I
+> > > > > close/reopen lid. 2.6.24 did not behave like that. And it makes my
+> > > > > machine mostly unusable -- as soon as you try to carry it away, you
+> > > > > loose video. BAD.
+> > > > 
+> > > > Can you text the current -git (preferably without anything on top) pretty please?
+> > > 
+> > > Did anything relevant change in the last 8 hours or so?
+> > 
+> > No, it didn't.
+> > 
+> > > My scripts tell me there's nothing to pull:
+> > > 
+> > > Done counting 441 objects.
+> > > Result has 304 objects.
+> > > Deltifying 304 objects.
+> > >  100% (304/304) done
+> > > Total 304, written 304 (delta 236), reused 121 (delta 75)
+> > > Fetching pack (head and objects)...
+> > > Fetching tags...
+> > > Up to date.
+> > > 
+> > > Applying changes...
+> > > Branch already fully merged.
+> > > pavel@amd:~$
+> > 
+> > Still, the current -git has the offending patch reverted and you're seeing a
+> > regression nevertheless.
+> > 
+> > Is that correct?
+> 
+> Yes.
+> 
+> (Or more precisely, there are two regressions:
+> 
+> * s2ram 5 seconds slower -- fixed by current git
 
-In I/O completion, the clone request doesn't have clone bios,
-so the target driver can't resubmit it as it is, even if the target
-driver wants to retry it using another path.
-To resubmit the clone request, memory allocation for clone bios is
-needed.  There is no big benefit to resubmit the clone request.
+OK
 
-So the target driver doesn't requeue a clone in the target queue.
-Instead, the target driver ask dm core for requeueing and remapping
-the original request of the clone (do_end_io()).
-As a result, the target driver don't need to record/restore
-the information of the original request for resubmitting the clone.
+> * backlight goes out in X -- not fixed by current git)
 
+Can you please open a bugzilla entry for this one and make it block
+bug #9832?  [That will make the tracking of it a bit easier.]
 
-Actual path selection is done at congestion state checking time
-(multipath_congested()), since we'd like to check the path which
-will be definitely used for next I/O.
-
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/md/dm-mpath.c |  175 +++++++++++++++++++++++++++++++-------------------
- 1 files changed, 109 insertions(+), 66 deletions(-)
-
-Index: 2.6.25-rc5/drivers/md/dm-mpath.c
-===================================================================
---- 2.6.25-rc5.orig/drivers/md/dm-mpath.c
-+++ 2.6.25-rc5/drivers/md/dm-mpath.c
-@@ -8,8 +8,6 @@
- #include "dm.h"
- #include "dm-path-selector.h"
- #include "dm-hw-handler.h"
--#include "dm-bio-list.h"
--#include "dm-bio-record.h"
- #include "dm-uevent.h"
- 
- #include <linux/ctype.h>
-@@ -80,7 +78,7 @@ struct multipath {
- 	unsigned pg_init_count;		/* Number of times pg_init called */
- 
- 	struct work_struct process_queued_ios;
--	struct bio_list queued_ios;
-+	struct list_head queued_ios;
- 	unsigned queue_size;
- 
- 	struct work_struct trigger_event;
-@@ -97,7 +95,6 @@ struct multipath {
-  */
- struct dm_mpath_io {
- 	struct pgpath *pgpath;
--	struct dm_bio_details details;
- };
- 
- typedef int (*action_fn) (struct pgpath *pgpath);
-@@ -174,6 +171,7 @@ static struct multipath *alloc_multipath
- 	m = kzalloc(sizeof(*m), GFP_KERNEL);
- 	if (m) {
- 		INIT_LIST_HEAD(&m->priority_groups);
-+		INIT_LIST_HEAD(&m->queued_ios);
- 		spin_lock_init(&m->lock);
- 		m->queue_io = 1;
- 		INIT_WORK(&m->process_queued_ios, process_queued_ios);
-@@ -304,12 +302,13 @@ static int __must_push_back(struct multi
- 		dm_noflush_suspending(m->ti));
- }
- 
--static int map_io(struct multipath *m, struct bio *bio,
-+static int map_io(struct multipath *m, struct request *clone,
- 		  struct dm_mpath_io *mpio, unsigned was_queued)
- {
- 	int r = DM_MAPIO_REMAPPED;
- 	unsigned long flags;
- 	struct pgpath *pgpath;
-+	struct block_device *bdev;
- 
- 	spin_lock_irqsave(&m->lock, flags);
- 
-@@ -326,19 +325,28 @@ static int map_io(struct multipath *m, s
- 	if ((pgpath && m->queue_io) ||
- 	    (!pgpath && m->queue_if_no_path)) {
- 		/* Queue for the daemon to resubmit */
--		bio_list_add(&m->queued_ios, bio);
-+		list_add_tail(&clone->queuelist, &m->queued_ios);
- 		m->queue_size++;
- 		if ((m->pg_init_required && !m->pg_init_in_progress) ||
- 		    !m->queue_io)
- 			queue_work(kmultipathd, &m->process_queued_ios);
- 		pgpath = NULL;
-+		clone->q = NULL;
-+		clone->rq_disk = NULL;
- 		r = DM_MAPIO_SUBMITTED;
--	} else if (pgpath)
--		bio->bi_bdev = pgpath->path.dev->bdev;
--	else if (__must_push_back(m))
-+	} else if (pgpath) {
-+		bdev = pgpath->path.dev->bdev;
-+		clone->q = bdev_get_queue(bdev);
-+		clone->rq_disk = bdev->bd_disk;
-+	} else if (__must_push_back(m)) {
-+		clone->q = NULL;
-+		clone->rq_disk = NULL;
- 		r = DM_MAPIO_REQUEUE;
--	else
-+	} else {
-+		clone->q = NULL;
-+		clone->rq_disk = NULL;
- 		r = -EIO;	/* Failed */
-+	}
- 
- 	mpio->pgpath = pgpath;
- 
-@@ -378,30 +386,29 @@ static void dispatch_queued_ios(struct m
- {
- 	int r;
- 	unsigned long flags;
--	struct bio *bio = NULL, *next;
- 	struct dm_mpath_io *mpio;
- 	union map_info *info;
-+	struct request *clone, *n;
-+	LIST_HEAD(cl);
- 
- 	spin_lock_irqsave(&m->lock, flags);
--	bio = bio_list_get(&m->queued_ios);
-+	list_splice_init(&m->queued_ios, &cl);
- 	spin_unlock_irqrestore(&m->lock, flags);
- 
--	while (bio) {
--		next = bio->bi_next;
--		bio->bi_next = NULL;
-+	list_for_each_entry_safe(clone, n, &cl, queuelist) {
-+		list_del_init(&clone->queuelist);
- 
--		info = dm_get_mapinfo(bio);
-+		info = dm_get_rq_mapinfo(clone);
- 		mpio = info->ptr;
- 
--		r = map_io(m, bio, mpio, 1);
--		if (r < 0)
--			bio_endio(bio, r);
--		else if (r == DM_MAPIO_REMAPPED)
--			generic_make_request(bio);
--		else if (r == DM_MAPIO_REQUEUE)
--			bio_endio(bio, -EIO);
--
--		bio = next;
-+		r = map_io(m, clone, mpio, 1);
-+		if (r < 0 || r == DM_MAPIO_REQUEUE) {
-+			mempool_free(mpio, m->mpio_pool);
-+			if (r == DM_MAPIO_REQUEUE)
-+				r = DM_ENDIO_REQUEUE;
-+			dm_end_request(clone, r);
-+		} else if (r == DM_MAPIO_REMAPPED)
-+			dm_dispatch_request(clone);
- 	}
- }
- 
-@@ -813,21 +820,25 @@ static void multipath_dtr(struct dm_targ
- }
- 
- /*
-- * Map bios, recording original fields for later in case we have to resubmit
-+ * Map cloned requests
-  */
--static int multipath_map(struct dm_target *ti, struct bio *bio,
-+static int multipath_map(struct dm_target *ti, struct request *clone,
- 			 union map_info *map_context)
- {
- 	int r;
- 	struct dm_mpath_io *mpio;
- 	struct multipath *m = (struct multipath *) ti->private;
- 
--	mpio = mempool_alloc(m->mpio_pool, GFP_NOIO);
--	dm_bio_record(&mpio->details, bio);
-+	mpio = mempool_alloc(m->mpio_pool, GFP_ATOMIC);
-+	if (!mpio)
-+		/* ENOMEM, requeue */
-+		return DM_MAPIO_REQUEUE;
-+	memset(mpio, 0, sizeof(*mpio));
- 
- 	map_context->ptr = mpio;
--	bio->bi_rw |= (1 << BIO_RW_FAILFAST);
--	r = map_io(m, bio, mpio, 0);
-+	clone->cmd_flags |= REQ_FAILFAST;
-+
-+	r = map_io(m, clone, mpio, 0);
- 	if (r < 0 || r == DM_MAPIO_REQUEUE)
- 		mempool_free(mpio, m->mpio_pool);
- 
-@@ -1066,39 +1077,34 @@ void dm_pg_init_complete(struct dm_path 
- /*
-  * end_io handling
-  */
--static int do_end_io(struct multipath *m, struct bio *bio,
-+static int do_end_io(struct multipath *m, struct request *clone,
- 		     int error, struct dm_mpath_io *mpio)
- {
- 	struct hw_handler *hwh = &m->hw_handler;
- 	unsigned err_flags = MP_FAIL_PATH;	/* Default behavior */
- 	unsigned long flags;
-+	int r;
- 
--	if (!error)
-+	if (!error && !clone->errors)
- 		return 0;	/* I/O complete */
- 
--	if ((error == -EWOULDBLOCK) && bio_rw_ahead(bio))
--		return error;
--
- 	if (error == -EOPNOTSUPP)
- 		return error;
- 
- 	spin_lock_irqsave(&m->lock, flags);
- 	if (!m->nr_valid_paths) {
--		if (__must_push_back(m)) {
--			spin_unlock_irqrestore(&m->lock, flags);
--			return DM_ENDIO_REQUEUE;
--		} else if (!m->queue_if_no_path) {
--			spin_unlock_irqrestore(&m->lock, flags);
--			return -EIO;
--		} else {
--			spin_unlock_irqrestore(&m->lock, flags);
--			goto requeue;
--		}
-+		if (__must_push_back(m) || m->queue_if_no_path)
-+			r = DM_ENDIO_REQUEUE;
-+		else
-+			r = -EIO;
-+
-+		spin_unlock_irqrestore(&m->lock, flags);
-+		return r;
- 	}
- 	spin_unlock_irqrestore(&m->lock, flags);
- 
--	if (hwh->type && hwh->type->error)
--		err_flags = hwh->type->error(hwh, bio);
-+	if (hwh->type && hwh->type->error_rq)
-+		err_flags = hwh->type->error_rq(hwh, clone);
- 
- 	if (mpio->pgpath) {
- 		if (err_flags & MP_FAIL_PATH)
-@@ -1111,21 +1117,10 @@ static int do_end_io(struct multipath *m
- 	if (err_flags & MP_ERROR_IO)
- 		return -EIO;
- 
--      requeue:
--	dm_bio_restore(&mpio->details, bio);
--
--	/* queue for the daemon to resubmit or fail */
--	spin_lock_irqsave(&m->lock, flags);
--	bio_list_add(&m->queued_ios, bio);
--	m->queue_size++;
--	if (!m->queue_io)
--		queue_work(kmultipathd, &m->process_queued_ios);
--	spin_unlock_irqrestore(&m->lock, flags);
--
--	return DM_ENDIO_INCOMPLETE;	/* io not complete */
-+	return DM_ENDIO_REQUEUE;
- }
- 
--static int multipath_end_io(struct dm_target *ti, struct bio *bio,
-+static int multipath_end_io(struct dm_target *ti, struct request *clone,
- 			    int error, union map_info *map_context)
- {
- 	struct multipath *m = ti->private;
-@@ -1134,14 +1129,13 @@ static int multipath_end_io(struct dm_ta
- 	struct path_selector *ps;
- 	int r;
- 
--	r  = do_end_io(m, bio, error, mpio);
-+	r  = do_end_io(m, clone, error, mpio);
- 	if (pgpath) {
- 		ps = &pgpath->pg->ps;
- 		if (ps->type->end_io)
- 			ps->type->end_io(ps, &pgpath->path);
- 	}
--	if (r != DM_ENDIO_INCOMPLETE)
--		mempool_free(mpio, m->mpio_pool);
-+	mempool_free(mpio, m->mpio_pool);
- 
- 	return r;
- }
-@@ -1380,6 +1374,54 @@ static int multipath_ioctl(struct dm_tar
- 					 bdev->bd_disk, cmd, arg);
- }
- 
-+static int __pgpath_congested(struct pgpath *pgpath)
-+{
-+	struct request_queue *q = bdev_get_queue(pgpath->path.dev->bdev);
-+
-+	if (dm_underlying_device_congested(q))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int multipath_congested(struct dm_target *ti)
-+{
-+	int congested = 0;
-+	struct multipath *m = (struct multipath *) ti->private;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&m->lock, flags);
-+
-+	if (m->current_pgpath && m->repeat_count > 1) {
-+		/* m->current_pgpath is surely used at next mapping time. */
-+		if (__pgpath_congested(m->current_pgpath))
-+			congested = 1;
-+
-+		goto out;
-+	}
-+
-+	/*
-+	 * We are here means that path selection will be executed
-+	 * at next mapping time.
-+	 * We run the path selection here and check congestion status
-+	 * of the next path.
-+	 * And increment repeat_count to avoid path selection again
-+	 * in map_io().
-+	 */
-+	__choose_pgpath(m);
-+	if (m->current_pgpath) {
-+		if (__pgpath_congested(m->current_pgpath))
-+			congested = 1;
-+
-+		m->repeat_count++;
-+	}
-+
-+out:
-+	spin_unlock_irqrestore(&m->lock, flags);
-+
-+	return congested;
-+}
-+
- /*-----------------------------------------------------------------
-  * Module setup
-  *---------------------------------------------------------------*/
-@@ -1389,13 +1431,14 @@ static struct target_type multipath_targ
- 	.module = THIS_MODULE,
- 	.ctr = multipath_ctr,
- 	.dtr = multipath_dtr,
--	.map = multipath_map,
--	.end_io = multipath_end_io,
-+	.map_rq = multipath_map,
-+	.rq_end_io = multipath_end_io,
- 	.presuspend = multipath_presuspend,
- 	.resume = multipath_resume,
- 	.status = multipath_status,
- 	.message = multipath_message,
- 	.ioctl  = multipath_ioctl,
-+	.congested = multipath_congested,
- };
- 
- static int __init dm_multipath_init(void)
+Thanks,
+Rafael
