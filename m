@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937031AbYCTADt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761871AbYCTAGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937031AbYCTADt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965720AbYCSWzS
+	id S1761871AbYCTAGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759014AbYCSXF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:55:18 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:43018 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965662AbYCSWzO (ORCPT
+	Wed, 19 Mar 2008 19:05:56 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39900 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1162772AbYCSXFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:55:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aHGdk61IGlLZyrHps8Zuz7ymmiwnbVO/90ak0fSXpSixRNrd8TF/tzmsL+P06UOmddxEZwwANurGsmrZbq6JwYNku6BX6IFMUgb+fdpTmfZsxHzQsBPPOuHsdfdYcn/yDsIJoCs4tmdouck3w9uvC+JSufB7ivyt/3PGth3dk9o=
-Message-ID: <45a44e480803191555vfcfe493r4f2fd267097d9a38@mail.gmail.com>
-Date: Thu, 20 Mar 2008 06:55:11 +0800
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work as advertized
-Cc: armbru@redhat.com, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com
-In-Reply-To: <20080319153946.a5a8060e.akpm@linux-foundation.org>
+	Wed, 19 Mar 2008 19:05:53 -0400
+Date: Thu, 20 Mar 2008 00:06:24 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: marcel@holtmann.org, maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: bluetooth still corrupts memory in 2.6.25-rc6
+Message-ID: <20080319230624.GJ1811@elf.ucw.cz>
+References: <20080319082115.GA14543@elf.ucw.cz> <47E19BA1.8010905@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <87tzjx6vj3.fsf@pike.pond.sub.org>
-	 <87k5kt6vd3.fsf@pike.pond.sub.org>
-	 <45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
-	 <871w6z6ajs.fsf@pike.pond.sub.org>
-	 <45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
-	 <87iqzjat6e.fsf@pike.pond.sub.org>
-	 <45a44e480803190424s51b85efbk39ab3bfce4cb924a@mail.gmail.com>
-	 <20080319113745.d3873de0.akpm@linux-foundation.org>
-	 <45a44e480803191530p27ec9575l260d6de063a8d6bf@mail.gmail.com>
-	 <20080319153946.a5a8060e.akpm@linux-foundation.org>
+In-Reply-To: <47E19BA1.8010905@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 6:39 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
+On Thu 2008-03-20 00:02:57, Jiri Slaby wrote:
+> On 03/19/2008 09:21 AM, Pavel Machek wrote:
+>> ...just leave ppp-over-cellphone-over-bluetooth running, and do
+>> s2ram...
+>>
+>> Linux version 2.6.25-rc6 (pavel@amd) (gcc version 4.1.3 20071209 (prerelease) (Debian 4.1.2-18)) #186 SMP Wed Mar 19 00:46:05 CET 2008
+>> BIOS-provided physical RAM map:
 >
->  Well all we have in the changelog is
->
->   Implement support for the E-Ink Metronome controller.  It provides an
->   mmapable interface to the controller using defio support.  It was tested
->   with a gumstix pxa255 with Vizplex media using Xfbdev and various X
->   clients such as xeyes, xpdf, xloadimage.
->
->  grump.  This say nothing at all about the change to drivers/video/fb_defio.c.
+> Pavel, does the "still" from $SUBJ mean, that 2.6.24 is affected too (if 
+> this is the same what I hit)?
 
-I apologize. I should have done better.
+Hey, I did not do careful analysis. I believe it is the same problem
+that affects 2.6.24, too, yes. But I actually believe it is much older
+than that...
+									Pavel
 
->
->  a) the changelog _should_ document this change.  Please send a paragraph and
->    I'll add it.
-
-This patch fixes the following bug. Defio would cause a hang on write
-access to the framebuffer as the page fault would be called
-ad-infinitum. It fixes fb_defio by setting the mapping to be used by
-page_mkclean.
-
->
->  b) If this discussion hadn't happened, that bug (whatever it is) would
->    have remained unfixed in 2.6.25.  As a direct consequence of poor
->    changelogging.
-
-Understood. The root cause of my flaw was my assumption that other
-than me, there weren't any users of defio so I was in no hurry to get
-it fixed.
-
->
->  c) This bugfix (whatever it is) should have been in a separate patch.
-
-Understood. It won't happen again.
-
-Thanks,
-jaya
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
