@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942543AbYCSXJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S942589AbYCSXKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942543AbYCSXJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932842AbYCSVer
+	id S942589AbYCSXKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932967AbYCSVf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:34:47 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:45921 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937722AbYCSVep (ORCPT
+	Wed, 19 Mar 2008 17:35:28 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2271 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S937737AbYCSVfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:34:45 -0400
-Date: Wed, 19 Mar 2008 04:28:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: volanoMark 12% regression with 2.6.25-rc6
-Message-ID: <20080319032854.GA20793@elte.hu>
-References: <1205831650.3215.569.camel@ymzhang> <20080318195807.GA26887@elte.hu> <1205892420.3215.594.camel@ymzhang> <20080319021555.GA15825@elte.hu> <1205896722.3215.624.camel@ymzhang>
+	Wed, 19 Mar 2008 17:35:24 -0400
+Date: Wed, 19 Mar 2008 17:35:23 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Greg Kroah-Hartman <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] USB: enable USB-PERSIST by default
+In-Reply-To: <47E147CD.3060102@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0803191727030.2504-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1205896722.3215.624.camel@ymzhang>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0066]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 19 Mar 2008, Mark Lord wrote:
 
-* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
-
-> On Wed, 2008-03-19 at 03:15 +0100, Ingo Molnar wrote:
-> > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> Greg Kroah-Hartman wrote:
+> > From: Alan Stern <stern@rowland.harvard.edu>
 > > 
-> > > Could you send me a patch against 2.6.25-rc6? Or just send me the 
-> > > kernel/sched*.c?
+> > This patch (as1052) enables USB-PERSIST for all devices by default.
+> > The user won't have to remember to enable it explicitly for devices
+> > containing mounted filesystems.
 > > 
-> > sure - the jist of it should be in the patch below.
-> I did a quick test and didn't find much help with the new patch.
+> > Eventually userspace tools like hal may be able to set the persist
+> > attribute automatically when a filesystem is mounted on a USB device.
+> > When that time comes this patch can be reverted, if people think it
+> > matters.
+> ..
+> 
+> Should the next word below be "that", rather than "this" ?
 
-could you paste the rc5 and rc6 result lines you get out of Volanomark? 
-(to see how much they fluctuate, etc.)
+Yours is a rather obscure grammatical question, especially concerning a
+Changelog entry (which is not even as significant to developers as a
+comment, IMO).  What difference in meaning do you imagine replacing
+"This" with "That" would achieve?
 
-	Ingo
+> > This approach has the advantage of giving the user the ability to turn
+> > off USB-PERSIST for devices with mounted filesystems, rather than
+> > making the kernel always assume it should be on.
+> ...
+
+What I meant (it probably wasn't very clear from the text) was that the
+approach of leaving USB-PERSIST controlled by the power/persist
+attribute and merely altering the attribute's default value is better
+than having the kernel unilaterally and unconditionally turn
+USB-PERSIST on for every device holding a mounted filesystem.  In other
+words, the approach taken by the patch is better than the approach
+suggested by Linus Torvalds.
+
+Alan Stern
+
