@@ -1,270 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbYCSUZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbYCSU0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbYCSUZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYCSTje
+	id S1753780AbYCSU0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYCSTjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:39:34 -0400
+	Wed, 19 Mar 2008 15:39:37 -0400
 Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757281AbYCSTjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:39:05 -0400
+	id S1754827AbYCSTjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:39:09 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
        Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 10/79] [PATCH] merge smp_store_cpu_info
-Date: Wed, 19 Mar 2008 14:25:05 -0300
-Message-Id: <12059476212769-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 65/79] [PATCH] integrate start_secondary
+Date: Wed, 19 Mar 2008 14:26:00 -0300
+Message-Id: <12059478682569-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12059476162900-git-send-email-gcosta@redhat.com>
-References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1205947862872-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com> <12059476351524-git-send-email-gcosta@redhat.com> <12059476393279-git-send-email-gcosta@redhat.com> <12059476441057-git-send-email-gcosta@redhat.com> <12059476482875-git-send-email-gcosta@redhat.com> <12059476531095-git-send-email-gcosta@redhat.com> <1205947657993-git-send-email-gcosta@redhat.com> <1205947661385-git-send-email-g!
+ costa@redhat.com> <12059476663034-git-send-email-gcosta@redhat.com> <12059476703608-git-send-email-gcosta@redhat.com> <1205947675605-git-send-email-gcosta@redhat.com> <12059476802159-git-send-email-gcosta@redhat.com> <12059476844196-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send!
+ -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Glauber Costa <gcosta@redhat.com>
 
-now that it is the same between arches, put it into smpboot.c
+It now looks the same between architectures, so we
+merge it in smpboot.c. Minor differences goes inside
+an ifdef
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot.c    |   77 ++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/smpboot_32.c |   71 +--------------------------------------
- arch/x86/kernel/smpboot_64.c |   15 --------
- include/asm-x86/smp.h        |    2 +
- include/asm-x86/smp_32.h     |    2 -
- 5 files changed, 80 insertions(+), 87 deletions(-)
+ arch/x86/kernel/smpboot.c    |   86 +++++++++++++++++++++++++++++++++++++++++-
+ arch/x86/kernel/smpboot_32.c |   75 ------------------------------------
+ arch/x86/kernel/smpboot_64.c |   63 ------------------------------
+ 3 files changed, 85 insertions(+), 139 deletions(-)
 
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index b13b9d5..a157a52 100644
+index 69c1796..a36ae27 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -45,6 +45,83 @@ unsigned char *trampoline_base = __va(SMP_TRAMPOLINE_BASE);
- /* representing cpus for which sibling maps can be computed */
- static cpumask_t cpu_sibling_setup_map;
+@@ -17,6 +17,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/mtrr.h>
+ #include <asm/nmi.h>
++#include <asm/vmi.h>
+ #include <linux/mc146818rtc.h>
  
-+#ifdef CONFIG_X86_32
-+/* Set if we find a B stepping CPU */
-+int __cpuinitdata smp_b_stepping;
-+#endif
-+
-+static void __cpuinit smp_apply_quirks(struct cpuinfo_x86 *c)
+ #include <mach_apic.h>
+@@ -229,6 +230,90 @@ void __cpuinit smp_callin(void)
+ 	cpu_set(cpuid, cpu_callin_map);
+ }
+ 
++/*
++ * Activate a secondary processor.
++ */
++void __cpuinit start_secondary(void *unused)
 +{
-+#ifdef CONFIG_X86_32
 +	/*
-+	 * Mask B, Pentium, but not Pentium MMX
++	 * Don't put *anything* before cpu_init(), SMP booting is too
++	 * fragile that we want to limit the things done here to the
++	 * most necessary things.
 +	 */
-+	if (c->x86_vendor == X86_VENDOR_INTEL &&
-+	    c->x86 == 5 &&
-+	    c->x86_mask >= 1 && c->x86_mask <= 4 &&
-+	    c->x86_model <= 3)
-+		/*
-+		 * Remember we have B step Pentia with bugs
-+		 */
-+		smp_b_stepping = 1;
++#ifdef CONFIG_VMI
++	vmi_bringup();
++#endif
++	cpu_init();
++	preempt_disable();
++	smp_callin();
 +
++	/* otherwise gcc will move up smp_processor_id before the cpu_init */
++	barrier();
 +	/*
-+	 * Certain Athlons might work (for various values of 'work') in SMP
-+	 * but they are not certified as MP capable.
++	 * Check TSC synchronization with the BP:
 +	 */
-+	if ((c->x86_vendor == X86_VENDOR_AMD) && (c->x86 == 6)) {
++	check_tsc_sync_target();
 +
-+		if (num_possible_cpus() == 1)
-+			goto valid_k7;
-+
-+		/* Athlon 660/661 is valid. */
-+		if ((c->x86_model == 6) && ((c->x86_mask == 0) ||
-+		    (c->x86_mask == 1)))
-+			goto valid_k7;
-+
-+		/* Duron 670 is valid */
-+		if ((c->x86_model == 7) && (c->x86_mask == 0))
-+			goto valid_k7;
-+
-+		/*
-+		 * Athlon 662, Duron 671, and Athlon >model 7 have capability
-+		 * bit. It's worth noting that the A5 stepping (662) of some
-+		 * Athlon XP's have the MP bit set.
-+		 * See http://www.heise.de/newsticker/data/jow-18.10.01-000 for
-+		 * more.
-+		 */
-+		if (((c->x86_model == 6) && (c->x86_mask >= 2)) ||
-+		    ((c->x86_model == 7) && (c->x86_mask >= 1)) ||
-+		     (c->x86_model > 7))
-+			if (cpu_has_mp)
-+				goto valid_k7;
-+
-+		/* If we get here, not a certified SMP capable AMD system. */
-+		add_taint(TAINT_UNSAFE_SMP);
++	if (nmi_watchdog == NMI_IO_APIC) {
++		disable_8259A_irq(0);
++		enable_NMI_through_LVT0();
++		enable_8259A_irq(0);
 +	}
 +
-+valid_k7:
-+	;
++	/* This must be done before setting cpu_online_map */
++	set_cpu_sibling_map(raw_smp_processor_id());
++	wmb();
++
++	/*
++	 * We need to hold call_lock, so there is no inconsistency
++	 * between the time smp_call_function() determines number of
++	 * IPI recipients, and the time when the determination is made
++	 * for which cpus receive the IPI. Holding this
++	 * lock helps us to not include this cpu in a currently in progress
++	 * smp_call_function().
++	 */
++	lock_ipi_call_lock();
++#ifdef CONFIG_X86_64
++	spin_lock(&vector_lock);
++
++	/* Setup the per cpu irq handling data structures */
++	__setup_vector_irq(smp_processor_id());
++	/*
++	 * Allow the master to continue.
++	 */
++	spin_unlock(&vector_lock);
 +#endif
++	cpu_set(smp_processor_id(), cpu_online_map);
++	unlock_ipi_call_lock();
++	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
++
++	setup_secondary_clock();
++
++	wmb();
++	cpu_idle();
 +}
 +
++#ifdef CONFIG_X86_32
 +/*
-+ * The bootstrap kernel entry code has set these up. Save them for
-+ * a given CPU
++ * Everything has been set up for the secondary
++ * CPUs - they just need to reload everything
++ * from the task structure
++ * This function must not return.
 + */
-+
-+void __cpuinit smp_store_cpu_info(int id)
++void __devinit initialize_secondary(void)
 +{
-+	struct cpuinfo_x86 *c = &cpu_data(id);
++	/*
++	 * We don't actually need to load the full TSS,
++	 * basically just the stack pointer and the ip.
++	 */
 +
-+	*c = boot_cpu_data;
-+	c->cpu_index = id;
-+	if (id != 0)
-+		identify_secondary_cpu(c);
-+	smp_apply_quirks(c);
++	asm volatile(
++		"movl %0,%%esp\n\t"
++		"jmp *%1"
++		:
++		:"m" (current->thread.sp), "m" (current->thread.ip));
 +}
-+
-+
- void __cpuinit set_cpu_sibling_map(int cpu)
++#endif
+ 
+ static void __cpuinit smp_apply_quirks(struct cpuinfo_x86 *c)
  {
- 	int i;
+@@ -533,7 +618,6 @@ wakeup_secondary_cpu(int logical_apicid, unsigned long start_eip)
+ }
+ #endif	/* WAKE_SECONDARY_VIA_NMI */
+ 
+-extern void start_secondary(void *unused);
+ #ifdef WAKE_SECONDARY_VIA_INIT
+ static int __devinit
+ wakeup_secondary_cpu(int phys_apicid, unsigned long start_eip)
 diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index e050064..0bfb31e 100644
+index e82eeb2..77b045c 100644
 --- a/arch/x86/kernel/smpboot_32.c
 +++ b/arch/x86/kernel/smpboot_32.c
-@@ -59,8 +59,7 @@
- #include <asm/vmi.h>
- #include <asm/mtrr.h>
- 
--/* Set if we find a B stepping CPU */
--static int __cpuinitdata smp_b_stepping;
-+extern int smp_b_stepping;
- 
- static cpumask_t smp_commenced_mask;
- 
-@@ -78,74 +77,6 @@ static void map_cpu_to_logical_apicid(void);
+@@ -80,81 +80,6 @@ extern void unmap_cpu_to_logical_apicid(int cpu);
  /* State of each CPU. */
  DEFINE_PER_CPU(int, cpu_state) = { 0 };
  
--static void __cpuinit smp_apply_quirks(struct cpuinfo_x86 *c)
+-extern void smp_callin(void);
+-
+-/*
+- * Activate a secondary processor.
+- */
+-void __cpuinit start_secondary(void *unused)
 -{
 -	/*
--	 * Mask B, Pentium, but not Pentium MMX
+-	 * Don't put *anything* before cpu_init(), SMP booting is too
+-	 * fragile that we want to limit the things done here to the
+-	 * most necessary things.
 -	 */
--	if (c->x86_vendor == X86_VENDOR_INTEL &&
--	    c->x86 == 5 &&
--	    c->x86_mask >= 1 && c->x86_mask <= 4 &&
--	    c->x86_model <= 3)
--		/*
--		 * Remember we have B step Pentia with bugs
--		 */
--		smp_b_stepping = 1;
+-#ifdef CONFIG_VMI
+-	vmi_bringup();
+-#endif
+-	cpu_init();
+-	preempt_disable();
+-	smp_callin();
 -
+-	/* otherwise gcc will move up smp_processor_id before the cpu_init */
+-	barrier();
 -	/*
--	 * Certain Athlons might work (for various values of 'work') in SMP
--	 * but they are not certified as MP capable.
+-	 * Check TSC synchronization with the BP:
 -	 */
--	if ((c->x86_vendor == X86_VENDOR_AMD) && (c->x86 == 6)) {
+-	check_tsc_sync_target();
 -
--		if (num_possible_cpus() == 1)
--			goto valid_k7;
--
--		/* Athlon 660/661 is valid. */	
--		if ((c->x86_model==6) && ((c->x86_mask==0) || (c->x86_mask==1)))
--			goto valid_k7;
--
--		/* Duron 670 is valid */
--		if ((c->x86_model==7) && (c->x86_mask==0))
--			goto valid_k7;
--
--		/*
--		 * Athlon 662, Duron 671, and Athlon >model 7 have capability bit.
--		 * It's worth noting that the A5 stepping (662) of some Athlon XP's
--		 * have the MP bit set.
--		 * See http://www.heise.de/newsticker/data/jow-18.10.01-000 for more.
--		 */
--		if (((c->x86_model==6) && (c->x86_mask>=2)) ||
--		    ((c->x86_model==7) && (c->x86_mask>=1)) ||
--		     (c->x86_model> 7))
--			if (cpu_has_mp)
--				goto valid_k7;
--
--		/* If we get here, it's not a certified SMP capable AMD system. */
--		add_taint(TAINT_UNSAFE_SMP);
+-	if (nmi_watchdog == NMI_IO_APIC) {
+-		disable_8259A_irq(0);
+-		enable_NMI_through_LVT0();
+-		enable_8259A_irq(0);
 -	}
 -
--valid_k7:
--	;
+-	/* This must be done before setting cpu_online_map */
+-	set_cpu_sibling_map(raw_smp_processor_id());
+-	wmb();
 -
+-	/*
+-	 * We need to hold call_lock, so there is no inconsistency
+-	 * between the time smp_call_function() determines number of
+-	 * IPI recipients, and the time when the determination is made
+-	 * for which cpus receive the IPI. Holding this
+-	 * lock helps us to not include this cpu in a currently in progress
+-	 * smp_call_function().
+-	 */
+-	lock_ipi_call_lock();
+-	cpu_set(smp_processor_id(), cpu_online_map);
+-	unlock_ipi_call_lock();
+-	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
+-
+-	setup_secondary_clock();
+-
+-	wmb();
+-	cpu_idle();
 -}
 -
 -/*
-- * The bootstrap kernel entry code has set these up. Save them for
-- * a given CPU
+- * Everything has been set up for the secondary
+- * CPUs - they just need to reload everything
+- * from the task structure
+- * This function must not return.
 - */
--
--void __cpuinit smp_store_cpu_info(int id)
+-void __devinit initialize_secondary(void)
 -{
--	struct cpuinfo_x86 *c = &cpu_data(id);
+-	/*
+-	 * We don't actually need to load the full TSS,
+-	 * basically just the stack pointer and the ip.
+-	 */
 -
--	*c = boot_cpu_data;
--	c->cpu_index = id;
--	if (id != 0)
--		identify_secondary_cpu(c);
--	smp_apply_quirks(c);
+-	asm volatile(
+-		"movl %0,%%esp\n\t"
+-		"jmp *%1"
+-		:
+-		:"m" (current->thread.sp),"m" (current->thread.ip));
 -}
 -
- static atomic_t init_deasserted;
- 
- static void __cpuinit smp_callin(void)
+ #ifdef CONFIG_HOTPLUG_CPU
+ void cpu_exit_clear(void)
+ {
 diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index f84e30d..c213345 100644
+index 71f13b1..60cd8cf 100644
 --- a/arch/x86/kernel/smpboot_64.c
 +++ b/arch/x86/kernel/smpboot_64.c
-@@ -85,21 +85,6 @@ struct task_struct *idle_thread_array[NR_CPUS] __cpuinitdata ;
- #define set_idle_for_cpu(x,p)   (idle_thread_array[(x)] = (p))
- #endif
+@@ -71,69 +71,6 @@ int smp_threads_ready;
+ /* State of each CPU */
+ DEFINE_PER_CPU(int, cpu_state) = { 0 };
  
+-extern void smp_callin(void);
 -/*
-- * The bootstrap kernel entry code has set these up. Save them for
-- * a given CPU
+- * Setup code on secondary processor (after comming out of the trampoline)
 - */
--
--static void __cpuinit smp_store_cpu_info(int id)
+-void __cpuinit start_secondary(void)
 -{
--	struct cpuinfo_x86 *c = &cpu_data(id);
+-	/*
+-	 * Dont put anything before smp_callin(), SMP
+-	 * booting is too fragile that we want to limit the
+-	 * things done here to the most necessary things.
+-	 */
+-	cpu_init();
+-	preempt_disable();
+-	smp_callin();
 -
--	*c = boot_cpu_data;
--	c->cpu_index = id;
--	if (id != 0)
--		identify_secondary_cpu(c);
+-	/* otherwise gcc will move up the smp_processor_id before the cpu_init */
+-	barrier();
+-
+-	/*
+-  	 * Check TSC sync first:
+- 	 */
+-	check_tsc_sync_target();
+-
+-	if (nmi_watchdog == NMI_IO_APIC) {
+-		disable_8259A_irq(0);
+-		enable_NMI_through_LVT0();
+-		enable_8259A_irq(0);
+-	}
+-
+-	/*
+-	 * The sibling maps must be set before turing the online map on for
+-	 * this cpu
+-	 */
+-	set_cpu_sibling_map(smp_processor_id());
+-
+-	/*
+-	 * We need to hold call_lock, so there is no inconsistency
+-	 * between the time smp_call_function() determines number of
+-	 * IPI recipients, and the time when the determination is made
+-	 * for which cpus receive the IPI in genapic_flat.c. Holding this
+-	 * lock helps us to not include this cpu in a currently in progress
+-	 * smp_call_function().
+-	 */
+-	lock_ipi_call_lock();
+-	spin_lock(&vector_lock);
+-
+-	/* Setup the per cpu irq handling data structures */
+-	__setup_vector_irq(smp_processor_id());
+-	/*
+-	 * Allow the master to continue.
+-	 */
+-	spin_unlock(&vector_lock);
+-	cpu_set(smp_processor_id(), cpu_online_map);
+-	unlock_ipi_call_lock();
+-
+-	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
+-
+-	setup_secondary_clock();
+-
+-	wmb();
+-	cpu_idle();
 -}
 -
- static inline void wait_for_init_deassert(atomic_t *deassert)
- {
- 	while (!atomic_read(deassert))
-diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-index 4dc271b..b4c5143 100644
---- a/include/asm-x86/smp.h
-+++ b/include/asm-x86/smp.h
-@@ -88,6 +88,8 @@ extern void prefill_possible_map(void);
+ cycles_t cacheflush_time;
+ unsigned long cache_decay_ticks;
  
- #define SMP_TRAMPOLINE_BASE 0x6000
- extern unsigned long setup_trampoline(void);
-+
-+void smp_store_cpu_info(int id);
- #endif
- 
- #ifdef CONFIG_X86_32
-diff --git a/include/asm-x86/smp_32.h b/include/asm-x86/smp_32.h
-index 76740de..51624ab 100644
---- a/include/asm-x86/smp_32.h
-+++ b/include/asm-x86/smp_32.h
-@@ -42,8 +42,6 @@ DECLARE_PER_CPU(int, cpu_number);
- 
- extern int safe_smp_processor_id(void);
- 
--void __cpuinit smp_store_cpu_info(int id);
--
- /* We don't mark CPUs online until __cpu_up(), so we need another measure */
- static inline int num_booting_cpus(void)
- {
 -- 
 1.5.0.6
 
