@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937818AbYCSXV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932814AbYCSXSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937818AbYCSXV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939298AbYCSV4L
+	id S932814AbYCSXSe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938553AbYCSVqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:56:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58159 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761031AbYCSV4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:56:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: + pm-convert-wakeup-flag-accessors-to-inline-functions-fix.patch added to -mm tree
-Date: Wed, 19 Mar 2008 22:55:28 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>, lenb@kernel.org
-References: <Pine.LNX.4.44L0.0803191736550.2504-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803191736550.2504-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 19 Mar 2008 17:46:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60447 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S938547AbYCSVqh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:46:37 -0400
+Date: Wed, 19 Mar 2008 14:43:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: randy.dunlap@oracle.com, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][v4]  Modify loop device to be able to manage partitions
+ of the disk image
+Message-Id: <20080319144348.c235508c.akpm@linux-foundation.org>
+In-Reply-To: <1205962750.4758.17.camel@frecb07144>
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+	<12059301672966-git-send-email-Laurent.Vivier@bull.net>
+	<20080319131106.61d7fa0c.randy.dunlap@oracle.com>
+	<1205958281.4758.7.camel@frecb07144>
+	<20080319142821.73d280f3.akpm@linux-foundation.org>
+	<1205962750.4758.17.camel@frecb07144>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803192255.29655.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 19 of March 2008, Alan Stern wrote:
-> On Wed, 19 Mar 2008, Greg KH wrote:
-> 
-> > On Wed, Mar 19, 2008 at 11:48:29AM -0700, Andrew Morton wrote:
-> > > I'll drop everything, let's start again.
+On Wed, 19 Mar 2008 22:39:10 +0100
+Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+
+> > > > What happened to the update to Documentation/kernel-parameters.txt
+> > > > that was in v3?
 > > > 
-> > > Only how?  umm, please review Greg's driver tree, let us know which patches
-> > > shoudl be dropped from that then send new ones, I guess.
+> > > Well, perhaps I didn't understand the comment of Andrew:
+> > > 
+> > > "This shouldn't be needed."
+> > > 
+> > > I though it means I should remove it. So, Andrew ???
 > > 
-> > Yes, please do, I'm confused as well :)
+> > No, given that all module_param() options are available via the boot
+> > command line when the module is linked into vmlinux, we don't document them
+> > separately.
 > 
-> Okay.  No doubt Rafael will correct me if I get something wrong.
+> "No" is "To document max_part is not needed"
 > 
-> Greg's tree still contains the original, wrong version of 
-> pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch.  It 
-> should be reverted.  In its place should be substituted this series of 
-> patches (URLs for 0/3 ... 3/3):
+> or
 > 
-> 	http://marc.info/?l=linux-kernel&m=120561808422302&w=2
-> 	http://marc.info/?l=linux-kernel&m=120561808522316&w=2
-> 	http://marc.info/?l=linux-kernel&m=120561808522322&w=2
-> 	http://marc.info/?l=linux-kernel&m=120561808622328&w=2
-> 
-> There is likely to be a conflict in applying the 2/3 patch, because its 
-> first hunk touches a region of code also affected by work Rafael has 
-> been doing.  The important aspect of that hunk is that it moves the 
-> should_wakeup flag definition outside the region protected by "#ifdef 
-> CONFIG_PM_SLEEP".
+> "No" is "you must not remove parameter documentation from your patch" ?
 
-I've just resent the three patches, rebased on top of the current tree.
-
-Please double check if everytning is right.
-
-Thanks,
-Rafael
+The former ;)
