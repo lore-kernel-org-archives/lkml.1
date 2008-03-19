@@ -1,43 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbYCTAEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYCTAF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932206AbYCTAEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S942307AbYCSXDI
+	id S1753828AbYCTAF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965801AbYCSXEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 19:03:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:52170 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S942301AbYCSXDF (ORCPT
+	Wed, 19 Mar 2008 19:04:25 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:19573 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965796AbYCSXEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 19:03:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=azvP84CvH283gmZ6coVBywfcvwcZTt/qkO/EWJTlmxvHTBff5nL0lexG6Xmr3awokZDCpHiIUGUy5ZpPqkWxtBlM3f+uMSicUjSApnDPLtq4/Cuhx1zcJ5Od/EC8G+smqZcnqUQVoCCQORnZSsi4vVs8fLkn/fjvZ02kVhUuR/Q=
-Message-ID: <47E19BA1.8010905@gmail.com>
-Date: Thu, 20 Mar 2008 00:02:57 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 19 Mar 2008 19:04:22 -0400
+Message-ID: <47E19BC2.2030100@oracle.com>
+Date: Wed, 19 Mar 2008 16:03:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: marcel@holtmann.org, maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: bluetooth still corrupts memory in 2.6.25-rc6
-References: <20080319082115.GA14543@elf.ucw.cz>
-In-Reply-To: <20080319082115.GA14543@elf.ucw.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Laurent Vivier <Laurent.Vivier@bull.net>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][v4]  Modify loop device to be able to manage partitions
+ of the disk image
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>	<12059301672966-git-send-email-Laurent.Vivier@bull.net>	<20080319131106.61d7fa0c.randy.dunlap@oracle.com>	<1205958281.4758.7.camel@frecb07144> <20080319142821.73d280f3.akpm@linux-foundation.org>
+In-Reply-To: <20080319142821.73d280f3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/19/2008 09:21 AM, Pavel Machek wrote:
-> ...just leave ppp-over-cellphone-over-bluetooth running, and do
-> s2ram...
+Andrew Morton wrote:
+> On Wed, 19 Mar 2008 21:24:41 +0100
+> Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 > 
-> Linux version 2.6.25-rc6 (pavel@amd) (gcc version 4.1.3 20071209 (prerelease) (Debian 4.1.2-18)) #186 SMP Wed Mar 19 00:46:05 CET 2008
-> BIOS-provided physical RAM map:
+>> Le mercredi 19 mars 2008 __ 13:11 -0700, Randy Dunlap a __crit :
+>>> On Wed, 19 Mar 2008 13:36:07 +0100 Laurent Vivier wrote:
+>>>
+>>>> This patch allows to use loop device with partitionned disk image.
+>>>>
+>>>> Original behavior of loop is not modified.
+>>>>
+>>>> A new parameter is introduced to define how many partition we want to be
+>>>> able to manage per loop device. This parameter is "max_part".
+>>> What happened to the update to Documentation/kernel-parameters.txt
+>>> that was in v3?
+>> Well, perhaps I didn't understand the comment of Andrew:
+>>
+>> "This shouldn't be needed."
+>>
+>> I though it means I should remove it. So, Andrew ???
 
-Pavel, does the "still" from $SUBJ mean, that 2.6.24 is affected too (if this is 
-the same what I hit)?
+First of all, I didn't see Andrew's message until awhile after yours,
+due to some kind of email problems...
+
+> No, given that all module_param() options are available via the boot
+> command line when the module is linked into vmlinux, we don't document them
+> separately.
+
+Thanks.  That's news to me.  Not that I mind the news.
+
+> There should be a way of auto-generating all the documentation for all the
+> module parameters from their MODULE_PARM_DESC's.  And there probably is,
+> but I'm not sure how this is done (?)
+
+No, nothing in tree like that.
+
+Would such an auto-generator use source files or compiled modules?
+Using the latter means that (a) something like allmodconfig must be done
+and (b) it only works for the compiled $ARCH(es), whereas using source code
+has neither of those "problems."
+
+I can work on updating
+http://www.xenotime.net/linux/scripts/module-params (from Oct-2006).
+Comments welcome.
+
+
+> (does `make help', fails to spot it).
+> 
+> You can do `modinfo loop' but that probably doesn't work if
+> CONFIG_BLK_DEV_LOOP=y?
+
+
+-- 
+~Randy
