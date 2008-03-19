@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYCST4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761083AbYCST4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYCST4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756886AbYCSThn
+	id S1761083AbYCST4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbYCSThj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:37:43 -0400
+	Wed, 19 Mar 2008 15:37:39 -0400
 Received: from mx1.redhat.com ([66.187.233.31]:55887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756879AbYCSThl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:37:41 -0400
+	id S1756823AbYCSThh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:37:37 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
        Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 13/79] [PATCH] move setup_secondary_clock a little bit down in the function
-Date: Wed, 19 Mar 2008 14:25:08 -0300
-Message-Id: <12059476351524-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 05/79] [PATCH] add an smp_apply_quirks to smpboot_32.c
+Date: Wed, 19 Mar 2008 14:25:00 -0300
+Message-Id: <12059475982810-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12059476302473-git-send-email-gcosta@redhat.com>
-References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com> <12059475982810-git-send-email-gcosta@redhat.com> <12059476032561-git-send-email-gcosta@redhat.com> <1205947607406-git-send-email-gcosta@redhat.com> <12059476123203-git-send-email-gcosta@redhat.com> <12059476162900-git-send-email-gcosta@redhat.com> <12059476212769-git-send-email-gcosta@redhat.com> <1205947625472-git-send-email-gcosta@redhat.com> <12059476302473-git-send-email-gcosta@redhat.com>
+In-Reply-To: <12059475944070-git-send-email-gcosta@redhat.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <1205947580526-git-send-email-gcosta@redhat.com> <12059475853453-git-send-email-gcosta@redhat.com> <12059475892790-git-send-email-gcosta@redhat.com> <12059475944070-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Glauber Costa <gcosta@redhat.com>
 
-This is done so we call setup_secondary_clock() in the same place x86_64
-does. A separate patch for this is appearantly not needed. But clock
-initialization is such a delicate thing, that it's safer to do this way
+The split of smp_store_cpu_info in a quirks-only part
+will ease integration with x86_64
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot_32.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/x86/kernel/smpboot_32.c |   30 ++++++++++++++++++------------
+ 1 files changed, 18 insertions(+), 12 deletions(-)
 
 diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index 6c16165..4e5416e 100644
+index 8676eec..e050064 100644
 --- a/arch/x86/kernel/smpboot_32.c
 +++ b/arch/x86/kernel/smpboot_32.c
-@@ -185,7 +185,6 @@ static void __cpuinit start_secondary(void *unused)
+@@ -78,19 +78,8 @@ static void map_cpu_to_logical_apicid(void);
+ /* State of each CPU. */
+ DEFINE_PER_CPU(int, cpu_state) = { 0 };
+ 
+-/*
+- * The bootstrap kernel entry code has set these up. Save them for
+- * a given CPU
+- */
+-
+-void __cpuinit smp_store_cpu_info(int id)
++static void __cpuinit smp_apply_quirks(struct cpuinfo_x86 *c)
+ {
+-	struct cpuinfo_x86 *c = &cpu_data(id);
+-
+-	*c = boot_cpu_data;
+-	c->cpu_index = id;
+-	if (id!=0)
+-		identify_secondary_cpu(c);
+ 	/*
+ 	 * Mask B, Pentium, but not Pentium MMX
  	 */
- 	check_tsc_sync_target();
+@@ -138,6 +127,23 @@ void __cpuinit smp_store_cpu_info(int id)
  
--	setup_secondary_clock();
- 	if (nmi_watchdog == NMI_IO_APIC) {
- 		disable_8259A_irq(0);
- 		enable_NMI_through_LVT0();
-@@ -214,6 +213,8 @@ static void __cpuinit start_secondary(void *unused)
- 	unlock_ipi_call_lock();
- 	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
- 
-+	setup_secondary_clock();
+ valid_k7:
+ 	;
 +
- 	wmb();
- 	cpu_idle();
++}
++
++/*
++ * The bootstrap kernel entry code has set these up. Save them for
++ * a given CPU
++ */
++
++void __cpuinit smp_store_cpu_info(int id)
++{
++	struct cpuinfo_x86 *c = &cpu_data(id);
++
++	*c = boot_cpu_data;
++	c->cpu_index = id;
++	if (id != 0)
++		identify_secondary_cpu(c);
++	smp_apply_quirks(c);
  }
+ 
+ static atomic_t init_deasserted;
 -- 
 1.5.0.6
 
