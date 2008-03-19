@@ -1,271 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763579AbYCSVBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763407AbYCSVAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763579AbYCSVBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760205AbYCSTwP
+	id S1763407AbYCSVAN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759473AbYCSTtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:52:15 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:25237 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760195AbYCSTwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:52:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=XRkPehT+whb5klyEUWZjSTKZMnqyPGmVWmwnMn6dySlZUGtgi8JmnogkEv23n6o6LjVFAX4cNKgSEWTaoTrq7y0kSIN7nAicY5nF44GlrxT9yigCBBBLxWKdKW4wWzo3R7uy91qlrwehhdH/cnLlnRtdFr4+WgMVpkbvOTRzbz4=  ;
-X-YMail-OSG: 8vyAHAAVM1lq4TNlyXGgQdRMQVOGxOCk_aI4bPjRr1Ush1fY96rAFX5IPebARzm3hhhPCQHEstLRWiHNl_LU.165NikXAYIRQJYXrMVKQhDu8fty5g--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: trenn@suse.de, yi.y.yang@intel.com
-Subject: Re: [PATCH] ACPI: Add sysfs interface for acpi device wakeup
-Date: Wed, 19 Mar 2008 11:52:08 -0700
-User-Agent: KMail/1.9.6
-Cc: Zhang Rui <rui.zhang@intel.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, acpi-bugzilla@lists.sourceforge.net,
-       Holger Macht <hmacht@suse.de>
-References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com> <1200009342.5389.12.camel@yangyi-dev.bj.intel.com> <1205931982.21619.301.camel@queen.suse.de>
-In-Reply-To: <1205931982.21619.301.camel@queen.suse.de>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803191152.09482.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 15:49:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55291 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756206AbYCSTt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:49:28 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080318170438.e4121982.akpm@linux-foundation.org>
+References: <20080318170438.e4121982.akpm@linux-foundation.org> <20080313191432.28959.52722.stgit@warthog.procyon.org.uk> <20080313191442.28959.28152.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, kwc@citi.umich.edu,
+       arunsr@cse.iitk.ac.in, dwalsh@redhat.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] KEYS: Make the keyring quotas controllable through /proc/sys
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 19 Mar 2008 11:19:48 +0000
+Message-ID: <15937.1205925588@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 March 2008, Thomas Renninger wrote:
-> On Fri, 2008-01-11 at 07:55 +0800, Yi Yang wrote:
-> > > > I think that it would be much much better to place wake-up attributes under
-> > > > corresponding PCI and PNP devices.
-> > > > Probably it is even better to link this code to PCI code, so PCI
-> > > > drivers will be aware of ACPI. 
-> > >
-> > > I like this idea, maxim. :)
-> > > And that's what we actually did about half a year ago.
-> > > 
-> > > Yi,
-> > > Please refer to http://bugzilla.kernel.org/show_bug.cgi?id=6892
-> > > and David's patch set here:
-> > > http://marc.info/?l=linux-mm-commits&m=117701595209299&w=2
-> > > http://marc.info/?l=linux-mm-commits&m=117701866524935&w=2
-> > > You can have a look at this thread as well:
-> > > http://marc.info/?l=linux-acpi&m=119982937409968&w=2
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-And I have some more split-out versions of those patches
-now, too.  Cleanups and simplifications should be more
-directly mergeable, and the tricky bits affecting GPE use
-can be addressed by folk who are actively involved in the
-nitty-gritty of making the power management parts of ACPI
-work right for Linux.
+> Could we please have a copy of sysctl.c?  The boring old build system seems
+> to think it's important.
 
-I think I'll repost them soonish, to linux-pm and, as relevant,
-to linux-acpi.  LKML for stuff that's IMO mergeable as-is.
+Oops.  Here's a copy of the patch *with* sysctl.c.  Note that I've folded the
+doc updates patch into this one.
 
+David
+---
+KEYS: Make the keyring quotas controllable through /proc/sys
+
+From: David Howells <dhowells@redhat.com>
+
+Make the keyring quotas controllable through /proc/sys files:
+
+ (*) /proc/sys/kernel/keys/root_maxkeys
+     /proc/sys/kernel/keys/root_maxbytes
+
+     Maximum number of keys that root may have and the maximum total number of
+     bytes of data that root may have stored in those keys.
+
+ (*) /proc/sys/kernel/keys/maxkeys
+     /proc/sys/kernel/keys/maxbytes
+
+     Maximum number of keys that each non-root user may have and the maximum
+     total number of bytes of data that each of those users may have stored in
+     their keys.
+
+Also increase the quotas as a number of people have been complaining that it's
+not big enough.  I'm not sure that it's big enough now either, but on the
+other hand, it can now be set in /etc/sysctl.conf.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ Documentation/keys.txt   |   24 +++++++++++++++++++++-
+ include/linux/key.h      |    5 +++++
+ kernel/sysctl.c          |    9 ++++++++
+ security/keys/Makefile   |    1 +
+ security/keys/internal.h |   14 +++++++++----
+ security/keys/key.c      |   23 +++++++++++++++++----
+ security/keys/keyctl.c   |   12 ++++++++---
+ security/keys/proc.c     |    9 ++++++--
+ security/keys/sysctl.c   |   50 ++++++++++++++++++++++++++++++++++++++++++++++
+ 9 files changed, 131 insertions(+), 16 deletions(-)
+ create mode 100644 security/keys/sysctl.c
+
+
+diff --git a/Documentation/keys.txt b/Documentation/keys.txt
+index b82d38d..38a90d9 100644
+--- a/Documentation/keys.txt
++++ b/Documentation/keys.txt
+@@ -170,7 +170,8 @@ The key service provides a number of features besides keys:
+      amount of description and payload space that can be consumed.
  
-> > I checked those patches you mentioned, they did bind two wakeup flag to
-> > some extent, but they can't be exchanged to use and they are just partly
-> > in current linus tree, two flags bind isn't in linus tree.
-
-Right.
-
-
-> > According to my test on the latest linus tree, wakeup flag of
-> > acpi_device hasn't any association with device's, i don't know if they
-> > are the same thing. if we enbale or disable it manually, what will
-> > happen? From source code, it is just a flag, it doesn't trigger any
-> > event or hardware operation.
-
-Currently ACPI wakeup mechanisms are not at all integrated with
-driver model mechanisms, or with non-ACPI bits of the system.
-
-The "why" of that is that those patches still haven't been merged;
-and the "why" of *that* is, AFAICT, that ACPI sleep/wake/resume
-support is still in serious flux.
-
-The current model is, yes, those are just flags ... and they only
-kick in during driver state transitions.  Someday we can hope
-they will support runtime power management (e.g. putting PCI
-devices in PCI_D3hot to save power, then letting them trigger
-runtime wake events when external hardware asks for that) ...
-but for now, those transitions only kick in when the system as
-a whole enters a sleep state, via /sys/power/state writes.
-
-
-> > > thanks,
-> > > Rui
-> > > > For example it will fix the 'EHCI instantly wakes up the system
-> > > > from S4' on my system, since here USB doesn't wake 
-> > > > up anything from S4, and ACPI tables correctly show that.
-> > > > 
-> > > > If ehci driver was aware of that it could disable #PME on entrance to S4.
-> > > > And we even can reuse its 'wakeup' attribute, thus enabling wakeup
-> > > > automatically. 
-> > > > 
-> > > > Going ever further, I think that it will be great to get rid of ACPI
-> > > > device tree, since 
-> > > > most acpi devices are ether PCI of PNP ones.
-> > > > 
-> > > > Or, even better have a small ACPI tree, that will contain 'true'
-> > > > ACPI devices, like cpus thermal sensors, buttons, etc. 
-
-There's a bit of state in the ACPI device nodes that's not
-currently visible through PCI or PNP.  The patch I posted
-a while back to cross-link ACPI nodes to the "real" nodes
-should help sort out some of that.  (Basically, it's just
-an updated version of a patch from Zhang Rui.)
-
-
-> Any news on this?
-
-Not from me, but that sounds like a useful direction.  In
-the same vein, it'd make sense to properly root PCI from the
-PNP record for the PCI root.
-
-
-> I ran into a problem with the current implementation:
-> 
-> If one GPE is tight to several devices you get a message:
-> echo XYZ >/tmp/acpi/wakeup
-> ACPI: 'XXX' and 'XYZ' have the same GPE, can't disable/enable one
-> seperately
-> ACPI: 'YYY' and 'XYZ' have the same GPE, can't disable/enable one
-> seperately
-> and none of the devices are activated to be able to wake the machine up.
-
-I've not happened across that myself.
-
-
-> Which I expect is wrong, all should be enabled/disabled then IMO, but
-> it's probably not worth much fixing in /proc/acpi/...
-
-Agreed.
-
+      The user can view information on this and other statistics through procfs
+-     files.
++     files.  The root user may also alter the quota limits through sysctl files
++     (see the section "New procfs files").
  
-> The correct interface to use seem to be:
-> drivers/base/power/sysfs.c
-> But this is rather broken?
-> Here an output of /proc/acpi/wakeup and /sys/...:
-> for x in `find /sys/ |grep wakeup`;do if [ $(cat $x) ];then echo $x; cat $x;fi;done
-> /sys/devices/pnp0/00:04/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.7/usb4/4-5/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.7/usb4/4-1/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.7/usb4/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.7/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.2/usb3/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.1/usb2/power/wakeup
-> enabled
-> /sys/devices/pci0000:00/0000:00:1d.0/usb1/power/wakeup
-> enabled
-
-In short:  only USB portions of the tree have those flags set,
-since USB (a) has some workarounds for the lack of ACPI support
-on OHCI and EHCI controllers, like 00:1d.7, and (b) supports
-those flags for devices that ACPI doesn't know about, such as
-most USB keyboards, hubs, mice, and so forth.  Plus, (c) you
-aren't using the rtc-cmos driver, which works better with the
-rest of Linux than the legacy drivers/char/rtc driver.
-
-If you had applied patches like my "teach ACPI how to use the
-wakeup flags", you should see more devices with such flags.
-
-
-> trenn@stravinsky:/extern/trenn/packages/home:trenn> cat /proc/acpi/wakeup 
-> Device  S-state   Status   Sysfs node
-> PCI0      S5     disabled  no-bus:pci0000:00
-
-Hmm, and (d) you've got a system that doesn't do much in terms
-of ACPI wakeup:  a PCI root bridge, and maybe some buttons.  Why
-that root bridge shows up as a "no-bus" node I don't know... 
-there's usually a PNP node for it, and otherwise it'd seem like
-it should be a PCI device.  (The buttons seem to never show up.)
-
-It's not uncommon for the ACPI device tables to list devices
-that don't actually exist in /proc/acpi/wakeup.  Many of the
-devices with no sysfs node seem to be of that type.  To me,
-this just highlights the current weak handling of wakeups in
-the ACPI stack.
-
-
-> I still think (from comments in drivers/base/power/sysfs.c, not sure
-> whether it really is that appropriate) it is wakeup sysfs file that
-> should be used for this.
-
-Yes.
-
-
-> I wonder why each device has a wakeup file, it should be enough to
-> create them dynamically if wakeup enable/disable is supported for a
-> specific device?
-
-Because that can change dynamically.  Classic example:  a USB
-device with two active configurations, plus "configuration zero".
-Whether it's wakeup-capable depends on a bit in the descriptor
-for the active configuration ... so config zero may never waake
-the system, while either (or both!) of the active configs might.
-
-
-> Also a second file is missing from which state (S3,S4,S5) the device can
-> wake the machine up.
-
-Those labels are ACPI-specific, and anything at the core of
-Linux (like the driver model and its wakeup flags) should
-never be ACPI-specific!
-
-Plus, it's not clear how much that matters.  It's not as if
-drivers should prevent entering sleep states if they can't
-act as wake event sources in that level (e.g. S3 == "mem").
-That information can stay in /proc/acpi/wakeup until that's
-finally removed; if no userspace tools need that info, I see
-no good reason for exporting it.
-
-
-> If there can be multiple devices for one GPE, this information (the
-> power directory of multiple devices) could be linked together in sysfs?
-> E.g.
-> /sys/devices/pci0000:00/0000:00:1d.7/usb4/power/wakeup
-> is a link to:
-> /sys/devices/pci0000:00/0000:00:1d.2/usb3/power/wakeup
-> If both are using one wake-up GPE.
-
-That doesn't seem helpful ... it'd mean that you couldn't
-manage wakeup policy for individual devices. 
-
-This issue is an ACPI-ism, having to do with how wakeup
-is implemented on one platform:  "GPE" signals, which are
-not exposed in any useful way, rather than IRQs (fully
-exposed and shareable, see irq_chip.set_wake) or some other
-mechanism.  So it doesn't belong in the driver model core.
-
-
-> Also if the ACPI device caught through acpi_get_physical device is a PCI
-> bridge, it should get evaluated what is behind the bridge and this
-> device (e.g. a network card) should get the wakeup stuff set up, not the
-> bridge?
-
-One part of the bug 6892 discussion is specifically about
-how PCI bridges don't support wakeup events ... PME# signals,
-or their PCIE equivalent, as issued by add-in PCI cards.
-
-I think that'll work better if ACPI gets sane support for
-wakeup from the built-in devices first.  And oddly enough,
-basic patches supporting that have been around for well over
-a year now ...
-
-
-> Does someone still look at this?
-> If not, shall I or is it on some queue?
-> Should this be discussed a bit more detailed first?
-
-I'll do my bit by (re)reposting the patches I have.
-
-- Dave
+      Process-specific and thread-specific keyrings are not counted towards a
+      user's quota.
+@@ -329,6 +330,27 @@ about the status of the key service:
+ 	<bytes>/<max>		Key size quota
+ 
+ 
++Four new sysctl files have been added also for the purpose of controlling the
++quota limits on keys:
++
++ (*) /proc/sys/kernel/keys/root_maxkeys
++     /proc/sys/kernel/keys/root_maxbytes
++
++     These files hold the maximum number of keys that root may have and the
++     maximum total number of bytes of data that root may have stored in those
++     keys.
++
++ (*) /proc/sys/kernel/keys/maxkeys
++     /proc/sys/kernel/keys/maxbytes
++
++     These files hold the maximum number of keys that each non-root user may
++     have and the maximum total number of bytes of data that each of those
++     users may have stored in their keys.
++
++Root may alter these by writing each new limit as a decimal number string to
++the appropriate file.
++
++
+ ===============================
+ USERSPACE SYSTEM CALL INTERFACE
+ ===============================
+diff --git a/include/linux/key.h b/include/linux/key.h
+index 2effd03..ad02d9c 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -19,6 +19,7 @@
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
+ #include <linux/rcupdate.h>
++#include <linux/sysctl.h>
+ #include <asm/atomic.h>
+ 
+ #ifdef __KERNEL__
+@@ -265,6 +266,10 @@ extern struct key *key_lookup(key_serial_t id);
+ 
+ #define key_serial(key) ((key) ? (key)->serial : 0)
+ 
++#ifdef CONFIG_SYSCTL
++extern ctl_table key_sysctls[];
++#endif
++
+ /*
+  * the userspace interface
+  */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index b2a2d68..1e89295 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -45,6 +45,7 @@
+ #include <linux/nfs_fs.h>
+ #include <linux/acpi.h>
+ #include <linux/reboot.h>
++#include <linux/key.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -820,6 +821,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dostring,
+ 		.strategy	= &sysctl_string,
+ 	},
++#ifdef CONFIG_KEYS
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "keys",
++		.mode		= 0555,
++		.child		= key_sysctls,
++	},
++#endif
+ /*
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+diff --git a/security/keys/Makefile b/security/keys/Makefile
+index 5145adf..747a464 100644
+--- a/security/keys/Makefile
++++ b/security/keys/Makefile
+@@ -14,3 +14,4 @@ obj-y := \
+ 
+ obj-$(CONFIG_KEYS_COMPAT) += compat.o
+ obj-$(CONFIG_PROC_FS) += proc.o
++obj-$(CONFIG_SYSCTL) += sysctl.o
+diff --git a/security/keys/internal.h b/security/keys/internal.h
+index b84f04a..e385066 100644
+--- a/security/keys/internal.h
++++ b/security/keys/internal.h
+@@ -57,10 +57,6 @@ struct key_user {
+ 	int			qnbytes;	/* number of bytes allocated to this user */
+ };
+ 
+-#define KEYQUOTA_MAX_KEYS	100
+-#define KEYQUOTA_MAX_BYTES	10000
+-#define KEYQUOTA_LINK_BYTES	4		/* a link in a keyring is worth 4 bytes */
+-
+ extern struct rb_root	key_user_tree;
+ extern spinlock_t	key_user_lock;
+ extern struct key_user	root_key_user;
+@@ -68,6 +64,16 @@ extern struct key_user	root_key_user;
+ extern struct key_user *key_user_lookup(uid_t uid);
+ extern void key_user_put(struct key_user *user);
+ 
++/*
++ * key quota limits
++ * - root has its own separate limits to everyone else
++ */
++extern unsigned key_quota_root_maxkeys;
++extern unsigned key_quota_root_maxbytes;
++extern unsigned key_quota_maxkeys;
++extern unsigned key_quota_maxbytes;
++
++#define KEYQUOTA_LINK_BYTES	4		/* a link in a keyring is worth 4 bytes */
+ 
+ 
+ extern struct rb_root key_serial_tree;
+diff --git a/security/keys/key.c b/security/keys/key.c
+index 46f125a..14948cf 100644
+--- a/security/keys/key.c
++++ b/security/keys/key.c
+@@ -27,6 +27,11 @@ DEFINE_SPINLOCK(key_serial_lock);
+ struct rb_root	key_user_tree; /* tree of quota records indexed by UID */
+ DEFINE_SPINLOCK(key_user_lock);
+ 
++unsigned int key_quota_root_maxkeys = 200;	/* root's key count quota */
++unsigned int key_quota_root_maxbytes = 20000;	/* root's key space quota */
++unsigned int key_quota_maxkeys = 200;		/* general key count quota */
++unsigned int key_quota_maxbytes = 20000;	/* general key space quota */
++
+ static LIST_HEAD(key_types_list);
+ static DECLARE_RWSEM(key_types_sem);
+ 
+@@ -236,11 +241,16 @@ struct key *key_alloc(struct key_type *type, const char *desc,
+ 	/* check that the user's quota permits allocation of another key and
+ 	 * its description */
+ 	if (!(flags & KEY_ALLOC_NOT_IN_QUOTA)) {
++		unsigned maxkeys = (uid == 0) ?
++			key_quota_root_maxkeys : key_quota_maxkeys;
++		unsigned maxbytes = (uid == 0) ?
++			key_quota_root_maxbytes : key_quota_maxbytes;
++
+ 		spin_lock(&user->lock);
+ 		if (!(flags & KEY_ALLOC_QUOTA_OVERRUN)) {
+-			if (user->qnkeys + 1 >= KEYQUOTA_MAX_KEYS ||
+-			    user->qnbytes + quotalen >= KEYQUOTA_MAX_BYTES
+-			    )
++			if (user->qnkeys + 1 >= maxkeys ||
++			    user->qnbytes + quotalen >= maxbytes ||
++			    user->qnbytes + quotalen < user->qnbytes)
+ 				goto no_quota;
+ 		}
+ 
+@@ -345,11 +355,14 @@ int key_payload_reserve(struct key *key, size_t datalen)
+ 
+ 	/* contemplate the quota adjustment */
+ 	if (delta != 0 && test_bit(KEY_FLAG_IN_QUOTA, &key->flags)) {
++		unsigned maxbytes = (key->user->uid == 0) ?
++			key_quota_root_maxbytes : key_quota_maxbytes;
++
+ 		spin_lock(&key->user->lock);
+ 
+ 		if (delta > 0 &&
+-		    key->user->qnbytes + delta > KEYQUOTA_MAX_BYTES
+-		    ) {
++		    (key->user->qnbytes + delta >= maxbytes ||
++		     key->user->qnbytes + delta < key->user->qnbytes)) {
+ 			ret = -EDQUOT;
+ 		}
+ 		else {
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index 5f0d85b..c32f5c6 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -730,10 +730,16 @@ long keyctl_chown_key(key_serial_t id, uid_t uid, gid_t gid)
+ 
+ 		/* transfer the quota burden to the new user */
+ 		if (test_bit(KEY_FLAG_IN_QUOTA, &key->flags)) {
++			unsigned maxkeys = (uid == 0) ?
++				key_quota_root_maxkeys : key_quota_maxkeys;
++			unsigned maxbytes = (uid == 0) ?
++				key_quota_root_maxbytes : key_quota_maxbytes;
++
+ 			spin_lock(&newowner->lock);
+-			if (newowner->qnkeys + 1 >= KEYQUOTA_MAX_KEYS ||
+-			    newowner->qnbytes + key->quotalen >=
+-			    KEYQUOTA_MAX_BYTES)
++			if (newowner->qnkeys + 1 >= maxkeys ||
++			    newowner->qnbytes + key->quotalen >= maxbytes ||
++			    newowner->qnbytes + key->quotalen <
++			    newowner->qnbytes)
+ 				goto quota_overrun;
+ 
+ 			newowner->qnkeys++;
+diff --git a/security/keys/proc.c b/security/keys/proc.c
+index 6941260..b49ad38 100644
+--- a/security/keys/proc.c
++++ b/security/keys/proc.c
+@@ -246,6 +246,10 @@ static int proc_key_users_show(struct seq_file *m, void *v)
+ {
+ 	struct rb_node *_p = v;
+ 	struct key_user *user = rb_entry(_p, struct key_user, node);
++	unsigned maxkeys = (user->uid == 0) ?
++		key_quota_root_maxkeys : key_quota_maxkeys;
++	unsigned maxbytes = (user->uid == 0) ?
++		key_quota_root_maxbytes : key_quota_maxbytes;
+ 
+ 	seq_printf(m, "%5u: %5d %d/%d %d/%d %d/%d\n",
+ 		   user->uid,
+@@ -253,10 +257,9 @@ static int proc_key_users_show(struct seq_file *m, void *v)
+ 		   atomic_read(&user->nkeys),
+ 		   atomic_read(&user->nikeys),
+ 		   user->qnkeys,
+-		   KEYQUOTA_MAX_KEYS,
++		   maxkeys,
+ 		   user->qnbytes,
+-		   KEYQUOTA_MAX_BYTES
+-		   );
++		   maxbytes);
+ 
+ 	return 0;
+ 
+diff --git a/security/keys/sysctl.c b/security/keys/sysctl.c
+new file mode 100644
+index 0000000..b611d49
+--- /dev/null
++++ b/security/keys/sysctl.c
+@@ -0,0 +1,50 @@
++/* Key management controls
++ *
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#include <linux/key.h>
++#include <linux/sysctl.h>
++#include "internal.h"
++
++ctl_table key_sysctls[] = {
++	{
++		.ctl_name = CTL_UNNUMBERED,
++		.procname = "maxkeys",
++		.data = &key_quota_maxkeys,
++		.maxlen = sizeof(unsigned),
++		.mode = 0644,
++		.proc_handler = &proc_dointvec,
++	},
++	{
++		.ctl_name = CTL_UNNUMBERED,
++		.procname = "maxbytes",
++		.data = &key_quota_maxbytes,
++		.maxlen = sizeof(unsigned),
++		.mode = 0644,
++		.proc_handler = &proc_dointvec,
++	},
++	{
++		.ctl_name = CTL_UNNUMBERED,
++		.procname = "root_maxkeys",
++		.data = &key_quota_root_maxkeys,
++		.maxlen = sizeof(unsigned),
++		.mode = 0644,
++		.proc_handler = &proc_dointvec,
++	},
++	{
++		.ctl_name = CTL_UNNUMBERED,
++		.procname = "root_maxbytes",
++		.data = &key_quota_root_maxbytes,
++		.maxlen = sizeof(unsigned),
++		.mode = 0644,
++		.proc_handler = &proc_dointvec,
++	},
++	{ .ctl_name = 0 }
++};
