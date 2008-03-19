@@ -1,96 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYCSThG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYCSThq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbYCSThG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 15:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYCST2v
+	id S1756882AbYCSThq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYCST27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:28:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:55868 "EHLO mail.goop.org"
+	Wed, 19 Mar 2008 15:28:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57218 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754570AbYCST2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:28:49 -0400
-Message-ID: <47E12D39.2000207@goop.org>
-Date: Wed, 19 Mar 2008 08:11:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1754641AbYCST25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:28:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Date: Wed, 19 Mar 2008 20:28:26 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
+       Len Brown <lenb@kernel.org>
+References: <Pine.LNX.4.44L0.0803191057270.4958-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803191057270.4958-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
-References: <patchbomb.1205797011@localhost> <1205918565.4112.61.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1205918565.4112.61.camel@zakaz.uk.xensource.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803192028.27383.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> On Mon, 2008-03-17 at 16:36 -0700, Jeremy Fitzhardinge wrote:
->   
->> Hi Ingo,
->>
->> This is a great big pile of x86 unification and Xen bugfix patches.
->> They build and boot for me on 64-bit and 32-bit (PAE and non-PAE).
->>     
->
-> FWIW I tested in a PAE Xen guest on 32 and 64 bit h/v and it was fine
-> including running ddcprobe which was my most recent issue. I can't see
-> why this would fix it though.
->   
+On Wednesday, 19 of March 2008, Alan Stern wrote:
+> On Tue, 18 Mar 2008, Eric W. Biederman wrote:
+> 
+> > Alan Stern <stern@rowland.harvard.edu> writes:
+> 
+> > > Could it be connected with the way the boot kernel hands control over
+> > > to the image kernel?  Presumably ACPI isn't prepared to deal with that
+> > > sort of thing during a boot from S5.  It would have to be fooled into
+> > > thinking the two kernels were one and the same.
+> > 
+> > It should be easy to test if it is a hand over problem, by turning off
+> > the laptop by placing it in S5 (shutdown -h now) and then booting same
+> > kernel again.
+> 
+> ?  Doesn't this happen every time Rafael turns the computer off and 
+> then turns it back on?
+> 
+> Do you mean that Rafael should do an S5-type hibernate, but then reboot 
+> in such a way that the image isn't loaded and resumed?
 
-I'm actually having problem booting 32-on-64 hvm guests.  Specifically 
-the Fedora installer crashes fairly early on:
+That will work.
 
-Freeing unused kernel memory: 280k freed
-Write protecting the kernel read-only data: 844k
-input: ImExPS/2 Generic Explorer Mouse as /class/input/input2
-[9;0][8]
-Greetings.
-anaconda installer init version 11.3.0.50 starting
-mounting /proc filesystem... done
-creating /dev filesystem... done
-mounting /dev/pts (unix98 pty) filesystem... done
-mounting /sys filesystem... done
-anaconda installer init version 11.3.0.50 using a serial console
-trying to remount root filesystem read write... done
-mounting /tmp as ramfs... done
-running install...
-running /sbin/loader
-loader received SIGSEGV!  Backtrace:
-[0x804a030]
-[0x110420]
-[0x816a7c8]
-[0x81697a5]
-[0x805b626]
-[0x805b72b]
-[0x805c153]
-[0x804af81]
-[0x8175004]
-[0x8048151]
-install exited abnormally [1/1] 
-sending termination signals...done
-sending kill signals...done
-disabling swap...
-unmounting filesystems...
-        /proc done
-        /dev/pts done
-        /sys done
-        /tmp/ramfs done
-you may safely reboot your system
+The problem happens when the control goes back to the hibernated kernel.
 
+I _think_ it has to do with the suspend(PRETHAW) thing we do before that,
+but frankly I'm not too inclined to verify it as the problem is generally
+dangerous to the hardware (not working thermal management on a notebook is
+never fun).
 
-Seen anything like that?
-
-> I thought for a second when you said it booted on 64 bit you meant 64
-> bit Xen guest, do you know how that stuff ﻿is going?
->   
-
-Last I heard, they got something booting, but it wasn't very clean.  I 
-need to resync with Eduardo.  A lot of these changes were intended to 
-make that effort easier, but it would be nice to confirm ;)  Doesn't 
-look like http://git.et.redhat.com/?p=xen-pvops-64.git;a=summary has 
-changed much lately.
-
-    J
+Thanks,
+Rafael
