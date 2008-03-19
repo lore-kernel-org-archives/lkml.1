@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936415AbYCSWpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941617AbYCSWqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936415AbYCSWpJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765058AbYCSVQG
+	id S941617AbYCSWqH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936719AbYCSVQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:16:06 -0400
-Received: from tur.go2.pl ([193.17.41.50]:58883 "EHLO tur.go2.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936698AbYCSVQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:16:03 -0400
-From: Zbigniew Luszpinski <zbiggy@o2.pl>
-Date: Wed, 19 Mar 2008 15:51:50 +0100
-User-Agent: KMail/1.9.9
+	Wed, 19 Mar 2008 17:16:19 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:46481 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936714AbYCSVQS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:16:18 -0400
+Message-ID: <45a44e480803190424s51b85efbk39ab3bfce4cb924a@mail.gmail.com>
+Date: Wed, 19 Mar 2008 19:24:25 +0800
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Markus Armbruster" <armbru@redhat.com>
+Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work as advertized
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       akpm@linux-foundation.org
+In-Reply-To: <87iqzjat6e.fsf@pike.pond.sub.org>
 MIME-Version: 1.0
-Subject: [PATCH] arch/x86/kernel/quirks.c, kernel 2.6.24.3, hpet clock enable on nVidia nForce 430
-To: linux-kernel@vger.kernel.org
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_GiS4HWAO0nciyjw"
-Message-Id: <200803191551.50538.zbiggy@o2.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <87tzjx6vj3.fsf@pike.pond.sub.org>
+	 <87k5kt6vd3.fsf@pike.pond.sub.org>
+	 <45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
+	 <871w6z6ajs.fsf@pike.pond.sub.org>
+	 <45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
+	 <87iqzjat6e.fsf@pike.pond.sub.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_GiS4HWAO0nciyjw
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wed, Mar 19, 2008 at 6:45 PM, Markus Armbruster <armbru@redhat.com> wrote:
+>
+>  Any progress on this?
+>
+>  Considering that fb_defio is utterly broken without the fix (writing
+>  the frame buffer makes the VM endlessly invoke vm_ops.page_mkwrite()),
+>  wouldn't it make sense to merge the fix even if it still has issues?
+>
 
-Hello,
+Yes, Andrew has merged the fix into -mm. I see it in mmotm
 
-this patch allows hpet=force on nVidia nForce 430 southbridge.
-This patch was tested by me on my old Asus A8N-VM CSM (where bios does not 
-support hpet and does not advertise it via acpi entry). My nForce430 version:
-lspci -nn | grep LPC
-00:0a.0 ISA bridge [0601]: nVidia Corporation MCP51 LPC Bridge [10de:0260] 
-(rev a2)
+http://userweb.kernel.org/~akpm/mmotm/broken-out/fbdev-defio-and-metronomefb-v4.patch
 
-Kernel 2.6.24.3 after patching and using hpet=force reports this:
-dmesg | grep -i hpet
-Kernel command line: root=/dev/sda8 ro vga=773 video=vesafb:mtrr:4,ywrap 
-vt.default_utf8=0 hpet=force
-Force enabled HPET at base address 0xfed00000
-hpet clockevent registered
-Time: hpet clocksource has been installed.
-
-grep -i hpet /proc/timer_list
-Clock Event Device: hpet
- set_next_event: hpet_legacy_next_event
- set_mode:       hpet_legacy_set_mode
-
-grep Clock /proc/timer_list (before patching)
-Clock Event Device: pit
-Clock Event Device: lapic
-
-grep Clock /proc/timer_list (after patching)
-Clock Event Device: hpet
-Clock Event Device: lapic
-
-have a nice day,
-Zbigniew 'zbiggy' Luszpinski
-
---Boundary-00=_GiS4HWAO0nciyjw
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="nforce430.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="nforce430.patch"
-
---- linux-2.6.24.3/arch/x86/kernel/quirks.c	2008-01-24 23:58:37.000000000 +0100
-+++ linux-2.6.24.3/arch/x86/kernel/quirks.c	2008-03-13 03:01:19.000000000 +0100
-@@ -355,6 +355,8 @@
- 			nvidia_force_enable_hpet);
- 
- /* LPC bridges */
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0260,
-+			nvidia_force_enable_hpet);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0360,
- 			nvidia_force_enable_hpet);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NVIDIA, 0x0361,
-
---Boundary-00=_GiS4HWAO0nciyjw--
+Thanks,
+jaya
