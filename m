@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936977AbYCSXFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162828AbYCSXGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936977AbYCSXFx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936013AbYCSVb0
+	id S1162828AbYCSXGb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935225AbYCSVb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:31:26 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:45627 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933750AbYCSVbZ (ORCPT
+	Wed, 19 Mar 2008 17:31:28 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2264 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932549AbYCSVb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:31:25 -0400
-Date: Wed, 19 Mar 2008 04:49:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] scheduler fixes
-Message-ID: <20080319034952.GB21347@elte.hu>
+	Wed, 19 Mar 2008 17:31:26 -0400
+Date: Tue, 18 Mar 2008 22:44:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
+ hibernation callbacks
+In-Reply-To: <200803190204.07592.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803182233370.10154-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
 
-Linus, please pull the latest scheduler fixes git tree from:
+> In the meantime I had an IRC chat with Ben, who wanted a couple of quite
+> substantial changes to be made to this patch.
+> 
+> First, Ben thinks that ->prepare() should be called in a separate loop for
+> all devices, before any of them is suspended, so that drivers can assume the
+> availability of the other devices during ->prepare() (for example, so that they
+> can use GFP_KERNEL memory allocations).  Accordingly, ->complete() would
+> be called in a separate loop after calling ->resume() for all devices.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git for-linus
+In order to make this work, you would have to prevent new children from
+being registered starting from the time just after prepare() returns,
+rather than from the time just before suspend() is called.  Nothing is
+wrong with that, but it requires a redesign of the new flags.  (It's 
+worth mentioning that drivers will want to have a flag that gets set 
+just _before_ prepare() -- just _after_ is too late.)
 
-[ Note: it touches net/core/sock.c to tweak two socket wakeups there. ]
+In the other direction, it ought to be okay to allow new children to 
+be registered during resume().  There's no need to wait for complete().
 
-this tree improves/fixes lat_ctx/lat_pipe/bw_pipe latency/performance on 
-SMP systems:
+> Next, he wants the number of noirq callbacks to be reduced.
 
-                      .25-rc6            .25-rc6-sched/for-linus
-   -------------------------------------------------------------
-   lat_ctx 2 :        1.93 us                0.69 us
-   lat_pipe  :        4.96 us                2.49 us
-   bw_pipe   :     2841.11 MB/sec         3436.61 MB/sec
+I agree.  For example, there isn't much point in having prepare() and
+complete() entries for noirq.
 
-it also improves the ramp-up phase of sysbench on a quad:
+> Both of the above things make sense, so I'll rework the patch (or maybe even
+> all three patches) to implement them and we'll see how they will look like.
 
-                      .25-rc6            .25-rc6-sched/for-linus
-   -------------------------------------------------------------
-      1:     ( 836.64 per sec.)         (1216.90 per sec.)
-      2:     (2407.02 per sec.)         (2361.12 per sec.)
-      4:     (4468.59 per sec.)         (4510.14 per sec.)
+Alan Stern
 
-( similar improvements were measured on an 8-way and on various
-  dual boxes as well - a 16way box was largely unchanged. )
-
-these changes also improved some other workloads as well: mysql, apache 
-and others - and it did not impact some others that we handled well 
-before (such as kbuild, hackbench and others).
-
-Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (8):
-      sched: clean up wakeup balancing, move wake_affine()
-      sched: clean up wakeup balancing, rename variables
-      sched: clean up wakeup balancing, code flow
-      sched, net: socket wakeups are sync
-      sched: improve affine wakeups
-      sched: wakeup-buddy tasks are cache-hot
-      sched: retune wake granularity
-      sched: tune multi-core idle balancing
-
- include/linux/sched.h    |    3 +
- include/linux/topology.h |    1 -
- kernel/sched.c           |   11 +++-
- kernel/sched_debug.c     |    1 +
- kernel/sched_fair.c      |  191 ++++++++++++++++++++++++++++------------------
- net/core/sock.c          |    4 +-
- 6 files changed, 134 insertions(+), 77 deletions(-)
