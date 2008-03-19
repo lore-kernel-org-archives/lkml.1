@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940555AbYCSWT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940308AbYCSWR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940555AbYCSWT5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbYCSUwV
+	id S940308AbYCSWR4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762386AbYCSUuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:52:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:64314 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964985AbYCSUwT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:52:19 -0400
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.25-rc4
-Date: Wed, 19 Mar 2008 12:14:02 +0100
-User-Agent: KMail/1.9.9
-Cc: Anders Eriksson <aeriksson@fastmail.fm>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803190503.27719.bzolnier@gmail.com> <alpine.LFD.1.00.0803182135570.3020@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803182135570.3020@woody.linux-foundation.org>
+	Wed, 19 Mar 2008 16:50:07 -0400
+Received: from phunq.net ([64.81.85.152]:57177 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762394AbYCSUuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:50:05 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: "Mike Snitzer" <snitzer@gmail.com>
+Subject: Re: [ANNOUNCE] ddtree: A git kernel tree for storage servers
+Date: Wed, 19 Mar 2008 12:50:01 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200803190102.25491.phillips@phunq.net> <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
+In-Reply-To: <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803191214.03035.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803191350.02024.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 March 2008, Linus Torvalds wrote:
+On Wednesday 19 March 2008 13:23, Mike Snitzer wrote:
+> >   * Block layer deadlock fixes (Status: production)
 > 
-> On Wed, 19 Mar 2008, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Your patch is more robust and we should go with it
-> > (and thanks for fixing this bug!).
-> 
-> Ok, I committed the patch as-is, since it's what Anders tested, but I'm 
-> not at all convinced that it is necessarily the best or final form. The 
+> Do you happen to have a pointer to where these block layer deadlock
+> fixes are?  Or will you be committing them shortly?
 
-Thanks.
+Hi Mike,
 
-> things I am aware of but didn't think about all *that* deeply:
-> 
->  - do we get return values etc right (ie if we complete the command that 
->    didn't give any data, how do we account the size of it?)
+Committing shortly.  They also live here:
 
-Yeah, closer look would be needed there.
+   http://code.google.com/p/zumastor/source/browse/trunk/ddsnap/patches/2.6.24.2/bio.throttle.patch
+   ...etc...
 
->  - what about that remaining old unexpected case? I kept the "wait for it 
->    with timeout" behaviour for the case that wasn't an issue here, but if 
->    it really is a shared interrupt, that seems like it's going to always 
->    reset the timeout to WAIT_WORSTCASE, which doesn't sound really right.
+Regards,
 
-This shared IRQs quirk should no longer be necessary so probably the best
-way to handle BSY there would be to give drive some last chance and if it
-is still BSY treat is as error.
-
-> so I think this particular bug is fixed and we should be better off, but 
-> I'm definitely not claiming that the code shouldn't have people thinking 
-> about improving it..
-
-Definitevely, I'll try to address "old unexpected case" for 2.6.26
-(+ I'll keep looking for other issues as time permits) and of course
-I'll be happy to review/merge any patches improving this area.
-
-Bart
+Daniel
