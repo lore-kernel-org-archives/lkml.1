@@ -1,109 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S943163AbYCSXqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbYCSXrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S943163AbYCSXqt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbYCSWOZ
+	id S934212AbYCSXrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934894AbYCSWOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:14:25 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:30264 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935164AbYCSWOX (ORCPT
+	Wed, 19 Mar 2008 18:14:39 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:51297 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbYCSWOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:14:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xc0sVMfdbtxTh9edYwNzNju+ORhXKsaIacVhU+lmsJ3cfhxgOlgrBJNmhOtKKumV5OgSgEH+4alZycA6L0zLEX7om2GiuQ82hkinGC3zhjSjky0EauZ3oCrg2YjsTP+yNQj+RYuW3S6Ut6det8TU2nbR5F0jlq6WjKzsFDDkFkE=
-Message-ID: <939d53060803191514i4f225043g961d4de932a209ce@mail.gmail.com>
-Date: Wed, 19 Mar 2008 23:14:21 +0100
-From: "Benjamin Thery" <ben.thery@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command as non-root
-Cc: tilman@imap.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davem@davemloft.net, pekkas@netcore.fi, yoshfuji@linux-ipv6.org,
-       dlezcano@fr.ibm.com, xemul@openvz.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20080319141608.ede86a86.akpm@linux-foundation.org>
+	Wed, 19 Mar 2008 18:14:37 -0400
+To: Jeff Dike <jdike@addtoit.com>
+Cc: user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@timesys.com>
+Subject: Re: [2.6.24.x] UML select()/poll() oversleeping reproducibly
+References: <47B34BA0.30006@club-internet.fr>
+	<20080214003853.GA15952@c2.user-mode-linux.org>
+	<47B4BDCD.4080605@club-internet.fr>
+	<20080215160205.GA6082@c2.user-mode-linux.org>
+	<47B5CE40.9000005@club-internet.fr>
+	<20080215184650.GA8810@c2.user-mode-linux.org>
+	<87y78kx640.fsf_-_@hades.wkstn.nix>
+	<20080317193415.GA12234@c2.user-mode-linux.org>
+	<87k5k112kf.fsf@hades.wkstn.nix>
+	<20080318170019.GA8747@c2.user-mode-linux.org>
+From: Nix <nix@esperi.org.uk>
+Emacs: ... it's not just a way of life, it's a text editor!
+Date: Wed, 19 Mar 2008 22:14:14 +0000
+In-Reply-To: <20080318170019.GA8747@c2.user-mode-linux.org> (Jeff Dike's message of "Tue, 18 Mar 2008 13:00:19 -0400")
+Message-ID: <87od9apdjd.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <47D98510.60801@imap.cc>
-	 <939d53060803191052o2f43b75cu426d51f9f24e2a46@mail.gmail.com>
-	 <20080319141608.ede86a86.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+X-DCC-INFN-TO-Metrics: hades 1233; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 10:16 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->
-> On Wed, 19 Mar 2008 18:52:41 +0100
->  "Benjamin Thery" <ben.thery@gmail.com> wrote:
->
->  > Tilman,
->  >
->  > I've finally managed to reproduce your problem with Postfix on one of
->  > my victims.
->  >
->  > Earlier, in the afternoon, I wrote a piece of code that triggered a
->  > similar behaviour,
->  > but I wasn't sure it was exactly the problem you found. So, I've
->  > rebuilt Postfix, added
->  > some traces and, voila, same issue as yours.
->  > (The version of Postfix originally  installed on my machine seems to
->  > have IPv6 disabled)
->  >
->  > I bisected the problem to the commit "[NET]: Make /proc/net a symlink
->  > on /proc/self/net (v3)"
->  >
->  > Here is what happens:
->  >
->  > - Recently /proc/net has been moved to /proc/self/net, and
->  > /proc/self/net is a symlink
->  >   on this directory.
->  > - Before that everybody could access /proc/net and read /proc/net/if_inet6:
->  >    dr-xr-xr-x   6 root      root              0 2008-03-05 15:23 /proc/net
->  >
->  > - Now, /proc/self/net has a more restrictive access mode and ony the
->  > owner of the
->  >   process can enter the directory:
->  >   dr-xr--r-- 5 toto toto 0 Mar 19 17:30 net
->  >
->  >   This is not a problem in most of the cases, but it becomes annoying
->  > when a process
->  >   decides to change its UID or GID. It may loose access to its own
->  > /proc/self/net entries.
->  >
->  > - What happens in the Postfix case is the 'sendmail' process executes the
->  >    '/usr/sbin/postdrop' binary to enqueue the message, but unfortunately
->  >    '/usr/bin/postdrop' has the setgid bit set:
->  >    -rwxr-sr-x 1 root postdrop 479475 Mar 19 17:14 /usr/sbin/postdrop
->  >
->  >    The process egid changes and this seems to be problematic to access
->  >    /proc/self/net/if_inet6. :)
->  >
->  > I've attached a tiny test program that can be used to reproduce the problem
->  > without Postfix.
->  > - Either execute it as root and give it an unprivileged uid in argument
->  >   ./test-proc_net_if_inet6 1001
->  >
->  > - Or change its ownership and access mode to: -rwxr-sr-x root postdrop
->  >   and execute it as a lambda user.
->  >    chown root:postdrop test-proc_net_if_inet6; chmod 2755 test-proc_net_if_inet6
->  >    ./test-proc_net_if_inet6
->  >
->  > I've found the cause but not the fix. :)
->  > (Adding Pavel in cc:)
->  >
->
->  Thanks for that - most useful.
->
->  Although this is advertised as a 2.6.25-rc5-mm1 problem, I assume the
->  regression is also in mainline? 2.6.25-rc6?
+On 18 Mar 2008, Jeff Dike told this:
+> This version keeps track of the time between ticks (as reported by the
+> host's gettimeofday) and adjusts its sleeping and reporting ticks
+> accordingly.
 
-Yes, it is in mainline. I reproduced it on 2.6.25-rc5.
+I can confirm that, as expected, this patch works well enough that
+timing problems don't break dhclient anymore (which requires a 2x
+oversleep, which you're a long way from now).
 
-Benjamin
+At last I can upgrade my firewall :)
+
+-- 
+`The rest is a tale of post and counter-post.' --- Ian Rawlings
+                                                   describes USENET
