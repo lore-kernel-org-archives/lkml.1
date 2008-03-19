@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYCSRwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbYCSTYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbYCSRwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 13:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYCROP7
+	id S1752717AbYCSTYb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 15:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYCSTYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Mar 2008 10:15:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39241 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbYCROP6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Mar 2008 10:15:58 -0400
-Date: Tue, 18 Mar 2008 15:18:28 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-ID: <20080318141828.GD11966@one.firstfloor.org>
-References: <20080318209.039112899@firstfloor.org> <20080318003620.d84efb95.akpm@linux-foundation.org>
+	Wed, 19 Mar 2008 15:24:16 -0400
+Received: from systemlinux.org ([83.151.29.59]:60717 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750942AbYCSTYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:24:14 -0400
+Date: Wed, 19 Mar 2008 12:51:35 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Fix permissions of /proc/net
+Message-ID: <20080319115135.GM32242@skl-net.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FxlYARId5dseejUu"
 Content-Disposition: inline
-In-Reply-To: <20080318003620.d84efb95.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 18, 2008 at 12:36:20AM -0700, Andrew Morton wrote:
-> On Tue, 18 Mar 2008 02:09:34 +0100 (CET) Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > This patchkit is an experimental optimization I played around with 
-> > some time ago.
-> > 
-> > This is more a prototype still, but I wanted to push it out 
-> > so that other people can play with it.
-> > 
-> > The basic idea is that most programs have the same working set
-> > over multiple runs. So instead of demand paging all the text pages
-> > in the order the program runs save the working set to disk and prefetch
-> > it at program start and then save it at program exit.
-> > 
-> > This allows some optimizations: 
-> > - it can avoid unnecessary disk seeks because the blocks will be fetched in 
-> > sorted offset order instead of program execution order. 
-> > - batch kernel entries (each demand page exception has some
-> > overhead just for entering the kernel). This keeps the caches hot too.
-> > - The prefetch could be in theory done in the background while the program 
-> > runs (although that is not implemented currently)
-> 
-> Should be worthwhile for some things.
-> 
-> > Some details on the implementation:
-> 
-> Can't this all be done in userspace?  Hook into exit() with an LD_PRELOAD,
 
-In theory yes, but it would have much more overhead. Also I think prefetching
-algorithms like this really belong in the kernel.
+--FxlYARId5dseejUu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > - Executable files have to be writable by the user executing it
-> > currently to get bitmap updates. It would be possible to let the 
-> > kernel bypass this, but I haven't thought too much about the security 
-> > implications of it.
-> > However any user can use the bitmap data written by a user with
-> > write rights.
-> 
-> Those all get fixed with the userspace version?
+commit f205a545ee62e0f0f797c1e2b0bd2062d96414b3
+Author: Andre Noll <maan@congo.fml.local>
+Date:   Wed Mar 19 11:39:55 2008 +0100
 
-No in fact the permission problem is much harder to fix in user space.
+=46rom: Andre Noll <maan@systemlinux.org>
 
-The shared libraries would need some user support. Basically just a way
-how the ld.so can tell the kernel about the offsets/locations of new 
-bitmaps to add to the pbitmap list
+commit e9720ac ([NET]: Make /proc/net a symlink on /proc/self/net (v3))
+broke ganglia and probably other applications that read /proc/net/dev.
 
--Andi
+This is due to the change of permissions of /proc/net that was
+introduced in that commit.
 
-> 
+Before: dr-xr-xr-x 5 root root 0 Mar 19 11:30 /proc/net
+After: dr-xr--r-- 5 root root 0 Mar 19 11:29 /proc/self/net
+
+This patch restores the permissions to the old value which makes ganglia
+happy again.
+
+Signed-off-by: Andre Noll <maan@systemlinux.org>
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 8a10f6f..81d7d14 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2290,7 +2290,7 @@ static const struct pid_entry tgid_base_stuff[] =3D {
+ 	DIR("fd",         S_IRUSR|S_IXUSR, fd),
+ 	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
+ #ifdef CONFIG_NET
+-	DIR("net",        S_IRUGO|S_IXUSR, net),
++	DIR("net",        S_IRUGO|S_IXUGO, net),
+ #endif
+ 	REG("environ",    S_IRUSR, environ),
+ 	INF("auxv",       S_IRUSR, pid_auxv),
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--FxlYARId5dseejUu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFH4P5HWto1QDEAkw8RAj9/AJ96RrhHhDUWF3vbhzfb+3p/HhtmMwCfQl/S
+fYc57b8+nZLgXllXdmg7VzE=
+=r6Ja
+-----END PGP SIGNATURE-----
+
+--FxlYARId5dseejUu--
