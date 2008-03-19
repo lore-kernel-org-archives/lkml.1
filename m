@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYCSU4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935767AbYCSU7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbYCSU4d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbYCSTtY
+	id S935767AbYCSU7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbYCSTtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:49:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38419 "EHLO gir.skynet.ie"
+	Wed, 19 Mar 2008 15:49:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55291 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756053AbYCSTtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:49:23 -0400
-Date: Tue, 18 Mar 2008 16:02:15 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [10/18] Factor out new huge page preparation code into separate function
-Message-ID: <20080318160215.GI23866@csn.ul.ie>
-References: <20080317258.659191058@firstfloor.org> <20080317015824.074A31B41E0@basil.firstfloor.org>
+	id S1759458AbYCSTtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:49:31 -0400
+To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work as advertized
+References: <87tzjx6vj3.fsf@pike.pond.sub.org>
+	<87k5kt6vd3.fsf@pike.pond.sub.org>
+	<45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
+	<871w6z6ajs.fsf@pike.pond.sub.org>
+	<45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
+From: Markus Armbruster <armbru@redhat.com>
+Date: Wed, 19 Mar 2008 11:45:29 +0100
+In-Reply-To: <45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com> (Jaya Kumar's message of "Tue\, 26 Feb 2008 10\:01\:16 -0500")
+Message-ID: <87iqzjat6e.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080317015824.074A31B41E0@basil.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (17/03/08 02:58), Andi Kleen didst pronounce:
-> Needed to avoid code duplication in follow up patches.
-> 
-> This happens to fix a minor bug. When alloc_bootmem_node returns
-> a fallback node on a different node than passed the old code
-> would have put it into the free lists of the wrong node.
-> Now it would end up in the freelist of the correct node.
-> 
+"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
 
-It fixes a real bug for sure. It may be possible with that bug to leak
-pages onto a linked list with bogus counters.
+> On Tue, Feb 26, 2008 at 9:45 AM, Markus Armbruster <armbru@redhat.com> wrote:
+>>
+>>  What about pushing the fb_defio fixes independently of any new
+>>  fb_defio users?  If fb_defio was worth merging into Linus's tree, it
+>>  should be worth fixing there, whether new users are in shape already
+>>  or not.
+>
+> I think that Andrew's message is saying that there may be a race
+> condition in the defio patch itself as opposed to the defio user
+> patch.
+>
+> If there is no race condition or other problems, then I think it would
+> make sense to merge the defio patch independent of metronomefb or
+> other new patches that use defio.
+>
+> Thanks,
+> jaya
 
-Possibly another candidate patch to move to the start of the series so
-they can be merged and tested separetly?
+Any progress on this?
 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  mm/hugetlb.c |   21 +++++++++++++--------
->  1 file changed, 13 insertions(+), 8 deletions(-)
-> 
-> Index: linux/mm/hugetlb.c
-> ===================================================================
-> --- linux.orig/mm/hugetlb.c
-> +++ linux/mm/hugetlb.c
-> @@ -200,6 +200,17 @@ static int adjust_pool_surplus(struct hs
->  	return ret;
->  }
->  
-> +static void huge_new_page(struct hstate *h, struct page *page)
-> +{
-
-prep_new_huge_page() as it has a similar responsibility to
-prep_new_page() ? Just at a glance, huge_new_page() implies to me that
-it calls alloc_pages_node() 
-
-> +	unsigned nid = pfn_to_nid(page_to_pfn(page));
-> +	set_compound_page_dtor(page, free_huge_page);
-> +	spin_lock(&hugetlb_lock);
-> +	h->nr_huge_pages++;
-> +	h->nr_huge_pages_node[nid]++;
-> +	spin_unlock(&hugetlb_lock);
-> +	put_page(page); /* free it into the hugepage allocator */
-> +}
-> +
->  static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
->  {
->  	struct page *page;
-> @@ -207,14 +218,8 @@ static struct page *alloc_fresh_huge_pag
->  	page = alloc_pages_node(nid,
->  		htlb_alloc_mask|__GFP_COMP|__GFP_THISNODE|__GFP_NOWARN,
->  			huge_page_order(h));
-> -	if (page) {
-> -		set_compound_page_dtor(page, free_huge_page);
-> -		spin_lock(&hugetlb_lock);
-> -		h->nr_huge_pages++;
-> -		h->nr_huge_pages_node[nid]++;
-> -		spin_unlock(&hugetlb_lock);
-> -		put_page(page); /* free it into the hugepage allocator */
-> -	}
-> +	if (page)
-> +		huge_new_page(h, page);
->  
->  	return page;
->  }
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Considering that fb_defio is utterly broken without the fix (writing
+the frame buffer makes the VM endlessly invoke vm_ops.page_mkwrite()),
+wouldn't it make sense to merge the fix even if it still has issues?
