@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761448AbYCSWBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161300AbYCSWCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761448AbYCSWBr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYCSUXl
+	id S1161300AbYCSWCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932878AbYCSUXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:23:41 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52094 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932854AbYCSUXj (ORCPT
+	Wed, 19 Mar 2008 16:23:47 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:28798 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932866AbYCSUXp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:23:39 -0400
-Date: Wed, 19 Mar 2008 21:24:12 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
-	patchset against -rc6)
-Message-ID: <20080319202412.GB1811@elf.ucw.cz>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz> <alpine.LFD.1.00.0803181736340.3020@woody.linux-foundation.org> <20080319101947.GA2963@elf.ucw.cz> <alpine.LFD.1.00.0803190741490.3020@woody.linux-foundation.org>
+	Wed, 19 Mar 2008 16:23:45 -0400
+Message-ID: <1f1b08da0803191029w6878f693l6ac24f974a088676@mail.gmail.com>
+Date: Wed, 19 Mar 2008 10:29:34 -0700
+From: "john stultz" <johnstul@us.ibm.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: LinuxPPS (RESUBMIT 2): the PPS Linux implementation.
+Cc: linux-kernel@vger.kernel.org, "David Woodhouse" <dwmw2@infradead.org>,
+       "Dave Jones" <davej@redhat.com>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Greg KH" <greg@kroah.com>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Rodolfo Giometti" <giometti@linux.it>
+In-Reply-To: <12048053463198-git-send-email-giometti@linux.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803190741490.3020@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <12048053463198-git-send-email-giometti@linux.it>
+X-Google-Sender-Auth: a44f30bdab3a2a96
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-03-19 07:42:36, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 19 Mar 2008, Pavel Machek wrote:
-> >
-> > > > It will take a while. My .git directory is 7G, and I'd like to do a
-> > > > backup before playing with git.
-> > > 
-> > > Ouch, what have you done? It should be about 200MB, not 7GB.
-> > 
-> > And 10 minutes later, .git directory is 200MB. Thanks!
-> 
-> It strikes me that the only way I can think of that you could have gotten 
-> a 7GB .git directory without really working at it is if you use one of the 
-> so-called "dumb" git protocols that just copy whole packfiles from 
-> kernel.org when you pull.
-> 
-> So do you happen to perhaps use http:// or rsync:// when you fetch git 
-> data? That would not only be horribly slow occasionally (you'd fetch 
+On Thu, Mar 6, 2008 at 5:08 AM, Rodolfo Giometti <giometti@linux.it> wrote:
+> This patch set adds the PPS support into Linux.
+>
+>  PPS means "pulse per second" and its API is specified by RFC 2783
+>  (Pulse-Per-Second API for UNIX-like Operating Systems, Version 1.0).
+>
+>  The code has been tested with the NTPD program
+>  (http://www.eecis.udel.edu/~mills/ntp/html/index.html) and several GPS
+>  antennae.
 
-I was using rsync... should be fixed now. Thanks!
+Hey Andrew,
+  Are there any remaining objections that are keeping you from picking
+this patchset up?
 
-> all-new packs and re-download about 200MB of data when I repack the kernel 
-> repo on kernel.org, which happens about once or twice every release 
-> cycle), but it would also explain how it ballooned to 7GB for you (because 
-> you have all these duplicate packs!).
-
-Well, I thought that it is pulling a bit too much, but I attributed
-that to our fast development ;-).
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+thanks
+-john
