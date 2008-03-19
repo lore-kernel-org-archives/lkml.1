@@ -1,127 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYCSWNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYCSWOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbYCSWNP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761184AbYCSUj2
+	id S1754349AbYCSWOH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761512AbYCSUmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:39:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57666 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761166AbYCSUj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:39:26 -0400
-Date: Tue, 18 Mar 2008 16:37:15 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] [14/18] Clean up hugetlb boot time printk
-Message-ID: <20080318163715.GN23866@csn.ul.ie>
-References: <20080317258.659191058@firstfloor.org> <20080317015828.1AB091B41E0@basil.firstfloor.org>
+	Wed, 19 Mar 2008 16:42:15 -0400
+Received: from rn-out-0910.google.com ([64.233.170.184]:55092 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757023AbYCSUmM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:42:12 -0400
+Message-ID: <47E08762.9090704@gmail.com>
+Date: Wed, 19 Mar 2008 12:24:18 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080317015828.1AB091B41E0@basil.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Kasprzak <kas@fi.muni.cz>
+CC: =?UTF-8?B?TWFsdGUgU2NocsO2ZGVy?= <maltesch@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot (resend)
+References: <20080214184700.0bd3837d@highlander.home.lan> <47B4D02E.9030101@gmail.com> <20080215191215.430ee2e0@highlander.home.lan> <47BCE71F.2000309@gmail.com> <20080221172757.44882428@highlander.home.lan> <20080317210045.GG3189@fi.muni.cz> <20080318140116.GC8480@fi.muni.cz>
+In-Reply-To: <20080318140116.GC8480@fi.muni.cz>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (17/03/08 02:58), Andi Kleen didst pronounce:
-> - Reword sentence to clarify meaning with multiple options
-> - Add support for using GB prefixes for the page size
-> - Add extra printk to delayed > MAX_ORDER allocation code
+Jan Kasprzak wrote:
+> Jan Kasprzak wrote:
+> : Malte Schröder wrote:
+> : : I "solved" the problem by updating the BIOS. It now works perfectly. I
+> : : thought I had mailed that .. maybe I forgot.
+> : 
+> : 	I have the same problem (ASUS M2R32-MVP board with SB600 chipset,
+> : Athlon64 X2), but I am already using the latest BIOS for this mainboard.
 > 
+> 	Sorry for the noise, there is even newer BIOS (dated Mar 01),
+> and with this BIOS my mainboard works in AHCI mode even with 2.6.25-rc6.
 
-Scratch earlier comments about this printk. If the printk fix
-was broken out, it could be moved to the start of the set so it can be
-tested/merged separetly. The remainder of this patch could then be
-folded into the patch allowing 1GB pages to be reserved at boot-time.
-
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  mm/hugetlb.c |   33 ++++++++++++++++++++++++++++++---
->  1 file changed, 30 insertions(+), 3 deletions(-)
-> 
-> Index: linux/mm/hugetlb.c
-> ===================================================================
-> --- linux.orig/mm/hugetlb.c
-> +++ linux/mm/hugetlb.c
-> @@ -510,6 +510,15 @@ static struct page *alloc_huge_page(stru
->  	return page;
->  }
->  
-> +static __init char *memfmt(char *buf, unsigned long n)
-> +{
-> +	if (n >= (1UL << 30))
-> +		sprintf(buf, "%lu GB", n >> 30);
-> +	else
-> +		sprintf(buf, "%lu MB", n >> 20);
-> +	return buf;
-> +}
-> +
->  static __initdata LIST_HEAD(huge_boot_pages);
->  
->  struct huge_bm_page {
-> @@ -536,14 +545,28 @@ static int __init alloc_bm_huge_page(str
->  /* Put bootmem huge pages into the standard lists after mem_map is up */
->  static int __init huge_init_bm(void)
->  {
-> +	unsigned long pages = 0;
->  	struct huge_bm_page *m;
-> +	struct hstate *h = NULL;
-> +	char buf[32];
-> +
->  	list_for_each_entry (m, &huge_boot_pages, list) {
->  		struct page *page = virt_to_page(m);
-> -		struct hstate *h = m->hstate;
-> +		h = m->hstate;
->  		__ClearPageReserved(page);
->  		prep_compound_page(page, h->order);
->  		huge_new_page(h, page);
-> +		pages++;
->  	}
-> +
-> +	/*
-> +	 * This only prints for a single hstate. This works for x86-64,
-> +	 * but if you do multiple > MAX_ORDER hstates you'll need to fix it.
-> +	 */
-> +	if (pages > 0)
-> +		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
-> +				h->free_huge_pages,
-> +				memfmt(buf, huge_page_size(h)));
->  	return 0;
->  }
->  __initcall(huge_init_bm);
-> @@ -551,6 +574,8 @@ __initcall(huge_init_bm);
->  static int __init hugetlb_init_hstate(struct hstate *h)
->  {
->  	unsigned long i;
-> +	char buf[32];
-> +	unsigned long pages = 0;
->  
->  	/* Don't reinitialize lists if they have been already init'ed */
->  	if (!h->hugepage_freelists[0].next) {
-> @@ -567,12 +592,14 @@ static int __init hugetlb_init_hstate(st
->  		} else if (!alloc_fresh_huge_page(h))
->  			break;
->  		h->parsed_hugepages++;
-> +		pages++;
->  	}
->  	max_huge_pages[h - hstates] = h->parsed_hugepages;
->  
-> -	printk(KERN_INFO "Total HugeTLB memory allocated, %ld %dMB pages\n",
-> +	if (pages > 0)
-> +		printk(KERN_INFO "HugeTLB pre-allocated %ld %s pages\n",
->  			h->free_huge_pages,
-> -			1 << (h->order + PAGE_SHIFT - 20));
-> +			memfmt(buf, huge_page_size(h)));
->  	return 0;
->  }
->  
-> 
+Hmm... I still wanna know why it got broke in the first place.  The only
+thing I can think of is IRQ routing problem in which case pci=nomsi or
+irqpoll should help.  Any chance you can test the old BIOS?
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+tejun
