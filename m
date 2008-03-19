@@ -1,144 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbYCSUoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761725AbYCSUok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761619AbYCSUoB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 16:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbYCSTlg
+	id S1761725AbYCSUok (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 16:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYCSToG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 15:41:36 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13573 "EHLO mga11.intel.com"
+	Wed, 19 Mar 2008 15:44:06 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:26270 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757791AbYCSTlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 15:41:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,520,1199692800"; 
-   d="scan'208";a="536061932"
-Message-Id: <20080319000058.977770000@intel.com>
-References: <20080319000012.439150000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Mar 2008 17:00:16 -0700
-From: venkatesh.pallipadi@intel.com
-To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 04/13] x86: PAT make ioremap_change_attr non-static
-Content-Disposition: inline; filename=make_ioremap_change_attr_nonstatic.patch
+	id S1758254AbYCSToA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 15:44:00 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: npiggin@suse.de, paulus@samba.org, tglx@linutronix.de, mingo@redhat.com,
+       tony.luck@intel.com, Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 5/5] ia64: convert to generic helpers for IPI function calls
+Date: Wed, 19 Mar 2008 12:56:12 +0100
+Message-Id: <1205927772-31401-6-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com>
+References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make ioremap_change_attr() non-static and use prot_val in place of ioremap_mode.
-This interface is used in subsequent PAT patches.
+This converts ia64 to use the new helpers for smp_call_function() and
+frieds, and adds support for smp_call_function_single().
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ arch/ia64/kernel/smp.c |  171 +++++++++++++-----------------------------------
+ 1 files changed, 45 insertions(+), 126 deletions(-)
 
-Index: linux-2.6-x86.git/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6-x86.git.orig/arch/x86/mm/ioremap.c	2008-03-18 03:11:12.000000000 -0700
-+++ linux-2.6-x86.git/arch/x86/mm/ioremap.c	2008-03-18 09:20:37.000000000 -0700
-@@ -21,11 +21,6 @@
- #include <asm/tlbflush.h>
- #include <asm/pgalloc.h>
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index 4e446aa..fa26528 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -61,24 +61,9 @@ static struct local_tlb_flush_counts {
+ static DEFINE_PER_CPU(unsigned int, shadow_flush_counts[NR_CPUS]) ____cacheline_aligned;
  
--enum ioremap_mode {
--	IOR_MODE_UNCACHED,
--	IOR_MODE_CACHED,
+ 
+-/*
+- * Structure and data for smp_call_function(). This is designed to minimise static memory
+- * requirements. It also looks cleaner.
+- */
+-static  __cacheline_aligned DEFINE_SPINLOCK(call_lock);
+-
+-struct call_data_struct {
+-	void (*func) (void *info);
+-	void *info;
+-	long wait;
+-	atomic_t started;
+-	atomic_t finished;
 -};
 -
- #ifdef CONFIG_X86_64
+-static volatile struct call_data_struct *call_data;
+-
+ #define IPI_CALL_FUNC		0
+ #define IPI_CPU_STOP		1
++#define IPI_CALL_FUNC_SINGLE	2
+ #define IPI_KDUMP_CPU_STOP	3
  
- unsigned long __phys_addr(unsigned long x)
-@@ -91,18 +86,18 @@
-  * Fix up the linear direct mapping of the kernel to avoid cache attribute
-  * conflicts.
-  */
--static int ioremap_change_attr(unsigned long vaddr, unsigned long size,
--			       enum ioremap_mode mode)
-+int ioremap_change_attr(unsigned long vaddr, unsigned long size,
-+			       unsigned long prot_val)
+ /* This needs to be cacheline aligned because it is written to by *other* CPUs.  */
+@@ -89,13 +74,13 @@ extern void cpu_halt (void);
+ void
+ lock_ipi_calllock(void)
  {
- 	unsigned long nrpages = size >> PAGE_SHIFT;
- 	int err;
- 
--	switch (mode) {
--	case IOR_MODE_UNCACHED:
-+	switch (prot_val) {
-+	case _PAGE_CACHE_UC:
- 	default:
- 		err = set_memory_uc(vaddr, nrpages);
- 		break;
--	case IOR_MODE_CACHED:
-+	case _PAGE_CACHE_WB:
- 		err = set_memory_wb(vaddr, nrpages);
- 		break;
- 	}
-@@ -120,7 +115,7 @@
-  * caller shouldn't need to know that small detail.
-  */
- static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
--			       enum ioremap_mode mode)
-+			       unsigned long prot_val)
- {
- 	unsigned long pfn, offset, last_addr, vaddr;
- 	struct vm_struct *area;
-@@ -158,12 +153,12 @@
- 		WARN_ON_ONCE(is_ram);
- 	}
- 
--	switch (mode) {
--	case IOR_MODE_UNCACHED:
-+	switch (prot_val) {
-+	case _PAGE_CACHE_UC:
- 	default:
- 		prot = PAGE_KERNEL_NOCACHE;
- 		break;
--	case IOR_MODE_CACHED:
-+	case _PAGE_CACHE_WB:
- 		prot = PAGE_KERNEL;
- 		break;
- 	}
-@@ -188,7 +183,7 @@
- 		return NULL;
- 	}
- 
--	if (ioremap_change_attr(vaddr, size, mode) < 0) {
-+	if (ioremap_change_attr(vaddr, size, prot_val) < 0) {
- 		vunmap(area->addr);
- 		return NULL;
- 	}
-@@ -222,13 +217,13 @@
-  */
- void __iomem *ioremap_nocache(unsigned long phys_addr, unsigned long size)
- {
--	return __ioremap(phys_addr, size, IOR_MODE_UNCACHED);
-+	return __ioremap(phys_addr, size, _PAGE_CACHE_UC);
+-	spin_lock_irq(&call_lock);
++	spin_lock_irq(&call_function_lock);
  }
- EXPORT_SYMBOL(ioremap_nocache);
  
- void __iomem *ioremap_cache(unsigned long phys_addr, unsigned long size)
+ void
+ unlock_ipi_calllock(void)
  {
--	return __ioremap(phys_addr, size, IOR_MODE_CACHED);
-+	return __ioremap(phys_addr, size, _PAGE_CACHE_WB);
+-	spin_unlock_irq(&call_lock);
++	spin_unlock_irq(&call_function_lock);
  }
- EXPORT_SYMBOL(ioremap_cache);
  
-Index: linux-2.6-x86.git/include/asm-x86/io.h
-===================================================================
---- linux-2.6-x86.git.orig/include/asm-x86/io.h	2008-03-18 03:11:12.000000000 -0700
-+++ linux-2.6-x86.git/include/asm-x86/io.h	2008-03-18 09:20:25.000000000 -0700
-@@ -7,6 +7,9 @@
- # include "io_64.h"
- #endif
+ static void
+@@ -139,32 +124,11 @@ handle_IPI (int irq, void *dev_id)
  
-+extern int ioremap_change_attr(unsigned long vaddr, unsigned long size,
-+				unsigned long prot_val);
+ 			switch (which) {
+ 			      case IPI_CALL_FUNC:
+-			      {
+-				      struct call_data_struct *data;
+-				      void (*func)(void *info);
+-				      void *info;
+-				      int wait;
+-
+-				      /* release the 'pointer lock' */
+-				      data = (struct call_data_struct *) call_data;
+-				      func = data->func;
+-				      info = data->info;
+-				      wait = data->wait;
+-
+-				      mb();
+-				      atomic_inc(&data->started);
+-				      /*
+-				       * At this point the structure may be gone unless
+-				       * wait is true.
+-				       */
+-				      (*func)(info);
+-
+-				      /* Notify the sending CPU that the task is done.  */
+-				      mb();
+-				      if (wait)
+-					      atomic_inc(&data->finished);
+-			      }
+-			      break;
++				generic_smp_call_function_single_interrupt();
++				break;
++			      case IPI_CALL_FUNC_SINGLE:
++				generic_smp_call_function_single_interrupt();
++				break;
+ 
+ 			      case IPI_CPU_STOP:
+ 				stop_this_cpu();
+@@ -209,6 +173,15 @@ send_IPI_allbutself (int op)
+ 	}
+ }
+ 
++static inline void
++send_IPI_mask(cpumask_t mask, int op)
++{
++	unsigned int cpu;
 +
- extern void *xlate_dev_mem_ptr(unsigned long phys);
- extern void unxlate_dev_mem_ptr(unsigned long phys, void *addr);
++	for_each_cpu_mask(cpu, mask)
++		send_IPI_single(cpu, op);
++}
++
+ /*
+  * Called with preemption disabled.
+  */
+@@ -345,62 +318,41 @@ smp_flush_tlb_mm (struct mm_struct *mm)
+ 	on_each_cpu((void (*)(void *))local_finish_flush_tlb_mm, mm, 1, 1);
+ }
  
-
++static void send_cfs_ipi(int cpu)
++{
++	send_IPI_single(cpu, IPI_CALL_FUNC_SINGLE);
++}
++
++void __smp_call_function_single(int cpu, struct call_single_data *data)
++{
++	generic_exec_single(cpu, data, send_cfs_ipi);
++}
++
+ /*
+- * Run a function on a specific CPU
+- *  <func>	The function to run. This must be fast and non-blocking.
+- *  <info>	An arbitrary pointer to pass to the function.
+- *  <nonatomic>	Currently unused.
+- *  <wait>	If true, wait until function has completed on other CPUs.
+- *  [RETURNS]   0 on success, else a negative status code.
++ * smp_call_function_single - Run a function on a specific CPU
++ * @func: The function to run. This must be fast and non-blocking.
++ * @info: An arbitrary pointer to pass to the function.
++ * @nonatomic: Currently unused.
++ * @wait: If true, wait until function has completed on other CPUs.
++ *
++ * Retrurns 0 on success, else a negative status code.
+  *
+  * Does not return until the remote CPU is nearly ready to execute <func>
+  * or is or has executed.
+  */
+-
+-int
+-smp_call_function_single (int cpuid, void (*func) (void *info), void *info, int nonatomic,
+-			  int wait)
++int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
++			      int nonatomic, int wait)
+ {
+-	struct call_data_struct data;
+-	int cpus = 1;
+-	int me = get_cpu(); /* prevent preemption and reschedule on another processor */
+-
+-	if (cpuid == me) {
+-		local_irq_disable();
+-		func(info);
+-		local_irq_enable();
+-		put_cpu();
+-		return 0;
+-	}
+-
+-	data.func = func;
+-	data.info = info;
+-	atomic_set(&data.started, 0);
+-	data.wait = wait;
+-	if (wait)
+-		atomic_set(&data.finished, 0);
+-
+-	spin_lock_bh(&call_lock);
+-
+-	call_data = &data;
+-	mb();	/* ensure store to call_data precedes setting of IPI_CALL_FUNC */
+-  	send_IPI_single(cpuid, IPI_CALL_FUNC);
+-
+-	/* Wait for response */
+-	while (atomic_read(&data.started) != cpus)
+-		cpu_relax();
+-
+-	if (wait)
+-		while (atomic_read(&data.finished) != cpus)
+-			cpu_relax();
+-	call_data = NULL;
+-
+-	spin_unlock_bh(&call_lock);
+-	put_cpu();
+-	return 0;
++	return generic_smp_call_function_single(cpu, func, info, wait,
++						send_cfs_ipi);
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
++static void send_call_function_ipi(cpumask_t mask)
++{
++	send_IPI_mask(mask, IPI_CALL_FUNC);
++}
++
+ /*
+  * this function sends a 'generic call function' IPI to all other CPUs
+  * in the system.
+@@ -423,41 +375,8 @@ EXPORT_SYMBOL(smp_call_function_single);
+ int
+ smp_call_function (void (*func) (void *info), void *info, int nonatomic, int wait)
+ {
+-	struct call_data_struct data;
+-	int cpus;
+-
+-	spin_lock(&call_lock);
+-	cpus = num_online_cpus() - 1;
+-	if (!cpus) {
+-		spin_unlock(&call_lock);
+-		return 0;
+-	}
+-
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+-	data.func = func;
+-	data.info = info;
+-	atomic_set(&data.started, 0);
+-	data.wait = wait;
+-	if (wait)
+-		atomic_set(&data.finished, 0);
+-
+-	call_data = &data;
+-	mb();	/* ensure store to call_data precedes setting of IPI_CALL_FUNC */
+-	send_IPI_allbutself(IPI_CALL_FUNC);
+-
+-	/* Wait for response */
+-	while (atomic_read(&data.started) != cpus)
+-		cpu_relax();
+-
+-	if (wait)
+-		while (atomic_read(&data.finished) != cpus)
+-			cpu_relax();
+-	call_data = NULL;
+-
+-	spin_unlock(&call_lock);
+-	return 0;
++	return generic_smp_call_function(func, info, wait, cpu_online_map,
++						send_call_function_ipi);
+ }
+ EXPORT_SYMBOL(smp_call_function);
+ 
 -- 
+1.5.4.GIT
+
