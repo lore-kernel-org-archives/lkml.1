@@ -1,141 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940616AbYCSXvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbYCSXwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940616AbYCSXvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765125AbYCSWWz
+	id S1763888AbYCSXwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940852AbYCSWXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:22:55 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:41606 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762911AbYCSWWy (ORCPT
+	Wed, 19 Mar 2008 18:23:00 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:45464 "HELO
+	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933001AbYCSWW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:22:54 -0400
-Message-ID: <86802c440803181057j710a1ba7mfa14acd3ea1f626c@mail.gmail.com>
-Date: Tue, 18 Mar 2008 10:57:56 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mel Gorman" <mel@csn.ul.ie>
-Subject: Re: [PATCH] mm: allocate section_map for sparse_init
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andy Whitcroft" <apw@shadowen.org>
-In-Reply-To: <20080318094132.GB11587@csn.ul.ie>
+	Wed, 19 Mar 2008 18:22:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=AhV1xBph/ufC/PlxRu4mQqhNgWdCJr/SFnghdlAMgpSPRcBhWgut0LzNUwej6cpqSfeB49B7iWXyUvPdvi1b+64uZbfJ+OHibGtvRe+1ZPkL9cylN6+HL9fm7mDH+4i3AXiYlc6WMItLZ3qskHt+gsNNyrPAdTT0lbXKU3X6mXU=  ;
+X-YMail-OSG: wIIaJaMVM1lc_8C7nKLsRe0CjZK1YrJkSjRuHCIrN7Niqh9NxJ9UpHPcEu_54ARpetLACRnerW.JvUTYuEvlBHlBO2V5aAUTJ5hQdtYGgrP0av.9mYE-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH 2/3] PM: Make wakeup flags available whenever CONFIG_PM is set (ver 2)
+Date: Wed, 19 Mar 2008 15:22:54 -0700
+User-Agent: KMail/1.9.6
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <200803190315.m2J3FXnK029022@imap1.linux-foundation.org> <200803192233.55313.rjw@sisk.pl> <200803192237.43123.rjw@sisk.pl>
+In-Reply-To: <200803192237.43123.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <86802c440803121051q20023badsf8e6e0571f4bb92e@mail.gmail.com>
-	 <20080313111934.GA12351@csn.ul.ie>
-	 <86802c440803131102u79fcc774j440eef4356083b56@mail.gmail.com>
-	 <20080318094132.GB11587@csn.ul.ie>
+Message-Id: <200803191522.54856.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 18, 2008 at 2:41 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On (13/03/08 11:02), Yinghai Lu didst pronounce:
->
->
-> > On Thu, Mar 13, 2008 at 4:19 AM, Mel Gorman <mel@csn.ul.ie> wrote:
->  > > On (12/03/08 10:51), Yinghai Lu didst pronounce:
->  > >
->  > >
->  > > > [PATCH] mm: allocate section_map for sparse_init
->  > >  >
->  > >  > allocate section_map in bootmem instead of using __initdata.
->  > >  >
->  > >  > need to apply it after
->  > >  >         [PATCH] mm: fix boundary checking in free_bootmem_core
->  > >  >         [PATCH] mm: make mem_map allocation continuous.
->  > >  >
->  > >  >
->  > >  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->  > >
->  > >  > Index: linux-2.6/mm/sparse.c
->  > >  > ===================================================================
->  > >  > --- linux-2.6.orig/mm/sparse.c
->  > >  > +++ linux-2.6/mm/sparse.c
->  > >  > @@ -285,8 +285,6 @@ struct page __init *sparse_early_mem_map
->  > >  >       return NULL;
->  > >  >  }
->  > >  >
->  > >  > -/* section_map pointer array is 64k */
->  > >  > -static __initdata struct page *section_map[NR_MEM_SECTIONS];
->  > >  >  /*
->  > >  >   * Allocate the accumulated non-linear sections, allocate a mem_map
->  > >  >   * for each and record the physical to section mapping.
->  > >  > @@ -296,6 +294,9 @@ void __init sparse_init(void)
->  > >  >       unsigned long pnum;
->  > >  >       struct page *map;
->  > >  >       unsigned long *usemap;
->  > >  > +     struct page **section_map;
->  > >  > +     int size;
->  > >  > +     int node;
->  > >  >
->  > >  >       /*
->  > >  >        * map is using big page (aka 2M in x86 64 bit)
->  > >  > @@ -305,13 +306,17 @@ void __init sparse_init(void)
->  > >  >        * then in big system, the memmory will have a lot hole...
->  > >  >        * here try to allocate 2M pages continously.
->  > >  >        */
->  > >  > +     size = sizeof(struct page *) * NR_MEM_SECTIONS;
->  > >  > +     section_map = alloc_bootmem(size);
->  > >  > +     if (!section_map)
->  > >  > +             panic("can not allocate section_map\n");
->  > >  > +
->  > >  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  > >  >               if (!present_section_nr(pnum))
->  > >  >                       continue;
->  > >  >               section_map[pnum] = sparse_early_mem_map_alloc(pnum);
->  > >  >       }
->  > >  >
->  > >  > -
->  > >  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  > >  >               if (!present_section_nr(pnum))
->  > >  >                       continue;
->  > >  > @@ -327,6 +332,9 @@ void __init sparse_init(void)
->  > >  >               sparse_init_one_section(__nr_to_section(pnum), pnum, map,
->  > >  >                                                               usemap);
->  > >  >       }
->  > >  > +
->  > >  > +     for_each_online_node(node)
->  > >  > +             free_bootmem_node(NODE_DATA(node), __pa(section_map), size);
->  > >
->  > >  Why are you iterating every online node here instead of just calling
->  > >  free_bootmem(__pa(section_map), size) ?
->  >
->  > free_bootmem will assume use bdata on NODE_DATA(0).
->  >
->
->  True. The unwritten assumption is that NODE_DATA(0) always has memory
->  for allocate or free.
->
->
->  > some cases: four nodes system: only have memory installed for node 1,
->  > and node 3.
->  > alloc_bootmem will loop to get bootmem from node1, because there is no
->  > ram node0, and not NODE_DATA(0) ...
->  >
->  > we may update free_bootmem to loop all bdata or all online nodes to
->  > call free_bootmem_core...
->  >
->
->  Alternatively, update free_bootmem so that it figures out which node it is
->  meant to be freeing to based on the PFN of the page currently being freed.
->
->  It still doesn't seem right to try freeing on all online nodes as it looks like
->  free_bootmem_core() should flip bits outside the range of its node_bootmem_map
->  which could cause tricky bugs.
->
->  As things currently stand with bootmem, what you should be doing is using
->  for_each_online_node() to figure out which node you can allocate from,
->  remembering that node and calling free_bootmem_node() once. If you fix
->  free_bootmem() though, you should only need to call free_bootmem() once
->  in this patch.
+On Wednesday 19 March 2008, Rafael J. Wysocki wrote:
+> From: Alan Stern <stern@rowland.harvard.edu>
+> 
+> The various wakeup flags and their accessor macros in struct
+> dev_pm_info should be available whenever CONFIG_PM is enabled, not
+> just when CONFIG_PM_SLEEP is on.  Otherwise remote wakeup won't always
+> be configurable for runtime power management.  This patch (as1056b)
+> fixes the oversight.
 
-Yes
+More accurately, fixes the "regression" ... as noted sometime
+last summer, after 296699de6bdc717189a331ab6bbe90e05c94db06
+introduced CONFIG_SUSPEND.  But that didn't make the regression
+list for that kernel, ergo the delay in fixing it.
 
-with the new free_bootmem that loop bdata_list, we can call
-free_bootmem.
+- Dave
 
-YH
+
+> [rjw: rebased]
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/base/power/main.c  |    2 --
+>  drivers/base/power/sysfs.c |    2 ++
+>  include/linux/pm.h         |   36 +++++++++++++++++++++---------------
+>  3 files changed, 23 insertions(+), 17 deletions(-)
+> 
+> Index: linux-2.6/include/linux/pm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pm.h
+> +++ linux-2.6/include/linux/pm.h
+> @@ -183,9 +183,9 @@ typedef struct pm_message {
+>  struct dev_pm_info {
+>  	pm_message_t		power_state;
+>  	unsigned		can_wakeup:1;
+> +	unsigned		should_wakeup:1;
+>  	bool			sleeping:1;	/* Owned by the PM core */
+>  #ifdef	CONFIG_PM_SLEEP
+> -	unsigned		should_wakeup:1;
+>  	struct list_head	entry;
+>  #endif
+>  };
+> @@ -198,11 +198,6 @@ extern void device_resume(void);
+>  extern int device_suspend(pm_message_t state);
+>  extern int device_prepare_suspend(pm_message_t state);
+>  
+> -#define device_set_wakeup_enable(dev,val) \
+> -	((dev)->power.should_wakeup = !!(val))
+> -#define device_may_wakeup(dev) \
+> -	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
+> -
+>  extern void __suspend_report_result(const char *function, void *fn, int ret);
+>  
+>  #define suspend_report_result(fn, ret)					\
+> @@ -210,6 +205,24 @@ extern void __suspend_report_result(cons
+>  		__suspend_report_result(__FUNCTION__, fn, ret);		\
+>  	} while (0)
+>  
+> +#else /* !CONFIG_PM_SLEEP */
+> +
+> +static inline int device_suspend(pm_message_t state)
+> +{
+> +	return 0;
+> +}
+> +
+> +#define suspend_report_result(fn, ret) do { } while (0)
+> +
+> +#endif /* !CONFIG_PM_SLEEP */
+> +
+> +#ifdef CONFIG_PM
+> +
+> +#define device_set_wakeup_enable(dev,val) \
+> +	((dev)->power.should_wakeup = !!(val))
+> +#define device_may_wakeup(dev) \
+> +	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
+> +
+>  /*
+>   * Platform hook to activate device wakeup capability, if that's not already
+>   * handled by enable_irq_wake() etc.
+> @@ -224,24 +237,17 @@ static inline int call_platform_enable_w
+>  	return 0;
+>  }
+>  
+> -#else /* !CONFIG_PM_SLEEP */
+> -
+> -static inline int device_suspend(pm_message_t state)
+> -{
+> -	return 0;
+> -}
+> +#else /* !CONFIG_PM */
+>  
+>  #define device_set_wakeup_enable(dev,val)	do{}while(0)
+>  #define device_may_wakeup(dev)			(0)
+>  
+> -#define suspend_report_result(fn, ret) do { } while (0)
+> -
+>  static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+>  {
+>  	return 0;
+>  }
+>  
+> -#endif /* !CONFIG_PM_SLEEP */
+> +#endif /* !CONFIG_PM */
+>  
+>  /* changes to device_may_wakeup take effect on the next pm state change.
+>   * by default, devices should wakeup if they can.
+> Index: linux-2.6/drivers/base/power/main.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/main.c
+> +++ linux-2.6/drivers/base/power/main.c
+> @@ -57,8 +57,6 @@ static DEFINE_MUTEX(dpm_list_mtx);
+>  /* 'true' if all devices have been suspended, protected by dpm_list_mtx */
+>  static bool all_sleeping;
+>  
+> -int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> -
+>  /**
+>   *	device_pm_add - add a device to the list of active devices
+>   *	@dev:	Device to be added to the list
+> Index: linux-2.6/drivers/base/power/sysfs.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/sysfs.c
+> +++ linux-2.6/drivers/base/power/sysfs.c
+> @@ -6,6 +6,8 @@
+>  #include <linux/string.h>
+>  #include "power.h"
+>  
+> +int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> +
+>  
+>  /*
+>   *	wakeup - Report/change current wakeup option for device
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> 
+
+
