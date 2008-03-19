@@ -1,202 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbYCSWE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161554AbYCSWFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbYCSWE2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761114AbYCSU23
+	id S1161554AbYCSWFH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbYCSU3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:28:29 -0400
-Received: from pilet.ens-lyon.fr ([140.77.167.16]:40273 "EHLO
-	pilet.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757750AbYCSU2Z (ORCPT
+	Wed, 19 Mar 2008 16:29:47 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47530 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763474AbYCSU3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:28:25 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 16:28:24 EDT
-Date: Wed, 19 Mar 2008 21:28:18 +0100
-From: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: [PATCH] [TRIVIAL] spelling fix in various files: preferred ->
-	preferred
-Message-ID: <20080319202818.GE6935@ens-lyon.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 19 Mar 2008 16:29:43 -0400
+Subject: Re: [PATCH][RESEND][v3] Modify loop device to be able to manage
+	partitions of the disk image
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: axboe@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <47E17673.4040302@tmr.com>
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
+	 <47E17673.4040302@tmr.com>
+Content-Type: text/plain; charset=utf-8
+Organization: Bull S.A.S.
+Date: Wed, 19 Mar 2008 21:32:32 +0100
+Message-Id: <1205958752.4758.13.camel@frecb07144>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fix: prefered -> preferred
 
-Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
+Le mercredi 19 mars 2008 à 16:24 -0400, Bill Davidsen a écrit :
+> Laurent Vivier wrote:
+> > v3 is an updated version of v2, replacing a "%d" by a "%lu".
+> > 
+> > This patch allows to use loop device with partitionned disk image.
+> > 
+> How does this compare in overhead to using nbd?
 
-diff -r 2202c155b8c3 -r ef957e3033e5 Documentation/i2c/busses/i2c-parport-light
---- a/Documentation/i2c/busses/i2c-parport-light	Tue Mar 18 21:34:48 2008 -0700
-+++ b/Documentation/i2c/busses/i2c-parport-light	Wed Mar 19 21:01:45 2008 +0100
-@@ -4,7 +4,7 @@
- 
- This driver is a light version of i2c-parport. It doesn't depend        
- on the parport driver, and uses direct I/O access instead. This might be
--prefered on embedded systems where wasting memory for the clean but heavy
-+preferred on embedded systems where wasting memory for the clean but heavy
- parport handling is not an option. The drawback is a reduced portability
- and the impossibility to daisy-chain other parallel port devices.                 
-   
-diff -r 2202c155b8c3 -r ef957e3033e5 arch/m68knommu/platform/coldfire/head.S
---- a/arch/m68knommu/platform/coldfire/head.S	Tue Mar 18 21:34:48 2008 -0700
-+++ b/arch/m68knommu/platform/coldfire/head.S	Wed Mar 19 21:01:45 2008 +0100
-@@ -19,7 +19,7 @@
- 
- /*
-  *	If we don't have a fixed memory size, then lets build in code
-- *	to auto detect the DRAM size. Obviously this is the prefered
-+ *	to auto detect the DRAM size. Obviously this is the preferred
-  *	method, and should work for most boards. It won't work for those
-  *	that do not have their RAM starting at address 0, and it only
-  *	works on SDRAM (not boards fitted with SRAM).
-diff -r 2202c155b8c3 -r ef957e3033e5 arch/s390/kernel/time.c
---- a/arch/s390/kernel/time.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/arch/s390/kernel/time.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -1038,7 +1038,7 @@
- 		eacr = etr_handle_update(&aib, eacr);
- 
- 	/*
--	 * Select ports to enable. The prefered synchronization mode is PPS.
-+	 * Select ports to enable. The preferred synchronization mode is PPS.
- 	 * If a port can be enabled depends on a number of things:
- 	 * 1) The port needs to be online and uptodate. A port is not
- 	 *    disabled just because it is not uptodate, but it is only
-diff -r 2202c155b8c3 -r ef957e3033e5 drivers/media/video/cx25840/cx25840-core.c
---- a/drivers/media/video/cx25840/cx25840-core.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/drivers/media/video/cx25840/cx25840-core.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -245,7 +245,7 @@
- 	cx25840_write(client, 0x918, 0xa0);
- 	cx25840_write(client, 0x919, 0x01);
- 
--	/* stereo prefered */
-+	/* stereo preferred */
- 	cx25840_write(client, 0x809, 0x04);
- 	/* AC97 shift */
- 	cx25840_write(client, 0x8cf, 0x0f);
-diff -r 2202c155b8c3 -r ef957e3033e5 drivers/net/enc28j60_hw.h
---- a/drivers/net/enc28j60_hw.h	Tue Mar 18 21:34:48 2008 -0700
-+++ b/drivers/net/enc28j60_hw.h	Wed Mar 19 21:01:45 2008 +0100
-@@ -303,7 +303,7 @@
- /* maximum ethernet frame length */
- #define MAX_FRAMELEN		1518
- 
--/* Prefered half duplex: LEDA: Link status LEDB: Rx/Tx activity */
-+/* Preferred half duplex: LEDA: Link status LEDB: Rx/Tx activity */
- #define ENC28J60_LAMPS_MODE	0x3476
- 
- #endif
-diff -r 2202c155b8c3 -r ef957e3033e5 drivers/net/sk98lin/skrlmt.c
---- a/drivers/net/sk98lin/skrlmt.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/drivers/net/sk98lin/skrlmt.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -1627,7 +1627,7 @@
- 	PortFound = SK_FALSE;
- 	pAC->Rlmt.CheckSwitch = SK_FALSE;
- 
--#if 0	/* RW 2001/10/18 - active port becomes always prefered one */
-+#if 0	/* RW 2001/10/18 - active port becomes always preferred one */
- 	if (pAC->Rlmt.Net[NetIdx].Preference == 0xFFFFFFFF) { /* Automatic */
- 		/* disable auto-fail back */
- 		PrefPort = Active;
-diff -r 2202c155b8c3 -r ef957e3033e5 drivers/net/tokenring/madgemc.c
---- a/drivers/net/tokenring/madgemc.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/drivers/net/tokenring/madgemc.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -459,7 +459,7 @@
- }
- 
- /*
-- * Set the card to the prefered ring speed.
-+ * Set the card to the preferred ring speed.
-  *
-  * Unlike newer cards, the MC16/32 have their speed selection
-  * circuit connected to the Madge ASICs and not to the TMS380
-diff -r 2202c155b8c3 -r ef957e3033e5 include/acpi/actbl.h
---- a/include/acpi/actbl.h	Tue Mar 18 21:34:48 2008 -0700
-+++ b/include/acpi/actbl.h	Wed Mar 19 21:01:45 2008 +0100
-@@ -260,9 +260,9 @@
- #define ACPI_FADT_APIC_PHYSICAL     (1<<19)	/* 19: All local x_aPICs must use physical dest mode (ACPI 3.0) */
- 
- /*
-- * FADT Prefered Power Management Profiles
-+ * FADT Preferred Power Management Profiles
-  */
--enum acpi_prefered_pm_profiles {
-+enum acpi_preferred_pm_profiles {
- 	PM_UNSPECIFIED = 0,
- 	PM_DESKTOP = 1,
- 	PM_MOBILE = 2,
-diff -r 2202c155b8c3 -r ef957e3033e5 include/asm-blackfin/cplbinit.h
---- a/include/asm-blackfin/cplbinit.h	Tue Mar 18 21:34:48 2008 -0700
-+++ b/include/asm-blackfin/cplbinit.h	Wed Mar 19 21:01:45 2008 +0100
-@@ -52,7 +52,7 @@
- struct cplb_desc {
- 	u32 start; /* start address */
- 	u32 end; /* end address */
--	u32 psize; /* prefered size if any otherwise 1MB or 4MB*/
-+	u32 psize; /* preferred size if any otherwise 1MB or 4MB*/
- 	u16 attr;/* attributes */
- 	u16 i_conf;/* I-CPLB DATA */
- 	u16 d_conf;/* D-CPLB DATA */
-diff -r 2202c155b8c3 -r ef957e3033e5 include/asm-ia64/sn/bte.h
---- a/include/asm-ia64/sn/bte.h	Tue Mar 18 21:34:48 2008 -0700
-+++ b/include/asm-ia64/sn/bte.h	Wed Mar 19 21:01:45 2008 +0100
-@@ -216,7 +216,7 @@
- 	bte_copy(0, dest, len, ((mode) | BTE_ZERO_FILL), notification)
- 
- /*
-- * The following is the prefered way of calling bte_unaligned_copy
-+ * The following is the preferred way of calling bte_unaligned_copy
-  * If the copy is fully cache line aligned, then bte_copy is
-  * used instead.  Since bte_copy is inlined, this saves a call
-  * stack.  NOTE: bte_copy is called synchronously and does block
-diff -r 2202c155b8c3 -r ef957e3033e5 include/linux/prefetch.h
---- a/include/linux/prefetch.h	Tue Mar 18 21:34:48 2008 -0700
-+++ b/include/linux/prefetch.h	Wed Mar 19 21:01:45 2008 +0100
-@@ -29,7 +29,7 @@
- 	prefetchw(x)	- prefetches the cacheline at "x" for write
- 	spin_lock_prefetch(x) - prefetches the spinlock *x for taking
- 	
--	there is also PREFETCH_STRIDE which is the architecure-prefered 
-+	there is also PREFETCH_STRIDE which is the architecure-preferred 
- 	"lookahead" size for prefetching streamed operations.
- 	
- */
-diff -r 2202c155b8c3 -r ef957e3033e5 include/net/iw_handler.h
---- a/include/net/iw_handler.h	Tue Mar 18 21:34:48 2008 -0700
-+++ b/include/net/iw_handler.h	Wed Mar 19 21:01:45 2008 +0100
-@@ -129,7 +129,7 @@
-  *
-  * Functions prototype uses union iwreq_data
-  * -----------------------------------------
-- * Some would have prefered functions defined this way :
-+ * Some would have preferred functions defined this way :
-  *	static int mydriver_ioctl_setrate(struct net_device *dev, 
-  *					  long rate, int auto)
-  * 1) The kernel code doesn't "validate" the content of iwreq_data, and
-diff -r 2202c155b8c3 -r ef957e3033e5 sound/pci/ice1712/ice1712.c
---- a/sound/pci/ice1712/ice1712.c	Tue Mar 18 21:34:48 2008 -0700
-+++ b/sound/pci/ice1712/ice1712.c	Wed Mar 19 21:01:45 2008 +0100
-@@ -2712,7 +2712,7 @@
- 			return err;
- 		}
- 		if (c->mpu401_1_name)
--			/*  Prefered name available in card_info */
-+			/*  Preferred name available in card_info */
- 			snprintf(ice->rmidi[0]->name,
- 				 sizeof(ice->rmidi[0]->name),
- 				 "%s %d", c->mpu401_1_name, card->number);
-@@ -2729,7 +2729,7 @@
- 				return err;
- 			}
- 			if (c->mpu401_2_name)
--				/*  Prefered name available in card_info */
-+				/*  Preferred name available in card_info */
- 				snprintf(ice->rmidi[1]->name,
- 					 sizeof(ice->rmidi[1]->name),
- 					 "%s %d", c->mpu401_2_name,
+What do you mean ?
 
+NBD doesn't manage partitions... but I also have a patch to do that.
+NBD implies an NBD server and an NBD client in userspace, so loop is
+better when disk image is in a raw format.
+
+Laurent
+
+> > Original behavior of loop is not modified.
+> > 
+> > A new parameter is introduced to define how many partition we want to be
+> > able to manage per loop device. This parameter is "loop_max_part".
+> > 
+> > For instance, to manage 63 partitions / loop device, we will do:
+> > # modprobe loop loop_max_part=63
+> > # ls -l /dev/loop?
+> > brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> > brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> > brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> > brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> > brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> > brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> > brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> > brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> > 
+> > And to attach a raw partitionned disk image, the original losetup is used:
+> > 
+> > # losetup -f etch.img
+> > EXT3 FS on loop0p1, internal journal
+> > EXT3-fs: mounted filesystem with ordered data mode.
+> > loop: module loaded
+> >  loop0: p1 p2 < p5 >
+> > # ls -l /dev/loop?*
+> > brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> > brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+> > brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+> > brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+> > brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> > brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> > brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> > brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> > brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> > brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> > brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> > # mount /dev/loop0p1 /mnt
+> > kjournald starting.  Commit interval 5 seconds
+> > EXT3 FS on loop0p1, internal journal
+> > EXT3-fs: mounted filesystem with ordered data mode.
+> > # ls /mnt
+> > bench  cdrom  home        lib         mnt   root     srv  usr
+> > bin    dev    initrd      lost+found  opt   sbin     sys  var
+> > boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+> > # umount /mnt
+> > # losetup -d /dev/loop0
+> > 
+> > Of course, the same behavior can be done using kpartx on a loop device,
+> > but modifying loop avoids to stack several layers of block device (loop +
+> > device mapper), this is a very light modification (40% of modifications
+> > are to manage the new parameter).
+> > 
+> > Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+> > ---
+> >  Documentation/kernel-parameters.txt |    4 +++
+> >  drivers/block/loop.c                |   39 ++++++++++++++++++++++++++++++----
+> >  2 files changed, 38 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> > index 9a5b665..7f2fd52 100644
+> > --- a/Documentation/kernel-parameters.txt
+> > +++ b/Documentation/kernel-parameters.txt
+> > @@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
+> >  			be mounted
+> >  			Format: <1-256>
+> >  
+> > +	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
+> > +			Should be greater than 0, the maximum value depends
+> > +			on max_loop.
+> > +
+> >  	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
+> >  			should make use of.  maxcpus=n : n >= 0 limits the
+> >  			kernel to using 'n' processors.  n=0 is a special case,
+> > diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> > index 91ebb00..16b2aa6 100644
+> > --- a/drivers/block/loop.c
+> > +++ b/drivers/block/loop.c
+> > @@ -82,6 +82,9 @@
+> >  static LIST_HEAD(loop_devices);
+> >  static DEFINE_MUTEX(loop_devices_mutex);
+> >  
+> > +static int loop_max_part;
+> > +static int part_shift;
+> > +
+> >  /*
+> >   * Transfer functions
+> >   */
+> > @@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
+> >  		goto out_putf;
+> >  
+> >  	fput(old_file);
+> > +	if (loop_max_part > 0)
+> > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+> >  	return 0;
+> >  
+> >   out_putf:
+> > @@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+> >  	}
+> >  	lo->lo_state = Lo_bound;
+> >  	wake_up_process(lo->lo_thread);
+> > +	if (loop_max_part > 0)
+> > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+> >  	return 0;
+> >  
+> >  out_clr:
+> > @@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
+> >  static int max_loop;
+> >  module_param(max_loop, int, 0);
+> >  MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
+> > +module_param(loop_max_part, int, 0);
+> > +MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
+> >  MODULE_LICENSE("GPL");
+> >  MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+> >  
+> > @@ -1412,7 +1421,7 @@ static struct loop_device *loop_alloc(int i)
+> >  	if (!lo->lo_queue)
+> >  		goto out_free_dev;
+> >  
+> > -	disk = lo->lo_disk = alloc_disk(1);
+> > +	disk = lo->lo_disk = alloc_disk(1 << part_shift);
+> >  	if (!disk)
+> >  		goto out_free_queue;
+> >  
+> > @@ -1422,7 +1431,7 @@ static struct loop_device *loop_alloc(int i)
+> >  	init_waitqueue_head(&lo->lo_event);
+> >  	spin_lock_init(&lo->lo_lock);
+> >  	disk->major		= LOOP_MAJOR;
+> > -	disk->first_minor	= i;
+> > +	disk->first_minor	= i << part_shift;
+> >  	disk->fops		= &lo_fops;
+> >  	disk->private_data	= lo;
+> >  	disk->queue		= lo->lo_queue;
+> > @@ -1502,7 +1511,12 @@ static int __init loop_init(void)
+> >  	 *     themselves and have kernel automatically instantiate actual
+> >  	 *     device on-demand.
+> >  	 */
+> > -	if (max_loop > 1UL << MINORBITS)
+> > +
+> > +	part_shift = 0;
+> > +	if (loop_max_part > 0)
+> > +		part_shift = fls(loop_max_part);
+> > +
+> > +	if (max_loop > 1UL << (MINORBITS - part_shift))
+> >  		return -EINVAL;
+> >  
+> >  	if (max_loop) {
+> > @@ -1510,7 +1524,7 @@ static int __init loop_init(void)
+> >  		range = max_loop;
+> >  	} else {
+> >  		nr = 8;
+> > -		range = 1UL << MINORBITS;
+> > +		range = 1UL << (MINORBITS - part_shift);
+> >  	}
+> >  
+> >  	if (register_blkdev(LOOP_MAJOR, "loop"))
+> > @@ -1549,7 +1563,7 @@ static void __exit loop_exit(void)
+> >  	unsigned long range;
+> >  	struct loop_device *lo, *next;
+> >  
+> > -	range = max_loop ? max_loop :  1UL << MINORBITS;
+> > +	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
+> >  
+> >  	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+> >  		loop_del_one(lo);
+> > @@ -1569,4 +1583,19 @@ static int __init max_loop_setup(char *str)
+> >  }
+> >  
+> >  __setup("max_loop=", max_loop_setup);
+> > +
+> > +static int __init max_part_setup(char *str)
+> > +{
+> > +	loop_max_part = simple_strtol(str, NULL, 0);
+> > +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
+> > +		/* we must keep at least one bit for loop device number */
+> > +		printk(KERN_ERR
+> > +			"loop: loop_max_part cannot be greater than %lu\n",
+> > +			1UL << (MINORBITS - 1));
+> > +		return 0;
+> > +	}
+> > +	return 1;
+> > +}
+> > +
+> > +__setup("loop_max_part=", max_part_setup);
+> >  #endif
+> 
+> 
 -- 
-:wq
+------- Laurent.Vivier@bull.net  -------
+  "The best way to predict the future 
+      is to invent it." - Alan Kay
+
