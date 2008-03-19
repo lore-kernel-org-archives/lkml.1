@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S942775AbYCSXiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S943014AbYCSXib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S942775AbYCSXiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 19:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939626AbYCSWIO
+	id S943014AbYCSXib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 19:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939666AbYCSWIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 18:08:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53437 "EHLO mx1.redhat.com"
+	Wed, 19 Mar 2008 18:08:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53458 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761777AbYCSWIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 18:08:12 -0400
-Date: Wed, 19 Mar 2008 18:08:33 -0500 (EST)
-Message-Id: <20080319.180833.28392718.k-ueda@ct.jp.nec.com>
+	id S938927AbYCSWIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 18:08:41 -0400
+Date: Wed, 19 Mar 2008 18:09:00 -0500 (EST)
+Message-Id: <20080319.180900.99206705.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, michaelc@cs.wisc.edu, hare@suse.de, agk@redhat.com,
        linux-kernel@vger.kernel.org
 Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
        k-ueda@ct.jp.nec.com
-Subject: [RFC PATCH 02/13] block: add request submission interface
+Subject: [RFC PATCH 03/13] block: lld busy status exporting interface
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -26,105 +26,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a generic request submission interface for request
-stacking drivers so that request-based dm can use it to submit
-clones to underlying devices.
+This patch adds an interface to check lld's busy status
+from the block layer.
+(scsi patch is also included just for example.)
+This resolves a performance problem on request stacking devices below.
 
-The request may have been made based on limitations of other queues.
-So generic limitation checks based on the submitting queue are needed.
+
+Some drivers like scsi mid layer stop dispatching request when
+they detect busy state on its low-level device like host/bus/device.
+It allows other requests to stay in the I/O scheduler's queue
+for a chance of merging.
+
+Request stacking drivers like request-based dm should follow
+the same logic.
+However, there is no generic interface for the stacked device
+to check if the underlying device(s) are busy.
+If the request stacking driver dispatches and submits requests to
+the busy underlying device, the requests will stay in
+the underlying device's queue without a chance for merging.
+This causes performance problem on burst I/O load.
+
+With this patch, busy state of the underlying device is exported
+via the queue flag.  So the request stacking driver can check it
+and stop dispatching requests if busy.
+The underlying device driver must set/clear the flag appropriately.
+
+For example, scsi sets the busy flag when low-level devices are not
+ready or the low-level driver rejects dispatching command.
+And scsi clears the busy flag when a command has been dispatched
+successfully, since there may be more spaces to dispatch (the exact
+limit check will be done in the next loop for the next request.)
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- block/blk-core.c       |   65 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/blkdev.h |    1 
- 2 files changed, 66 insertions(+)
+ drivers/scsi/scsi_lib.c |   11 ++++++++++-
+ include/linux/blkdev.h  |    4 ++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
-Index: 2.6.25-rc5/block/blk-core.c
-===================================================================
---- 2.6.25-rc5.orig/block/blk-core.c
-+++ 2.6.25-rc5/block/blk-core.c
-@@ -1507,6 +1507,71 @@ void submit_bio(int rw, struct bio *bio)
- }
- EXPORT_SYMBOL(submit_bio);
- 
-+/*
-+ * Check a request for queue limits
-+ */
-+static int check_queue_limit(struct request_queue *q, struct request *rq)
-+{
-+	if (rq->nr_sectors > q->max_sectors ||
-+	    rq->data_len >> 9 > q->max_hw_sectors) {
-+		printk(KERN_ERR "%s: over max size limit.\n", __func__);
-+		return 1;
-+	}
-+
-+	/*
-+	 * queue's settings related to segment counting like q->bounce_pfn
-+	 * may differ from that of other stacking queues.
-+	 * Recalculate it to check the request correctly on this queue's
-+	 * limitation.
-+	 */
-+	blk_recalc_rq_segments(rq);
-+	if (rq->nr_phys_segments > q->max_phys_segments ||
-+	    rq->nr_hw_segments > q->max_hw_segments) {
-+		printk(KERN_ERR "%s: over max segments limit.\n", __func__);
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * blk_submit_request - Helper for stacking drivers to submit the request
-+ * @q:  the queue to submit the request
-+ * @rq: the request being queued
-+ **/
-+void blk_submit_request(struct request_queue *q, struct request *rq)
-+{
-+	unsigned long flags;
-+
-+	if (check_queue_limit(q, rq))
-+		goto end_io;
-+
-+#ifdef CONFIG_FAIL_MAKE_REQUEST
-+	if (rq->rq_disk && rq->rq_disk->flags & GENHD_FL_FAIL &&
-+	    should_fail(&fail_make_request, blk_rq_bytes(rq)))
-+		goto end_io;
-+#endif
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
-+
-+	/*
-+	 * Submitting request must be dequeued before calling this function
-+	 * because it will be linked to another request_queue
-+	 */
-+	BUG_ON(blk_queued_rq(rq));
-+
-+	drive_stat_acct(rq, 1);
-+	__elv_add_request(q, rq, ELEVATOR_INSERT_BACK, 0);
-+
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+
-+	return;
-+
-+end_io:
-+	blk_end_request(rq, -EIO, blk_rq_bytes(rq));
-+}
-+EXPORT_SYMBOL_GPL(blk_submit_request);
-+
- /**
-  * __end_that_request_first - end I/O on a request
-  * @req:      the request being processed
 Index: 2.6.25-rc5/include/linux/blkdev.h
 ===================================================================
 --- 2.6.25-rc5.orig/include/linux/blkdev.h
 +++ 2.6.25-rc5/include/linux/blkdev.h
-@@ -582,6 +582,7 @@ extern void blk_end_sync_rq(struct reque
- extern struct request *blk_get_request(struct request_queue *, int, gfp_t);
- extern void blk_insert_request(struct request_queue *, struct request *, int, void *);
- extern void blk_requeue_request(struct request_queue *, struct request *);
-+extern void blk_submit_request(struct request_queue *q, struct request *rq);
- extern void blk_plug_device(struct request_queue *);
- extern int blk_remove_plug(struct request_queue *);
- extern void blk_recount_segments(struct request_queue *, struct bio *);
+@@ -405,6 +405,7 @@ struct request_queue
+ #define QUEUE_FLAG_PLUGGED	7	/* queue is plugged */
+ #define QUEUE_FLAG_ELVSWITCH	8	/* don't use elevator, just do FIFO */
+ #define QUEUE_FLAG_BIDI		9	/* queue supports bidi requests */
++#define QUEUE_FLAG_BUSY		10	/* device/host under queue is busy */
+ 
+ enum {
+ 	/*
+@@ -450,6 +451,9 @@ enum {
+ #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
+ #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
+ #define blk_queue_flushing(q)	((q)->ordseq)
++#define blk_lld_busy(q)		test_bit(QUEUE_FLAG_BUSY, &(q)->queue_flags)
++#define blk_set_lld_busy(q)	set_bit(QUEUE_FLAG_BUSY, &(q)->queue_flags)
++#define blk_clear_lld_busy(q)	clear_bit(QUEUE_FLAG_BUSY, &(q)->queue_flags)
+ 
+ #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
+ #define blk_pc_request(rq)	((rq)->cmd_type == REQ_TYPE_BLOCK_PC)
+Index: 2.6.25-rc5/drivers/scsi/scsi_lib.c
+===================================================================
+--- 2.6.25-rc5.orig/drivers/scsi/scsi_lib.c
++++ 2.6.25-rc5/drivers/scsi/scsi_lib.c
+@@ -1448,9 +1448,14 @@ static void scsi_request_fn(struct reque
+ 		 * accept it.
+ 		 */
+ 		req = elv_next_request(q);
+-		if (!req || !scsi_dev_queue_ready(q, sdev))
++		if (!req)
+ 			break;
+ 
++		if (!scsi_dev_queue_ready(q, sdev)) {
++			blk_set_lld_busy(q);
++			break;
++		}
++
+ 		if (unlikely(!scsi_device_online(sdev))) {
+ 			sdev_printk(KERN_ERR, sdev,
+ 				    "rejecting I/O to offline device\n");
+@@ -1506,6 +1511,8 @@ static void scsi_request_fn(struct reque
+ 		rtn = scsi_dispatch_cmd(cmd);
+ 		spin_lock_irq(q->queue_lock);
+ 		if(rtn) {
++			blk_set_lld_busy(q);
++
+ 			/* we're refusing the command; because of
+ 			 * the way locks get dropped, we need to 
+ 			 * check here if plugging is required */
+@@ -1514,6 +1521,7 @@ static void scsi_request_fn(struct reque
+ 
+ 			break;
+ 		}
++		blk_clear_lld_busy(q);
+ 	}
+ 
+ 	goto out;
+@@ -1530,6 +1538,7 @@ static void scsi_request_fn(struct reque
+ 	 * later time.
+ 	 */
+ 	spin_lock_irq(q->queue_lock);
++	blk_set_lld_busy(q);
+ 	blk_requeue_request(q, req);
+ 	sdev->device_busy--;
+ 	if(sdev->device_busy == 0)
