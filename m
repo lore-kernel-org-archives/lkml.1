@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162361AbYCSWrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966884AbYCSWsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162361AbYCSWrn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 18:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936854AbYCSVRB
+	id S966884AbYCSWsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 18:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936890AbYCSVR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 17:17:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35856 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765302AbYCSVQ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 17:16:58 -0400
-Date: Wed, 19 Mar 2008 14:16:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Benjamin Thery" <ben.thery@gmail.com>
-Cc: tilman@imap.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davem@davemloft.net, pekkas@netcore.fi, yoshfuji@linux-ipv6.org,
-       dlezcano@fr.ibm.com, xemul@openvz.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail
- command as non-root
-Message-Id: <20080319141608.ede86a86.akpm@linux-foundation.org>
-In-Reply-To: <939d53060803191052o2f43b75cu426d51f9f24e2a46@mail.gmail.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D98510.60801@imap.cc>
-	<939d53060803191052o2f43b75cu426d51f9f24e2a46@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Mar 2008 17:17:28 -0400
+Received: from mail.uport.ru ([212.220.127.245]:39528 "EHLO u-start.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936882AbYCSVR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 17:17:27 -0400
+X-Greylist: delayed 3604 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 17:17:26 EDT
+Message-ID: <47E09F53.5020201@permonline.ru>
+Date: Wed, 19 Mar 2008 10:06:27 +0500
+From: "Artem S. Tashkinov" <birdie@permonline.ru>
+User-Agent: Thunderbird 3.0a1pre (X11/2008031803)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: GIT commit description flag(s)
+References: <47DC4104.1070109@permonline.ru> <alpine.LNX.1.00.0803181757020.8851@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.00.0803181757020.8851@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008 18:52:41 +0100
-"Benjamin Thery" <ben.thery@gmail.com> wrote:
+I quite agree with you that the description is already there, but such 
+flags could help easily review or grep commits in order to identify your 
+areas of interest.
 
-> Tilman,
-> 
-> I've finally managed to reproduce your problem with Postfix on one of
-> my victims.
-> 
-> Earlier, in the afternoon, I wrote a piece of code that triggered a
-> similar behaviour,
-> but I wasn't sure it was exactly the problem you found. So, I've
-> rebuilt Postfix, added
-> some traces and, voila, same issue as yours.
-> (The version of Postfix originally  installed on my machine seems to
-> have IPv6 disabled)
-> 
-> I bisected the problem to the commit "[NET]: Make /proc/net a symlink
-> on /proc/self/net (v3)"
-> 
-> Here is what happens:
-> 
-> - Recently /proc/net has been moved to /proc/self/net, and
-> /proc/self/net is a symlink
->   on this directory.
-> - Before that everybody could access /proc/net and read /proc/net/if_inet6:
->    dr-xr-xr-x   6 root      root              0 2008-03-05 15:23 /proc/net
-> 
-> - Now, /proc/self/net has a more restrictive access mode and ony the
-> owner of the
->   process can enter the directory:
->   dr-xr--r-- 5 toto toto 0 Mar 19 17:30 net
-> 
->   This is not a problem in most of the cases, but it becomes annoying
-> when a process
->   decides to change its UID or GID. It may loose access to its own
-> /proc/self/net entries.
-> 
-> - What happens in the Postfix case is the 'sendmail' process executes the
->    '/usr/sbin/postdrop' binary to enqueue the message, but unfortunately
->    '/usr/bin/postdrop' has the setgid bit set:
->    -rwxr-sr-x 1 root postdrop 479475 Mar 19 17:14 /usr/sbin/postdrop
-> 
->    The process egid changes and this seems to be problematic to access
->    /proc/self/net/if_inet6. :)
-> 
-> I've attached a tiny test program that can be used to reproduce the problem
-> without Postfix.
-> - Either execute it as root and give it an unprivileged uid in argument
->   ./test-proc_net_if_inet6 1001
-> 
-> - Or change its ownership and access mode to: -rwxr-sr-x root postdrop
->   and execute it as a lambda user.
->    chown root:postdrop test-proc_net_if_inet6; chmod 2755 test-proc_net_if_inet6
->    ./test-proc_net_if_inet6
-> 
-> I've found the cause but not the fix. :)
-> (Adding Pavel in cc:)
-> 
+Even your example has ambiguity: "Wire up new timerfd syscalls" - It's 
+not easy to understand whether this particular commit is a bugfix, or it 
+speeds up things, or the old code which has been cleaned up, etc.
 
-Thanks for that - most useful.
-
-Although this is advertised as a 2.6.25-rc5-mm1 problem, I assume the
-regression is also in mainline? 2.6.25-rc6?
-
+Jan Engelhardt wrote:
+>
+> On Mar 16 2008 02:35, Artem S. Tashkinov wrote:
+>> It would be nice if [kernel] git commits had a flag [a char] (or a
+>> combination of) describing their main purpose which could be the
+>> following:
+>>
+>> bug Fix [F]
+>> Speed up/Performance [S]
+>> Revert [R]
+>> New functionality [N]
+>
+> Usually you already give the type implicitly in the commit:
+>
+> dfd347f... HID: fix comment in hid_input_report()
+> fa331ff... [S390] sclp_vt220: speed up console output for interactive work
+> d9452e9... [NETPOLL]: Revert two bogus cleanups that broke netconsole.
+> 8727e28... m68k{,nommu}: Wire up new timerfd syscalls
+> b863ceb... [NET]: Add macvlan driver
+>
+> So all is well.
+>
