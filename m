@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938639AbYCSVrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938377AbYCSVos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938639AbYCSVrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 17:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932066AbYCSUSc
+	id S938377AbYCSVos (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 17:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYCSUNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 16:18:32 -0400
-Received: from mail.tmr.com ([64.65.253.246]:43194 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766009AbYCSUSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 16:18:30 -0400
-Message-ID: <47E17673.4040302@tmr.com>
-Date: Wed, 19 Mar 2008 16:24:19 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
+	Wed, 19 Mar 2008 16:13:30 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:55052 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761082AbYCSUN3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 16:13:29 -0400
+Date: Wed, 19 Mar 2008 13:11:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: axboe@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH][RESEND][v3] Modify loop device to be able to manage partitions
+Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][v4]  Modify loop device to be able to manage partitions
  of the disk image
+Message-Id: <20080319131106.61d7fa0c.randy.dunlap@oracle.com>
+In-Reply-To: <12059301672966-git-send-email-Laurent.Vivier@bull.net>
 References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
-In-Reply-To: <12058427603971-git-send-email-Laurent.Vivier@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<12059301672966-git-send-email-Laurent.Vivier@bull.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> v3 is an updated version of v2, replacing a "%d" by a "%lu".
-> 
+On Wed, 19 Mar 2008 13:36:07 +0100 Laurent Vivier wrote:
+
 > This patch allows to use loop device with partitionned disk image.
 > 
-How does this compare in overhead to using nbd?
-
 > Original behavior of loop is not modified.
 > 
 > A new parameter is introduced to define how many partition we want to be
-> able to manage per loop device. This parameter is "loop_max_part".
-> 
+> able to manage per loop device. This parameter is "max_part".
+
+What happened to the update to Documentation/kernel-parameters.txt
+that was in v3?
+
+
 > For instance, to manage 63 partitions / loop device, we will do:
-> # modprobe loop loop_max_part=63
-> # ls -l /dev/loop?
+> # modprobe loop max_part=63
+> # ls -l /dev/loop?*
 > brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
 > brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
 > brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
@@ -53,10 +62,6 @@ How does this compare in overhead to using nbd?
 > And to attach a raw partitionned disk image, the original losetup is used:
 > 
 > # losetup -f etch.img
-> EXT3 FS on loop0p1, internal journal
-> EXT3-fs: mounted filesystem with ordered data mode.
-> loop: module loaded
->  loop0: p1 p2 < p5 >
 > # ls -l /dev/loop?*
 > brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
 > brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
@@ -70,9 +75,6 @@ How does this compare in overhead to using nbd?
 > brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
 > brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
 > # mount /dev/loop0p1 /mnt
-> kjournald starting.  Commit interval 5 seconds
-> EXT3 FS on loop0p1, internal journal
-> EXT3-fs: mounted filesystem with ordered data mode.
 > # ls /mnt
 > bench  cdrom  home        lib         mnt   root     srv  usr
 > bin    dev    initrd      lost+found  opt   sbin     sys  var
@@ -87,34 +89,18 @@ How does this compare in overhead to using nbd?
 > 
 > Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 > ---
->  Documentation/kernel-parameters.txt |    4 +++
->  drivers/block/loop.c                |   39 ++++++++++++++++++++++++++++++----
->  2 files changed, 38 insertions(+), 5 deletions(-)
+>  drivers/block/loop.c |   26 +++++++++++++++++++++-----
+>  1 files changed, 21 insertions(+), 5 deletions(-)
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 9a5b665..7f2fd52 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
->  			be mounted
->  			Format: <1-256>
->  
-> +	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
-> +			Should be greater than 0, the maximum value depends
-> +			on max_loop.
-> +
->  	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
->  			should make use of.  maxcpus=n : n >= 0 limits the
->  			kernel to using 'n' processors.  n=0 is a special case,
 > diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-> index 91ebb00..16b2aa6 100644
+> index 91ebb00..f7f1635 100644
 > --- a/drivers/block/loop.c
 > +++ b/drivers/block/loop.c
 > @@ -82,6 +82,9 @@
 >  static LIST_HEAD(loop_devices);
 >  static DEFINE_MUTEX(loop_devices_mutex);
 >  
-> +static int loop_max_part;
+> +static int max_part;
 > +static int part_shift;
 > +
 >  /*
@@ -124,7 +110,7 @@ How does this compare in overhead to using nbd?
 >  		goto out_putf;
 >  
 >  	fput(old_file);
-> +	if (loop_max_part > 0)
+> +	if (max_part > 0)
 > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
 >  	return 0;
 >  
@@ -133,21 +119,30 @@ How does this compare in overhead to using nbd?
 >  	}
 >  	lo->lo_state = Lo_bound;
 >  	wake_up_process(lo->lo_thread);
-> +	if (loop_max_part > 0)
+> +	if (max_part > 0)
 > +		ioctl_by_bdev(bdev, BLKRRPART, 0);
 >  	return 0;
 >  
 >  out_clr:
-> @@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
+> @@ -919,6 +926,8 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+>  	fput(filp);
+>  	/* This is safe: open() is still holding a reference. */
+>  	module_put(THIS_MODULE);
+> +	if (max_part > 0)
+> +		ioctl_by_bdev(bdev, BLKRRPART, 0);
+>  	return 0;
+>  }
+>  
+> @@ -1360,6 +1369,8 @@ static struct block_device_operations lo_fops = {
 >  static int max_loop;
 >  module_param(max_loop, int, 0);
 >  MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
-> +module_param(loop_max_part, int, 0);
-> +MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
+> +module_param(max_part, int, 0);
+> +MODULE_PARM_DESC(max_part, "Maximum number of partitions per loop device");
 >  MODULE_LICENSE("GPL");
 >  MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
 >  
-> @@ -1412,7 +1421,7 @@ static struct loop_device *loop_alloc(int i)
+> @@ -1412,7 +1423,7 @@ static struct loop_device *loop_alloc(int i)
 >  	if (!lo->lo_queue)
 >  		goto out_free_dev;
 >  
@@ -156,7 +151,7 @@ How does this compare in overhead to using nbd?
 >  	if (!disk)
 >  		goto out_free_queue;
 >  
-> @@ -1422,7 +1431,7 @@ static struct loop_device *loop_alloc(int i)
+> @@ -1422,7 +1433,7 @@ static struct loop_device *loop_alloc(int i)
 >  	init_waitqueue_head(&lo->lo_event);
 >  	spin_lock_init(&lo->lo_lock);
 >  	disk->major		= LOOP_MAJOR;
@@ -165,21 +160,21 @@ How does this compare in overhead to using nbd?
 >  	disk->fops		= &lo_fops;
 >  	disk->private_data	= lo;
 >  	disk->queue		= lo->lo_queue;
-> @@ -1502,7 +1511,12 @@ static int __init loop_init(void)
+> @@ -1502,7 +1513,12 @@ static int __init loop_init(void)
 >  	 *     themselves and have kernel automatically instantiate actual
 >  	 *     device on-demand.
 >  	 */
 > -	if (max_loop > 1UL << MINORBITS)
 > +
 > +	part_shift = 0;
-> +	if (loop_max_part > 0)
-> +		part_shift = fls(loop_max_part);
+> +	if (max_part > 0)
+> +		part_shift = fls(max_part);
 > +
 > +	if (max_loop > 1UL << (MINORBITS - part_shift))
 >  		return -EINVAL;
 >  
 >  	if (max_loop) {
-> @@ -1510,7 +1524,7 @@ static int __init loop_init(void)
+> @@ -1510,7 +1526,7 @@ static int __init loop_init(void)
 >  		range = max_loop;
 >  	} else {
 >  		nr = 8;
@@ -188,7 +183,7 @@ How does this compare in overhead to using nbd?
 >  	}
 >  
 >  	if (register_blkdev(LOOP_MAJOR, "loop"))
-> @@ -1549,7 +1563,7 @@ static void __exit loop_exit(void)
+> @@ -1549,7 +1565,7 @@ static void __exit loop_exit(void)
 >  	unsigned long range;
 >  	struct loop_device *lo, *next;
 >  
@@ -197,29 +192,8 @@ How does this compare in overhead to using nbd?
 >  
 >  	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
 >  		loop_del_one(lo);
-> @@ -1569,4 +1583,19 @@ static int __init max_loop_setup(char *str)
->  }
->  
->  __setup("max_loop=", max_loop_setup);
-> +
-> +static int __init max_part_setup(char *str)
-> +{
-> +	loop_max_part = simple_strtol(str, NULL, 0);
-> +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
-> +		/* we must keep at least one bit for loop device number */
-> +		printk(KERN_ERR
-> +			"loop: loop_max_part cannot be greater than %lu\n",
-> +			1UL << (MINORBITS - 1));
-> +		return 0;
-> +	}
-> +	return 1;
-> +}
-> +
-> +__setup("loop_max_part=", max_part_setup);
->  #endif
+> -- 
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+---
+~Randy
