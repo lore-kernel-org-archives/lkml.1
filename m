@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbYCTQQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYCTQRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756868AbYCTQQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 12:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYCTQQT
+	id S1757205AbYCTQRq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 12:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYCTQRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 12:16:19 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:34468 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752571AbYCTQQT (ORCPT
+	Thu, 20 Mar 2008 12:17:37 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:47564 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754068AbYCTQRg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 12:16:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lmAVn0mZe/703cb1zP3GX51YvuRnUKqWYIsaTgBhbvPnm4m4Tzd3TZarBXidRZmDyZ8IxByDUfuz+cAxdrgZ4aeSrjcd1VqMRPPpfNqHYtTwLS0zs6AjMQPrROcXYrkVImgBy57/y1tzdWv++wm8baONT7jpc2rqZP30+2v7Vyc=
-Subject: Re: many items in Documentation/feature-removal-schedule.txt have
-	expired, please update
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: rae l <crquan@gmail.com>, Pavel Machek <pavel@suse.cz>,
-       David Miller <davem@davemloft.net>, Dominik Brodowski <linux@brodo.de>,
-       Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       Nick Piggin <npiggin@suse.de>, Len Brown <len.brown@intel.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-In-Reply-To: <20080320132543.GA11149@lst.de>
-References: <91b13c310803200622k6a302851nc97774615f2ef3ee@mail.gmail.com>
-	 <20080320132543.GA11149@lst.de>
+	Thu, 20 Mar 2008 12:17:36 -0400
+X-SourceIP: 80.56.237.116
+Subject: RE: [2.6.25-rc5-mm1][regression] ia64: hackbench doesn't finish>12
+	hour
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "Yu, Fenghua" <fenghua.yu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECDDA233@orsmsx424.amr.corp.intel.com>
+References: <20080318084314.FF0F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <DDF46CB71CB9D647A983FECACF09A886A33019@orsmsx424.amr.corp.intel.com>
+	 <20080318094527.FF12.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <DDF46CB71CB9D647A983FECACF09A886A8A6B5@orsmsx424.amr.corp.intel.com>
+	 <1205969039.6437.44.camel@lappy>
+	 <1FE6DD409037234FAB833C420AA843ECDDA233@orsmsx424.amr.corp.intel.com>
 Content-Type: text/plain
-Date: Thu, 20 Mar 2008 09:15:52 -0700
-Message-Id: <1206029752.17059.1.camel@brick>
+Date: Thu, 20 Mar 2008 17:16:42 +0100
+Message-Id: <1206029802.8514.406.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.21.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-20 at 14:25 +0100, Christoph Hellwig wrote:
-> On Thu, Mar 20, 2008 at 09:22:29PM +0800, rae l wrote:
-> > What:	old NCR53C9x driver
-> > When:	October 2007
-> > Why:	Replaced by the much better esp_scsi driver.  Actual low-level
-> > 	driver can be ported over almost trivially.
-> > Who:	David Miller <davem@davemloft.net>
-> > 	Christoph Hellwig <hch@lst.de>
+On Thu, 2008-03-20 at 09:04 -0700, Luck, Tony wrote:
+> > Which makes me wonder, why did you ever use a semaphore here? Looking at
+> > the code its a straight forward mutex. And when you would have used a
+> > mutex lockdep would have warned about this.
 > 
-> This one is long gone, probably just needs a doc patch.
-> 
+> The functionality that we are trying to add is to allow up to N
+> simultaneous processors to execute the critical region.  On current
+> processors/platforms N=1 so a spinlock or mutex would be fine, but
+> there will be platforms for which N is a small integer greater than
+> one.  Semaphore initialized to N looked to be the ideal primitive
+> for this (until Motohiro-san ran the test case that showed the path
+> where we call this code with a spinlock held).
 
-I sent a patch to James Bottomley after the removal a few weeks ago, he
-said he wanted the message to stay for a release in case someone goes
-looking for the driver.
+Right, no alternative there.
 
-Harvey
+> Next question is whether it is reasonable to get to this code
+> while holding a spinlock.  Isn't this a problem for architectures
+> that need to use cross-processor interrupts to do a global TLB
+> shootdown?
 
+Yeah, semaphores can't be used from hardirq contexts for much the same
+reasons. But its all ia64 code, right? So I'm not directly seeing how
+other archs are affected here.
 
