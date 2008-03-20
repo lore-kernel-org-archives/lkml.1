@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYCTQXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbYCTQ1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbYCTQXd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 12:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYCTQXY
+	id S1757249AbYCTQ1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 12:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYCTQ11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 12:23:24 -0400
-Received: from homer.mvista.com ([63.81.120.158]:13317 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752375AbYCTQXY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 12:23:24 -0400
-Subject: Re: preempt_disable() question
-From: Daniel Walker <dwalker@mvista.com>
-To: Rick Brown <rick.brown.3@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <7783925d0803181914n16b0a221l179cc350bc2f3f89@mail.gmail.com>
-References: <7783925d0803181914n16b0a221l179cc350bc2f3f89@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 20 Mar 2008 09:23:19 -0700
-Message-Id: <1206030199.10894.201.camel@localhost.localdomain>
+	Thu, 20 Mar 2008 12:27:27 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4176 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753148AbYCTQ10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 12:27:26 -0400
+Date: Thu, 20 Mar 2008 17:27:18 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
+       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] ptrace: it is fun to strace /sbin/init
+Message-ID: <20080320162718.GA4397@ucw.cz>
+References: <20080316155455.GA20848@tv-sign.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080316155455.GA20848@tv-sign.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-03-19 at 07:44 +0530, Rick Brown wrote:
-> Hi,
-> 
-> I've asked this on kernel newbies before, but not enough responses.
-> 
-> Does preempt_disable() disable preemption on all the processors, or
-> just the local processor?
+> Ptracing of /sbin/init is not allowed. Of course, this is very dangerous, but
+> may be useful. Introduce the kernel boot parameter to allow this.
+...
+> @@ -803,6 +803,8 @@ and is between 256 and 4096 characters. 
+>  			Run specified binary instead of /sbin/init as init
+>  			process.
+>  
+> +	init_ptrace	[KNL] Allows to ptrace init. Very dangerous. Don't use.
+> +
 
-Just the local processor.
+I don't know what ptracing init is good for, and I believe people
+wanting to do this kind of special stuff can patch their own kernel...
 
-Daniel
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
