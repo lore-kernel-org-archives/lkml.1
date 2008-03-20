@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbYCTTXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbYCTTcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbYCTTXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 15:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYCTTXf
+	id S1756673AbYCTTcu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 15:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbYCTTcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 15:23:35 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:48104 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754465AbYCTTXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 15:23:34 -0400
-Date: Thu, 20 Mar 2008 12:22:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [1/2] vmalloc: Show vmalloced areas via /proc/vmallocinfo
-In-Reply-To: <20080319210436.191bb8fe@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0803201141250.10592@schroedinger.engr.sgi.com>
-References: <20080318222701.788442216@sgi.com> <20080318222827.291587297@sgi.com>
- <20080319210436.191bb8fe@laptopd505.fenrus.org>
+	Thu, 20 Mar 2008 15:32:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36504 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754616AbYCTTci (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 15:32:38 -0400
+Date: Thu, 20 Mar 2008 15:32:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
+In-Reply-To: <47E2A63B.4020003@ct.jp.nec.com>
+Message-ID: <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com>
+References: <47E2A63B.4020003@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008, Arjan van de Ven wrote:
 
-> > +	proc_create("vmallocinfo",S_IWUSR|S_IRUGO, NULL,
-> why should non-root be able to read this? sounds like a security issue (info leak) to me...
+Hi Hiroshi,
 
-Well I copied from the slabinfo logic (leaking info for slabs is okay?).
+Thanks for looking into it. I'll take a deeper look at it later, but
+first I have a few nitpicks with the patch.
 
-Lets restrict it to root then:
+On Thu, 20 Mar 2008, Hiroshi Shimamoto wrote:
+>
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  mm/slab.c |   18 +++++++++---------
+>  1 files changed, 9 insertions(+), 9 deletions(-)
+>
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 4bf6ca8..7beb378 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -138,8 +138,8 @@
+>   *
+>   * (On PREEMPT_RT, these are NOPs, but we have to drop/get the irq locks.)
+>   */
+> -# define slab_irq_disable_nort()	local_irq_disable()
+> -# define slab_irq_enable_nort()		local_irq_enable()
+> +# define slab_irq_disable_nort(cpu)	slab_irq_disable(cpu)
+> +# define slab_irq_enable_nort(cpu)	slab_irq_enable(cpu)
+
+This is the !PREEMPT_RT version. It should stay as is (with the
+exception of ignoring the "cpu" variable. [ (void)cpu; ? ]
+
+#define slab_irq_disable_nort(cpu) \
+	do { \
+		(void)cpu;  \
+		local_irq_disable(); \
+	} while(0)
 
 
+>  # define slab_irq_disable_rt(flags)	do { (void)(flags); } while (0)
+>  # define slab_irq_enable_rt(flags)	do { (void)(flags); } while (0)
+>  # define slab_spin_lock_irq(lock, cpu) \
+> @@ -160,8 +160,8 @@ DEFINE_PER_CPU_LOCKED(int, slab_irq_locks) = { 0, };
+>  	do { slab_irq_enable(cpu); (void) (flags); } while (0)
+>  # define slab_irq_disable_rt(cpu)	slab_irq_disable(cpu)
+>  # define slab_irq_enable_rt(cpu)	slab_irq_enable(cpu)
+> -# define slab_irq_disable_nort()	do { } while (0)
+> -# define slab_irq_enable_nort()		do { } while (0)
+> +# define slab_irq_disable_nort(cpu)	do { } while (0)
+> +# define slab_irq_enable_nort(cpu)	do { } while (0)
 
-Subject: vmallocinfo: Only allow root to read /proc/vmallocinfo
+And these are the PREEMPT_RT version. So basically, this patch is a nop
+for PREEMPT_RT. I doubt it will solve your bug ;-)
 
-Change permissions for /proc/vmallocinfo to only allow read
-for root.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+-- Steve
 
----
- fs/proc/proc_misc.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-Index: linux-2.6.25-rc5-mm1/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.25-rc5-mm1.orig/fs/proc/proc_misc.c	2008-03-20 12:14:20.215358835 -0700
-+++ linux-2.6.25-rc5-mm1/fs/proc/proc_misc.c	2008-03-20 12:23:01.920887750 -0700
-@@ -1002,8 +1002,7 @@ void __init proc_misc_init(void)
- 	proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
- #endif
- #endif
--	proc_create("vmallocinfo",S_IWUSR|S_IRUGO, NULL,
--						&proc_vmalloc_operations);
-+	proc_create("vmallocinfo",S_IRUSR, NULL, &proc_vmalloc_operations);
- 	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
- 	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
- 	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
