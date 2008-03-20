@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbYCTWIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbYCTWKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759176AbYCTWIX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 18:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbYCTWIG
+	id S1758922AbYCTWKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 18:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbYCTWKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 18:08:06 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2481 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757594AbYCTWIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 18:08:04 -0400
-Date: Thu, 20 Mar 2008 18:03:48 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: David Miller <davem@davemloft.net>, sam@ravnborg.org, dsd@gentoo.org,
+	Thu, 20 Mar 2008 18:10:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50520
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753774AbYCTWKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 18:10:38 -0400
+Date: Thu, 20 Mar 2008 15:10:54 -0700 (PDT)
+Message-Id: <20080320.151054.41532763.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: johannes@sipsolutions.net, sam@ravnborg.org, dsd@gentoo.org,
        linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
        netdev@vger.kernel.org
 Subject: Re: [PATCH/RFC v2] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig
-	symbol
-Message-ID: <20080320220348.GC1330@tuxdriver.com>
-References: <1206023695.16475.137.camel@johannes.berg> <20080320181310.GA17884@uranus.ravnborg.org> <1206038373.16475.150.camel@johannes.berg> <20080320.141307.173590705.davem@davemloft.net> <1206048106.16475.161.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206048106.16475.161.camel@johannes.berg>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ symbol
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080320220348.GC1330@tuxdriver.com>
+References: <20080320.141307.173590705.davem@davemloft.net>
+	<1206048106.16475.161.camel@johannes.berg>
+	<20080320220348.GC1330@tuxdriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 10:21:46PM +0100, Johannes Berg wrote:
-> 
-> > I think you're semantically testing the wrong thing.
-> > 
-> > It's not if unaligned accesses are supported, it's if they are
-> > efficient enough or not.
-> > 
-> > For example, sparc64 fully handles unaligned accesses but taking the
-> > trap to fix it up is slow.  So sparc64 "can" handle unaligned
-> > accesses, but whether we want to set this symbol or not is another
-> > matter.
-> 
-> Yeah, good point. Should I rename it to HAVE_EFFICIENT_UNALIGNED_ACCESS
-> or similar? Or have it defined as some sort of number so you can make
-> actually make tradeoffs? Like Dave Woodhouse suggested at some point to
-> have get_unaligned() take an argument that indicates the probability...
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Thu, 20 Mar 2008 18:03:48 -0400
 
-Ugh...that sounds like premature optimization to me...
+> While I think Dave has a point, I don't think you should labor the word
+> choice too much.  Try to document it as clearly as possible and hope
+> for the best -- I hear that the arch maintainers are top notch! :-)
 
-While I think Dave has a point, I don't think you should labor the word
-choice too much.  Try to document it as clearly as possible and hope
-for the best -- I hear that the arch maintainers are top notch! :-)
+I think the name of the macro is very important.
 
-John
-
--- 
-John W. Linville
-linville@tuxdriver.com
+Non-arch people will see this thing and wonder what in the
+world it means.  You can document something with kerneldoc
+foo as much as you like, still the initial impression the
+reader gets from the name is of utmost importance.
