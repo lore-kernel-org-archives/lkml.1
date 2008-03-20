@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYCTHxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYCTH54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYCTHxh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 03:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYCTHx1
+	id S1755370AbYCTH54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 03:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYCTH5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 03:53:27 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:30050 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752924AbYCTHx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 03:53:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aor31AowhHiAS6mc94UxSc3b+Eeg4f6gpGodi4dqT2tjZUSL0vzcmeNsjSLiICNlHkcvQp3gG1togy+6Y7GfjvjVnyG1AEAKuz7mza/KR6HR3uHENRsh1bPw+hj1BvQJolOT6HB1obGNP2Ela9nUozyhbveKwtJvXcPLLHmw5uk=
-Message-ID: <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com>
-Date: Thu, 20 Mar 2008 00:53:25 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ravikiran G Thirumalai" <kiran@scalex86.org>
-Subject: Re: [patch 4/4] x86: apic_is_clustered_box to indicate unsynched TSC's on multiboard vSMP systems
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       "Andi Kleen" <ak@suse.de>, shai@scalex86.org
-In-Reply-To: <20080320074508.GE9414@localdomain>
+	Thu, 20 Mar 2008 03:57:47 -0400
+Received: from sacred.ru ([62.205.161.221]:39586 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753525AbYCTH5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 03:57:46 -0400
+Message-ID: <47E218AF.2030402@openvz.org>
+Date: Thu, 20 Mar 2008 10:56:31 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
+To: Andre Noll <maan@systemlinux.org>, "David S. Miller" <davem@davemloft.net>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Thery <benjamin.thery@bull.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Fix permissions of /proc/net
+References: <20080319115135.GM32242@skl-net.de>
+In-Reply-To: <20080319115135.GM32242@skl-net.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080320073740.GA9414@localdomain>
-	 <20080320074508.GE9414@localdomain>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Mar 2008 10:56:27 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 12:45 AM, Ravikiran G Thirumalai
-<kiran@scalex86.org> wrote:
-> Indicate TSCs are unreliable as time sources if the platform is
->  a multi chassi ScaleMP vSMPowered machine.
->
->  Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
->
->  Index: linux.git.trees/arch/x86/kernel/apic_64.c
->  ===================================================================
->  --- linux.git.trees.orig/arch/x86/kernel/apic_64.c      2008-03-19 20:42:28.187659497 -0700
->  +++ linux.git.trees/arch/x86/kernel/apic_64.c   2008-03-19 21:24:17.705515003 -0700
->  @@ -1208,7 +1208,7 @@ __cpuinit int apic_is_clustered_box(void
->          * will be [4, 0x23] or [8, 0x27] could be thought to
->          * vsmp box still need checking...
->          */
->  -       if (!is_vsmp_box() && (boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
->  +       if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && !is_vsmp_box())
->                 return 0;
+Andre Noll wrote:
+> commit f205a545ee62e0f0f797c1e2b0bd2062d96414b3
+> Author: Andre Noll <maan@congo.fml.local>
+> Date:   Wed Mar 19 11:39:55 2008 +0100
+> 
+> From: Andre Noll <maan@systemlinux.org>
+> 
+> commit e9720ac ([NET]: Make /proc/net a symlink on /proc/self/net (v3))
+> broke ganglia and probably other applications that read /proc/net/dev.
 
-why?
+This also broke the postfix, as it was reported in bug #10286
+and described in detail by Benjamin.
 
->
->         bios_cpu_apicid = x86_bios_cpu_apicid_early_ptr;
->  @@ -1248,6 +1248,12 @@ __cpuinit int apic_is_clustered_box(void
->                         ++zeros;
->         }
->
->  +       /* ScaleMP vSMPowered boxes have one cluster per board and TSCs are
->  +        * not guaranteed to be synced between boards
->  +        */
->  +       if (is_vsmp_box() && clusters > 1)
->  +               return 1;
+> This is due to the change of permissions of /proc/net that was
+> introduced in that commit.
+> 
+> Before: dr-xr-xr-x 5 root root 0 Mar 19 11:30 /proc/net
+> After: dr-xr--r-- 5 root root 0 Mar 19 11:29 /proc/self/net
+> 
+> This patch restores the permissions to the old value which makes ganglia
+> happy again.
 
-you still call that for intel box.
+And it fixes the problem reported by Benjamin.
+Thanks, Andre!
 
-YH
+> Signed-off-by: Andre Noll <maan@systemlinux.org>
+
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
+ 
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 8a10f6f..81d7d14 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2290,7 +2290,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+>  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
+>  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
+>  #ifdef CONFIG_NET
+> -	DIR("net",        S_IRUGO|S_IXUSR, net),
+> +	DIR("net",        S_IRUGO|S_IXUGO, net),
+>  #endif
+>  	REG("environ",    S_IRUSR, environ),
+>  	INF("auxv",       S_IRUSR, pid_auxv),
+
