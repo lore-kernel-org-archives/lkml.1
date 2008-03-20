@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbYCTRBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbYCTRBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757737AbYCTRBJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 13:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757123AbYCTRA4
+	id S1757907AbYCTRBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 13:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbYCTRBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 13:00:56 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:5655 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756008AbYCTRA4 (ORCPT
+	Thu, 20 Mar 2008 13:01:44 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58224 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757188AbYCTRBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 13:00:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Rd7lngTFpDd70JO18QP7Zs028z6k3TciSuGFAQc3R585W1vFA1sCUOKEXN7jd5RrdVEpzaXKjz4sicvrOdxrcqw83gWA1iM1qQu7r4tRrGw664FfD8UnbkBuFpMP2A2NHHnLg6ukf+j5hKWpFyVMRzSti6A6PwblQFZXqEls+fM=
-Message-ID: <5b1d25eb0803201000s7b60143fl61afd832140c2ac4@mail.gmail.com>
-Date: Thu, 20 Mar 2008 10:00:54 -0700
-From: "Sreen Tallam" <tallam.sreen@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Device tree file customization for 2.6.18
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 20 Mar 2008 13:01:42 -0400
+Subject: [GIT PATCH] SCSI fixes for 2.6.25-rc6
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 20 Mar 2008 12:01:39 -0500
+Message-Id: <1206032499.3038.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+This is basically a round of small bug fixes.  The patch is available
+here:
 
-I have been using 2.6.10 until now and moving over 2.6.18.
-And I trying to build a 2.6.18 kernel for a PowerPC 405GP.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-I discovered that there is a .dts file needed by the kernel.
-I have no idea how to customize this file. Any tips, suggestions or
-Documentation that I can look at?
+The short changelog is:
 
-I am using u-boot as my board's FW.
-Also, I have a Walnut like board for which I am building the kernel.
+Akinobu Mita (1):
+      a100u2w: fix bitmap lookup routine
 
-Appreciate your help in this issue.
+Boaz Harrosh (1):
+      isd200: Allocate sense_buffer for hacked up scsi_cmnd
 
-Thanks,
-Sreen
+James Bottomley (1):
+      Fix dependency problems in SCSI drivers
+
+Kay Sievers (2):
+      fix media change events for polled devices
+      sd, sr: do not emit change event at device add
+
+Matthew Wilcox (1):
+      advansys: Fix bug in AdvLoadMicrocode
+
+Mike Christie (1):
+      fix bsg queue oops with iscsi logout
+
+Prakash, Sathya (1):
+      mpt fusion: Power Management fixes for MPT SAS PCI-E controllers
+
+Sven Schnelle (1):
+      gdth: Allocate sense_buffer to prevent NULL pointer dereference
+
+nickcheng (1):
+      arcmsr: fix iounmap error for Type B adapter
+
+
+And the diffstat:
+
+ drivers/message/fusion/mptbase.c  |  276 +++++++++++++++++++++-----------------
+ drivers/message/fusion/mptscsih.c |   11 +
+ drivers/scsi/Kconfig              |    2 
+ drivers/scsi/a100u2w.c            |    9 -
+ drivers/scsi/advansys.c           |    2 
+ drivers/scsi/arcmsr/arcmsr.h      |   14 -
+ drivers/scsi/gdth.c               |    7 
+ drivers/scsi/scsi_lib.c           |    5 
+ drivers/scsi/scsi_sysfs.c         |    2 
+ drivers/scsi/sd.c                 |    1 
+ drivers/scsi/sr.c                 |    1 
+ drivers/usb/storage/isd200.c      |    5 
+ 12 files changed, 199 insertions(+), 136 deletions(-)
+
+James
+
+
