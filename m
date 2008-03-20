@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbYCTS3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbYCTSeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbYCTS3Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 14:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYCTS3P
+	id S1758326AbYCTSeG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 14:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYCTSdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 14:29:15 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43104 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbYCTS3O (ORCPT
+	Thu, 20 Mar 2008 14:33:55 -0400
+Received: from lazybastard.de ([212.112.238.170]:51487 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754460AbYCTSdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 14:29:14 -0400
-Date: Thu, 20 Mar 2008 18:29:11 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-netdev <netdev@vger.kernel.org>
-Subject: Re: [RFC PATCH] kernel: add byteorder macros with alignment fixups
-Message-ID: <20080320182911.GQ10722@ZenIV.linux.org.uk>
-References: <1206034454.17059.4.camel@brick>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Mar 2008 14:33:54 -0400
+Date: Thu, 20 Mar 2008 18:35:16 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo van Lil <inguin@gmx.de>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Memory corruption in block2mtd.c
+Message-ID: <20080320173516.GA3977@logfs.org>
+References: <47E27680.5070306@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1206034454.17059.4.camel@brick>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47E27680.5070306@gmx.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 10:34:14AM -0700, Harvey Harrison wrote:
-> A common pattern in the kernel (especially networking) is:
+On Thu, 20 March 2008 15:36:48 +0100, Ingo van Lil wrote:
 > 
-> le32_to_cpu(get_unaligned((__le32 *)x));
+> the block2mtd driver (drivers/mtd/devices/block2mtd.c) will kfree an
+> on-stack pointer when handling an invalid argument line (e.g.
+> block2mtd=/dev/loop0,xxx).
 > 
-> Repeat for various combinations of le/be and 64/32/16 bit.  Add
-> a variant that operates on possibly unaligned pointers to
-> byteorder/generic.h
+> The kfree was added some time ago when "name" was dynamically
+> allocated.
 
-... and asm/unaligned.h has just acquired fuckloads of places including
-it indirectly.  Not Nice(tm).
+Good catch.
+
+> Signed-off-by: Ingo van Lil <inguin@gmx.de>
+Acked-by: Joern Engel <joern@lazybastard.org>
+
+> ---
+> 
+> --- linux-2.6.23.1/drivers/mtd/devices/block2mtd.c.orig	2008-03-20 
+> 15:13:49.000000000 +0100
+> +++ linux-2.6.23.1/drivers/mtd/devices/block2mtd.c	2008-03-20 
+> 15:14:09.000000000 +0100
+> @@ -408,7 +408,6 @@
+>  	if (token[1]) {
+>  		ret = parse_num(&erase_size, token[1]);
+>  		if (ret) {
+> -			kfree(name);
+>  			parse_err("illegal erase size");
+>  		}
+>  	}
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+Jörn
+
+-- 
+It is the mark of an educated mind to be able to entertain a thought
+without accepting it.
+-- Aristotle
