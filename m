@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYCTPGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYCTPJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbYCTPGx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 11:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbYCTPGn
+	id S1756887AbYCTPJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 11:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYCTPJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 11:06:43 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:54713 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755585AbYCTPGm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 11:06:42 -0400
-X-Sasl-enc: l3e6cQMCfZtj0zk1NgMnbNWlD/MpuLfPAb9ms6McSmZD 1206025600
-Date: Thu, 20 Mar 2008 12:06:37 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
-	patchset against -rc6)
-Message-ID: <20080320150637.GC5615@khazad-dum.debian.net>
-References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz>
+	Thu, 20 Mar 2008 11:09:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41975 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755835AbYCTPJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 11:09:08 -0400
+Message-ID: <47E27D08.9050809@redhat.com>
+Date: Thu, 20 Mar 2008 12:04:40 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080318225201.GA2115@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, ak@suse.de
+Subject: Re: [PATCH 45/79] [PATCH] fix apic acking of irqs
+References: <12059475744092-git-send-email-gcosta@redhat.com> <12059476883852-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send! -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat <12059477792893-git-send-email-gcosta@redhat.com> <alpine.SOC.1.00.0803201016540.12075@piorun>
+In-Reply-To: <alpine.SOC.1.00.0803201016540.12075@piorun>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008, Pavel Machek wrote:
->     ACPI: Ignore _BQC object when registering backlight device
+Maciej W. Rozycki wrote:
+> On Wed, 19 Mar 2008, Glauber de Oliveira Costa wrote:
+> 
+>> EOI is a write-only register. Using write around will have the effect
+>> of reading it, which will make all subsequent reads of the ESR register
+>> to return an error code. It was unnotices for quite a while because main sources
+>> of reading the ESR register where done prior to apic interrupt enabling.
+> 
+>  Are you sure this actually triggers for APIC chips affected by the 
+> erratum in question?  And please note that for them the effect of two 
+> consecutive writes will be much more disastrous than setting a bit in the 
+> ESR register.
+> 
+>   Maciej
 
-Thinkpads always have them all, or none at all.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I'm not _sure_, but I can't find anything in the errata list that states 
+otherwise. It would be great that anyone has such a system to test it. 
+But with the current conditions, it will break bootup code. In case it 
+is really a problem, we'd need to make a special case for that.
