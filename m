@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYCTXAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYCTXCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbYCTXAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 19:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYCTXAY
+	id S1758854AbYCTXCN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 19:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYCTXB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 19:00:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:46786 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbYCTXAX (ORCPT
+	Thu, 20 Mar 2008 19:01:58 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4512 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753069AbYCTXB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 19:00:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ui8WP6QgpYGkclCqI/x8xSDMmlyiFN76CyGnjhsxofW7zIysACyyYYVlCwDLjj7oc0molEEiLfsUBwOSWMuX93OZKzz0fOVnK9x1m6bpnnYWOQie55DDhzUjca1Lf9RoQZyPig4KNOHkClIR2XKNyKtYOoPOUQpGv6JT/M2sj7c=
-Message-ID: <dd18b0c30803201600r1322ddc2gc6eeabacc3817664@mail.gmail.com>
-Date: Thu, 20 Mar 2008 23:00:21 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: fglrx
+	Thu, 20 Mar 2008 19:01:57 -0400
+Date: Thu, 20 Mar 2008 19:01:56 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pavel Machek <pavel@ucw.cz>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+In-Reply-To: <200803202345.25083.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803201858030.8453-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello;  bob knight
-thank you again for helping me out with fglrx, The build did worked
-this time, I received an invalid lvalue with cap_t, but was able to
-carry through with just using an old capability.h file.
-As for the change_page_attr (I dont think I would of ever gotten that)
-nice work; here is what dmesg says:
+On Thu, 20 Mar 2008, Rafael J. Wysocki wrote:
 
-[    8.823442] Symbol init_mm is marked as UNUSED, however this module
-is using it.
-[    8.823446] This symbol will go away in the future.
-[    8.823448] Please evalute if this is the right api to use, and if
-it really is, submit a report the linux kernel mailinglist together
-with submitting your code for inclusion.
-[    8.842105] [fglrx] Maximum main memory to use for locked dma
-buffers: 913 MBytes.
-[    8.842133] [fglrx] ASYNCIO init succeed!
-[    8.843985] [fglrx] PAT is enabled successfully!
-[    8.844006] [fglrx] module loaded - fglrx 8.47.3 [Feb 25 2008] on minor 0
-[   54.527129] [fglrx] Reserve Block - 0 offset =  0X7ffb000 length = 0X5000
-[   54.527135] [fglrx] Reserve Block - 1 offset =  0X0 length = 0X1000000
-[   54.527138] [fglrx] Reserve Block - 2 offset =  0X7fbb000 length = 0X40000
-[   54.785599] [fglrx] interrupt source 20008000 successfully enabled
-[   54.785599] [fglrx] enable ID = 0x00000008
-[   54.785599] [fglrx] Receive enable interrupt message with
-irqEnableMask: 20008000
-[   54.785599] [fglrx] interrupt source 10000000 successfully enabled
-[   54.785599] [fglrx] enable ID = 0x00000009
-[   54.785599] [fglrx] Receive enable interrupt message with
-irqEnableMask: 10000000
+> > > >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
+> > > >> use S5 instead of entering S4, the fan doesn't work correctly after the
+> > > >> resume.  Plain and simple.
+> > > >> 
+> > > >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
+> > > >> but I have no idea what that can be at the moment.
+> > > >
+> > > > IMO it would be worthwhile to track this down.  It's a clear indication 
+> > > > that something is wrong somewhere.
+> > > >
+> > > > Could it be connected with the way the boot kernel hands control over
+> > > > to the image kernel?  Presumably ACPI isn't prepared to deal with that
+> > > > sort of thing during a boot from S5.  It would have to be fooled into
+> > > > thinking the two kernels were one and the same.
+> > > 
+> > > It should be easy to test if it is a hand over problem, by turning off
+> > > the laptop by placing it in S5 (shutdown -h now) and then booting same
+> > > kernel again.
+> > 
+> > Feel free to help with testing.
+> > 
+> > I believe ACPI is simply getting confused by us overwriting memory
+> > with that from old image. I don't see how you can emulate it with
+> > shutdown.
+> 
+> Well, in fact ACPI has something called the NVS memory, which we're supposed
+> to restore during the resume and which we're not doing.  The problem may be
+> related to this.
 
-I looked on google but didnt find much about init_mm
-I'll paste what you gave me on the mactel site so anybody who needs
-fglrx on 2.6.25 can get it working to somewhat of an extent.
-regards;
+No, it can't be.  ACPI won't expect the NVS memory to be restored 
+following an S5-shutdown.  In fact, as far as ACPI is concerned, 
+resuming from an S5-type hibernation should not be considered a resume 
+at all but just an ordinary reboot.  All ACPI-related memory areas 
+in the boot kernel should be passed directly through to the image 
+kernel.
 
+Alan Stern
 
--- 
-Justin P. Mattock
