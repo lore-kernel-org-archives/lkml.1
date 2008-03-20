@@ -1,65 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbYCTUX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbYCTUXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758437AbYCTUX2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbYCTUVT
+	id S1758621AbYCTUXt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbYCTUVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:21:19 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:40691 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754966AbYCTUVL (ORCPT
+	Thu, 20 Mar 2008 16:21:25 -0400
+Received: from viefep31-int.chello.at ([62.179.121.49]:53413 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754499AbYCTUVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 16:21:11 -0400
-Message-Id: <20080320202122.439298000@chello.nl>
+	Thu, 20 Mar 2008 16:21:19 -0400
+Message-Id: <20080320202124.799183000@chello.nl>
 References: <20080320201042.675090000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 20 Mar 2008 21:10:52 +0100
+Date: Thu, 20 Mar 2008 21:11:05 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
        neilb@suse.de, miklos@szeredi.hu, penberg@cs.helsinki.fi,
        a.p.zijlstra@chello.nl
-Subject: [PATCH 10/30] mm: system wide ALLOC_NO_WATERMARK
-Content-Disposition: inline; filename=global-ALLOC_NO_WATERMARKS.patch
+Subject: [PATCH 23/30] netvm: skb processing
+Content-Disposition: inline; filename=netvm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The reserve is proportionally distributed over all (!highmem) zones in the
-system. So we need to allow an emergency allocation access to all zones. In
-order to do that we need to break out of any mempolicy boundaries we might
-have.
+In order to make sure emergency packets receive all memory needed to proceed
+ensure processing of emergency SKBs happens under PF_MEMALLOC.
 
-In my opinion that does not break mempolicies as those are user oriented
-and not system oriented. That is, system allocations are not guaranteed to be
-within mempolicy boundaries. For instance IRQs don't even have a mempolicy.
+Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
 
-So breaking out of mempolicy boundaries for 'rare' emergency allocations,
-which are always system allocations (as opposed to user) is ok.
+Skip taps, since those are user-space again.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/page_alloc.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ include/net/sock.h |    5 ++++
+ net/core/dev.c     |   58 +++++++++++++++++++++++++++++++++++++++++++++++------
+ net/core/sock.c    |   16 ++++++++++++++
+ 3 files changed, 73 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linux-2.6/net/core/dev.c
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1625,6 +1625,12 @@ restart:
- rebalance:
- 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- nofail_alloc:
-+		/*
-+		 * break out of mempolicy boundaries
-+		 */
-+		zonelist = NODE_DATA(numa_node_id())->node_zonelists +
-+			gfp_zone(gfp_mask);
+--- linux-2.6.orig/net/core/dev.c
++++ linux-2.6/net/core/dev.c
+@@ -2008,6 +2008,30 @@ out:
+ }
+ #endif
+ 
++/*
++ * Filter the protocols for which the reserves are adequate.
++ *
++ * Before adding a protocol make sure that it is either covered by the existing
++ * reserves, or add reserves covering the memory need of the new protocol's
++ * packet processing.
++ */
++static int skb_emergency_protocol(struct sk_buff *skb)
++{
++	if (skb_emergency(skb))
++		switch (skb->protocol) {
++		case __constant_htons(ETH_P_ARP):
++		case __constant_htons(ETH_P_IP):
++		case __constant_htons(ETH_P_IPV6):
++		case __constant_htons(ETH_P_8021Q):
++			break;
 +
- 		/* go through the zonelist yet again, ignoring mins */
- 		page = get_page_from_freelist(gfp_mask, nodemask, order,
- 				zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
++		default:
++			return 0;
++		}
++
++	return 1;
++}
++
+ /**
+  *	netif_receive_skb - process receive buffer from network
+  *	@skb: buffer to process
+@@ -2029,10 +2053,22 @@ int netif_receive_skb(struct sk_buff *sk
+ 	struct net_device *orig_dev;
+ 	int ret = NET_RX_DROP;
+ 	__be16 type;
++	unsigned long pflags = current->flags;
++
++	/* Emergency skb are special, they should
++	 *  - be delivered to SOCK_MEMALLOC sockets only
++	 *  - stay away from userspace
++	 *  - have bounded memory usage
++	 *
++	 * Use PF_MEMALLOC so that we're not memory challenged during
++	 * packet processing of this emergency packet.
++	 */
++	if (skb_emergency(skb))
++		current->flags |= PF_MEMALLOC;
+ 
+ 	/* if we've gotten here through NAPI, check netpoll */
+ 	if (netpoll_receive_skb(skb))
+-		return NET_RX_DROP;
++		goto out;
+ 
+ 	if (!skb->tstamp.tv64)
+ 		net_timestamp(skb);
+@@ -2043,7 +2079,7 @@ int netif_receive_skb(struct sk_buff *sk
+ 	orig_dev = skb_bond(skb);
+ 
+ 	if (!orig_dev)
+-		return NET_RX_DROP;
++		goto out;
+ 
+ 	__get_cpu_var(netdev_rx_stat).total++;
+ 
+@@ -2062,6 +2098,9 @@ int netif_receive_skb(struct sk_buff *sk
+ 	}
+ #endif
+ 
++	if (skb_emergency(skb))
++		goto skip_taps;
++
+ 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
+ 		if (!ptype->dev || ptype->dev == skb->dev) {
+ 			if (pt_prev)
+@@ -2070,19 +2109,23 @@ int netif_receive_skb(struct sk_buff *sk
+ 		}
+ 	}
+ 
++skip_taps:
+ #ifdef CONFIG_NET_CLS_ACT
+ 	skb = handle_ing(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ ncls:
+ #endif
+ 
++	if (!skb_emergency_protocol(skb))
++		goto drop;
++
+ 	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ 	skb = handle_macvlan(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ 
+ 	type = skb->protocol;
+ 	list_for_each_entry_rcu(ptype,
+@@ -2098,6 +2141,7 @@ ncls:
+ 	if (pt_prev) {
+ 		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+ 	} else {
++drop:
+ 		kfree_skb(skb);
+ 		/* Jamal, now you will not able to escape explaining
+ 		 * me how you were going to use this. :-)
+@@ -2105,8 +2149,10 @@ ncls:
+ 		ret = NET_RX_DROP;
+ 	}
+ 
+-out:
++unlock:
+ 	rcu_read_unlock();
++out:
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+ 	return ret;
+ }
+ 
+Index: linux-2.6/include/net/sock.h
+===================================================================
+--- linux-2.6.orig/include/net/sock.h
++++ linux-2.6/include/net/sock.h
+@@ -521,8 +521,13 @@ static inline void sk_add_backlog(struct
+ 	skb->next = NULL;
+ }
+ 
++extern int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
++
+ static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+ {
++	if (skb_emergency(skb))
++		return __sk_backlog_rcv(sk, skb);
++
+ 	return sk->sk_backlog_rcv(sk, skb);
+ }
+ 
+Index: linux-2.6/net/core/sock.c
+===================================================================
+--- linux-2.6.orig/net/core/sock.c
++++ linux-2.6/net/core/sock.c
+@@ -311,6 +311,22 @@ int sk_clear_memalloc(struct sock *sk)
+ 	return set;
+ }
+ EXPORT_SYMBOL_GPL(sk_clear_memalloc);
++
++int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
++{
++	int ret;
++	unsigned long pflags = current->flags;
++
++	/* these should have been dropped before queueing */
++	BUG_ON(!sk_has_memalloc(sk));
++
++	current->flags |= PF_MEMALLOC;
++	ret = sk->sk_backlog_rcv(sk, skb);
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
++
++	return ret;
++}
++EXPORT_SYMBOL(__sk_backlog_rcv);
+ #endif
+ 
+ static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
 
 --
 
