@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965248AbYCTAmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967759AbYCTAnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965248AbYCTAmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967551AbYCTAec
+	id S967759AbYCTAnP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762712AbYCTAjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:34:32 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50753 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932299AbYCTAe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:34:27 -0400
-From: akepner@sgi.com
-Date: Wed, 19 Mar 2008 17:32:58 -0700
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Tony Luck <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Mark Nelson <mdnelson@au1.ibm.com>
-Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs() interface
-Message-ID: <20080320003258.GM1843@sgi.com>
-References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com> <20080229182504.GA18102@colo.lackof.org> <1204310276.4003.48.camel@localhost.localdomain> <20080305181307.GR17802@sgi.com> <1204783306.14874.37.camel@concordia.ozlabs.ibm.com> <20080312011954.GN12370@sgi.com> <1205469029.7414.18.camel@concordia.ozlabs.ibm.com>
+	Wed, 19 Mar 2008 20:39:17 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:34520 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933799AbYCTAjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 20:39:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmcFAAJP4UdMQWoK/2dsb2JhbACBWqkDgg4
+Date: Wed, 19 Mar 2008 20:39:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86 Fix text_poke for vmalloced pages
+Message-ID: <20080320003908.GA4988@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1205469029.7414.18.camel@concordia.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.1i
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:36:30 up 19 days, 20:47,  6 users,  load average: 5.48, 5.27,
+	5.18
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 14, 2008 at 03:30:29PM +1100, Michael Ellerman wrote:
-> 
-> I like this better, sorry to keep nitpicking, but just a few comments
-> below ..
+The shadow vmap for DEBUG_RODATA kernel text modification uses virt_to_page to
+get the pages from the pointer address.
 
-Comments are appreciated.
+However, I think vmalloc_to_page would be required in case the page is used for
+modules.
 
-> ...
-> You say a "DMA to a memory region with the DMA_ATTR_BARRIER attribute
-> forces all pending DMA writes to complete". Does it force _all_ DMA
-> writes to complete, or just writes to the region, or just writes coming
-> from devices? What if something is writing to a device?
->
+Since only the core kernel text is marked read-only, use core_kernel_text()
+to make sure we only shadow map the core kernel text, not modules.
 
-Yes, forces all writes to complete (as others have already said).
+This is an incremental change to make the DEBUG_RODATA and text_poke play
+together nicely. A future step will be to make the module text read-only too,
+which will require changes to load module, module free and text_poke.
+The idea is to fix the current x86 git tree quickly.
 
- 
-> Does DMA_ATTR_BARRIER have any effect on reads?
-> 
+- Changelog:
+kernel_text_address() -> core_kernel_text().
 
-No, changed the name to DMA_ATTR_WRITE_BARRIER to emphasize this.
+It applies on top of the x86 git tree, 2.6.25-rc6.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/alternative.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-03-19 18:57:29.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-03-19 20:01:10.000000000 -0400
+@@ -511,7 +511,7 @@ void *__kprobes text_poke(void *addr, co
+ 	BUG_ON(len > sizeof(long));
+ 	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
+ 		- ((long)addr & ~(sizeof(long) - 1)));
+-	{
++	if (core_kernel_text((unsigned long)addr)) {
+ 		struct page *pages[2] = { virt_to_page(addr),
+ 			virt_to_page(addr + PAGE_SIZE) };
+ 		if (!pages[1])
+@@ -522,6 +522,13 @@ void *__kprobes text_poke(void *addr, co
+ 		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+ 		local_irq_restore(flags);
+ 		vunmap(vaddr);
++	} else {
++		/*
++		 * modules are in vmalloc'ed memory, always writable.
++		 */
++		local_irq_save(flags);
++		memcpy(addr, opcode, len);
++		local_irq_restore(flags);
+ 	}
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
 -- 
-Arthur
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
