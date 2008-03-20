@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbYCTWwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYCTW40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759138AbYCTWwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 18:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYCTWwq
+	id S1759300AbYCTW40 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 18:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbYCTW4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 18:52:46 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:56069 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753531AbYCTWwp (ORCPT
+	Thu, 20 Mar 2008 18:56:18 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:47632 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754371AbYCTW4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 18:52:45 -0400
-X-Trace: 683474503/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: At4IAK2H4kdRAVlC/2dsb2JhbACBWoFLqBU
-Subject: Re: [PATCH] 1/2 Maple: Update bus driver to allow support of VMU
-	device
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+	Thu, 20 Mar 2008 18:56:17 -0400
+X-Sasl-enc: RhBCS7i1Ykgfx6tn99PMf9V8LEtzk55IGHb40r7MFmI7 1206053776
+Date: Thu, 20 Mar 2008 19:56:12 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dwmw2@infradead.org, greg@kroah.com, lethal@linux-sh.org,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-       linux-mtd@vger.kernel.org
-In-Reply-To: <20080320153944.75b6edc1.akpm@linux-foundation.org>
-References: <1205879413.6250.13.camel@localhost.localdomain>
-	 <1205880554.6250.25.camel@localhost.localdomain>
-	 <20080320135618.1a283b3e.akpm@linux-foundation.org>
-	 <1206051797.6274.17.camel@localhost.localdomain>
-	 <20080320153944.75b6edc1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 20 Mar 2008 22:52:27 +0000
-Message-Id: <1206053547.6274.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Cc: David Brownell <david-b@pacbell.net>, Richard Purdie <rpurdie@rpsys.net>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+Message-ID: <20080320225612.GB20788@khazad-dum.debian.net>
+References: <20080316184349.GA28543@khazad-dum.debian.net> <200803161246.23909.david-b@pacbell.net> <20080318001429.896acf51.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318001429.896acf51.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-03-20 at 15:39 -0700, Andrew Morton wrote:
-> On Thu, 20 Mar 2008 22:23:17 +0000
-> Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
-> 
+On Tue, 18 Mar 2008, Andrew Morton wrote:
+> On Sun, 16 Mar 2008 11:46:23 -0800 David Brownell <david-b@pacbell.net> wrote:
+> > On Sunday 16 March 2008, Henrique de Moraes Holschuh wrote:
+> > > Is the use of "if (preempt_count())" to know when to defer led gpio work to
+> > > a workqueue needed? __Shouldn't "if (in_atomic())" be enough?
 > > 
-> > > urgh, down_trylock().  And a secret, undocumented one too.
-> > > 
-> > > A trylock is always an exceptional thing.  How is *any* reader of this code
-> > > supposed to work out what the heck it's doing there?  Convert it into
-> > > down(), run the code and decrypt the lockdep warnings, I suspect.
-> > > 
-> > > <looks>
-> > > 
-> > > Nope, I can't see any other lock being held when we call this function.
-> > > 
-> > > The trylocks are an utter mystery to me.  Please don't write mysterious
-> > > code.
-> > > 
+> > At this point, I don't know of any such reason.
 > > 
-> > OK, I am sure this is my problem but I have no idea why you are
-> > describing down_trylock as undocumented
+> > I remember hunting for the right heuristic, and settling on
+> > that one for reasons that I can't recall now.  They may even
+> > be no longer applicable.
 > 
-> I'm describing your use of it!  I'm sitting here trying to work out why on
-> earth this code is using the highly unusual (and highly suspicious) trylock
-> idiom and this is far from clear.
+> Both are incorrect.  When CONFIG_PREEMPT=n we have no support for
+> determining whether schedule() may be called.  The calling code has to sort
+> out its stuff on its own.
 > 
+> <greps for preempt_count>
+> 
+> The LEDs code seems to be the sole offender.  print_vma_addr() might be
+> wrong too, but Ingo did it, and perhaps he knows that all code paths which
+> call print_vma_addr() from deadlockable contexts have already called
+> inc_preempt_count().  But is that true for all architectures?
+> 
+> <greps for in_atomic>
+> 
+> omigawd, what have we done, and how can we fix it? :(
 
-OK, I understand your point now. Some comments wouldn't go amiss, for
-sure.
+Well, it is obvious an "are we in a sleep-ok state?" query that works in any
+case is desired by a lot of code.
 
+I certainly don't want to punt every thinkpad LED write to a workqueue,
+because that would mean less time with the CPU in C3 in the bottom line,
+even if there are some benefits to always doing it the workqueue way (the
+workqueue helper colapses attempts to change the LED state too often).
+
+Can we add "in_scheduleable()", or maybe "can_schedule()", that returns
+in_atomic() if CONFIG_PREEMT, or 0 if there is no way to know?   To my
+limited knowledge of how that part of the kernel works, it would do the
+right thing.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
