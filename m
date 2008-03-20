@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbYCTO2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbYCTO3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756562AbYCTO2i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 10:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbYCTO2X
+	id S1756657AbYCTO3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 10:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbYCTO31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 10:28:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54394 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755473AbYCTO2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 10:28:21 -0400
-Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Len Brown <lenb@kernel.org>
-Cc: =?ISO-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tilman Schmidt <tilman@imap.cc>, Dave Hansen <haveblue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <200803181632.44288.lenb@kernel.org>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	 <200803171327.16695.lenb@kernel.org>
-	 <1205858252.21619.233.camel@queen.suse.de>
-	 <200803181632.44288.lenb@kernel.org>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 20 Mar 2008 15:28:19 +0100
-Message-Id: <1206023299.21619.358.camel@queen.suse.de>
+	Thu, 20 Mar 2008 10:29:27 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46435 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753949AbYCTO3Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 10:29:25 -0400
+Date: Thu, 20 Mar 2008 14:13:48 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/4] disk-protect: Add disk shock protection helpers to
+ libata
+Message-ID: <20080320141348.7a5ca570@core>
+In-Reply-To: <20080307181750.9981.88028.stgit@denkblock.local>
+References: <87skzgd1zk.fsf@denkblock.local>
+	<20080226123946.75dbe3d2@core>
+	<87mypl8p49.fsf@denkblock.local>
+	<20080228111349.6831925c@core>
+	<87bq5qfm2v.fsf@denkblock.local>
+	<20080307181750.9981.88028.stgit@denkblock.local>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-18 at 16:32 -0400, Len Brown wrote:
-> > > The initrd version of the DSDT override is really for one scenario.
-> > > Somebody who has a BIOS that even Windows can't deal with -- so
-> > > no amount of "Windows bug compatbility" will help Linux with it.
-> 
-> > No, this is for people getting involved in ACPI.
-> > Everybody thinks ACPI is that complicated..., but it's not.
-> > It's amazing how far people can debug ACPI bugs (yes, even people who
-> > "do not even know" how to compile a kernel) by simply analyzing the ASL
-> > BIOS code.
-> 
-> Thomas,
-> The justification above is what convinced me
-> that we should try to integrate this feature.
-> Further, although we failed in 2.6.25,
-> I think we should continue to try to get this capability integrated.
-> 
-> If you think it will be useful for additional purposes, that's great.
-> As you know, I'm somewhat skeptical, as I've seen huge mistakes such
-> as a database of modified BIOS images created and used when the users
-> have absolutely no idea what they're doing.
-But even here we now have the only existing database for some research.
--> very important IMO.
-> But we don't have to
-> agree on this to move forward.
-I think we fully agree.
-I don't mind to add a message in big letters: "Only override the DSDT
-for debugging, please report any findings" or whatever, we can add this
-ten times in a row, still it is an important feature which is worth
-pushing (and getting populate_root_fs being able to be executed earlier
-is a feature others also like to see AFAIK).
+> +	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0, 0);
+> +	if (err_mask)
+> +		goto abort;
 
-    Thomas
+We assume you never use ata_exec_internal on a "live" to block layer
+device, so this doesn't work for the general case. In the EH handler for
+unparking it should be fine as the EH thread runs with the drive queue
+shut down.
 
+
+> +static inline int ata_id_has_unload(const u16 *id)
+> +{
+> +	/* ATA-7 specifies two places to indicate unload feature support.
+> +	 * Since I don't really understand the difference, I'll just check
+> +	 * both and only return zero if none of them indicates otherwise. */
+
+Probably wise and we can fix that once it is obvious what reality is
+using.
+
+>
