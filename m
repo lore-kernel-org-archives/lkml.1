@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYCTH60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYCTIKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbYCTH60 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 03:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYCTH6J
+	id S1754705AbYCTIKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 04:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYCTIKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 03:58:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:64957 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753879AbYCTH6I (ORCPT
+	Thu, 20 Mar 2008 04:10:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57633 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbYCTIKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 03:58:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=eFLKCJuaeYoHNJTMPvtFjj7BuzwP8hspe4FVSIrJRtDFf3bk3WwpvVHs7Nxr1IKhvFFJ6JI7O1IEq78LCN3OO8j3RjAXAg6VUoSZ4yzjnf2iZ7p+Y0JQ2Hc5FIAyJiRuUfFYtG97cSlvpNY8+Oyt8H1HhLNbQDapOQ0njwKP1ok=
-Message-ID: <2f11576a0803200058k4ee85bf1se6abe272c496c39d@mail.gmail.com>
-Date: Thu, 20 Mar 2008 16:58:07 +0900
-From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-To: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
-Subject: Re: [BUG?] 2.6.25-rc[23]-mm1 cgroup list corruption under load with VM Scalability patches
-Cc: "Paul Menage" <menage@google.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1205863811.5032.26.camel@localhost>
+	Thu, 20 Mar 2008 04:10:32 -0400
+Date: Thu, 20 Mar 2008 04:10:28 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc1/2 regression: first-time login into gnome fails
+Message-ID: <20080320081028.GA27854@infradead.org>
+References: <1203332161.26696.11.camel@pern> <2c0942db0802180815r59c2ef1s8d4c2e1e733b79c4@mail.gmail.com> <20080317120641.GA16710@infradead.org> <2c0942db0803170847n3e88bdf6r33eabe4c15e7d3f2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1204745828.6244.31.camel@localhost>
-	 <6599ad830803051309g22d5b746ta30c4f28a394572c@mail.gmail.com>
-	 <1205863811.5032.26.camel@localhost>
-X-Google-Sender-Auth: f20f87bbe9009692
+In-Reply-To: <2c0942db0803170847n3e88bdf6r33eabe4c15e7d3f2@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon, Mar 17, 2008 at 08:47:30AM -0700, Ray Lee wrote:
+> I'm assuming you upgraded from 2.6.24, correct? (not .25-rcX).
 
-CC'ed KAMEZAWA-san
+Yes.
 
->  > > list_del corruption in cgroup_exit() on 16 cpu, 32GB ia64 NUMA platform.
->  > >
->  > >  I've been seeing this for a while now, but we've had known problems
->  > >  [page leaks, ...] with the VM scalability series.  Now the system
->  > >  appears to be running very well with these patches under stress loads
->  > >  that would hang it or cause OOM kill of tests with plenty of swap space
->  > >  left.  Eventually, [after 40-45 minutes], I hit a list corruption in
->  > >  cgroup_exit().
->  > >
->  > >  I can't say for sure that our patches aren't causing this, but I've been
->  > >  unable to keep the system up long enough under the stress load w/o the
->  > >  splitlru+noreclaim patches to hit the problem.
+> Are you running either debian or ubuntu?
 
-sorry for late responce, I don't notice this thread.
-fujitsu guys investigated that problem too.
+Yes.
 
-AFAIK this problem already fixed KAMEZAWA-san.
-but I don't know that patch merged -mm or not.
+> If so, do you have the
+> dbus-x11 package installed? Alternately, does /usr/bin/dbus-launch
+> exist? If no, try installing dbus-x11 and try again. I think a
+> side-effect of installing is to start dbus earlier, and may perhaps
+> avoid the race (if it is a race that's causing all this, which I still
+> think it is).
 
-kamezawa-san, please let us know its status?
+Yes, installing dbus-x11 makes everything work properly, aka paper
+over the underlying issue.
+
