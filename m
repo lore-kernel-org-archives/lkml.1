@@ -1,132 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYCTSxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYCTTDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757419AbYCTSxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 14:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYCTSxJ
+	id S1757045AbYCTTDL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 15:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYCTTCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 14:53:09 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:24279 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbYCTSxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 14:53:08 -0400
-X-IronPort-AV: E=Sophos;i="4.25,532,1199692800"; 
-   d="scan'208";a="12786716"
-Subject: [GIT] Please pull another NFS client fix for 2.6.25...
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Thu, 20 Mar 2008 14:53:03 -0400
-Message-Id: <1206039185.15027.21.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 20 Mar 2008 18:53:07.0491 (UTC) FILETIME=[A2CCD730:01C88ABB]
+	Thu, 20 Mar 2008 15:02:55 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:46501 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbYCTTCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 15:02:54 -0400
+Date: Thu, 20 Mar 2008 12:02:40 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>, Andi Kleen <ak@suse.de>,
+       shai@scalex86.org
+Subject: Re: [patch 4/4] x86: apic_is_clustered_box to indicate unsynched TSC's on multiboard vSMP systems
+Message-ID: <20080320190240.GB6085@localdomain>
+References: <20080320073740.GA9414@localdomain> <20080320074508.GE9414@localdomain> <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Mar 20, 2008 at 12:53:25AM -0700, Yinghai Lu wrote:
+>On Thu, Mar 20, 2008 at 12:45 AM, Ravikiran G Thirumalai
+><kiran@scalex86.org> wrote:
+>> Indicate TSCs are unreliable as time sources if the platform is
+>>  a multi chassi ScaleMP vSMPowered machine.
+>>
+>>  Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+>>
+>>  Index: linux.git.trees/arch/x86/kernel/apic_64.c
+>>  ===================================================================
+>>  --- linux.git.trees.orig/arch/x86/kernel/apic_64.c      2008-03-19 20:42:28.187659497 -0700
+>>  +++ linux.git.trees/arch/x86/kernel/apic_64.c   2008-03-19 21:24:17.705515003 -0700
+>>  @@ -1208,7 +1208,7 @@ __cpuinit int apic_is_clustered_box(void
+>>          * will be [4, 0x23] or [8, 0x27] could be thought to
+>>          * vsmp box still need checking...
+>>          */
+>>  -       if (!is_vsmp_box() && (boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
+>>  +       if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && !is_vsmp_box())
+>>                 return 0;
+>
+>why?
+>
+>>
+>>         bios_cpu_apicid = x86_bios_cpu_apicid_early_ptr;
+>>  @@ -1248,6 +1248,12 @@ __cpuinit int apic_is_clustered_box(void
+>>                         ++zeros;
+>>         }
+>>
+>>  +       /* ScaleMP vSMPowered boxes have one cluster per board and TSCs are
+>>  +        * not guaranteed to be synced between boards
+>>  +        */
+>>  +       if (is_vsmp_box() && clusters > 1)
+>>  +               return 1;
+>
+>you still call that for intel box.
 
-Please pull from the "hotfixes" branch of the repository at
+Yes.  The first call is to state that TSC's are synced if it is an  AMD box
+and if it is _not_ a vSMPowered box (for the apic id lifting case on Sun
+boxes), the second call is for _any_ vSMPowered system with more than one
+board -- TSC's are not guaranteed to be synched in that case.  Both these
+calls are needed.
 
-   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git hotfixes
-
-This will update the following files through the appended changesets.
-
-  Cheers,
-    Trond
-
-----
- fs/nfs/read.c  |    5 ++++-
- fs/nfs/write.c |    8 +++++++-
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
-commit f8512ad0da16cbe156f3a7627971cdf0b39c4138
-Author: Fred Isaman <iisaman@citi.umich.edu>
-Date:   Wed Mar 19 11:24:39 2008 -0400
-
-    nfs: don't ignore return value from nfs_pageio_add_request
-    
-    Ignoring the return value from nfs_pageio_add_request can cause deadlocks.
-    
-    In read path:
-      call nfs_pageio_add_request from readpage_async_filler
-      assume at this point that there are requests already in desc, that
-        can't be merged with the current request.
-      so nfs_pageio_doio is fired up to clear out desc.
-      assume something goes wrong in setting up the io, so desc->pg_error is set.
-      This causes nfs_pageio_add_request to return 0, *WITHOUT* adding the original
-        request.
-      BUT, since return code is ignored, readpage_async_filler assumes it has
-        been added, and does nothing further, leaving page locked.
-      do_generic_mapping_read will eventually call lock_page, resulting in deadlock
-    
-    In write path:
-      page is marked dirty by generic_perform_write
-      nfs_writepages is called
-      call nfs_pageio_add_request from nfs_page_async_flush
-      assume at this point that there are requests already in desc, that
-        can't be merged with the current request.
-      so nfs_pageio_doio is fired up to clear out desc.
-      assume something goes wrong in setting up the io, so desc->pg_error is set.
-      This causes nfs_page_async_flush to return 0, *WITHOUT* adding the original
-        request, yet marking the request as locked (PG_BUSY) and in writeback,
-        clearing dirty marks.
-      The next time a write is done to the page, deadlock will result as
-        nfs_write_end calls nfs_update_request
-    
-    Signed-off-by: Fred Isaman <iisaman@citi.umich.edu>
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 3d7d963..5a70be5 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -533,7 +533,10 @@ readpage_async_filler(void *data, struct page *page)
- 
- 	if (len < PAGE_CACHE_SIZE)
- 		zero_user_segment(page, len, PAGE_CACHE_SIZE);
--	nfs_pageio_add_request(desc->pgio, new);
-+	if (!nfs_pageio_add_request(desc->pgio, new)) {
-+		error = desc->pgio->pg_error;
-+		goto out_unlock;
-+	}
- 	return 0;
- out_error:
- 	error = PTR_ERR(new);
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 80c61fd..bed6341 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -39,6 +39,7 @@ static struct nfs_page * nfs_update_request(struct nfs_open_context*,
- 					    unsigned int, unsigned int);
- static void nfs_pageio_init_write(struct nfs_pageio_descriptor *desc,
- 				  struct inode *inode, int ioflags);
-+static void nfs_redirty_request(struct nfs_page *req);
- static const struct rpc_call_ops nfs_write_partial_ops;
- static const struct rpc_call_ops nfs_write_full_ops;
- static const struct rpc_call_ops nfs_commit_ops;
-@@ -288,7 +289,12 @@ static int nfs_page_async_flush(struct nfs_pageio_descriptor *pgio,
- 		BUG();
- 	}
- 	spin_unlock(&inode->i_lock);
--	nfs_pageio_add_request(pgio, req);
-+	if (!nfs_pageio_add_request(pgio, req)) {
-+		nfs_redirty_request(req);
-+		nfs_end_page_writeback(page);
-+		nfs_clear_page_tag_locked(req);
-+		return pgio->pg_error;
-+	}
- 	return 0;
- }
- 
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+Thanks,
+Kiran
