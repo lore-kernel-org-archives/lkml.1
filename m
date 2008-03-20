@@ -1,56 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbYCTTu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbYCTTvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbYCTTu1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 15:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYCTTuQ
+	id S1757002AbYCTTvb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 15:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbYCTTvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 15:50:16 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:56964 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753649AbYCTTuO (ORCPT
+	Thu, 20 Mar 2008 15:51:19 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58929 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754423AbYCTTvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 15:50:14 -0400
-Date: Thu, 20 Mar 2008 12:49:41 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@osdl.org>,
-       Mike Mason <mmlnx@us.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       David Smith <dsmith@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 1/4] Markers - depends on not PREEMPT_RCU
-Message-ID: <20080320194941.GD9570@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080320002737.918213455@polymtl.ca> <20080320002834.448782178@polymtl.ca> <20080320190335.GA12770@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080320190335.GA12770@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 20 Mar 2008 15:51:17 -0400
+Subject: [PATCH/RFC v4] introduce HAVE_UNALIGNED_ACCESS_SUPPORT Kconfig
+	symbol
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Daniel Drake <dsd@gentoo.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <20080320194101.GC17884@uranus.ravnborg.org>
+References: <1206023695.16475.137.camel@johannes.berg>
+	 <20080320181310.GA17884@uranus.ravnborg.org>
+	 <1206038373.16475.150.camel@johannes.berg>
+	 <1206038734.16475.153.camel@johannes.berg>
+	 <20080320194101.GC17884@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Thu, 20 Mar 2008 20:50:58 +0100
+Message-Id: <1206042658.16475.158.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 08:03:38PM +0100, Ingo Molnar wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > +++ linux-2.6-lttng/init/Kconfig	2008-03-19 18:27:43.000000000 -0400
-> > @@ -742,6 +742,7 @@ config PROFILING
-> >  
-> >  config MARKERS
-> >  	bool "Activate markers"
-> > +	depends on !PREEMPT_RCU
-> >  	help
-> 
-> Ugh, NACK. Please solve this properly... What kind of kernel 
-> infrastructure is it what disables itself in the presence of another 
-> piece of kernel infrastructure?
+In many cases, especially in networking, it can be beneficial to
+know at compile time whether the architecture can do unaligned
+accesses. This patch introduces a new Kconfig symbol
+	HAVE_UNALIGNED_ACCESS_SUPPORT
+for that purpose and adds it to the powerpc and x86 architectures.
+Also add some documentation about alignment and networking, and
+especially one intended use of this symbol.
 
-This is a reminder to me to get going on call_rcu_sched().  Until
-I get that done and in, they don't have what they need to work
-with preemptable RCU.  :-/
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+---
+Didn't I say I was going to fix the subject? Sorry.
 
-						Thanx, Paul
+ Documentation/unaligned-memory-access.txt |   32 +++++++++++++++++++++++++++---
+ arch/Kconfig                              |    3 ++
+ arch/powerpc/Kconfig                      |    1 
+ arch/x86/Kconfig                          |    1 
+ 4 files changed, 34 insertions(+), 3 deletions(-)
+
+--- everything.orig/Documentation/unaligned-memory-access.txt	2008-03-20 15:30:38.000000000 +0100
++++ everything/Documentation/unaligned-memory-access.txt	2008-03-20 19:38:30.000000000 +0100
+@@ -218,9 +218,35 @@ If use of such macros is not convenient,
+ where the source or destination (or both) are of type u8* or unsigned char*.
+ Due to the byte-wise nature of this operation, unaligned accesses are avoided.
+ 
++
++Alignment vs. Networking
++========================
++
++On architectures that require aligned loads, networking requires that the IP
++header is aligned on a four-byte boundary to optimise the IP stack. For
++regular ethernet hardware, the constant NET_IP_ALIGN is used, on most
++architectures this constant has the value 2 because the normal ethernet
++header is 14 bytes long, so in order to get proper alignment one needs to
++DMA to an address that is can be expressed as 4*n + 2. One notable exception
++here is powerpc which defines NET_IP_ALIGN to 0 because DMA to unaligned
++addresses can be very expensive and dwarf the cost of unaligned loads.
++
++For some ethernet hardware that cannot DMA to unaligned addresses like
++4*n+2 or non-ethernet hardware, this can be a problem, and it is then
++required to copy the incoming frame into an aligned buffer. Because this is
++unnecessary on architectures that can do unaligned accesses, the code can be
++made depend on CONFIG_HAVE_UNALIGNED_ACCESS_SUPPORT like so:
++
++#ifdef CONFIG_HAVE_UNALIGNED_ACCESS_SUPPORT
++	skb = original skb
++#else
++	skb = copy skb
++#endif
++
+ --
+-Author: Daniel Drake <dsd@gentoo.org>
++Authors: Daniel Drake <dsd@gentoo.org>,
++         Johannes Berg <johannes@sipsolutions.net>
+ With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
+-Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
+-Uli Kunitz, Vadim Lobanov
++Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock, Uli Kunitz,
++Vadim Lobanov
+ 
+--- everything.orig/arch/powerpc/Kconfig	2008-03-20 15:30:38.000000000 +0100
++++ everything/arch/powerpc/Kconfig	2008-03-20 19:37:22.000000000 +0100
+@@ -91,6 +91,7 @@ config PPC
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
++	select HAVE_UNALIGNED_ACCESS_SUPPORT
+ 
+ config EARLY_PRINTK
+ 	bool
+--- everything.orig/arch/x86/Kconfig	2008-03-20 15:30:38.000000000 +0100
++++ everything/arch/x86/Kconfig	2008-03-20 19:38:08.000000000 +0100
+@@ -23,6 +23,7 @@ config X86
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+ 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
++	select HAVE_UNALIGNED_ACCESS_SUPPORT
+ 
+ 
+ config GENERIC_LOCKBREAK
+--- everything.orig/arch/Kconfig	2008-03-20 19:37:26.000000000 +0100
++++ everything/arch/Kconfig	2008-03-20 19:37:34.000000000 +0100
+@@ -36,3 +36,6 @@ config HAVE_KPROBES
+ 
+ config HAVE_KRETPROBES
+ 	def_bool n
++
++config HAVE_UNALIGNED_ACCESS_SUPPORT
++	def_bool n
+
+
