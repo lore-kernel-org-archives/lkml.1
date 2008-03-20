@@ -1,71 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYCTXCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYCTXCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbYCTXCN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 19:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYCTXB6
+	id S1754724AbYCTXCv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 19:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYCTXCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 19:01:58 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4512 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753069AbYCTXB5 (ORCPT
+	Thu, 20 Mar 2008 19:02:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41596 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753069AbYCTXCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 19:01:57 -0400
-Date: Thu, 20 Mar 2008 19:01:56 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       <nigel@nigel.suspend2.net>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
-In-Reply-To: <200803202345.25083.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803201858030.8453-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 20 Mar 2008 19:02:42 -0400
+Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       linux-fbdev-devel@lists.sourceforge.net, timur@freescale.com,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080320152708.23c6c734.akpm@linux-foundation.org>
+References: <12059526271941-git-send-email-yorksun@freescale.com>
+	 <12059526274026-git-send-email-yorksun@freescale.com>
+	 <20080320152708.23c6c734.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 21 Mar 2008 00:02:16 +0100
+Message-Id: <1206054136.6437.67.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Mar 2008, Rafael J. Wysocki wrote:
+On Thu, 2008-03-20 at 15:27 -0700, Andrew Morton wrote:
 
-> > > >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
-> > > >> use S5 instead of entering S4, the fan doesn't work correctly after the
-> > > >> resume.  Plain and simple.
-> > > >> 
-> > > >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
-> > > >> but I have no idea what that can be at the moment.
-> > > >
-> > > > IMO it would be worthwhile to track this down.  It's a clear indication 
-> > > > that something is wrong somewhere.
-> > > >
-> > > > Could it be connected with the way the boot kernel hands control over
-> > > > to the image kernel?  Presumably ACPI isn't prepared to deal with that
-> > > > sort of thing during a boot from S5.  It would have to be fooled into
-> > > > thinking the two kernels were one and the same.
-> > > 
-> > > It should be easy to test if it is a hand over problem, by turning off
-> > > the laptop by placing it in S5 (shutdown -h now) and then booting same
-> > > kernel again.
-> > 
-> > Feel free to help with testing.
-> > 
-> > I believe ACPI is simply getting confused by us overwriting memory
-> > with that from old image. I don't see how you can emulate it with
-> > shutdown.
+> >
+> > +static struct diu_hw dr = {
+> > +	.mode = MFB_MODE1,
+> > +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+> > +};
 > 
-> Well, in fact ACPI has something called the NVS memory, which we're supposed
-> to restore during the resume and which we're not doing.  The problem may be
-> related to this.
+> I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
+> do know that its documentation is crap.
+> 
+> I guess you should have used SPIN_LOCK_UNLOCKED there rather than
+> open-coding its equivalent.  And SPIN_LOCK_UNLOCKED _is_ documented.  It
+> says "don't use this".
+> 
+> Now, s/documentation/guesswork-and-grep/ says that you're supposed to pick
+> a tree-wide-unique string here as your lockdep key.
+> 
+> So I did this:
+> 
+> --- a/drivers/video/fsl-diu-fb.c~fbdev-driver-for-freescale-8610-and-5121-diu-fix
+> +++ a/drivers/video/fsl-diu-fb.c
+> @@ -274,7 +274,7 @@ static struct mfb_info mfb_template[] = 
+>  
+>  static struct diu_hw dr = {
+>  	.mode = MFB_MODE1,
+> -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+> +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
+>  };
 
-No, it can't be.  ACPI won't expect the NVS memory to be restored 
-following an S5-shutdown.  In fact, as far as ACPI is concerned, 
-resuming from an S5-type hibernation should not be considered a resume 
-at all but just an ordinary reboot.  All ACPI-related memory areas 
-in the boot kernel should be passed directly through to the image 
-kernel.
+#define __SPIN_LOCK_UNLOCKED(lockname)
 
-Alan Stern
+seems pretty suggestive to me, also DEFINE_SPINLOCK(x) shows the proper
+usage; the right thing would have been:
+
+static struct diu_hw dr = {
+ 	.mode = MFB_MODE1,
+-	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
++	.reg_lock = __SPIN_LOCK_UNLOCKED(dr.reg_lock),
+};
+
+Where 'dr.reg_lock' is the expression to locate the actual object.
+
+Does something like this make sense to you:
+
+---
+Subject: lockdep: document __SPIN_LOCK_UNLOCKED() usage
+
+Small comment clarifying the intended usage of __SPIN_LOCK_UNLOCKED()
+
+[ for the observant readers; yes this prescribes a usage that is more
+  than strictly needed, it does however enable interesting future uses ]
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/include/linux/spinlock_types.h b/include/linux/spinlock_types.h
+index 68d88f7..4278558 100644
+--- a/include/linux/spinlock_types.h
++++ b/include/linux/spinlock_types.h
+@@ -63,6 +63,10 @@ typedef struct {
+ # define RW_DEP_MAP_INIT(lockname)
+ #endif
+ 
++/*
++ * __*_LOCK_UNLOCKED(lockname), where 'lockname' is a valid C expression
++ * that evaluates to the actual object being initialized.
++ */
+ #ifdef CONFIG_DEBUG_SPINLOCK
+ # define __SPIN_LOCK_UNLOCKED(lockname)					\
+ 	(spinlock_t)	{	.raw_lock = __RAW_SPIN_LOCK_UNLOCKED,	\
+---
+
+Perhaps I should make the macros do something like:
+
+  typecheck(spinlock_t, lockname)
+
+And sweep the tree to make it compile again.
+
+>  static struct diu_pool pool;
+> 
+> > +static struct diu_pool pool;
+> > +
+> > +/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
+> > + *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
+> > + *	very large memory (more than 4MB). We don't want to allocate all memory
+> > + *	in rheap since small memory allocation/deallocation will fragment the
+> > + *	rheap and make the furture large allocation fail.
+> > + */
+> > +
+> > +void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
+> > +{
+> > +	void *virt;
+> > +
+> > +	pr_debug("size=%lu\n", size);
+> > +
+> > +	virt = (void *)__get_free_pages(GFP_DMA | GFP_ATOMIC, get_order(size));
+> 
+> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+
+FWIW, I prefer the form: GFP_type | __GFP_modifiers
+
+For instance: 'GFP_KERNEL | __GFP_DMA | __GFP_ZERO'
+
+
 
