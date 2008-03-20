@@ -1,81 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbYCTXG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbYCTXST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759224AbYCTXG4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 19:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYCTXGt
+	id S1758286AbYCTXST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 19:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYCTXSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 19:06:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:38749 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753587AbYCTXGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 19:06:48 -0400
-Message-ID: <47E2ECF3.2050606@goop.org>
-Date: Thu, 20 Mar 2008 16:02:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 20 Mar 2008 19:18:05 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52431 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbYCTXSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 19:18:04 -0400
+Date: Fri, 21 Mar 2008 00:18:35 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: USB-audio strange problems
+Message-ID: <20080320231835.GE17431@elf.ucw.cz>
+References: <20070203131014.GA4231@elf.ucw.cz> <s5htzy0y2rx.wl%tiwai@suse.de> <20080319211247.GA2659@elf.ucw.cz> <s5h63vhver6.wl%tiwai@suse.de> <20080320111637.GB24304@atrey.karlin.mff.cuni.cz> <s5h3aqlvdxe.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: How to avoid spurious lockdep warnings?
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5h3aqlvdxe.wl%tiwai@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In a Xen system, when a new pagetable is about to be put in use it is 
-"pinned", meaning that each page in the pagetable is registered with the 
-hypervisor.  This is done in arch/x86/xen/mmu.c:pin_page().
+Hi!
+> > > > Problem was not mixer after all... somehow it expects me to play sound
+> > > > as 8-bit, and then I can play 16-bit mono and actually hear
+> > > > it. _Strange_.
+> > > > 
+> > > > So:
+> > > > 
+> > > > mplayer -ao alsa:device=hw=0 -af format=u8  KDE_Startup.wav
+> > > > mplayer -ao alsa:device=hw=0 -af format=s16le -af resample=48000  -af channels=1 KDE_Logout_1.ogg
+> > > > 
+> > > > ...plays both files. 
+> > > > 
+> > > > Forget about the first mplayer, and it will play nothing.
+> > > 
+> > > Dalls DS4201 has a known bug that it doesn't handle U8 format but only
+> > > S8 format.  The driver changes the supported format flags from U8 to
+> > > S8 when this USB ID is detected.  So you cannot play U8 format
+> > > natively.  (Still strange that it is accepted by mplayer.)
+> > 
+> > But problem is: I have to. Otherwise the second mplayer will produce
+> > just silence.
+> 
+> How about "-ao alsa:device=plughw=0 -af format=u8" ?
 
-In order to make this efficient, the hypercalls for pinning are batched, 
-so that multiple pages are submitted at once in a single multicall.  
-While a page is batched pending the hypercall, its corresponding 
-pte_lock is held.
+mplayer -ao alsa:device=plughw=0 -af format=u8 KDE_Startup.wav
 
-This means that the code can end up holding multiple pte locks at once, 
-though it is guaranteed to never try to hold the same lock at once.  
-However, because these locks are in the same lock class, I get a 
-spurious warning from lockdep.  Is there some way I can get rid of this 
-warning?
+...is silent
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.25-rc6-x86-latest.git-dirty #297
----------------------------------------------
-init/1 is trying to acquire lock:
- (__pte_lockptr(page)){--..}, at: [<c0105038>] pin_page+0x6a/0x167
+mplayer -ao alsa:device=hw=0 -af format=u8 KDE_Startup.wav
 
-but task is already holding lock:
- (__pte_lockptr(page)){--..}, at: [<c0105038>] pin_page+0x6a/0x167
+...I can hear it. (What's difference between hw and plughw?)
 
-other info that might help us debug this:
-4 locks held by init/1:
- #0:  (&mm->mmap_sem){----}, at: [<c012645c>] copy_process+0x97e/0x122f
- #1:  (&mm->mmap_sem/1){--..}, at: [<c012646c>] copy_process+0x98e/0x122f
- #2:  (&mm->page_table_lock){--..}, at: [<c0104bf5>] xen_dup_mmap+0x11/0x24
- #3:  (__pte_lockptr(page)){--..}, at: [<c0105038>] pin_page+0x6a/0x167
+> > Also, even with that treatment, I'm unable to play stereo :-(.
+> 
+> What shows stream* proc file while playing a 16bit stereo file?
 
-stack backtrace:
-Pid: 1, comm: init Not tainted 2.6.25-rc6-x86-latest.git-dirty #297
- [<c0144049>] __lock_acquire+0x821/0xb50
- [<c01443ee>] lock_acquire+0x76/0x9d
- [<c0105038>] ? pin_page+0x6a/0x167
- [<c0454537>] _spin_lock+0x23/0x32
- [<c0105038>] ? pin_page+0x6a/0x167
- [<c0105038>] pin_page+0x6a/0x167
- [<c0104520>] pgd_walk+0x18f/0x1e1
- [<c0104fce>] ? pin_page+0x0/0x167
- [<c0104b20>] xen_pgd_pin+0x46/0x10a
- [<c0104bfd>] xen_dup_mmap+0x19/0x24
- [<c0126619>] copy_process+0xb3b/0x122f
- [<c0126e6d>] do_fork+0xab/0x1dd
- [<c017341b>] ? vfs_write+0xf1/0x108
- [<c010877a>] ? sysenter_past_esp+0xba/0xc8
- [<c0106cd5>] sys_clone+0x1f/0x21
- [<c0108731>] sysenter_past_esp+0x71/0xc8
- =======================
+I test by:
 
+mplayer -ao alsa:device=hw=0 -af format=s16le -af resample=48000   KDE_Logout_1.ogg
 
-Thanks,
-    J
+hobit:/proc/asound# grep . */stream*
+U0x4fa0x4201/stream0:USB Device 0x4fa:0x4201 at usb-0000:00:1a.0-1,
+full speed : USB Audio
+U0x4fa0x4201/stream0:Playback:
+U0x4fa0x4201/stream0:  Status: Running
+U0x4fa0x4201/stream0:    Interface = 1
+U0x4fa0x4201/stream0:    Altset = 5
+U0x4fa0x4201/stream0:    URBs = 3 [ 8 8 6 ]
+U0x4fa0x4201/stream0:    Packet Size = 196
+U0x4fa0x4201/stream0:    Momentary freq = 48000 Hz (0x30.0000)
+U0x4fa0x4201/stream0:  Interface 1
+U0x4fa0x4201/stream0:    Altset 1
+U0x4fa0x4201/stream0:    Format: 0x2
+U0x4fa0x4201/stream0:    Channels: 2
+U0x4fa0x4201/stream0:    Endpoint: 1 OUT (ASYNC)
+U0x4fa0x4201/stream0:    Rates: 44100, 48000
+U0x4fa0x4201/stream0:  Interface 1
+U0x4fa0x4201/stream0:    Altset 2
+U0x4fa0x4201/stream0:    Format: 0x2
+U0x4fa0x4201/stream0:    Channels: 1
+U0x4fa0x4201/stream0:    Endpoint: 1 OUT (ASYNC)
+U0x4fa0x4201/stream0:    Rates: 44100, 48000
+U0x4fa0x4201/stream0:  Interface 1
+U0x4fa0x4201/stream0:    Altset 3
+U0x4fa0x4201/stream0:    Format: 0x0
+U0x4fa0x4201/stream0:    Channels: 2
+U0x4fa0x4201/stream0:    Endpoint: 1 OUT (ASYNC)
+U0x4fa0x4201/stream0:    Rates: 44100, 48000
+U0x4fa0x4201/stream0:  Interface 1
+U0x4fa0x4201/stream0:    Altset 4
+U0x4fa0x4201/stream0:    Format: 0x0
+U0x4fa0x4201/stream0:    Channels: 1
+U0x4fa0x4201/stream0:    Endpoint: 1 OUT (ASYNC)
+U0x4fa0x4201/stream0:    Rates: 44100, 48000
+U0x4fa0x4201/stream0:  Interface 1
+U0x4fa0x4201/stream0:    Altset 5
+U0x4fa0x4201/stream0:    Format: 0x2
+U0x4fa0x4201/stream0:    Channels: 2
+U0x4fa0x4201/stream0:    Endpoint: 1 OUT (ADAPTIVE)
+U0x4fa0x4201/stream0:    Rates: 44100, 48000
+card0/stream0:USB Device 0x4fa:0x4201 at usb-0000:00:1a.0-1, full
+speed : USB Audio
+card0/stream0:Playback:
+card0/stream0:  Status: Running
+card0/stream0:    Interface = 1
+card0/stream0:    Altset = 5
+card0/stream0:    URBs = 3 [ 8 8 6 ]
+card0/stream0:    Packet Size = 196
+card0/stream0:    Momentary freq = 48000 Hz (0x30.0000)
+card0/stream0:  Interface 1
+card0/stream0:    Altset 1
+card0/stream0:    Format: 0x2
+card0/stream0:    Channels: 2
+card0/stream0:    Endpoint: 1 OUT (ASYNC)
+card0/stream0:    Rates: 44100, 48000
+card0/stream0:  Interface 1
+card0/stream0:    Altset 2
+card0/stream0:    Format: 0x2
+card0/stream0:    Channels: 1
+card0/stream0:    Endpoint: 1 OUT (ASYNC)
+card0/stream0:    Rates: 44100, 48000
+card0/stream0:  Interface 1
+card0/stream0:    Altset 3
+card0/stream0:    Format: 0x0
+card0/stream0:    Channels: 2
+card0/stream0:    Endpoint: 1 OUT (ASYNC)
+card0/stream0:    Rates: 44100, 48000
+card0/stream0:  Interface 1
+card0/stream0:    Altset 4
+card0/stream0:    Format: 0x0
+card0/stream0:    Channels: 1
+card0/stream0:    Endpoint: 1 OUT (ASYNC)
+card0/stream0:    Rates: 44100, 48000
+card0/stream0:  Interface 1
+card0/stream0:    Altset 5
+card0/stream0:    Format: 0x2
+card0/stream0:    Channels: 2
+card0/stream0:    Endpoint: 1 OUT (ADAPTIVE)
+card0/stream0:    Rates: 44100, 48000
+hobit:/proc/asound# 
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
