@@ -1,87 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYCTO6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYCTPGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbYCTO6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 10:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbYCTO6h
+	id S1756725AbYCTPGx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 11:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbYCTPGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 10:58:37 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:40552 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755094AbYCTO6g (ORCPT
+	Thu, 20 Mar 2008 11:06:43 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:54713 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755585AbYCTPGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 10:58:36 -0400
-Subject: Re: [PATCH/RFC] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig symbol
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Will Newton <will.newton@gmail.com>
-Cc: Daniel Drake <dsd@gentoo.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <87a5b0800803200739v6d222afck850f221eae1edd70@mail.gmail.com> (sfid-20080320_143913_214765_488C899F)
-References: <1206023695.16475.137.camel@johannes.berg>
-	 <87a5b0800803200739v6d222afck850f221eae1edd70@mail.gmail.com>
-	 (sfid-20080320_143913_214765_488C899F)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HXUuBJ2INb6D0oeDiMrA"
-Date: Thu, 20 Mar 2008 15:58:17 +0100
-Message-Id: <1206025097.16475.139.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 20 Mar 2008 11:06:42 -0400
+X-Sasl-enc: l3e6cQMCfZtj0zk1NgMnbNWlD/MpuLfPAb9ms6McSmZD 1206025600
+Date: Thu, 20 Mar 2008 12:06:37 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
+	patchset against -rc6)
+Message-ID: <20080320150637.GC5615@khazad-dum.debian.net>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318225201.GA2115@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080318225201.GA2115@elf.ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 18 Mar 2008, Pavel Machek wrote:
+>     ACPI: Ignore _BQC object when registering backlight device
 
---=-HXUuBJ2INb6D0oeDiMrA
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thinkpads always have them all, or none at all.
 
-
-On Thu, 2008-03-20 at 14:39 +0000, Will Newton wrote:
-> On Thu, Mar 20, 2008 at 2:34 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
->=20
-> >  +For some ethernet hardware that cannot DMA to unaligned addresses lik=
-e
-> >  +4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-> >  +required to copy the incoming frame into an aligned buffer. Because t=
-his is
-> >  +unnecessary on architectures that can do unaligned accesses, the code=
- can be
-> >  +made depend on CONFIG_ARCH_CAN_UNALIGNED_ACCESS like so:
-> >  +
-> >  +#ifdef CONFIG_ARCH_CAN_UNALIGNED_ACCESS
-> >  +       skb =3D copy skb
-> >  +#else
-> >  +       skb =3D original skb
-> >  +#endif
->=20
-> Is this logic reversed?
-
-Euh, indeed, thanks. Will repost after having more comments.
-
-johannes
-
---=-HXUuBJ2INb6D0oeDiMrA
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR+J7iKVg1VMiehFYAQJybRAAqGr095wjFY1emELqFL2BspwuyWkX9CKW
-Hs3p/z3GdakkP0WvH8x80ZIZZSJg09ijazjOHdiqcOXGsSSIMDlK4S2dHOiswhpM
-qa9+MwBxy1wxql9YXHfMUpyesdNzQyNVZ39/PrNyMGnn6oAUNSy/lWLVmhjhTzqE
-v9GdpOrKGJuDtGaI6NoEqpMf6/jcDWA0D8CCZDUjtuBgE0HsAnQRRL4uwuT+pMrG
-Sc3CIE8gR1M+skJrxE7NOPMoeoBLc7byA4SKVzJ0a3fuIDwCSRAYsx5FIzllSUo3
-RsgO87UtmUzCn+JNwEZXL9b0f1PpyFHuVgvZ144iEcxDcQrJ5pRJaghG3g+Gm6ZD
-Fjl3F1kRenPqvjwEH8bxu3q1UA+osoXIIi8/HKCoLkVIRJmX3nPkMZgZwKHoBgR5
-x0FwEH2hoZZf/pjsJGTGCmJPeg6km+S4Kkt0aCxWUCNntmuot6Dwf844O02M8JqA
-knsigj3UDMqGvUUe4BjVTRvg4neLn4AVAxEna9T0AYhj1P0MoKLqTShO/CMeiEjo
-PVNT3XVsIEPeMzhUC7bGZiZxgdDpPuUBhZ5Z5k98Lm2aL/WMoehcbF/kr1PZRmfO
-6+m6oj3W70tSK+d2fGOQUzWH6JOH+L+bPv3M2umah4Ski6XOrffR0OLE7x1bmd6q
-zjqj3AdY7s8=
-=aVm4
------END PGP SIGNATURE-----
-
---=-HXUuBJ2INb6D0oeDiMrA--
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
