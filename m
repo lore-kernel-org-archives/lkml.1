@@ -1,138 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYCTXCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbYCTXG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbYCTXCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 19:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYCTXCn
+	id S1759224AbYCTXG4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 19:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYCTXGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 19:02:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41596 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753069AbYCTXCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 19:02:42 -0400
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       linux-fbdev-devel@lists.sourceforge.net, timur@freescale.com,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080320152708.23c6c734.akpm@linux-foundation.org>
-References: <12059526271941-git-send-email-yorksun@freescale.com>
-	 <12059526274026-git-send-email-yorksun@freescale.com>
-	 <20080320152708.23c6c734.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 21 Mar 2008 00:02:16 +0100
-Message-Id: <1206054136.6437.67.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Thu, 20 Mar 2008 19:06:49 -0400
+Received: from gw.goop.org ([64.81.55.164]:38749 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753587AbYCTXGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 19:06:48 -0400
+Message-ID: <47E2ECF3.2050606@goop.org>
+Date: Thu, 20 Mar 2008 16:02:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: How to avoid spurious lockdep warnings?
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-20 at 15:27 -0700, Andrew Morton wrote:
+In a Xen system, when a new pagetable is about to be put in use it is 
+"pinned", meaning that each page in the pagetable is registered with the 
+hypervisor.  This is done in arch/x86/xen/mmu.c:pin_page().
 
-> >
-> > +static struct diu_hw dr = {
-> > +	.mode = MFB_MODE1,
-> > +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> > +};
-> 
-> I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
-> do know that its documentation is crap.
-> 
-> I guess you should have used SPIN_LOCK_UNLOCKED there rather than
-> open-coding its equivalent.  And SPIN_LOCK_UNLOCKED _is_ documented.  It
-> says "don't use this".
-> 
-> Now, s/documentation/guesswork-and-grep/ says that you're supposed to pick
-> a tree-wide-unique string here as your lockdep key.
-> 
-> So I did this:
-> 
-> --- a/drivers/video/fsl-diu-fb.c~fbdev-driver-for-freescale-8610-and-5121-diu-fix
-> +++ a/drivers/video/fsl-diu-fb.c
-> @@ -274,7 +274,7 @@ static struct mfb_info mfb_template[] = 
->  
->  static struct diu_hw dr = {
->  	.mode = MFB_MODE1,
-> -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
->  };
+In order to make this efficient, the hypercalls for pinning are batched, 
+so that multiple pages are submitted at once in a single multicall.  
+While a page is batched pending the hypercall, its corresponding 
+pte_lock is held.
 
-#define __SPIN_LOCK_UNLOCKED(lockname)
+This means that the code can end up holding multiple pte locks at once, 
+though it is guaranteed to never try to hold the same lock at once.  
+However, because these locks are in the same lock class, I get a 
+spurious warning from lockdep.  Is there some way I can get rid of this 
+warning?
 
-seems pretty suggestive to me, also DEFINE_SPINLOCK(x) shows the proper
-usage; the right thing would have been:
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.25-rc6-x86-latest.git-dirty #297
+---------------------------------------------
+init/1 is trying to acquire lock:
+ (__pte_lockptr(page)){--..}, at: [<c0105038>] pin_page+0x6a/0x167
 
-static struct diu_hw dr = {
- 	.mode = MFB_MODE1,
--	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-+	.reg_lock = __SPIN_LOCK_UNLOCKED(dr.reg_lock),
-};
+but task is already holding lock:
+ (__pte_lockptr(page)){--..}, at: [<c0105038>] pin_page+0x6a/0x167
 
-Where 'dr.reg_lock' is the expression to locate the actual object.
+other info that might help us debug this:
+4 locks held by init/1:
+ #0:  (&mm->mmap_sem){----}, at: [<c012645c>] copy_process+0x97e/0x122f
+ #1:  (&mm->mmap_sem/1){--..}, at: [<c012646c>] copy_process+0x98e/0x122f
+ #2:  (&mm->page_table_lock){--..}, at: [<c0104bf5>] xen_dup_mmap+0x11/0x24
+ #3:  (__pte_lockptr(page)){--..}, at: [<c0105038>] pin_page+0x6a/0x167
 
-Does something like this make sense to you:
-
----
-Subject: lockdep: document __SPIN_LOCK_UNLOCKED() usage
-
-Small comment clarifying the intended usage of __SPIN_LOCK_UNLOCKED()
-
-[ for the observant readers; yes this prescribes a usage that is more
-  than strictly needed, it does however enable interesting future uses ]
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/include/linux/spinlock_types.h b/include/linux/spinlock_types.h
-index 68d88f7..4278558 100644
---- a/include/linux/spinlock_types.h
-+++ b/include/linux/spinlock_types.h
-@@ -63,6 +63,10 @@ typedef struct {
- # define RW_DEP_MAP_INIT(lockname)
- #endif
- 
-+/*
-+ * __*_LOCK_UNLOCKED(lockname), where 'lockname' is a valid C expression
-+ * that evaluates to the actual object being initialized.
-+ */
- #ifdef CONFIG_DEBUG_SPINLOCK
- # define __SPIN_LOCK_UNLOCKED(lockname)					\
- 	(spinlock_t)	{	.raw_lock = __RAW_SPIN_LOCK_UNLOCKED,	\
----
-
-Perhaps I should make the macros do something like:
-
-  typecheck(spinlock_t, lockname)
-
-And sweep the tree to make it compile again.
-
->  static struct diu_pool pool;
-> 
-> > +static struct diu_pool pool;
-> > +
-> > +/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
-> > + *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
-> > + *	very large memory (more than 4MB). We don't want to allocate all memory
-> > + *	in rheap since small memory allocation/deallocation will fragment the
-> > + *	rheap and make the furture large allocation fail.
-> > + */
-> > +
-> > +void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-> > +{
-> > +	void *virt;
-> > +
-> > +	pr_debug("size=%lu\n", size);
-> > +
-> > +	virt = (void *)__get_free_pages(GFP_DMA | GFP_ATOMIC, get_order(size));
-> 
-> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
-
-FWIW, I prefer the form: GFP_type | __GFP_modifiers
-
-For instance: 'GFP_KERNEL | __GFP_DMA | __GFP_ZERO'
+stack backtrace:
+Pid: 1, comm: init Not tainted 2.6.25-rc6-x86-latest.git-dirty #297
+ [<c0144049>] __lock_acquire+0x821/0xb50
+ [<c01443ee>] lock_acquire+0x76/0x9d
+ [<c0105038>] ? pin_page+0x6a/0x167
+ [<c0454537>] _spin_lock+0x23/0x32
+ [<c0105038>] ? pin_page+0x6a/0x167
+ [<c0105038>] pin_page+0x6a/0x167
+ [<c0104520>] pgd_walk+0x18f/0x1e1
+ [<c0104fce>] ? pin_page+0x0/0x167
+ [<c0104b20>] xen_pgd_pin+0x46/0x10a
+ [<c0104bfd>] xen_dup_mmap+0x19/0x24
+ [<c0126619>] copy_process+0xb3b/0x122f
+ [<c0126e6d>] do_fork+0xab/0x1dd
+ [<c017341b>] ? vfs_write+0xf1/0x108
+ [<c010877a>] ? sysenter_past_esp+0xba/0xc8
+ [<c0106cd5>] sys_clone+0x1f/0x21
+ [<c0108731>] sysenter_past_esp+0x71/0xc8
+ =======================
 
 
-
+Thanks,
+    J
