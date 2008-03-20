@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbYCTWZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYCTW0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759236AbYCTWZI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 18:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbYCTWYz
+	id S1759232AbYCTW0t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 18:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbYCTW0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 18:24:55 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:46485 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755907AbYCTWYz (ORCPT
+	Thu, 20 Mar 2008 18:26:41 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:36845 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755009AbYCTW0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 18:24:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: As4EAByB4kdMQWoK/2dsb2JhbACBWql7
-Date: Thu, 20 Mar 2008 18:24:53 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Jon Masters <jcm@jonmasters.org>,
-       Jon Masters <jcm@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 4/4] Markers Support for Proprierary Modules
-Message-ID: <20080320222453.GB15511@Krystal>
-References: <20080320002737.918213455@polymtl.ca> <20080320002835.384758480@polymtl.ca> <20080320191205.GA13309@elte.hu> <y0mzlst6tgi.fsf@ton.toronto.redhat.com> <20080320220540.GA29012@elte.hu>
-Mime-Version: 1.0
+	Thu, 20 Mar 2008 18:26:40 -0400
+X-Sasl-enc: vta66pgyatipGeSi5DgBR9aZ2oXEcW336TVO7X4mhYp0 1206051998
+Date: Thu, 20 Mar 2008 19:26:33 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation
+	patchset against -rc6)
+Message-ID: <20080320222633.GA20788@khazad-dum.debian.net>
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318232037.GA1670@elf.ucw.cz> <20080320151931.GD5615@khazad-dum.debian.net> <47E287D4.3060906@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080320220540.GA29012@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:23:52 up 20 days, 18:34,  6 users,  load average: 0.82, 0.81,
-	0.80
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <47E287D4.3060906@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Frank Ch. Eigler <fche@redhat.com> wrote:
-> 
-> > Ingo Molnar <mingo@elte.hu> writes:
-> > 
-[...]
-> > > [if the proprietary modules attach to kernel markers ...] then all 
-> > > the pressure is on those who _can_ fix their code - meaning the 
-> > > kernel subsystem maintainers that use [you mean: define] markers.
-> > 
-> > (In a way, it would be a nice problem to have.  At this moment, there 
-> > are still no markers actually committed within -mm nor -linus.)
-> 
-> ... which makes it doubly problematic to expose them to binary-only 
-> modules in any way, shape or form. Really, once _any_ kernel facility is 
-> used by such a module, it's pain for us to change it from that point on. 
-> Once markers are a 10 year concept that nobody in their right mind would 
-> want to change, sure, we dont _care_ about whether it's export or not, 
-> and basic courtesy might say that it's OK to do it. But to proactively 
-> export any aspect of a half-done piece of infrastructure is crazy.
-> 
-> 	Ingo
+On Thu, 20 Mar 2008, Alexey Starikovskiy wrote:
+> Henrique de Moraes Holschuh wrote:
+>> On Wed, 19 Mar 2008, Pavel Machek wrote:
+>>   
+>>>     Also, for polling mode to work on Acers, we need
+>>>     to insert a delay.
+>>
+>> Can we, in the future, always trigger any such performance damaging "fixups"
+>> based on DMI white/black lists?  As a rule?
+>>   
+> Poll mode is not supposed to be entered on any non-broken HW.
 
-I agree with you on this : maybe it would be better to wait a bit and
-let the core markers in first and learn from that before we open this up
-to proprierary modules.
+We have seen just how much we can trust that, haven't we?
 
-Mathieu
+The truth is that even secondary last-resort paths like this need to work
+well, and as fast as possible.  As things stand, we DO excercise them a lot
+more than we'd expect...
+
+> The fact that it happens now with Thinkpads at suspend is a bug.
+
+Sure, and one we should fix.  That doesn't change the fact that any broken
+HW (or one hit by a kernel bug) that is not as broken as some Acers don't
+need to take that 5ms hit on every EC transaction, in an EC mode that is
+already way too slow without extra help.
+
+> EC region should not be accessed with interrupts of GPEs disabled.
+
+Looks like something we should tack a WARN_ONCE to, at least when in a debug
+mode compile?
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
