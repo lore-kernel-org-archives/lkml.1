@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYCTKVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYCTKVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbYCTKVF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 06:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbYCTKUv
+	id S1756090AbYCTKVw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 06:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYCTKVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 06:20:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43341 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754125AbYCTKUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 06:20:50 -0400
-Date: Thu, 20 Mar 2008 03:20:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Higdon <jeremy@sgi.com>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Buffered I/O to block device very slow and other SCSI issues...
-Message-Id: <20080320032010.e640c52a.akpm@linux-foundation.org>
-In-Reply-To: <20080320010807.GA27620@sgi.com>
-References: <20080319231654.GA103321673@sgi.com>
-	<20080320010807.GA27620@sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Mar 2008 06:21:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33103 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754174AbYCTKVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 06:21:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Benjamin Thery" <ben.thery@gmail.com>
+Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command as non-root
+Date: Thu, 20 Mar 2008 11:21:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "David Miller" <davem@davemloft.net>, akpm@linux-foundation.org,
+       tilman@imap.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       pekkas@netcore.fi, yoshfuji@linux-ipv6.org, dlezcano@fr.ibm.com,
+       xemul@openvz.org, ebiederm@xmission.com
+References: <47D98510.60801@imap.cc> <20080319.154947.78332548.davem@davemloft.net> <939d53060803200126k563b9ae7l7197dea4e96ba1ed@mail.gmail.com>
+In-Reply-To: <939d53060803200126k563b9ae7l7197dea4e96ba1ed@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803201121.07633.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Mar 2008 18:08:07 -0700 Jeremy Higdon <jeremy@sgi.com> wrote:
->
-
-(cc's added.  It matters)
-
-> On Thu, Mar 20, 2008 at 10:16:54AM +1100, David Chinner wrote:
-> > 4p ia64, 24GB RAM, 2.6.25-rc3, qla1280, 15krpm scsi disk.
-> > 
-> > Direct I/O:
-> > 
-> > dgc@budgie:~/xfstests$ sudo dd if=/dev/zero of=/dev/sdb6 bs=1024k count=1024 oflag=direct
-> > 1024+0 records in
-> > 1024+0 records out
-> > 1073741824 bytes (1.1 GB) copied, 27.8974 s, 38.5 MB/s
-> > 
-> > Doing approximately 80 512k I/os per second (disk bandwidth).
-> > 
-> > Buffered I/O:
-> > 
-> > dgc@budgie:~/xfstests$ sudo dd if=/dev/zero of=/dev/sdb6 bs=1024k count=4096
-> > 4096+0 records in
-> > 4096+0 records out
-> > 4294967296 bytes (4.3 GB) copied, 427.872 s, 10.0 MB/s
+On Thursday, 20 of March 2008, Benjamin Thery wrote:
+> On Wed, Mar 19, 2008 at 11:49 PM, David Miller <davem@davemloft.net> wrote:
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> >  Date: Wed, 19 Mar 2008 14:16:08 -0700
+> >
+> >
+> >  > Although this is advertised as a 2.6.25-rc5-mm1 problem, I assume the
+> >  > regression is also in mainline? 2.6.25-rc6?
+> >
+> >  It is in 2.6.25-rc6, correct.
+> >
+> >  If Pavel or someone else doesn't produce a good fix soon
+> >  I'll revert the guilty change as this bug is worse than
+> >  the problem that changeset fixes.
 > 
-> How big is sdb6?  How many '2's do you see in
+> Andre Noll sent a patch to LKML, acked by Pavel:
 > 
-> 	factor `cat /sys/block/sdb/sdb6/size`
+> "Fix permissions of /proc/net"
+> http://thread.gmane.org/gmane.linux.kernel/655148
 
-There have always been problems with thsi and I'm not sure that anyone
-cared enough about buffered writes to blockdevs to get to the bottom of
-them.
+Have you tested that patch?
 
-I assume you aren't running i386 highmem...
-
-
-> > I also suspect that CTQ has not been set up correctly on this
-> > kernel, because:
-> > 
-> > $ cat /sys/block/sdb/device/queue_depth
-> > 3
-> > $ ls -l /sys/block/sdb/device/queue_depth
-> > -r--r--r-- 1 root root 0 Mar 20 09:59 /sys/block/sdb/device/queue_depth
-> > $
-> > 
-> > It appears to be hard coded to 3 and can't be changed....
-> 
-> That's a bug in the qla1280 driver.  I thought that had gotten fixed.
-> It's looking at the wrong mailbox register after setting device parameters.
-> 
-
-Was there a patch anywhere?
+Rafael
