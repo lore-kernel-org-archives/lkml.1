@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbYCTCuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbYCTDAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbYCTCuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 22:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYCTCuZ
+	id S1758886AbYCTDAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 23:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYCTDAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 22:50:25 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:50123 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbYCTCuY (ORCPT
+	Wed, 19 Mar 2008 23:00:16 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:29680 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754333AbYCTDAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 22:50:24 -0400
+	Wed, 19 Mar 2008 23:00:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Sq5RQTnym5bWA9BgfXuAwkQ7rbfObLJW20YcOO2DvRQnCKbaZDwXxm3aFI/py56AHMLmTgFn5ggsYzbKDYkHlWT8Cs6RKQDmctBI/fTorQxyeJFAbglgegTho5PzE1NSug7V5Qym1QFGw0c85D8nzdoIqmBPcBmjXykxmsmxk8Y=
-Message-ID: <a8e1da0803191950s1a656fffq98fbc180069814d9@mail.gmail.com>
-Date: Thu, 20 Mar 2008 10:50:22 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: bluetooth still corrupts memory in 2.6.25-rc6
-Cc: "Pavel Machek" <pavel@ucw.cz>, marcel@holtmann.org, maxk@qualcomm.com,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org
-In-Reply-To: <47E1A112.4060208@gmail.com>
+        b=rwBbkF0iMBvG1vG1O2vkplyhiIwS1JHafd836b6XqO7QXejbrWU34taObeXVY9fmQW0/uFSxkGdiB909oWxkSZSzvFaidPGn+cNPyyZYmhs7t3kzvYNK7C52WjJeHbDGPYmp3uoMlLlnVNY7+M4cW5twNjkFnOD0TxJ1SKwaRSc=
+Message-ID: <86802c440803192000x41a1383fxc2b58ed68e2375b7@mail.gmail.com>
+Date: Wed, 19 Mar 2008 20:00:13 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 0/79] smpboot integration
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <86802c440803191918y11af1269m39a7c7164f5f7d36@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080319082115.GA14543@elf.ucw.cz> <47E19BA1.8010905@gmail.com>
-	 <20080319230624.GJ1811@elf.ucw.cz> <47E1A112.4060208@gmail.com>
+References: <12059475744092-git-send-email-gcosta@redhat.com>
+	 <20080319173533.GA31576@elte.hu>
+	 <86802c440803191918y11af1269m39a7c7164f5f7d36@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 7:26 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Removed the bluez-devel@.
->
->
->  On 03/20/2008 12:06 AM, Pavel Machek wrote:
->  > On Thu 2008-03-20 00:02:57, Jiri Slaby wrote:
->  >> On 03/19/2008 09:21 AM, Pavel Machek wrote:
->  >>> ...just leave ppp-over-cellphone-over-bluetooth running, and do
->  >>> s2ram...
->  >>>
->  >>> Linux version 2.6.25-rc6 (pavel@amd) (gcc version 4.1.3 20071209 (prerelease) (Debian 4.1.2-18)) #186 SMP Wed Mar 19 00:46:05 CET 2008
->  >>> BIOS-provided physical RAM map:
->  >> Pavel, does the "still" from $SUBJ mean, that 2.6.24 is affected too (if
->  >> this is the same what I hit)?
+On Wed, Mar 19, 2008 at 7:18 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Wed, Mar 19, 2008 at 10:35 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >  >
->  > Hey, I did not do careful analysis. I believe it is the same problem
->  > that affects 2.6.24, too, yes. But I actually believe it is much older
->  > than that...
+>  >  * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+>  >
+>  >  > Testing and bisectability:
+>  >  >
+>  >  > The end result was tested in all my hardware (which includes qemu ;-).
+>  >  > It does not mean it will boot _your_ hardware, but I did my best ;-)
+>  >  >
+>  >  > The tree at least compiles in more than 20 randconfigs (for each of
+>  >  > x86_64 and i386) For i386, each of the subarchitectures was compiled
+>  >  > at least once. (By compile, I obviously mean, every patch,
+>  >  > individually)
+>  >
+>  >  very nice work! I'll pick it up - and i'm not too worried about
+>  >  breakages because at 80 patches granularity any problem should be
+>  >  identifiable in a very finegrained way.
+>  >
 >
->  If yes, then I got the crash by using hidp over l2cap with non-hid device
->  (session->input). I'm not sure if it was connected at all and even if hidd was
->  running (I tested moving with mouse by cellphone with switching on and off the
->  daemon, since it needed some little changes).
+>  it broke 4 sockets quad core above with 64 bit
 >
->  If you, hci fellows, are interested I might send more detailed description of
->  the crash tomorrow.
+>  Booting processor 11/15 ip 6000
+>  Initializing CPU#11
+>  masked ExtINT on CPU#11
+>  Calibrating delay using timer specific routine.. 4589.46 BogoMIPS (lpj=9178934)
+>  CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+>  CPU: L2 Cache: 512K (64 bytes/line)
+>  CPU 11/f -> Node 2
+>  CPU: Physical Processor ID: 2
+>  CPU: Processor Core ID: 3
+>  CPU11: Quad-Core AMD Opteron(tm) Processor 8356 stepping 03
+>  checking TSC synchronization [CPU#0 -> CPU#11]: passed.
+>  Booting processor 12/16 ip 6000
+>
+>  looks like local apic id up 4 bit is masked out. so can not start 0x10
+>  above any more.
 
-add linux-bluetooth@vger.kernel.org in cc
+in wakeup_secondary_via_INIT
+before the patchsets
+64 bit code:
 
->
->
-> --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+        /*
+         * Send IPI
+         */
+        apic_write(APIC_ICR, APIC_INT_LEVELTRIG | APIC_INT_ASSERT
+                                | APIC_DM_INIT);
+
+
+after patchset
+
+        /* Boot on the stack */
+        /* Kick the second */
+        apic_write_around(APIC_ICR, APIC_DM_NMI | APIC_DEST_LOGICAL);
+
+So that is wrong! esp for system has ext apic id that is has 8 bits
+instead of 4 bits.
+
+YH
