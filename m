@@ -1,45 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYCTFgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYCTFpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbYCTFgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 01:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYCTFg0
+	id S1754539AbYCTFpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 01:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYCTFpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 01:36:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:56253 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752641AbYCTFgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 01:36:25 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [patch 4/4] Markers Support for Proprierary Modules
-Date: Thu, 20 Mar 2008 16:35:30 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jon Masters <jcm@jonmasters.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jon Masters <jcm@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080320002737.918213455@polymtl.ca> <20080320002835.384758480@polymtl.ca>
-In-Reply-To: <20080320002835.384758480@polymtl.ca>
+	Thu, 20 Mar 2008 01:45:10 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:54766 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752885AbYCTFpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 01:45:08 -0400
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATCH] sched: fix race in schedule
+Date: Thu, 20 Mar 2008 11:14:57 +0530
+User-Agent: KMail/1.9.4
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, hpj@urpla.net
+References: <47D57770.50909@ct.jp.nec.com>
+In-Reply-To: <47D57770.50909@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803201635.30795.rusty@rustcorp.com.au>
+Message-Id: <200803201114.57956.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 March 2008 11:27:41 Mathieu Desnoyers wrote:
-> There seems to be good arguments for markers to support proprierary
-> modules. So I am throwing this one-liner in and let's see how people react.
-> It only makes sure that a module that has been "forced" to be loaded won't
-> have its markers used. It is important to leave this check to make sure the
-> kernel does not crash by expecting the markers part of the struct module by
-> mistake in the case there is an incorrect checksum.
+On Monday 10 March 2008 23:31, Hiroshi Shimamoto wrote:
+> Hi Ingo,
+>
+> I found a race condition in scheduler.
+> The first report is the below;
+> http://lkml.org/lkml/2008/2/26/459
+>
+> It took a bit long time to investigate and I couldn't have much time
+> last week. It is hard to reproduce but -rt is little easier because
+> it has preemptible spin lock and rcu.
+>
+> Could you please check the scenario and the patch.
+> It will be needed for the stable, too.
 
-OK, I've applied this to my tree.  That means it will be in 2.6.26 unless you 
-want me to push it earlier.
+Hi,
+
+I can recreate a problem that looks very similar to this on a kernel 
+based on 2.6.24.3-rt3. Hiroshi-san's patch seems to fix the problem for 
+me.
+
+Ingo, is this patch going to be included in the next -rt patch? I see 
+that it is already part of mainline.
 
 Thanks,
-Rusty.
+Sripathi.
+
+
+>
+> ---
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>
+> There is a race condition between schedule() and some dequeue/enqueue
+> functions; rt_mutex_setprio(), __setscheduler() and
+> sched_move_task().
+>
+> When scheduling to idle, idle_balance() is called to pull tasks from
+> other busy processor. It might drop the rq lock.
+> It means that those 3 functions encounter on_rq=0 and running=1.
+> The current task should be put when running.
+>
+> Here is a possible scenario;
+>    CPU0                               CPU1
+>
+>     |                              schedule()
+>     |                              ->deactivate_task()
+>     |                              ->idle_balance()
+>     |                              -->load_balance_newidle()
+>
+> rt_mutex_setprio()                     |
+>
+>     |                              --->double_lock_balance()
+>
+>     *get lock                          *rel lock
+>     * on_rq=0, ruuning=1               |
+>     * sched_class is changed           |
+>     *rel lock                          *get lock
+>
+>
+>                                    ->put_prev_task_rt()
+>                                    ->pick_next_task_fair()
+>                                        => panic
+>
+> The current process of CPU1(P1) is scheduling. Deactivated P1,
+> and the scheduler looks for another process on other CPU's runqueue
+> because CPU1 will be idle. idle_balance(), load_balance_newidle()
+> and double_lock_balance() are called and double_lock_balance() could
+> drop the rq lock. On the other hand, CPU0 is trying to boost the
+> priority of P1. The result of boosting only P1's prio and sched_class
+> are changed to RT. The sched entities of P1 and P1's group are never
+> put. It makes cfs_rq invalid, because the cfs_rq has curr and no
+> leaf, but pick_next_task_fair() is called, then the kernel panics.
+>
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  kernel/sched.c |   38 ++++++++++++++++----------------------
+>  1 files changed, 16 insertions(+), 22 deletions(-)
+>
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 52b9867..eedf748 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4268,11 +4268,10 @@ void rt_mutex_setprio(struct task_struct *p,
+> int prio) oldprio = p->prio;
+>  	on_rq = p->se.on_rq;
+>  	running = task_current(rq, p);
+> -	if (on_rq) {
+> +	if (on_rq)
+>  		dequeue_task(rq, p, 0);
+> -		if (running)
+> -			p->sched_class->put_prev_task(rq, p);
+> -	}
+> +	if (running)
+> +		p->sched_class->put_prev_task(rq, p);
+>
+>  	if (rt_prio(prio))
+>  		p->sched_class = &rt_sched_class;
+> @@ -4281,10 +4280,9 @@ void rt_mutex_setprio(struct task_struct *p,
+> int prio)
+>
+>  	p->prio = prio;
+>
+> +	if (running)
+> +		p->sched_class->set_curr_task(rq);
+>  	if (on_rq) {
+> -		if (running)
+> -			p->sched_class->set_curr_task(rq);
+> -
+>  		enqueue_task(rq, p, 0);
+>
+>  		check_class_changed(rq, p, prev_class, oldprio, running);
+> @@ -4581,19 +4579,17 @@ recheck:
+>  	update_rq_clock(rq);
+>  	on_rq = p->se.on_rq;
+>  	running = task_current(rq, p);
+> -	if (on_rq) {
+> +	if (on_rq)
+>  		deactivate_task(rq, p, 0);
+> -		if (running)
+> -			p->sched_class->put_prev_task(rq, p);
+> -	}
+> +	if (running)
+> +		p->sched_class->put_prev_task(rq, p);
+>
+>  	oldprio = p->prio;
+>  	__setscheduler(rq, p, policy, param->sched_priority);
+>
+> +	if (running)
+> +		p->sched_class->set_curr_task(rq);
+>  	if (on_rq) {
+> -		if (running)
+> -			p->sched_class->set_curr_task(rq);
+> -
+>  		activate_task(rq, p, 0);
+>
+>  		check_class_changed(rq, p, prev_class, oldprio, running);
+> @@ -7617,11 +7613,10 @@ void sched_move_task(struct task_struct *tsk)
+>  	running = task_current(rq, tsk);
+>  	on_rq = tsk->se.on_rq;
+>
+> -	if (on_rq) {
+> +	if (on_rq)
+>  		dequeue_task(rq, tsk, 0);
+> -		if (unlikely(running))
+> -			tsk->sched_class->put_prev_task(rq, tsk);
+> -	}
+> +	if (unlikely(running))
+> +		tsk->sched_class->put_prev_task(rq, tsk);
+>
+>  	set_task_rq(tsk, task_cpu(tsk));
+>
+> @@ -7630,11 +7625,10 @@ void sched_move_task(struct task_struct *tsk)
+>  		tsk->sched_class->moved_group(tsk);
+>  #endif
+>
+> -	if (on_rq) {
+> -		if (unlikely(running))
+> -			tsk->sched_class->set_curr_task(rq);
+> +	if (unlikely(running))
+> +		tsk->sched_class->set_curr_task(rq);
+> +	if (on_rq)
+>  		enqueue_task(rq, tsk, 0);
+> -	}
+>
+>  	task_rq_unlock(rq, &flags);
+>  }
