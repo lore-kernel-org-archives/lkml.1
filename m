@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966728AbYCTAiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940667AbYCTAis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966728AbYCTAiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S944128AbYCTASp
+	id S940667AbYCTAis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966421AbYCTAYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:18:45 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:53760 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S940198AbYCTASm (ORCPT
+	Wed, 19 Mar 2008 20:24:20 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:38976 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759550AbYCTAYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:18:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RCnDFGMBGCNHoBo2hNAM2Bcj/hqt5zXuIlq5ezI3THrwDDTlAYUMTPuxmMxJ8Q3wWAcaJ/MFzqjNed0U8ZSDHFWddgq8DopISdfE5UiQW1EBFN84np0PFwYQP624i0x68e6xLoqW67aoYjR1ttjTXb/z0qZZGU54ZLakKLB0hvw=
-Message-ID: <a8e1da0803191718o7f751306vf4d229d5e8fc133b@mail.gmail.com>
-Date: Thu, 20 Mar 2008 08:18:38 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [mmotm build error] Re: [PATCH] [3/3] Use WARN_ON_SECS in rcupreempt.h
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       paulmck@linux.vnet.ibm.com
-In-Reply-To: <20080319115716.e255e49e.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Mar 2008 20:24:16 -0400
+Date: Wed, 19 Mar 2008 17:23:10 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Luciano Rocha <luciano@eurotux.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: target headers_install: no linux/if_addrlabel.h (2.6.24.3)
+Message-Id: <20080319172310.08071b27.randy.dunlap@oracle.com>
+In-Reply-To: <20080318152437.GA29674@bit.office.eurotux.com>
+References: <20080318152437.GA29674@bit.office.eurotux.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080310063922.GC6745@darkstar.te-china.tietoenator.com>
-	 <20080319115716.e255e49e.randy.dunlap@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 2:57 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> HZ notdef; NO_HZ=y, HZ=250
->   CC      init/main.o
->  In file included from mmotm-2008-0318-1720/include/linux/rcupdate.h:59,
->                  from mmotm-2008-0318-1720/include/linux/rculist.h:10,
->                  from mmotm-2008-0318-1720/include/linux/dcache.h:8,
->                  from mmotm-2008-0318-1720/include/linux/fs.h:278,
->                  from mmotm-2008-0318-1720/include/linux/proc_fs.h:5,
->                  from mmotm-2008-0318-1720/init/main.c:14:
->  mmotm-2008-0318-1720/include/linux/rcupreempt.h: In function 'rcu_enter_nohz':
->   CC      init/do_mounts.o
->  mmotm-2008-0318-1720/include/linux/rcupreempt.h:92: error: 'HZ' undeclared (first use in this function)
->  mmotm-2008-0318-1720/include/linux/rcupreempt.h:92: error: (Each undeclared identifier is reported only once
->  mmotm-2008-0318-1720/include/linux/rcupreempt.h:92: error: for each function it appears in.)
->  mmotm-2008-0318-1720/include/linux/rcupreempt.h: In function 'rcu_exit_nohz':
->  mmotm-2008-0318-1720/include/linux/rcupreempt.h:99: error: 'HZ' undeclared (first use in this function)
->  make[2]: *** [init/main.o] Error 1
+On Tue, 18 Mar 2008 15:24:37 +0000 Luciano Rocha wrote:
 
-Hi,
-There's a fix from andrew, please see:
-http://lkml.org/lkml/2008/3/12/44
+> 
+> Hello,
+> 
+> I've compiled Linux 2.6.24.3 for arm, using gcc 4.3.0, and I get the
+> following error when trying to extract the kernel headers. Is this
+> known, or do I have a problem with my configuration?
+> 
+> $ nice make -C /home/luciano/work/gilix/v2/src/linux O=$PWD ARCH=arm \
+>   CROSS_COMPILE=arm-unknown-linux-gnueabi- V=1 \
+>   modules_install INSTALL_MOD_PATH=$PWD/dist \
+>   headers_install INSTALL_HDR_PATH=$PWD/dist/usr
+> 
+> ...
+>   scripts/unifdef -U__KERNEL__ /home/luciano/work/gilix/v2/src/linux/include/linux/icmpv6.h | sed 	-e "s/ inline / __inline__ /g" -e "s/[[:space:]]__user[[:space:]]\{1,\}/ /g" -e "s/(__user[[:space:]]\{1,\}/ (/g" -e "s/[[:space:]]__force[[:space:]]\{1,\}/ /g" -e "s/(__force[[:space:]]\{1,\}/ (/g" -e "s/[[:space:]]__iomem[[:space:]]\{1,\}/ /g" -e "s/(__iomem[[:space:]]\{1,\}/ (/g" -e "s/[[:space:]]__attribute_const__[[:space:]]\{1,\}/\ /g" -e "s/[[:space:]]__attribute_const__$//" -e "/^#include <linux\/compiler.h>/d" > /home/luciano/work/gilix/v2/build/linux/dist/usr/include/linux/icmpv6.h || :
+>   scripts/unifdef -U__KERNEL__ /home/luciano/work/gilix/v2/src/linux/include/linux/if_addr.h | sed 	-e "s/ inline / __inline__ /g" -e "s/[[:space:]]__user[[:space:]]\{1,\}/ /g" -e "s/(__user[[:space:]]\{1,\}/ (/g" -e "s/[[:space:]]__force[[:space:]]\{1,\}/ /g" -e "s/(__force[[:space:]]\{1,\}/ (/g" -e "s/[[:space:]]__iomem[[:space:]]\{1,\}/ /g" -e "s/(__iomem[[:space:]]\{1,\}/ (/g" -e "s/[[:space:]]__attribute_const__[[:space:]]\{1,\}/\ /g" -e "s/[[:space:]]__attribute_const__$//" -e "/^#include <linux\/compiler.h>/d" > /home/luciano/work/gilix/v2/build/linux/dist/usr/include/linux/if_addr.h || :
+> make[3]: *** No rule to make target `/home/luciano/work/gilix/v2/src/linux/include/linux/if_addrlabel.h', needed by `/home/luciano/work/gilix/v2/build/linux/dist/usr/include/linux/if_addrlabel.h'.  Stop.
+> make[2]: *** [linux] Error 2
+> make[1]: *** [headers_install] Error 2
+> make: *** [sub-make] Error 2
 
-Regards
-dave
+The fix for this is queued and will be present (fixed) in the
+next 2.6.24.x stable release.
+
+---
+~Randy
