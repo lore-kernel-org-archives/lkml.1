@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbYCTCb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbYCTCiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828AbYCTCb3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 22:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYCTCbU
+	id S1758979AbYCTCiA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 22:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYCTChu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 22:31:20 -0400
-Received: from ns2.suse.de ([195.135.220.15]:52309 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753183AbYCTCbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 22:31:18 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Date: Thu, 20 Mar 2008 13:31:07 +1100 (EST)
-Message-ID: <58229.192.168.1.70.1205980267.squirrel@neil.brown.name>
-In-Reply-To: <20080319223221.GL25636@fieldses.org>
-References: <20080312122550.GB8141@ics.muni.cz>
-    <20080312160007.GA10015@fieldses.org>
-    <20080313143631.GH27873@ics.muni.cz>
-    <20080314181413.GF2119@fieldses.org>
-    <20080314193350.GK2119@fieldses.org>
-    <20080314195303.GA4390@ics.muni.cz>
-    <20080314200510.GL2119@fieldses.org>
-    <20080314234205.GO2119@fieldses.org>
-    <18397.43768.705353.514972@notabene.brown>
-    <20080319223221.GL25636@fieldses.org>
-Subject: Re: Oops in NFSv4 server in 2.6.23.17
-Cc: "Lukas Hejtmanek" <xhejtman@ics.muni.cz>, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.13
+	Wed, 19 Mar 2008 22:37:50 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:44032 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbYCTCht (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 22:37:49 -0400
+X-Greylist: delayed 2234 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 22:37:49 EDT
+Date: Wed, 19 Mar 2008 19:00:33 -0700
+From: Bryce Harrington <bryce@canonical.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Justin Madru <jdm64@gawab.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression: 2.6.25-rc5: Blank Screen: Intel 945]
+Message-ID: <20080320015841.GB7206@bryceharrington.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803191648.59400.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-HELO: mylar.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, March 20, 2008 9:32 am, J. Bruce Fields wrote:
-> On Mon, Mar 17, 2008 at 10:19:20AM +1100, Neil Brown wrote:
->> On Friday March 14, bfields@fieldses.org wrote:
->> > On Fri, Mar 14, 2008 at 04:05:10PM -0400, bfields wrote:
->> > > I find that a little contorted.  So I'll go ahead and submit this
->> small
->> > > patch to 2.6.25 and stable now (I have since managed to reproduce
->> what I
->> > > believe is your bug, though my symptoms were a little different),
->> and
->> > > then submit to 2.6.26 some cleanup which makes this more
->> understandable,
->> >
->> > Here's an attempt.  We could break up fh_verify even more, though.--b.
->>
->> Looks like a good attempt.
->>
->> My only suggestion would be to put a comment at the top of
->> nfsd_set_fh_dentry explaining what it does and who calls it.
+On Wed, Mar 19, 2008 at 04:48:59PM -0700, Jesse Barnes wrote:
+> On Wednesday, March 19, 2008 4:38 pm Justin Madru wrote:
+> > Jesse, do you still think it's a bug in the X server driver instead of
+> > the kernel driver (dri I guess)? Because I can trigger the blank screen
+> > before the X server even starts. If I press ctr+alt+f1 at the _right_
+> > time when the kernel is booting (or I guess when the boot splash is
+> > showing) it will instantly blank out. That doesn't seem like something
+> > related to X.
 >
-> OK!  I'm planning to just add:
->
-> +/*
-> + * Use the given filehandle to look up the corresponding export and
-> + * dentry.  On success, the results are used to set fh_export and
-> + * fh_dentry.
-> + */
->  static __be32 nfsd_set_fh_dentry(struct svc_rqst *rqstp, struct svc_fh
-> *fhp)
->  {
->  	struct knfsd_fh	*fh = &fhp->fh_handle;
->
-> (Nothing about "who calls it", but it's static and its only caller is
-> fh_verify, so that seemed uninteresting.)  Anything else you were
-> looking for?
+> Depends on the boot splash program.  I think in some configurations it'll be X
+> based, but again Bryce probably knows more here as the Ubuntu X guy. :)
 
-No, that's adequate.
-The function name has one verb and 2 (or 3) nouns,  and it isn't clear
-how the verb relates to the nouns.  The comment you gave makes that
-clear.
+Mmm, well indeed that may be the kernel framebuffer.
 
-Thanks,
-NeilBrown
+Justin, one thing you could try is to set your system to boot up without
+starting gdm.  Either do this via /etc/X11/default-display-manager
+(comment it out, or set to xdm or something) or bypass it entirely by 
+mv /etc/rc3.d/{S30,K30}gdm, and then append '3' to the end of the boot line
+in grub.  (Maybe there's a better way to achieve this with upstart, but
+my upstart-fu is limited.)
 
+Bryce
