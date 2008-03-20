@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940820AbYCTAgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163459AbYCTAhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940820AbYCTAgp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966072AbYCTAJX
+	id S1163459AbYCTAhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934322AbYCTAQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:09:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57840
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S966063AbYCTAJV (ORCPT
+	Wed, 19 Mar 2008 20:16:54 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:38180 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S944094AbYCTAQv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:09:21 -0400
-Date: Wed, 19 Mar 2008 17:09:37 -0700 (PDT)
-Message-Id: <20080319.170937.247919863.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: drepper@gmail.com, andi@firstfloor.org, linux-kernel@vger.kernel.org,
+	Wed, 19 Mar 2008 20:16:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=qZrWXhXdTsb5f8FxLHn7COPZfLs4t+/KcLOMPpzJVB2kYVBB8H48vUJAkVls10ZHv/K+453MaYZWT0YYyQiDbt1nVUYK4bSiMXBxYQ7HkCDQt7sk2HnffmG8KLNKzDBoJmV8074gORtQcqaJj1pZHXKQjOIgr9NyTUEBarZQlPI=
+Date: Thu, 20 Mar 2008 01:15:20 +0100
+From: Diego Calleja <diegocg@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
 Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080319161211.2df88adc.akpm@linux-foundation.org>
-References: <20080319020440.80379d50.akpm@linux-foundation.org>
-	<a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com>
-	<20080319161211.2df88adc.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Message-Id: <20080320011520.60e151be.diegocg@gmail.com>
+In-Reply-To: <20080319020440.80379d50.akpm@linux-foundation.org>
+References: <20080318209.039112899@firstfloor.org>
+	<20080318003620.d84efb95.akpm@linux-foundation.org>
+	<20080318141828.GD11966@one.firstfloor.org>
+	<20080318095715.27120788.akpm@linux-foundation.org>
+	<20080318172045.GI11966@one.firstfloor.org>
+	<20080318104437.966c10ec.akpm@linux-foundation.org>
+	<20080319083228.GM11966@one.firstfloor.org>
+	<20080319020440.80379d50.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 19 Mar 2008 16:12:11 -0700
+El Wed, 19 Mar 2008 02:04:40 -0700, Andrew Morton <akpm@linux-foundation.org> escribió:
 
-> I did some work on that many years ago and I do recall that it
-> helped, but I forget how much.
+> Assuming that all users have the same access pattern might be inefficient,
+> a little bit.  There might be some advantage to making it per-user, dunno.
 
-I wrote such a patch ages ago as well.
+In the Dark Side of operating systems, the prefetching system they use
+can log several access patterns for a single executable, because a single
+executable can have different behaviours even for the same user, depending
+on what parameters the executable is passed and what COM machinery it
+uses. For example, wmplayer.exe can play a dvd, rip a CD, listen to a music
+stream, etc...diferent usages, different access patterns. Linux probably faces
+the same problem (bash, cat...)
 
-Frankly, based upon my experiences then and what I know now, I think
-it's a lose to do this.
+A alternative design for a userspace solution that doesn't needs LD_PRELOAD
+is to use CONFIG_PROC_EVENTS to get notifications of what processes are
+started, which can be used to poll its /proc files or try to preload data
+(asynchronously, and a bit hacky maybe).
 
-Better to 1) have enough ram and 2) make the reclaim smarter about
-important "executable" page cache pages.
+But if a kernel patch is really needed to implement this properly, maybe
+it'd be worth to take a look at the prefetch project that the Ubuntu guys
+are apparently going to merge in the next ubuntu development release (8.10)...
+https://wiki.ubuntu.com/DesktopTeam/Specs/Prefetch
+
+There are even kernel patches:
+http://code.google.com/p/prefetch/source/browse/tags/soc2007-end/trunk/kernel-patches/2.6.22/submitted/0001-prefetch-core.diff
+http://code.google.com/p/prefetch/source/browse/tags/soc2007-end/trunk/kernel-patches/2.6.22/submitted/0002-prefetch-boot.diff
