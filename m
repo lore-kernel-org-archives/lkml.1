@@ -1,255 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbYCTUYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYCTUYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbYCTUYf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757894AbYCTUVc
+	id S1759106AbYCTUYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbYCTUVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:21:32 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:61092 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755859AbYCTUVV (ORCPT
+	Thu, 20 Mar 2008 16:21:35 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:35545 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755586AbYCTUVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 16:21:21 -0400
-Message-Id: <20080320202121.494786000@chello.nl>
+	Thu, 20 Mar 2008 16:21:20 -0400
+Message-Id: <20080320202125.461846000@chello.nl>
 References: <20080320201042.675090000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 20 Mar 2008 21:10:48 +0100
+Date: Thu, 20 Mar 2008 21:11:10 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
        neilb@suse.de, miklos@szeredi.hu, penberg@cs.helsinki.fi,
        a.p.zijlstra@chello.nl
-Subject: [PATCH 06/30] mm: kmem_alloc_estimate()
-Content-Disposition: inline; filename=mm-kmem_estimate_pages.patch
+Subject: [PATCH 28/30] nfs: disable data cache revalidation for swapfiles
+Content-Disposition: inline; filename=nfs-swapper.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a method to get the upper bound on the pages needed to allocate
-a given number of objects from a given kmem_cache.
+Do as Trond suggested:
+  http://lkml.org/lkml/2006/8/25/348
 
-This lays the foundation for a generic reserve framework as presented in
-a later patch in this series. This framework needs to convert object demand
-(kmalloc() bytes, kmem_cache_alloc() objects) to pages.
+Disable NFS data cache revalidation on swap files since it doesn't really 
+make sense to have other clients change the file while you are using it.
+
+Thereby we can stop setting PG_private on swap pages, since there ought to
+be no further races with invalidate_inode_pages2() to deal with.
+
+And since we cannot set PG_private we cannot use page->private (which is
+already used by PG_swapcache pages anyway) to store the nfs_page. Thus
+augment the new nfs_page_find_request logic.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/slab.h |    4 ++
- mm/slab.c            |   75 +++++++++++++++++++++++++++++++++++++++++++++
- mm/slub.c            |   84 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 163 insertions(+)
+ fs/nfs/inode.c |    6 ++++
+ fs/nfs/write.c |   73 ++++++++++++++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 65 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/include/linux/slab.h
+Index: linux-2.6/fs/nfs/inode.c
 ===================================================================
---- linux-2.6.orig/include/linux/slab.h
-+++ linux-2.6/include/linux/slab.h
-@@ -60,6 +60,8 @@ void kmem_cache_free(struct kmem_cache *
- unsigned int kmem_cache_size(struct kmem_cache *);
- const char *kmem_cache_name(struct kmem_cache *);
- int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
-+unsigned kmem_alloc_estimate(struct kmem_cache *cachep,
-+			gfp_t flags, int objects);
+--- linux-2.6.orig/fs/nfs/inode.c
++++ linux-2.6/fs/nfs/inode.c
+@@ -764,6 +764,12 @@ int nfs_revalidate_mapping_nolock(struct
+ 	struct nfs_inode *nfsi = NFS_I(inode);
+ 	int ret = 0;
  
- /*
-  * Please use this macro to create slab caches. Simply specify the
-@@ -94,6 +96,8 @@ int kmem_ptr_validate(struct kmem_cache 
- void * __must_check krealloc(const void *, size_t, gfp_t);
- void kfree(const void *);
- size_t ksize(const void *);
-+unsigned kmalloc_estimate_fixed(size_t, gfp_t, int);
-+unsigned kmalloc_estimate_variable(gfp_t, size_t);
- 
- /*
-  * Allocator specific definitions. These are mainly used to establish optimized
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -2347,6 +2347,39 @@ const char *kmem_cache_name(struct kmem_
- EXPORT_SYMBOL(kmem_cache_name);
- 
- /*
-+ * Calculate the upper bound of pages required to sequentially allocate
-+ * @objects objects from @cachep.
-+ *
-+ * We should use s->min_objects because those are the least efficient.
-+ */
-+unsigned kmem_alloc_estimate(struct kmem_cache *s, gfp_t flags, int objects)
-+{
-+	unsigned long pages;
-+
-+	if (WARN_ON(!s) || WARN_ON(!s->min_objects))
-+		return 0;
-+
-+	pages = DIV_ROUND_UP(objects, s->min_objects) << get_order(s->size);
-+
 +	/*
-+	 * Account the possible additional overhead if the slab holds more that
-+	 * one object. Use s->max_objects because that's the worst case.
++	 * swapfiles are not supposed to be shared.
 +	 */
-+	if (s->max_objects > 1) {
-+		/*
-+		 * Account the possible additional overhead if per cpu slabs
-+		 * are currently empty and have to be allocated. This is very
-+		 * unlikely but a possible scenario immediately after
-+		 * kmem_cache_shrink.
-+		 */
-+		pages += num_online_cpus() << s->order;
-+	}
++	if (IS_SWAPFILE(inode))
++		goto out;
 +
-+	return pages;
-+}
-+EXPORT_SYMBOL_GPL(kmem_alloc_estimate);
-+
-+/*
-  * Attempt to free all slabs on a node. Return the number of slabs we
-  * were unable to free.
-  */
-@@ -2726,6 +2759,57 @@ static unsigned long count_partial_total
+ 	if ((nfsi->cache_validity & NFS_INO_REVAL_PAGECACHE)
+ 			|| nfs_attribute_timeout(inode) || NFS_STALE(inode)) {
+ 		ret = __nfs_revalidate_inode(NFS_SERVER(inode), inode);
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -112,25 +112,62 @@ static void nfs_context_set_write_error(
+ 	set_bit(NFS_CONTEXT_ERROR_WRITE, &ctx->flags);
  }
  
- /*
-+ * Calculate the upper bound of pages required to sequentially allocate
-+ * @count objects of @size bytes from kmalloc given @flags.
-+ */
-+unsigned kmalloc_estimate_fixed(size_t size, gfp_t flags, int count)
-+{
-+	struct kmem_cache *s = get_slab(size, flags);
-+	if (!s)
-+		return 0;
-+
-+	return kmem_alloc_estimate(s, flags, count);
-+
-+}
-+EXPORT_SYMBOL_GPL(kmalloc_estimate_fixed);
-+
-+/*
-+ * Calculate the upper bound of pages requires to sequentially allocate @bytes
-+ * from kmalloc in an unspecified number of allocations of nonuniform size.
-+ */
-+unsigned kmalloc_estimate_variable(gfp_t flags, size_t bytes)
-+{
-+	int i;
-+	unsigned long pages;
-+
-+	/*
-+	 * multiply by two, in order to account the worst case slack space
-+	 * due to the power-of-two allocation sizes.
-+	 */
-+	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
-+
-+	/*
-+	 * add the kmem_cache overhead of each possible kmalloc cache
-+	 */
-+	for (i = 1; i < PAGE_SHIFT; i++) {
-+		struct kmem_cache *s;
-+
-+#ifdef CONFIG_ZONE_DMA
-+		if (unlikely(flags & SLUB_DMA))
-+			s = dma_kmalloc_cache(i, flags);
-+		else
-+#endif
-+			s = &kmalloc_caches[i];
-+
-+		if (s)
-+			pages += kmem_alloc_estimate(s, flags, 0);
-+	}
-+
-+	return pages;
-+}
-+EXPORT_SYMBOL_GPL(kmalloc_estimate_variable);
-+
-+/*
-  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
-  * the remaining slabs by the number of items in use. The slabs with the
-  * most items in use come first. New allocations will then fill those up
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c
-+++ linux-2.6/mm/slab.c
-@@ -3847,6 +3847,81 @@ const char *kmem_cache_name(struct kmem_
- EXPORT_SYMBOL_GPL(kmem_cache_name);
+-static struct nfs_page *nfs_page_find_request_locked(struct page *page)
++static struct nfs_page *
++__nfs_page_find_request_locked(struct nfs_inode *nfsi, struct page *page, int get)
+ {
+ 	struct nfs_page *req = NULL;
  
- /*
-+ * Calculate the upper bound of pages required to sequentially allocate
-+ * @objects objects from @cachep.
-+ */
-+unsigned kmem_alloc_estimate(struct kmem_cache *cachep,
-+		gfp_t flags, int objects)
+-	if (PagePrivate(page)) {
++	if (PagePrivate(page))
+ 		req = (struct nfs_page *)page_private(page);
+-		if (req != NULL)
+-			kref_get(&req->wb_kref);
+-	}
++	else if (unlikely(PageSwapCache(page)))
++		req = radix_tree_lookup(&nfsi->nfs_page_tree, page_file_index(page));
++
++	if (get && req)
++		kref_get(&req->wb_kref);
++
+ 	return req;
+ }
+ 
++static inline struct nfs_page *
++nfs_page_find_request_locked(struct nfs_inode *nfsi, struct page *page)
 +{
-+	/*
-+	 * (1) memory for objects,
-+	 */
-+	unsigned nr_slabs = DIV_ROUND_UP(objects, cachep->num);
-+	unsigned nr_pages = nr_slabs << cachep->gfporder;
-+
-+	/*
-+	 * (2) memory for each per-cpu queue (nr_cpu_ids),
-+	 * (3) memory for each per-node alien queues (nr_cpu_ids), and
-+	 * (4) some amount of memory for the slab management structures
-+	 *
-+	 * XXX: truely account these
-+	 */
-+	nr_pages += 1 + ilog2(nr_pages);
-+
-+	return nr_pages;
++	return __nfs_page_find_request_locked(nfsi, page, 1);
 +}
 +
-+/*
-+ * Calculate the upper bound of pages required to sequentially allocate
-+ * @count objects of @size bytes from kmalloc given @flags.
-+ */
-+unsigned kmalloc_estimate_fixed(size_t size, gfp_t flags, int count)
++static int __nfs_page_has_request(struct page *page)
 +{
-+	struct kmem_cache *s = kmem_find_general_cachep(size, flags);
-+	if (!s)
-+		return 0;
++	struct inode *inode = page_file_mapping(page)->host;
++	struct nfs_page *req = NULL;
 +
-+	return kmem_alloc_estimate(s, flags, count);
++	spin_lock(&inode->i_lock);
++	req = __nfs_page_find_request_locked(NFS_I(inode), page, 0);
++	spin_unlock(&inode->i_lock);
++
++	/*
++	 * hole here plugged by the caller holding onto PG_locked
++	 */
++
++	return req != NULL;
 +}
-+EXPORT_SYMBOL_GPL(kmalloc_estimate_fixed);
 +
-+/*
-+ * Calculate the upper bound of pages requires to sequentially allocate @bytes
-+ * from kmalloc in an unspecified number of allocations of nonuniform size.
-+ */
-+unsigned kmalloc_estimate_variable(gfp_t flags, size_t bytes)
++static inline int nfs_page_has_request(struct page *page)
 +{
-+	unsigned long pages;
-+	struct cache_sizes *csizep = malloc_sizes;
++	if (PagePrivate(page))
++		return 1;
 +
++	if (unlikely(PageSwapCache(page)))
++		return __nfs_page_has_request(page);
++
++	return 0;
++}
++
+ static struct nfs_page *nfs_page_find_request(struct page *page)
+ {
+ 	struct inode *inode = page_file_mapping(page)->host;
+ 	struct nfs_page *req = NULL;
+ 
+ 	spin_lock(&inode->i_lock);
+-	req = nfs_page_find_request_locked(page);
++	req = nfs_page_find_request_locked(NFS_I(inode), page);
+ 	spin_unlock(&inode->i_lock);
+ 	return req;
+ }
+@@ -252,7 +289,7 @@ static int nfs_page_async_flush(struct n
+ 
+ 	spin_lock(&inode->i_lock);
+ 	for(;;) {
+-		req = nfs_page_find_request_locked(page);
++		req = nfs_page_find_request_locked(NFS_I(inode), page);
+ 		if (req == NULL) {
+ 			spin_unlock(&inode->i_lock);
+ 			return 0;
+@@ -367,8 +404,14 @@ static void nfs_inode_add_request(struct
+ 		if (nfs_have_delegation(inode, FMODE_WRITE))
+ 			nfsi->change_attr++;
+ 	}
+-	SetPagePrivate(req->wb_page);
+-	set_page_private(req->wb_page, (unsigned long)req);
 +	/*
-+	 * multiply by two, in order to account the worst case slack space
-+	 * due to the power-of-two allocation sizes.
++	 * Swap-space should not get truncated. Hence no need to plug the race
++	 * with invalidate/truncate.
 +	 */
-+	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
-+
-+	/*
-+	 * add the kmem_cache overhead of each possible kmalloc cache
-+	 */
-+	for (csizep = malloc_sizes; csizep->cs_cachep; csizep++) {
-+		struct kmem_cache *s;
-+
-+#ifdef CONFIG_ZONE_DMA
-+		if (unlikely(flags & __GFP_DMA))
-+			s = csizep->cs_dmacachep;
-+		else
-+#endif
-+			s = csizep->cs_cachep;
-+
-+		if (s)
-+			pages += kmem_alloc_estimate(s, flags, 0);
++	if (likely(!PageSwapCache(req->wb_page))) {
++		SetPagePrivate(req->wb_page);
++		set_page_private(req->wb_page, (unsigned long)req);
 +	}
-+
-+	return pages;
-+}
-+EXPORT_SYMBOL_GPL(kmalloc_estimate_variable);
-+
-+/*
-  * This initializes kmem_list3 or resizes various caches for all nodes.
-  */
- static int alloc_kmemlist(struct kmem_cache *cachep)
+ 	nfsi->npages++;
+ 	kref_get(&req->wb_kref);
+ 	radix_tree_tag_set(&nfsi->nfs_page_tree, req->wb_index,
+@@ -386,8 +429,10 @@ static void nfs_inode_remove_request(str
+ 	BUG_ON (!NFS_WBACK_BUSY(req));
+ 
+ 	spin_lock(&inode->i_lock);
+-	set_page_private(req->wb_page, 0);
+-	ClearPagePrivate(req->wb_page);
++	if (likely(!PageSwapCache(req->wb_page))) {
++		set_page_private(req->wb_page, 0);
++		ClearPagePrivate(req->wb_page);
++	}
+ 	radix_tree_delete(&nfsi->nfs_page_tree, req->wb_index);
+ 	nfsi->npages--;
+ 	if (!nfsi->npages) {
+@@ -593,7 +638,7 @@ static struct nfs_page * nfs_update_requ
+ 		}
+ 
+ 		spin_lock(&inode->i_lock);
+-		req = nfs_page_find_request_locked(page);
++		req = nfs_page_find_request_locked(NFS_I(inode), page);
+ 		if (req) {
+ 			if (!nfs_set_page_tag_locked(req)) {
+ 				int error;
+@@ -1460,7 +1505,7 @@ int nfs_wb_page_cancel(struct inode *ino
+ 		if (ret < 0)
+ 			goto out;
+ 	}
+-	if (!PagePrivate(page))
++	if (!nfs_page_has_request(page))
+ 		return 0;
+ 	ret = nfs_sync_mapping_wait(page_file_mapping(page), &wbc, FLUSH_INVALIDATE);
+ out:
+@@ -1487,7 +1532,7 @@ static int nfs_wb_page_priority(struct i
+ 		if (ret < 0)
+ 			goto out;
+ 	}
+-	if (!PagePrivate(page))
++	if (!nfs_page_has_request(page))
+ 		return 0;
+ 	ret = nfs_sync_mapping_wait(page_file_mapping(page), &wbc, how);
+ 	if (ret >= 0)
 
 --
 
