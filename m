@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765104AbYCTAsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYCTAxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765104AbYCTAsh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbYCTAsU
+	id S1760006AbYCTAxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYCTAxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:48:20 -0400
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:44885 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753119AbYCTAsS (ORCPT
+	Wed, 19 Mar 2008 20:53:38 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:49525 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbYCTAxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:48:18 -0400
-X-Greylist: delayed 2848 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 20:48:18 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=mattstone.net; h=date:from:to:
-	subject:message-id:mime-version:content-type; q=dns; s=selector1; b=
-	G3pNxMZSijBKijPlbUq3iWgPZPSMQQ+TD4w4fOVJRnnI4YBE9CQ81XIYnKbuEbMo
-	eWf3UR4C7kfaotaxk27MoCbWl7LD3rg5RWHqlBjOjqtOMvTdWUO+Zj4doOFAmfTH
-	X1DsYBcxCJjNcXWIGAjgqFEVQycbCUjreDV8G3rflb0=
-Date: Tue, 18 Mar 2008 21:43:56 +0000
-From: Matt Richards <matt@mattstone.net>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: RFC2644 (Enable Directed Broadcasts option)
-Message-ID: <20080318214355.GA13933@mattstone.net>
+	Wed, 19 Mar 2008 20:53:37 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] net: yellowfin parenthesis fix
+Date: Thu, 20 Mar 2008 01:53:27 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803200153.27730.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+	The code is under unused #ifdef NO_TXSTATS branch but its better
+to have it fixed. The patch is against 2.6.25-rc5-mm1.
 
-Hello,=20
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Is it possible in the 2.6 kernels to enable linux routers to forward
-directed broadcasts to the locally connected network?
-
-The broadcast packet is routed OK until it hits the router that is
-directly connected to the broadcast domain the packet is addresses to
-and then it just appears to get dropped.
-
-I have been reading that there isn't an option to enable these packets
-to be forwarded or 'exploded' onto the correct network, if this is the
-case is there anyway that I can make this work ?
-
-Thanks for any feedback,
-
-Matt.
-
-
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH4DebrmnybSDmzlsRAkYpAKCOtWmzPz/LuLjo4Kg2oaJmqhTQjQCePzcS
-2kTSEa0kG9d6hqfYweWT4JI=
-=p8sI
------END PGP SIGNATURE-----
-
---gKMricLos+KVdGMg--
-
+--- linux-2.6.25-rc5-mm1-a/drivers/net/yellowfin.c	2008-03-20 01:35:48.000000000 +0100
++++ linux-2.6.25-rc5-mm1-b/drivers/net/yellowfin.c	2008-03-20 01:36:46.000000000 +0100
+@@ -770,14 +770,14 @@ static void yellowfin_init_ring(struct n
+ 		/* Branch on Tx error. */
+ 		yp->tx_ring[j].dbdma_cmd = cpu_to_le32(CMD_STOP);
+ 		yp->tx_ring[j].branch_addr = cpu_to_le32(yp->tx_ring_dma +
+-			(j+1)*sizeof(struct yellowfin_desc);
++			(j+1)*sizeof(struct yellowfin_desc));
+ 		j++;
+ 		if (yp->flags & FullTxStatus) {
+ 			yp->tx_ring[j].dbdma_cmd =
+ 				cpu_to_le32(CMD_TXSTATUS | sizeof(*yp->tx_status));
+ 			yp->tx_ring[j].request_cnt = sizeof(*yp->tx_status);
+ 			yp->tx_ring[j].addr = cpu_to_le32(yp->tx_status_dma +
+-				i*sizeof(struct tx_status_words);
++				i*sizeof(struct tx_status_words));
+ 		} else {
+ 			/* Symbios chips write only tx_errs word. */
+ 			yp->tx_ring[j].dbdma_cmd =
