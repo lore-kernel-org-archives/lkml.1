@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbYCTTWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbYCTTXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756424AbYCTTWx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 15:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbYCTTWo
+	id S1756927AbYCTTXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 15:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYCTTXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 15:22:44 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:15254 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754473AbYCTTWn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 15:22:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IwtCrOQ4gBPiUYThmpHp/sje6mBoyZiixtoE746OSK3flFsOTYvY6LrZNH4aSIWxIqFshyf2ojJ60NQZM+/PmLlpg2h3a3m8wfo971debDNZWv2pzpFWONcXd832eHRV7R8WmyS0lro69LeGXQyECA8PZYuGVfvSul9TxeAbOG8=
-Subject: Re: [RFC PATCH] kernel: add byteorder macros with alignment fixups
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-netdev <netdev@vger.kernel.org>
-In-Reply-To: <20080320190953.GR10722@ZenIV.linux.org.uk>
-References: <1206034454.17059.4.camel@brick>
-	 <20080320182911.GQ10722@ZenIV.linux.org.uk>
-	 <1206038244.17059.7.camel@brick>
-	 <20080320190953.GR10722@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 20 Mar 2008 12:22:33 -0700
-Message-Id: <1206040953.17059.13.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Mar 2008 15:23:35 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:48104 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754465AbYCTTXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 15:23:34 -0400
+Date: Thu, 20 Mar 2008 12:22:07 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [1/2] vmalloc: Show vmalloced areas via /proc/vmallocinfo
+In-Reply-To: <20080319210436.191bb8fe@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0803201141250.10592@schroedinger.engr.sgi.com>
+References: <20080318222701.788442216@sgi.com> <20080318222827.291587297@sgi.com>
+ <20080319210436.191bb8fe@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create linux/unaligned.h to hold a common pattern in the kernel:
+On Wed, 19 Mar 2008, Arjan van de Ven wrote:
 
-le32_to_cpu(get_unaligned((__le32 *)x));
+> > +	proc_create("vmallocinfo",S_IWUSR|S_IRUGO, NULL,
+> why should non-root be able to read this? sounds like a security issue (info leak) to me...
 
-Repeat for various combinations of le/be and 64/32/16 bit.  Add
-a variant that operates on possibly unaligned pointers to
-byteorder/generic.h
+Well I copied from the slabinfo logic (leaking info for slabs is okay?).
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Lets restrict it to root then:
+
+
+
+Subject: vmallocinfo: Only allow root to read /proc/vmallocinfo
+
+Change permissions for /proc/vmallocinfo to only allow read
+for root.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
 ---
-Now the indirect include of asm/unaligned is opt-in when places
-add the linux/unaligned header.
+ fs/proc/proc_misc.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
- include/linux/unaligned.h |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/unaligned.h b/include/linux/unaligned.h
-new file mode 100644
-index 0000000..7d8fddc
---- /dev/null
-+++ b/include/linux/unaligned.h
-@@ -0,0 +1,42 @@
-+#ifndef _LINUX_UNALIGNED_H_
-+#define _LINUX_UNALIGNED_H_
-+
-+#include <linux/types.h>
-+#include <asm/byteorder.h>
-+#include <asm/unaligned.h>
-+
-+#ifdef __KERNEL__
-+
-+static inline u64 le64_to_cpu_unaligned(void *p)
-+{
-+	return __le64_to_cpu(get_unaligned((__le64 *)p));
-+}
-+
-+static inline u32 le32_to_cpu_unaligned(void *p)
-+{
-+	return __le32_to_cpu(get_unaligned((__le32 *)p));
-+}
-+
-+static inline u16 le16_to_cpu_unaligned(void *p)
-+{
-+	return __le16_to_cpu(get_unaligned((__le16 *)p));
-+}
-+
-+static inline u64 be64_to_cpu_unaligned(void *p)
-+{
-+	return __be64_to_cpu(get_unaligned((__be64 *)p));
-+}
-+
-+static inline u32 be32_to_cpu_unaligned(void *p)
-+{
-+	return __be32_to_cpu(get_unaligned((__be32 *)p));
-+}
-+
-+static inline u16 be16_to_cpu_unaligned(void *p)
-+{
-+	return __be16_to_cpu(get_unaligned((__be16 *)p));
-+}
-+
-+#endif /* KERNEL */
-+
-+#endif /* _LINUX_UNALIGNED_H */
--- 
-1.5.4.4.684.g0e08
-
-
-
+Index: linux-2.6.25-rc5-mm1/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.25-rc5-mm1.orig/fs/proc/proc_misc.c	2008-03-20 12:14:20.215358835 -0700
++++ linux-2.6.25-rc5-mm1/fs/proc/proc_misc.c	2008-03-20 12:23:01.920887750 -0700
+@@ -1002,8 +1002,7 @@ void __init proc_misc_init(void)
+ 	proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
+ #endif
+ #endif
+-	proc_create("vmallocinfo",S_IWUSR|S_IRUGO, NULL,
+-						&proc_vmalloc_operations);
++	proc_create("vmallocinfo",S_IRUSR, NULL, &proc_vmalloc_operations);
+ 	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
+ 	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
+ 	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
