@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYCTPoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbYCTPvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbYCTPoI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 11:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYCTPny
+	id S1756276AbYCTPvL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 11:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYCTPuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 11:43:54 -0400
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:45428 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753244AbYCTPny (ORCPT
+	Thu, 20 Mar 2008 11:50:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:40161 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753519AbYCTPuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 11:43:54 -0400
-Message-ID: <47E28637.4010700@tiscali.nl>
-Date: Thu, 20 Mar 2008 16:43:51 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 20 Mar 2008 11:50:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=UVkMr8hWHJxQHVjxQVDCeZYzlGi5Jb5XHvoCMRUXaPdP524H8OE0U/RpIe1iTjrB7h8usHdjyHcF/4DSr8DVdMCrRUFMSQF824lGf1YDK8DjiVFh0nxsalrEBcPRgiBiEzAt+JFisi9M9tAUT3bYPIb/7xlzgumk51BEsvp7sDY=
+Message-ID: <47E287D4.3060906@gmail.com>
+Date: Thu, 20 Mar 2008 18:50:44 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: khc@pm.waw.pl
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drivers/net/wan/wanxl.c: time_before(timeout, jiffies) ->
- jiffies, timeout
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Pavel Machek <pavel@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend slow in 2.6.25-rc6 (was Re: Suspend and hibernation patchset
+ against -rc6)
+References: <200803120129.25585.rjw@sisk.pl> <200803172317.33745.rjw@sisk.pl> <20080318130642.GA1609@elf.ucw.cz> <20080318130710.GB1609@elf.ucw.cz> <alpine.LFD.1.00.0803181028400.3020@woody.linux-foundation.org> <20080318232037.GA1670@elf.ucw.cz> <20080320151931.GD5615@khazad-dum.debian.net>
+In-Reply-To: <20080320151931.GD5615@khazad-dum.debian.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not tested, please confirm it's right
----
-fix reversal of timeout and jiffies
+Henrique de Moraes Holschuh wrote:
+> On Wed, 19 Mar 2008, Pavel Machek wrote:
+>   
+>>     Also, for polling mode to work on Acers, we need
+>>     to insert a delay.
+>>     
+>
+> Can we, in the future, always trigger any such performance damaging "fixups"
+> based on DMI white/black lists?  As a rule?
+>   
+Poll mode is not supposed to be entered on any non-broken HW.
+The fact that it happens now with Thinkpads at suspend is a bug.
+EC region should not be accessed with interrupts of GPEs disabled.
+> This is not the first time I see a vendor push broken crap, and everyone
+> else who did it right get the shaft, because people don't like to add
+> quirks to common code.  We get performance enhancement features disabled,
+> mdelays added...
+>
+> And for the do-as-windows-does crowd, they do it on vendor­issued device
+> drivers, which obviously don't hork everyone else's devices.  Our equivalent
+> solution is to key things to DMI matches.   This is worth keeping in mind,
+> because the ACPI subsystem seems to be a common target for such bad
+> behaviour.
+>
+>   
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/net/wan/wanxl.c b/drivers/net/wan/wanxl.c
-index d4aab8a..f61413b 100644
---- a/drivers/net/wan/wanxl.c
-+++ b/drivers/net/wan/wanxl.c
-@@ -650,7 +650,7 @@ static int __devinit wanxl_pci_init_one(struct pci_dev *pdev,
- 
- 	timeout = jiffies + 20 * HZ;
- 	while ((stat = readl(card->plx + PLX_MAILBOX_0)) != 0) {
--		if (time_before(timeout, jiffies)) {
-+		if (time_before(jiffies, timeout)) {
- 			printk(KERN_WARNING "wanXL %s: timeout waiting for"
- 			       " PUTS to complete\n", pci_name(pdev));
- 			wanxl_pci_remove_one(pdev);
