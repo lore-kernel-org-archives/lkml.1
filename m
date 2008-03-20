@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYCTH54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYCTH60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbYCTH54 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 03:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYCTH5r
+	id S1755870AbYCTH60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 03:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYCTH6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 03:57:47 -0400
-Received: from sacred.ru ([62.205.161.221]:39586 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753525AbYCTH5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 03:57:46 -0400
-Message-ID: <47E218AF.2030402@openvz.org>
-Date: Thu, 20 Mar 2008 10:56:31 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 20 Mar 2008 03:58:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:64957 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753879AbYCTH6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 03:58:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=eFLKCJuaeYoHNJTMPvtFjj7BuzwP8hspe4FVSIrJRtDFf3bk3WwpvVHs7Nxr1IKhvFFJ6JI7O1IEq78LCN3OO8j3RjAXAg6VUoSZ4yzjnf2iZ7p+Y0JQ2Hc5FIAyJiRuUfFYtG97cSlvpNY8+Oyt8H1HhLNbQDapOQ0njwKP1ok=
+Message-ID: <2f11576a0803200058k4ee85bf1se6abe272c496c39d@mail.gmail.com>
+Date: Thu, 20 Mar 2008 16:58:07 +0900
+From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
+To: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
+Subject: Re: [BUG?] 2.6.25-rc[23]-mm1 cgroup list corruption under load with VM Scalability patches
+Cc: "Paul Menage" <menage@google.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1205863811.5032.26.camel@localhost>
 MIME-Version: 1.0
-To: Andre Noll <maan@systemlinux.org>, "David S. Miller" <davem@davemloft.net>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Thery <benjamin.thery@bull.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Fix permissions of /proc/net
-References: <20080319115135.GM32242@skl-net.de>
-In-Reply-To: <20080319115135.GM32242@skl-net.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Mar 2008 10:56:27 +0300 (MSK)
+Content-Disposition: inline
+References: <1204745828.6244.31.camel@localhost>
+	 <6599ad830803051309g22d5b746ta30c4f28a394572c@mail.gmail.com>
+	 <1205863811.5032.26.camel@localhost>
+X-Google-Sender-Auth: f20f87bbe9009692
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andre Noll wrote:
-> commit f205a545ee62e0f0f797c1e2b0bd2062d96414b3
-> Author: Andre Noll <maan@congo.fml.local>
-> Date:   Wed Mar 19 11:39:55 2008 +0100
-> 
-> From: Andre Noll <maan@systemlinux.org>
-> 
-> commit e9720ac ([NET]: Make /proc/net a symlink on /proc/self/net (v3))
-> broke ganglia and probably other applications that read /proc/net/dev.
+Hi
 
-This also broke the postfix, as it was reported in bug #10286
-and described in detail by Benjamin.
+CC'ed KAMEZAWA-san
 
-> This is due to the change of permissions of /proc/net that was
-> introduced in that commit.
-> 
-> Before: dr-xr-xr-x 5 root root 0 Mar 19 11:30 /proc/net
-> After: dr-xr--r-- 5 root root 0 Mar 19 11:29 /proc/self/net
-> 
-> This patch restores the permissions to the old value which makes ganglia
-> happy again.
+>  > > list_del corruption in cgroup_exit() on 16 cpu, 32GB ia64 NUMA platform.
+>  > >
+>  > >  I've been seeing this for a while now, but we've had known problems
+>  > >  [page leaks, ...] with the VM scalability series.  Now the system
+>  > >  appears to be running very well with these patches under stress loads
+>  > >  that would hang it or cause OOM kill of tests with plenty of swap space
+>  > >  left.  Eventually, [after 40-45 minutes], I hit a list corruption in
+>  > >  cgroup_exit().
+>  > >
+>  > >  I can't say for sure that our patches aren't causing this, but I've been
+>  > >  unable to keep the system up long enough under the stress load w/o the
+>  > >  splitlru+noreclaim patches to hit the problem.
 
-And it fixes the problem reported by Benjamin.
-Thanks, Andre!
+sorry for late responce, I don't notice this thread.
+fujitsu guys investigated that problem too.
 
-> Signed-off-by: Andre Noll <maan@systemlinux.org>
+AFAIK this problem already fixed KAMEZAWA-san.
+but I don't know that patch merged -mm or not.
 
-Acked-by: Pavel Emelyanov <xemul@openvz.org>
- 
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index 8a10f6f..81d7d14 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -2290,7 +2290,7 @@ static const struct pid_entry tgid_base_stuff[] = {
->  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
->  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
->  #ifdef CONFIG_NET
-> -	DIR("net",        S_IRUGO|S_IXUSR, net),
-> +	DIR("net",        S_IRUGO|S_IXUGO, net),
->  #endif
->  	REG("environ",    S_IRUSR, environ),
->  	INF("auxv",       S_IRUSR, pid_auxv),
-
+kamezawa-san, please let us know its status?
