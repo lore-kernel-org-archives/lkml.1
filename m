@@ -1,65 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYCTHFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYCTHPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbYCTHFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 03:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYCTHFM
+	id S1755207AbYCTHPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 03:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYCTHP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 03:05:12 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37379 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYCTHFK (ORCPT
+	Thu, 20 Mar 2008 03:15:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:9312 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbYCTHP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 03:05:10 -0400
-Date: Thu, 20 Mar 2008 08:05:45 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, marcel@holtmann.org, maxk@qualcomm.com,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org
-Subject: Re: bluetooth still corrupts memory in 2.6.25-rc6
-Message-ID: <20080320070545.GA17356@elf.ucw.cz>
-References: <20080319082115.GA14543@elf.ucw.cz> <47E19BA1.8010905@gmail.com> <20080319230624.GJ1811@elf.ucw.cz> <47E1A112.4060208@gmail.com> <a8e1da0803191950s1a656fffq98fbc180069814d9@mail.gmail.com>
+	Thu, 20 Mar 2008 03:15:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=lGz3fs99Sfk/u0yIGitP5r6dWMWLCxs09V6pItftwhUgcuI4AaIw97vFKjTjO8oY4MyUalB4xTHbJy7HhCDnvaMLP2lTpC76mpc/TQmUw5ZPql733WhQuVVVtEeklrWGXEB925ZabbvOuxnjEO7K5XAE0+P2WwIMs4jxN4cIyAg=
+Message-ID: <dd18b0c30803200015l355a1313k44885ba2f51d400c@mail.gmail.com>
+Date: Thu, 20 Mar 2008 07:15:26 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: fglrx
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <a8e1da0803191950s1a656fffq98fbc180069814d9@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hello;
+Thank you very much for the diffs on fglrx to get it working.
 
-> >  >>> ...just leave ppp-over-cellphone-over-bluetooth running, and do
-> >  >>> s2ram...
-> >  >>>
-> >  >>> Linux version 2.6.25-rc6 (pavel@amd) (gcc version 4.1.3 20071209 (prerelease) (Debian 4.1.2-18)) #186 SMP Wed Mar 19 00:46:05 CET 2008
-> >  >>> BIOS-provided physical RAM map:
-> >  >> Pavel, does the "still" from $SUBJ mean, that 2.6.24 is affected too (if
-> >  >> this is the same what I hit)?
-> >  >
-> >  > Hey, I did not do careful analysis. I believe it is the same problem
-> >  > that affects 2.6.24, too, yes. But I actually believe it is much older
-> >  > than that...
-> >
-> >  If yes, then I got the crash by using hidp over l2cap with non-hid device
-> >  (session->input). I'm not sure if it was connected at all and even if hidd was
-> >  running (I tested moving with mouse by cellphone with switching on and off the
-> >  daemon, since it needed some little changes).
 
-If you have easy/reproducible way of triggering that crash, yes that
-would be useful.
-
-...just leave ppp-over-cellphone-over-bluetooth running, and do
-s2ram... takes few tries to reproduce, and you need to set up ppp each
-time, so it is quite nasty to debug...
-
-> >  If you, hci fellows, are interested I might send more detailed description of
-> >  the crash tomorrow.
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+Justin P. Mattock
