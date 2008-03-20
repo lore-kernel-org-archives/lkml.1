@@ -1,37 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYCTIou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYCTIyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbYCTIou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 04:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYCTIoj
+	id S1754752AbYCTIyy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 04:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYCTIyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 04:44:39 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:35251 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbYCTIoh (ORCPT
+	Thu, 20 Mar 2008 04:54:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46405 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbYCTIyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 04:44:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=KNUKvo99BzRpGlv+8UfSZDKRxEeOKYGpEeuk3nIMglV7YH0wXlnrscS1bDwla5ih7/Gk2gc4+dDIJx0nCpBSouW7QBkagkTJ8iJJSg+NUTyfD2WnSt9AR9Ohb/sbnK2t9W/qb5NBLkTHAKvjc2etxYSegDCTwAs+hY1JYvWlgmM=
-Message-ID: <47E223E9.6000908@gmail.com>
-Date: Thu, 20 Mar 2008 09:44:25 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Kevin Shanahan <kmshanah@ucwb.org.au>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+	Thu, 20 Mar 2008 04:54:43 -0400
 Subject: Re: OOM (HighMem) on linux 2.6.24.2
-References: <1205974089.4023.20.camel@kulgan.wumi.org.au>
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kevin Shanahan <kmshanah@ucwb.org.au>
+Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <1205974089.4023.20.camel@kulgan.wumi.org.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+References: <1205974089.4023.20.camel@kulgan.wumi.org.au>
+Content-Type: text/plain
+Date: Thu, 20 Mar 2008 09:54:35 +0100
+Message-Id: <1206003275.8514.399.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/20/2008 01:48 AM, Kevin Shanahan wrote:
+On Thu, 2008-03-20 at 11:18 +1030, Kevin Shanahan wrote:
 > I'm running a vanilla 2.6.24.2 kernel on an x86 system with 2GB physical
 > RAM. We had a problem yesterday where Samba and Apache both "died" and
 > AFAIK, we weren't able to ssh into the system. One of our staff was able
@@ -104,12 +99,17 @@ On 03/20/2008 01:48 AM, Kevin Shanahan wrote:
 > on here. Does it look there's anything weird going on in kernel space
 > based on this, or did something in userspace really just exhaust all
 > memory?
+> 
+> The best I can understand from the log, the problem the kernel detected
+> was that HighMem fell below the low watermark. Also very strange to see
+> that it says we have no free swap space - normally we only see a handful
+> of pages from the whole ~1GB of swap being used, even after weeks of
+> uptime.
 
-lsmod, lspci, lsusb, .config, /proc/mounts would be good, please, I think I get 
-this too time to time on latest -mm (akpm).
+Looks like you just ran out of memory, swap is filled up, memory is
+pretty much used up, except for !HIGHMEM which even though it has enough
+free memory does report all_unreclaimable=1. This suggests this is a
+second OOM not the first, are you sure this is the first OOM on that
+box?
 
-Could somebody from -mm (memory) interpret the output, I must admit, I don't 
-understand too much by who all the memory is held. The inactive 339150 is memory 
-which was not touched for longer time got from __get_free_page* and might be 
-swapped out, right?
 
