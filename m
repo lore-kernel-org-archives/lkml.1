@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYCTXp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbYCTXsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757995AbYCTXp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 19:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbYCTXpS
+	id S1758656AbYCTXsZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 19:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYCTXsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 19:45:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45094 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921AbYCTXpR (ORCPT
+	Thu, 20 Mar 2008 19:48:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60273 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754824AbYCTXsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 19:45:17 -0400
-Subject: Re: How to avoid spurious lockdep warnings?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <47E2ECF3.2050606@goop.org>
-References: <47E2ECF3.2050606@goop.org>
-Content-Type: text/plain
-Date: Fri, 21 Mar 2008 00:44:58 +0100
-Message-Id: <1206056698.6437.70.camel@lappy>
+	Thu, 20 Mar 2008 19:48:16 -0400
+Date: Thu, 20 Mar 2008 16:47:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: David Brownell <david-b@pacbell.net>, Richard Purdie <rpurdie@rpsys.net>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+Message-Id: <20080320164741.734e838c.akpm@linux-foundation.org>
+In-Reply-To: <20080320225612.GB20788@khazad-dum.debian.net>
+References: <20080316184349.GA28543@khazad-dum.debian.net>
+	<200803161246.23909.david-b@pacbell.net>
+	<20080318001429.896acf51.akpm@linux-foundation.org>
+	<20080320225612.GB20788@khazad-dum.debian.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-20 at 16:02 -0700, Jeremy Fitzhardinge wrote:
-> In a Xen system, when a new pagetable is about to be put in use it is 
-> "pinned", meaning that each page in the pagetable is registered with the 
-> hypervisor.  This is done in arch/x86/xen/mmu.c:pin_page().
-> 
-> In order to make this efficient, the hypercalls for pinning are batched, 
-> so that multiple pages are submitted at once in a single multicall.  
-> While a page is batched pending the hypercall, its corresponding 
-> pte_lock is held.
-> 
-> This means that the code can end up holding multiple pte locks at once, 
-> though it is guaranteed to never try to hold the same lock at once.  
-> However, because these locks are in the same lock class, I get a 
-> spurious warning from lockdep.  Is there some way I can get rid of this 
-> warning?
+On Thu, 20 Mar 2008 19:56:12 -0300 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
 
-How many locks at once?
+> Can we add "in_scheduleable()", or maybe "can_schedule()", that returns
+> in_atomic() if CONFIG_PREEMT, or 0 if there is no way to know?   To my
+> limited knowledge of how that part of the kernel works, it would do the
+> right thing.
+
+If we did that, then people would use it.  And that would be bad.  It'll
+lead to code which behaves differently on non-preemptible kernels, to code
+which works less well on non-preemptible kernels and it will lead to less
+well-thought-out code in general.
+
+Really, this all points at an ill-designed part of the leds interface.  The
+consistent pattern we use in the kernel is that callers keep track of
+whether they are running in a schedulable context and, if necessary, they
+will inform callees about that.  Callees don't work it out for themselves.
 
