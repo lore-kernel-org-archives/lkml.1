@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbYCTOjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbYCTOk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbYCTOjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 10:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYCTOjM
+	id S1756929AbYCTOk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 10:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbYCTOj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 10:39:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:35927 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755727AbYCTOjK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 10:39:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d+zIVmy8WhuxEc0UnAPvrVxrDK4qR7R2DpjerGIsLdP+pXiT5a3vextYTGFUNv7zIdmw+pgSAdpwerU/w6oXGZcrw1IowTKuT4+1R7aPr7DFONHS46a5AxCkUo+SiRSggJHuR7Ss+bF23/Pt9msLA6DGHE/km3vmx0KDSzTq1wI=
-Message-ID: <87a5b0800803200739v6d222afck850f221eae1edd70@mail.gmail.com>
-Date: Thu, 20 Mar 2008 14:39:08 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: [PATCH/RFC] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig symbol
-Cc: "Daniel Drake" <dsd@gentoo.org>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <1206023695.16475.137.camel@johannes.berg>
+	Thu, 20 Mar 2008 10:39:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35472 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756236AbYCTOjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 10:39:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Benjamin Thery" <ben.thery@gmail.com>
+Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command as non-root
+Date: Thu, 20 Mar 2008 15:38:52 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Pavel Emelyanov" <xemul@openvz.org>, "David Miller" <davem@davemloft.net>,
+       akpm@linux-foundation.org, tilman@imap.cc, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, pekkas@netcore.fi, yoshfuji@linux-ipv6.org,
+       dlezcano@fr.ibm.com, ebiederm@xmission.com
+References: <47D98510.60801@imap.cc> <47E25DF5.3090107@openvz.org> <939d53060803200648s422969b5m429fa444bdcacc35@mail.gmail.com>
+In-Reply-To: <939d53060803200648s422969b5m429fa444bdcacc35@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1206023695.16475.137.camel@johannes.berg>
+Message-Id: <200803201538.53377.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 2:34 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
+On Thursday, 20 of March 2008, Benjamin Thery wrote:
+> On Thu, Mar 20, 2008 at 1:52 PM, Pavel Emelyanov <xemul@openvz.org> wrote:
+> >
+> > Rafael J. Wysocki wrote:
+> >  > On Thursday, 20 of March 2008, Benjamin Thery wrote:
+> >  >> On Wed, Mar 19, 2008 at 11:49 PM, David Miller <davem@davemloft.net> wrote:
+> >  >>> From: Andrew Morton <akpm@linux-foundation.org>
+> >  >>>  Date: Wed, 19 Mar 2008 14:16:08 -0700
+> >  >>>
+> >  >>>
+> >  >>>  > Although this is advertised as a 2.6.25-rc5-mm1 problem, I assume the
+> >  >>>  > regression is also in mainline? 2.6.25-rc6?
+> >  >>>
+> >  >>>  It is in 2.6.25-rc6, correct.
+> >  >>>
+> >  >>>  If Pavel or someone else doesn't produce a good fix soon
+> >  >>>  I'll revert the guilty change as this bug is worse than
+> >  >>>  the problem that changeset fixes.
+> >  >> Andre Noll sent a patch to LKML, acked by Pavel:
+> >  >>
+> >  >> "Fix permissions of /proc/net"
+> >  >> http://thread.gmane.org/gmane.linux.kernel/655148
+> >  >
+> >  > Have you tested that patch?
+> >
+> >  I did - works OK, that's why I Acked it.
+> 
+> Also tested here. It fixes the regression.
 
->  +For some ethernet hardware that cannot DMA to unaligned addresses like
->  +4*n+2 or non-ethernet hardware, this can be a problem, and it is then
->  +required to copy the incoming frame into an aligned buffer. Because this is
->  +unnecessary on architectures that can do unaligned accesses, the code can be
->  +made depend on CONFIG_ARCH_CAN_UNALIGNED_ACCESS like so:
->  +
->  +#ifdef CONFIG_ARCH_CAN_UNALIGNED_ACCESS
->  +       skb = copy skb
->  +#else
->  +       skb = original skb
->  +#endif
+OK, thanks.
 
-Is this logic reversed?
+Rafael
