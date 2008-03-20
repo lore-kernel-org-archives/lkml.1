@@ -1,116 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYCTDch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYCTDfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbYCTDch (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 23:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYCTDc0
+	id S1754195AbYCTDfi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 23:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750698AbYCTDf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 23:32:26 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:13341 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbYCTDcY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 23:32:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wzam6JD7Erz8tY4JXC8u13X7N0mkRF3NgL/p8m0WzaH6tUeZPgCU7cihLikyHorgT7OU8V2Tu67VufIyyKbF3p4BIixXFevx7jffABzzm8tzlgke5nlzMb/SMIHB6Xxaus27QbLsKrfXyG5mwxfDBjEIo8YIt0fUGg+Jw4dlKK4=
-Message-ID: <86802c440803192032r2aa15a10pb32ef15fcfc693e7@mail.gmail.com>
-Date: Wed, 19 Mar 2008 20:32:24 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/79] smpboot integration
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <86802c440803192000x41a1383fxc2b58ed68e2375b7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Mar 2008 23:35:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52130 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbYCTDf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 23:35:27 -0400
+Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
+	hibernation callbacks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.44L0.0803191101050.4958-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0803191101050.4958-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Thu, 20 Mar 2008 14:33:28 +1100
+Message-Id: <1205984008.26869.408.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12059475744092-git-send-email-gcosta@redhat.com>
-	 <20080319173533.GA31576@elte.hu>
-	 <86802c440803191918y11af1269m39a7c7164f5f7d36@mail.gmail.com>
-	 <86802c440803192000x41a1383fxc2b58ed68e2375b7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 8:00 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> On Wed, Mar 19, 2008 at 7:18 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  > On Wed, Mar 19, 2008 at 10:35 AM, Ingo Molnar <mingo@elte.hu> wrote:
->  >  >
->  >  >  * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
->  >  >
->  >  >  > Testing and bisectability:
->  >  >  >
->  >  >  > The end result was tested in all my hardware (which includes qemu ;-).
->  >  >  > It does not mean it will boot _your_ hardware, but I did my best ;-)
->  >  >  >
->  >  >  > The tree at least compiles in more than 20 randconfigs (for each of
->  >  >  > x86_64 and i386) For i386, each of the subarchitectures was compiled
->  >  >  > at least once. (By compile, I obviously mean, every patch,
->  >  >  > individually)
->  >  >
->  >  >  very nice work! I'll pick it up - and i'm not too worried about
->  >  >  breakages because at 80 patches granularity any problem should be
->  >  >  identifiable in a very finegrained way.
->  >  >
->  >
->  >  it broke 4 sockets quad core above with 64 bit
->  >
->  >  Booting processor 11/15 ip 6000
->  >  Initializing CPU#11
->  >  masked ExtINT on CPU#11
->  >  Calibrating delay using timer specific routine.. 4589.46 BogoMIPS (lpj=9178934)
->  >  CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
->  >  CPU: L2 Cache: 512K (64 bytes/line)
->  >  CPU 11/f -> Node 2
->  >  CPU: Physical Processor ID: 2
->  >  CPU: Processor Core ID: 3
->  >  CPU11: Quad-Core AMD Opteron(tm) Processor 8356 stepping 03
->  >  checking TSC synchronization [CPU#0 -> CPU#11]: passed.
->  >  Booting processor 12/16 ip 6000
->  >
->  >  looks like local apic id up 4 bit is masked out. so can not start 0x10
->  >  above any more.
->
->  in wakeup_secondary_via_INIT
->  before the patchsets
->  64 bit code:
->
->         /*
->          * Send IPI
->          */
->         apic_write(APIC_ICR, APIC_INT_LEVELTRIG | APIC_INT_ASSERT
->                                 | APIC_DM_INIT);
->
->
->  after patchset
->
->         /* Boot on the stack */
->         /* Kick the second */
->         apic_write_around(APIC_ICR, APIC_DM_NMI | APIC_DEST_LOGICAL);
->
->  So that is wrong! esp for system has ext apic id that is has 8 bits
->  instead of 4 bits.
->
 
-it seems there is two wakeup_secondary_cpu. one for NMI and one INIT.
+> That was in fact the original plan, before Rafael changed over to
+> calling prepare() just prior to suspend().
 
-but should have
+Heh, ok :-)
 
-#define WAKE_SECONDARY_VIA_INIT
+> Your analysis is right.  Removal isn't a problem; we don't care if 
+> drivers are prohibited from registering new children when they are 
+> unbound.  In general we want to make it possible to unregister devices 
+> at any time during the suspend-resume procedure (except of course that 
+> a device can't be unregistered while one of its methods is running).
+> 
+> An important point I tried to make in the earlier email is that drivers
+> will want a simple way to know when it is illegal for them to register
+> new children.  For example, suppose the registration is done by a
+> workqueue routine.  The most reliable way for the driver to insure that
+> the routine won't try to register new children improperly is to have
+> the routine check a flag which gets set _before_ prepare() is called.
 
-for x86_64
+I don't totally agree here. Drivers could have their own flag set
+internally with appropriate locking. The problem with your approach is
+locking. Just setting a flag is mostly useless, -unless- there
+appropriate locking between setter and testers. 
 
-but after
+For example, the flags we talked about previously, the one set _after_
+prepare that causes device_add() to fail, this one must have its setting
+done within the same mutex/lock as device_add() internally uses to
+protect the list. Or something along those lines.
 
-#ifdef CONFIG_X86_64
-#undef WAKE_SECONDARY_VIA_NMI
-#define WAKE_SECONDARY_VIA_INIT
-#endif
+Now, your idea of having the core set some other flag to tell drivers to
+stop doing addition wouldn't work here because the driver would -not-
+hold the core device list mutex between testing it and performing the
+addition.
 
-it still doesn't work.
+As a general matter, the driver would need to internally, using it's own
+locking mechanisms, ensure that it will not do any further device_add,
+and that's not something the core can help with. In our case, that could
+be acheived by flushing the work queues and ensuring we don't queue
+another one, or using some driver internal semaphore to set a "stop
+adding" flag whatever... 
 
-YH
+However, I think this is mostly a non-issue, because the core _does_
+provide something here that is useful for drivers who don't want to
+bother with the above: The failure return from device_add. If drivers
+don't want to do something akin to what I described, they can just be
+made to deal gracefully with the failure from device_add that would
+happen due to the core internal flag being set after the return from
+prepare().
+
+So I don't think we need anything else.
+
+Cheers,
+Ben.
+
+
