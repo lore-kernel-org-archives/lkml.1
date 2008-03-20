@@ -1,288 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbYCTU2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbYCTU2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759982AbYCTU2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757788AbYCTUWQ
+	id S1760060AbYCTU2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYCTUWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:22:16 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:54505 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755408AbYCTUVP (ORCPT
+	Thu, 20 Mar 2008 16:22:41 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:38736 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755402AbYCTUVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Mar 2008 16:21:15 -0400
-Message-Id: <20080320202123.998629000@chello.nl>
+Message-Id: <20080320202123.869960000@chello.nl>
 References: <20080320201042.675090000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 20 Mar 2008 21:10:59 +0100
+Date: Thu, 20 Mar 2008 21:10:58 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
        neilb@suse.de, miklos@szeredi.hu, penberg@cs.helsinki.fi,
        a.p.zijlstra@chello.nl
-Subject: [PATCH 17/30] netvm: network reserve infrastructure
-Content-Disposition: inline; filename=netvm-reserve.patch
+Subject: [PATCH 16/30] net: sk_allocation() - concentrate socket related allocations
+Content-Disposition: inline; filename=net-sk_allocation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide the basic infrastructure to reserve and charge/account network memory.
-
-We provide the following reserve tree:
-
-1)  total network reserve
-2)    network TX reserve
-3)      protocol TX pages
-4)    network RX reserve
-5)      SKB data reserve
-
-[1] is used to make all the network reserves a single subtree, for easy
-manipulation.
-
-[2] and [4] are merely for eastetic reasons.
-
-The TX pages reserve [3] is assumed bounded by it being the upper bound of
-memory that can be used for sending pages (not quite true, but good enough)
-
-The SKB reserve [5] is an aggregate reserve, which is used to charge SKB data
-against in the fallback path.
-
-The consumers for these reserves are sockets marked with:
-  SOCK_MEMALLOC
-
-Such sockets are to be used to service the VM (iow. to swap over). They
-must be handled kernel side, exposing such a socket to user-space is a BUG.
+Introduce sk_allocation(), this function allows to inject sock specific
+flags to each sock related allocation.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h |   43 ++++++++++++++++++++-
- net/Kconfig        |    3 +
- net/core/sock.c    |  107 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 152 insertions(+), 1 deletion(-)
+ include/net/sock.h    |    5 +++++
+ net/ipv4/tcp.c        |    3 ++-
+ net/ipv4/tcp_output.c |   12 +++++++-----
+ net/ipv6/tcp_ipv6.c   |   15 ++++++++++-----
+ 4 files changed, 24 insertions(+), 11 deletions(-)
 
+Index: linux-2.6/net/ipv4/tcp_output.c
+===================================================================
+--- linux-2.6.orig/net/ipv4/tcp_output.c
++++ linux-2.6/net/ipv4/tcp_output.c
+@@ -2078,7 +2078,8 @@ void tcp_send_fin(struct sock *sk)
+ 	} else {
+ 		/* Socket is locked, keep trying until memory is available. */
+ 		for (;;) {
+-			skb = alloc_skb_fclone(MAX_TCP_HEADER, GFP_KERNEL);
++			skb = alloc_skb_fclone(MAX_TCP_HEADER,
++					       sk_allocation(sk, GFP_KERNEL));
+ 			if (skb)
+ 				break;
+ 			yield();
+@@ -2104,7 +2105,7 @@ void tcp_send_active_reset(struct sock *
+ 	struct sk_buff *skb;
+ 
+ 	/* NOTE: No TCP options attached and we never retransmit this. */
+-	skb = alloc_skb(MAX_TCP_HEADER, priority);
++	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, priority));
+ 	if (!skb) {
+ 		NET_INC_STATS(LINUX_MIB_TCPABORTFAILED);
+ 		return;
+@@ -2171,7 +2172,8 @@ struct sk_buff *tcp_make_synack(struct s
+ 	__u8 *md5_hash_location;
+ #endif
+ 
+-	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1, GFP_ATOMIC);
++	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1,
++			sk_allocation(sk, GFP_ATOMIC));
+ 	if (skb == NULL)
+ 		return NULL;
+ 
+@@ -2425,7 +2427,7 @@ void tcp_send_ack(struct sock *sk)
+ 	 * tcp_transmit_skb() will set the ownership to this
+ 	 * sock.
+ 	 */
+-	buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
++	buff = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
+ 	if (buff == NULL) {
+ 		inet_csk_schedule_ack(sk);
+ 		inet_csk(sk)->icsk_ack.ato = TCP_ATO_MIN;
+@@ -2460,7 +2462,7 @@ static int tcp_xmit_probe_skb(struct soc
+ 	struct sk_buff *skb;
+ 
+ 	/* We don't queue it, tcp_transmit_skb() sets ownership. */
+-	skb = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
++	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
+ 	if (skb == NULL)
+ 		return -1;
+ 
 Index: linux-2.6/include/net/sock.h
 ===================================================================
 --- linux-2.6.orig/include/net/sock.h
 +++ linux-2.6/include/net/sock.h
-@@ -51,6 +51,7 @@
- #include <linux/skbuff.h>	/* struct sk_buff */
- #include <linux/mm.h>
- #include <linux/security.h>
-+#include <linux/reserve.h>
- 
- #include <linux/filter.h>
- 
-@@ -406,6 +407,7 @@ enum sock_flags {
- 	SOCK_RCVTSTAMPNS, /* %SO_TIMESTAMPNS setting */
- 	SOCK_LOCALROUTE, /* route locally only, %SO_DONTROUTE setting */
- 	SOCK_QUEUE_SHRUNK, /* write queue has been shrunk recently */
-+	SOCK_MEMALLOC, /* the VM depends on us - make sure we're serviced */
- };
- 
- static inline void sock_copy_flags(struct sock *nsk, struct sock *osk)
-@@ -428,9 +430,48 @@ static inline int sock_flag(struct sock 
+@@ -427,6 +427,11 @@ static inline int sock_flag(struct sock 
  	return test_bit(flag, &sk->sk_flags);
  }
  
-+static inline int sk_has_memalloc(struct sock *sk)
++static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
 +{
-+	return sock_flag(sk, SOCK_MEMALLOC);
++	return gfp_mask;
 +}
 +
-+extern struct mem_reserve net_rx_reserve;
-+extern struct mem_reserve net_skb_reserve;
-+
-+#ifdef CONFIG_NETVM
-+/*
-+ * Guestimate the per request queue TX upper bound.
-+ *
-+ * Max packet size is 64k, and we need to reserve that much since the data
-+ * might need to bounce it. Double it to be on the safe side.
-+ */
-+#define TX_RESERVE_PAGES DIV_ROUND_UP(2*65536, PAGE_SIZE)
-+
-+extern int memalloc_socks;
-+
-+static inline int sk_memalloc_socks(void)
-+{
-+	return memalloc_socks;
-+}
-+
-+extern int sk_adjust_memalloc(int socks, long tx_reserve_pages);
-+extern int sk_set_memalloc(struct sock *sk);
-+extern int sk_clear_memalloc(struct sock *sk);
-+#else
-+static inline int sk_memalloc_socks(void)
-+{
-+	return 0;
-+}
-+
-+static inline int sk_clear_memalloc(struct sock *sk)
-+{
-+	return 0;
-+}
-+#endif
-+
- static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
- {
--	return gfp_mask;
-+	return gfp_mask | (sk->sk_allocation & __GFP_MEMALLOC);
- }
- 
  static inline void sk_acceptq_removed(struct sock *sk)
-Index: linux-2.6/net/core/sock.c
-===================================================================
---- linux-2.6.orig/net/core/sock.c
-+++ linux-2.6/net/core/sock.c
-@@ -112,6 +112,7 @@
- #include <linux/tcp.h>
- #include <linux/init.h>
- #include <linux/highmem.h>
-+#include <linux/reserve.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -213,6 +214,105 @@ __u32 sysctl_rmem_default __read_mostly 
- /* Maximal space eaten by iovec or ancilliary data plus some space */
- int sysctl_optmem_max __read_mostly = sizeof(unsigned long)*(2*UIO_MAXIOV+512);
- 
-+static struct mem_reserve net_reserve;
-+struct mem_reserve net_rx_reserve;
-+EXPORT_SYMBOL_GPL(net_rx_reserve); /* modular ipv6 only */
-+struct mem_reserve net_skb_reserve;
-+EXPORT_SYMBOL_GPL(net_skb_reserve); /* modular ipv6 only */
-+static struct mem_reserve net_tx_reserve;
-+static struct mem_reserve net_tx_pages;
-+
-+#ifdef CONFIG_NETVM
-+static DEFINE_MUTEX(memalloc_socks_lock);
-+int memalloc_socks;
-+
-+/**
-+ *	sk_adjust_memalloc - adjust the global memalloc reserve for critical RX
-+ *	@socks: number of new %SOCK_MEMALLOC sockets
-+ *	@tx_resserve_pages: number of pages to (un)reserve for TX
-+ *
-+ *	This function adjusts the memalloc reserve based on system demand.
-+ *	The RX reserve is a limit, and only added once, not for each socket.
-+ *
-+ *	NOTE:
-+ *	   @tx_reserve_pages is an upper-bound of memory used for TX hence
-+ *	   we need not account the pages like we do for RX pages.
-+ */
-+int sk_adjust_memalloc(int socks, long tx_reserve_pages)
-+{
-+	int err;
-+
-+	mutex_lock(&memalloc_socks_lock);
-+	err = mem_reserve_pages_add(&net_tx_pages, tx_reserve_pages);
-+	if (err)
-+		goto unlock;
-+
-+	/*
-+	 * either socks is positive and we need to check for 0 -> !0
-+	 * transition and connect the reserve tree when we observe it.
-+	 */
-+	if (!memalloc_socks && socks > 0) {
-+		err = mem_reserve_connect(&net_reserve, &mem_reserve_root);
-+		if (err) {
-+			/*
-+			 * if we failed to connect the tree, undo the tx
-+			 * reserve so that failure has no side effects.
-+			 */
-+			mem_reserve_pages_add(&net_tx_pages, -tx_reserve_pages);
-+			goto unlock;
-+		}
-+	}
-+	memalloc_socks += socks;
-+	/*
-+	 * or socks is negative and we must observe the !0 -> 0 transition
-+	 * and disconnect the reserve tree.
-+	 */
-+	if (!memalloc_socks && socks)
-+		mem_reserve_disconnect(&net_reserve);
-+
-+unlock:
-+	mutex_unlock(&memalloc_socks_lock);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(sk_adjust_memalloc);
-+
-+/**
-+ *	sk_set_memalloc - sets %SOCK_MEMALLOC
-+ *	@sk: socket to set it on
-+ *
-+ *	Set %SOCK_MEMALLOC on a socket and increase the memalloc reserve
-+ *	accordingly.
-+ */
-+int sk_set_memalloc(struct sock *sk)
-+{
-+	int set = sock_flag(sk, SOCK_MEMALLOC);
-+
-+	if (!set) {
-+		int err = sk_adjust_memalloc(1, 0);
-+		if (err)
-+			return err;
-+
-+		sock_set_flag(sk, SOCK_MEMALLOC);
-+		sk->sk_allocation |= __GFP_MEMALLOC;
-+	}
-+	return !set;
-+}
-+EXPORT_SYMBOL_GPL(sk_set_memalloc);
-+
-+int sk_clear_memalloc(struct sock *sk)
-+{
-+	int set = sock_flag(sk, SOCK_MEMALLOC);
-+	if (set) {
-+		sk_adjust_memalloc(-1, 0);
-+		sock_reset_flag(sk, SOCK_MEMALLOC);
-+		sk->sk_allocation &= ~__GFP_MEMALLOC;
-+	}
-+	return set;
-+}
-+EXPORT_SYMBOL_GPL(sk_clear_memalloc);
-+#endif
-+
- static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
  {
- 	struct timeval tv;
-@@ -968,6 +1068,7 @@ void sk_free(struct sock *sk)
- {
- 	struct sk_filter *filter;
- 
-+	sk_clear_memalloc(sk);
- 	if (sk->sk_destruct)
- 		sk->sk_destruct(sk);
- 
-@@ -1095,6 +1196,12 @@ void __init sk_init(void)
- 		sysctl_wmem_max = 131071;
- 		sysctl_rmem_max = 131071;
- 	}
-+
-+	mem_reserve_init(&net_reserve, "total network reserve", NULL);
-+	mem_reserve_init(&net_rx_reserve, "network RX reserve", &net_reserve);
-+	mem_reserve_init(&net_skb_reserve, "SKB data reserve", &net_rx_reserve);
-+	mem_reserve_init(&net_tx_reserve, "network TX reserve", &net_reserve);
-+	mem_reserve_init(&net_tx_pages, "protocol TX pages", &net_tx_reserve);
- }
- 
- /*
-Index: linux-2.6/net/Kconfig
+ 	sk->sk_ack_backlog--;
+Index: linux-2.6/net/ipv6/tcp_ipv6.c
 ===================================================================
---- linux-2.6.orig/net/Kconfig
-+++ linux-2.6/net/Kconfig
-@@ -250,6 +250,9 @@ endmenu
- source "net/rfkill/Kconfig"
- source "net/9p/Kconfig"
+--- linux-2.6.orig/net/ipv6/tcp_ipv6.c
++++ linux-2.6/net/ipv6/tcp_ipv6.c
+@@ -568,7 +568,8 @@ static int tcp_v6_md5_do_add(struct sock
+ 	} else {
+ 		/* reallocate new list if current one is full. */
+ 		if (!tp->md5sig_info) {
+-			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info), GFP_ATOMIC);
++			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info),
++					sk_allocation(sk, GFP_ATOMIC));
+ 			if (!tp->md5sig_info) {
+ 				kfree(newkey);
+ 				return -ENOMEM;
+@@ -581,7 +582,8 @@ static int tcp_v6_md5_do_add(struct sock
+ 		}
+ 		if (tp->md5sig_info->alloced6 == tp->md5sig_info->entries6) {
+ 			keys = kmalloc((sizeof (tp->md5sig_info->keys6[0]) *
+-				       (tp->md5sig_info->entries6 + 1)), GFP_ATOMIC);
++				       (tp->md5sig_info->entries6 + 1)),
++				       sk_allocation(sk, GFP_ATOMIC));
  
-+config NETVM
-+	def_bool n
-+
- endif   # if NET
- endmenu # Networking
+ 			if (!keys) {
+ 				tcp_free_md5sig_pool();
+@@ -705,7 +707,8 @@ static int tcp_v6_parse_md5_keys (struct
+ 		struct tcp_sock *tp = tcp_sk(sk);
+ 		struct tcp_md5sig_info *p;
  
+-		p = kzalloc(sizeof(struct tcp_md5sig_info), GFP_KERNEL);
++		p = kzalloc(sizeof(struct tcp_md5sig_info),
++				   sk_allocation(sk, GFP_KERNEL));
+ 		if (!p)
+ 			return -ENOMEM;
+ 
+@@ -1006,7 +1009,7 @@ static void tcp_v6_send_reset(struct soc
+ 	 */
+ 
+ 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
+-			 GFP_ATOMIC);
++			 sk_allocation(sk, GFP_ATOMIC));
+ 	if (buff == NULL)
+ 		return;
+ 
+@@ -1085,10 +1088,12 @@ static void tcp_v6_send_ack(struct tcp_t
+ 	struct tcp_md5sig_key *key;
+ 	struct tcp_md5sig_key tw_key;
+ #endif
++	gfp_t gfp_mask = GFP_ATOMIC;
+ 
+ #ifdef CONFIG_TCP_MD5SIG
+ 	if (!tw && skb->sk) {
+ 		key = tcp_v6_md5_do_lookup(skb->sk, &ipv6_hdr(skb)->daddr);
++		gfp_mask = sk_allocation(skb->sk, gfp_mask);
+ 	} else if (tw && tw->tw_md5_keylen) {
+ 		tw_key.key = tw->tw_md5_key;
+ 		tw_key.keylen = tw->tw_md5_keylen;
+@@ -1106,7 +1111,7 @@ static void tcp_v6_send_ack(struct tcp_t
+ #endif
+ 
+ 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
+-			 GFP_ATOMIC);
++			 gfp_mask);
+ 	if (buff == NULL)
+ 		return;
+ 
+Index: linux-2.6/net/ipv4/tcp.c
+===================================================================
+--- linux-2.6.orig/net/ipv4/tcp.c
++++ linux-2.6/net/ipv4/tcp.c
+@@ -636,7 +636,8 @@ struct sk_buff *sk_stream_alloc_skb(stru
+ 	/* The TCP header must be at least 32-bit aligned.  */
+ 	size = ALIGN(size, 4);
+ 
+-	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
++	skb = alloc_skb_fclone(size + sk->sk_prot->max_header,
++			       sk_allocation(sk, gfp));
+ 	if (skb) {
+ 		if (sk_wmem_schedule(sk, skb->truesize)) {
+ 			/*
 
 --
 
