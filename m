@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYCTR35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYCTRe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbYCTR35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 13:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbYCTR3t
+	id S1758205AbYCTRe3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 13:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYCTReT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 13:29:49 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:36812 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754260AbYCTR3s (ORCPT
+	Thu, 20 Mar 2008 13:34:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:13745 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754433AbYCTReS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 13:29:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 20 Mar 2008 18:28:56 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] FireWire update
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.b05a30e97b4f9820@s5r6.in-berlin.de>
-Message-ID: <tkrat.2374baeb26921d92@s5r6.in-berlin.de>
-References: <tkrat.459cc31de75e4149@s5r6.in-berlin.de>
- <tkrat.68585c2b7aee00eb@s5r6.in-berlin.de>
- <tkrat.14d846ed63cc91c2@s5r6.in-berlin.de>
- <tkrat.948f418ebe464164@s5r6.in-berlin.de>
- <tkrat.b05a30e97b4f9820@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Thu, 20 Mar 2008 13:34:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=TGJTvfDL1cMZ+Yr3LovCVSWRQC6TieFApVqjR3xvF+XQm7mplnp565TsVlv4+owzcbFZ1U9uNGtEfx7t8XNRX/54iFbAPpmTEIA1A/U3X67bIbqoP13iemuv2FYf68y97A8L4MkaMxcLOzk94jedaE8Az2LBy3I9EcBoqEpnjQw=
+Subject: [RFC PATCH] kernel: add byteorder macros with alignment fixups
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-netdev <netdev@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 20 Mar 2008 10:34:14 -0700
+Message-Id: <1206034454.17059.4.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+A common pattern in the kernel (especially networking) is:
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+le32_to_cpu(get_unaligned((__le32 *)x));
 
-to receive the following update for the firewire subsystem.
+Repeat for various combinations of le/be and 64/32/16 bit.  Add
+a variant that operates on possibly unaligned pointers to
+byteorder/generic.h
 
- drivers/firewire/fw-transaction.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/linux/byteorder/generic.h |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-Stefan Richter (1):
-      firewire: fix panic in handle_at_packet
-
-
-commit 10a4c735515a5afc317abe4d697a4c95f6d9d764
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Sun Mar 16 00:56:41 2008 +0100
-
-    firewire: fix panic in handle_at_packet
-    
-    This fixes a use-after-free bug in the handling of split transactions.
-    The AT DMA handler of the request was occasionally executed after the
-    AR DMA handler of the response.  The AT DMA handler then accessed an
-    already freed packet.
-    
-    Reported by Johannes Berg.
-    http://bugzilla.kernel.org/show_bug.cgi?id=9617
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-    Tested-by: Johannes Berg <johannes@sipsolutions.net>
-    Signed-off-by: Jarod Wilson <jwilson@redhat.com>
-
-diff --git a/drivers/firewire/fw-transaction.c b/drivers/firewire/fw-transaction.c
-index 99529e5..e6f1bda 100644
---- a/drivers/firewire/fw-transaction.c
-+++ b/drivers/firewire/fw-transaction.c
-@@ -736,6 +736,12 @@ fw_core_handle_response(struct fw_card *card, struct fw_packet *p)
- 		break;
- 	}
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index d377155..9b1a7a4 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -73,6 +73,10 @@
+  *	cpu_to_[bl]eXXp(__uXX x)
+  *	[bl]eXX_to_cpup(__uXX x)
+  *
++ * The same, but takes a possibly unaligned pointer to the value to convert
++ *	cpu_to_[bl]eXXp_un(__uXX x)
++ *	[bl]eXX_to_cpup_un(__uXX x)
++ *
+  * The same, but change in situ
+  *	cpu_to_[bl]eXXs(__uXX x)
+  *	[bl]eXX_to_cpus(__uXX x)
+@@ -84,6 +88,8 @@
  
-+	/*
-+	 * The response handler may be executed while the request handler
-+	 * is still pending.  Cancel the request handler.
-+	 */
-+	card->driver->cancel_packet(card, &t->packet);
+ 
+ #if defined(__KERNEL__)
++#include <asm/unaligned.h>
 +
- 	t->callback(card, rcode, data, data_length, t->callback_data);
- }
- EXPORT_SYMBOL(fw_core_handle_response);
-
-
-Thanks,
+ /*
+  * inside the kernel, we can use nicknames;
+  * outside of it, we must avoid POSIX namespace pollution...
+@@ -126,6 +132,16 @@
+ #define be16_to_cpus __be16_to_cpus
+ 
+ /*
++ * Operates on possibly unaligned pointers
++ */
++#define le64_to_cpup_un(x) __le64_to_cpu(get_unaligned((__le64 *)(x)))
++#define le32_to_cpup_un(x) __le32_to_cpu(get_unaligned((__le32 *)(x)))
++#define le16_to_cpup_un(x) __le16_to_cpu(get_unaligned((__le16 *)(x)))
++#define be64_to_cpup_un(x) __be64_to_cpu(get_unaligned((__be64 *)(x)))
++#define be32_to_cpup_un(x) __be32_to_cpu(get_unaligned((__be32 *)(x)))
++#define be16_to_cpup_un(x) __be16_to_cpu(get_unaligned((__be16 *)(x)))
++
++/*
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+  * it is no longer constant according to gcc..
 -- 
-Stefan Richter
--=====-==--- --== =-=--
-http://arcgraph.de/sr/
+1.5.4.4.684.g0e08
+
+
 
