@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYCTLH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbYCTLPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbYCTLH7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 07:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYCTLHv
+	id S1755054AbYCTLPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 07:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYCTLPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 07:07:51 -0400
-Received: from agminet02.oracle.com ([141.146.126.229]:20453 "EHLO
-	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbYCTLHu (ORCPT
+	Thu, 20 Mar 2008 07:15:09 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:35964 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752132AbYCTLPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 07:07:50 -0400
-Date: Tue, 18 Mar 2008 14:14:11 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net
-Subject: [PATCH 2.6.25-rc6-git2] drm: fix printk format warning
-Message-Id: <20080318141411.201fa1a1.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 20 Mar 2008 07:15:08 -0400
+Date: Thu, 20 Mar 2008 12:14:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kernel list <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>
+Subject: iommu breaks usb after resume
+Message-ID: <20080320111429.GA14764@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi!
 
-Fix gcc printk format warning:
-drivers/char/drm/ati_pcigart.c:125: warning: format '%08X' expects type 'unsigned int', but argument 3 has type 'dma_addr_t'
+On 64-bit machine with 4GB ram (8core from amd), iommu breaks USB
+after swsusp. iommu=soft fixes that issue.
 
-but doesn't the %08 leave room for truncation?
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/char/drm/ati_pcigart.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
---- linux-2.6.25-rc6-git2.orig/drivers/char/drm/ati_pcigart.c
-+++ linux-2.6.25-rc6-git2/drivers/char/drm/ati_pcigart.c
-@@ -122,8 +122,9 @@ int drm_ati_pcigart_init(struct drm_devi
- 	} else {
- 		address = gart_info->addr;
- 		bus_address = gart_info->bus_addr;
--		DRM_DEBUG("PCI: Gart Table: VRAM %08X mapped at %08lX\n",
--			  bus_address, (unsigned long)address);
-+		DRM_DEBUG("PCI: Gart Table: VRAM %08llX mapped at %08lX\n",
-+			  (unsigned long long)bus_address,
-+			  (unsigned long)address);
- 	}
- 
- 	pci_gart = (u32 *) address;
+I guess iommu handling in arch/x86/kernel/ should have some
+suspend/resume support, as it manipulates hardware registers...?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
