@@ -1,174 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763425AbYCTAj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163494AbYCTAkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763425AbYCTAj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966903AbYCTAZR
+	id S1163494AbYCTAkB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967266AbYCTA2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:25:17 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:22799 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966889AbYCTAZJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:25:09 -0400
-Message-ID: <1a25886d0803181023o785efa42w523ea48896a0331c@mail.gmail.com>
-Date: Tue, 18 Mar 2008 10:23:07 -0700
-From: "Tim Elliott" <tle@holymonkey.com>
-To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
-Subject: Re: ACPI regression in 2.6.25-rc6 (function keys stop working)
-Cc: "Guillaume Chazarain" <guichaz@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, lenb@kernel.org
-In-Reply-To: <47DFC0D5.8020104@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Mar 2008 20:28:12 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:43625 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765436AbYCTA2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 20:28:08 -0400
+From: akepner@sgi.com
+Date: Wed, 19 Mar 2008 17:26:37 -0700
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4 v4] dma: dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080320002637.GK1843@sgi.com>
+References: <20080313040022.GJ12370@sgi.com> <20080313014106.782aa3c7.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <3d8471ca0803171713q31b87939y557f6408543ac881@mail.gmail.com>
-	 <47DFC0D5.8020104@suse.de>
+In-Reply-To: <20080313014106.782aa3c7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am seeing the same problem on my Lenovo 3000 v100. The function keys
-stopped working.
+On Thu, Mar 13, 2008 at 01:41:06AM -0700, Andrew Morton wrote:
 
-tim@tim-len:~$ cat /proc/interrupts
-           CPU0       CPU1
-  0:     164105          0   IO-APIC-edge      timer
-  1:      12560          0   IO-APIC-edge      i8042
-  9:          6          0   IO-APIC-fasteoi   acpi
- 12:     117534          0   IO-APIC-edge      i8042
- 14:         51          0   IO-APIC-edge      ide0
- 16:         31          0   IO-APIC-fasteoi   uhci_hcd:usb4,
-i915@pci:0000:00:02.0
- 18:     121892          0   IO-APIC-fasteoi   uhci_hcd:usb3, iwl3945
- 19:      36197          0   IO-APIC-fasteoi   uhci_hcd:usb2, ahci
- 20:       7931          0   IO-APIC-fasteoi   eth0
- 22:      11071          0   IO-APIC-fasteoi   sdhc0:slot0, HDA Intel
- 23:          5          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5
-NMI:          0          0   Non-maskable interrupts
-LOC:      11296      73879   Local timer interrupts
-RES:      23199      49164   Rescheduling interrupts
-CAL:        297      27033   function call interrupts
-TLB:        838       1286   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
+Thanks for the review. 
 
-The problem goes away when reverting 2c81ce4c9c37b910210f2640c28e98a0c398dc26
+I have a new patchset which will address most of your comments. 
 
-Reverting the above and applying the patch in comment #38 of bug #9998
-also works (http://bugzilla.kernel.org/show_bug.cgi?id=9998).
+> On Wed, 12 Mar 2008 21:00:22 -0700 akepner@sgi.com wrote:
+> 
+> > ...
+> >
+> > diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
+> > index e69de29..05b6e91 100644
+> > --- a/include/linux/dma-attrs.h
+> > +++ b/include/linux/dma-attrs.h
+> > @@ -0,0 +1,55 @@
+> > +#ifndef _DMA_ATTR_H
+> > +#define _DMA_ATTR_H
+> > +
+> > +enum dma_attr {
+> > +	DMA_ATTR_BARRIER,
+> > +	DMA_ATTR_MAX,
+> > +};
+> > +
+> > +struct dma_attrs {
+> > +	unsigned flags;
+> > +};
+> 
+> Please comment the above.  Describe the semantic meaning of the enums and
+> how they are mapped into `struct dma_attrs' (which is what I assume they
+> do).  I see there's a documentation update here so if you think it's best
+> to direct the code reader to that file then fine, add a suitable reference.
 
-Cheers,
-Tim
+OK, I've added a reference to the Documentation/DMA-attributes.txt 
+file.
 
-On 3/18/08, Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
-> Hi Guillaume,
+> 
+> Why did we need to implement a struct for a plain old flags word?
+
+To make the type that carries the attributes opaque, so that it 
+could be expanded. It's a bitmap in the latest version.
+
+> 
+> > +#define __DMA_ATTRS_INIT() { .flags = 0, }
+> 
+> Does this need to exist?
+
+No, it's gone from the next patchset.
+
+> 
+> > +#define DECLARE_DMA_ATTRS(x) struct dma_attrs x = __DMA_ATTRS_INIT()
+> 
+> This is a definition, not a declaration.  Please rename it to
+> DEFINE_DMA_ATTRS().
 >
->  Please check if the patch to call _PSW methods, attached to bug #9998
->  helps to reduce number of ACPI interrupts if you revert the 2c81ce4c9c3
->
->  Thanks,
->  Alex.
->
->
->  Guillaume Chazarain wrote:
->  > Hi,
->  >
->  > There is an ACPI regression in 2.6.25-rc6, which causes the ACPI keys
->  > to stop working on my laptop, an Asus V6VA. git bisect identified the
->  > appended commit as guilty, and reverting it indeed fixes the problem
->  > for me. Attached are my .config, a good dmesg and a bad one. The diff
->  > between both dmesg reveals this interesting hunk:
->  >
->  > @@ -121,8 +121,9 @@
->  >  ACPI: (supports S0 S1 S3 S4 S5)
->  >  ACPI: Using IOAPIC for interrupt routing
->  >  ACPI: EC: non-query interrupt received, switching to interrupt mode
->  > +ACPI: EC: GPE storm detected, disabling EC GPE
->  >  ACPI: EC: GPE = 0x1c, I/O: command/status = 0x66, data = 0x62
->  > -ACPI: EC: driver started in interrupt mode
->  > +ACPI: EC: driver started in poll mode
->  >  ACPI: PCI Root Bridge [PCI0] (0000:00)
->  >  pci 0000:00:1f.0: Enabled ICH6/i801 SMBus device
->  >  pci 0000:00:1f.0: quirk: region 0800-087f claimed by ICH6 ACPI/GPIO/TCO
->  >
->  >
->  > Thanks.
->  >
->  >
->  > commit 2c81ce4c9c37b910210f2640c28e98a0c398dc26
->  > Author: Alexey Starikovskiy <astarikovskiy@suse.de>
->  > Date:   Tue Mar 11 13:30:00 2008 -0400
->  >
->  >     ACPI: EC: Handle IRQ storm on Acer laptops
->  >
->  >     On some Acer systems, the HW fails to clear the GPE source,
->  >     causing an interrupt storm.
->  >
->  >     So in EC interrupt mode, we count how many interrupts we
->  >     receive when waiting.  If we get more than 5, we give
->  >     up on interrupt mode and revert to polling mode.
->  >
->  >     Also, for polling mode to work on Acers, we need
->  >     to insert a delay.
->  >
->  >     Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
->  >     Signed-off-by: Len Brown <len.brown@intel.com>
->  >
->  > diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
->  > index caf873c..2c77359 100644
->  > --- a/drivers/acpi/ec.c
->  > +++ b/drivers/acpi/ec.c
->  > @@ -129,6 +129,7 @@ static struct acpi_ec {
->  >       struct mutex lock;
->  >       wait_queue_head_t wait;
->  >       struct list_head list;
->  > +     atomic_t irq_count;
->  >       u8 handlers_installed;
->  >  } *boot_ec, *first_ec;
->  >
->  > @@ -181,6 +182,8 @@ static int acpi_ec_wait(struct acpi_ec *ec, enum
->  > ec_event event, int force_poll)
->  >  {
->  >       int ret = 0;
->  >
->  > +     atomic_set(&ec->irq_count, 0);
->  > +
->  >       if (unlikely(event == ACPI_EC_EVENT_OBF_1 &&
->  >                    test_bit(EC_FLAGS_NO_OBF1_GPE, &ec->flags)))
->  >               force_poll = 1;
->  > @@ -227,6 +230,7 @@ static int acpi_ec_wait(struct acpi_ec *ec, enum
->  > ec_event event, int force_poll)
->  >               while (time_before(jiffies, delay)) {
->  >                       if (acpi_ec_check_status(ec, event))
->  >                               goto end;
->  > +                     msleep(5);
->  >               }
->  >       }
->  >       pr_err(PREFIX "acpi_ec_wait timeout,"
->  > @@ -529,6 +533,13 @@ static u32 acpi_ec_gpe_handler(void *data)
->  >       struct acpi_ec *ec = data;
->  >
->  >       pr_debug(PREFIX "~~~> interrupt\n");
->  > +     atomic_inc(&ec->irq_count);
->  > +     if (atomic_read(&ec->irq_count) > 5) {
->  > +             pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
->  > +             acpi_disable_gpe(NULL, ec->gpe, ACPI_ISR);
->  > +             clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
->  > +             return ACPI_INTERRUPT_HANDLED;
->  > +     }
->  >       clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
->  >       if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags))
->  >               wake_up(&ec->wait);
->  >
->  >
->
->
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+
+You're right. Done.
+
+ 
+> > +#define INIT_DMA_ATTRS(x) (x)->flags = 0;
+> 
+> So if I do
+> 
+> 	if (expr)
+> 		INIT_DMA_ATTRS(bar);
+> 	else
+> 		something_else();
+> 
+> it won't compile.
+> 
+> Golden rule: implement not in cpp that which can be implemented in C.
+> 
+> static inline void init_dma_attrs(struct dma_attrs *attrs)
+> {
+> 	attrs->flags = 0;
+> }
+> 
+> is much nicer, no?
+> 
+
+Yes ;-)
+
+> > +#ifdef ARCH_USES_DMA_ATTRS
+> 
+> There is no precedent for ARCH_USES_*.
+> 
+> There is a little bit of precedent for ARCH_HAVE_*
+> 
+> There is lots of precendence for ARCH_HAS_*.
+> 
+> We don't like ARCH_HAS_* anyway ;) What can we do to get rid of this? 
+> Ideally, make it available on all architectures at zero cost to those which
+> don't need it.  If that is impractical (why?) then it is preferable to do
+> this in Kconfig.
+> 
+
+OK, I've changed this to CONFIG_HAVE_DMA_ATTRS, selected in Kconfig.
+
+> > +/*
+> > + * dma_set_attr - set a specific attribute
+> > + * may be called with a null attrs
+> > + */
+> > +static inline int dma_set_attr(struct dma_attrs *attrs, enum dma_attr attr)
+> > +{
+> > +	if (!attrs)
+> > +		return 0;
+> > +	if (attr < DMA_ATTR_MAX) {
+> > +		attrs->flags |= (1 << attr);
+> > +		return 0;
+> > +	}
+> > +	return -EINVAL;
+> > +}
+> 
+> Is there any non-buggy reason why code would pass an out-of-range attribute
+> into this function?  If not, BUG_ON() would be appropriate treatment.
+
+Latest version uses BUG_ON().
+
+> 
+> ....
+> We have a dma_set_attr() stub but no dma_get_attr() stub?
+> 
+
+I put a stub in, but dma_get_attr() is only used by arch-specific 
+code, and only code that has CONFIG_HAVE_DMA_ATTRS set. 
+dma_set_attr() is used by arch-independent code, so it has 
+to be there whether CONFIG_HAVE_DMA_ATTRS is set or no.
+
+-- 
+Arthur
+
