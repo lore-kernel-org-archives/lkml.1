@@ -1,99 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYCTF2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYCTFgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYCTF2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 01:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbYCTF2X
+	id S1754341AbYCTFgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 01:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYCTFg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 01:28:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:60583 "EHLO ozlabs.org"
+	Thu, 20 Mar 2008 01:36:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:56253 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbYCTF2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 01:28:21 -0400
+	id S1752641AbYCTFgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 01:36:25 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: [PATCH 2/2] module: Enhance verify_export_symbols
-Date: Thu, 20 Mar 2008 16:27:31 +1100
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 4/4] Markers Support for Proprierary Modules
+Date: Thu, 20 Mar 2008 16:35:30 +1100
 User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <47D8FC21.76E4.0078.0@novell.com> <200803181129.32399.rusty@rustcorp.com.au> <200803201625.45920.rusty@rustcorp.com.au>
-In-Reply-To: <200803201625.45920.rusty@rustcorp.com.au>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jon Masters <jcm@jonmasters.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jon Masters <jcm@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20080320002737.918213455@polymtl.ca> <20080320002835.384758480@polymtl.ca>
+In-Reply-To: <20080320002835.384758480@polymtl.ca>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803201627.31722.rusty@rustcorp.com.au>
+Message-Id: <200803201635.30795.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make verify_export_symbols check the modules unused, unused_gpl and gpl_future syms
+On Thursday 20 March 2008 11:27:41 Mathieu Desnoyers wrote:
+> There seems to be good arguments for markers to support proprierary
+> modules. So I am throwing this one-liner in and let's see how people react.
+> It only makes sure that a module that has been "forced" to be loaded won't
+> have its markers used. It is important to leave this check to make sure the
+> kernel does not crash by expecting the markers part of the struct module by
+> mistake in the case there is an incorrect checksum.
 
-Inspired by Jan Beulich's fix, but table-driven.
+OK, I've applied this to my tree.  That means it will be in 2.6.26 unless you 
+want me to push it earlier.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/module.c |   48 ++++++++++++++++++++++++------------------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
-
-diff -r 08e60e418777 kernel/module.c
---- a/kernel/module.c	Tue Mar 18 11:30:06 2008 +1100
-+++ b/kernel/module.c	Tue Mar 18 14:05:37 2008 +1100
-@@ -1397,33 +1397,33 @@ EXPORT_SYMBOL_GPL(__symbol_get);
-  */
- static int verify_export_symbols(struct module *mod)
- {
--	const char *name = NULL;
--	unsigned long i, ret = 0;
-+	unsigned int i;
- 	struct module *owner;
--	const unsigned long *crc;
-+	const struct kernel_symbol *s;
-+	struct {
-+		const struct kernel_symbol *sym;
-+		unsigned int num;
-+	} arr[] = {
-+		{ mod->syms, mod->num_syms },
-+		{ mod->gpl_syms, mod->num_gpl_syms },
-+		{ mod->gpl_future_syms, mod->num_gpl_future_syms },
-+		{ mod->unused_syms, mod->num_unused_syms },
-+		{ mod->unused_gpl_syms, mod->num_unused_gpl_syms },
-+	};
- 
--	for (i = 0; i < mod->num_syms; i++)
--		if (!IS_ERR_VALUE(find_symbol(mod->syms[i].name,
--					      &owner, &crc, true, false))) {
--			name = mod->syms[i].name;
--			ret = -ENOEXEC;
--			goto dup;
-+	for (i = 0; i < ARRAY_SIZE(arr); i++) {
-+		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
-+			if (!IS_ERR_VALUE(find_symbol(s->name, &owner,
-+						      NULL, true, false))) {
-+				printk(KERN_ERR
-+				       "%s: exports duplicate symbol %s"
-+				       " (owned by %s)\n",
-+				       mod->name, s->name, module_name(owner));
-+				return -ENOEXEC;
-+			}
- 		}
--
--	for (i = 0; i < mod->num_gpl_syms; i++)
--		if (!IS_ERR_VALUE(find_symbol(mod->gpl_syms[i].name,
--					      &owner, &crc, true, false))) {
--			name = mod->gpl_syms[i].name;
--			ret = -ENOEXEC;
--			goto dup;
--		}
--
--dup:
--	if (ret)
--		printk(KERN_ERR "%s: exports duplicate symbol %s (owned by %s)\n",
--			mod->name, name, module_name(owner));
--
--	return ret;
-+	}
-+	return 0;
- }
- 
- /* Change all symbols so that st_value encodes the pointer directly. */
+Thanks,
+Rusty.
