@@ -1,152 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYCTKE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYCTKLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbYCTKE7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 06:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYCTKEu
+	id S1755626AbYCTKLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 06:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYCTKLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 06:04:50 -0400
-Received: from bowden.ucwb.org.au ([203.122.237.119]:47831 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbYCTKEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 06:04:49 -0400
-Subject: Re: OOM (HighMem) on linux 2.6.24.2
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1206003275.8514.399.camel@twins>
-References: <1205974089.4023.20.camel@kulgan.wumi.org.au>
-	 <1206003275.8514.399.camel@twins>
-Content-Type: text/plain
-Organization: UnitingCare Wesley Bowden
-Date: Thu, 20 Mar 2008 20:34:45 +1030
-Message-Id: <1206007485.5086.8.camel@kulgan.wumi.org.au>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 20 Mar 2008 06:11:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33057 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753992AbYCTKLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 06:11:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core Duo
+Date: Thu, 20 Mar 2008 11:10:43 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20080320060550.GA13200@dose.home.local>
+In-Reply-To: <20080320060550.GA13200@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803201110.43921.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-20 at 09:54 +0100, Peter Zijlstra wrote:
-> Looks like you just ran out of memory, swap is filled up, memory is
-> pretty much used up, except for !HIGHMEM which even though it has enough
-> free memory does report all_unreclaimable=1. This suggests this is a
-> second OOM not the first, are you sure this is the first OOM on that
-> box?
+On Thursday, 20 of March 2008, Tino Keitel wrote:
+> Hi folks,
 
-Well, it's the first time since we rebooted on Feb 28th.
+Hi,
 
-Ugh, looks like the reason we rebooted then was because of something
-similar as well:
+> whereas I had working suspend with 2.6.25-rc5, I had a hang at resume
+> with git HEAD from March 19th (something after 2.6.25-rc6). I tried it
+> again and got another hang, so it seems to be reproducible.
+> 
+> Any hints what commit might have broke suspend? I won't have the time
+> to start a git bisect or any resume debugging using CONFIG_PM_TRACE_RTC
+> until next Tuesday.
 
-Feb 28 06:32:19 hermes kernel: postmaster invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
-Feb 28 06:32:19 hermes kernel: Pid: 2505, comm: postmaster Not tainted 2.6.24.2 #1
-Feb 28 06:32:19 hermes kernel:  [<c0139841>] oom_kill_process+0x54/0xf8
-Feb 28 06:32:19 hermes kernel:  [<c0139c3b>] out_of_memory+0x15f/0x194
-Feb 28 06:32:19 hermes kernel:  [<c013b85e>] __alloc_pages+0x239/0x2c7
-Feb 28 06:32:19 hermes kernel:  [<c013d283>] __do_page_cache_readahead+0xd5/0x1be
-Feb 28 06:32:19 hermes kernel:  [<c013d6b2>] do_page_cache_readahead+0x49/0x53
-Feb 28 06:32:19 hermes kernel:  [<c0138f95>] filemap_fault+0x19a/0x3b4
-Feb 28 06:32:19 hermes kernel:  [<c0141d80>] __do_fault+0x51/0x327
-Feb 28 06:32:19 hermes kernel:  [<c0143c3e>] handle_mm_fault+0x2aa/0x5b6
-Feb 28 06:32:19 hermes kernel:  [<c0110f15>] do_page_fault+0x18d/0x530
-Feb 28 06:32:19 hermes kernel:  [<c0110d88>] do_page_fault+0x0/0x530
-Feb 28 06:32:20 hermes kernel:  [<c03a1a72>] error_code+0x72/0x78
-Feb 28 06:32:20 hermes kernel:  =======================
-Feb 28 06:32:20 hermes kernel: Mem-info:
-Feb 28 06:32:20 hermes kernel: DMA per-cpu:
-Feb 28 06:32:20 hermes kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-Feb 28 06:32:20 hermes kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-Feb 28 06:32:20 hermes kernel: Normal per-cpu:
-Feb 28 06:32:20 hermes kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 163   Cold: hi:   62, btch:  15 usd:  59
-Feb 28 06:32:20 hermes kernel: CPU    1: Hot: hi:  186, btch:  31 usd: 152   Cold: hi:   62, btch:  15 usd:  61
-Feb 28 06:32:20 hermes kernel: HighMem per-cpu:
-Feb 28 06:32:20 hermes kernel: CPU    0: Hot: hi:  186, btch:  31 usd:  23   Cold: hi:   62, btch:  15 usd:  47
-Feb 28 06:32:20 hermes kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  15   Cold: hi:   62, btch:  15 usd:  56
-Feb 28 06:32:20 hermes kernel: Active:247172 inactive:246700 dirty:0 writeback:0 unstable:0
-Feb 28 06:32:20 hermes kernel:  free:12237 slab:5313 mapped:92 pagetables:2632 bounce:0
-Feb 28 06:32:20 hermes kernel: DMA free:8128kB min:68kB low:84kB high:100kB active:1576kB inactive:1336kB present:16256kB pages_scanned:12856 all_unreclaimable? yes
-Feb 28 06:32:20 hermes kernel: lowmem_reserve[]: 0 873 2016 2016
-Feb 28 06:32:20 hermes kernel: Normal free:40316kB min:3744kB low:4680kB high:5616kB active:399640kB inactive:407172kB present:894080kB pages_scanned:4921459 all_unreclaimable? yes
-Feb 28 06:32:20 hermes kernel: lowmem_reserve[]: 0 0 9143 9143
-Feb 28 06:32:20 hermes kernel: HighMem free:504kB min:512kB low:1736kB high:2964kB active:587472kB inactive:578292kB present:1170372kB pages_scanned:4714529 all_unreclaimable? yes
-Feb 28 06:32:20 hermes kernel: lowmem_reserve[]: 0 0 0 0
-Feb 28 06:32:20 hermes kernel: DMA: 96*4kB 138*8kB 131*16kB 22*32kB 4*64kB 2*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 8128kB
-Feb 28 06:32:20 hermes kernel: Normal: 9119*4kB 6*8kB 9*16kB 6*32kB 2*64kB 2*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 40316kB
-Feb 28 06:32:20 hermes kernel: HighMem: 22*4kB 18*8kB 1*16kB 0*32kB 0*64kB 2*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 504kB
-Feb 28 06:32:20 hermes kernel: Swap cache: add 304821, delete 304821, find 81588/89482, race 0+6
-Feb 28 06:32:20 hermes kernel: Free swap  = 0kB
-Feb 28 06:32:20 hermes kernel: Total swap = 899064kB
-Feb 28 06:32:20 hermes kernel: Free swap:            0kB
-Feb 28 06:32:20 hermes kernel: 524272 pages of RAM
-Feb 28 06:32:20 hermes kernel: 294896 pages of HIGHMEM
-Feb 28 06:32:20 hermes kernel: 5542 reserved pages
-Feb 28 06:32:20 hermes kernel: 49663 pages shared
-Feb 28 06:32:20 hermes kernel: 0 pages swap cached
-Feb 28 06:32:20 hermes kernel: 0 pages dirty
-Feb 28 06:32:20 hermes kernel: 0 pages writeback
-Feb 28 06:32:20 hermes kernel: 92 pages mapped
-Feb 28 06:32:20 hermes kernel: 5313 pages slab
-Feb 28 06:32:20 hermes kernel: 2632 pages pagetables
-Feb 28 06:32:20 hermes kernel: Out of memory: kill process 24013 (apache2) score 22257 or a child
-Feb 28 06:32:20 hermes kernel: Killed process 1904 (ntlm_auth)
-Feb 28 06:32:20 hermes kernel: postmaster invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=0
-Feb 28 06:32:20 hermes kernel: Pid: 2505, comm: postmaster Not tainted 2.6.24.2 #1
-Feb 28 06:32:20 hermes kernel:  [<c0139841>] oom_kill_process+0x54/0xf8
-Feb 28 06:32:20 hermes kernel:  [<c0139c3b>] out_of_memory+0x15f/0x194
-Feb 28 06:32:20 hermes kernel:  [<c013b85e>] __alloc_pages+0x239/0x2c7
-Feb 28 06:32:20 hermes kernel:  [<c013d283>] __do_page_cache_readahead+0xd5/0x1be
-Feb 28 06:32:20 hermes kernel:  [<c013d6b2>] do_page_cache_readahead+0x49/0x53
-Feb 28 06:32:20 hermes kernel:  [<c0138f95>] filemap_fault+0x19a/0x3b4
-Feb 28 06:32:20 hermes kernel:  [<c0141d80>] __do_fault+0x51/0x327
-Feb 28 06:32:20 hermes kernel:  [<c0143c3e>] handle_mm_fault+0x2aa/0x5b6
-Feb 28 06:32:20 hermes kernel:  [<c0110f15>] do_page_fault+0x18d/0x530
-Feb 28 06:32:20 hermes kernel:  [<c0110d88>] do_page_fault+0x0/0x530
-Feb 28 06:32:20 hermes kernel:  [<c03a1a72>] error_code+0x72/0x78
-Feb 28 06:32:20 hermes kernel:  =======================
-Feb 28 06:32:20 hermes kernel: Mem-info:
-Feb 28 06:32:20 hermes kernel: DMA per-cpu:
-Feb 28 06:32:20 hermes kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-Feb 28 06:32:20 hermes kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-Feb 28 06:32:20 hermes kernel: Normal per-cpu:
-Feb 28 06:32:20 hermes kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 162   Cold: hi:   62, btch:  15 usd:  59
-Feb 28 06:32:20 hermes kernel: CPU    1: Hot: hi:  186, btch:  31 usd: 149   Cold: hi:   62, btch:  15 usd:  61
-Feb 28 06:32:20 hermes kernel: HighMem per-cpu:
-Feb 28 06:32:20 hermes kernel: CPU    0: Hot: hi:  186, btch:  31 usd:  23   Cold: hi:   62, btch:  15 usd:  47
-Feb 28 06:32:20 hermes kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  43   Cold: hi:   62, btch:  15 usd:  56
-Feb 28 06:32:20 hermes kernel: Active:247230 inactive:246512 dirty:0 writeback:62 unstable:0
-Feb 28 06:32:20 hermes kernel:  free:12237 slab:5313 mapped:92 pagetables:2632 bounce:0
-Feb 28 06:32:20 hermes kernel: DMA free:8128kB min:68kB low:84kB high:100kB active:1576kB inactive:1336kB present:16256kB pages_scanned:12856 all_unreclaimable? yes
-Feb 28 06:32:20 hermes kernel: lowmem_reserve[]: 0 873 2016 2016
-Feb 28 06:32:20 hermes kernel: Normal free:40316kB min:3744kB low:4680kB high:5616kB active:399512kB inactive:407172kB present:894080kB pages_scanned:4921491 all_unreclaimable? yes
-Feb 28 06:32:20 hermes kernel: lowmem_reserve[]: 0 0 9143 9143
-Feb 28 06:32:20 hermes kernel: HighMem free:504kB min:512kB low:1736kB high:2964kB active:587956kB inactive:577412kB present:1170372kB pages_scanned:4717047 all_unreclaimable? yes
-Feb 28 06:32:20 hermes kernel: lowmem_reserve[]: 0 0 0 0
-Feb 28 06:32:20 hermes kernel: DMA: 96*4kB 138*8kB 131*16kB 22*32kB 4*64kB 2*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 8128kB
-Feb 28 06:32:20 hermes kernel: Normal: 9119*4kB 6*8kB 9*16kB 6*32kB 2*64kB 2*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 40316kB
-Feb 28 06:32:20 hermes kernel: HighMem: 22*4kB 18*8kB 1*16kB 0*32kB 0*64kB 2*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 504kB
-Feb 28 06:32:20 hermes kernel: Swap cache: add 304901, delete 304821, find 81588/89483, race 0+6
-Feb 28 06:32:20 hermes kernel: Free swap  = 0kB
-Feb 28 06:32:20 hermes kernel: Total swap = 899064kB
-Feb 28 06:32:20 hermes kernel: Free swap:            0kB
-Feb 28 06:32:20 hermes kernel: 524272 pages of RAM
-Feb 28 06:32:20 hermes kernel: 294896 pages of HIGHMEM
-Feb 28 06:32:20 hermes kernel: 5542 reserved pages
-Feb 28 06:32:20 hermes kernel: 49707 pages shared
-Feb 28 06:32:20 hermes kernel: 80 pages swap cached
-Feb 28 06:32:20 hermes kernel: 0 pages dirty
-Feb 28 06:32:20 hermes kernel: 62 pages writeback
-Feb 28 06:32:20 hermes kernel: 92 pages mapped
-Feb 28 06:32:20 hermes kernel: 5313 pages slab
-Feb 28 06:32:20 hermes kernel: 2632 pages pagetables
-Feb 28 06:32:20 hermes kernel: Out of memory: kill process 24013 (apache2) score 22070 or a child
-Feb 28 06:32:20 hermes kernel: Killed process 24013 (apache2)
+No ideas for now.
 
-Looks like the HighMem low watermark was hit again (though I've no idea
-if that's actually significant).
+I have created a Bugzilla entry for this problem at:
+http://bugzilla.kernel.org/show_bug.cgi?id=10291
+
+Please add yourself to the CC list in there.
+
+> This is a Mac mini Core Duo. Here is the lspci -nn output:
+> 
+> 00:00.0 Host bridge [0600]: Intel Corporation Mobile 945GM/PM/GMS,
+> 943/940GML and 945GT Express Memory Controller Hub [8086:27a0] (rev 03)
+> 
+> 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile
+> 945GM/GMS, 943/940GML Express Integrated Graphics Controller
+> [8086:27a2] (rev 03)
+> 
+> 00:07.0 Performance counters [1101]: Intel Corporation Unknown device
+> [8086:27a3] (rev 03)
+> 
+> 00:1b.0 Audio device [0403]: Intel Corporation 82801G (ICH7 Family)
+> High Definition Audio Controller [8086:27d8] (rev 02)
+> 
+> 00:1c.0 PCI bridge [0604]: Intel Corporation 82801G (ICH7 Family) PCI
+> Express Port 1 [8086:27d0] (rev 02)
+> 
+> 00:1c.1 PCI bridge [0604]: Intel Corporation 82801G (ICH7 Family) PCI
+> Express Port 2 [8086:27d2] (rev 02)
+> 
+> 00:1d.0 USB Controller [0c03]: Intel Corporation 82801G (ICH7 Family)
+> USB UHCI Controller #1 [8086:27c8] (rev 02)
+> 
+> 00:1d.1 USB Controller [0c03]: Intel Corporation 82801G (ICH7 Family)
+> USB UHCI Controller #2 [8086:27c9] (rev 02)
+> 
+> 00:1d.2 USB Controller [0c03]: Intel Corporation 82801G (ICH7 Family)
+> USB UHCI Controller #3 [8086:27ca] (rev 02)
+> 
+> 00:1d.3 USB Controller [0c03]: Intel Corporation 82801G (ICH7 Family)
+> USB UHCI Controller #4 [8086:27cb] (rev 02)
+> 
+> 00:1d.7 USB Controller [0c03]: Intel Corporation 82801G (ICH7 Family)
+> USB2 EHCI Controller [8086:27cc] (rev 02)
+> 
+> 00:1e.0 PCI bridge [0604]: Intel Corporation 82801 Mobile PCI Bridge
+> [8086:2448] (rev e2)
+> 
+> 00:1f.0 ISA bridge [0601]: Intel Corporation 82801GBM (ICH7-M) LPC
+> Interface Bridge [8086:27b9] (rev 02)
+> 
+> 00:1f.1 IDE interface [0101]: Intel Corporation 82801G (ICH7 Family)
+> IDE Controller [8086:27df] (rev 02)
+> 
+> 00:1f.2 IDE interface [0101]: Intel Corporation 82801GBM/GHM (ICH7
+> Family) SATA IDE Controller [8086:27c4] (rev 02)
+> 
+> 00:1f.3 SMBus [0c05]: Intel Corporation 82801G (ICH7 Family) SMBus
+> Controller [8086:27da] (rev 02)
+> 
+> 01:00.0 Ethernet controller [0200]: Marvell Technology Group Ltd.
+> 88E8053 PCI-E Gigabit Ethernet Controller [11ab:4362] (rev 22)
+> 
+> 02:00.0 Ethernet controller [0200]: Atheros Communications, Inc. AR242x
+> 802.11abg Wireless PCI Express Adapter [168c:001c] (rev 01)
+> 
+> 03:03.0 FireWire (IEEE 1394) [0c00]: Agere Systems FW323 [11c1:5811]
+> (rev 61)
 
 Thanks,
-Kevin.
-
-
+Rafael
