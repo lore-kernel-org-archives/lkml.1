@@ -1,97 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYCTDh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYCTDk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYCTDh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 23:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYCTDhE
+	id S1755049AbYCTDk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 23:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYCTDkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 23:37:04 -0400
-Received: from mga10.intel.com ([192.55.52.92]:35872 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750698AbYCTDhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 23:37:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,528,1199692800"; 
-   d="scan'208";a="536780486"
-Subject: Re: [patch 2/9] Store max number of objects in the page struct.
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <clameter@sgi.com>, LKML <linux-kernel@vger.kernel.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
-       Matt Mackall <mpm@selenic.com>, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0803191049450.29173@schroedinger.engr.sgi.com>
-References: <20080317230516.078358225@sgi.com>
-	 <20080317230528.279983034@sgi.com> <1205917757.10318.1.camel@ymzhang>
-	 <Pine.LNX.4.64.0803191049450.29173@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 20 Mar 2008 11:32:17 +0800
-Message-Id: <1205983937.14496.24.camel@ymzhang>
+	Wed, 19 Mar 2008 23:40:05 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52453 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbYCTDkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 23:40:03 -0400
+Date: Thu, 20 Mar 2008 14:39:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
+       Theodore Tso <tytso@MIT.EDU>
+Subject: linux-next: Tree for March 20
+Message-Id: <20080320143953.8d6b5a60.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-19 at 10:49 -0700, Christoph Lameter wrote:
-> On Wed, 19 Mar 2008, Zhang, Yanmin wrote:
-> 
-> > > +	if ((PAGE_SIZE << min_order) / size > 65535)
-> > > +		return get_order(size * 65535) - 1;
-> > Is it better to define something like USHORT_MAX to replace 65535?
-> 
-> Yes. Do we have something like that?
+--Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I couldn't find such definition in include/linux/kernel.h.
+Hi all,
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-But glibc defines USHRT_MAX file include/limits.h:
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
 
-/* Minimum and maximum values a `signed short int' can hold.  */
-#  define SHRT_MIN      (-32768)
-#  define SHRT_MAX      32767
+I have started this tree by reverting the following:
+driver-core/driver-core-remove-no-longer-used-struct-class_device.patch
+	should be merged late
+driver-core/ib-convert-struct-class_device-to-struct-device.patch
+	conflicts with the infiniband tree
+driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+	breaks non CONFIG_PM builds of drivers/serial/serial_core.c
 
-/* Maximum value an `unsigned short int' can hold.  (Minimum is 0.)  */
-#  define USHRT_MAX     65535
+There were a few merge conflicts (fairly trivial).
 
+I have added POWERPC-really-export-empty_zero_page.patch and reverted
+async-tx commit 9974693221954ef1019f87d32ae26a0757d2ee85 ("dmaengine: ack
+to flags: make use of the unused bits in the 'ack' field") as these are
+still needed to make powerpc allmodconfig build (in particular ext4 and
+drivers/dma/fsldma.c).  These have been reported previously.
 
-How about below patch against 2.6.25-rc6?
+We are up to 48 trees, more are welcome (even if they are currently
+empty).  The influx of new trees has slowed completely.  Thanks to those
+who have contributed, and to those who haven't, please do.
 
----
+In particular, I have very few of the architecture trees ....
 
-Add definitions of USHRT_MAX and others into kernel. ipc uses it and
-slub implementation might also use it.
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
 
-The patch is against 2.6.25-rc6.
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/.
 
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
----
+--Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e
+Content-Type: application/pgp-signature
 
---- linux-2.6.25-rc6/include/linux/kernel.h	2008-03-20 04:25:46.000000000 +0800
-+++ linux-2.6.25-rc6_work/include/linux/kernel.h	2008-03-20 04:17:45.000000000 +0800
-@@ -20,6 +20,9 @@
- extern const char linux_banner[];
- extern const char linux_proc_banner[];
- 
-+#define USHRT_MAX	((u16)(~0U))
-+#define SHRT_MAX	((s16)(USHRT_MAX>>1))
-+#define SHRT_MIN	(-SHRT_MAX - 1)
- #define INT_MAX		((int)(~0U>>1))
- #define INT_MIN		(-INT_MAX - 1)
- #define UINT_MAX	(~0U)
---- linux-2.6.25-rc6/ipc/util.h	2008-03-20 04:25:46.000000000 +0800
-+++ linux-2.6.25-rc6_work/ipc/util.h	2008-03-20 04:22:07.000000000 +0800
-@@ -12,7 +12,6 @@
- 
- #include <linux/err.h>
- 
--#define USHRT_MAX 0xffff
- #define SEQ_MULTIPLIER	(IPCMNI)
- 
- void sem_init (void);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFH4dyOTgG2atn1QN8RAiSwAKCYgkV/2MKAASbFmiG0ZJaRNhY70gCcCVHP
+oG/07++gRxyKK1A1WvYcMNE=
+=qBcF
+-----END PGP SIGNATURE-----
 
-
-
-
-
+--Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e--
