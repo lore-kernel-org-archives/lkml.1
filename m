@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbYCTAkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967623AbYCTAlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965059AbYCTAkr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967409AbYCTAa2
+	id S967623AbYCTAlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935465AbYCTAa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:30:28 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37709 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967404AbYCTAaZ (ORCPT
+	Wed, 19 Mar 2008 20:30:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57227 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761217AbYCTAa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:30:25 -0400
-Message-ID: <47E1B062.4060709@keyaccess.nl>
-Date: Thu, 20 Mar 2008 01:31:30 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-CC: David Brownell <david-b@pacbell.net>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ehci-hcd affects hda speed
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200803171700.26274.david-b@pacbell.net> <47DF19AD.405@keyaccess.nl> <200803171855.44552.david-b@pacbell.net> <alpine.LFD.1.00.0803200211230.31035@nev.ubzr>
-In-Reply-To: <alpine.LFD.1.00.0803200211230.31035@nev.ubzr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Wed, 19 Mar 2008 20:30:56 -0400
+From: akepner@sgi.com
+Date: Wed, 19 Mar 2008 17:29:28 -0700
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4 v4] dma: dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080320002928.GL1843@sgi.com>
+References: <20080313040022.GJ12370@sgi.com> <20080313014106.782aa3c7.akpm@linux-foundation.org> <20080313082754.3da94420.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080313082754.3da94420.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20-03-08 00:47, Lev A. Melnikovsky wrote:
+On Thu, Mar 13, 2008 at 08:27:54AM -0700, Randy Dunlap wrote:
 
-> Just in case - I do have an A7V8X-based PC in the office and have 
-> performed a simple experiment.
+Thanks for looking at this. A new patchset is on the way.
+
+> On Thu, 13 Mar 2008 01:41:06 -0700 Andrew Morton wrote:
 > 
-> #1. Idle USB controller has no effect on PCI performance (I again
-> measured hda throughput).
+> > > +#ifdef ARCH_USES_DMA_ATTRS
+> > 
+> > There is no precedent for ARCH_USES_*.
+> > 
+> > There is a little bit of precedent for ARCH_HAVE_*
+> > 
+> > There is lots of precendence for ARCH_HAS_*.
+> > 
+> > We don't like ARCH_HAS_* anyway ;) What can we do to get rid of this? 
+> > Ideally, make it available on all architectures at zero cost to those which
+> > don't need it.  If that is impractical (why?) then it is preferable to do
+> > this in Kconfig.
 > 
-> #2. Default value for register 4Bh is 09h.
+> Sam has been pushing HAVE_* and even added that to
+> Documentation/kbuild/kconfig-language.txt.
+
+OK, changed it to CONFIG_HAVE_DMA_ATTRS.
+
 > 
-> #3. I have detected no effect of changing [4Bh]=29h. Particularly, USB 
-> FLASH read speed is ~8MB/s and hda read speed is ~40MB/s regardless of 
-> [4Bh] content. During hda timing, "dd if=/dev/sda of=/dev/null bs=1024" 
-> was running in another window (/dev/sda being the USB stick).
+> > > +/*
+> > > + * dma_set_attr - set a specific attribute
+> > > + * may be called with a null attrs
+> > > + */
 > 
-> My interpretation, is that bit5 at offset 4B may _not_ be an "EHCI sleep 
-> time select" like it is for VT6212. Am I missing something?
+> Use kernel-doc notation?
 
-No, very useful test, thanks much. Patch as submitted for revision 0x6x will 
-stand then.
+Done.
 
-I do wonder -- is your hda throughput also the same before _ever_ attaching 
-anything to the EHCI controller and after? In my case, the slow down only 
-happened after switching on my external USB drive once, and would persist 
-from that time until reboot (or unloading ehci-hcd, which I kept modular for 
-exactly that reason).
+-- 
+Arthur
 
-The sleep time wasn't the core problem, so I wonder of later VIA chips do 
-still have the active async schedule problem...
-
-Alessandro? You said there still was a difference for you between no EHCI at 
-all and EHCI after tweaking 4B as Lev showed. How much?
-
-Rene.
+(503) 234 4671
