@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbYCTSeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbYCTSgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758326AbYCTSeG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 14:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYCTSdz
+	id S1758539AbYCTSgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 14:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbYCTSfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 14:33:55 -0400
-Received: from lazybastard.de ([212.112.238.170]:51487 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460AbYCTSdy (ORCPT
+	Thu, 20 Mar 2008 14:35:54 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:38780 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753896AbYCTSfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 14:33:54 -0400
-Date: Thu, 20 Mar 2008 18:35:16 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo van Lil <inguin@gmx.de>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Memory corruption in block2mtd.c
-Message-ID: <20080320173516.GA3977@logfs.org>
-References: <47E27680.5070306@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47E27680.5070306@gmx.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 20 Mar 2008 14:35:53 -0400
+Subject: Re: [PATCH/RFC] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig symbol
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Daniel Drake <dsd@gentoo.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <20080320181310.GA17884@uranus.ravnborg.org>
+References: <1206023695.16475.137.camel@johannes.berg>
+	 <20080320181310.GA17884@uranus.ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0FES/eduH35huO1gJhWo"
+Date: Thu, 20 Mar 2008 19:35:35 +0100
+Message-Id: <1206038135.16475.148.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 March 2008 15:36:48 +0100, Ingo van Lil wrote:
-> 
-> the block2mtd driver (drivers/mtd/devices/block2mtd.c) will kfree an
-> on-stack pointer when handling an invalid argument line (e.g.
-> block2mtd=/dev/loop0,xxx).
-> 
-> The kfree was added some time ago when "name" was dynamically
-> allocated.
 
-Good catch.
+--=-0FES/eduH35huO1gJhWo
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Ingo van Lil <inguin@gmx.de>
-Acked-by: Joern Engel <joern@lazybastard.org>
 
-> ---
-> 
-> --- linux-2.6.23.1/drivers/mtd/devices/block2mtd.c.orig	2008-03-20 
-> 15:13:49.000000000 +0100
-> +++ linux-2.6.23.1/drivers/mtd/devices/block2mtd.c	2008-03-20 
-> 15:14:09.000000000 +0100
-> @@ -408,7 +408,6 @@
->  	if (token[1]) {
->  		ret = parse_num(&erase_size, token[1]);
->  		if (ret) {
-> -			kfree(name);
->  			parse_err("illegal erase size");
->  		}
->  	}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Thu, 2008-03-20 at 19:13 +0100, Sam Ravnborg wrote:
+> On Thu, Mar 20, 2008 at 03:34:55PM +0100, Johannes Berg wrote:
+> > In many cases, especially in networking, it can be beneficial to
+> > know at compile time whether the architecture can do unaligned
+> > accesses. This patch introduces a new Kconfig symbol
+> > 	ARCH_CAN_UNALIGNED_ACCESS
+>=20
+> Can we please have a single symbol defined and name it:
+> HAVE_*
+>=20
+> Then the architectures that HAVE this feature can select the symbol.
 
-Jörn
+Sure. Where should it be defined? arch/Kconfig?
 
--- 
-It is the mark of an educated mind to be able to entertain a thought
-without accepting it.
--- Aristotle
+> This follows the suggestion as available in
+> Documentation/kbuild/kconfig-language.txt
+
+Guess I haven't read that in a while.
+
+johannes
+
+--=-0FES/eduH35huO1gJhWo
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR+KudaVg1VMiehFYAQJ7ig//byJi8CKfE/7515uLj4GdSidKrvL6LGt4
+QcEahi7hVp4CIXnD0l8bIvWQEiqjjSrkVMMetC8aQxtUa6hqh02BLIJsqLZxpomv
+/gKtks9bRK5JsABLejd+Q+OTjQL7zPlaaN1Rawj2XvJu+OkjdbHwzkIroEswnHzJ
+9SzCZwAfuoVh6DYsgxfeWxPEbCUrOLy1gqRQTUau4fR2Tv1qA0Wdlfy3z18AzkZQ
+/dULBvQPqsdoEt8/4V0iw36oKdaCPFCKDKhTurEZRKDTiuJM04enMPCXz8S8cfzY
+Cz+L8a7jHNHfqMEAlw15Tut+STjK5F+wIPTSiBdunhsEMmHkc3D5ggnY+yLiqbT1
+jXXONx52+Fk8wk9iHkppQEzIUTou/vkBXa0RQR/sEXk7SiAZQaerND5QWL6UyHtR
+grdGFIZ1VIq2Ug8ld5RkVLuHW0loAlLoR5W3+q5T3/apE6jgCBvZtfKURmbnKeaQ
+gLEynMdfHGh67LQvkt9smfh2ejWr5EALKepDwBlSrknX7ar2KxyeFv6RoeWG0EAN
+vZTaIlQgYTKmfGA5oB4FW/HJ+6Ha4H9qxPMOmyVQ7vNxVCBT7YxldqzPnAx6i1gp
+XQ1JdJ4FkUrLkrXvx4l5mmlZALPkpWhdmrvvaUYdQTydN5i9zUyLCeuAXa2uGbw1
+LTCPv2yD58Q=
+=fWRa
+-----END PGP SIGNATURE-----
+
+--=-0FES/eduH35huO1gJhWo--
+
