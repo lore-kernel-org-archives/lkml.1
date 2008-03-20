@@ -1,100 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYCTUiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYCTUke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbYCTUiE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbYCTUgt
+	id S1759430AbYCTUke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYCTUkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:36:49 -0400
-Received: from viefep31-int.chello.at ([62.179.121.49]:59054 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756071AbYCTUgn (ORCPT
+	Thu, 20 Mar 2008 16:40:24 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:12278 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753139AbYCTUkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 16:36:43 -0400
-Message-Id: <20080320202121.654343000@chello.nl>
-References: <20080320201042.675090000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Thu, 20 Mar 2008 21:10:49 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       neilb@suse.de, miklos@szeredi.hu, penberg@cs.helsinki.fi,
-       a.p.zijlstra@chello.nl
-Subject: [PATCH 07/30] mm: allow PF_MEMALLOC from softirq context
-Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
+	Thu, 20 Mar 2008 16:40:22 -0400
+Date: Thu, 20 Mar 2008 13:39:27 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] kernel: create linux/unaligned.h
+Message-Id: <20080320133927.fa599135.randy.dunlap@oracle.com>
+In-Reply-To: <1206044217.17059.17.camel@brick>
+References: <1206034454.17059.4.camel@brick>
+	<20080320182911.GQ10722@ZenIV.linux.org.uk>
+	<1206038244.17059.7.camel@brick>
+	<20080320190953.GR10722@ZenIV.linux.org.uk>
+	<1206044217.17059.17.camel@brick>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow PF_MEMALLOC to be set in softirq context. 
+On Thu, 20 Mar 2008 13:16:57 -0700 Harvey Harrison wrote:
 
-This is needed to allow network softirq packet processing to make use of
-PF_MEMALLOC.
+> Add helpers for the following two patterns currently found in the
+> kernel:
+> 
+> le32_to_cpu(get_unaligned((__le32 *)p));
+> put_unaligned(cpu_to_le32(x), (__le32 *)p);
+> 
+> Becomes:
+> le32_to_cpu_unaligned(p);
+> cpu_to_le32_unaligned(x, p);
+> 
+> There are also some hand-rolled functions implementing this
+> with byte-shifts that can be replaced.  To avoid new indirect
+> includes of asm/unaligned.h, create linux/unaligned.h to make
+> it opt in for new code that wants to use these helpers.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> This is a rollup of all the previous ones, added kerneldocs and
+> have CC'd Randy.
+> 
+>  include/linux/unaligned.h |  138 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 138 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/unaligned.h b/include/linux/unaligned.h
+> new file mode 100644
+> index 0000000..035c1c7
+> --- /dev/null
+> +++ b/include/linux/unaligned.h
+> @@ -0,0 +1,138 @@
+> +#ifndef _LINUX_UNALIGNED_H_
+> +#define _LINUX_UNALIGNED_H_
+> +
+> +#include <linux/types.h>
+> +#include <asm/byteorder.h>
+> +#include <asm/unaligned.h>
+> +
+> +#ifdef __KERNEL__
+> +
+> +/**
+> + * le64_to_cpu_unaligned - read a le64 from a possibly unaligned pointer
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+I would write these as "an le64" etc., but then I read them as
+"l e 64".
+
+
+> + * @p: pointer to read from
+> + *
+> + * Returns a u64 in cpu byteorder
+
+And I would write "CPU", but some people don't do that.  ;)
+
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+
+Thanks.
+
+> + */
+> +static inline u64 le64_to_cpu_unaligned(void *p)
+> +{
+> +	return le64_to_cpu(get_unaligned((__le64 *)p));
+> +}
+> +
+> +/**
+> + * le32_to_cpu_unaligned - read a le32 from a possibly unaligned pointer
+> + * @p: pointer to read from
+> + *
+> + * Returns a u32 in cpu byteorder
+> + */
+> +static inline u32 le32_to_cpu_unaligned(void *p)
+> +{
+> +	return le32_to_cpu(get_unaligned((__le32 *)p));
+> +}
+> +
+> +/**
+> + * le16_to_cpu_unaligned - read a le16 from a possibly unaligned pointer
+> + * @p: pointer to read from
+> + *
+> + * Returns a u16 in cpu byteorder
+> + */
+> +static inline u16 le16_to_cpu_unaligned(void *p)
+> +{
+> +	return le16_to_cpu(get_unaligned((__le16 *)p));
+> +}
+> +
+> +/**
+> + * be64_to_cpu_unaligned - read a be64 from a possibly unaligned pointer
+> + * @p: pointer to read from
+> + *
+> + * Returns a u64 in cpu byteorder
+> + */
+> +static inline u64 be64_to_cpu_unaligned(void *p)
+> +{
+> +	return be64_to_cpu(get_unaligned((__be64 *)p));
+> +}
+> +
+> +/**
+> + * be32_to_cpu_unaligned - read a be32 from a possibly unaligned pointer
+> + * @p: pointer to read from
+> + *
+> + * Returns a u32 in cpu byteorder
+> + */
+> +static inline u32 be32_to_cpu_unaligned(void *p)
+> +{
+> +	return be32_to_cpu(get_unaligned((__be32 *)p));
+> +}
+> +
+> +/**
+> + * be16_to_cpu_unaligned - read a be16 from a possibly unaligned pointer
+> + * @p: pointer to read from
+> + *
+> + * Returns a u16 in cpu byteorder
+> + */
+> +static inline u16 be16_to_cpu_unaligned(void *p)
+> +{
+> +	return be16_to_cpu(get_unaligned((__be16 *)p));
+> +}
+> +
+> +/**
+> + * le64_to_cpu_unaligned - write a u64 in le-byteorder to a possibly unaligned pointer
+> + * @val: value to be written
+> + * @p: pointer to write to
+> + */
+> +static inline void cpu_to_le64_unaligned(u64 val, void *p)
+> +{
+> +	put_unaligned(cpu_to_le64(val), (__le64 *)p);
+> +}
+> +
+> +/**
+> + * le32_to_cpu_unaligned - write a u32 in le-byteorder to a possibly unaligned pointer
+> + * @val: value to be written
+> + * @p: pointer to write to
+> + */
+> +static inline void cpu_to_le32_unaligned(u32 val, void *p)
+> +{
+> +	put_unaligned(cpu_to_le32(val), (__le32 *)p);
+> +}
+> +
+> +/**
+> + * le16_to_cpu_unaligned - write a u16 in le-byteorder to a possibly unaligned pointer
+> + * @val: value to be written
+> + * @p: pointer to write to
+> + */
+> +static inline void cpu_to_le16_unaligned(u16 val, void *p)
+> +{
+> +	put_unaligned(cpu_to_le16(val), (__le16 *)p);
+> +}
+> +
+> +/**
+> + * be64_to_cpu_unaligned - write a u64 in be-byteorder to a possibly unaligned pointer
+> + * @val: value to be written
+> + * @p: pointer to write to
+> + */
+> +static inline void cpu_to_be64_unaligned(u64 val, void *p)
+> +{
+> +	put_unaligned(cpu_to_be64(val), (__be64 *)p);
+> +}
+> +
+> +/**
+> + * be32_to_cpu_unaligned - write a u32 in be-byteorder to a possibly unaligned pointer
+> + * @val: value to be written
+> + * @p: pointer to write to
+> + */
+> +static inline void cpu_to_be32_unaligned(u32 val, void *p)
+> +{
+> +	put_unaligned(cpu_to_be32(val), (__be32 *)p);
+> +}
+> +
+> +/**
+> + * be16_to_cpu_unaligned - write a u16 in be-byteorder to a possibly unaligned pointer
+> + * @val: value to be written
+> + * @p: pointer to write to
+> + */
+> +static inline void cpu_to_be16_unaligned(u16 val, void *p)
+> +{
+> +	put_unaligned(cpu_to_be16(val), (__be16 *)p);
+> +}
+> +
+> +#endif /* KERNEL */
+> +
+> +#endif /* _LINUX_UNALIGNED_H */
+> -- 
+
 ---
- include/linux/sched.h |    7 +++++++
- kernel/softirq.c      |    3 +++
- mm/page_alloc.c       |    7 ++++---
- 3 files changed, 14 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1542,9 +1542,10 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
- 		alloc_flags |= ALLOC_HARDER;
- 
- 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
--		if (!in_interrupt() &&
--		    ((p->flags & PF_MEMALLOC) ||
--		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+		if (!in_irq() && (p->flags & PF_MEMALLOC))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+		else if (!in_interrupt() &&
-+				unlikely(test_thread_flag(TIF_MEMDIE)))
- 			alloc_flags |= ALLOC_NO_WATERMARKS;
- 	}
- 
-Index: linux-2.6/kernel/softirq.c
-===================================================================
---- linux-2.6.orig/kernel/softirq.c
-+++ linux-2.6/kernel/softirq.c
-@@ -213,6 +213,8 @@ asmlinkage void __do_softirq(void)
- 	__u32 pending;
- 	int max_restart = MAX_SOFTIRQ_RESTART;
- 	int cpu;
-+	unsigned long pflags = current->flags;
-+	current->flags &= ~PF_MEMALLOC;
- 
- 	pending = local_softirq_pending();
- 	account_system_vtime(current);
-@@ -251,6 +253,7 @@ restart:
- 
- 	account_system_vtime(current);
- 	_local_bh_enable();
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
- }
- 
- #ifndef __ARCH_HAS_DO_SOFTIRQ
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1501,6 +1501,13 @@ static inline void put_task_struct(struc
- #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
- #define used_math() tsk_used_math(current)
- 
-+static inline void tsk_restore_flags(struct task_struct *p,
-+				     unsigned long pflags, unsigned long mask)
-+{
-+	p->flags &= ~mask;
-+	p->flags |= pflags & mask;
-+}
-+
- #ifdef CONFIG_SMP
- extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
- #else
-
---
-
+~Randy
