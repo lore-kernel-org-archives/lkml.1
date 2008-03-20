@@ -1,126 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbYCTSqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYCTSxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbYCTSqJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 14:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYCTSpy
+	id S1757419AbYCTSxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 14:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYCTSxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 14:45:54 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:53074 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbYCTSpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 14:45:52 -0400
-Subject: [PATCH/RFC v3] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig symbol
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Daniel Drake <dsd@gentoo.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <1206038373.16475.150.camel@johannes.berg> (sfid-20080320_184016_333600_B74BDE6D)
-References: <1206023695.16475.137.camel@johannes.berg>
-	 <20080320181310.GA17884@uranus.ravnborg.org>
-	 <1206038373.16475.150.camel@johannes.berg>
-	 (sfid-20080320_184016_333600_B74BDE6D)
+	Thu, 20 Mar 2008 14:53:09 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:24279 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751102AbYCTSxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 14:53:08 -0400
+X-IronPort-AV: E=Sophos;i="4.25,532,1199692800"; 
+   d="scan'208";a="12786716"
+Subject: [GIT] Please pull another NFS client fix for 2.6.25...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
 Content-Type: text/plain
-Date: Thu, 20 Mar 2008 19:45:34 +0100
-Message-Id: <1206038734.16475.153.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Thu, 20 Mar 2008 14:53:03 -0400
+Message-Id: <1206039185.15027.21.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 20 Mar 2008 18:53:07.0491 (UTC) FILETIME=[A2CCD730:01C88ABB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: introduce HAVE_UNALIGNED_ACCESS_SUPPORT Kconfig symbol
+Hi Linus,
 
-In many cases, especially in networking, it can be beneficial to
-know at compile time whether the architecture can do unaligned
-accesses. This patch introduces a new Kconfig symbol
-	HAVE_UNALIGNED_ACCESS_SUPPORT
-for that purpose and adds it to the powerpc and x86 architectures.
-Also add some documentation about alignment and networking, and
-especially one intended use of this symbol.
+Please pull from the "hotfixes" branch of the repository at
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-Erm. I should update the patch description and title too...
+   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git hotfixes
 
- Documentation/unaligned-memory-access.txt |   32 +++++++++++++++++++++++++++---
- arch/Kconfig                              |    3 ++
- arch/powerpc/Kconfig                      |    1 
- arch/x86/Kconfig                          |    1 
- 4 files changed, 34 insertions(+), 3 deletions(-)
+This will update the following files through the appended changesets.
 
---- everything.orig/Documentation/unaligned-memory-access.txt	2008-03-20 15:30:38.000000000 +0100
-+++ everything/Documentation/unaligned-memory-access.txt	2008-03-20 19:38:30.000000000 +0100
-@@ -218,9 +218,35 @@ If use of such macros is not convenient,
- where the source or destination (or both) are of type u8* or unsigned char*.
- Due to the byte-wise nature of this operation, unaligned accesses are avoided.
- 
-+
-+Alignment vs. Networking
-+========================
-+
-+On architectures that require aligned loads, networking requires that the IP
-+header is aligned on a four-byte boundary to optimise the IP stack. For
-+regular ethernet hardware, the constant NET_IP_ALIGN is used, on most
-+architectures this constant has the value 2 because the normal ethernet
-+header is 14 bytes long, so in order to get proper alignment one needs to
-+DMA to an address that is can be expressed as 4*n + 2. One notable exception
-+here is powerpc which defines NET_IP_ALIGN to 0 because DMA to unaligned
-+addresses can be very expensive and dwarf the cost of unaligned loads.
-+
-+For some ethernet hardware that cannot DMA to unaligned addresses like
-+4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-+required to copy the incoming frame into an aligned buffer. Because this is
-+unnecessary on architectures that can do unaligned accesses, the code can be
-+made depend on CONFIG_HAVE_UNALIGNED_ACCESS_SUPPORT like so:
-+
-+#ifdef CONFIG_HAVE_UNALIGNED_ACCESS_SUPPORT
-+	skb = original skb
-+#else
-+	skb = copy skb
-+#endif
-+
- --
--Author: Daniel Drake <dsd@gentoo.org>
-+Authors: Daniel Drake <dsd@gentoo.org>,
-+         Johannes Berg <johannes@sipsolutions.net>
- With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
--Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
--Uli Kunitz, Vadim Lobanov
-+Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock, Uli Kunitz,
-+Vadim Lobanov
- 
---- everything.orig/arch/powerpc/Kconfig	2008-03-20 15:30:38.000000000 +0100
-+++ everything/arch/powerpc/Kconfig	2008-03-20 19:37:22.000000000 +0100
-@@ -91,6 +91,7 @@ config PPC
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
-+	select HAVE_UNALIGNED_ACCESS_SUPPORT
- 
- config EARLY_PRINTK
- 	bool
---- everything.orig/arch/x86/Kconfig	2008-03-20 15:30:38.000000000 +0100
-+++ everything/arch/x86/Kconfig	2008-03-20 19:38:08.000000000 +0100
-@@ -23,6 +23,7 @@ config X86
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
-+	select HAVE_UNALIGNED_ACCESS_SUPPORT
- 
- 
- config GENERIC_LOCKBREAK
---- everything.orig/arch/Kconfig	2008-03-20 19:37:26.000000000 +0100
-+++ everything/arch/Kconfig	2008-03-20 19:37:34.000000000 +0100
-@@ -36,3 +36,6 @@ config HAVE_KPROBES
- 
- config HAVE_KRETPROBES
- 	def_bool n
-+
-+config HAVE_UNALIGNED_ACCESS_SUPPORT
-+	def_bool n
+  Cheers,
+    Trond
 
+----
+ fs/nfs/read.c  |    5 ++++-
+ fs/nfs/write.c |    8 +++++++-
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
+commit f8512ad0da16cbe156f3a7627971cdf0b39c4138
+Author: Fred Isaman <iisaman@citi.umich.edu>
+Date:   Wed Mar 19 11:24:39 2008 -0400
+
+    nfs: don't ignore return value from nfs_pageio_add_request
+    
+    Ignoring the return value from nfs_pageio_add_request can cause deadlocks.
+    
+    In read path:
+      call nfs_pageio_add_request from readpage_async_filler
+      assume at this point that there are requests already in desc, that
+        can't be merged with the current request.
+      so nfs_pageio_doio is fired up to clear out desc.
+      assume something goes wrong in setting up the io, so desc->pg_error is set.
+      This causes nfs_pageio_add_request to return 0, *WITHOUT* adding the original
+        request.
+      BUT, since return code is ignored, readpage_async_filler assumes it has
+        been added, and does nothing further, leaving page locked.
+      do_generic_mapping_read will eventually call lock_page, resulting in deadlock
+    
+    In write path:
+      page is marked dirty by generic_perform_write
+      nfs_writepages is called
+      call nfs_pageio_add_request from nfs_page_async_flush
+      assume at this point that there are requests already in desc, that
+        can't be merged with the current request.
+      so nfs_pageio_doio is fired up to clear out desc.
+      assume something goes wrong in setting up the io, so desc->pg_error is set.
+      This causes nfs_page_async_flush to return 0, *WITHOUT* adding the original
+        request, yet marking the request as locked (PG_BUSY) and in writeback,
+        clearing dirty marks.
+      The next time a write is done to the page, deadlock will result as
+        nfs_write_end calls nfs_update_request
+    
+    Signed-off-by: Fred Isaman <iisaman@citi.umich.edu>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+diff --git a/fs/nfs/read.c b/fs/nfs/read.c
+index 3d7d963..5a70be5 100644
+--- a/fs/nfs/read.c
++++ b/fs/nfs/read.c
+@@ -533,7 +533,10 @@ readpage_async_filler(void *data, struct page *page)
+ 
+ 	if (len < PAGE_CACHE_SIZE)
+ 		zero_user_segment(page, len, PAGE_CACHE_SIZE);
+-	nfs_pageio_add_request(desc->pgio, new);
++	if (!nfs_pageio_add_request(desc->pgio, new)) {
++		error = desc->pgio->pg_error;
++		goto out_unlock;
++	}
+ 	return 0;
+ out_error:
+ 	error = PTR_ERR(new);
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index 80c61fd..bed6341 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -39,6 +39,7 @@ static struct nfs_page * nfs_update_request(struct nfs_open_context*,
+ 					    unsigned int, unsigned int);
+ static void nfs_pageio_init_write(struct nfs_pageio_descriptor *desc,
+ 				  struct inode *inode, int ioflags);
++static void nfs_redirty_request(struct nfs_page *req);
+ static const struct rpc_call_ops nfs_write_partial_ops;
+ static const struct rpc_call_ops nfs_write_full_ops;
+ static const struct rpc_call_ops nfs_commit_ops;
+@@ -288,7 +289,12 @@ static int nfs_page_async_flush(struct nfs_pageio_descriptor *pgio,
+ 		BUG();
+ 	}
+ 	spin_unlock(&inode->i_lock);
+-	nfs_pageio_add_request(pgio, req);
++	if (!nfs_pageio_add_request(pgio, req)) {
++		nfs_redirty_request(req);
++		nfs_end_page_writeback(page);
++		nfs_clear_page_tag_locked(req);
++		return pgio->pg_error;
++	}
+ 	return 0;
+ }
+ 
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
