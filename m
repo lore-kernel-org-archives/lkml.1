@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967759AbYCTAnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966336AbYCTAnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967759AbYCTAnP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762712AbYCTAjR
+	id S966336AbYCTAnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965018AbYCTAkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:39:17 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:34520 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933799AbYCTAjO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:39:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmcFAAJP4UdMQWoK/2dsb2JhbACBWqkDgg4
-Date: Wed, 19 Mar 2008 20:39:09 -0400
+	Wed, 19 Mar 2008 20:40:32 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:48682 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965017AbYCTAk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 20:40:29 -0400
+Message-Id: <20080320002737.918213455@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Wed, 19 Mar 2008 20:27:37 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86 Fix text_poke for vmalloced pages
-Message-ID: <20080320003908.GA4988@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:36:30 up 19 days, 20:47,  6 users,  load average: 5.48, 5.27,
-	5.18
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/4] Markers updates for 2.6.25-rc6
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 20 Mar 2008 00:28:36 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The shadow vmap for DEBUG_RODATA kernel text modification uses virt_to_page to
-get the pages from the pointer address.
+Hi Andrew,
 
-However, I think vmalloc_to_page would be required in case the page is used for
-modules.
+Here are a few updates for the kernel markers. One is particularity important :
+the combined use of preempt_disable/enable() and call_rcu/rcu_barrier does not
+mix well with PREEMPT_RCU. I added a depends !PREEMPT_RCU to the markers to this
+configuration is not reached.
 
-Since only the core kernel text is marked read-only, use core_kernel_text()
-to make sure we only shadow map the core kernel text, not modules.
+The proper fix will imply to implement call_sched and sched_barrier, but I don't
+think it will appear before 2.6.25.
 
-This is an incremental change to make the DEBUG_RODATA and text_poke play
-together nicely. A future step will be to make the module text read-only too,
-which will require changes to load module, module free and text_poke.
-The idea is to fix the current x86 git tree quickly.
+It applies on top of 2.6.25-rc6 on top of the make-marker_debug-static.patch
+already in your tree in th following order :
 
-- Changelog:
-kernel_text_address() -> core_kernel_text().
+markers-depends-on-not-preempt-rcu.patch
+markers-add-comments.patch
+markers-remove-access-once.patch
+markers-support-for-proprietary-modules.patch
 
-It applies on top of the x86 git tree, 2.6.25-rc6.
+Mathieu
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/alternative.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-03-19 18:57:29.000000000 -0400
-+++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-03-19 20:01:10.000000000 -0400
-@@ -511,7 +511,7 @@ void *__kprobes text_poke(void *addr, co
- 	BUG_ON(len > sizeof(long));
- 	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
- 		- ((long)addr & ~(sizeof(long) - 1)));
--	{
-+	if (core_kernel_text((unsigned long)addr)) {
- 		struct page *pages[2] = { virt_to_page(addr),
- 			virt_to_page(addr + PAGE_SIZE) };
- 		if (!pages[1])
-@@ -522,6 +522,13 @@ void *__kprobes text_poke(void *addr, co
- 		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
- 		local_irq_restore(flags);
- 		vunmap(vaddr);
-+	} else {
-+		/*
-+		 * modules are in vmalloc'ed memory, always writable.
-+		 */
-+		local_irq_save(flags);
-+		memcpy(addr, opcode, len);
-+		local_irq_restore(flags);
- 	}
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
