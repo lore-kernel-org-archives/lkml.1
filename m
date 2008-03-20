@@ -1,103 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765400AbYCTAdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967547AbYCTAeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765400AbYCTAdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937093AbYCTAHj
+	id S967547AbYCTAeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939665AbYCTAHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:07:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:17166 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S940453AbYCTAHd (ORCPT
+	Wed, 19 Mar 2008 20:07:49 -0400
+Received: from clustermail5.digiweb.com.br ([189.38.50.59]:42668 "EHLO
+	lvs.digiweb.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756546AbYCTAHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:07:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=skWxa6Gl0N+WEkZW1wYU98/ry4VArFFogQO8PqNtMvPtNq8l/yxc6kfDcV299XuRENWbfTCbYHtKsOH7cCIKsubJiZXBjpvrzLqCHh4G9Qch799otreNzakx52c4zS0O93mstShqu75HtvZJxn6eib0zwJUnWOhscS/OqjN0XFk=
-Message-ID: <170fa0d20803191707y1591d389y898b34ba7b30e7be@mail.gmail.com>
-Date: Wed, 19 Mar 2008 20:07:32 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Daniel Phillips" <phillips@phunq.net>
-Subject: Re: [ANNOUNCE] ddtree: A git kernel tree for storage servers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200803191633.20922.phillips@phunq.net>
+	Wed, 19 Mar 2008 20:07:45 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Mar 2008 20:07:45 EDT
+Message-ID: <47E1A935.9030705@linuxbr.com>
+Date: Wed, 19 Mar 2008 21:00:53 -0300
+From: Cesar Suga <sartre@linuxbr.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: BUG: at fs/inotify.c:182 set_dentry_child_flags() - second
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803190102.25491.phillips@phunq.net>
-	 <170fa0d20803191323o65bd9738j80511de2c9f6a03c@mail.gmail.com>
-	 <200803191633.20922.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 7:33 PM, Daniel Phillips <phillips@phunq.net> wrote:
-> On Wednesday 19 March 2008 13:23, Mike Snitzer wrote:
->
-> > >   * Block layer deadlock fixes (Status: production)
->  >
->  > Do you happen to have a pointer to where these block layer deadlock
->  > fixes are?  Or will you be committing them shortly?
->
->  Hi Mike,
->
->  OK, this is committed now, but caveat: improved, untested except for
->  booting.  But what could possibly go wrong? :-/
->
->  http://phunq.net/ddtree?p=ddtree/.git;a=blob;f=patches/bio-throttle
->
->  The production version is sitting in the code.google.com svn repository
->  in ddsnap/patches/2.6.23.8.  That one has a known bug that has somehow
->  escaped being stomped with a new commit, since it only manifests if you
->  stack one stacking block device on top of another one.  I will post here
->  when we have an official, torture tested version of the patch.
+Hi,
 
-You mean like LVM2 LV ontop of MD?  Or stacking purely DM-based
-stacked devices (Maybe LVM2 LV ontop of mpath? or dm-crypt on LVM2?).
+I second Patrick McLean's e-mail from 2007/02/27.
 
->  The patch above is improved from the most recently posted version by
->  using using the ->bi_max_vecs field for throttle accounting instead of
->  calling out to a per-driver metric.  This works nicely because the
->  max_vecs field cannot change during the life of the bio, and it gives
->  a decent upper bound on the resource consumption of the bio, better
->  than simply counting bios in flight.  The queue->metric() method is
->  still in there as a stub, some more cleanup to do there (and further
->  shrinking of the patch).  It does no harm.
->
->  This improvement shrinks the throttled version of struct bio by 4
->  bytes.
+Patrick also said he was using nfsd at that point.
 
-Cool, so I looked briefly at the ddsnap DM target some time ago and
-saw that it needed to take special care to leverage this particular
-throttle (I think this was the per-driver metric?).  My memory is
-fuzzy on that but what I'm wondering is how "general" is this new
-patch?  Do additional steps need to be taken to be able to _really_
-guarantee devices won't deadlock?
+WARNING: at fs/inotify.c:182 set_dentry_child_flags()
+Pid: 19103, comm: gam_server Tainted: P        2.6.24.3-smp #1
+ [<c01a2087>] set_dentry_child_flags+0x127/0x160
+ [<c01a2110>] remove_watch_no_event+0x50/0x60
+ [<c01a2228>] inotify_remove_watch_locked+0x18/0x50
+ [<c01a258c>] inotify_rm_wd+0x6c/0xb0
+ [<c01a2ba8>] sys_inotify_rm_watch+0x38/0x60
+ [<c0104336>] syscall_call+0x7/0xb
+ =======================
 
-I typically use dm-linear devices built on MD (raid1 w/ one member
-being remote via nbd).  The per-bdi dirty writeback accounting has
-proven useful but I've recently hit a nasty livelock when the bdi
-accounting for a device no longer enables writeback progress to be
-made, e.g:
+Running Slackware 2.6.24.3-smp stock kernel. However, ntpdate ran 1 
+minute before this occurred (offset 7.4 seconds). Machine was running 
+rsync to a remote NFS server (common rsync, not using rsync protocol) 
+mounted at the local machine.
 
-BdiWriteback:            0 kB
-BdiReclaimable:     321408 kB
-BdiDirtyThresh:     316364 kB
-DirtyThresh:        381284 kB
-BackgroundThresh:   190640 kB
+Regards,
+Cesar
 
-With an all too familiar trace like the following:
-..
- [<ffffffff8044cda6>] io_schedule_timeout+0x4b/0x79
- [<ffffffff80271371>] congestion_wait+0x66/0x80
- [<ffffffff802457bd>] autoremove_wake_function+0x0/0x2e
- [<ffffffff8026c64d>] balance_dirty_pages_ratelimited_nr+0x21d/0x2b1
- [<ffffffff80268191>] generic_file_buffered_write+0x5f3/0x711
+--- quote ---
+I have this message in the dmesg on a mail server running on an xfs
+filesystem. It appears to have happened at some point when nfsd was
+restarted, but I can't seem to convince it to reproduce.
 
-I'm _hoping_ your simple/elegant patch can enable me to drop my 2.6.22
-per-bdi backport and all will be right with the world.
+The machine is running Gentoo's 2.6.20 kernel.
 
-What do you think?
+BUG: at fs/inotify.c:182 set_dentry_child_flags()
 
-Mike
+Call Trace:
+[<ffffffff802b7e2a>] set_dentry_child_flags+0xd4/0x132
+[<ffffffff802b7eef>] remove_watch_no_event+0x67/0x76
+[<ffffffff802b7f16>] inotify_remove_watch_locked+0x18/0x3b
+[<ffffffff802b8004>] inotify_rm_wd+0x7e/0xa1
+[<ffffffff802b8519>] sys_inotify_rm_watch+0x46/0x62
+[<ffffffff80253e6e>] system_call+0x7e/0x83
+
