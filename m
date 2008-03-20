@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYCTJAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYCTJN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYCTJAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 05:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYCTJAR
+	id S1755524AbYCTJN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 05:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbYCTJNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 05:00:17 -0400
-Received: from pilet.ens-lyon.fr ([140.77.167.16]:55943 "EHLO
-	pilet.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753417AbYCTJAO (ORCPT
+	Thu, 20 Mar 2008 05:13:49 -0400
+Received: from mga01.intel.com ([192.55.52.88]:50659 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753860AbYCTJNs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 05:00:14 -0400
-Date: Thu, 20 Mar 2008 10:00:11 +0100
-From: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
-To: David Miller <davem@davemloft.net>
-Cc: joe@perches.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       pekkas@netcore.fi, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH] [RFC] [IPv6] spelling fix in /proc:
-	/proc/sys/net/ipv6/conf/default/temp_prefered_lft
-Message-ID: <20080320090011.GK6935@ens-lyon.fr>
-References: <20080319204227.GF6935@ens-lyon.fr> <20080319.135205.125229102.davem@davemloft.net> <1205976319.26345.20.camel@localhost> <20080319.185649.235399151.davem@davemloft.net>
+	Thu, 20 Mar 2008 05:13:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,530,1199692800"; 
+   d="scan'208";a="536899543"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080319.185649.235399151.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Xen common code across architecture
+Date: Thu, 20 Mar 2008 17:13:43 +0800
+Message-ID: <10EA09EFD8728347A513008B6B0DA77A02EF8C3A@pdsmsx411.ccr.corp.intel.com>
+In-Reply-To: <12047411473158-git-send-email-yamahata@valinux.co.jp>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Xen common code across architecture
+Thread-Index: Ach+7bilScqNQx56TrWtkr1yygdDlQLe4sPQ
+References: <12047411453864-git-send-email-yamahata@valinux.co.jp> <12047411473158-git-send-email-yamahata@valinux.co.jp>
+From: "Dong, Eddie" <eddie.dong@intel.com>
+To: <virtualization@lists.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Cc: <kvm-ia64-devel@lists.sourceforge.net>,
+       <xen-ia64-devel@lists.xensource.com>, <linux-ia64@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 20 Mar 2008 09:13:47.0234 (UTC) FILETIME=[B4128C20:01C88A6A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 06:56:49PM -0700, David Miller wrote:
-> From: Joe Perches <joe@perches.com>
-> Date: Wed, 19 Mar 2008 18:25:19 -0700
-> 
-> > On Wed, 2008-03-19 at 13:52 -0700, David Miller wrote:
-> > > From: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
-> > > Date: Wed, 19 Mar 2008 21:42:27 +0100
-> > > > Here is a patch to fix all the spelling error (prefered -> preferred)
-> > > I think this doesn't add any value.
-> > > If the procfs file name has to remain the same, which it does,
-> > > changing variable and macro names to be different will only
-> > > cause merge conflicts and pain yet have no redeeming value.
-> > 
-> > I disagree.  Proper spelling has value.
-> 
-> Only if it matches the spelling of thing it is implementing!
-> 
-> Making the object being implemented and the variables used to do so
-> disagree in name will only create other kinds of confusion.
-
-The file already have both occurences, there are function names and
-variable with "preferred", sometimes mixed in the same line.
-
-If it can help, the last time a line which uses prefered_lft was
-changed, it was more than a year ago (1ab1457c42bc078e5a9becd82a7f9f940b55c53a)
-for a whitespace cleanup.
-Most of the occurences haven't been touched since the conversion to git.
-
-regards,
-
-Benoit
-
-PS: I don't really care, it's just that I was touching the lifetime code
-and tought that maybe I should try to change the whole file before
-submitting my code.
--- 
-:wq
+Jeremy & all:
+	Current xen kernel codes are in arch/x86/xen, but xen dynamic
+irqchip (events.c) are common for other architectures such as IA64. We
+are in progress with enabling pv_ops for IA64 now and want to reuse same
+code, do we need to move the code to some place common? suggestions?
+	Thanks, eddie
