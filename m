@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936195AbYCTAzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYCTBIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936195AbYCTAzu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYCTAzf
+	id S1755343AbYCTBIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 21:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYCTBIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:55:35 -0400
-Received: from smtp-out2.libero.it ([212.52.84.42]:34519 "EHLO
-	smtp-out2.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752422AbYCTAze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:55:34 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjUBAP5S4UeXMW7J/2dsb2JhbAAIqjQ
-User-Agent: Microsoft-Entourage/11.4.0.080122
-Date: Thu, 20 Mar 2008 01:55:29 +0100
-Subject: max_sectors_kb problem
-From: Matteo Tescione <matteo@rmnet.it>
-To: <linux-kernel@vger.kernel.org>
-Message-ID: <C4077491.650A%matteo@rmnet.it>
-Thread-Topic: max_sectors_kb problem
-Thread-Index: AciKJRdWVfnuKvYYEdy6mAAZ4zZdpQ==
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Wed, 19 Mar 2008 21:08:10 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:47833 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752838AbYCTBII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 21:08:08 -0400
+Date: Wed, 19 Mar 2008 18:08:07 -0700
+From: Jeremy Higdon <jeremy@sgi.com>
+To: David Chinner <dgc@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Buffered I/O to block device very slow and other SCSI issues...
+Message-ID: <20080320010807.GA27620@sgi.com>
+References: <20080319231654.GA103321673@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080319231654.GA103321673@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Folks,
+On Thu, Mar 20, 2008 at 10:16:54AM +1100, David Chinner wrote:
+> 4p ia64, 24GB RAM, 2.6.25-rc3, qla1280, 15krpm scsi disk.
+> 
+> Direct I/O:
+> 
+> dgc@budgie:~/xfstests$ sudo dd if=/dev/zero of=/dev/sdb6 bs=1024k count=1024 oflag=direct
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 27.8974 s, 38.5 MB/s
+> 
+> Doing approximately 80 512k I/os per second (disk bandwidth).
+> 
+> Buffered I/O:
+> 
+> dgc@budgie:~/xfstests$ sudo dd if=/dev/zero of=/dev/sdb6 bs=1024k count=4096
+> 4096+0 records in
+> 4096+0 records out
+> 4294967296 bytes (4.3 GB) copied, 427.872 s, 10.0 MB/s
 
-I'm running 2.6.24.3 kernel with the 3ware 9650se 8port in raid10 with 256K
-of stripesize.
-The question is: why linux kernel (2.6.24 but it's the same in older
-kernels) see only 128K as it's max_sectors_kb ?
-It's limited by max_hw_segments_kb which i think should be 256 with a 256 k
-stripe.
-It seems hardcoded somewhere, altough in 3w-9xxx.c i can't find it.
-I'm running firmware FE9X 3.08.02.007 and driver version  2.26.02.010
-Can someone help me?
-Thanks in advance,
---
---
-#Matteo Tescione
-#RMnet srl
+How big is sdb6?  How many '2's do you see in
 
+	factor `cat /sys/block/sdb/sdb6/size`
 
+> I also suspect that CTQ has not been set up correctly on this
+> kernel, because:
+> 
+> $ cat /sys/block/sdb/device/queue_depth
+> 3
+> $ ls -l /sys/block/sdb/device/queue_depth
+> -r--r--r-- 1 root root 0 Mar 20 09:59 /sys/block/sdb/device/queue_depth
+> $
+> 
+> It appears to be hard coded to 3 and can't be changed....
+
+That's a bug in the qla1280 driver.  I thought that had gotten fixed.
+It's looking at the wrong mailbox register after setting device parameters.
+
+jeremy
