@@ -1,164 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163494AbYCTAkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbYCTAkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163494AbYCTAkB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 20:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967266AbYCTA2M
+	id S965059AbYCTAkr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 20:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967409AbYCTAa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 20:28:12 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43625 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765436AbYCTA2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 20:28:08 -0400
-From: akepner@sgi.com
-Date: Wed, 19 Mar 2008 17:26:37 -0700
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4 v4] dma: dma_{un}map_{single|sg}_attrs() interface
-Message-ID: <20080320002637.GK1843@sgi.com>
-References: <20080313040022.GJ12370@sgi.com> <20080313014106.782aa3c7.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080313014106.782aa3c7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Wed, 19 Mar 2008 20:30:28 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:37709 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967404AbYCTAaZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Mar 2008 20:30:25 -0400
+Message-ID: <47E1B062.4060709@keyaccess.nl>
+Date: Thu, 20 Mar 2008 01:31:30 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+CC: David Brownell <david-b@pacbell.net>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ehci-hcd affects hda speed
+References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <200803171700.26274.david-b@pacbell.net> <47DF19AD.405@keyaccess.nl> <200803171855.44552.david-b@pacbell.net> <alpine.LFD.1.00.0803200211230.31035@nev.ubzr>
+In-Reply-To: <alpine.LFD.1.00.0803200211230.31035@nev.ubzr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 13, 2008 at 01:41:06AM -0700, Andrew Morton wrote:
+On 20-03-08 00:47, Lev A. Melnikovsky wrote:
 
-Thanks for the review. 
+> Just in case - I do have an A7V8X-based PC in the office and have 
+> performed a simple experiment.
+> 
+> #1. Idle USB controller has no effect on PCI performance (I again
+> measured hda throughput).
+> 
+> #2. Default value for register 4Bh is 09h.
+> 
+> #3. I have detected no effect of changing [4Bh]=29h. Particularly, USB 
+> FLASH read speed is ~8MB/s and hda read speed is ~40MB/s regardless of 
+> [4Bh] content. During hda timing, "dd if=/dev/sda of=/dev/null bs=1024" 
+> was running in another window (/dev/sda being the USB stick).
+> 
+> My interpretation, is that bit5 at offset 4B may _not_ be an "EHCI sleep 
+> time select" like it is for VT6212. Am I missing something?
 
-I have a new patchset which will address most of your comments. 
+No, very useful test, thanks much. Patch as submitted for revision 0x6x will 
+stand then.
 
-> On Wed, 12 Mar 2008 21:00:22 -0700 akepner@sgi.com wrote:
-> 
-> > ...
-> >
-> > diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
-> > index e69de29..05b6e91 100644
-> > --- a/include/linux/dma-attrs.h
-> > +++ b/include/linux/dma-attrs.h
-> > @@ -0,0 +1,55 @@
-> > +#ifndef _DMA_ATTR_H
-> > +#define _DMA_ATTR_H
-> > +
-> > +enum dma_attr {
-> > +	DMA_ATTR_BARRIER,
-> > +	DMA_ATTR_MAX,
-> > +};
-> > +
-> > +struct dma_attrs {
-> > +	unsigned flags;
-> > +};
-> 
-> Please comment the above.  Describe the semantic meaning of the enums and
-> how they are mapped into `struct dma_attrs' (which is what I assume they
-> do).  I see there's a documentation update here so if you think it's best
-> to direct the code reader to that file then fine, add a suitable reference.
+I do wonder -- is your hda throughput also the same before _ever_ attaching 
+anything to the EHCI controller and after? In my case, the slow down only 
+happened after switching on my external USB drive once, and would persist 
+from that time until reboot (or unloading ehci-hcd, which I kept modular for 
+exactly that reason).
 
-OK, I've added a reference to the Documentation/DMA-attributes.txt 
-file.
+The sleep time wasn't the core problem, so I wonder of later VIA chips do 
+still have the active async schedule problem...
 
-> 
-> Why did we need to implement a struct for a plain old flags word?
+Alessandro? You said there still was a difference for you between no EHCI at 
+all and EHCI after tweaking 4B as Lev showed. How much?
 
-To make the type that carries the attributes opaque, so that it 
-could be expanded. It's a bitmap in the latest version.
-
-> 
-> > +#define __DMA_ATTRS_INIT() { .flags = 0, }
-> 
-> Does this need to exist?
-
-No, it's gone from the next patchset.
-
-> 
-> > +#define DECLARE_DMA_ATTRS(x) struct dma_attrs x = __DMA_ATTRS_INIT()
-> 
-> This is a definition, not a declaration.  Please rename it to
-> DEFINE_DMA_ATTRS().
->
-
-You're right. Done.
-
- 
-> > +#define INIT_DMA_ATTRS(x) (x)->flags = 0;
-> 
-> So if I do
-> 
-> 	if (expr)
-> 		INIT_DMA_ATTRS(bar);
-> 	else
-> 		something_else();
-> 
-> it won't compile.
-> 
-> Golden rule: implement not in cpp that which can be implemented in C.
-> 
-> static inline void init_dma_attrs(struct dma_attrs *attrs)
-> {
-> 	attrs->flags = 0;
-> }
-> 
-> is much nicer, no?
-> 
-
-Yes ;-)
-
-> > +#ifdef ARCH_USES_DMA_ATTRS
-> 
-> There is no precedent for ARCH_USES_*.
-> 
-> There is a little bit of precedent for ARCH_HAVE_*
-> 
-> There is lots of precendence for ARCH_HAS_*.
-> 
-> We don't like ARCH_HAS_* anyway ;) What can we do to get rid of this? 
-> Ideally, make it available on all architectures at zero cost to those which
-> don't need it.  If that is impractical (why?) then it is preferable to do
-> this in Kconfig.
-> 
-
-OK, I've changed this to CONFIG_HAVE_DMA_ATTRS, selected in Kconfig.
-
-> > +/*
-> > + * dma_set_attr - set a specific attribute
-> > + * may be called with a null attrs
-> > + */
-> > +static inline int dma_set_attr(struct dma_attrs *attrs, enum dma_attr attr)
-> > +{
-> > +	if (!attrs)
-> > +		return 0;
-> > +	if (attr < DMA_ATTR_MAX) {
-> > +		attrs->flags |= (1 << attr);
-> > +		return 0;
-> > +	}
-> > +	return -EINVAL;
-> > +}
-> 
-> Is there any non-buggy reason why code would pass an out-of-range attribute
-> into this function?  If not, BUG_ON() would be appropriate treatment.
-
-Latest version uses BUG_ON().
-
-> 
-> ....
-> We have a dma_set_attr() stub but no dma_get_attr() stub?
-> 
-
-I put a stub in, but dma_get_attr() is only used by arch-specific 
-code, and only code that has CONFIG_HAVE_DMA_ATTRS set. 
-dma_set_attr() is used by arch-independent code, so it has 
-to be there whether CONFIG_HAVE_DMA_ATTRS is set or no.
-
--- 
-Arthur
-
+Rene.
