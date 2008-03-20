@@ -1,69 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYCTU0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbYCTU0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYCTU0L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbYCTUVq
+	id S1759521AbYCTU0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756191AbYCTUWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:21:46 -0400
-Received: from viefep25-int.chello.at ([62.179.121.45]:29768 "EHLO
-	viefep25-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757754AbYCTUVn (ORCPT
+	Thu, 20 Mar 2008 16:22:08 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:36487 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755492AbYCTUVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 16:21:43 -0400
-X-SourceIP: 80.56.237.116
-Message-Id: <20080320202120.601334000@chello.nl>
+	Thu, 20 Mar 2008 16:21:16 -0400
+Message-Id: <20080320202124.540993000@chello.nl>
 References: <20080320201042.675090000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Thu, 20 Mar 2008 21:10:45 +0100
+Date: Thu, 20 Mar 2008 21:11:03 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
        neilb@suse.de, miklos@szeredi.hu, penberg@cs.helsinki.fi,
        a.p.zijlstra@chello.nl
-Subject: [PATCH 03/30] mm: tag reseve pages
-Content-Disposition: inline; filename=page_alloc-reserve.patch
+Subject: [PATCH 21/30] netvm: prevent a stream specific deadlock
+Content-Disposition: inline; filename=netvm-tcp-deadlock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tag pages allocated from the reserves with a non-zero page->reserve.
-This allows us to distinguish and account reserve pages.
+It could happen that all !SOCK_MEMALLOC sockets have buffered so much data
+that we're over the global rmem limit. This will prevent SOCK_MEMALLOC buffers
+from receiving data, which will prevent userspace from running, which is needed
+to reduce the buffered data.
+
+Fix this by exempting the SOCK_MEMALLOC sockets from the rmem limit.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm_types.h |    1 +
- mm/page_alloc.c          |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ include/net/sock.h   |    7 ++++---
+ net/core/sock.c      |    2 +-
+ net/ipv4/tcp_input.c |    8 ++++----
+ net/sctp/ulpevent.c  |    2 +-
+ 4 files changed, 10 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/include/linux/mm_types.h
+Index: linux-2.6/include/net/sock.h
 ===================================================================
---- linux-2.6.orig/include/linux/mm_types.h
-+++ linux-2.6/include/linux/mm_types.h
-@@ -70,6 +70,7 @@ struct page {
- 	union {
- 		pgoff_t index;		/* Our offset within mapping. */
- 		void *freelist;		/* SLUB: freelist req. slab lock */
-+		int reserve;		/* page_alloc: page is a reserve page */
- 	};
- 	struct list_head lru;		/* Pageout list, eg. active_list
- 					 * protected by zone->lru_lock !
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1433,8 +1433,10 @@ zonelist_scan:
- 		}
+--- linux-2.6.orig/include/net/sock.h
++++ linux-2.6/include/net/sock.h
+@@ -800,12 +800,13 @@ static inline int sk_wmem_schedule(struc
+ 		__sk_mem_schedule(sk, size, SK_MEM_SEND);
+ }
  
- 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
--		if (page)
-+		if (page) {
-+			page->reserve = !!(alloc_flags & ALLOC_NO_WATERMARKS);
- 			break;
-+		}
- this_zone_full:
- 		if (NUMA_BUILD)
- 			zlc_mark_zone_full(zonelist, z);
+-static inline int sk_rmem_schedule(struct sock *sk, int size)
++static inline int sk_rmem_schedule(struct sock *sk, struct sk_buff *skb)
+ {
+ 	if (!sk_has_account(sk))
+ 		return 1;
+-	return size <= sk->sk_forward_alloc ||
+-		__sk_mem_schedule(sk, size, SK_MEM_RECV);
++	return skb->truesize <= sk->sk_forward_alloc ||
++		__sk_mem_schedule(sk, skb->truesize, SK_MEM_RECV) ||
++		skb_emergency(skb);
+ }
+ 
+ static inline void sk_mem_reclaim(struct sock *sk)
+Index: linux-2.6/net/core/sock.c
+===================================================================
+--- linux-2.6.orig/net/core/sock.c
++++ linux-2.6/net/core/sock.c
+@@ -384,7 +384,7 @@ int sock_queue_rcv_skb(struct sock *sk, 
+ 	if (err)
+ 		goto out;
+ 
+-	if (!sk_rmem_schedule(sk, skb->truesize)) {
++	if (!sk_rmem_schedule(sk, skb)) {
+ 		err = -ENOBUFS;
+ 		goto out;
+ 	}
+Index: linux-2.6/net/ipv4/tcp_input.c
+===================================================================
+--- linux-2.6.orig/net/ipv4/tcp_input.c
++++ linux-2.6/net/ipv4/tcp_input.c
+@@ -3862,9 +3862,9 @@ static void tcp_data_queue(struct sock *
+ queue_and_out:
+ 			if (eaten < 0 &&
+ 			    (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
+-			     !sk_rmem_schedule(sk, skb->truesize))) {
++			     !sk_rmem_schedule(sk, skb))) {
+ 				if (tcp_prune_queue(sk) < 0 ||
+-				    !sk_rmem_schedule(sk, skb->truesize))
++				    !sk_rmem_schedule(sk, skb))
+ 					goto drop;
+ 			}
+ 			skb_set_owner_r(skb, sk);
+@@ -3936,9 +3936,9 @@ drop:
+ 	TCP_ECN_check_ce(tp, skb);
+ 
+ 	if (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
+-	    !sk_rmem_schedule(sk, skb->truesize)) {
++	    !sk_rmem_schedule(sk, skb)) {
+ 		if (tcp_prune_queue(sk) < 0 ||
+-		    !sk_rmem_schedule(sk, skb->truesize))
++		    !sk_rmem_schedule(sk, skb))
+ 			goto drop;
+ 	}
+ 
+Index: linux-2.6/net/sctp/ulpevent.c
+===================================================================
+--- linux-2.6.orig/net/sctp/ulpevent.c
++++ linux-2.6/net/sctp/ulpevent.c
+@@ -701,7 +701,7 @@ struct sctp_ulpevent *sctp_ulpevent_make
+ 	if (rx_count >= asoc->base.sk->sk_rcvbuf) {
+ 
+ 		if ((asoc->base.sk->sk_userlocks & SOCK_RCVBUF_LOCK) ||
+-		    (!sk_rmem_schedule(asoc->base.sk, chunk->skb->truesize)))
++		    (!sk_rmem_schedule(asoc->base.sk, chunk->skb)))
+ 			goto fail;
+ 	}
+ 
 
 --
 
