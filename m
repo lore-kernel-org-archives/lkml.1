@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYCTCIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbYCTCQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbYCTCIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Mar 2008 22:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYCTCIG
+	id S1756825AbYCTCQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Mar 2008 22:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbYCTCQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Mar 2008 22:08:06 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:18843 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752252AbYCTCIF (ORCPT
+	Wed, 19 Mar 2008 22:16:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753091AbYCTCQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Mar 2008 22:08:05 -0400
-Date: Thu, 20 Mar 2008 02:07:59 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [mmotm build error] Re: [PATCH,RESEND] Basic braille screen reader support
-Message-ID: <20080320020758.GA4545@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
-	torvalds@osdl.org, linux-kernel@vger.kernel.org
-References: <20080204031842.GE4439@implementation> <20080205220054.GD4394@implementation> <20080319115726.a4ca9883.randy.dunlap@oracle.com>
+	Wed, 19 Mar 2008 22:16:32 -0400
+Date: Wed, 19 Mar 2008 19:13:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       morgan@kernel.org, buraphalinuxserver@gmail.com,
+       lcapitulino@mandriva.com.br
+Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill() (-git)
+In-Reply-To: <20080319164601.d105e3df.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0803191912360.3020@woody.linux-foundation.org>
+References: <20080319165635.GH5935@sergelap.ibm.com> <20080319164601.d105e3df.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080319115726.a4ca9883.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap, le Wed 19 Mar 2008 11:57:26 -0700, a écrit :
-> when O=dir is used in make:
+
+
+On Wed, 19 Mar 2008, Andrew Morton wrote:
 > 
->   CC      drivers/accessibility/braille/braille_console.o
-> Assembler messages:
-> Fatal error: can't create drivers/accessibility/braille/braille_console.o: No such file or directory
->   CC      crypto/aes_generic.o
-> make[3]: *** [drivers/accessibility/braille/braille_console.o] Error 2
-> make[2]: *** [drivers/accessibility] Error 2
-> make[1]: *** [drivers] Error 2
+> umm,
+> 
+> security/smack/smack_lsm.c: In function 'smack_task_kill':
+> security/smack/smack_lsm.c:1122: error: implicit declaration of function 'cap_task_kill'
 
-Oh, right, the patch below should fix it
+Serge, can you resend with that fixed and the tested-by added?
 
-
-
-Properly recurse Makefiles into accessibility and accessibility/braille/
-
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-
---- linux-2.6.24.1-perso/drivers/accessibility/Makefile.orig	2008-03-20 01:51:09.000000000 +0000
-+++ linux-2.6.24.1-perso/drivers/accessibility/Makefile	2008-03-20 01:52:30.000000000 +0000
-@@ -1 +1 @@
--obj-$(CONFIG_A11Y_BRAILLE_CONSOLE)		+= braille/braille_console.o
-+obj-y				+= braille/
---- /dev/null	2008-03-20 02:39:28.130012041 +0000
-+++ linux-2.6.24.1-perso/drivers/accessibility/braille/Makefile	2008-03-20 01:52:44.000000000 +0000
-@@ -0,0 +1 @@
-+obj-$(CONFIG_A11Y_BRAILLE_CONSOLE)		+= braille_console.o
+		Linus
