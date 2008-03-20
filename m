@@ -1,82 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbYCTTcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbYCTTdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbYCTTcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 15:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbYCTTcj
+	id S1757329AbYCTTdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 15:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbYCTTdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 15:32:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36504 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754616AbYCTTci (ORCPT
+	Thu, 20 Mar 2008 15:33:03 -0400
+Received: from qb-out-0506.google.com ([72.14.204.232]:26546 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755761AbYCTTcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 15:32:38 -0400
-Date: Thu, 20 Mar 2008 15:32:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
-In-Reply-To: <47E2A63B.4020003@ct.jp.nec.com>
-Message-ID: <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com>
-References: <47E2A63B.4020003@ct.jp.nec.com>
+	Thu, 20 Mar 2008 15:32:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=QP6ljFYVvI+CN0j/+VFyC3M92xk8yd/ddmLFXtQwtW0Hmx6iWFJXV0faEcdleZ7jbN5k6u6nmaY0xksYLDdhhtjusjuKevIR2VMSuy2R38nxf2P9TaD9mQtTb8h3XvEsFby1goCN3JyOpivNpSmPz3wKAfaoT1zxYHyGwk40y7A=
+Message-ID: <b99fa2c0803201232o350bcd5ev7e8e2425d938738a@mail.gmail.com>
+Date: Fri, 21 Mar 2008 03:32:38 +0800
+From: "=?BIG5?B?w1G6vajI?=" <tx67kx6329q@gmail.com>
+To: samemall@pchome.com.tw
+Subject: =?BIG5?B?MjAwOC8zLzIxIKH3ob2h81BIUMHK?= =?BIG5?B?qquorrjqrsaud7r0r7ixTa7XobqhvaHRIDM6MzI=?=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=BIG5
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m2KJSnnq032038
 
-
-Hi Hiroshi,
-
-Thanks for looking into it. I'll take a deeper look at it later, but
-first I have a few nitpicks with the patch.
-
-On Thu, 20 Mar 2008, Hiroshi Shimamoto wrote:
->
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  mm/slab.c |   18 +++++++++---------
->  1 files changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 4bf6ca8..7beb378 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -138,8 +138,8 @@
->   *
->   * (On PREEMPT_RT, these are NOPs, but we have to drop/get the irq locks.)
->   */
-> -# define slab_irq_disable_nort()	local_irq_disable()
-> -# define slab_irq_enable_nort()		local_irq_enable()
-> +# define slab_irq_disable_nort(cpu)	slab_irq_disable(cpu)
-> +# define slab_irq_enable_nort(cpu)	slab_irq_enable(cpu)
-
-This is the !PREEMPT_RT version. It should stay as is (with the
-exception of ignoring the "cpu" variable. [ (void)cpu; ? ]
-
-#define slab_irq_disable_nort(cpu) \
-	do { \
-		(void)cpu;  \
-		local_irq_disable(); \
-	} while(0)
-
-
->  # define slab_irq_disable_rt(flags)	do { (void)(flags); } while (0)
->  # define slab_irq_enable_rt(flags)	do { (void)(flags); } while (0)
->  # define slab_spin_lock_irq(lock, cpu) \
-> @@ -160,8 +160,8 @@ DEFINE_PER_CPU_LOCKED(int, slab_irq_locks) = { 0, };
->  	do { slab_irq_enable(cpu); (void) (flags); } while (0)
->  # define slab_irq_disable_rt(cpu)	slab_irq_disable(cpu)
->  # define slab_irq_enable_rt(cpu)	slab_irq_enable(cpu)
-> -# define slab_irq_disable_nort()	do { } while (0)
-> -# define slab_irq_enable_nort()		do { } while (0)
-> +# define slab_irq_disable_nort(cpu)	do { } while (0)
-> +# define slab_irq_enable_nort(cpu)	do { } while (0)
-
-And these are the PREEMPT_RT version. So basically, this patch is a nop
-for PREEMPT_RT. I doubt it will solve your bug ;-)
-
-
--- Steve
-
+2008-3-21¡ö
+¤sà¾¬ì§Şºô­¶³]­p±zÁÙ¨S¦³¤@­Ó±MÄİªº¥ø·~ºô¯¸¶Ü¡H
+¤sà¾¬ì§Ş±À¥XPHPÁÊª«¨®¸ê®Æ®wºô¯¸±M®×¥u­n¢C¢±¢³¡A¢¸¢¯¢¯¡e·|­û¡D²£«~¡D­q³æ¸ê®Æ®w......µ¥¡f¦A°e¤@¦~100MB¤£­­¬y¶qµêÀÀ¥D¾÷
+¤ß°Ê¤£¦p°¨¤W¦æ°Ê³á¤sà¾¬ì§Ş¸ê°T¦³­­¤½¥q½Ğ¨Ó¹q¬¢¸ß¶À±M­û¡G0938764395
+3:32:34
+Ã§ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
