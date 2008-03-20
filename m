@@ -1,52 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYCTT4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYCTUFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYCTT4d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 15:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbYCTT4Z
+	id S1756686AbYCTUFm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbYCTUFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 15:56:25 -0400
-Received: from qmta02.emeryville.ca.mail.comcast.net ([76.96.30.24]:42815 "EHLO
-	QMTA02.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753959AbYCTT4Y (ORCPT
+	Thu, 20 Mar 2008 16:05:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47412 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754864AbYCTUFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 15:56:24 -0400
-X-Authority-Analysis: v=1.0 c=1 a=0M346g1JBBMA:10 a=y4c5MiR-AAAA:8
- a=UaMh_QsRMryB30rWN9EA:9 a=HnpzKa48DuZYW4cqsIIA:7
- a=a6j99q-9xOA0NF1f0rd_ICx0RUcA:4 a=Mz_smNXqyOQA:10
-Message-ID: <47E2C158.5010008@andrei.myip.org>
-Date: Thu, 20 Mar 2008 12:56:08 -0700
-From: Florin Andrei <florin@andrei.myip.org>
-Reply-To: linux-kernel@vger.kernel.org
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: kernel support for newer UDF versions (> 2.01)
-References: <1201981141.3197.7.camel@fermat.scientia.net> <20080206163611.GB23382@atrey.karlin.mff.cuni.cz> <1202327121.3236.17.camel@fermat.scientia.net> <20080207094538.GA6140@duck.suse.cz>
-In-Reply-To: <20080207094538.GA6140@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 20 Mar 2008 16:05:30 -0400
+Date: Thu, 20 Mar 2008 13:04:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rodolfo Giometti <giometti@linux.it>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
+       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com,
+       giometti@linux.it
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+Message-Id: <20080320130400.0b17e1fc.akpm@linux-foundation.org>
+In-Reply-To: <12048053472063-git-send-email-giometti@linux.it>
+References: <12048053463198-git-send-email-giometti@linux.it>
+	<12048053473401-git-send-email-giometti@linux.it>
+	<12048053471754-git-send-email-giometti@linux.it>
+	<12048053471177-git-send-email-giometti@linux.it>
+	<12048053473741-git-send-email-giometti@linux.it>
+	<12048053472063-git-send-email-giometti@linux.it>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> On Wed 06-02-08 20:45:21, Christoph Anton Mitterer wrote:
->> On Wed, 2008-02-06 at 17:36 +0100, Jan Kara wrote:
->>> I think there's a patch for 2.50 support which is quite recent (2.6.24).
->>> I plan to merge the support when Sebastian submits it (I'm already in
->>> contact with him regarding this).
->> Ah great, so 2.6.25 probably?!
->   Not very likely for 2.6.25 (I still don't have a patch with Sebastians's
-> Sign-off without which I cannot merge it and 2.6.25 merge window is closing
-> soon...). But hopefully it'll make it into 2.6.26.
+On Thu,  6 Mar 2008 13:09:04 +0100
+Rodolfo Giometti <giometti@linux.it> wrote:
 
-What's the status of the UDF 2.50 patch currently? Still on track for 
-inclusion in 2.6.26?
+> Adds support for the PPS sources connected with the CD (Carrier
+> Detect) pin of a serial port.
+> 
+> ...
+>
+> +#ifdef CONFIG_PPS_CLIENT_UART
+> +
+> +static int
+> +uart_register_pps_port(struct uart_state *state, struct uart_port *port)
+> +{
+> +	struct tty_driver *drv = port->info->tty->driver;
+> +	int ret;
+> +
+> +	state->pps_info.owner = THIS_MODULE;
+> +	state->pps_info.dev = port->dev;
+> +	snprintf(state->pps_info.name, PPS_MAX_NAME_LEN, "%s%d",
+> +		drv->driver_name, port->line);
+> +	snprintf(state->pps_info.path, PPS_MAX_NAME_LEN, "/dev/%s%d",
+> +		drv->name, port->line);
 
-Where can I find a patch that works with the latest stable kernel? 
-(2.6.24.3)
+umm, why are we hard-wiring "/dev" into the kernel source?  Is it just for
+user-friendly printks?
 
--- 
-Florin Andrei
+> +	state->pps_info.mode = PPS_CAPTUREBOTH | \
+> +			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
+> +			PPS_CANWAIT | PPS_TSFMT_TSPEC;
+> +
+> +	ret = pps_register_source(&state->pps_info, PPS_CAPTUREBOTH | \
+> +				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
+> +	if (ret < 0) {
+> +		dev_err(port->dev, "cannot register PPS source \"%s\"\n",
+> +						state->pps_info.path);
+> +		return ret;
+> +	}
+> +	port->pps_source = ret;
+> +	dev_dbg(port->dev, "PPS source #%d \"%s\" added\n",
+> +		port->pps_source, state->pps_info.path);
+> +
+> +	return 0;
+> +}
+> +
+> +static void
+> +uart_unregister_pps_port(struct uart_state *state, struct uart_port *port)
+> +{
+> +	pps_unregister_source(port->pps_source);
+> +	dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
+> +				port->pps_source, state->pps_info.path);
+> +}
+> +
+> +#else
+> +
+> +#define uart_register_pps_port(state, port)	do { } while (0)
+> +#define uart_unregister_pps_port(state, port)	do { } while (0)
 
-http://florin.myip.org/
+Please never implement in cpp that which can be implemented in C.  These
+should have been static inlines.  That's nicer, matches the
+CONFIG_PPS_CLIENT_UART=y code and provides type checking.
+
+> +#endif /* CONFIG_PPS_CLIENT_UART */
+> +
+>  static int uart_set_info(struct uart_state *state,
+>  			 struct serial_struct __user *newinfo)
+>  {
+> @@ -810,11 +859,19 @@ static int uart_set_info(struct uart_state *state,
+>  			(port->flags & UPF_LOW_LATENCY) ? 1 : 0;
+>  
+>   check_and_exit:
+> +	/* PPS support enabled/disabled? */
+> +	if ((old_flags & UPF_HARDPPS_CD) != (new_flags & UPF_HARDPPS_CD)) {
+> +		if (new_flags & UPF_HARDPPS_CD)
+> +			uart_register_pps_port(state, port);
+> +		else
+> +			uart_unregister_pps_port(state, port);
+> +	}
+> +
+>  	retval = 0;
+>  	if (port->type == PORT_UNKNOWN)
+>  		goto exit;
+>  	if (state->info->flags & UIF_INITIALIZED) {
+> -		if (((old_flags ^ port->flags) & UPF_SPD_MASK) ||
+> +		if (((old_flags ^ port->flags) & (UPF_SPD_MASK|UPF_HARDPPS_CD)) ||
+>  		    old_custom_divisor != port->custom_divisor) {
+>  			/*
+>  			 * If they're setting up a custom divisor or speed,
+> @@ -2148,6 +2205,12 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
+>  		port->ops->config_port(port, flags);
+>  	}
+>  
+> +	/*
+> +	 * Add the PPS support for the current port.
+> +	 */
+> +	if (port->flags & UPF_HARDPPS_CD)
+> +		uart_register_pps_port(state, port);
+> +
+>  	if (port->type != PORT_UNKNOWN) {
+>  		unsigned long flags;
+>  
+> @@ -2405,6 +2468,12 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
+>  	mutex_unlock(&state->mutex);
+>  
+>  	/*
+> +	 * Remove PPS support from the current port.
+> +	 */
+> +	if (port->flags & UPF_HARDPPS_CD)
+> +		uart_unregister_pps_port(state, port);
+> +
+> +	/*
+>  	 * Remove the devices from the tty layer
+>  	 */
+>  	tty_unregister_device(drv->tty_driver, port->line);
+
