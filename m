@@ -1,65 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbYCTMa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbYCTMff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbYCTMa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 08:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYCTMaW
+	id S1755930AbYCTMff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 08:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYCTMf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 08:30:22 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:55606 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753363AbYCTMaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 08:30:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqQFAKb14UdMQWoK/2dsb2JhbACBWqkC
-Date: Thu, 20 Mar 2008 08:30:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jon Masters <jcm@jonmasters.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jon Masters <jcm@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 4/4] Markers Support for Proprierary Modules
-Message-ID: <20080320123014.GA15987@Krystal>
-References: <20080320002737.918213455@polymtl.ca> <20080320002835.384758480@polymtl.ca> <200803201635.30795.rusty@rustcorp.com.au>
-Mime-Version: 1.0
+	Thu, 20 Mar 2008 08:35:29 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:44661 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753597AbYCTMf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 08:35:28 -0400
+Date: Thu, 20 Mar 2008 15:29:53 +0300
+From: root <root@el5-64-build>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org
+Subject: [PATCH] Fix data leak in nobh_write_end.
+Message-ID: <20080320122953.GA19928@dmon-lap.sw.ru>
+Mail-Followup-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200803201635.30795.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:27:40 up 20 days,  8:38,  4 users,  load average: 0.65, 0.65,
-	0.71
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Thursday 20 March 2008 11:27:41 Mathieu Desnoyers wrote:
-> > There seems to be good arguments for markers to support proprierary
-> > modules. So I am throwing this one-liner in and let's see how people react.
-> > It only makes sure that a module that has been "forced" to be loaded won't
-> > have its markers used. It is important to leave this check to make sure the
-> > kernel does not crash by expecting the markers part of the struct module by
-> > mistake in the case there is an incorrect checksum.
-> 
-> OK, I've applied this to my tree.  That means it will be in 2.6.26 unless you 
-> want me to push it earlier.
-> 
-> Thanks,
-> Rusty.
+Hi.
+Current nobh_write_end() implementation ignore partial writes(copied < len)
+case if page was fully mapped and simply mark page as Uptodate, which
+is totally wrong because area [pos+copied, pos+len) wasn't updated explicitly
+in previous write_begin call. It simply contains garbage from pagecache
+and result in data leakage.
+#TEST_CASE_BEGIN:
+~~~~~~~~~~~~~~~~
+In fact issue triggered by classical testcase
+	open("/mnt/test", O_RDWR|O_CREAT|O_TRUNC, 0666) = 3
+	ftruncate(3, 409600)                    = 0 
+	writev(3, [{"a", 1}, {NULL, 4095}], 2)  = 1
+##TESTCASE_SOURCE:
+~~~~~~~~~~~~~~~~~
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/uio.h>
+#include <sys/mman.h>
+#include <errno.h>
+int main(int argc, char **argv)
+{
+	int fd,  ret;
+	void* p;
+	struct iovec iov[2];
+	fd = open(argv[1], O_RDWR|O_CREAT|O_TRUNC, 0666);
+	ftruncate(fd, 409600);
+	iov[0].iov_base="a";
+	iov[0].iov_len=1;
+	iov[1].iov_base=NULL;
+	iov[1].iov_len=4096;
+	ret = writev(fd, iov, sizeof(iov)/sizeof(struct iovec));
+	printf("writev  = %d, err = %d\n", ret, errno);
+	return 0;
+}
+##TESTCASE RESULT:
+~~~~~~~~~~~~~~~~~~
+[root@ts63 ~]# mount | grep mnt2
+/dev/mapper/test on /mnt2 type ext2 (rw,nobh)
+[root@ts63 ~]#  /tmp/writev /mnt2/test
+writev  = 1, err = 0
+[root@ts63 ~]# hexdump -C /mnt2/test
 
-I think it's ok to wait for 2.6.26, since we are already very far in the
-2.6.25 release process and it's more a "feature" than a "bugfix".
+00000000  61 65 62 6f 6f 74 00 00  f0 b9 b4 59 3a 00 00 00  |aeboot.....Y:...|
+00000010  20 00 00 00 00 00 00 00  21 00 00 00 00 00 00 00  | .......!.......|
+00000020  df df df df df df df df  df df df df df df df df  |................|
+00000030  3a 00 00 00 2a 00 00 00  21 00 00 00 00 00 00 00  |:...*...!.......|
+00000040  60 c0 8c 00 00 00 00 00  40 4a 8d 00 00 00 00 00  |`.......@J......|
+00000050  00 00 00 00 00 00 00 00  41 00 00 00 00 00 00 00  |........A.......|
+00000060  74 69 6d 65 20 64 64 20  69 66 3d 2f 64 65 76 2f  |time dd if=/dev/|
+00000070  6c 6f 6f 70 30 20 20 6f  66 3d 2f 64 65 76 2f 6e  |loop0  of=/dev/n|
+skip..
+00000f50  00 00 00 00 00 00 00 00  31 00 00 00 00 00 00 00  |........1.......|
+00000f60  6d 6b 66 73 2e 65 78 74  33 20 2f 64 65 76 2f 76  |mkfs.ext3 /dev/v|
+00000f70  7a 76 67 2f 74 65 73 74  20 2d 62 34 30 39 36 00  |zvg/test -b4096.|
+00000f80  a0 fe 8c 00 00 00 00 00  21 00 00 00 00 00 00 00  |........!.......|
+00000f90  23 31 32 30 35 39 35 30  34 30 34 00 3a 00 00 00  |#1205950404.:...|
+00000fa0  20 00 8d 00 00 00 00 00  21 00 00 00 00 00 00 00  | .......!.......|
+00000fb0  d0 cf 8c 00 00 00 00 00  10 d0 8c 00 00 00 00 00  |................|
+00000fc0  00 00 00 00 00 00 00 00  41 00 00 00 00 00 00 00  |........A.......|
+00000fd0  6d 6f 75 6e 74 20 2f 64  65 76 2f 76 7a 76 67 2f  |mount /dev/vzvg/|
+00000fe0  74 65 73 74 20 20 2f 76  7a 20 2d 6f 20 64 61 74  |test  /vz -o dat|
+00000ff0  61 3d 77 72 69 74 65 62  61 63 6b 00 00 00 00 00  |a=writeback.....|
+00001000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
 
-Thanks,
+As you can see file's page contains garbage from pagecache instead of zeros.
+#TEST_CASE_END
 
-Mathieu
+Attached patch:
+- Add sanity check BUG_ON in order to prevent incorrect usage by caller,
+  This is function invariant because page can has buffers and in no zero
+  *fadata pointer at the same time.
+- Always attach buffers to page is it is partial write case.
+- Always switch back to generic_write_end if page has buffers.
+  This is reasonable because if page already has buffer then generic_write_begin
+  was called previously.
 
+Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+---
+ fs/buffer.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index f349f13..c234d79 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2570,14 +2570,13 @@ int nobh_write_end(struct file *file, struct address_space *mapping,
+ 	struct inode *inode = page->mapping->host;
+ 	struct buffer_head *head = fsdata;
+ 	struct buffer_head *bh;
++	BUG_ON(fsdata != NULL && page_has_buffers(page));
+ 
+-	if (!PageMappedToDisk(page)) {
+-		if (unlikely(copied < len) && !page_has_buffers(page))
+-			attach_nobh_buffers(page, head);
+-		if (page_has_buffers(page))
+-			return generic_write_end(file, mapping, pos, len,
+-						copied, page, fsdata);
+-	}
++	if (unlikely(copied < len) && !page_has_buffers(page))
++		attach_nobh_buffers(page, head);
++	if (page_has_buffers(page))
++		return generic_write_end(file, mapping, pos, len,
++					copied, page, fsdata);
+ 
+ 	SetPageUptodate(page);
+ 	set_page_dirty(page);
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.5.4.rc4
+
