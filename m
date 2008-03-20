@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYCTIR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYCTI0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbYCTIR7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 04:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYCTIRh
+	id S1755239AbYCTI0w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 04:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYCTI0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 04:17:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37310 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbYCTIRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 04:17:34 -0400
+	Thu, 20 Mar 2008 04:26:38 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:57031 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168AbYCTI0h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 04:26:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JGfGBS/V9oK/GOzQrz9X022XFF+1lmuW8lGj0gcCJYzLz2Z3usA1zCEHCY7ws94N8QGuzFH9hJ35Q9VGJejyTLG0GS6S5VnQdcllUWr+8sZgBX+8Mf8XMgQI/6xAkxBlENuhmQ/8splK+VOeh9hG2+1/i4NxbdgIg3fL7CwDiX4=
+Message-ID: <939d53060803200126k563b9ae7l7197dea4e96ba1ed@mail.gmail.com>
+Date: Thu, 20 Mar 2008 09:26:35 +0100
+From: "Benjamin Thery" <ben.thery@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [2.6.25-rc5-mm1] regression: cannot run Postfix sendmail command as non-root
+Cc: akpm@linux-foundation.org, tilman@imap.cc, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, pekkas@netcore.fi, yoshfuji@linux-ipv6.org,
+       dlezcano@fr.ibm.com, xemul@openvz.org, rjw@sisk.pl,
+       ebiederm@xmission.com
+In-Reply-To: <20080319.154947.78332548.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Richard Henderson <rth@twiddle.net>, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
-In-Reply-To: Linus Torvalds's message of  Wednesday, 19 March 2008 19:40:25 -0700 <alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20080319211714.8B14226F995@magilla.localdomain>
-	<20080319212024.EA03126F995@magilla.localdomain>
-	<alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
-X-Shopping-List: (1) Heroic argumentation carnations
-   (2) Puerile monkeys
-   (3) Antic translucent mispronunciations
-Message-Id: <20080320081658.0B23826F995@magilla.localdomain>
-Date: Thu, 20 Mar 2008 01:16:58 -0700 (PDT)
+Content-Disposition: inline
+References: <47D98510.60801@imap.cc>
+	 <939d53060803191052o2f43b75cu426d51f9f24e2a46@mail.gmail.com>
+	 <20080319141608.ede86a86.akpm@linux-foundation.org>
+	 <20080319.154947.78332548.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm.. I see the whole series, and I see this patch, but I think it adds 
-> new code and new complexity, and I don't really see *why*.
+On Wed, Mar 19, 2008 at 11:49 PM, David Miller <davem@davemloft.net> wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+>  Date: Wed, 19 Mar 2008 14:16:08 -0700
+>
+>
+>  > Although this is advertised as a 2.6.25-rc5-mm1 problem, I assume the
+>  > regression is also in mainline? 2.6.25-rc6?
+>
+>  It is in 2.6.25-rc6, correct.
+>
+>  If Pavel or someone else doesn't produce a good fix soon
+>  I'll revert the guilty change as this bug is worse than
+>  the problem that changeset fixes.
 
-The motivation is to get the arch function out of the code path for the
-machine-independent request handling.  I want to be able to change the
-implementation later without touching the arch code again.  
+Andre Noll sent a patch to LKML, acked by Pavel:
 
-The arguments passed down to arch_ptrace are sufficient for what the arch
-code itself needs and for the current implementation in ptrace_request.
-In future, I'd like the option of changing the code for the standard
-requests to use a local data structure set up at the start of ptrace, and
-such like (so more pointers and the like would need to be passed down to
-ptrace_request).  These patches let me remove ptrace_request or change
-its calling convention without touching the arch code again.
+"Fix permissions of /proc/net"
+http://thread.gmane.org/gmane.linux.kernel/655148
 
-> Wouldn't it be nicer to just let "arch_ptrace()" return a flag saying 
-> whether it handled things or not?
-
-It would certainly be nicer.  I would prefer:
-
-extern int arch_ptrace(struct task_struct *child, long request,
-       	    	       long addr, long data, long *retval);
-
-where it returns an error code or it returns 0 and *retval is the value
-or it returns 1 and it didn't do anything.
-
-The reason I took the approach I did instead is incrementalism.
-I can't change that signature without breaking about 22 arch builds.
-I'm only really prepared to thoroughly verify a change on 2 of those
-myself.  It should be a simple enough change to make blind and get 
-right.  But I've gotten a lot of things wrong before.  On principle,
-I wouldn't really expect anyone to sign off on stuff I won't even
-claim to have tried.  I did the forced_successful_syscall_return()
-macro for arch's I don't try to build, and was just awful sure golly
-that I hadn't got them wrong, because the generic change would break
-those few arch's (not 20) without it.
-
-So this ugliness seemed like a better bet than waiting for 20 more
-arch sign-offs before any of it could go in.  You are certainly in a
-position to just change the generic signature and make every arch do
-the update (or fix your typos if you just tweak them all blind), and
-let them grumble.  I did not presume to do so.
-
-If you'd like a patch that changes this signature, updates all arch
-implementations, and is actually verified to compile and work only
-on x86 and powerpc, I'll be happy to provide that.
-
-
-Thanks,
-Roland
+Benjamin
