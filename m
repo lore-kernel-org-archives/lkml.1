@@ -1,292 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbYCTU52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbYCTVFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758359AbYCTU52 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbYCTU5F
+	id S1757764AbYCTVFk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 17:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbYCTVFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:57:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43285 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757979AbYCTU5B (ORCPT
+	Thu, 20 Mar 2008 17:05:30 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41295 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754264AbYCTVF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 16:57:01 -0400
-Date: Thu, 20 Mar 2008 13:56:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: dwmw2@infradead.org, greg@kroah.com, lethal@linux-sh.org,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-       linux-mtd@vger.kernel.org
-Subject: Re: [PATCH] 1/2 Maple: Update bus driver to allow support of VMU
- device
-Message-Id: <20080320135618.1a283b3e.akpm@linux-foundation.org>
-In-Reply-To: <1205880554.6250.25.camel@localhost.localdomain>
-References: <1205879413.6250.13.camel@localhost.localdomain>
-	<1205880554.6250.25.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Mar 2008 17:05:29 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 20 Mar 2008 22:04:36 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: debug interrupt events
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, Jarod Wilson <jwilson@redhat.com>
+Message-ID: <tkrat.1ed152c64838f360@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 22:49:14 +0000
-Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
+This adds debug printks for asynchronous transmission and reception and
+for self ID reception.  They can be enabled at module load time, and at
+runtime via /sys/module/firewire_ohci/parameters/debug.
 
-> These patches update the maple bus driver with a semaphore to allow
-> other maple drivers to inject arbitrary packets (eg block reads and
-> writes) into the maple bus packet stream - so allowing support for the
-> VMU (and, eventually, other maple devices).
-> 
-> The patches also ensure that the maple bus driver properly supports the
-> device model through probing.
-> 
-> ...
->
-> @@ -255,12 +267,8 @@ static int attach_matching_maple_driver(struct device_driver *driver,
->  
->  	mdev = devptr;
->  	maple_drv = to_maple_driver(driver);
-> -	if (mdev->devinfo.function & be32_to_cpu(maple_drv->function)) {
-> -		if (maple_drv->connect(mdev) == 0) {
-> -			mdev->driver = maple_drv;
-> -			return 1;
-> -		}
-> -	}
-> +	if (mdev->devinfo.function & cpu_to_be32(maple_drv->function))
-> +		return 1;
->  	return 0;
->  }
->  
-> @@ -268,11 +276,6 @@ static void maple_detach_driver(struct maple_device *mdev)
->  {
->  	if (!mdev)
->  		return;
-> -	if (mdev->driver) {
-> -		if (mdev->driver->disconnect)
-> -			mdev->driver->disconnect(mdev);
-> -	}
-> -	mdev->driver = NULL;
->  	device_unregister(&mdev->dev);
->  	mdev = NULL;
->  }
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
-there seem to be a lot of changes in here which aren't covered by the
-changelog.  But then, it was a rather vague changelog.
+Also added:  Logging of interrupt event codes and of cancelled AT
+packets.
 
-> @@ -377,18 +380,20 @@ static int setup_maple_commands(struct device *device, void *ignored)
->  
->  	if ((maple_dev->interval > 0)
->  	    && time_after(jiffies, maple_dev->when)) {
-> +		if (down_trylock(&maple_dev->mq->sem))
-> +			return 0;
->  		maple_dev->when = jiffies + maple_dev->interval;
->  		maple_dev->mq->command = MAPLE_COMMAND_GETCOND;
->  		maple_dev->mq->sendbuf = &maple_dev->function;
->  		maple_dev->mq->length = 1;
->  		maple_add_packet(maple_dev->mq);
-> -		liststatus++;
->  	} else {
->  		if (time_after(jiffies, maple_pnp_time)) {
-> +			if (down_trylock(&maple_dev->mq->sem))
-> +				return -1;
->  			maple_dev->mq->command = MAPLE_COMMAND_DEVINFO;
->  			maple_dev->mq->length = 0;
->  			maple_add_packet(maple_dev->mq);
-> -			liststatus++;
->  		}
->  	}
+The code now depends on a Kconfig variable.  This makes it easier to
+build firewire-ohci without the feature or to make it an option in the
+future.  The variable is currently hidden and always on.
 
-urgh, down_trylock().  And a secret, undocumented one too.
+This feature inflates firewire-ohci.ko by 7 kB = 27% on x86-64 and by
+4 kB = 23% on i686.
 
-A trylock is always an exceptional thing.  How is *any* reader of this code
-supposed to work out what the heck it's doing there?  Convert it into
-down(), run the code and decrypt the lockdep warnings, I suspect.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/Kconfig   |    5 +
+ drivers/firewire/fw-ohci.c |  182 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 187 insertions(+)
 
-<looks>
+Index: linux/drivers/firewire/Kconfig
+===================================================================
+--- linux.orig/drivers/firewire/Kconfig
++++ linux/drivers/firewire/Kconfig
+@@ -54,6 +54,11 @@ config FIREWIRE_OHCI
+ 	  directive, use "install modulename /bin/true" for the modules to be
+ 	  blacklisted.
+ 
++config FIREWIRE_OHCI_DEBUG
++	bool
++	depends on FIREWIRE_OHCI
++	default y
++
+ config FIREWIRE_SBP2
+ 	tristate "Support for storage devices (SBP-2 protocol driver)"
+ 	depends on FIREWIRE && SCSI
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -27,6 +27,7 @@
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
++#include <linux/moduleparam.h>
+ #include <linux/pci.h>
+ #include <linux/spinlock.h>
+ 
+@@ -237,6 +238,179 @@ static inline struct fw_ohci *fw_ohci(st
+ 
+ static char ohci_driver_name[] = KBUILD_MODNAME;
+ 
++#ifdef CONFIG_FIREWIRE_OHCI_DEBUG
++
++#define OHCI_PARAM_DEBUG_IRQS		1
++#define OHCI_PARAM_DEBUG_SELFIDS	2
++#define OHCI_PARAM_DEBUG_AT_AR		4
++
++static int param_debug;
++module_param_named(debug, param_debug, int, 0644);
++MODULE_PARM_DESC(debug, "Verbose logging (default = 0"
++	", IRQs = "		__stringify(OHCI_PARAM_DEBUG_IRQS)
++	", self-IDs = "		__stringify(OHCI_PARAM_DEBUG_SELFIDS)
++	", AT/AR events = "	__stringify(OHCI_PARAM_DEBUG_AT_AR)
++	", or a combination, or all = -1)");
++
++static void log_irqs(u32 evt)
++{
++	if (likely(!(param_debug & OHCI_PARAM_DEBUG_IRQS)))
++		return;
++
++	printk(KERN_DEBUG KBUILD_MODNAME ": IRQ %08x%s%s%s%s%s%s%s%s%s%s%s\n",
++	       evt,
++	       evt & OHCI1394_selfIDComplete	? " selfID"		: "",
++	       evt & OHCI1394_RQPkt		? " AR_req"		: "",
++	       evt & OHCI1394_RSPkt		? " AR_resp"		: "",
++	       evt & OHCI1394_reqTxComplete	? " AT_req"		: "",
++	       evt & OHCI1394_respTxComplete	? " AT_resp"		: "",
++	       evt & OHCI1394_isochRx		? " IR"			: "",
++	       evt & OHCI1394_isochTx		? " IT"			: "",
++	       evt & OHCI1394_postedWriteErr	? " postedWriteErr"	: "",
++	       evt & OHCI1394_cycleTooLong	? " cycleTooLong"	: "",
++	       evt & OHCI1394_cycle64Seconds	? " cycle64Seconds"	: "",
++	       evt & ~(OHCI1394_selfIDComplete | OHCI1394_RQPkt |
++		       OHCI1394_RSPkt | OHCI1394_reqTxComplete |
++		       OHCI1394_respTxComplete | OHCI1394_isochRx |
++		       OHCI1394_isochTx | OHCI1394_postedWriteErr |
++		       OHCI1394_cycleTooLong | OHCI1394_cycle64Seconds)
++						? " ?"			: "");
++}
++
++static const char *speed[] = {
++	[0] = "S100", [1] = "S200", [2] = "S400",    [3] = "beta",
++};
++static const char *power[] = {
++	[0] = "+0W",  [1] = "+15W", [2] = "+30W",    [3] = "+45W",
++	[4] = "-3W",  [5] = " ?W",  [6] = "-3..-6W", [7] = "-3..-10W",
++};
++static const char port[] = { '.', '-', 'p', 'c', };
++
++static char _p(u32 *s, int shift)
++{
++	return port[*s >> shift & 3];
++}
++
++static void log_selfids(int generation, int self_id_count, u32 *s)
++{
++	if (likely(!(param_debug & OHCI_PARAM_DEBUG_SELFIDS)))
++		return;
++
++	printk(KERN_DEBUG KBUILD_MODNAME ": %d selfIDs, generation %d\n",
++	       self_id_count, generation);
++
++	for (; self_id_count--; ++s)
++		if ((*s & 1 << 23) == 0)
++			printk(KERN_DEBUG "selfID 0: %08x, phy %d [%c%c%c] "
++			       "%s gc=%d %s %s%s%s\n",
++			       *s, *s >> 24 & 63, _p(s, 6), _p(s, 4), _p(s, 2),
++			       speed[*s >> 14 & 3], *s >> 16 & 63,
++			       power[*s >> 8 & 7], *s >> 22 & 1 ? "L" : "",
++			       *s >> 11 & 1 ? "c" : "", *s & 2 ? "i" : "");
++		else
++			printk(KERN_DEBUG "selfID n: %08x, phy %d "
++			       "[%c%c%c%c%c%c%c%c]\n",
++			       *s, *s >> 24 & 63,
++			       _p(s, 16), _p(s, 14), _p(s, 12), _p(s, 10),
++			       _p(s,  8), _p(s,  6), _p(s,  4), _p(s,  2));
++}
++
++static const char *evts[] = {
++	[0x00] = "evt_no_status",	[0x01] = "-reserved-",
++	[0x02] = "evt_long_packet",	[0x03] = "evt_missing_ack",
++	[0x04] = "evt_underrun",	[0x05] = "evt_overrun",
++	[0x06] = "evt_descriptor_read",	[0x07] = "evt_data_read",
++	[0x08] = "evt_data_write",	[0x09] = "evt_bus_reset",
++	[0x0a] = "evt_timeout",		[0x0b] = "evt_tcode_err",
++	[0x0c] = "-reserved-",		[0x0d] = "-reserved-",
++	[0x0e] = "evt_unknown",		[0x0f] = "evt_flushed",
++	[0x10] = "-reserved-",		[0x11] = "ack_complete",
++	[0x12] = "ack_pending ",	[0x13] = "-reserved-",
++	[0x14] = "ack_busy_X",		[0x15] = "ack_busy_A",
++	[0x16] = "ack_busy_B",		[0x17] = "-reserved-",
++	[0x18] = "-reserved-",		[0x19] = "-reserved-",
++	[0x1a] = "-reserved-",		[0x1b] = "ack_tardy",
++	[0x1c] = "-reserved-",		[0x1d] = "ack_data_error",
++	[0x1e] = "ack_type_error",	[0x1f] = "-reserved-",
++	[0x20] = "pending/cancelled",
++};
++static const char *tcodes[] = {
++	[0x0] = "QW req",		[0x1] = "BW req",
++	[0x2] = "W resp",		[0x3] = "-reserved-",
++	[0x4] = "QR req",		[0x5] = "BR req",
++	[0x6] = "QR resp",		[0x7] = "BR resp",
++	[0x8] = "cycle start",		[0x9] = "Lk req",
++	[0xa] = "async stream packet",	[0xb] = "Lk resp",
++	[0xc] = "-reserved-",		[0xd] = "-reserved-",
++	[0xe] = "link internal",	[0xf] = "-reserved-",
++};
++static const char *phys[] = {
++	[0x0] = "phy config packet",	[0x1] = "link-on packet",
++	[0x2] = "self-id packet",	[0x3] = "-reserved-",
++};
++
++static void log_ar_at_event(char dir, int speed, u32 *header, int evt)
++{
++	int tcode = header[0] >> 4 & 0xf;
++	char specific[12];
++
++	if (likely(!(param_debug & OHCI_PARAM_DEBUG_AT_AR)))
++		return;
++
++	if (unlikely(evt >= ARRAY_SIZE(evts)))
++			evt = 0x1f;
++
++	if (header[0] == ~header[1]) {
++		printk(KERN_DEBUG "A%c %s, %s, %08x\n",
++		       dir, evts[evt], phys[header[0] >> 30 & 0x3],
++		       header[0]);
++		return;
++	}
++
++	switch (tcode) {
++	case 0x0: case 0x6: case 0x8:
++		snprintf(specific, sizeof(specific), " = %08x",
++			 be32_to_cpu((__force __be32)header[3]));
++		break;
++	case 0x1: case 0x5: case 0x7: case 0x9: case 0xb:
++		snprintf(specific, sizeof(specific), " %x,%x",
++			 header[3] >> 16, header[3] & 0xffff);
++		break;
++	default:
++		specific[0] = '\0';
++	}
++
++	switch (tcode) {
++	case 0xe: case 0xa:
++		printk(KERN_DEBUG "A%c %s, %s\n",
++		       dir, evts[evt], tcodes[tcode]);
++		break;
++	case 0x0: case 0x1: case 0x4: case 0x5: case 0x9:
++		printk(KERN_DEBUG "A%c spd %x tl %02x, "
++		       "%04x -> %04x, %s, "
++		       "%s, %04x%08x%s\n",
++		       dir, speed, header[0] >> 10 & 0x3f,
++		       header[1] >> 16, header[0] >> 16, evts[evt],
++		       tcodes[tcode], header[1] & 0xffff, header[2], specific);
++		break;
++	default:
++		printk(KERN_DEBUG "A%c spd %x tl %02x, "
++		       "%04x -> %04x, %s, "
++		       "%s%s\n",
++		       dir, speed, header[0] >> 10 & 0x3f,
++		       header[1] >> 16, header[0] >> 16, evts[evt],
++		       tcodes[tcode], specific);
++	}
++}
++
++#else
++
++#define log_irqs(evt)
++#define log_selfids(generation, self_id_count, sid)
++#define log_ar_at_event(dir, speed, header, evt)
++
++#endif /* CONFIG_FIREWIRE_OHCI_DEBUG */
++
+ static inline void reg_write(const struct fw_ohci *ohci, int offset, u32 data)
+ {
+ 	writel(data, ohci->registers + offset);
+@@ -368,6 +542,8 @@ static __le32 *handle_ar_packet(struct a
+ 	p.timestamp  = status & 0xffff;
+ 	p.generation = ohci->request_generation;
+ 
++	log_ar_at_event('R', p.speed, p.header, status >> 16 & 0x1f);
++
+ 	/*
+ 	 * The OHCI bus reset handler synthesizes a phy packet with
+ 	 * the new generation number when a bus reset happens (see
+@@ -816,6 +992,8 @@ static int handle_at_packet(struct conte
+ 	evt = le16_to_cpu(last->transfer_status) & 0x1f;
+ 	packet->timestamp = le16_to_cpu(last->res_count);
+ 
++	log_ar_at_event('T', packet->speed, packet->header, evt);
++
+ 	switch (evt) {
+ 	case OHCI1394_evt_timeout:
+ 		/* Async response transmit timed out. */
+@@ -1117,6 +1295,8 @@ static void bus_reset_tasklet(unsigned l
+ 		dma_free_coherent(ohci->card.device, CONFIG_ROM_SIZE,
+ 				  free_rom, free_rom_bus);
+ 
++	log_selfids(generation, self_id_count, ohci->self_id_buffer);
++
+ 	fw_core_handle_bus_reset(&ohci->card, ohci->node_id, generation,
+ 				 self_id_count, ohci->self_id_buffer);
+ }
+@@ -1133,6 +1313,7 @@ static irqreturn_t irq_handler(int irq, 
+ 		return IRQ_NONE;
+ 
+ 	reg_write(ohci, OHCI1394_IntEventClear, event);
++	log_irqs(event);
+ 
+ 	if (event & OHCI1394_selfIDComplete)
+ 		tasklet_schedule(&ohci->bus_reset_tasklet);
+@@ -1435,6 +1616,7 @@ static int ohci_cancel_packet(struct fw_
+ 	if (packet->ack != 0)
+ 		goto out;
+ 
++	log_ar_at_event('T', packet->speed, packet->header, 0x20);
+ 	driver_data->packet = NULL;
+ 	packet->ack = RCODE_CANCELLED;
+ 	packet->callback(packet, &ohci->card, packet->ack);
 
-Nope, I can't see any other lock being held when we call this function.
+-- 
+Stefan Richter
+-=====-==--- --== =-=--
+http://arcgraph.de/sr/
 
-The trylocks are an utter mystery to me.  Please don't write mysterious
-code.
-
-> @@ -398,32 +403,38 @@ static int setup_maple_commands(struct device *device, void *ignored)
->  /* VBLANK bottom half - implemented via workqueue */
->  static void maple_vblank_handler(struct work_struct *work)
->  {
-> -	if (!maple_dma_done())
-> -		return;
->  	if (!list_empty(&maple_sentq))
->  		return;
-> +	if (!maple_dma_done())
-> +		return;
->  	ctrl_outl(0, MAPLE_ENABLE);
-> -	liststatus = 0;
->  	bus_for_each_dev(&maple_bus_type, NULL, NULL,
->  			 setup_maple_commands);
->  	if (time_after(jiffies, maple_pnp_time))
->  		maple_pnp_time = jiffies + MAPLE_PNP_INTERVAL;
-> -	if (liststatus && list_empty(&maple_sentq)) {
-> +	mutex_lock(&maple_wlist_lock);
-> +	if (!list_empty(&maple_waitq) && list_empty(&maple_sentq)) {
-> +		mutex_unlock(&maple_wlist_lock);
-> +		mutex_lock(&maple_list_lock);
->  		INIT_LIST_HEAD(&maple_sentq);
-> +		mutex_unlock(&maple_list_lock);
->  		maple_send();
-> +	} else {
-> +		mutex_unlock(&maple_wlist_lock);
->  	}
-> +
->  	maplebus_dma_reset();
->  }
-
-This locking looks like a mess.  I'd suggest that maple_list_lock and
-maple_wlist_lock now need documentation.  Describe what data they protect
-and what their ranking rules are.
-
->  /* handle devices added via hotplugs - placing them on queue for DEVINFO*/
->  static void maple_map_subunits(struct maple_device *mdev, int submask)
->  {
-> -	int retval, k, devcheck;
-> +	int retval, k, devcheck, locking;
->  	struct maple_device *mdev_add;
->  	struct maple_device_specify ds;
->  
-> +	ds.port = mdev->port;
->  	for (k = 0; k < 5; k++) {
-> -		ds.port = mdev->port;
->  		ds.unit = k + 1;
->  		retval =
->  		    bus_for_each_dev(&maple_bus_type, NULL, &ds,
-> @@ -437,9 +448,15 @@ static void maple_map_subunits(struct maple_device *mdev, int submask)
->  			mdev_add = maple_alloc_dev(mdev->port, k + 1);
->  			if (!mdev_add)
->  				return;
-> +			locking = down_trylock(&mdev_add->mq->sem);
-> +			if (locking) {
-> +				up(&mdev_add->mq->sem);
-> +				down_interruptible(&mdev_add->mq->sem);
-> +			}
-
-What the heck is that trying to do?!?!?!
-
-And it's buggy.  The return value of down_interruptible() is ignored, so
-the driver has lost track of whether or not the semphore was taken.
-
->  			mdev_add->mq->command = MAPLE_COMMAND_DEVINFO;
->  			mdev_add->mq->length = 0;
->  			maple_add_packet(mdev_add->mq);
-> +			/* mark that we are checking sub devices */
->  			scanning = 1;
->  		}
->  		submask = submask >> 1;
-> @@ -512,15 +529,17 @@ static void maple_dma_handler(struct work_struct *work)
->  	struct maple_device *dev;
->  	char *recvbuf;
->  	enum maple_code code;
-> -	int i;
-> +	int i, locking;
->  
->  	if (!maple_dma_done())
->  		return;
->  	ctrl_outl(0, MAPLE_ENABLE);
-> +	mutex_lock(&maple_list_lock);
->  	if (!list_empty(&maple_sentq)) {
->  		list_for_each_entry_safe(mq, nmq, &maple_sentq, list) {
->  			recvbuf = mq->recvbuf;
->  			code = recvbuf[0];
-> +			up(&mq->sem);
->  			dev = mq->dev;
->  			switch (code) {
->  			case MAPLE_RESPONSE_NONE:
-> @@ -559,18 +578,26 @@ static void maple_dma_handler(struct work_struct *work)
->  			}
->  		}
->  		INIT_LIST_HEAD(&maple_sentq);
-> +		mutex_unlock(&maple_list_lock);
-> +		/* if scanning is 1 then we have subdevices to check */
->  		if (scanning == 1) {
->  			maple_send();
->  			scanning = 2;
->  		} else
->  			scanning = 0;
-> -
-> +		/*check if we have actually tested all ports yet */
->  		if (!fullscan) {
->  			fullscan = 1;
->  			for (i = 0; i < MAPLE_PORTS; i++) {
->  				if (checked[i] == false) {
->  					fullscan = 0;
->  					dev = baseunits[i];
-> +					locking = down_trylock(&dev->mq->sem);
-> +					if (locking) {
-> +						up(&dev->mq->sem);
-> +						down_interruptible
-> +							(&dev->mq->sem);
-> +					}
-
-Ditto.
-
->  					dev->mq->command =
->  						MAPLE_COMMAND_DEVINFO;
->  					dev->mq->length = 0;
-> @@ -578,8 +605,11 @@ static void maple_dma_handler(struct work_struct *work)
->  				}
->  			}
->  		}
-> +		/* mark that we have been through the first scan */
->  		if (started == 0)
->  			started = 1;
-> +	} else {
-> +		mutex_unlock(&maple_list_lock);
->  	}
->  	maplebus_dma_reset();
->  }
-> @@ -631,7 +661,7 @@ static int match_maple_bus_driver(struct device *devptr,
->  	if (maple_dev->devinfo.function == 0xFFFFFFFF)
->  		return 0;
->  	else if (maple_dev->devinfo.function &
-> -		 be32_to_cpu(maple_drv->function))
-> +		 cpu_to_be32(maple_drv->function))
->  		return 1;
->  	return 0;
->  }
-> @@ -713,6 +743,8 @@ static int __init maple_bus_init(void)
->  	if (!maple_queue_cache)
->  		goto cleanup_bothirqs;
->  
-> +	INIT_LIST_HEAD(&maple_waitq);
-> +
->  	/* setup maple ports */
->  	for (i = 0; i < MAPLE_PORTS; i++) {
->  		checked[i] = false;
-> @@ -723,6 +755,7 @@ static int __init maple_bus_init(void)
->  				maple_free_dev(mdev[i]);
->  			goto cleanup_cache;
->  		}
-> +		down_interruptible(&mdev[i]->mq->sem);
->  		mdev[i]->mq->command = MAPLE_COMMAND_DEVINFO;
->  		mdev[i]->mq->length = 0;
->  		maple_add_packet(mdev[i]->mq);
-> diff --git a/include/linux/maple.h b/include/linux/maple.h
-> index d31e36e..e40142e 100644
-> --- a/include/linux/maple.h
-> +++ b/include/linux/maple.h
-> @@ -33,6 +33,7 @@ struct mapleq {
->  	void *sendbuf, *recvbuf, *recvbufdcsp;
->  	unsigned char length;
->  	enum maple_code command;
-> +	struct semaphore sem;
->  };
->  
->  struct maple_devinfo {
-> @@ -73,6 +74,7 @@ void maple_getcond_callback(struct maple_device *dev,
->  int maple_driver_register(struct device_driver *drv);
->  void maple_add_packet(struct mapleq *mq);
->  
-> +
->  #define to_maple_dev(n) container_of(n, struct maple_device, dev)
->  #define to_maple_driver(n) container_of(n, struct maple_driver, drv)
-
-Stray newline.
