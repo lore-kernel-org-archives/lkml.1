@@ -1,115 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYCTI5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYCTJAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbYCTI5e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 04:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYCTI5Z
+	id S1755525AbYCTJAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 05:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYCTJAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 04:57:25 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57349 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbYCTI5Y (ORCPT
+	Thu, 20 Mar 2008 05:00:17 -0400
+Received: from pilet.ens-lyon.fr ([140.77.167.16]:55943 "EHLO
+	pilet.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753417AbYCTJAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 04:57:24 -0400
-Date: Thu, 20 Mar 2008 10:00:05 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-ID: <20080320090005.GA25734@one.firstfloor.org>
-References: <20080318209.039112899@firstfloor.org> <20080318003620.d84efb95.akpm@linux-foundation.org> <20080318141828.GD11966@one.firstfloor.org> <20080318095715.27120788.akpm@linux-foundation.org> <20080318172045.GI11966@one.firstfloor.org> <20080318104437.966c10ec.akpm@linux-foundation.org> <20080319083228.GM11966@one.firstfloor.org> <20080319020440.80379d50.akpm@linux-foundation.org> <a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 20 Mar 2008 05:00:14 -0400
+Date: Thu, 20 Mar 2008 10:00:11 +0100
+From: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
+To: David Miller <davem@davemloft.net>
+Cc: joe@perches.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       pekkas@netcore.fi, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH] [RFC] [IPv6] spelling fix in /proc:
+	/proc/sys/net/ipv6/conf/default/temp_prefered_lft
+Message-ID: <20080320090011.GK6935@ens-lyon.fr>
+References: <20080319204227.GF6935@ens-lyon.fr> <20080319.135205.125229102.davem@davemloft.net> <1205976319.26345.20.camel@localhost> <20080319.185649.235399151.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080319.185649.235399151.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 03:45:16PM -0700, Ulrich Drepper wrote:
-> On Wed, Mar 19, 2008 at 2:04 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >  The requirement to write to an executable sounds like a bit of a
-> >  showstopper.
+On Wed, Mar 19, 2008 at 06:56:49PM -0700, David Miller wrote:
+> From: Joe Perches <joe@perches.com>
+> Date: Wed, 19 Mar 2008 18:25:19 -0700
 > 
-> Agreed.  In addition, it makes all kinds of tools misbehave.  I can
-> see extensions to the ELF format and those would require relinking
-> binaries, but without this you create chaos.  ELF is so nice because
-
-What chaos exactly? For me it looks rather that a separatate database
-would be a recipe for chaos. e.g. for example how would you make sure
-the database keeps track of changing executables?
-
-The only minor issue is rpm -Va and similar, but that can be handled
-in the same way as prelinking is handled there by using filter scripts
-that reset the bitmap before taking a checksum.
-
-Also the current way does not require relinking by using the shdr hack.
-I have a simple program that adds a bitmap shdr to any executable.
-But if the binutils leanred about this and added a bitmap phdr (it 
-tends to be only a few hundred bytes even on very large executables)
-one seek could be avoided.
-
-
-> it describes the entire file and we can handle everything according to
-> rules.  If you just somehow magically patch some new data structure in
-> this will break things.
-
-Can you elaborate what you think will be broken?
-
+> > On Wed, 2008-03-19 at 13:52 -0700, David Miller wrote:
+> > > From: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
+> > > Date: Wed, 19 Mar 2008 21:42:27 +0100
+> > > > Here is a patch to fix all the spelling error (prefered -> preferred)
+> > > I think this doesn't add any value.
+> > > If the procfs file name has to remain the same, which it does,
+> > > changing variable and macro names to be different will only
+> > > cause merge conflicts and pain yet have no redeeming value.
+> > 
+> > I disagree.  Proper spelling has value.
 > 
-> Furthermore, by adding all this data to the end of the file you'll
-
-We are talking about 32bytes for each MB worth of executable.
-You can hardly call that "all that data". Besides the prefetcher supports
-in theory larger page sizes, so if you wanted you could even reduce
-that even more by e.g. using 64k prefetch blocks. But the overhead
-is so tiny that it doesn't make much difference.
-
-> normally create unnecessary costs.  The parts of the binaries which
-> are used at runtime start at the front.  At the end there might be a
-> lot of data which isn't needed at runtime and is therefore normally
-> not read.
-
-Yes as I said using the SHDR currently requires an additional seek
-(although in practice i expect it to be served out of the track
-buffer of the hard disk if the executable is not too large and is
-continuous on disk). If binutils were taught of generating a phdr
-that minor problem would go away.
- 
+> Only if it matches the spelling of thing it is implementing!
 > 
-> 
-> >  if it proves useful, build it all into libc..
-> 
-> I could see that.  But to handle it efficiently kernel support is
-> needed.  Especially since I don't think the currently proposed
+> Making the object being implemented and the variables used to do so
+> disagree in name will only create other kinds of confusion.
 
-I agree.
+The file already have both occurences, there are function names and
+variable with "preferred", sometimes mixed in the same line.
 
-> "learning mode" is adequate.  Over many uses of a program all kinds of
+If it can help, the last time a line which uses prefered_lft was
+changed, it was more than a year ago (1ab1457c42bc078e5a9becd82a7f9f940b55c53a)
+for a whitespace cleanup.
+Most of the occurences haven't been touched since the conversion to git.
 
-It is not too bad, but could be certainly better. I outlined
-some possible ways to improve the algorithms in my original way.
-It would be a nice research project for someone to investigate
-the various ways (anyone interested?)
+regards,
 
-> pages will be needed.  Far more than in most cases.  The prefetching
-> should really only cover the commonly used code paths in the program.
+Benoit
 
-Sorry that doesnt make sense. Anything that is read at startup
-has to be prefetched, even if that code is only executed once.
-Otherwise the whole scheme is rather useless.
-Because even a single access requires the IO to read it from
-disk.
-
-> If you pull in everything, this will have advantages if you have that
-> much page cache to spare.  In that case just prefetching the entire
-
-Yes that is what the "mmap_flush" hack (last patch does) I actually
-have some numbers on a older kernel and in some cases it really
-does quite well. But it also has a few problems (e.g. interaction
-with data mmaps and memory waste) that are unpleasant.
-
--Andi
+PS: I don't really care, it's just that I was touching the lifetime code
+and tought that maybe I should try to change the whole file before
+submitting my code.
+-- 
+:wq
