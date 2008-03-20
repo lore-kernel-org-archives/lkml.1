@@ -1,112 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYCTOf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYCTOft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbYCTOf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 10:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYCTOfO
+	id S1756822AbYCTOft (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 10:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbYCTOff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 10:35:14 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:56810 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbYCTOfM (ORCPT
+	Thu, 20 Mar 2008 10:35:35 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:35443 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756626AbYCTOfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 10:35:12 -0400
-Subject: [PATCH/RFC] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig symbol
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
+	Thu, 20 Mar 2008 10:35:34 -0400
+Subject: Re: [RFC][PATCH] mark /proc/sys/dev/scsi/logging_level to be
+	removed
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Denis Cheng <crquan@gmail.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1206018190-5888-1-git-send-email-crquan@gmail.com>
+References: <1206018190-5888-1-git-send-email-crquan@gmail.com>
 Content-Type: text/plain
-Date: Thu, 20 Mar 2008 15:34:55 +0100
-Message-Id: <1206023695.16475.137.camel@johannes.berg>
+Date: Thu, 20 Mar 2008 09:35:30 -0500
+Message-Id: <1206023730.3038.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In many cases, especially in networking, it can be beneficial to
-know at compile time whether the architecture can do unaligned
-accesses. This patch introduces a new Kconfig symbol
-	ARCH_CAN_UNALIGNED_ACCESS
-for that purpose and adds it to the powerpc and x86 architectures.
-Also add some documentation about alignment and networking, and
-especially one intended use of this symbol.
+On Thu, 2008-03-20 at 21:03 +0800, Denis Cheng wrote:
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+> Since scsi_logging_level module_param can be read/written while system
+> running, the demand for /proc/sys/dev/scsi/logging_level has been no longer
+> mandotory.
+> 
+> But someone might have already set this value in /etc/sysctl.conf, so
+> mark it to be removed in one year (until March 2009).
+> 
+> One year might be not enough or too long, this period should also be discussed.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-Users will be added later, especially wireless networking can benefit.
+I don't think there's really much point to doing this.  We're already tied to the SYS_SYSCTL deprecation Eric Biderman is hoping to do for this; it's much better if the whole lot goes at once rather than piecemeal (particularly if sysctl stays around longer than anticipated).
 
- Documentation/unaligned-memory-access.txt |   32 +++++++++++++++++++++++++++---
- arch/powerpc/Kconfig                      |    3 ++
- arch/x86/Kconfig                          |    3 ++
- 3 files changed, 35 insertions(+), 3 deletions(-)
-
---- everything.orig/Documentation/unaligned-memory-access.txt	2008-03-20 15:19:06.000000000 +0100
-+++ everything/Documentation/unaligned-memory-access.txt	2008-03-20 15:29:13.000000000 +0100
-@@ -218,9 +218,35 @@ If use of such macros is not convenient,
- where the source or destination (or both) are of type u8* or unsigned char*.
- Due to the byte-wise nature of this operation, unaligned accesses are avoided.
- 
-+
-+Alignment vs. Networking
-+========================
-+
-+On architectures that require aligned loads, networking requires that the IP
-+header is aligned on a four-byte boundary to optimise the IP stack. For
-+regular ethernet hardware, the constant NET_IP_ALIGN is used, on most
-+architectures this constant has the value 2 because the normal ethernet
-+header is 14 bytes long, so in order to get proper alignment one needs to
-+DMA to an address that is can be expressed as 4*n + 2. One notable exception
-+here is powerpc which defines NET_IP_ALIGN to 0 because DMA to unaligned
-+addresses can be very expensive and dwarf the cost of unaligned loads.
-+
-+For some ethernet hardware that cannot DMA to unaligned addresses like
-+4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-+required to copy the incoming frame into an aligned buffer. Because this is
-+unnecessary on architectures that can do unaligned accesses, the code can be
-+made depend on CONFIG_ARCH_CAN_UNALIGNED_ACCESS like so:
-+
-+#ifdef CONFIG_ARCH_CAN_UNALIGNED_ACCESS
-+	skb = copy skb
-+#else
-+	skb = original skb
-+#endif
-+
- --
--Author: Daniel Drake <dsd@gentoo.org>
-+Authors: Daniel Drake <dsd@gentoo.org>,
-+         Johannes Berg <johannes@sipsolutions.net>
- With help from: Alan Cox, Avuton Olrich, Heikki Orsila, Jan Engelhardt,
--Johannes Berg, Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock,
--Uli Kunitz, Vadim Lobanov
-+Kyle McMartin, Kyle Moffett, Randy Dunlap, Robert Hancock, Uli Kunitz,
-+Vadim Lobanov
- 
---- everything.orig/arch/powerpc/Kconfig	2008-03-20 15:17:50.000000000 +0100
-+++ everything/arch/powerpc/Kconfig	2008-03-20 15:19:00.000000000 +0100
-@@ -84,6 +84,9 @@ config GENERIC_FIND_NEXT_BIT
- config ARCH_NO_VIRT_TO_BUS
- 	def_bool PPC64
- 
-+config ARCH_CAN_UNALIGNED_ACCESS
-+	def_bool y
-+
- config PPC
- 	bool
- 	default y
---- everything.orig/arch/x86/Kconfig	2008-03-20 15:29:31.000000000 +0100
-+++ everything/arch/x86/Kconfig	2008-03-20 15:29:49.000000000 +0100
-@@ -144,6 +144,9 @@ config AUDIT_ARCH
- config ARCH_SUPPORTS_AOUT
- 	def_bool y
- 
-+config ARCH_CAN_UNALIGNED_ACCESS
-+	def_bool y
-+
- # Use the generic interrupt handling code in kernel/irq/:
- config GENERIC_HARDIRQS
- 	bool
+James
 
 
