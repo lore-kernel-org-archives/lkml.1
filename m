@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbYCTEG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYCTELI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753096AbYCTEG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 00:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbYCTEGu
+	id S1752681AbYCTELI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 00:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbYCTEKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 00:06:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42861 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbYCTEGt (ORCPT
+	Thu, 20 Mar 2008 00:10:55 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:9967 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYCTEKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 00:06:49 -0400
-Date: Wed, 19 Mar 2008 21:04:36 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [1/2] vmalloc: Show vmalloced areas via /proc/vmallocinfo
-Message-ID: <20080319210436.191bb8fe@laptopd505.fenrus.org>
-In-Reply-To: <20080318222827.291587297@sgi.com>
-References: <20080318222701.788442216@sgi.com>
-	<20080318222827.291587297@sgi.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Mar 2008 00:10:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VKc9iU3NnhIjFoV8KnkfL+PX/YQ4r897zHlnuGudI1E+3BRtN8jgNOFWMyvUr0McKcBDJfDnWEI7CUFUMVpJBXR8rFxjlkQWT43UuAmas77KqyUzsSyf64NSQrWpaNXo0ywAW66aF693tD0gpmIfNo2sXAKGxS6OrivPeEeXohY=
+Message-ID: <dc84318c0803192110xe9cc515s49350923cdc88869@mail.gmail.com>
+Date: Thu, 20 Mar 2008 12:10:49 +0800
+From: "Daolong Wang" <ahlongxp@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH]CHECKPATCH:fix misleading output on spaces/tabs error
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <dc84318c0803192108l28292288yec6f75b79aa65e80@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <dc84318c0803182006u46b4ac2aj8d7a127963a0d5f3@mail.gmail.com>
+	 <20080319141355.GC8590@shadowen.org>
+	 <dc84318c0803192108l28292288yec6f75b79aa65e80@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Mar 2008 15:27:02 -0700
-Christoph Lameter <clameter@sgi.com> wrote:
+>
+ >  Except that it says "use tabs not spaces when you should use tabs" and
+ >  doesn't actually tell us what the error was, nor how to correct it.  So
+ >  its not really any better than the original (which is also useless in
+ >  this regard).
+ >
+ >  How about:
+ >
+ >         "code indent should use tabs where possible"
+ >
+ >
+ My point is the original isn't good.
 
-> Implement a new proc file that allows the display of the currently
-> allocated vmalloc memory.
+ And about the replacement, that was just my suggestion.
+ We can choose one that'll please everyone.
+ In fact, either mine or yours is much better.
 
-> +	proc_create("vmallocinfo",S_IWUSR|S_IRUGO, NULL,
-
-
-why should non-root be able to read this? sounds like a security issue (info leak) to me...
-
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Add cc, Sorry for repeating.
