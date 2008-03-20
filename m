@@ -1,226 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYCTUke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbYCTUxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYCTUke (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 16:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYCTUkY
+	id S1757812AbYCTUxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 16:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYCTUxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 16:40:24 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:12278 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753139AbYCTUkW (ORCPT
+	Thu, 20 Mar 2008 16:53:01 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33855 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754499AbYCTUxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 16:40:22 -0400
-Date: Thu, 20 Mar 2008 13:39:27 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] kernel: create linux/unaligned.h
-Message-Id: <20080320133927.fa599135.randy.dunlap@oracle.com>
-In-Reply-To: <1206044217.17059.17.camel@brick>
-References: <1206034454.17059.4.camel@brick>
-	<20080320182911.GQ10722@ZenIV.linux.org.uk>
-	<1206038244.17059.7.camel@brick>
-	<20080320190953.GR10722@ZenIV.linux.org.uk>
-	<1206044217.17059.17.camel@brick>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 20 Mar 2008 16:53:00 -0400
+Date: Thu, 20 Mar 2008 11:40:19 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Message-ID: <20080320104019.GA6870@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0803182228520.10154-100000@netrider.rowland.org> <m1ve3jtmxk.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ve3jtmxk.fsf@ebiederm.dsl.xmission.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Mar 2008 13:16:57 -0700 Harvey Harrison wrote:
-
-> Add helpers for the following two patterns currently found in the
-> kernel:
+On Tue 2008-03-18 21:25:27, Eric W. Biederman wrote:
+> Alan Stern <stern@rowland.harvard.edu> writes:
 > 
-> le32_to_cpu(get_unaligned((__le32 *)p));
-> put_unaligned(cpu_to_le32(x), (__le32 *)p);
+> > On Wed, 19 Mar 2008, Rafael J. Wysocki wrote:
+> >
+> >> Well, I've been saying that for I-don't-remember-how-long: on my box, if you
+> >> use S5 instead of entering S4, the fan doesn't work correctly after the
+> >> resume.  Plain and simple.
+> >> 
+> >> Perhaps there's a problem with our ACPI drivers that causes this to happen,
+> >> but I have no idea what that can be at the moment.
+> >
+> > IMO it would be worthwhile to track this down.  It's a clear indication 
+> > that something is wrong somewhere.
+> >
+> > Could it be connected with the way the boot kernel hands control over
+> > to the image kernel?  Presumably ACPI isn't prepared to deal with that
+> > sort of thing during a boot from S5.  It would have to be fooled into
+> > thinking the two kernels were one and the same.
 > 
-> Becomes:
-> le32_to_cpu_unaligned(p);
-> cpu_to_le32_unaligned(x, p);
-> 
-> There are also some hand-rolled functions implementing this
-> with byte-shifts that can be replaced.  To avoid new indirect
-> includes of asm/unaligned.h, create linux/unaligned.h to make
-> it opt in for new code that wants to use these helpers.
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> This is a rollup of all the previous ones, added kerneldocs and
-> have CC'd Randy.
-> 
->  include/linux/unaligned.h |  138 +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 138 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/unaligned.h b/include/linux/unaligned.h
-> new file mode 100644
-> index 0000000..035c1c7
-> --- /dev/null
-> +++ b/include/linux/unaligned.h
-> @@ -0,0 +1,138 @@
-> +#ifndef _LINUX_UNALIGNED_H_
-> +#define _LINUX_UNALIGNED_H_
-> +
-> +#include <linux/types.h>
-> +#include <asm/byteorder.h>
-> +#include <asm/unaligned.h>
-> +
-> +#ifdef __KERNEL__
-> +
-> +/**
-> + * le64_to_cpu_unaligned - read a le64 from a possibly unaligned pointer
+> It should be easy to test if it is a hand over problem, by turning off
+> the laptop by placing it in S5 (shutdown -h now) and then booting same
+> kernel again.
 
-I would write these as "an le64" etc., but then I read them as
-"l e 64".
+Feel free to help with testing.
 
-
-> + * @p: pointer to read from
-> + *
-> + * Returns a u64 in cpu byteorder
-
-And I would write "CPU", but some people don't do that.  ;)
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-
-Thanks.
-
-> + */
-> +static inline u64 le64_to_cpu_unaligned(void *p)
-> +{
-> +	return le64_to_cpu(get_unaligned((__le64 *)p));
-> +}
-> +
-> +/**
-> + * le32_to_cpu_unaligned - read a le32 from a possibly unaligned pointer
-> + * @p: pointer to read from
-> + *
-> + * Returns a u32 in cpu byteorder
-> + */
-> +static inline u32 le32_to_cpu_unaligned(void *p)
-> +{
-> +	return le32_to_cpu(get_unaligned((__le32 *)p));
-> +}
-> +
-> +/**
-> + * le16_to_cpu_unaligned - read a le16 from a possibly unaligned pointer
-> + * @p: pointer to read from
-> + *
-> + * Returns a u16 in cpu byteorder
-> + */
-> +static inline u16 le16_to_cpu_unaligned(void *p)
-> +{
-> +	return le16_to_cpu(get_unaligned((__le16 *)p));
-> +}
-> +
-> +/**
-> + * be64_to_cpu_unaligned - read a be64 from a possibly unaligned pointer
-> + * @p: pointer to read from
-> + *
-> + * Returns a u64 in cpu byteorder
-> + */
-> +static inline u64 be64_to_cpu_unaligned(void *p)
-> +{
-> +	return be64_to_cpu(get_unaligned((__be64 *)p));
-> +}
-> +
-> +/**
-> + * be32_to_cpu_unaligned - read a be32 from a possibly unaligned pointer
-> + * @p: pointer to read from
-> + *
-> + * Returns a u32 in cpu byteorder
-> + */
-> +static inline u32 be32_to_cpu_unaligned(void *p)
-> +{
-> +	return be32_to_cpu(get_unaligned((__be32 *)p));
-> +}
-> +
-> +/**
-> + * be16_to_cpu_unaligned - read a be16 from a possibly unaligned pointer
-> + * @p: pointer to read from
-> + *
-> + * Returns a u16 in cpu byteorder
-> + */
-> +static inline u16 be16_to_cpu_unaligned(void *p)
-> +{
-> +	return be16_to_cpu(get_unaligned((__be16 *)p));
-> +}
-> +
-> +/**
-> + * le64_to_cpu_unaligned - write a u64 in le-byteorder to a possibly unaligned pointer
-> + * @val: value to be written
-> + * @p: pointer to write to
-> + */
-> +static inline void cpu_to_le64_unaligned(u64 val, void *p)
-> +{
-> +	put_unaligned(cpu_to_le64(val), (__le64 *)p);
-> +}
-> +
-> +/**
-> + * le32_to_cpu_unaligned - write a u32 in le-byteorder to a possibly unaligned pointer
-> + * @val: value to be written
-> + * @p: pointer to write to
-> + */
-> +static inline void cpu_to_le32_unaligned(u32 val, void *p)
-> +{
-> +	put_unaligned(cpu_to_le32(val), (__le32 *)p);
-> +}
-> +
-> +/**
-> + * le16_to_cpu_unaligned - write a u16 in le-byteorder to a possibly unaligned pointer
-> + * @val: value to be written
-> + * @p: pointer to write to
-> + */
-> +static inline void cpu_to_le16_unaligned(u16 val, void *p)
-> +{
-> +	put_unaligned(cpu_to_le16(val), (__le16 *)p);
-> +}
-> +
-> +/**
-> + * be64_to_cpu_unaligned - write a u64 in be-byteorder to a possibly unaligned pointer
-> + * @val: value to be written
-> + * @p: pointer to write to
-> + */
-> +static inline void cpu_to_be64_unaligned(u64 val, void *p)
-> +{
-> +	put_unaligned(cpu_to_be64(val), (__be64 *)p);
-> +}
-> +
-> +/**
-> + * be32_to_cpu_unaligned - write a u32 in be-byteorder to a possibly unaligned pointer
-> + * @val: value to be written
-> + * @p: pointer to write to
-> + */
-> +static inline void cpu_to_be32_unaligned(u32 val, void *p)
-> +{
-> +	put_unaligned(cpu_to_be32(val), (__be32 *)p);
-> +}
-> +
-> +/**
-> + * be16_to_cpu_unaligned - write a u16 in be-byteorder to a possibly unaligned pointer
-> + * @val: value to be written
-> + * @p: pointer to write to
-> + */
-> +static inline void cpu_to_be16_unaligned(u16 val, void *p)
-> +{
-> +	put_unaligned(cpu_to_be16(val), (__be16 *)p);
-> +}
-> +
-> +#endif /* KERNEL */
-> +
-> +#endif /* _LINUX_UNALIGNED_H */
-> -- 
-
----
-~Randy
+I believe ACPI is simply getting confused by us overwriting memory
+with that from old image. I don't see how you can emulate it with
+shutdown.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
