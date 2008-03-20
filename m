@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbYCTTJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbYCTTKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbYCTTJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 15:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYCTTJV
+	id S1757394AbYCTTKL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 15:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYCTTJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 15:09:21 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:2683 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754650AbYCTTJS (ORCPT
+	Thu, 20 Mar 2008 15:09:58 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57774 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753909AbYCTTJ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 15:09:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Rdbvktk4tEF+YnrAnoJGAqQdOHimWDlFPfHOd53Yx1+KHe95w868tuo7ADm2VljVCrluER5RaZmqgDNZNGBaeX2oxZJ5aUyOHggUz6iis9m/usU7AXa+vf0v+HKjjH/ybckbHDRaWEpUfetdCTWED6PVOYROCcb8LxYIwLqCoq8=
-Subject: Re: [PATCH/RFC v3] introduce ARCH_CAN_UNALIGNED_ACCESS Kconfig
-	symbol
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Daniel Drake <dsd@gentoo.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <1206038734.16475.153.camel@johannes.berg>
-References: <1206023695.16475.137.camel@johannes.berg>
-	 <20080320181310.GA17884@uranus.ravnborg.org>
-	 <1206038373.16475.150.camel@johannes.berg>
-	 (sfid-20080320_184016_333600_B74BDE6D)  <1206038734.16475.153.camel@johannes.berg>
-Content-Type: text/plain
-Date: Thu, 20 Mar 2008 12:09:11 -0700
-Message-Id: <1206040151.17059.10.camel@brick>
+	Thu, 20 Mar 2008 15:09:56 -0400
+Date: Thu, 20 Mar 2008 19:09:54 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>
+Subject: Re: [RFC PATCH] kernel: add byteorder macros with alignment fixups
+Message-ID: <20080320190953.GR10722@ZenIV.linux.org.uk>
+References: <1206034454.17059.4.camel@brick> <20080320182911.GQ10722@ZenIV.linux.org.uk> <1206038244.17059.7.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206038244.17059.7.camel@brick>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-20 at 19:45 +0100, Johannes Berg wrote:
-> +For some ethernet hardware that cannot DMA to unaligned addresses like
-> +4*n+2 or non-ethernet hardware, this can be a problem, and it is then
-> +required to copy the incoming frame into an aligned buffer. Because this is
-> +unnecessary on architectures that can do unaligned accesses, the code can be
-> +made depend on CONFIG_HAVE_UNALIGNED_ACCESS_SUPPORT like so:
-> +
-> +#ifdef CONFIG_HAVE_UNALIGNED_ACCESS_SUPPORT
-> +	skb = original skb
-> +#else
-> +	skb = copy skb
-> +#endif
-> +
+On Thu, Mar 20, 2008 at 11:37:24AM -0700, Harvey Harrison wrote:
+> On Thu, 2008-03-20 at 18:29 +0000, Al Viro wrote:
+> > On Thu, Mar 20, 2008 at 10:34:14AM -0700, Harvey Harrison wrote:
+> > > A common pattern in the kernel (especially networking) is:
+> > > 
+> > > le32_to_cpu(get_unaligned((__le32 *)x));
+> > > 
+> > > Repeat for various combinations of le/be and 64/32/16 bit.  Add
+> > > a variant that operates on possibly unaligned pointers to
+> > > byteorder/generic.h
+> > 
+> > ... and asm/unaligned.h has just acquired fuckloads of places including
+> > it indirectly.  Not Nice(tm).
+> 
+> Time for linux/unaligned.h?
 
-Couldn't this just be made an inline in a networking header somewhere,
-instead of ifdefs in the code?
-
-Harvey
-
+Er...  And just how would that improve things?
