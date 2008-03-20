@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYCTG46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYCTHFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbYCTG46 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 02:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbYCTG4t
+	id S1755163AbYCTHFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 03:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYCTHFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 02:56:49 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:5651 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYCTG4s (ORCPT
+	Thu, 20 Mar 2008 03:05:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37379 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbYCTHFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 02:56:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kJ7T+jhftJ8FnM+wOQKi/klLPACfZEwHwUH65CRpaKKG+FjBo9e6XRWg6WJl0IsOK8E83fwJC461hCt31XlxlbXov3d1iLfyzKNimOKl7ZmOSODveiC6YTEQbJfrHHw/o6UDpGvUan50ej3kFnoa0Zs1v/b0ltDpqT5Bgr05vaQ=
-Message-ID: <86802c440803192356l6ff7e8dg9cfbfd3bc045dcac@mail.gmail.com>
-Date: Wed, 19 Mar 2008 23:56:47 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Glauber de Oliveira Costa" <gcosta@redhat.com>
-Subject: Re: [PATCH 58/79] [PATCH] include mach_apic.h in smpboot_64.c and smpboot.c
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, ak@suse.de
-In-Reply-To: <12059478362371-git-send-email-gcosta@redhat.com>
+	Thu, 20 Mar 2008 03:05:10 -0400
+Date: Thu, 20 Mar 2008 08:05:45 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, marcel@holtmann.org, maxk@qualcomm.com,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: bluetooth still corrupts memory in 2.6.25-rc6
+Message-ID: <20080320070545.GA17356@elf.ucw.cz>
+References: <20080319082115.GA14543@elf.ucw.cz> <47E19BA1.8010905@gmail.com> <20080319230624.GJ1811@elf.ucw.cz> <47E1A112.4060208@gmail.com> <a8e1da0803191950s1a656fffq98fbc180069814d9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12059475744092-git-send-email-gcosta@redhat.com>
-	 <1205947719906-git-send-email-gcosta@redhat.com>
-	 <12059477234148-git-send-email-gcosta@redhat.com>
-	 <12059477273855-git-send-email-gcosta@redhat.com>
-	 <1205947732309-git-send-email-gcosta@redhat.com>
-	 <12059477371787-git-send-email-gcosta@redhat.com>
-	 <12059477421707-git-send-email-gcosta@redhat.com>
-	 <12059477472416-git-send-email-gcosta@redhat.com>
-	 <12059478321396-git-send-email-gcosta@redhat.com>
-	 <12059478362371-git-send-email-gcosta@redhat.com>
+In-Reply-To: <a8e1da0803191950s1a656fffq98fbc180069814d9@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 10:25 AM, Glauber de Oliveira Costa
-<gcosta@redhat.com> wrote:
-> From: Glauber Costa <gcosta@redhat.com>
->
->  After the inclusion, a lot of files needs fixing for conflicts,
->  some of them in the headers themselves, to accomodate for both
->  i386 and x86_64 versions.
->
->  Signed-off-by: Glauber Costa <gcosta@redhat.com>
->  ---
->   arch/x86/kernel/acpi/boot.c                 |    2 ++
->   arch/x86/kernel/mpparse_64.c                |    2 ++
->   arch/x86/kernel/smpboot.c                   |    2 ++
->   arch/x86/kernel/smpboot_64.c                |    1 +
->   arch/x86/vdso/Makefile                      |    2 +-
->   include/asm-x86/apic.h                      |    1 -
->   include/asm-x86/apicdef.h                   |    6 ------
->   include/asm-x86/mach-default/mach_apic.h    |   11 +++++++++++
->   include/asm-x86/mach-default/mach_apicdef.h |    5 +++++
->   include/asm-x86/smp_64.h                    |    9 +--------
->   10 files changed, 25 insertions(+), 16 deletions(-)
+Hi!
 
-please don't.
+> >  >>> ...just leave ppp-over-cellphone-over-bluetooth running, and do
+> >  >>> s2ram...
+> >  >>>
+> >  >>> Linux version 2.6.25-rc6 (pavel@amd) (gcc version 4.1.3 20071209 (prerelease) (Debian 4.1.2-18)) #186 SMP Wed Mar 19 00:46:05 CET 2008
+> >  >>> BIOS-provided physical RAM map:
+> >  >> Pavel, does the "still" from $SUBJ mean, that 2.6.24 is affected too (if
+> >  >> this is the same what I hit)?
+> >  >
+> >  > Hey, I did not do careful analysis. I believe it is the same problem
+> >  > that affects 2.6.24, too, yes. But I actually believe it is much older
+> >  > than that...
+> >
+> >  If yes, then I got the crash by using hidp over l2cap with non-hid device
+> >  (session->input). I'm not sure if it was connected at all and even if hidd was
+> >  running (I tested moving with mouse by cellphone with switching on and off the
+> >  daemon, since it needed some little changes).
 
-before this patch
-include/asm-x86/mach_apic.h is only for x86_64 only
-include/asm-x86/mach-default/mach_apic.h is for i386 only.
+If you have easy/reproducible way of triggering that crash, yes that
+would be useful.
 
-and both have __ASM_MACH_APIC_H defined.
+...just leave ppp-over-cellphone-over-bluetooth running, and do
+s2ram... takes few tries to reproduce, and you need to set up ppp each
+time, so it is quite nasty to debug...
 
-may need another name?
+> >  If you, hci fellows, are interested I might send more detailed description of
+> >  the crash tomorrow.
 
-YH
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
