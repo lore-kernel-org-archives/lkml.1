@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbYCTO3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYCTO35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbYCTO3i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 10:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbYCTO31
+	id S1756796AbYCTO35 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 10:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbYCTO3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 10:29:27 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46435 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753949AbYCTO3Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 10:29:25 -0400
-Date: Thu, 20 Mar 2008 14:13:48 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Elias Oltmanns <eo@nebensachen.de>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/4] disk-protect: Add disk shock protection helpers to
- libata
-Message-ID: <20080320141348.7a5ca570@core>
-In-Reply-To: <20080307181750.9981.88028.stgit@denkblock.local>
-References: <87skzgd1zk.fsf@denkblock.local>
-	<20080226123946.75dbe3d2@core>
-	<87mypl8p49.fsf@denkblock.local>
-	<20080228111349.6831925c@core>
-	<87bq5qfm2v.fsf@denkblock.local>
-	<20080307181750.9981.88028.stgit@denkblock.local>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Mar 2008 10:29:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49481 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756576AbYCTO3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 10:29:32 -0400
+Message-ID: <47E273D0.40402@redhat.com>
+Date: Thu, 20 Mar 2008 11:25:20 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, ak@suse.de
+Subject: Re: [PATCH 58/79] [PATCH] include mach_apic.h in smpboot_64.c and
+ smpboot.c
+References: <12059475744092-git-send-email-gcosta@redhat.com>	 <1205947719906-git-send-email-gcosta@redhat.com>	 <12059477234148-git-send-email-gcosta@redhat.com>	 <12059477273855-git-send-email-gcosta@redhat.com>	 <1205947732309-git-send-email-gcosta@redhat.com>	 <12059477371787-git-send-email-gcosta@redhat.com>	 <12059477421707-git-send-email-gcosta@redhat.com>	 <12059477472416-git-send-email-gcosta@redhat.com>	 <12059478321396-git-send-email-gcosta@redhat.com>	 <12059478362371-git-send-email-gcosta@redhat.com> <86802c440803192356l6ff7e8dg9cfbfd3bc045dcac@mail.gmail.com>
+In-Reply-To: <86802c440803192356l6ff7e8dg9cfbfd3bc045dcac@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0, 0);
-> +	if (err_mask)
-> +		goto abort;
+Yinghai Lu wrote:
+> On Wed, Mar 19, 2008 at 10:25 AM, Glauber de Oliveira Costa
+> <gcosta@redhat.com> wrote:
+>> From: Glauber Costa <gcosta@redhat.com>
+>>
+>>  After the inclusion, a lot of files needs fixing for conflicts,
+>>  some of them in the headers themselves, to accomodate for both
+>>  i386 and x86_64 versions.
+>>
+>>  Signed-off-by: Glauber Costa <gcosta@redhat.com>
+>>  ---
+>>   arch/x86/kernel/acpi/boot.c                 |    2 ++
+>>   arch/x86/kernel/mpparse_64.c                |    2 ++
+>>   arch/x86/kernel/smpboot.c                   |    2 ++
+>>   arch/x86/kernel/smpboot_64.c                |    1 +
+>>   arch/x86/vdso/Makefile                      |    2 +-
+>>   include/asm-x86/apic.h                      |    1 -
+>>   include/asm-x86/apicdef.h                   |    6 ------
+>>   include/asm-x86/mach-default/mach_apic.h    |   11 +++++++++++
+>>   include/asm-x86/mach-default/mach_apicdef.h |    5 +++++
+>>   include/asm-x86/smp_64.h                    |    9 +--------
+>>   10 files changed, 25 insertions(+), 16 deletions(-)
+> 
+> please don't.
+> 
+> before this patch
+> include/asm-x86/mach_apic.h is only for x86_64 only
+> include/asm-x86/mach-default/mach_apic.h is for i386 only.
+> 
+> and both have __ASM_MACH_APIC_H defined.
+> 
+> may need another name?
+> 
+> YH
+Another name is possible, but I'd prefer to get rid of the 
+asm-x86/mach_apic.h. The goal here is to have things integrated, so 
+unless really necessary, this is prefered.
 
-We assume you never use ata_exec_internal on a "live" to block layer
-device, so this doesn't work for the general case. In the EH handler for
-unparking it should be fine as the EH thread runs with the drive queue
-shut down.
+Is this related to your problem anyhow? (just in curiosity)
 
-
-> +static inline int ata_id_has_unload(const u16 *id)
-> +{
-> +	/* ATA-7 specifies two places to indicate unload feature support.
-> +	 * Since I don't really understand the difference, I'll just check
-> +	 * both and only return zero if none of them indicates otherwise. */
-
-Probably wise and we can fix that once it is obvious what reality is
-using.
-
->
