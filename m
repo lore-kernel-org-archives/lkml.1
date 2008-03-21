@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765691AbYCUXKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765857AbYCUXKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765691AbYCUXKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932174AbYCUWwS
+	id S1765857AbYCUXKs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbYCUWwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:52:18 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41301 "EHLO
+	Fri, 21 Mar 2008 18:52:24 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41323 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758011AbYCUWwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:52:14 -0400
-Message-Id: <20080321224452.154449336@sous-sol.org>
+	id S932161AbYCUWwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:52:22 -0400
+Message-Id: <20080321224433.633957866@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:44:01 -0700
+Date: Fri, 21 Mar 2008 15:43:46 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Duane Griffin <duaneg@dghda.com>, Jan Kara <jack@suse.cz>,
-       <linux-ext4@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 71/76] jbd: correctly unescape journal data blocks
-Content-Disposition: inline; filename=jbd-correctly-unescape-journal-data-blocks.patch
+       Misha Zhilin <misha@epiphan.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 56/76] USB: ehci: handle large bulk URBs correctly (again)
+Content-Disposition: inline; filename=usb-ehci-handle-large-bulk-urbs-correctly.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,38 +36,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Duane Griffin <duaneg@dghda.com>
+From: Misha Zhilin <misha@epiphan.com>
 
-Fix a long-standing typo (predating git) that will cause data corruption if a
-journal data block needs unescaping.  At the moment the wrong buffer head's
-data is being unescaped.
+When use of urb->status in the EHCI driver was reworked last August
+(commit 14c04c0f88f228fee1f412be91d6edcb935c78aa), a bug was inserted
+in the handling of early completion for bulk transactions that need
+more than one qTD (e.g. more than 20KB in one URB).
 
-To test this case mount a filesystem with data=journal, start creating and
-deleting a bunch of files containing only JFS_MAGIC_NUMBER (0xc03b3998), then
-pull the plug on the device.  Without this patch the files will contain zeros
-instead of the correct data after recovery.
+This patch resolves that problem by ensuring that the early completion
+status is preserved until the URB is handed back to its submitter,
+instead of resetting it after each qTD.
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
-Acked-by: Jan Kara <jack@suse.cz>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Misha Zhilin <misha@epiphan.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/jbd/recovery.c |    2 +-
+ drivers/usb/host/ehci-q.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/jbd/recovery.c
-+++ b/fs/jbd/recovery.c
-@@ -478,7 +478,7 @@ static int do_one_pass(journal_t *journa
- 					memcpy(nbh->b_data, obh->b_data,
- 							journal->j_blocksize);
- 					if (flags & JFS_FLAG_ESCAPE) {
--						*((__be32 *)bh->b_data) =
-+						*((__be32 *)nbh->b_data) =
- 						cpu_to_be32(JFS_MAGIC_NUMBER);
- 					}
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -315,10 +315,10 @@ qh_completions (struct ehci_hcd *ehci, s
+ 			if (likely (last->urb != urb)) {
+ 				ehci_urb_done(ehci, last->urb, last_status);
+ 				count++;
++				last_status = -EINPROGRESS;
+ 			}
+ 			ehci_qtd_free (ehci, last);
+ 			last = NULL;
+-			last_status = -EINPROGRESS;
+ 		}
  
+ 		/* ignore urbs submitted during completions we reported */
 
 -- 
