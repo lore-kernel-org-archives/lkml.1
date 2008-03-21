@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbYCUXSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbYCUXS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbYCUXSg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762095AbYCUXHV
+	id S1764053AbYCUXS4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbYCUXHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 19:07:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:50954 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764293AbYCUXHO (ORCPT
+	Fri, 21 Mar 2008 19:07:50 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:55362 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932638AbYCUXHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 19:07:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=XVXuheAxo4QX3zy/Zwcgao0V3doGtvQ9978FGaWULdt+l/JTb3ljgL7twu6/HbQdqcPw+d/d3Dm9Qt9HdKyeI1S+TsC5TKkMobWgTGEeDee+Vz09IzzTzyx7opCe4kXCUZMrRZFRQZfDZMb28YLFVwKS6xclFX2InDFQ4NRuStk=
-Date: Sat, 22 Mar 2008 00:07:13 +0100 (CET)
-To: Greg Kroah-Hartman <greg@kroah.com>
-cc: Jyoti Shah <jshah@us.ibm.com>, Irene Zubarev <zubarev@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-Subject: [PATCH] Fix leaks in IBM Hot Plug Controller Driver -
- ibmphp_init_devno()
-Message-ID: <alpine.LNX.1.00.0803220003050.10052@dragon.funnycrock.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Fri, 21 Mar 2008 19:07:47 -0400
+Message-ID: <47E43FBE.90600@googlemail.com>
+Date: Sat, 22 Mar 2008 00:07:42 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Jesper Juhl <jesper.juhl@gmail.com>
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, vladislav.yasevich@hp.com, sri@us.ibm.com,
+       netdev@vger.kernel.org
+Subject: Re: Commit 270637abff0cdf848b910b9f96ad342e1da61c66 introduced a
+ lot new compiler warnings
+References: <47E40856.6020902@googlemail.com> <20080321.154340.210302849.davem@davemloft.net>
+In-Reply-To: <20080321.154340.210302849.davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
+> From: Gabriel C <nix.or.die@googlemail.com>
+> Date: Fri, 21 Mar 2008 20:11:18 +0100
+> 
+>> I noticed the following new compile warnings on current git head introduced by 270637abff0cdf848b910b9f96ad342e1da61c66 :
+> 
+> Please include netdev@vger.kernel.org for networking bug
+> reports in the future, thank you.
 
-In drivers/pci/hotplug/ibmphp_core.c::ibmphp_init_devno() we allocate 
-space dynamically for a PCI irq routing table by calling 
-pcibios_get_irq_routing_table(), but we never free the allocated space.
+I usually do that and to be honest I thought I did , damn fingers.
 
-This patch frees the allocated space at the function exit points.
+Really sorry.
 
-Spotted by the Coverity checker. Compile tested only.
+> 
+> Thanks for the report, I'll push the following fix:
+> 
+> commit 1233823b0847190976d69a86d7bb1287992ba2c7
+> Author: David S. Miller <davem@davemloft.net>
+> Date:   Fri Mar 21 15:40:47 2008 -0700
+> 
+>     [SCTP]: Fix build warnings with IPV6 disabled.
+>     
+>     Introduced by 270637abff0cdf848b910b9f96ad342e1da61c66
+>     ("[SCTP]: Fix a race between module load and protosw access")
+>     
+>     Reported by Gabriel C:
+>     
+>     In file included from net/sctp/sm_statetable.c:50:
+>     include/net/sctp/sctp.h: In function 'sctp_v6_pf_init':
+>     include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
+>     In file included from net/sctp/sm_statefuns.c:62:
+>     include/net/sctp/sctp.h: In function 'sctp_v6_pf_init':
+>     include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
+>      ...
+>     
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
+> index 57ed3e3..ea80673 100644
+> --- a/include/net/sctp/sctp.h
+> +++ b/include/net/sctp/sctp.h
+> @@ -389,7 +389,7 @@ void sctp_v6_del_protocol(void);
+>  
+>  #else /* #ifdef defined(CONFIG_IPV6) */
+>  
+> -static inline void sctp_v6_pf_init(void) { return 0; }
+> +static inline void sctp_v6_pf_init(void) { return; }
+>  static inline void sctp_v6_pf_exit(void) { return; }
+>  static inline int sctp_v6_protosw_init(void) { return 0; }
+>  static inline void sctp_v6_protosw_exit(void) { return; }
+> 
 
-Please consider applying.
+It fixes all warnings , thx.
 
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
---- 
-
- ibmphp_core.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/pci/hotplug/ibmphp_core.c b/drivers/pci/hotplug/ibmphp_core.c
-index 87b6b8b..81d0092 100644
---- a/drivers/pci/hotplug/ibmphp_core.c
-+++ b/drivers/pci/hotplug/ibmphp_core.c
-@@ -148,8 +148,10 @@ int ibmphp_init_devno(struct slot **cur_slot)
- 	len = (rtable->size - sizeof(struct irq_routing_table)) /
- 			sizeof(struct irq_info);
- 
--	if (!len)
-+	if (!len) {
-+		kfree(rtable);
- 		return -1;
-+	}
- 	for (loop = 0; loop < len; loop++) {
- 		if ((*cur_slot)->number == rtable->slots[loop].slot) {
- 		if ((*cur_slot)->bus == rtable->slots[loop].bus) {
-@@ -187,11 +189,13 @@ int ibmphp_init_devno(struct slot **cur_slot)
- 				debug("rtable->slots[loop].irq[3].link = %x\n",
- 					rtable->slots[loop].irq[3].link);
- 				debug("end of init_devno\n");
-+				kfree(rtable);
- 				return 0;
- 			}
- 		}
- 	}
- 
-+	kfree(rtable);
- 	return -1;
- }
- 
-
-
-
+Gabriel
