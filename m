@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbYCUTdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYCUTdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbYCUTdg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 15:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYCUTdF
+	id S1754326AbYCUTdx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761244AbYCUTdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:33:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:52222 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbYCUTdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:33:01 -0400
-Date: Fri, 21 Mar 2008 20:32:46 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH REPOST] [3/3] Replace macro recursion with more conventional
- loop
-In-Reply-To: <20080321171724.GF2346@one.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0803211953520.3781@apollo.tec.linutronix.de>
-References: <20080311223.655043226@firstfloor.org> <20080311012322.B1E221B41CE@basil.firstfloor.org> <alpine.LFD.1.00.0803211806590.3781@apollo.tec.linutronix.de> <20080321171724.GF2346@one.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 21 Mar 2008 15:33:32 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47956 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761234AbYCUTda (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 15:33:30 -0400
+Date: Fri, 21 Mar 2008 13:33:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       warthog19@eaglescrag.net, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 15/16] PCI slot: Trivial cleanups for slot.c (Not for mainline!)
+Message-ID: <20080321193329.GM424@parisc-linux.org>
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E3390A.7030308@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E3390A.7030308@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Andi Kleen wrote:
-> On Fri, Mar 21, 2008 at 06:07:55PM +0100, Thomas Gleixner wrote:
-> > On Tue, 11 Mar 2008, Andi Kleen wrote:
-> > > The early exception handlers are currently set up using a macro
-> > > recursion. Replace that with a standard loop.
-> > > 
-> > > Noop patch, just a cleanup.
-> > 
-> > Cleanups before code changes please.
-> 
-> It relies on the earlier changes.
+On Fri, Mar 21, 2008 at 01:26:50PM +0900, Kenji Kaneshige wrote:
+> Some trivial cleanups for drivers/pci/slot.c.
 
-I just had a closer look. Your patch order makes sense. It's less
-noise that way due to the previous removal of the 3 users of the macro. 
+ACK
 
-I applied the series with the following changes:
-
-- Moved 3/3 before 2/3 to make it clear that this is a consecutive cleanup
-- Simplified 3/3 (patch below)
-- fixed the commit log of 3/3 so it points out why the cleanup is done 
-
-Btw, can you please add a "x86:" prefix to your subject lines ?
-
-Thanks,
-
-	tglx
---
-
-The early exception handlers are currently set up using a macro
-recursion. There is only one user left. Replace the macro with a
-standard loop in place.
-
---- linux-2.6.orig/arch/x86/kernel/head_64.S
-+++ linux-2.6/arch/x86/kernel/head_64.S
-@@ -269,15 +269,12 @@ bad_address:
- 
- 	.section ".init.text","ax"
- #ifdef CONFIG_EARLY_PRINTK
--.macro early_idt_tramp i
--	movl $\i, %esi
--	jmp early_idt_handler
--.endm
- 	.globl early_idt_handlers
- early_idt_handlers:
- 	i = 0
- 	.rept NUM_EXCEPTION_VECTORS
--	early_idt_tramp i
-+	movl $i, %esi
-+	jmp early_idt_handler
- 	i = i + 1
- 	.endr
- #endif
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
