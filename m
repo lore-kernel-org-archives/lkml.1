@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbYCUSGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYCUSIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760660AbYCUSGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357AbYCUSGD
+	id S1758754AbYCUSIw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbYCUSIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:06:03 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2111 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756239AbYCUSGB (ORCPT
+	Fri, 21 Mar 2008 14:08:45 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:40254 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755550AbYCUSIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:06:01 -0400
-Date: Fri, 21 Mar 2008 14:05:59 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jean Delvare <khali@linux-fr.org>, Michael Buesch <mb@bu3sch.de>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       David Brownell <david-b@pacbell.net>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-In-Reply-To: <20080321103732.ea08e189.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0803211343240.24421-100000@netrider.rowland.org>
+	Fri, 21 Mar 2008 14:08:44 -0400
+Date: Fri, 21 Mar 2008 14:08:39 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Adrian Bunk <bunk@kernel.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what's with the "pre-releases" directory?
+In-Reply-To: <20080321175651.GC1434@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.00.0803211407510.12549@localhost.localdomain>
+References: <alpine.LFD.1.00.0803211312500.30701@localhost.localdomain> <20080321173415.GB1434@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0803211336350.7227@localhost.localdomain> <20080321175651.GC1434@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Andrew Morton wrote:
+On Fri, 21 Mar 2008, Adrian Bunk wrote:
 
-> On Fri, 21 Mar 2008 10:53:11 +0100 Jean Delvare <khali@linux-fr.org> wrote:
-> 
-> > On Thu, 20 Mar 2008 20:17:23 -0700, Andrew Morton wrote:
-> > > in_atomic() is for core kernel use only.  (...)
-> > 
-> > Then why is it made available to drivers through <linux/hardirq.h>?
-> 
-> Because we suck.
-> 
-> > If
-> > it's such a dangerous macro to call from drivers, it shouldn't be made
-> > available, or at the very least there should be a big fat warning in
-> > <linux/hardirq.h> that drivers aren't supposed to use it. This would
-> > have avoided the 23 uses cases in drivers we have right now.
-> 
-> True.
+> On Fri, Mar 21, 2008 at 01:41:36PM -0400, Robert P. J. Day wrote:
 
-There's also a section about in_atomic() in the Linux Device Drivers 
-(3rd ed.) book which may have contributed to the confusion.  On p. 198:
+> > p.s.  and while i'm whining, would it be possible to clear the
+> > obsolete "LATEST-IS" files out of:
+> >
+> >   ftp://ftp.kernel.org/pub/linux/kernel/v2.6/testing
+> >
+> > i have a script that grabs the latest rc tarball out of that
+> > directory, and it got confused by seeing more than one LATEST-IS file.
+> > not hard to work around but, still ...
+>
+> For this you have to whine to the guy who places them there:
+>
+> -rw-rw-r--  1 torvalds kernel         0 Mar  5 04:44 LATEST-IS-2.6.25-rc4
+> -rw-rw-r--  1 torvalds kernel         0 Mar 10 05:30 LATEST-IS-2.6.25-rc5
+> -rw-rw-r--  1 torvalds kernel         0 Mar 16 23:50 LATEST-IS-2.6.25-rc6
 
-	A function related to in_interrupt() is in_atomic().  Its 
-	return value is nonzero whenever scheduling is not allowed;
-	this includes hardware and software interrupt contexts as well
-	as any time when a spinlock is held.  In the latter case, 
-	current may be valid, but access to user space is forbidden, 
-	since it can cause scheduling to happen.  Whenever you are
-	using in_interrupt(), you should really consider whether 
-	in_atomic() is what you actually mean.  Both functions are
-	declared in <asm/hardirq.h>.
+darned newbies.  :-P
 
-Alan Stern
+rday
+--
 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
