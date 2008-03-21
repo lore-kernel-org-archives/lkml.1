@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYCUPXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYCUPYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbYCUPXS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 11:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYCUPXH
+	id S1754068AbYCUPYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 11:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbYCUPXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 11:23:07 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:35948 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751423AbYCUPXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 11:23:06 -0400
-Date: Fri, 21 Mar 2008 10:23:05 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: ak@suse.de, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] - Allow NODES_SHIFT to be a config option on x86_64
-Message-ID: <20080321152305.GA28098@sgi.com>
-References: <20080321133425.GA11095@sgi.com> <20080321142648.GB31719@elte.hu> <20080321145401.GA10303@sgi.com> <20080321145736.GC1545@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321145736.GC1545@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 21 Mar 2008 11:23:47 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:46455 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbYCUPXq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 11:23:46 -0400
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: possible lockdep crash
+Date: Fri, 21 Mar 2008 17:23:30 +0200
+Message-Id: <20080321152045.M11363@visp.net.lb>
+In-Reply-To: <20080321.040408.153242166.davem@davemloft.net>
+References: <20080321093052.M39677@visp.net.lb> <20080321.033530.249188954.davem@davemloft.net> <20080321105404.M46676@visp.net.lb> <20080321.040408.153242166.davem@davemloft.net>
+X-Mailer: OpenWebMail 2.52 
+X-OriginatingIP: 195.69.208.254 (denys@visp.net.lb)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 03:57:36PM +0100, Ingo Molnar wrote:
+I have very strange lockups on this machine, and i tried to catch them. But 
+seems it doesn't help me, till now lockdep catch only ifb false-positive.
+
+I will try to compile and run now without lockdep.
+
+On Fri, 21 Mar 2008 04:04:08 -0700 (PDT), David Miller wrote
+> From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+> Date: Fri, 21 Mar 2008 12:54:50 +0200
 > 
-> * Jack Steiner <steiner@sgi.com> wrote:
+> > Let me know if i can improve output to help debugging.
+> > If possible it must be minimal risk to hang, cause router is in very 
+> > difficult to reach area.
 > 
-> > On Fri, Mar 21, 2008 at 03:26:49PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Jack Steiner <steiner@sgi.com> wrote:
-> > > 
-> > > > Allow the maximum number of nodes in an x86_64 system to be 
-> > > > configurable. This patch does NOT change the default value but allows 
-> > > > the value to be a config option.
-> > > 
-> > > i've applied your patch - but i'm wondering, shouldnt we auto-scale the 
-> > > default according to max number of CPUs? (with some sensible scaling 
-> > > that happens to meet your expected large-system needs as well ;-) All 
-> > > the current manual configuration of nodes shift is ugly.
-> > 
-> > I would prefer to auto-scale, too, but our hardware platform allows 
-> > too many options to make it easy. The current system configs will 
-> > support from 0 to 32 cpus per node (some nodes have memory only).
-> > 
-> > However, I'm open to suggestions if you have any ideas....
+> Can you disable lockdep and see if the problem persists?
 > 
-> how about scaling for the worst case, and allowing distros to tune down 
-> if they really want? What's the cost of a too large NODE_SHIFT?
-> 
+> It's killing your routing performance anyways, I have no
+> idea why you have it enabled.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
-NODE_SHIFT affects a number of nodemasks so you probably don't want it
-a lot larger than needed - especially if you are going over 64 nodes. Our
-target value is currently 512 although it is possible that it may
-change to 256.
-
-Let me do some experiments on auto-config. I'll get back to you....
-
---- jack
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
