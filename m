@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932751AbYCUXOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932881AbYCUXPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932751AbYCUXOk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763290AbYCUWxS
+	id S932881AbYCUXPO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763452AbYCUWx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:53:18 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41358 "EHLO
+	Fri, 21 Mar 2008 18:53:29 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41361 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763390AbYCUWxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:53:16 -0400
-Message-Id: <20080321224436.781154937@sous-sol.org>
+	id S1763410AbYCUWx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:53:26 -0400
+Message-Id: <20080321224421.540314761@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:49 -0700
+Date: Fri, 21 Mar 2008 15:43:37 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, torvalds@osdl.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,11 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Tony Breeds <tony@bakeyournoodle.com>,
+       Michael Buesch <mb@bu3sch.de>, Greg KH <greg@kroah.com>,
+       linux-wireless@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
+       alexey.zaytsev@gmail.com, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 59/76] Fix default compose table initialization
-Content-Disposition: inline; filename=fix-default-compose-table-initialization.patch
+Subject: [patch 47/76] b43: Backport bcm4311 fix
+Content-Disposition: inline; filename=b43-backport-bcm4311-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,203 +37,135 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+From: Michael Buesch <mb@bu3sch.de>
 
-Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
-0300...  This fixes the default unicode compose table by using integers
-instead of character constants.
+This is a backport of upstream commit 013978b6 ("b43: Changes to enable
+BCM4311 rev 02 with wireless core revision 13") and the changes include
+the following:
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+(1) Add the 802.11 rev 13 device to the ssb_device_id table to load b43.
+(2) Add PHY revision 9 to the supported list.
+(3) Change the 2-bit routing code for address extensions to 0b10 rather
+    than the 0b01 used for the 32-bit case.
+(4) Remove some magic numbers in the DMA setup.
 
-Fold in upstream commit 10a7f3135ac4937a3dc8ed11614a2b70cbd44728 (Build
-fix for drivers/s390/char/defkeymap.c) from Tony Breeds.
+The DMA implementation for this chip supports full 64-bit addressing with
+one exception. Whenever the Descriptor Ring Buffer is in high memory, a
+fatal DMA error occurs. This problem was not present in 2.6.24-rc2 due
+to code to "Bias the placement of kernel pages at lower PFNs". When
+commit 44048d70 reverted that code, the DMA error appeared. As a "fix",
+use the GFP_DMA flag when allocating the buffer for 64-bit DMA. At present,
+this problem is thought to arise from a hardware error.
 
-Commit 5ce2087ed0eb424e0889bdc9102727f65d2ecdde (Fix default compose
-table initialization) left a trailing quote.
-
-  CC      drivers/s390/char/defkeymap.o
-drivers/s390/char/defkeymap.c:155: error: missing terminating ' character
-drivers/s390/char/defkeymap.c:156: error: syntax error before ';' token
-make[3]: *** [drivers/s390/char/defkeymap.o] Error 1
-
-Fix that.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/acorn/char/defkeymap-l7200.c |   68 +++++++++++++++++------------------
- drivers/char/defkeymap.c_shipped     |   68 +++++++++++++++++------------------
- drivers/s390/char/defkeymap.c        |    4 +-
- 3 files changed, 70 insertions(+), 70 deletions(-)
 
---- a/drivers/acorn/char/defkeymap-l7200.c
-+++ b/drivers/acorn/char/defkeymap-l7200.c
-@@ -347,40 +347,40 @@ char *func_table[MAX_NR_FUNC] = {
+---
+ drivers/net/wireless/b43/dma.c  |   30 ++++++++++++++++++++++--------
+ drivers/net/wireless/b43/main.c |    3 ++-
+ 2 files changed, 24 insertions(+), 9 deletions(-)
+
+--- a/drivers/net/wireless/b43/dma.c
++++ b/drivers/net/wireless/b43/dma.c
+@@ -165,7 +165,7 @@ static void op64_fill_descriptor(struct 
+ 	addrhi = (((u64) dmaaddr >> 32) & ~SSB_DMA_TRANSLATION_MASK);
+ 	addrext = (((u64) dmaaddr >> 32) & SSB_DMA_TRANSLATION_MASK)
+ 	    >> SSB_DMA_TRANSLATION_SHIFT;
+-	addrhi |= ssb_dma_translation(ring->dev->dev);
++	addrhi |= (ssb_dma_translation(ring->dev->dev) << 1);
+ 	if (slot == ring->nr_slots - 1)
+ 		ctl0 |= B43_DMA64_DCTL0_DTABLEEND;
+ 	if (start)
+@@ -426,9 +426,21 @@ static inline
+ static int alloc_ringmemory(struct b43_dmaring *ring)
+ {
+ 	struct device *dev = ring->dev->dev->dev;
++	gfp_t flags = GFP_KERNEL;
+ 
++	/* The specs call for 4K buffers for 30- and 32-bit DMA with 4K
++	 * alignment and 8K buffers for 64-bit DMA with 8K alignment. Testing
++	 * has shown that 4K is sufficient for the latter as long as the buffer
++	 * does not cross an 8K boundary.
++	 *
++	 * For unknown reasons - possibly a hardware error - the BCM4311 rev
++	 * 02, which uses 64-bit DMA, needs the ring buffer in very low memory,
++	 * which accounts for the GFP_DMA flag below.
++	 */
++	if (ring->dma64)
++		flags |= GFP_DMA;
+ 	ring->descbase = dma_alloc_coherent(dev, B43_DMA_RINGMEMSIZE,
+-					    &(ring->dmabase), GFP_KERNEL);
++					    &(ring->dmabase), flags);
+ 	if (!ring->descbase) {
+ 		b43err(ring->dev->wl, "DMA ringmemory allocation failed\n");
+ 		return -ENOMEM;
+@@ -483,7 +495,7 @@ int b43_dmacontroller_rx_reset(struct b4
+ 	return 0;
+ }
+ 
+-/* Reset the RX DMA channel */
++/* Reset the TX DMA channel */
+ int b43_dmacontroller_tx_reset(struct b43_wldev *dev, u16 mmio_base, int dma64)
+ {
+ 	int i;
+@@ -647,7 +659,7 @@ static int dmacontroller_setup(struct b4
+ 			b43_dma_write(ring, B43_DMA64_TXRINGHI,
+ 				      ((ringbase >> 32) &
+ 				       ~SSB_DMA_TRANSLATION_MASK)
+-				      | trans);
++				      | (trans << 1));
+ 		} else {
+ 			u32 ringbase = (u32) (ring->dmabase);
+ 
+@@ -680,8 +692,9 @@ static int dmacontroller_setup(struct b4
+ 			b43_dma_write(ring, B43_DMA64_RXRINGHI,
+ 				      ((ringbase >> 32) &
+ 				       ~SSB_DMA_TRANSLATION_MASK)
+-				      | trans);
+-			b43_dma_write(ring, B43_DMA64_RXINDEX, 200);
++				      | (trans << 1));
++			b43_dma_write(ring, B43_DMA64_RXINDEX, ring->nr_slots *
++				      sizeof(struct b43_dmadesc64));
+ 		} else {
+ 			u32 ringbase = (u32) (ring->dmabase);
+ 
+@@ -695,11 +708,12 @@ static int dmacontroller_setup(struct b4
+ 			b43_dma_write(ring, B43_DMA32_RXRING,
+ 				      (ringbase & ~SSB_DMA_TRANSLATION_MASK)
+ 				      | trans);
+-			b43_dma_write(ring, B43_DMA32_RXINDEX, 200);
++			b43_dma_write(ring, B43_DMA32_RXINDEX, ring->nr_slots *
++				      sizeof(struct b43_dmadesc32));
+ 		}
+ 	}
+ 
+-      out:
++out:
+ 	return err;
+ }
+ 
+--- a/drivers/net/wireless/b43/main.c
++++ b/drivers/net/wireless/b43/main.c
+@@ -101,6 +101,7 @@ static const struct ssb_device_id b43_ss
+ 	SSB_DEVICE(SSB_VENDOR_BROADCOM, SSB_DEV_80211, 7),
+ 	SSB_DEVICE(SSB_VENDOR_BROADCOM, SSB_DEV_80211, 9),
+ 	SSB_DEVICE(SSB_VENDOR_BROADCOM, SSB_DEV_80211, 10),
++	SSB_DEVICE(SSB_VENDOR_BROADCOM, SSB_DEV_80211, 13),
+ 	SSB_DEVTABLE_END
  };
  
- struct kbdiacruc accent_table[MAX_DIACR] = {
--	{'`', 'A', '\300'},	{'`', 'a', '\340'},
--	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
--	{'^', 'A', '\302'},	{'^', 'a', '\342'},
--	{'~', 'A', '\303'},	{'~', 'a', '\343'},
--	{'"', 'A', '\304'},	{'"', 'a', '\344'},
--	{'O', 'A', '\305'},	{'o', 'a', '\345'},
--	{'0', 'A', '\305'},	{'0', 'a', '\345'},
--	{'A', 'A', '\305'},	{'a', 'a', '\345'},
--	{'A', 'E', '\306'},	{'a', 'e', '\346'},
--	{',', 'C', '\307'},	{',', 'c', '\347'},
--	{'`', 'E', '\310'},	{'`', 'e', '\350'},
--	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
--	{'^', 'E', '\312'},	{'^', 'e', '\352'},
--	{'"', 'E', '\313'},	{'"', 'e', '\353'},
--	{'`', 'I', '\314'},	{'`', 'i', '\354'},
--	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
--	{'^', 'I', '\316'},	{'^', 'i', '\356'},
--	{'"', 'I', '\317'},	{'"', 'i', '\357'},
--	{'-', 'D', '\320'},	{'-', 'd', '\360'},
--	{'~', 'N', '\321'},	{'~', 'n', '\361'},
--	{'`', 'O', '\322'},	{'`', 'o', '\362'},
--	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
--	{'^', 'O', '\324'},	{'^', 'o', '\364'},
--	{'~', 'O', '\325'},	{'~', 'o', '\365'},
--	{'"', 'O', '\326'},	{'"', 'o', '\366'},
--	{'/', 'O', '\330'},	{'/', 'o', '\370'},
--	{'`', 'U', '\331'},	{'`', 'u', '\371'},
--	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
--	{'^', 'U', '\333'},	{'^', 'u', '\373'},
--	{'"', 'U', '\334'},	{'"', 'u', '\374'},
--	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
--	{'T', 'H', '\336'},	{'t', 'h', '\376'},
--	{'s', 's', '\337'},	{'"', 'y', '\377'},
--	{'s', 'z', '\337'},	{'i', 'j', '\377'},
-+	{'`', 'A', 0300},	{'`', 'a', 0340},
-+	{'\'', 'A', 0301},	{'\'', 'a', 0341},
-+	{'^', 'A', 0302},	{'^', 'a', 0342},
-+	{'~', 'A', 0303},	{'~', 'a', 0343},
-+	{'"', 'A', 0304},	{'"', 'a', 0344},
-+	{'O', 'A', 0305},	{'o', 'a', 0345},
-+	{'0', 'A', 0305},	{'0', 'a', 0345},
-+	{'A', 'A', 0305},	{'a', 'a', 0345},
-+	{'A', 'E', 0306},	{'a', 'e', 0346},
-+	{',', 'C', 0307},	{',', 'c', 0347},
-+	{'`', 'E', 0310},	{'`', 'e', 0350},
-+	{'\'', 'E', 0311},	{'\'', 'e', 0351},
-+	{'^', 'E', 0312},	{'^', 'e', 0352},
-+	{'"', 'E', 0313},	{'"', 'e', 0353},
-+	{'`', 'I', 0314},	{'`', 'i', 0354},
-+	{'\'', 'I', 0315},	{'\'', 'i', 0355},
-+	{'^', 'I', 0316},	{'^', 'i', 0356},
-+	{'"', 'I', 0317},	{'"', 'i', 0357},
-+	{'-', 'D', 0320},	{'-', 'd', 0360},
-+	{'~', 'N', 0321},	{'~', 'n', 0361},
-+	{'`', 'O', 0322},	{'`', 'o', 0362},
-+	{'\'', 'O', 0323},	{'\'', 'o', 0363},
-+	{'^', 'O', 0324},	{'^', 'o', 0364},
-+	{'~', 'O', 0325},	{'~', 'o', 0365},
-+	{'"', 'O', 0326},	{'"', 'o', 0366},
-+	{'/', 'O', 0330},	{'/', 'o', 0370},
-+	{'`', 'U', 0331},	{'`', 'u', 0371},
-+	{'\'', 'U', 0332},	{'\'', 'u', 0372},
-+	{'^', 'U', 0333},	{'^', 'u', 0373},
-+	{'"', 'U', 0334},	{'"', 'u', 0374},
-+	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
-+	{'T', 'H', 0336},	{'t', 'h', 0376},
-+	{'s', 's', 0337},	{'"', 'y', 0377},
-+	{'s', 'z', 0337},	{'i', 'j', 0377},
- };
- 
- unsigned int accent_table_size = 68;
---- a/drivers/char/defkeymap.c_shipped
-+++ b/drivers/char/defkeymap.c_shipped
-@@ -223,40 +223,40 @@ char *func_table[MAX_NR_FUNC] = {
- };
- 
- struct kbdiacruc accent_table[MAX_DIACR] = {
--	{'`', 'A', '\300'},	{'`', 'a', '\340'},
--	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
--	{'^', 'A', '\302'},	{'^', 'a', '\342'},
--	{'~', 'A', '\303'},	{'~', 'a', '\343'},
--	{'"', 'A', '\304'},	{'"', 'a', '\344'},
--	{'O', 'A', '\305'},	{'o', 'a', '\345'},
--	{'0', 'A', '\305'},	{'0', 'a', '\345'},
--	{'A', 'A', '\305'},	{'a', 'a', '\345'},
--	{'A', 'E', '\306'},	{'a', 'e', '\346'},
--	{',', 'C', '\307'},	{',', 'c', '\347'},
--	{'`', 'E', '\310'},	{'`', 'e', '\350'},
--	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
--	{'^', 'E', '\312'},	{'^', 'e', '\352'},
--	{'"', 'E', '\313'},	{'"', 'e', '\353'},
--	{'`', 'I', '\314'},	{'`', 'i', '\354'},
--	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
--	{'^', 'I', '\316'},	{'^', 'i', '\356'},
--	{'"', 'I', '\317'},	{'"', 'i', '\357'},
--	{'-', 'D', '\320'},	{'-', 'd', '\360'},
--	{'~', 'N', '\321'},	{'~', 'n', '\361'},
--	{'`', 'O', '\322'},	{'`', 'o', '\362'},
--	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
--	{'^', 'O', '\324'},	{'^', 'o', '\364'},
--	{'~', 'O', '\325'},	{'~', 'o', '\365'},
--	{'"', 'O', '\326'},	{'"', 'o', '\366'},
--	{'/', 'O', '\330'},	{'/', 'o', '\370'},
--	{'`', 'U', '\331'},	{'`', 'u', '\371'},
--	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
--	{'^', 'U', '\333'},	{'^', 'u', '\373'},
--	{'"', 'U', '\334'},	{'"', 'u', '\374'},
--	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
--	{'T', 'H', '\336'},	{'t', 'h', '\376'},
--	{'s', 's', '\337'},	{'"', 'y', '\377'},
--	{'s', 'z', '\337'},	{'i', 'j', '\377'},
-+	{'`', 'A', 0300},	{'`', 'a', 0340},
-+	{'\'', 'A', 0301},	{'\'', 'a', 0341},
-+	{'^', 'A', 0302},	{'^', 'a', 0342},
-+	{'~', 'A', 0303},	{'~', 'a', 0343},
-+	{'"', 'A', 0304},	{'"', 'a', 0344},
-+	{'O', 'A', 0305},	{'o', 'a', 0345},
-+	{'0', 'A', 0305},	{'0', 'a', 0345},
-+	{'A', 'A', 0305},	{'a', 'a', 0345},
-+	{'A', 'E', 0306},	{'a', 'e', 0346},
-+	{',', 'C', 0307},	{',', 'c', 0347},
-+	{'`', 'E', 0310},	{'`', 'e', 0350},
-+	{'\'', 'E', 0311},	{'\'', 'e', 0351},
-+	{'^', 'E', 0312},	{'^', 'e', 0352},
-+	{'"', 'E', 0313},	{'"', 'e', 0353},
-+	{'`', 'I', 0314},	{'`', 'i', 0354},
-+	{'\'', 'I', 0315},	{'\'', 'i', 0355},
-+	{'^', 'I', 0316},	{'^', 'i', 0356},
-+	{'"', 'I', 0317},	{'"', 'i', 0357},
-+	{'-', 'D', 0320},	{'-', 'd', 0360},
-+	{'~', 'N', 0321},	{'~', 'n', 0361},
-+	{'`', 'O', 0322},	{'`', 'o', 0362},
-+	{'\'', 'O', 0323},	{'\'', 'o', 0363},
-+	{'^', 'O', 0324},	{'^', 'o', 0364},
-+	{'~', 'O', 0325},	{'~', 'o', 0365},
-+	{'"', 'O', 0326},	{'"', 'o', 0366},
-+	{'/', 'O', 0330},	{'/', 'o', 0370},
-+	{'`', 'U', 0331},	{'`', 'u', 0371},
-+	{'\'', 'U', 0332},	{'\'', 'u', 0372},
-+	{'^', 'U', 0333},	{'^', 'u', 0373},
-+	{'"', 'U', 0334},	{'"', 'u', 0374},
-+	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
-+	{'T', 'H', 0336},	{'t', 'h', 0376},
-+	{'s', 's', 0337},	{'"', 'y', 0377},
-+	{'s', 'z', 0337},	{'i', 'j', 0377},
- };
- 
- unsigned int accent_table_size = 68;
---- a/drivers/s390/char/defkeymap.c
-+++ b/drivers/s390/char/defkeymap.c
-@@ -151,8 +151,8 @@ char *func_table[MAX_NR_FUNC] = {
- };
- 
- struct kbdiacruc accent_table[MAX_DIACR] = {
--	{'^', 'c', '\003'},	{'^', 'd', '\004'},
--	{'^', 'z', '\032'},	{'^', '\012', '\000'},
-+	{'^', 'c', 0003},	{'^', 'd', 0004},
-+	{'^', 'z', 0032},	{'^', 0012, 0000},
- };
- 
- unsigned int accent_table_size = 4;
+@@ -3079,7 +3080,7 @@ static int b43_phy_versioning(struct b43
+ 			unsupported = 1;
+ 		break;
+ 	case B43_PHYTYPE_G:
+-		if (phy_rev > 8)
++		if (phy_rev > 9)
+ 			unsupported = 1;
+ 		break;
+ 	default:
 
 -- 
