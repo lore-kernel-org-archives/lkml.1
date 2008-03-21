@@ -1,133 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbYCUOzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYCUO4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758237AbYCUOzr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 10:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYCUOzi
+	id S1758545AbYCUO4z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 10:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYCUO4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 10:55:38 -0400
-Received: from mail-07.jhb.wbs.co.za ([196.2.97.4]:38528 "EHLO
-	mail-07.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbYCUOzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 10:55:38 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmkFAKxo40fEAmHEZGdsb2JhbACRABwpmFc
-From: Bongani Hlope <bonganilinux@mweb.co.za>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
-Date: Fri, 21 Mar 2008 16:55:30 +0200
-User-Agent: KMail/1.9.9
-Cc: Robert Fitzsimons <robfitz@273k.net>, video4linux-list@redhat.com,
+	Fri, 21 Mar 2008 10:56:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47051 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754321AbYCUO4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 10:56:45 -0400
+Date: Fri, 21 Mar 2008 15:55:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: venkatesh.pallipadi@intel.com
+Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
        linux-kernel@vger.kernel.org
-References: <200802171036.19619.bonganilinux@mweb.co.za> <200803172351.56717.bonganilinux@mweb.co.za> <20080320142212.2361f6d8@gaivota>
-In-Reply-To: <20080320142212.2361f6d8@gaivota>
+Subject: Re: [patch 00/13] x86: PAT support updated - v3
+Message-ID: <20080321145505.GA4868@elte.hu>
+References: <20080319000012.439150000@intel.com> <20080321132417.GJ27245@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803211655.31085.bonganilinux@mweb.co.za>
-X-Original-Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
-X-Scan-Signature: 14903c0132c7a84a2dd22db62a26812f
+In-Reply-To: <20080321132417.GJ27245@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 March 2008 19:22:12 Mauro Carvalho Chehab wrote:
-> On Mon, 17 Mar 2008 23:51:56 +0200
->
-8<
->
-> Could you please test this small patch?
->
-> diff -r 134d43b48b4a linux/drivers/media/video/bt8xx/bttv-driver.c
-> --- a/linux/drivers/media/video/bt8xx/bttv-driver.c	Tue Mar 18 23:46:37
-> 2008 +0000 +++ b/linux/drivers/media/video/bt8xx/bttv-driver.c	Thu Mar 20
-> 14:20:54 2008 -0300 @@ -3288,6 +3288,7 @@ static int bttv_open(struct inode
-> *inode
->  		return -ENOMEM;
->  	file->private_data = fh;
->  	*fh = btv->init;
-> +	fh->btv = btv;
->  	fh->type = type;
->  	fh->ov.setup_ok = 0;
->  	v4l2_prio_open(&btv->prio,&fh->prio);
->
->
-> Cheers,
-> Mauro
 
-Latest git with or without your patch still causes the oops..
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-The call trace that seems to be causing this oops is
+> > The patchset is against x86 testing from couple of days back.
+> 
+> thanks Venki, i've queued this up so that we can see how well it goes. 
+> It now looks a lot less dangerous and more compatible than it did 
+> before - but i'm sure there'll be issues nevertheless :-/
 
-radio
-|-> ioctl(
-       |->videodev.c:__video_do_ioctl
-          |->v4l1-compat.c:v4l_compat_translate_ioctl
-          |  case VIDIOCGTUNER: /*  get tuner information  */
-          | {
-          |      struct video_tuner      *tun = arg;
-          |
-          |      memset(&tun2,0,sizeof(tun2));
-          |__ err = drv(inode, file, VIDIOC_G_TUNER, &tun2);
-               |->videodev.c:__video_do_ioctl
-               |   case VIDIOC_G_TUNER:
-               |   {
-               |      struct v4l2_tuner *p=arg;
-               |     __u32 index=p->index;
-               |
-               |      if (!vfd->vidioc_g_tuner)
-               |          break;
-               |
-               |     memset(p,0,sizeof(*p));
-               |     p->index=index;
-               |
-               |     ret=vfd->vidioc_g_tuner(file, fh, p);
-               |_
-                  |-> bttv_driver.c:radio_g_tuner
-                  |  struct bttv_fh *fh = priv;
-                  |  struct bttv *btv = fh->btv;
-                  |  
-                  |  if (UNSET == bttv_tvcards[btv->c.type].tuner)
-                  |      return -EINVAL;
-                  |  if (0 != t->index)
-                  |    return -EINVAL;
-                  |  mutex_lock(&btv->lock); 
-                  |__
-                       |-> mutex.c:__mutex_lock_common 
-                       |  struct task_struct *task = current;
-                       |  struct mutex_waiter waiter;
-                       |  unsigned int old_val;
-                       |  unsigned long flags;
-                       |
-                       |  spin_lock_mutex(&lock->wait_lock, flags);
-                       |
-                       |  debug_mutex_lock_common(lock, &waiter);
-                       |  mutex_acquire(&lock->dep_map, subclass, 0, ip);
-                       |  debug_mutex_add_waiter(lock, &waiter, 
-task_thread_info(task));
-                       |
-                       |        /* add waiting tasks to the end of the 
-waitqueue (FIFO): */
-                       | list_add_tail(&waiter.list, &lock->wait_list); 
-                         ^^^^
-This is where it oops because lock->wait_list->next is NULL.
+no big issues so far, just a simple build fix for the !MTRR case below.
 
-BUT, changing: 
-memset(&tun2,0,sizeof(tun2));
-to
-memset(&tun2,-1,sizeof(tun2));
-in
-v4l1-compat.c:v4l_compat_translate_ioctl
-...
- case VIDIOCGTUNER:
+	Ingo
 
-changes
-lock->wait_list->next from being NULL to something else, and the oops move to 
-the next case statement i.e. VIDIOCGFREQ
+----------------->
+Subject: x86: PAT fix
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri Mar 21 15:42:28 CET 2008
 
+build fix for !CONFIG_MTRR.
 
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/mtrr.h |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-
-
+Index: linux-x86.q/include/asm-x86/mtrr.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/mtrr.h
++++ linux-x86.q/include/asm-x86/mtrr.h
+@@ -84,10 +84,9 @@ struct mtrr_gentry
+ 
+ #ifdef __KERNEL__
+ 
+-extern u8 mtrr_type_lookup(u64 addr, u64 end);
+-
+ /*  The following functions are for use by other drivers  */
+ # ifdef CONFIG_MTRR
++extern u8 mtrr_type_lookup(u64 addr, u64 end);
+ extern void mtrr_save_fixed_ranges(void *);
+ extern void mtrr_save_state(void);
+ extern int mtrr_add (unsigned long base, unsigned long size,
+@@ -101,6 +100,13 @@ extern void mtrr_ap_init(void);
+ extern void mtrr_bp_init(void);
+ extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
+ #  else
++static inline u8 mtrr_type_lookup(u64 addr, u64 end)
++{
++	/*
++	 * Return no-MTRRs:
++	 */
++	return 0xff;
++}
+ #define mtrr_save_fixed_ranges(arg) do {} while (0)
+ #define mtrr_save_state() do {} while (0)
+ static __inline__ int mtrr_add (unsigned long base, unsigned long size,
