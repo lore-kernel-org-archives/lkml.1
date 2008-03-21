@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYCUTXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbYCUTXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbYCUTXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 15:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbYCUTXE
+	id S1760962AbYCUTXf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbYCUTXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:23:04 -0400
-Received: from mga11.intel.com ([192.55.52.93]:19648 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755593AbYCUTXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:23:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,536,1199692800"; 
-   d="scan'208";a="308278912"
-Date: Fri, 21 Mar 2008 12:19:22 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
-       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 00/13] x86: PAT support updated - v3
-Message-ID: <20080321191921.GA23347@linux-os.sc.intel.com>
-References: <20080319000012.439150000@intel.com> <47E3B84C.6070808@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47E3B84C.6070808@zytor.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 21 Mar 2008 15:23:20 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:51803 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760310AbYCUTXT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 15:23:19 -0400
+Message-ID: <47E40B1C.30407@frugalware.org>
+Date: Fri, 21 Mar 2008 20:23:08 +0100
+From: Gabriel C <crazy@frugalware.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 06:29:48AM -0700, H. Peter Anvin wrote:
-> venkatesh.pallipadi@intel.com wrote:
-> >* UC_MINUS in PAT to provide backward compatibility to /dem/mem mmap users.
+Thomas Gleixner wrote:
+> On Fri, 21 Mar 2008, Gabriel C wrote:
+>>>> Also, can you please reapply the reverted clocksource patch ? I have
+>>>> the feeling that the acpi_pm one was the real problem which was
+>>>> triggered the modfied watchdog.
+>>> Sure I can , will do so in some minutes and let you know.
+>> It took a bit longer sorry but I have more infos now.
+>>
+>> The acpi_pm was not related to that I still get the problem.
+>>
+>> Of course I still can try to find the commit which magically fixed acpi_pm if you really want.
 > 
-> I have to say I think this looks like a good patchset.  However, I'd 
-> like a bit more clarification with regards to the above point?
+> Just if you are really bored. :) I would have asked if it had fixed
+> the TSC issue.
+>  
+>> It seems like it breaks only when you enable HT and only on 2 socket motherboards. 
+>> ( at least the ones I own , I know is old hardware but worked fine for me )
 > 
+> Hmm. I wonder why a dual socket board survives the initial sync test.
+>  
+>> Also disabling the second CPU and enabling HT works , enabling both
+>> CPUs and disabling HT works , booting with enabled HT and both CPUs
+>> but maxcpus=2 also works , booting with 2 CPUs and HT on breaks ,
+>> booting with both CPUs HT on but maxcpus=3 breaks also.
+>>
+>> Also I have another dual motherboard here 604 socket with 2 2,4 GHz
+>> Xeon's.  The motherboard has the storage controller somewhat broken
+>> but for a quick test it is still good :) and I see the same thing.
+>>
+>> Does that make any sense ?
+> 
+> Not really. Can you please revert the reverted revert again and run
+> 
+> http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
+> 
+> on your machine with all CPUs and HT enabled ?
 
-X seems to use (in that order)
-- mmap the range through /dev/mem
-- Set MTRR for the range to WC
+Sure , doing so now.
 
-I see this happening on one of my test systems with relatively new xorg.
+> 
+> Thanks,
+> 	tglx
 
-In this case, when mmap does the reserve for this range, if we give UC mapping
-then we will effectively negate the MTRR WC setting with the range being mapped
-UC. To accomodate this special use case, we give /dev/mem mmap (only when there
-are no other already existing mappings) a UC_MINUS attribute. With that,
-if and when X sets MTRR the range will become WC and until that time it will be
-UC. We ensure that all page table mappings use UC_MINUS for that range.
 
-Long term, we want X to switch to /proc/ of /sys interfaces. But, we can also
-provide backward compatibility for existing X usage like above.
-
-Thanks,
-Venki
+Gabriel
