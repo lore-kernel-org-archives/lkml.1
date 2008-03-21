@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYCUE2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYCUE3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYCUE2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 00:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYCUE2m
+	id S1756871AbYCUE3U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 00:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYCUE2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 00:28:42 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39666 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbYCUE2k (ORCPT
+	Fri, 21 Mar 2008 00:28:44 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36069 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837AbYCUE2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 00:28:40 -0400
-Message-ID: <47E3390A.7030308@jp.fujitsu.com>
-Date: Fri, 21 Mar 2008 13:26:50 +0900
+	Fri, 21 Mar 2008 00:28:42 -0400
+Message-ID: <47E338E5.3020504@jp.fujitsu.com>
+Date: Fri, 21 Mar 2008 13:26:13 +0900
 From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
@@ -21,7 +21,8 @@ CC: Gary Hade <garyhade@us.ibm.com>,
        Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
        rick.jones2@hp.com, linux-kernel@vger.kernel.org,
        linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: [PATCH 15/16] PCI slot: Trivial cleanups for slot.c (Not for mainline!)
+Subject: [PATCH 14/16] PCI slot: Change return value of pci_destroy_slot()
+ (Not for mainline!)
 References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com>
 In-Reply-To: <47E33472.1000602@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-2022-JP
@@ -30,40 +31,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some trivial cleanups for drivers/pci/slot.c.
+Since nobody checks the return value from pci_destroy_slot(), it
+should be void.
 
 Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
 ---
- drivers/pci/slot.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/pci/slot.c  |    4 +---
+ include/linux/pci.h |    2 +-
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
 Index: linux-2.6.25-rc6/drivers/pci/slot.c
 ===================================================================
 --- linux-2.6.25-rc6.orig/drivers/pci/slot.c
 +++ linux-2.6.25-rc6/drivers/pci/slot.c
-@@ -132,19 +132,16 @@ EXPORT_SYMBOL_GPL(pci_destroy_slot);
- 
- static int pci_slot_init(void)
- {
--	int result = 0;
- 	struct kset *pci_bus_kset;
- 
- 	pci_bus_kset = bus_get_kset(&pci_bus_type);
--
- 	pci_slots_kset = kset_create_and_add("slots", NULL,
- 						&pci_bus_kset->kobj);
- 	if (!pci_slots_kset) {
--		result = -ENOMEM;
--		printk(KERN_ERR "PCI: Slot initialization failure (%d)\n",
--			result);
-+		printk(KERN_ERR "PCI: Slot initialization failure\n");
-+		return -ENOMEM;
- 	}
--	return result;
-+	return 0;
+@@ -118,7 +118,7 @@ struct pci_slot *pci_create_slot(struct 
  }
+ EXPORT_SYMBOL_GPL(pci_create_slot);
  
- subsys_initcall(pci_slot_init);
+-int pci_destroy_slot(struct pci_slot *slot)
++void pci_destroy_slot(struct pci_slot *slot)
+ {
+ 	pr_debug("%s: decreased refcount to %d on %x:%d\n", __func__,
+ 		 atomic_read(&slot->kobj.kref.refcount) - 1, slot->bus->number,
+@@ -127,8 +127,6 @@ int pci_destroy_slot(struct pci_slot *sl
+ 	down_write(&pci_bus_sem);
+ 	kobject_put(&slot->kobj);
+ 	up_write(&pci_bus_sem);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(pci_destroy_slot);
+ 
+Index: linux-2.6.25-rc6/include/linux/pci.h
+===================================================================
+--- linux-2.6.25-rc6.orig/include/linux/pci.h
++++ linux-2.6.25-rc6/include/linux/pci.h
+@@ -493,7 +493,7 @@ struct pci_bus *pci_add_new_bus(struct p
+ 				int busnr);
+ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 				 const char *name);
+-int pci_destroy_slot(struct pci_slot *slot);
++void pci_destroy_slot(struct pci_slot *slot);
+ int pci_scan_slot(struct pci_bus *bus, int devfn);
+ struct pci_dev *pci_scan_single_device(struct pci_bus *bus, int devfn);
+ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus);
 
 
