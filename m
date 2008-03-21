@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762086AbYCUWno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbYCUWpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762086AbYCUWno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbYCUWna
+	id S1762036AbYCUWpr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbYCUWpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:43:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57124
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756118AbYCUWn3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:43:29 -0400
-Date: Fri, 21 Mar 2008 15:43:40 -0700 (PDT)
-Message-Id: <20080321.154340.210302849.davem@davemloft.net>
-To: nix.or.die@googlemail.com
-Cc: linux-kernel@vger.kernel.org, vladislav.yasevich@hp.com, sri@us.ibm.com,
-       netdev@vger.kernel.org
-Subject: Re: Commit 270637abff0cdf848b910b9f96ad342e1da61c66 introduced a
- lot new compiler warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47E40856.6020902@googlemail.com>
-References: <47E40856.6020902@googlemail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 18:45:39 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:34660 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757049AbYCUWpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:45:39 -0400
+Message-Id: <20080321224343.041836908@sous-sol.org>
+References: <20080321224250.144333319@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 21 Mar 2008 15:43:06 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 16/76] MIPS: Mark all but i8259 interrupts as no-probe.
+Content-Disposition: inline; filename=mips-mark-all-but-i8259-interrupts-as-no-probe.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gabriel C <nix.or.die@googlemail.com>
-Date: Fri, 21 Mar 2008 20:11:18 +0100
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-> I noticed the following new compile warnings on current git head introduced by 270637abff0cdf848b910b9f96ad342e1da61c66 :
+From: Ralf Baechle <ralf@linux-mips.org>
 
-Please include netdev@vger.kernel.org for networking bug
-reports in the future, thank you.
+Use set_irq_noprobe() to mark all MIPS interrupts as non-probe.  Override that
+default for i8259 interrupts.
 
-Thanks for the report, I'll push the following fix:
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Acked-and-tested-by: Rob Landley <rob@landley.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ arch/mips/kernel/i8259.c |    4 +++-
+ arch/mips/kernel/irq.c   |    5 +++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
-commit 1233823b0847190976d69a86d7bb1287992ba2c7
-Author: David S. Miller <davem@davemloft.net>
-Date:   Fri Mar 21 15:40:47 2008 -0700
-
-    [SCTP]: Fix build warnings with IPV6 disabled.
-    
-    Introduced by 270637abff0cdf848b910b9f96ad342e1da61c66
-    ("[SCTP]: Fix a race between module load and protosw access")
-    
-    Reported by Gabriel C:
-    
-    In file included from net/sctp/sm_statetable.c:50:
-    include/net/sctp/sctp.h: In function 'sctp_v6_pf_init':
-    include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
-    In file included from net/sctp/sm_statefuns.c:62:
-    include/net/sctp/sctp.h: In function 'sctp_v6_pf_init':
-    include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
-     ...
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
-index 57ed3e3..ea80673 100644
---- a/include/net/sctp/sctp.h
-+++ b/include/net/sctp/sctp.h
-@@ -389,7 +389,7 @@ void sctp_v6_del_protocol(void);
+--- linux-2.6.24.3.orig/arch/mips/kernel/i8259.c
++++ linux-2.6.24.3/arch/mips/kernel/i8259.c
+@@ -338,8 +338,10 @@ void __init init_i8259_irqs(void)
  
- #else /* #ifdef defined(CONFIG_IPV6) */
+ 	init_8259A(0);
  
--static inline void sctp_v6_pf_init(void) { return 0; }
-+static inline void sctp_v6_pf_init(void) { return; }
- static inline void sctp_v6_pf_exit(void) { return; }
- static inline int sctp_v6_protosw_init(void) { return 0; }
- static inline void sctp_v6_protosw_exit(void) { return; }
+-	for (i = I8259A_IRQ_BASE; i < I8259A_IRQ_BASE + 16; i++)
++	for (i = I8259A_IRQ_BASE; i < I8259A_IRQ_BASE + 16; i++) {
+ 		set_irq_chip_and_handler(i, &i8259A_chip, handle_level_irq);
++		set_irq_probe(i);
++	}
+ 
+ 	setup_irq(I8259A_IRQ_BASE + PIC_CASCADE_IR, &irq2);
+ }
+--- linux-2.6.24.3.orig/arch/mips/kernel/irq.c
++++ linux-2.6.24.3/arch/mips/kernel/irq.c
+@@ -145,6 +145,11 @@ __setup("nokgdb", nokgdb);
+ 
+ void __init init_IRQ(void)
+ {
++	int i;
++
++	for (i = 0; i < NR_IRQS; i++)
++		set_irq_noprobe(i);
++
+ 	arch_init_irq();
+ 
+ #ifdef CONFIG_KGDB
+
+-- 
