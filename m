@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbYCUREZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYCURGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbYCUREZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbYCUREN
+	id S1759873AbYCURGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbYCURG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:04:13 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:21357 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755878AbYCUREL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:04:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6FBGHeOQe7w2SPc8QqeAU4wwHO7T9kkMXgYN07XDja+W1nprIhPxA91wykc/VSxPWqpB8eS1+dkKGoMbIZatBb2fIuOVjpzHMOhyF49bjv3bJf1YsTgTIfAlNBqevqLyzDto2wnV2odGStB4ppNEzQlMK66OVY0y+uLHNgpgWNc=  ;
-X-YMail-OSG: TiQ26A0VM1l0flY80hunnJ6yJdsQlAjCDlel8T8neKGRl8T449DyoH76xYNbyGYwsfh9oMBA0g--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Date: Fri, 21 Mar 2008 10:04:04 -0700
-User-Agent: KMail/1.9.6
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, lm-sensors@lm-sensors.org
-References: <20080316184349.GA28543@khazad-dum.debian.net> <20080321003604.GC20788@khazad-dum.debian.net> <20080320180802.426ad2d1.akpm@linux-foundation.org>
-In-Reply-To: <20080320180802.426ad2d1.akpm@linux-foundation.org>
+	Fri, 21 Mar 2008 13:06:29 -0400
+Received: from www.tglx.de ([62.245.132.106]:52234 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754905AbYCURG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 13:06:29 -0400
+Date: Fri, 21 Mar 2008 18:06:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: andreas.herrmann3@amd.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [5/7] Readd rdmsrl_safe
+In-Reply-To: <20080312025331.B113B1B41D1@basil.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0803211756000.3781@apollo.tec.linutronix.de>
+References: <20080312353.598285931@firstfloor.org> <20080312025331.B113B1B41D1@basil.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200803211004.05106.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 March 2008, Andrew Morton wrote:
-> ./drivers/net/usb/pegasus.c
+On Wed, 12 Mar 2008, Andi Kleen wrote:
+> RDMSR for 64bit values with exception handling.
 > 
->   Possibly buggy: deadlockable (I assume)
+> Makes it easier to deal with 64bit valued MSRs. The old 64bit code
+> base had that too as checking_rdmsrl(), but it got dropped somehow. 
 
-Looks just unecessary to me ... ethtool MII ops get called from
-a task context, as I recall, and other drivers just rely on that.
+Yup, no users.
 
-- Dave
+> +#define rdmsrl_safe(msr,p) \
+> +	({ int __err; *(p) = native_read_msr_safe(msr, &__err); __err; })
+> +
 
-========= CUT HERE
-Remove superfluous in-atomic() check; ethtool MII ops are called
-from task context.
+static inline please
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/net/usb/pegasus.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+>  #define rdtscl(low)						\
+>  	((low) = (u32)native_read_tsc())
+>  
+> Index: linux/include/asm-x86/paravirt.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/paravirt.h
+> +++ linux/include/asm-x86/paravirt.h
+> @@ -687,6 +687,10 @@ static inline int paravirt_write_msr(uns
+>  	(*b) = _l >> 32;			\
+>  	_err; })
+>  
+> +#define rdmsrl_safe(msr, p) ({			\
+> +	int _err;				\
+> +	*(p) = paravirt_read_msr(msr, &_err);	\
+> +	_err; })
 
---- g26.orig/drivers/net/usb/pegasus.c	2008-03-21 08:53:28.000000000 -0700
-+++ g26/drivers/net/usb/pegasus.c	2008-03-21 08:54:07.000000000 -0700
-@@ -1128,12 +1128,8 @@ pegasus_get_settings(struct net_device *
- {
- 	pegasus_t *pegasus;
- 
--	if (in_atomic())
--		return 0;
--
- 	pegasus = netdev_priv(dev);
- 	mii_ethtool_gset(&pegasus->mii, ecmd);
--
- 	return 0;
- }
- 
+ditto
 
+Thanks,
+
+	tglx
