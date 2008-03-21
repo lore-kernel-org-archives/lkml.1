@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762255AbYCUUzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbYCUU4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762255AbYCUUzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbYCUUzp
+	id S1762324AbYCUU4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbYCUU4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:55:45 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:46094 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754803AbYCUUzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:55:45 -0400
-Message-ID: <47E420C5.1050407@frugalware.org>
-Date: Fri, 21 Mar 2008 21:55:33 +0100
-From: Gabriel C <crazy@frugalware.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 21 Mar 2008 16:56:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45714 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754803AbYCUU4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 16:56:14 -0400
+Date: Fri, 21 Mar 2008 21:55:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2/2] vmallocinfo: Add caller information
+Message-ID: <20080321205559.GC3509@elte.hu>
+References: <20080318222701.788442216@sgi.com> <20080318222827.519656153@sgi.com> <20080319214227.GA4454@elte.hu> <Pine.LNX.4.64.0803191659410.4645@schroedinger.engr.sgi.com> <20080321110008.GW20420@elte.hu> <Pine.LNX.4.64.0803211034140.18671@schroedinger.engr.sgi.com> <20080321184526.GB6571@elte.hu> <Pine.LNX.4.64.0803211212520.19558@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org>
-In-Reply-To: <47E40B1C.30407@frugalware.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803211212520.19558@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Thomas Gleixner wrote:
->> On Fri, 21 Mar 2008, Gabriel C wrote:
->>>>> Also, can you please reapply the reverted clocksource patch ? I have
->>>>> the feeling that the acpi_pm one was the real problem which was
->>>>> triggered the modfied watchdog.
->>>> Sure I can , will do so in some minutes and let you know.
->>> It took a bit longer sorry but I have more infos now.
->>>
->>> The acpi_pm was not related to that I still get the problem.
->>>
->>> Of course I still can try to find the commit which magically fixed acpi_pm if you really want.
->> Just if you are really bored. :) I would have asked if it had fixed
->> the TSC issue.
->>  
->>> It seems like it breaks only when you enable HT and only on 2 socket motherboards. 
->>> ( at least the ones I own , I know is old hardware but worked fine for me )
->> Hmm. I wonder why a dual socket board survives the initial sync test.
->>  
->>> Also disabling the second CPU and enabling HT works , enabling both
->>> CPUs and disabling HT works , booting with enabled HT and both CPUs
->>> but maxcpus=2 also works , booting with 2 CPUs and HT on breaks ,
->>> booting with both CPUs HT on but maxcpus=3 breaks also.
->>>
->>> Also I have another dual motherboard here 604 socket with 2 2,4 GHz
->>> Xeon's.  The motherboard has the storage controller somewhat broken
->>> but for a quick test it is still good :) and I see the same thing.
->>>
->>> Does that make any sense ?
->> Not really. Can you please revert the reverted revert again and run
->>
->> http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
->>
->> on your machine with all CPUs and HT enabled ?
+
+* Christoph Lameter <clameter@sgi.com> wrote:
+
+> > the best i found for lockdep was to include a fair number of them, 
+> > and to skip the top 3. struct vm_area that vmalloc uses isnt 
+> > space-critical, so 4-8 entries with a 3 skip would be quite ok. (but 
+> > can be more than that as well)
 > 
-> Sure , doing so now.
-> 
+> STACKTRACE depends on STACKTRACE_SUPPORT which is not available on all 
+> arches? alpha blackfin ia64 etc are missing it?
 
-Here the result on 2.6.25-rc6-00243-g028011e ( it was running 30++ minutes the time I was away for food =) )
+one more reason for them to implement it.
 
-...
+> I thought there were also issues on x86 with optimizations leading to 
+> weird stacktraces?
 
- 4 CPUs, running 4 parallel test-tasks.
-checking for time-warps via:
-- read time stamp counter (RDTSC) instruction (cycle resolution)
-- gettimeofday (TOD) syscall (usec resolution)
-- clock_gettime(CLOCK_MONOTONIC) syscall (nsec resolution)
+at most there can be extra stack trace entries. This is for debugging, 
+so if someone wants exact stacktraces, FRAME_POINTERS will certainly 
+improve them.
 
-| 1.46 us, TSC-warps:0 | 16.01 us, TOD-warps:0 | 16.10 us, CLOCK-warps:0
-
-...
-
-Gabriel
+	Ingo
