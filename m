@@ -1,80 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbYCUSLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760543AbYCUSNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbYCUSLy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760792AbYCUSLm
+	id S1760543AbYCUSNh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbYCUSN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:11:42 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:37118 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760781AbYCUSLl (ORCPT
+	Fri, 21 Mar 2008 14:13:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60263 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756191AbYCUSN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:11:41 -0400
-Message-ID: <47E3FA4F.9060509@frugalware.org>
-Date: Fri, 21 Mar 2008 19:11:27 +0100
-From: Gabriel C <crazy@frugalware.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org>
-In-Reply-To: <47E3E66F.9040006@frugalware.org>
+	Fri, 21 Mar 2008 14:13:27 -0400
+Date: Fri, 21 Mar 2008 11:12:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Timur Tabi <timur@freescale.com>
+Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
+Message-Id: <20080321111228.95a7d9ab.akpm@linux-foundation.org>
+In-Reply-To: <47E3DE6E.2050801@freescale.com>
+References: <12059526271941-git-send-email-yorksun@freescale.com>
+	<12059526274026-git-send-email-yorksun@freescale.com>
+	<20080320152708.23c6c734.akpm@linux-foundation.org>
+	<47E3DE6E.2050801@freescale.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Thomas Gleixner wrote:
->> On Fri, 21 Mar 2008, Gabriel C wrote:
->>  
->>>> still hangs when I boot with clocksource=acpi_pm so that seems to
->>>> be introduced in a different commit.
->>>>
->>>> I will try to bisect this hang also , most probably on weekend.
->>>>
->>> Correction on this one.
->>>
->>> Current git head boots just fine with clocksource=acpi_pm here , I
->>> just don't know which commit fixed it.
->> Hmm. Very dubious. I'm a bit afraid of self healing problems. It would
->> be interesting to find the commit which fixed the acpi_pm timer
->> problem unvoluntary.
+On Fri, 21 Mar 2008 11:12:30 -0500 Timur Tabi <timur@freescale.com> wrote:
+
+> Andrew Morton wrote:
 > 
-> I can try to find it.
+> >> +static struct diu_hw dr = {
+> >> +	.mode = MFB_MODE1,
+> >> +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+> >> +};
+> > 
+> > I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
+> > do know that its documentation is crap.
 > 
->> Also, can you please reapply the reverted clocksource patch ? I have
->> the feeling that the acpi_pm one was the real problem which was
->> triggered the modfied watchdog.
+> Yes, "__SPIN_LOCK_UNLOCKED(old_style_spin_init)" is wrong.  We'll fix it.
 > 
-> Sure I can , will do so in some minutes and let you know.
+> >  static struct diu_hw dr = {
+> >  	.mode = MFB_MODE1,
+> > -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+> > +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
+> >  };
+> 
+> Yes, this is better.  Did you already make this change when you applied it to
+> your -mm repo?
 
-It took a bit longer sorry but I have more infos now.
+I did:
 
-The acpi_pm was not related to that I still get the problem.
-
-Of course I still can try to find the commit which magically fixed acpi_pm if you really want.
-
-It seems like it breaks only when you enable HT and only on 2 socket motherboards. 
-( at least the ones I own , I know is old hardware but worked fine for me )
-
-Also disabling the second CPU and enabling HT works , enabling both CPUs and disabling HT works ,
-booting with enabled HT and both CPUs but maxcpus=2 also works , booting with 2 CPUs and HT on breaks ,
-booting with both CPUs HT on but maxcpus=3 breaks also.
-
-Also I have another dual motherboard here 604 socket with 2 2,4 GHz Xeon's.
-The motherboard has the storage controller somewhat broken but for a quick test it is still good :) and I see the
-same thing.
-
-Does that make any sense ?
+--- a/drivers/video/fsl-diu-fb.c~fbdev-driver-for-freescale-8610-and-5121-diu-fix
++++ a/drivers/video/fsl-diu-fb.c
+@@ -274,7 +274,7 @@ static struct mfb_info mfb_template[] = 
  
-Also all that tested on 2.6.25-rc6-00224-gae51801-dirty ( dirty while I reverted the revert =) )
+ static struct diu_hw dr = {
+ 	.mode = MFB_MODE1,
+-	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
++	.reg_lock = __SPIN_LOCK_UNLOCKED(dr.reg_lock),
+ };
+ 
+ static struct diu_pool pool;
 
-Gabriel
+> > GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+> 
+> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
+
+No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
+and misleading.  GFP_DMA is already atomic; the only effect of adding
+GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
+
+Don't wory about it ;)
+
+>  If so, this
+> combination is used a lot in the kernel today.
+> 
+> >> +	if (virt) {
+> >> +		*phys = virt_to_phys(virt);
+> >> +		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
+> >> +		memset(virt, 0, size);
+> > 
+> > Could have used __GFP_ZERO, I guess.
+> 
+> I had completely forgotten about __GFP_ZERO.  Thanks.
+> 
+> >> +	virt = (void *) rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
+> > 
+> > hm, I'd have expected checkpatch to whine about the space after the cast
+> > there.  Whatever.
+> 
+> I thought a space after a cast is the right thing to do?
+
+Last time I grepped, no-space is a lot more common.
+
+> > please take a look, and please use checkpatch on all future patches.
+> 
+> Sorry, we forgot to run it again after our second version of the patch.
+> 
+> >> +static void free_irq_local(int irq)
+> >> +{
+> >> +	struct diu *hw = dr.diu_reg;
+> >> +
+> >> +	/* Disable all LCDC interrupt */
+> >> +	out_be32(&(hw->int_mask), 0x1f);
+> >> +
+> >> +	free_irq(irq, 0);
+> >> +}
+> > 
+> > and the free_irq() will go splat?
+> 
+> Sorry, but I don't understand what's wrong with this code.
+
+You snipped a bit.  Earlier, request_irq() failures were ignored.  So I
+think there's a code path where free_irq_local() can free an IRQ which this
+driver never owned.
+
+> We'll make the other changes you've suggested and repost.
+
