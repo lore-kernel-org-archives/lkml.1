@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761535AbYCUUgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbYCUUHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761535AbYCUUgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYCUUgh
+	id S1761585AbYCUUHg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761464AbYCUUHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:36:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58532 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755215AbYCUUgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:36:36 -0400
-Message-ID: <47E41C50.4020406@garzik.org>
-Date: Fri, 21 Mar 2008 16:36:32 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 21 Mar 2008 16:07:09 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:26305 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761455AbYCUUHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 16:07:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=nhU3l81JbbhytjFrSy+djlcynMCEpr5+O5GOXeYHAb4PjzKB28TEIP9zIweqcgHrCBfNb5cXYbqiyIE1jMX3aHmfXIc3aSiuNTqCMDf6hxX35Uwei09rH0bWs6WtdQK5ShcKmVQJm5B0ghYQqjoh1S31VBMW5+vBPf3J3b3oGk0=
+Date: Fri, 21 Mar 2008 16:07:01 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Input: add flags bitfield
+Message-ID: <20080321160048.ZZRA012@mailhub.coreip.homeip.net>
+References: <1205698451-1640-1-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
-Subject: Re: [SCSI] fix media change events for polled devices
-References: <200803211559.m2LFxPi6017869@hera.kernel.org>	 <47E3EC67.4050404@garzik.org> <1206128662.2961.37.camel@localhost.localdomain>
-In-Reply-To: <1206128662.2961.37.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1205698451-1640-1-git-send-email-hmh@hmh.eng.br>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Fri, 2008-03-21 at 13:12 -0400, Jeff Garzik wrote:
->> Linux Kernel Mailing List wrote:
->>>     [SCSI] fix media change events for polled devices
->>>     
->>>     Commit:
->>>       a341cd0f (SCSI: add asynchronous event notification API)
->>>     breaks:
->>>       285e9670 (sr,sd: send media state change modification events)
->>>     by introducing an event filter, which is removed here, to make
->>>     events, we are depending on, happen again.
->>
->> By simply reading the code history, it is trivial to verify that this 
->> description is false:
->>
->> Commit 285e9670 depends on a341cd0f, so by definition it is 285e9670 -- 
->> or rather the incomplete update of your original patch that resulted in 
->> 285e9670 -- that is broken.
->>
->> Since commit 285e9670 is broken, you fixed the wrong thing.
->>
->> Furthermore, you broke a userspace interface that was introduced by 
->> a341cd0f, by removing the event filter controlled by userspace.
+Hi Henrique,
+
+On Sun, Mar 16, 2008 at 05:14:11PM -0300, Henrique de Moraes Holschuh wrote:
+> Add a flags bitfield to the input_dev structure, which can be used for
+> internal coordination among kernel input devices and input handlers without
+> the need to use ever-expanding blacklists on the input handlers.
 > 
->> Did anyone bother to read any code at all?
+> Add initial flag bits which allows an input driver to request that joystick
+> emulation (joydev) or mouse emulation (mousedev) not be attached to an
+> input device.
 > 
-> Yes, I did.  The userspace interface has never worked as a writeable
-> attribute because it's read only (as Kay has pointed out several times).
-> Based on that, I just #if'd out the filter code to get polled media
-> events working again.
-
-It has a show attribute and was obviously intended as a writable 
-interface (and I should know, I wrote it).
-
-
-> The filter can be put back with a better discriminator for 2.6.26
+> This will be used by accelerometer drivers exporting a raw interface which
+> is not to be used as a joystick device (not to confuse this with the usual
+> fuzzed joystick interface these drivers export for enhanced Neverball
+> productivity), for example.
 > 
->> When 285e9670 was updated for the scsi_evt_* interface, it should have 
->> initialized the supported_events mask.
-> 
-> That would break HAL ... it's using the presence of the media_event flag
-> in the variable to indicate it doesn't need to poll.  We need two flags,
-> one for polling and one for AN.
 
-Oh for pete's sake.  How hard is it to create a second bit _and_ keep 
-the existing AN featureset working?
+I'd rather not apply this patch because it pushes kowledge of existing
+input interfaces into device drivers. What we could do instead is add
+a 'type' field to the input device structure and then input interfaces
+(evdev/mousedev, etc) could have an option of matching either by device
+type or by device capabilities or both. Your raw devices could have type
+of accelerometer and joydev would bind to devices with type "joystick"
+or "unknown" + certain capabilities. Will this work?
 
-_YOU_ are the one that broke this stuff in the first place, can you 
-please take two seconds to fix it without breaking other stuff?
-
-	Jeff
-
-
-
+-- 
+Dmitry
