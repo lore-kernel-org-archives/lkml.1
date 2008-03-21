@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbYCUXQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765148AbYCUXRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933055AbYCUXQj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764463AbYCUW5u
+	id S1765148AbYCUXRJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763343AbYCUXBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:57:50 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:49184 "EHLO
+	Fri, 21 Mar 2008 19:01:04 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:49213 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764446AbYCUW5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:57:47 -0400
-Message-Id: <20080321224449.868525871@sous-sol.org>
+	id S932160AbYCUXBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 19:01:00 -0400
+Message-Id: <20080321224412.552492999@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:58 -0700
+Date: Fri, 21 Mar 2008 15:43:33 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
-       davem@davemloft.net, Eric Leblond <eric@inl.fr>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>, Tony Luck <tony.luck@intel.com>,
+       Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Pagano <mpagano@gentoo.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 68/76] NETFILTER: nfnetlink_log: fix computation of netlink skb size
-Content-Disposition: inline; filename=netfilter-nfnetlink_log-fix-computation-of-netlink-skb-size.patch
+Subject: [patch 43/76] moduleparam: fix alpha, ia64 and ppc64 compile failures
+Content-Disposition: inline; filename=moduleparam-fix-alpha-ia64-and-ppc64-compile-failures.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,32 +39,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Eric Leblond <eric@inl.fr>
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-Upstream commit 7000d38d:
+[upstream commit: 91d35dd9]
 
-This patch is similar to nfnetlink_queue fixes. It fixes the computation
-of skb size by using NLMSG_SPACE instead of NLMSG_ALIGN.
+On alpha, ia64 and ppc64 only relocations to local data can go into
+read-only sections. The vast majority of module parameters use the global
+generic param_set_*/param_get_* functions, so the 'const' attribute for
+struct kernel_param is not only useless, but it also causes compile
+failures due to 'section type conflict' in those rare cases where
+param_set/get are local functions.
 
-Signed-off-by: Eric Leblond <eric@inl.fr>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+This fixes http://bugzilla.kernel.org/show_bug.cgi?id=8964
+
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Adrian Bunk <bunk@stusta.de>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Pagano <mpagano@gentoo.org>
+[chrisw@sous-sol.org: backport to 2.6.24.3]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ include/linux/moduleparam.h |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
- net/netfilter/nfnetlink_log.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/net/netfilter/nfnetlink_log.c
-+++ b/net/netfilter/nfnetlink_log.c
-@@ -594,7 +594,7 @@ nfulnl_log_packet(unsigned int pf,
- 	/* FIXME: do we want to make the size calculation conditional based on
- 	 * what is actually present?  way more branches and checks, but more
- 	 * memory efficient... */
--	size =    NLMSG_ALIGN(sizeof(struct nfgenmsg))
-+	size =    NLMSG_SPACE(sizeof(struct nfgenmsg))
- 		+ nla_total_size(sizeof(struct nfulnl_msg_packet_hdr))
- 		+ nla_total_size(sizeof(u_int32_t))	/* ifindex */
- 		+ nla_total_size(sizeof(u_int32_t))	/* ifindex */
+--- a/include/linux/moduleparam.h
++++ b/include/linux/moduleparam.h
+@@ -62,6 +62,16 @@ struct kparam_array
+ 	void *elem;
+ };
+ 
++/* On alpha, ia64 and ppc64 relocations to global data cannot go into
++   read-only sections (which is part of respective UNIX ABI on these
++   platforms). So 'const' makes no sense and even causes compile failures
++   with some compilers. */
++#if defined(CONFIG_ALPHA) || defined(CONFIG_IA64) || defined(CONFIG_PPC64)
++#define __moduleparam_const
++#else
++#define __moduleparam_const const
++#endif
++
+ /* This is the fundamental function for registering boot/module
+    parameters.  perm sets the visibility in sysfs: 000 means it's
+    not there, read bits mean it's readable, write bits mean it's
+@@ -71,7 +81,7 @@ struct kparam_array
+ 	static int __param_perm_check_##name __attribute__((unused)) =	\
+ 	BUILD_BUG_ON_ZERO((perm) < 0 || (perm) > 0777 || ((perm) & 2));	\
+ 	static const char __param_str_##name[] = prefix #name;		\
+-	static struct kernel_param const __param_##name			\
++	static struct kernel_param __moduleparam_const __param_##name	\
+ 	__attribute_used__						\
+     __attribute__ ((unused,__section__ ("__param"),aligned(sizeof(void *)))) \
+ 	= { __param_str_##name, perm, set, get, { arg } }
 
 -- 
