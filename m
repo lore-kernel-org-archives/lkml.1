@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYCUUlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761920AbYCUUmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762099AbYCUUlv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbYCUUln
+	id S1761920AbYCUUmL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762121AbYCUUlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:41:43 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:30512 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756593AbYCUUll (ORCPT
+	Fri, 21 Mar 2008 16:41:53 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42417 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762105AbYCUUlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:41:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=iSI2qA+yNjzRkCYK2O2FKmcmTAjz7D+fpel9OOQLPK4Hw9Bz6v50JGlt3m//L01IcPqIXGXNL5XlKL9SW4zY9sjMQfREaKOuSimKovOrKP/KwmdVbyxc0T6EywM5ebHlnQA+sxLcbt9qP5dGjWxnRueL/eMBltrim9ZhnQDGFg0=
-Date: Fri, 21 Mar 2008 23:41:06 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: relocate_kernel - use predefined PAGE_SIZE
-	instead of own alias
-Message-ID: <20080321204106.GB9424@cvg>
-References: <20080321201214.GA9424@cvg> <47E41805.5090602@zytor.com>
+	Fri, 21 Mar 2008 16:41:51 -0400
+Message-ID: <47E41D7D.9050409@zytor.com>
+Date: Fri, 21 Mar 2008 13:41:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47E41805.5090602@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ultrastor.c is a bit-rot
+References: <47DE8736.8020405@panasas.com> <20080317152344.GE26285@parisc-linux.org>
+In-Reply-To: <20080317152344.GE26285@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Fri, Mar 21, 2008 at 01:18:13PM -0700]
-> Cyrill Gorcunov wrote:
->> This patch does clean up relocate_kernel_(32|64).S a bit by getting rid
->> of local PAGE_ALIGNED macro. We should use well-known PAGE_SIZE instead
->> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->
-> Looks good!
->
-> 	-hpa
->
+Matthew Wilcox wrote:
+> 
+> VESA Local Bus.  It was (in some sense) the predecessor of AGP.  We
+> treat it like ISA inside the kernel.  On x86, EISA depends on ISA, so
+> the dependency, while wrong, does not affect any x86 users who have an
+> EISA card.
+> 
 
-Thanks Peter for review, btw we have in relocate_kernel_32.S
+Well, one can say VLB was to ISA (a souped-up ISA bus with some of the 
+worst limitations removed) what AGP is to PCI...
 
-188:	movl	%cr4, %eax
-189:	andl	$0, %eax
-190:	movl	%eax, %cr4
-
-but maybe would be better just replace it with
-
-	xorl	%eax, %eax
-	movl	%eax, %cr4
-
-or there is some nonobvious reason not to do so?
-
-		- Cyrill -
+	-hpa
