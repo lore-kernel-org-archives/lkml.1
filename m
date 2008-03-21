@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbYCURC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbYCUREZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760026AbYCURC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759833AbYCURCs
+	id S1759912AbYCUREZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbYCUREN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:02:48 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34195 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756004AbYCURCr (ORCPT
+	Fri, 21 Mar 2008 13:04:13 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:21357 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755878AbYCUREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:02:47 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47E3EA27.7020800@s5r6.in-berlin.de>
-Date: Fri, 21 Mar 2008 18:02:31 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
-MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	Fri, 21 Mar 2008 13:04:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=6FBGHeOQe7w2SPc8QqeAU4wwHO7T9kkMXgYN07XDja+W1nprIhPxA91wykc/VSxPWqpB8eS1+dkKGoMbIZatBb2fIuOVjpzHMOhyF49bjv3bJf1YsTgTIfAlNBqevqLyzDto2wnV2odGStB4ppNEzQlMK66OVY0y+uLHNgpgWNc=  ;
+X-YMail-OSG: TiQ26A0VM1l0flY80hunnJ6yJdsQlAjCDlel8T8neKGRl8T449DyoH76xYNbyGYwsfh9oMBA0g--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-References: <20080320192719.6a32386e.akpm@linux-foundation.org>	<Pine.LNX.4.44L0.0803202301140.16520-100000@netrider.rowland.org>	<20080320201723.b87b3732.akpm@linux-foundation.org> <200803220011.CEC82820.QSOtJOVFFHFMLO@I-love.SAKURA.ne.jp> <47E3E83F.3070508@s5r6.in-berlin.de>
-In-Reply-To: <47E3E83F.3070508@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Fri, 21 Mar 2008 10:04:04 -0700
+User-Agent: KMail/1.9.6
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
+       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>, lm-sensors@lm-sensors.org
+References: <20080316184349.GA28543@khazad-dum.debian.net> <20080321003604.GC20788@khazad-dum.debian.net> <20080320180802.426ad2d1.akpm@linux-foundation.org>
+In-Reply-To: <20080320180802.426ad2d1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200803211004.05106.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PS,
-I wrote:
-> Tetsuo Handa wrote:
->> So, it is impossible to know whether I am inside a spinlock or not.
->> OK. That's not what I want to do.
->>
->> I want to make sure that my code (not a device driver) is called only 
->> from a context where use of down()/mutex_lock()/kmalloc(GFP_KERNEL)/
->> get_user_pages()/kmap() etc. are permitted.
->> Is "if (in_atomic()) return;" check a correct method for avoiding 
->> deadlocks when my code was accidentally called from a context
->> where use of down()/mutex_lock()/kmalloc(GFP_KERNEL)/get_user_pages()/
->> kmap() etc. are not permitted?
+On Thursday 20 March 2008, Andrew Morton wrote:
+> ./drivers/net/usb/pegasus.c
+> 
+>   Possibly buggy: deadlockable (I assume)
 
-No.  Quoting Andrew:  "in_atomic() returns false inside spinlock on 
-non-preemptible kernels."
+Looks just unecessary to me ... ethtool MII ops get called from
+a task context, as I recall, and other drivers just rely on that.
 
-> You shouldn't sleep while holding a spinlock.  As soon as another thread 
+- Dave
 
-or interrupt handler or tasklet
+========= CUT HERE
+Remove superfluous in-atomic() check; ethtool MII ops are called
+from task context.
 
-> attempts to take the spinlock, it will be stuck in a busy-wait loop.
--- 
-Stefan Richter
--=====-==--- --== =-=-=
-http://arcgraph.de/sr/
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/net/usb/pegasus.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+--- g26.orig/drivers/net/usb/pegasus.c	2008-03-21 08:53:28.000000000 -0700
++++ g26/drivers/net/usb/pegasus.c	2008-03-21 08:54:07.000000000 -0700
+@@ -1128,12 +1128,8 @@ pegasus_get_settings(struct net_device *
+ {
+ 	pegasus_t *pegasus;
+ 
+-	if (in_atomic())
+-		return 0;
+-
+ 	pegasus = netdev_priv(dev);
+ 	mii_ethtool_gset(&pegasus->mii, ecmd);
+-
+ 	return 0;
+ }
+ 
+
