@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbYCUTtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYCUT6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbYCUTtq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 15:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYCUTtg
+	id S1755525AbYCUT6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYCUT6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:49:36 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47389 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbYCUTtf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:49:35 -0400
-Date: Fri, 21 Mar 2008 19:49:31 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neilb@suse.de, akpm@linux-foundation.org,
-       hch@infradead.org, linux-security-module@vger.kernel.org,
-       jmorris@namei.org
-Subject: Re: r-o bind in nfsd
-Message-ID: <20080321194931.GX10722@ZenIV.linux.org.uk>
-References: <E1Jciie-0001E6-Dx@pomaz-ex.szeredi.hu> <20080321155451.GU10722@ZenIV.linux.org.uk> <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu> <20080321163520.GV10722@ZenIV.linux.org.uk> <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu> <E1Jckjd-0001X8-IM@pomaz-ex.szeredi.hu> <20080321181105.GW10722@ZenIV.linux.org.uk> <E1JcmLz-0001n1-RC@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
+	Fri, 21 Mar 2008 15:58:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37268 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753899AbYCUT6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 15:58:23 -0400
+Date: Fri, 21 Mar 2008 20:58:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
+Message-ID: <20080321195813.GC16179@elte.hu>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080312003227.a94580e8.akpm@linux-foundation.org> <4351.1205374751@turing-police.cc.vt.edu> <20080321134128.GO27245@elte.hu> <3343.1206128318@turing-police.cc.vt.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1JcmLz-0001n1-RC@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <3343.1206128318@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 07:52:35PM +0100, Miklos Szeredi wrote:
-> > > > And having the vfsmount available within vfs_...() functions means,
-> > > > that the mnt_want_write() check can be moved inside, which means that
-> > > > callers get simpler and less likely to be buggy.  Those are all
-> > > > advantages IMO, regardless of any security module issues.
-> > > 
-> > > Or we can introduce another set of exported functions (path_mkdir(),
-> > > ...), and leave vfs_...() alone.  And then the only question is if
-> > > LSM's can live with ordering change.
-> > 
-> > I really don't see the point of new helpers; especially since one doesn't
-> > have to _have_ vfsmount to use the old ones and since we don't have a lot
-> > of users of each of those to start with.
-> 
-> Traditionally we have syscalls, and nfsd.  Both of them want the
-> security checks, and I think nfsd wants the read-only mount checking
-> as well, but I'm not entirely sure.  Maybe we can handle that by just
-> making nfsd acquire a write-ref on the mount and keep it while it's
-> exported.
-> 
-> Then there's ecryptfs and unionfs, which probably need neither, but it
-> wouldn't hurt to do them anyway.
-> 
-> Still, even if there are only two callers, then moving stuff to up
-> doesn't make any sense.  Passing down a struct path is free for the
-> syscall case, it doesn't consume any stack space or extra CPU.  Do
-> please tell, why would that be such a bad thing?
 
-Because we'd been that way before; see the shitpiles around ->lookup()
-getting nameidata, etc.  You'll end up with some callers passing NULL
-as ->mnt since they don't have anything better to pass, some stuff
-called *from* the damn thing caring to check for ->mnt being NULL,
-some stuff not caring about what ->mnt is at all and some assuming
-that it's not NULL.  Which will lead to exploding combinations that
-won't be noticed until somebody steps into such config.
+* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
 
-As for the vfsmount-dependent checks (and any kind of MAC, while we are
-at it)...  They belong to callers, exactly because different callers may
-want different (amount of) checks.
+> git-bisect good ad42b55d36238ebb9fa4d7a538ef691a76397c46
+> # good: [56b412e63863ea82a5720315076c7dbd1d9888cd] x86: change x86 to use generic find_next_bit
+> git-bisect good 56b412e63863ea82a5720315076c7dbd1d9888cd
+> # good: [42de918f25dc9a49fb9688e22c2a3f2b156cc1bf] x86: prevent unconditional writes to DebugCtl MSR
+> git-bisect good 42de918f25dc9a49fb9688e22c2a3f2b156cc1bf
+> 
+> At this point, 'git bisect visualize' shows 9 commits left to bisect 
+> through, and all are dated 03/10 or later.  However, since 25-rc3-mm1 
+> had the problem, it had to be something in-tree as of 03/05.
+> 
+> Is it possible that the problem code was in the git-x86 tree when 
+> Andrew pulled for -rc3-mm1 and -rc5-mm1, but had been reverted by the 
+> time I grabbed the tree, so the /x86/base' was in fact *good* by that 
+> point?
+
+no, we frequently regenerate the x86.git tree so the dates have little 
+relevance. If for any particular pull, x86/base is good and x86/latest 
+is bad, then the bug is somewhere in those 200-300 patches inbetween. 
+They are lined up linearly so should be perfectly bisectable.
+
+	Ingo
