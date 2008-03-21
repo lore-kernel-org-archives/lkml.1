@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbYCUSv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbYCUSwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760636AbYCUSv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbYCUSvr
+	id S1760824AbYCUSwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbYCUSwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:51:47 -0400
-Received: from www.tglx.de ([62.245.132.106]:60668 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753357AbYCUSvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:51:46 -0400
-Date: Fri, 21 Mar 2008 19:49:45 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <crazy@frugalware.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47E3FA4F.9060509@frugalware.org>
-Message-ID: <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
- <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 21 Mar 2008 14:52:42 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:42318 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbYCUSwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 14:52:42 -0400
+Date: Fri, 21 Mar 2008 11:52:25 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>, shai@scalex86.org
+Subject: Re: [patch 4/4] x86: apic_is_clustered_box to indicate unsynched TSC's on multiboard vSMP systems
+Message-ID: <20080321185225.GA23139@localdomain>
+References: <20080320073740.GA9414@localdomain> <20080320074508.GE9414@localdomain> <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com> <20080320190240.GB6085@localdomain> <20080321091542.GE20420@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080321091542.GE20420@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Gabriel C wrote:
-> >> Also, can you please reapply the reverted clocksource patch ? I have
-> >> the feeling that the acpi_pm one was the real problem which was
-> >> triggered the modfied watchdog.
-> > 
-> > Sure I can , will do so in some minutes and let you know.
-> 
-> It took a bit longer sorry but I have more infos now.
-> 
-> The acpi_pm was not related to that I still get the problem.
-> 
-> Of course I still can try to find the commit which magically fixed acpi_pm if you really want.
+On Fri, Mar 21, 2008 at 10:15:42AM +0100, Ingo Molnar wrote:
+>
+>* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> >>  -       if (!is_vsmp_box() && (boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
+>> >>  +       if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && !is_vsmp_box())
+>> >>                 return 0;
+>
+>> Yes.  The first call is to state that TSC's are synced if it is an AMD 
+>> box and if it is _not_ a vSMPowered box (for the apic id lifting case 
+>> on Sun boxes), the second call is for _any_ vSMPowered system with 
+>> more than one board -- TSC's are not guaranteed to be synched in that 
+>> case.  Both these calls are needed.
+>
+>i suspect there are two questions here: firstly, your change only flips 
+>the condition around which should not have any effect _normally_. But 
+>the thing is that is_vsmp_box() has side-effects: it reads the PCI 
+>config space and sets a flag. It would be cleaner if there was a 
+>separate, explicit detect_vsmp_box() call early during bootup which did 
+>the PCI config space access, and is_vsmp_box() would only return the 
+>current state of the vsmp flag. Then your above change would be 
+>unnecessary.
 
-Just if you are really bored. :) I would have asked if it had fixed
-the TSC issue.
- 
-> It seems like it breaks only when you enable HT and only on 2 socket motherboards. 
-> ( at least the ones I own , I know is old hardware but worked fine for me )
+The above change -- the flipping of conditions -- is not _really_ necessary.
+The condition and call is needed however.  The flip was done while
+experimenting with the patch, since most vSMPowered machines today are mostly
+intel, the call to is_vsmp_box() could be avoided here on intel boxes.
+However this is only a trivial micro-optimization, as, we call
+is_vsmp_box() again even for intel boxes now.
 
-Hmm. I wonder why a dual socket board survives the initial sync test.
- 
-> Also disabling the second CPU and enabling HT works , enabling both
-> CPUs and disabling HT works , booting with enabled HT and both CPUs
-> but maxcpus=2 also works , booting with 2 CPUs and HT on breaks ,
-> booting with both CPUs HT on but maxcpus=3 breaks also.
-> 
-> Also I have another dual motherboard here 604 socket with 2 2,4 GHz
-> Xeon's.  The motherboard has the storage controller somewhat broken
-> but for a quick test it is still good :) and I see the same thing.
-> 
-> Does that make any sense ?
-
-Not really. Can you please revert the reverted revert again and run
-
-http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
-
-on your machine with all CPUs and HT enabled ?
+As for the observation about probing the pci space early during the bootup,
+we call vsmp_init() much earlier during the bootup, which calls is_vsmp_box(),
+does the pci probing and caches the result in the flag,  as you suggest.
+So the call in the above diff context does not access the pci config space
+as is.
 
 Thanks,
-	tglx
+Kiran
