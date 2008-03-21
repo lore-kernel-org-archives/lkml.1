@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYCVAGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYCVAHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbYCVAGk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 20:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYCVAGb
+	id S1754185AbYCVAHZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 20:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbYCVAHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 20:06:31 -0400
-Received: from igraine.blacknight.ie ([81.17.252.25]:37614 "EHLO
-	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYCVAGa (ORCPT
+	Fri, 21 Mar 2008 20:07:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28490 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753363AbYCVAHD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 20:06:30 -0400
-Date: Sat, 22 Mar 2008 00:05:57 +0000
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Bongani Hlope <bonganilinux@mweb.co.za>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Robert Fitzsimons <robfitz@273k.net>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] bttv: Add a radio compat_ioctl file operation.
-Message-ID: <20080322000557.GA21314@localhost>
-References: <200802171036.19619.bonganilinux@mweb.co.za> <200803172351.56717.bonganilinux@mweb.co.za> <20080320142212.2361f6d8@gaivota> <200803211655.31085.bonganilinux@mweb.co.za>
+	Fri, 21 Mar 2008 20:07:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,537,1199692800"; 
+   d="scan'208";a="221560504"
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803211655.31085.bonganilinux@mweb.co.za>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: 1JcrF6-0002jc-6Z
-X-blacknight-igraine-MailScanner: Found to be clean
-X-blacknight-igraine-MailScanner-SpamCheck: not spam,
-	SpamAssassin (not cached, score=1.608, required 7,
-	autolearn=disabled, HELO_LOCALHOST 4.50, RCVD_IN_NERDS_IE -3.50,
-	RCVD_IN_PBL 0.51, RDNS_NONE 0.10)
-X-blacknight-igraine-MailScanner-SpamScore: s
-X-MailScanner-From: robfitz@273k.net
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH, RFC] Create 'slot' sysfs attributein/sys/devices/system/cpu/cpuN/topology/
+Date: Fri, 21 Mar 2008 16:58:30 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com>
+In-reply-to: <20080319233140.GD16237@ldl.fc.hp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH, RFC] Create 'slot' sysfs attributein/sys/devices/system/cpu/cpuN/topology/
+Thread-Index: AciKGWkWI+JsGF1mSza4u/9FKmYOyQBlP1BQ
+References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Alex Chiang" <achiang@hp.com>
+Cc: <lenb@kernel.org>, <linux-ia64@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 21 Mar 2008 23:58:31.0974 (UTC) FILETIME=[7774CC60:01C88BAF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
----
- drivers/media/video/bt8xx/bttv-driver.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
++	if (ACPI_SUCCESS(acpi_get_handle(pr->handle, "_SUN", &handle))) {
++		status = acpi_evaluate_object(pr->handle,
++						"_SUN", NULL, &buffer);
++		if (ACPI_FAILURE(status))
++			object.integer.value = -1;
++	} else {
++		object.integer.value = -1;
++	}
++	arch_set_topology_slot(pr->id, object.integer.value);
++
+ 	if (!object.processor.pblk_address)
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No PBLK (NULL address)\n"));
+ 	else if (object.processor.pblk_length != 6)
 
+I'm still seeing these messages:
 
-Hi Bongani
+ "ACPI: Invalid PBLK length [0]"
 
-I only noticed that you might be using a 32 bit userspace, so the radio
-compat_ioctl needs to be implmented.
+for every cpu.  Presumably because "object" is a union and when
+you did the "object.integer.value = -1;" you scribbled on some bits
+that were needed in the subsequent code.
 
-Robert
-
-
-
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index 5404fcc..1bdb726 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -3601,6 +3601,7 @@ static const struct file_operations radio_fops =
- 	.read     = radio_read,
- 	.release  = radio_release,
- 	.ioctl	  = video_ioctl2,
-+	.compat_ioctl	= v4l_compat_ioctl32,
- 	.llseek	  = no_llseek,
- 	.poll     = radio_poll,
- };
--- 
-1.5.4.3.484.g60e3
-
+-Tony
