@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbYCUQZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbYCUQ2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbYCUQZV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 12:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbYCUQZE
+	id S1759016AbYCUQ2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 12:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYCUQ2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 12:25:04 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:21495 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754901AbYCUQZC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 12:25:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=rUrKvJmANJwHzMOkHZXmSJ0N6NEaD1vT9NH5uAwghglUzF2OqX3DdFGnwBVejUrsQTDBN4Gzy3BWrQ+3j/0OZ+1rRc4+oWcz73x46k3x9kxJZvkF2Zralqj8QjGsC5EzuCwDMOuoJBNKXHSti94NqNzqIAIb1ga5wFgHQjKgwpY=
-Message-ID: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com>
-Date: Fri, 21 Mar 2008 16:25:00 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: fglrx
+	Fri, 21 Mar 2008 12:28:22 -0400
+Received: from www.tglx.de ([62.245.132.106]:51940 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbYCUQ2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 12:28:22 -0400
+Date: Fri, 21 Mar 2008 17:26:56 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Gabriel C <crazy@frugalware.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+In-Reply-To: <47E3D322.1090902@googlemail.com>
+Message-ID: <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de>
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello; fair enough, I did ask ati about what I should do, but there
-wasn't much help. Overall its not pretty, but If you are impatient for
-ati to come out with an update then this should get you going(for 3D).
-The problem I see is, SELinux is going out of whack due to fglrx
-wanting a cap_t effective vector.  So on the secure side I probably
-wont use fglrx until there is support for the proper capability.
-or take you're approach and look at the open ati driver.
+On Fri, 21 Mar 2008, Gabriel C wrote:
+ 
+> > still hangs when I boot with clocksource=acpi_pm so that seems to
+> > be introduced in a different commit.
+> > 
+> > I will try to bisect this hang also , most probably on weekend.
+> > 
+> 
+> Correction on this one.
+>
+> Current git head boots just fine with clocksource=acpi_pm here , I
+> just don't know which commit fixed it.
 
+Hmm. Very dubious. I'm a bit afraid of self healing problems. It would
+be interesting to find the commit which fixed the acpi_pm timer
+problem unvoluntary.
 
--- 
-Justin P. Mattock
+Also, can you please reapply the reverted clocksource patch ? I have
+the feeling that the acpi_pm one was the real problem which was
+triggered the modfied watchdog.
+
+Thanks,
+
+	tglx
