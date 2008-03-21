@@ -1,94 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYCUO4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbYCUO5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbYCUO4z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 10:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYCUO4q
+	id S1758643AbYCUO5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 10:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYCUO5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 10:56:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47051 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754321AbYCUO4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 10:56:45 -0400
-Date: Fri, 21 Mar 2008 15:55:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: venkatesh.pallipadi@intel.com
-Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] x86: PAT support updated - v3
-Message-ID: <20080321145505.GA4868@elte.hu>
-References: <20080319000012.439150000@intel.com> <20080321132417.GJ27245@elte.hu>
+	Fri, 21 Mar 2008 10:57:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47866 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753024AbYCUO5g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 10:57:36 -0400
+Date: Fri, 21 Mar 2008 07:55:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Richard Henderson <rth@twiddle.net>, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
+In-Reply-To: <20080320081658.0B23826F995@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0803210744470.3020@woody.linux-foundation.org>
+References: <20080319211714.8B14226F995@magilla.localdomain> <20080319212024.EA03126F995@magilla.localdomain> <alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org> <20080320081658.0B23826F995@magilla.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321132417.GJ27245@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > The patchset is against x86 testing from couple of days back.
+On Thu, 20 Mar 2008, Roland McGrath wrote:
 > 
-> thanks Venki, i've queued this up so that we can see how well it goes. 
-> It now looks a lot less dangerous and more compatible than it did 
-> before - but i'm sure there'll be issues nevertheless :-/
+> The motivation is to get the arch function out of the code path for the
+> machine-independent request handling.  I want to be able to change the
+> implementation later without touching the arch code again.  
 
-no big issues so far, just a simple build fix for the !MTRR case below.
+If there is no stronger motivation than that, then I don't want to have 
+this ugly and unnecessary complication.
 
-	Ingo
+I really don't see the advantage of doing
 
------------------>
-Subject: x86: PAT fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Mar 21 15:42:28 CET 2008
+	/* We can't handle it, let the generic code sort it out */
+	return -ENOSYS;
 
-build fix for !CONFIG_MTRR.
+over a
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-x86/mtrr.h |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+	/* We can't handle it, let the generic code sort it out */
+	return ptrace_request(child, request, addr, data);
 
-Index: linux-x86.q/include/asm-x86/mtrr.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/mtrr.h
-+++ linux-x86.q/include/asm-x86/mtrr.h
-@@ -84,10 +84,9 @@ struct mtrr_gentry
- 
- #ifdef __KERNEL__
- 
--extern u8 mtrr_type_lookup(u64 addr, u64 end);
--
- /*  The following functions are for use by other drivers  */
- # ifdef CONFIG_MTRR
-+extern u8 mtrr_type_lookup(u64 addr, u64 end);
- extern void mtrr_save_fixed_ranges(void *);
- extern void mtrr_save_state(void);
- extern int mtrr_add (unsigned long base, unsigned long size,
-@@ -101,6 +100,13 @@ extern void mtrr_ap_init(void);
- extern void mtrr_bp_init(void);
- extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
- #  else
-+static inline u8 mtrr_type_lookup(u64 addr, u64 end)
-+{
-+	/*
-+	 * Return no-MTRRs:
-+	 */
-+	return 0xff;
-+}
- #define mtrr_save_fixed_ranges(arg) do {} while (0)
- #define mtrr_save_state() do {} while (0)
- static __inline__ int mtrr_add (unsigned long base, unsigned long size,
+in the arch-specific code, and I think the latter version is *much* 
+preferable if it avoids this whole unnecessary new abstraction crud and 
+odd testing in the generic part.
+
+> The reason I took the approach I did instead is incrementalism.
+> I can't change that signature without breaking about 22 arch builds.
+
+Don't worry about the arch builds. If that's your main worry and reason 
+for this, it's not worth it. Yes, ptrace changes, and yes, we may have 
+arch issues, but no, it's not that big of a deal. Just break them.
+
+Make sure x86[-64] works, and make sure that other architectures *can* 
+work (and explain it on linux-arch) when you have to fix something up, but 
+ptrace is a blip on the radar for people, it's not going to be a huge 
+issue.
+
+> I'm only really prepared to thoroughly verify a change on 2 of those
+> myself.
+
+.. and you really aren't expected to. It's why we have architecture 
+people: if there is a good reason for the change (ie it's not just some 
+churn for churns sake), it's largely up to them to make sure the code 
+works.
+
+Sure, you need to be able to explain the interface changes and answer 
+questions, but as mentioned, the ptrace code is not a big deal: it has 
+lots of tiny _details_, but it's not conceptually complex code.
+
+> So this ugliness seemed like a better bet than waiting for 20 more
+> arch sign-offs before any of it could go in.
+
+Really, that has never been a major concern. I will _happily_ break the 
+odd architectures if I see that it's a matter of changing over some 
+detail (ie it's not some fundamentally hard issue for an arch maintaner to 
+fix up).
+
+I think it's *wrong* to add a new an odd calling convention that is less 
+readable than what we have now, just to try to avoid something like this 
+that really isn't a big problem. It's not like we haven't broken 
+architectures over ptrace in the past, and it's also not like it's an area 
+that I think anybody has ever lost sleep over..
+
+			Linus
