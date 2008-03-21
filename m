@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYCUNTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbYCUNUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbYCUNTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 09:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYCUNSt
+	id S1757667AbYCUNUW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 09:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYCUNUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 09:18:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:13600 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755486AbYCUNSp (ORCPT
+	Fri, 21 Mar 2008 09:20:07 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:39135 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755374AbYCUNUG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 09:18:45 -0400
-Message-ID: <7c86c4470803210618j46d0dceay16757a90b9c7c48b@mail.gmail.com>
-Date: Fri, 21 Mar 2008 14:18:44 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] x86, ptrace: support pebs in ds.c and disable ptrace and ds support
-Cc: "Markus Metzger" <markus.t.metzger@intel.com>, ak@suse.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       markus.t.metzger@gmail.com, suresh.b.siddha@intel.com,
-       roland@redhat.com, akpm@linux-foundation.org, mtk.manpages@gmail.com
-In-Reply-To: <20080321125338.GB27245@elte.hu>
+	Fri, 21 Mar 2008 09:20:06 -0400
+X-Greylist: delayed 741 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Mar 2008 09:20:06 EDT
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [ugly patch] Save .15W-.5W by AHCI powersaving
+Date: Fri, 21 Mar 2008 08:49:56 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jeff Garzik <jeff@garzik.org>, Mark Lord <liml@rtr.ca>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca> <47C34472.3090706@garzik.org>
+In-Reply-To: <47C34472.3090706@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20080312125318.A15510@sedona.ch.intel.com>
-	 <20080321125338.GB27245@elte.hu>
+Message-Id: <200803210849.58035.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+Am Montag, 25. Februar 2008 23:42:58 schrieb Jeff Garzik:
+> > This is cool enough that we really ought to do a hardware-independent
+> > version, so that all SATA interfaces could benefit.  Especially ata_piix,
+> > but others too.
+> 
+> BTW we can also save power by allowing the user to choose to disable 
+> hotplugging support.  Then we can power down PHYs that are not in use.
 
-The PEBS support does not extend all the way to ptrace.
-It does not make sense anyway.
+Can't we power them up periodically to check for new hardware?
 
-I am fine with not using ptrace to expose BTS. But this needs
-to be exposed to user level somehow.  It is useful for many debugging
-tools.
+	Regards
+		Oliver
 
-
-On Fri, Mar 21, 2008 at 1:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Markus Metzger <markus.t.metzger@intel.com> wrote:
->
->  > Polish the ds.h interface and add support for PEBS.
->  >
->  > Guard DS support and the ptrace interface to BTS by CONFIG macros;
->  > disabled per default.
->  >
->  > Ds.c is meant to be the resource allocator for per-thread and per-cpu
->  > BTS and PEBS recording.
->  > It is used by ptrace to provide execution tracing of debugged tasks.
->  > It will be used by utrace for the same purpose.
->  > It will be used by profilers (e.g. perfmon2).
->  > It may be used by kernel debuggers to provide a kernel execution trace.
->
->  we could apply this if Roland Acks it - but i guess a precondition for
->  that is to not include more ptrace extensions and to also start working
->  on utrace support for it. Ptrace is something we want to reduce usage
->  of, not extend.
->
->         Ingo
->
