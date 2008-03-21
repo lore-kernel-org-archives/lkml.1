@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbYCUUhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbYCUUin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761977AbYCUUhv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761841AbYCUUhj
+	id S1762059AbYCUUin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759999AbYCUUif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:37:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49310 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761372AbYCUUhi (ORCPT
+	Fri, 21 Mar 2008 16:38:35 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53455 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759359AbYCUUie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:37:38 -0400
-Date: Fri, 21 Mar 2008 16:37:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
-In-Reply-To: <47E2C4CC.5050401@ct.jp.nec.com>
-Message-ID: <Pine.LNX.4.58.0803211635160.3220@gandalf.stny.rr.com>
-References: <47E2A63B.4020003@ct.jp.nec.com> <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com>
- <47E2C4CC.5050401@ct.jp.nec.com>
+	Fri, 21 Mar 2008 16:38:34 -0400
+Date: Fri, 21 Mar 2008 13:38:21 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix rcu_try_flip_waitack_needed() to prevent grace-period stall
+Message-ID: <20080321203821.GA16316@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The comment was correct -- need to make the code match the comment.
+Without this patch, if a CPU goes dynticks idle (and stays there forever)
+in just the right phase of preemptible-RCU grace-period processing,
+grace periods stall.  The offending sequence of events (courtesy
+of Promela/spin, at least after I got the liveness criterion coded
+correctly...) is as follows:
 
+o	CPU 0 is in dynticks-idle mode.  Its dynticks_progress_counter
+	is (say) 10.
 
-On Thu, 20 Mar 2008, Hiroshi Shimamoto wrote:
+o	CPU 0 takes an interrupt, so rcu_irq_enter() increments CPU 0's
+	dynticks_progress_counter to 11.
 
->
-> mm/slab.c:cache_alloc_refill()
-> 	if (unlikely(!ac->avail)) {
-> 		int x;
-> 		x = cache_grow(cachep, flags | GFP_THISNODE, cpu_to_node(*this_cpu), NULL, this_cpu);
->
-> 		/* cache_grow can reenable interrupts, then ac could change. */
-> 		ac = cpu_cache_get(cachep, *this_cpu);
->
-> The comment says, "ac could change", but it never if *this_cpu is same.
->
-> In cache_alloc_refill(), cpu_cache_get() should called with the valid cpu id
-> after cache_grow(). Because on !PREEMPT_RT, the array_cache is protected by
-> disabling irqs, so array_cache of other cpu shouldn't be accessed.
+o	CPU 1 is doing RCU grace-period processing in rcu_try_flip_idle(),
+	sees rcu_pending(), so invokes dyntick_save_progress_counter(),
+	which in turn takes a snapshot of CPU 0's dynticks_progress_counter
+	into CPU 0's rcu_dyntick_snapshot -- now set to 11.  CPU 1 then
+	updates the RCU grace-period state to rcu_try_flip_waitack().
 
-Ah, sorry I missed the !PREEMPT_RT part.
+o	CPU 0 returns from its interrupt, so rcu_irq_exit() increments
+	CPU 0's dynticks_progress_counter to 12.
 
->
-> >
-> >>  # define slab_irq_disable_rt(flags)	do { (void)(flags); } while (0)
-> >>  # define slab_irq_enable_rt(flags)	do { (void)(flags); } while (0)
-> >>  # define slab_spin_lock_irq(lock, cpu) \
-> >> @@ -160,8 +160,8 @@ DEFINE_PER_CPU_LOCKED(int, slab_irq_locks) = { 0, };
-> >>  	do { slab_irq_enable(cpu); (void) (flags); } while (0)
-> >>  # define slab_irq_disable_rt(cpu)	slab_irq_disable(cpu)
-> >>  # define slab_irq_enable_rt(cpu)	slab_irq_enable(cpu)
-> >> -# define slab_irq_disable_nort()	do { } while (0)
-> >> -# define slab_irq_enable_nort()		do { } while (0)
-> >> +# define slab_irq_disable_nort(cpu)	do { } while (0)
-> >> +# define slab_irq_enable_nort(cpu)	do { } while (0)
-> >
-> > And these are the PREEMPT_RT version. So basically, this patch is a nop
-> > for PREEMPT_RT. I doubt it will solve your bug ;-)
->
-> yes, it's nop. I'm sorry, I didn't show .config.
-> My kernel config is !PREEMPT_RT, it's same as the deadlock report.
-> I guess it's a problem only !PREEMPT_RT.
+o	CPU 1 later invokes rcu_try_flip_waitack(), which notices that
+	CPU 0 has not yet responded, and hence in turn invokes
+	rcu_try_flip_waitack_needed().  This function examines the
+	state of CPU 0's dynticks_progress_counter and rcu_dyntick_snapshot
+	variables, which it copies to curr (== 12) and snap (== 11),
+	respectively.
 
-Hmm, I'll have to look deeper into this on Monday (I'm off today -
-Friday).
+	Because curr!=snap, the first condition fails.
 
-Is this a bug in mainline? The !PREEMPT_RT case should be as close to
-mainline as possible, with no actual changes in object code. If this is
-not the case, then we need to fix that.
+	Because curr-snap is only 1 and snap is odd, the second
+	condition fails.
 
-I'll try to remember to take a look at this on Monday.
+	rcu_try_flip_waitack_needed() therefore incorrectly concludes
+	that it must wait for CPU 0 to explicitly acknowledge the
+	counter flip.
 
-Thanks,
+o	CPU 0 remains forever in dynticks-idle mode, never taking
+	any more hardware interrupts or any NMIs, and never running
+	any more tasks.  (Of course, -something- will usually eventually
+	happen, which might be why we haven't seen this one in the
+	wild.  Still should be fixed!)
 
--- Steve
+Therefore the grace period never ends.  Fix is to make the code match
+the comment, as shown below.  With this fix, the above scenario
+would be satisfied with curr being even, and allow the grace period
+to proceed.
 
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcupreempt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -urpNa -X dontdiff linux-2.6.25-rc6/kernel/rcupreempt.c linux-2.6.25-rc6-rcunohz-if/kernel/rcupreempt.c
+--- linux-2.6.25-rc6/kernel/rcupreempt.c	2008-03-16 17:45:17.000000000 -0700
++++ linux-2.6.25-rc6-rcunohz-if/kernel/rcupreempt.c	2008-03-18 20:27:47.000000000 -0700
+@@ -569,7 +569,7 @@ rcu_try_flip_waitack_needed(int cpu)
+ 	 * that this CPU already acknowledged the counter.
+ 	 */
+ 
+-	if ((curr - snap) > 2 || (snap & 0x1) == 0)
++	if ((curr - snap) > 2 || (curr & 0x1) == 0)
+ 		return 0;
+ 
+ 	/* We need this CPU to explicitly acknowledge the counter flip. */
