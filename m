@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbYCUW05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbYCUWbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761581AbYCUW05 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYCUW0s
+	id S1758913AbYCUWbL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYCUWa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:26:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38255 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752717AbYCUW0r (ORCPT
+	Fri, 21 Mar 2008 18:30:57 -0400
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:4564 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbYCUWa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:26:47 -0400
-Date: Fri, 21 Mar 2008 15:26:35 -0700
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] sysfs: allow the group is_visible() method to
-	return a mode and add an update API
-Message-ID: <20080321222635.GA2674@kroah.com>
-References: <1206134832.2961.64.camel@localhost.localdomain>
+	Fri, 21 Mar 2008 18:30:57 -0400
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on IA64 and x86
+References: <20080321061703.921169367@sgi.com>
+	<20080321061726.782068299@sgi.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 21 Mar 2008 23:30:54 +0100
+In-Reply-To: <20080321061726.782068299@sgi.com>
+Message-ID: <871w63iuap.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206134832.2961.64.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 21 Mar 2008 22:24:18.0190 (UTC) FILETIME=[4D89D2E0:01C88BA2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 04:27:12PM -0500, James Bottomley wrote:
-> We have a problem in scsi_transport_spi in that we need to customise
-> not only the visibility of the attributes, but also their mode.  Fix
-> this by making the is_visible() callback return a mode, with 0
-> indicating is not visible.
-> 
-> Also add a sysfs_update_group() API to allow us to change either the
-> visibility or mode of the files at any time on the fly.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
-> 
-> Greg, can I take this through SCSI, please ... assuming it's OK?  We
-> need this to fix up the SPI transport class.
+Christoph Lameter <clameter@sgi.com> writes:
 
-Sure.  But can you document that "update" field a bit more so we can
-remember what it means in the future?
+> This allows fallback for order 1 stack allocations. In the fallback
+> scenario the stacks will be virtually mapped.
 
-thanks,
+The traditional reason this was discouraged (people seem to reinvent
+variants of this patch all the time) was that there used 
+to be drivers that did __pa() (or equivalent) on stack addresses
+and that doesn't work with vmalloc pages.
 
-greg k-h
+I don't know if such drivers still exist, but such a change
+is certainly not a no-brainer
+
+-Andi
