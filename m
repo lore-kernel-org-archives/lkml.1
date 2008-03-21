@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbYCUNxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYCUNy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758359AbYCUNxO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 09:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYCUNw6
+	id S1758190AbYCUNy7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 09:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbYCUNyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 09:52:58 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37868 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753753AbYCUNw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 09:52:57 -0400
-From: Libor Pechacek <lpechacek@suse.cz>
-To: fubar@us.ibm.com
-Subject: [PATCH] bonding: Fix sysfs attribute handling
-Date: Fri, 21 Mar 2008 14:52:55 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+	Fri, 21 Mar 2008 09:54:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47882 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753490AbYCUNyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 09:54:50 -0400
+Date: Fri, 21 Mar 2008 14:54:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] x86: bitops asm constraint fixes
+Message-ID: <20080321135437.GR27245@elte.hu>
+References: <47D8FD33.76E4.0078.0@novell.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200803211452.55982.lpechacek@suse.cz>
+In-Reply-To: <47D8FD33.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2881]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bonding: Fix sysfs attribute handling
 
-For bonding interfaces any attempt to read the sysfs directory contents after
-module removal results in an oops.  The fix is to release sysfs attributes
-for the interfaces upon module unload.
+thanks Jan, i've applied your patch.
 
-Signed-off-by: Libor Pechacek <lpechacek@suse.cz>
---
- drivers/net/bonding/bond_main.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 0942d82..33767d4 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -4528,8 +4528,7 @@ static void bond_free_all(void)
- 		netif_tx_unlock_bh(bond_dev);
- 		/* Release the bonded slaves */
- 		bond_release_all(bond_dev);
--		bond_deinit(bond_dev);
--		unregister_netdevice(bond_dev);
-+		bond_destroy(bond);
- 	}
- 
- #ifdef CONFIG_PROC_FS
+	Ingo
