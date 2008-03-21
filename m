@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYCUPlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbYCUPqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbYCUPlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 11:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYCUPlp
+	id S1756478AbYCUPqX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 11:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYCUPqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 11:41:45 -0400
-Received: from andromeda.dapyr.net ([206.212.254.10]:55991 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbYCUPlo (ORCPT
+	Fri, 21 Mar 2008 11:46:15 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:32425 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbYCUPqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 11:41:44 -0400
-Date: Fri, 21 Mar 2008 11:41:25 -0400
-From: Konrad Rzeszutek <konrad@darnok.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       ketuzsezr@darnok.org
-Subject: Re: [mmotm] iscsi_ibft build error
-Message-ID: <20080321154125.GA29019@andromeda.dapyr.net>
-References: <20080319115655.ff4cb67a.randy.dunlap@oracle.com> <20080320154555.2d74c0d5.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Mar 2008 11:46:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=cfStFlPo79ZQcQVF1qcTEHOw99y97Olt+Ti395iuER1JE439V2Kvr6LEHc3jVcUezUMbCOgYWFOw8u2UZhOhuTcrglxwtzQU+0FrSBqunTkeiMlCRcWqPnI2fRYLUAT53HoccW03oDV0shCDl85uuECJJ/m7IfW1Ha8h9eDdQOk=
+Message-ID: <38b2ab8a0803210846p2f9b92adr951fe7fa0444de63@mail.gmail.com>
+Date: Fri, 21 Mar 2008 16:46:09 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question about C language.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080320154555.2d74c0d5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 03:45:55PM -0700, Andrew Morton wrote:
-> On Wed, 19 Mar 2008 11:56:55 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > mmotm-2008-0318-1720/drivers/firmware/iscsi_ibft.c: In function 'ibft_show_attribute':
-> > mmotm-2008-0318-1720/drivers/firmware/iscsi_ibft.c:521: error: implicit declaration of function 'capable'
-> > mmotm-2008-0318-1720/drivers/firmware/iscsi_ibft.c:521: error: 'CAP_SYS_ADMIN' undeclared (first use in this function)
-> > mmotm-2008-0318-1720/drivers/firmware/iscsi_ibft.c:521: error: (Each undeclared identifier is reported only once
-> > mmotm-2008-0318-1720/drivers/firmware/iscsi_ibft.c:521: error: for each function it appears in.)
-> > make[3]: *** [drivers/firmware/iscsi_ibft.o] Error 1
-> > 
-> 
-> --- a/drivers/firmware/iscsi_ibft.c~scsi-add-iscsi-ibft-support-fix
-> +++ a/drivers/firmware/iscsi_ibft.c
-> @@ -65,6 +65,7 @@
->  
->  
->  #include <linux/blkdev.h>
-> +#include <linux/capability.h>
->  #include <linux/ctype.h>
->  #include <linux/device.h>
->  #include <linux/err.h>
-> 
-> should do the trick.
-> 
-> Does this driver actually need to run capable(CAP_SYS_ADMIN)?  Can we not
-> rely upon permissions of the reelvant sysfs file?
+Hello,
 
-I followed what the efivars driver does. The permissions of the
-files are secure (as they are in the efivars), so one layer
-of protection could be suffice?
+I know it's a bit out of topic but this is something I need to clarify for
+writing a Linux driver... hope you don't mind.
+
+In my driver I have a global variable that controls a loop such as:
+
+int my_condition;
+
+void change_my_condition(int new)
+{
+    my_condition = new;
+}
+
+int foo(void)
+{
+    /* irqs are disabled */
+    my_condition = 1;
+    do {
+        ....
+        local_irq_enable();
+        cpu_sleep();
+        local_irq_disable();
+
+   } while (my_condition);
+
+}
+
+This variable is modified by an interrupt handler define in another file
+by using 'change_my_condition' function.
+
+By reading the ISO C99 specification, I _think_ that I needn't any
+kind of barrier
+or even use the volatile type qualifier for my_condition variable to make a true
+access to 'my_condition' in the controlling expression of the while, but I'm not
+sure.
+
+Coud anybody confirm ?
+
+Thanks,
+-- 
+Francis
