@@ -1,132 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbYCUCPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbYCUCYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbYCUCPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 22:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYCUCP0
+	id S1754438AbYCUCYL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 22:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYCUCX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 22:15:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38418 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752687AbYCUCPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 22:15:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 2)
-Date: Fri, 21 Mar 2008 03:14:54 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0803202104090.11234-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803202104090.11234-100000@netrider.rowland.org>
+	Thu, 20 Mar 2008 22:23:59 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:36473 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbYCUCX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 22:23:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=IHrWRViSSDM7VENs0okuUrGQM2FhmQ+1wk9mJD7kQROlJwtcV6EI1hhpbSFg8bSyETUL5fAf3Jli7h54qXvZ0e3CggCmXa92x58JBH3KLmniw0VNFQoHLFIhx+3mSmX/IEDLZX/k4vzs0WXwgJ43tRnb+LvNNJ/sBVlH8+IKC8Q=
+Message-ID: <47E31C36.6060903@gmail.com>
+Date: Fri, 21 Mar 2008 11:23:50 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: osb972ww-linuxczmil@yahoo.com
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Fw: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <343296.8242.qm@web34508.mail.mud.yahoo.com>
+In-Reply-To: <343296.8242.qm@web34508.mail.mud.yahoo.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803210314.55149.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 of March 2008, Alan Stern wrote:
-> On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
+Hello,
+
+osb972ww-linuxczmil@yahoo.com wrote:
+>  Greetings,
+>   I'm having a problem with 2.6.23.1-42 (Fedora 8) properly driving a SATA 
+> drive.  Although it is detected during boot as indicated by the dmesg below, 
+> once the sytstem is up and running, the drive is not accessible.   The second 
+> issue is with the CFdrive on the the primary IDE.  It works, but I can't enable 
+> interrupts with hdparm -u 1 /dev/sda.   
 > 
-> > Hi,
-> > 
-> > Below is an updated version of the $subject patch.  It has only been
-> > compilation tested, but I'd like to get as much feedback as reasonably possible
-> > at this stage to avoid redesigning things later in the process.
-> > 
-> > The most important changes from the previous one are the following:
-> > * Callbacks to be executed with interrupts disabled are now separated from
-> >   the "regular" ones.  There still are six of them, but IMHO this is what may
-> >   be necessary in the most general case (eg. a driver may have to carry out
-> >   some operations with interrupts disabled, which are different for SUSPEND,
-> >   FREEZE and HIBERNATE; the complementary "resume" callbacks are needed for
-> >   error recovery, for example)
-> > * It occured to me that the ->freeze() and ->quiesce() callbacks were
-> >   essentially the same, so I removed the latter
-> > * The ->recover() callback was also dropped, as ->thaw() may well be used instead
-> >   just fine (it seems)
-> > * ->prepare() and ->complete() are now called in separate loops which causes
-> >   some funny complications with error recovery.  Namely, we must remember which
-> >   devices have already been ->prepare()d, so that we call ->complete() for them
-> >   in the error path.  Moreover, there may be some ->prepare()d and some
-> >   ->suspend()ed devices at the same time, so if there's an error we should
-> >   ->resume() the ->suspend()ed ones and ->complete() everything etc.
-> >   This may be handled in many different ways, but I decided to introduce a new
-> >   list on which the ->complete()d devices are stored.  Accordingly, the
-> >   registration of new children of a device is blocked between ->prepare() and
-> >   ->complete() (it was only blocked between ->prepare() and ->resume() in the
-> >   previous version).
-> > 
-> > Please have a look.
-> 
-> I don't have time to go through this in detail now, but a few things 
-> stand out.
-> 
-> One trivial problem is that your dpm_prepare and dpm_complete routines 
-> go through the list in the wrong order.
+>  The interesting thing is when I put in a Fedora 5 system with a 2.6.17 kernel, 
+> everything works as expected.  I can hdparm -u 1 /dev/hda and it works as  expected, and
+>  the SATA drive is detected and works properly all on the exact  same hardware.  
+>  
+>  I've tried several different SATA drives also.   Thery all work on the old 
+>  Fedora 5/ 2.6.17 system, and none work on Fedora 8/2.6.23 or 2.6.24 kernels.
 
-I'm not all so sure that the order is actually wrong.  What would be the
-advantage of the forward order over the current one?
+Does irqpoll kernel parameter help?
 
-> More importantly, the situation with prepare and complete is getting
-> rather complicated.  Now that you're adding dev->power.state, why not
-> go all the way?  Get rid of all the different lists, keeping just
-> dpm_active and possibly dpm_destroy.
-
-dpm_destroy is not necessary and I'm going to drop it (later).
-
-> Instead of moving devices between different lists, just store in
-> dev->power.state an identification for which list the device is supposed
-> to be on or is supposed to be moving to.  (Or else have a bunch of bitfields
-> indicating which methods have been called.)  This has the advantage that
-> the entries will never get out of order, even if devices are registered at
-> the wrong time. 
-
-That's correct.
- 
-> There's some question about when we want the PM core to start
-> preventing new children from being registered.  Should this start right
-> after prepare() returns, or should it start right before suspend() is
-> called?  The first alternative sounds better to me.  Not only does it
-> agree with the purpose of the prepare method, it also makes race
-> situations easier to handle.
-
-I agree and that's implemented in the patch (ie. the registrations of new
-children are blocked immediately after ->prepare() has returned).
-
-> Since dpm_prepare is supposed to go through the list in the forward
-> direction, logically the "root" of the device tree should be the first
-> thing "prepared".  This means you should not allow parentless devices
-> to be registered any time after dpm_prepare has started.  Is that 
-> liable to cause problems?
-
-I'm still not seeing the advantage of the forward direction in the first place.
-
-Although I don't see what particular problems that may cause, I think the
-current approach (first, block registrations of new children for each
-->prepare()d device and finally block any registrations of new devices) is
-more natural.
-
-> There may be similar problems with complete().  A number of drivers
-> check during their resume method for the presence of new children
-> plugged in while the system was asleep.  All these drivers would have
-> to be converted over to the new scheme if they weren't permitted to
-> register the new children before complete() was called.  Of course,
-> this is easily fixed by permitting new children starting from when
-> resume() is called rather than when complete() is called.
-
-Well, the problem here was the protection of the correct ordering of the
-various lists.  However, if the approach with changing 'status' is adopted
-instead, which seems to be better, we'll be able to unblock the registering
-of new children before ->resume().
-
-Thanks,
-Rafael
+-- 
+tejun
