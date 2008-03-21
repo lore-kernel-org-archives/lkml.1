@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYCUNSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYCUNS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbYCUNSA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 09:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbYCUNRw
+	id S1757789AbYCUNS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 09:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYCUNSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 09:17:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37810 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755180AbYCUNRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 09:17:51 -0400
-Date: Fri, 21 Mar 2008 14:17:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
-Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
-Message-ID: <20080321131738.GI27245@elte.hu>
-References: <47E17171.9090108@goop.org> <20080319200931.GA24828@elte.hu> <20080319213343.GA2195@elte.hu> <47E18B8E.8080104@goop.org> <20080319220028.GA10480@elte.hu> <47E18C9D.4010007@goop.org> <20080319220431.GA11606@elte.hu> <47E19085.2020308@goop.org> <20080319235212.GA22786@elte.hu> <47E2C7E3.40109@goop.org>
+	Fri, 21 Mar 2008 09:18:43 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57036 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755183AbYCUNSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 09:18:41 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47E3B528.6010200@s5r6.in-berlin.de>
+Date: Fri, 21 Mar 2008 14:16:24 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47E2C7E3.40109@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
+       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
+       lm-sensors@lm-sensors.org
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+References: <20080316184349.GA28543@khazad-dum.debian.net> <200803161246.23909.david-b@pacbell.net> <20080318001429.896acf51.akpm@linux-foundation.org> <20080320225612.GB20788@khazad-dum.debian.net> <20080320164741.734e838c.akpm@linux-foundation.org> <20080321003604.GC20788@khazad-dum.debian.net> <20080320180802.426ad2d1.akpm@linux-foundation.org> <47E37E04.3080303@s5r6.in-berlin.de> <20080321123708.GE5586@khazad-dum.debian.net>
+In-Reply-To: <20080321123708.GE5586@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Henrique de Moraes Holschuh wrote:
+> On Fri, 21 Mar 2008, Stefan Richter wrote:
+>> and eth1394 to deal with temporary lack of of tlabels.  Alas I just  
+>> recently received a report that eth1394's workaround is unsuccessful on  
+>> non-preemptible uniprocessor kernels.  
+> 
+> Which, I think, is exactly the config where in_atomic() can't be used to
+> mean "in_scheduleable_context()" ?
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+That's coincidence.
 
->> so either figure out the bug by review or try turning your IRQ#0 into 
->> a screaming one for debug purposes. (hint: turning irq#0's trigger 
->> mode from 'edge' to 'level' in mpparse.c or ioapic.c does wonders to 
->> that end ;-)
->
-> Hm.  I think the problem was that the patch changed the ordering so 
-> that the %ebp fault test was happening with interrupts disabled, 
-> meaning that any fault-in would happen with interrupts disabled.
->
-> Could you tell me if this revised patch still provokes a problem?
+The mentioned workaround fails this way:
+   - tlabel consumer eth1394 (IPv4 over FireWire) grabs lots of tlabels
+     in soft IRQ context.
+   - tlabel recycler khpsbpkt (a kthread of ieee1394) sleeps even though
+     it could start putting tlabels back into the pool.
+   - eth1394 can't get tlabels anymore, stops the transmit queue,
+     schedules a workqueue job.
+   - eth1394's workqueue job (run by the events kthread) tries to acquire
+     a tlabel.  It does so in non-atomic context and hence sleeps in
+     hpsb_get_tlabel() until the tlabel pool is nonempty again.  It would
+     then wake up the eth1394 transmit queue again.
+   - Normally, khpsbpkt would have been woken up by now and would have
+     released a lot of now unused tlabels back into the pool again.
+     However, on UP preempt_none kernels, khpsbpkt continues to sleep.
+     (The 1394 stack's lower level runing in IRQ context or perhaps
+     tasklet context wakes up khpsbpkt.)
+   - Since it doesn't get a tlabel, eth1394's workqueue jobs sleeps
+     forever as well.
 
-it's looking good so far - queued it up.
+Result is that all other tasks of the shared workqueue can't be 
+serviced, notably the keyboard is stuck, and that the eth1394 connection 
+breaks down.  (I haven't started working on a fix, or opened a bugzilla 
+ticket for it yet.  The reporter currently switched his kernel to 
+PREEMPT which is not affected.)
 
-	Ingo
+IOW:
+The failure in the workaround is *not* about the in_atomic() being the 
+wrong question asked in hpsb_get_tlabel() --- no, ieee1394's in_atomic() 
+abuse works just fine even on UP PREEMPT_NONE.  Instead, the failure is 
+about kthreads not being scheduled in the way that I thought they would.
+-- 
+Stefan Richter
+-=====-==--- --== =-=-=
+http://arcgraph.de/sr/
