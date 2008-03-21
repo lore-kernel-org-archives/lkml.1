@@ -1,326 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYCUKfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYCUKkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755012AbYCUKfb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 06:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYCUKfR
+	id S1754818AbYCUKkP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 06:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYCUKkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 06:35:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57138
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752799AbYCUKfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 06:35:15 -0400
-Date: Fri, 21 Mar 2008 03:35:30 -0700 (PDT)
-Message-Id: <20080321.033530.249188954.davem@davemloft.net>
-To: denys@visp.net.lb
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: possible lockdep crash (was Re: kernel panic, ip_route_input,
- 2.6.25-rc6-git2)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080321093052.M39677@visp.net.lb>
-References: <20080321093052.M39677@visp.net.lb>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 06:40:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59495 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753508AbYCUKkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 06:40:01 -0400
+Date: Fri, 21 Mar 2008 11:39:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 handle_vm86_trap cleanup
+Message-ID: <20080321103946.GO20420@elte.hu>
+References: <20080317092108.EC6C626F995@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080317092108.EC6C626F995@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-Date: Fri, 21 Mar 2008 11:33:04 +0200
 
-> Hi, after trying to boot 2.6.25-rc6-git2 on loaded router, got kernel panic 
-> almost immediately (i am able to ssh, but router panic's in next 10-30 
-> seconds)
-> 
-> Here is netconsole output. It crashes also without netconsole (cause i heard 
-> patch not in stable yet, i tried to not use netconsole to avoid this bug).
+* Roland McGrath <roland@redhat.com> wrote:
 
-The IP may point to ip_route_input(), but the entire top of the
-backtrace is in the lockdep code.  Which makes me quite suspicious.
+> Use force_sig in handle_vm86_trap like other machine traps do.
 
-> Mar 21 11:26:46 ROUTER [   12.125124] BUG: unable to handle kernel
-> Mar 21 11:26:46 ROUTER paging request
-> Mar 21 11:26:46 ROUTER at c013d19a
-> Mar 21 11:26:46 ROUTER [   12.125181] IP:
-> Mar 21 11:26:46 ROUTER [<c0285798>] ip_route_input+0xa70/0xe56
-> Mar 21 11:26:46 ROUTER [   12.125181] Oops: 0003 [#1]
-> Mar 21 11:26:46 ROUTER SMP
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181] Modules linked in:
-> Mar 21 11:26:46 ROUTER softdog
-> Mar 21 11:26:46 ROUTER nf_nat_pptp
-> Mar 21 11:26:46 ROUTER nf_nat_proto_gre
-> Mar 21 11:26:46 ROUTER nf_conntrack_pptp
-> Mar 21 11:26:46 ROUTER nf_conntrack_proto_gre
-> Mar 21 11:26:46 ROUTER netconsole
-> Mar 21 11:26:46 ROUTER configfs
-> Mar 21 11:26:46 ROUTER xt_tcpudp
-> Mar 21 11:26:46 ROUTER ipt_TTL
-> Mar 21 11:26:46 ROUTER ipt_ttl
-> Mar 21 11:26:46 ROUTER xt_NOTRACK
-> Mar 21 11:26:46 ROUTER iptable_raw
-> Mar 21 11:26:46 ROUTER iptable_mangle
-> Mar 21 11:26:46 ROUTER ifb
-> Mar 21 11:26:46 ROUTER e1000e
-> Mar 21 11:26:46 ROUTER em_nbyte
-> Mar 21 11:26:46 ROUTER cls_tcindex
-> Mar 21 11:26:46 ROUTER act_gact
-> Mar 21 11:26:46 ROUTER cls_rsvp
-> Mar 21 11:26:46 ROUTER sch_htb
-> Mar 21 11:26:46 ROUTER cls_fw
-> Mar 21 11:26:46 ROUTER act_mirred
-> Mar 21 11:26:46 ROUTER em_u32
-> Mar 21 11:26:46 ROUTER sch_red
-> Mar 21 11:26:46 ROUTER sch_sfq
-> Mar 21 11:26:46 ROUTER sch_tbf
-> Mar 21 11:26:46 ROUTER sch_teql
-> Mar 21 11:26:46 ROUTER cls_basic
-> Mar 21 11:26:46 ROUTER act_police
-> Mar 21 11:26:46 ROUTER sch_gred
-> Mar 21 11:26:46 ROUTER act_pedit
-> Mar 21 11:26:46 ROUTER sch_hfsc
-> Mar 21 11:26:46 ROUTER cls_rsvp6
-> Mar 21 11:26:46 ROUTER sch_ingress
-> Mar 21 11:26:46 ROUTER em_meta
-> Mar 21 11:26:46 ROUTER em_text
-> Mar 21 11:26:46 ROUTER act_ipt
-> Mar 21 11:26:46 ROUTER sch_dsmark
-> Mar 21 11:26:46 ROUTER sch_prio
-> Mar 21 11:26:46 ROUTER sch_netem
-> Mar 21 11:26:46 ROUTER act_simple
-> Mar 21 11:26:46 ROUTER cls_u32
-> Mar 21 11:26:46 ROUTER em_cmp
-> Mar 21 11:26:46 ROUTER sch_cbq
-> Mar 21 11:26:46 ROUTER cls_route
-> Mar 21 11:26:46 ROUTER xt_TCPMSS
-> Mar 21 11:26:46 ROUTER iptable_nat
-> Mar 21 11:26:46 ROUTER nf_conntrack_ipv4
-> Mar 21 11:26:46 ROUTER ipt_LOG
-> Mar 21 11:26:46 ROUTER ipt_MASQUERADE
-> Mar 21 11:26:46 ROUTER ipt_REDIRECT
-> Mar 21 11:26:46 ROUTER nf_nat
-> Mar 21 11:26:46 ROUTER nf_conntrack
-> Mar 21 11:26:46 ROUTER nfnetlink
-> Mar 21 11:26:46 ROUTER iptable_filter
-> Mar 21 11:26:46 ROUTER ip_tables
-> Mar 21 11:26:46 ROUTER x_tables
-> Mar 21 11:26:46 ROUTER 8021q
-> Mar 21 11:26:46 ROUTER tun
-> Mar 21 11:26:46 ROUTER tulip
-> Mar 21 11:26:46 ROUTER r8169
-> Mar 21 11:26:46 ROUTER sky2
-> Mar 21 11:26:46 ROUTER via_velocity
-> Mar 21 11:26:46 ROUTER via_rhine
-> Mar 21 11:26:46 ROUTER sis900
-> Mar 21 11:26:46 ROUTER ne2k_pci
-> Mar 21 11:26:46 ROUTER 8390
-> Mar 21 11:26:46 ROUTER skge
-> Mar 21 11:26:46 ROUTER tg3
-> Mar 21 11:26:46 ROUTER 8139too
-> Mar 21 11:26:46 ROUTER e1000
-> Mar 21 11:26:46 ROUTER e100
-> Mar 21 11:26:46 ROUTER usb_storage
-> Mar 21 11:26:46 ROUTER mtdblock
-> Mar 21 11:26:46 ROUTER mtd_blkdevs
-> Mar 21 11:26:46 ROUTER usbhid
-> Mar 21 11:26:46 ROUTER uhci_hcd
-> Mar 21 11:26:46 ROUTER ehci_hcd
-> Mar 21 11:26:46 ROUTER ohci_hcd
-> Mar 21 11:26:46 ROUTER usbcore
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181]
-> Mar 21 11:26:46 ROUTER [   12.125181] Pid: 0, comm: swapper Not tainted 
-> (2.6.25-rc6-git2-build-0024 #8)
-> Mar 21 11:26:46 ROUTER [   12.125181] EIP: 0060:[<c0285798>] EFLAGS: 00010286 
-> CPU: 0
-> Mar 21 11:26:46 ROUTER [   12.125181] EIP is at ip_route_input+0xa70/0xe56
-> Mar 21 11:26:46 ROUTER [   12.125181] EAX: c0999200 EBX: 000000c2 ECX: 
-> c038ea2c EDX: c013d182
-> Mar 21 11:26:46 ROUTER [   12.125181] ESI: c099ff04 EDI: c099ff04 EBP: 
-> c099ff30 ESP: c099fe94
-> Mar 21 11:26:46 ROUTER [   12.125181]  DS: 007b ES: 007b FS: 00d8 GS: 0000 
-> SS: 0068
-> Mar 21 11:26:46 ROUTER [   12.125181] Process swapper (pid: 0, ti=c099f000 
-> task=c038e460 task.ti=c03b9000)
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181] Stack:
-> Mar 21 11:26:46 ROUTER c099fec8
-> Mar 21 11:26:46 ROUTER be9a92c2
-> Mar 21 11:26:46 ROUTER de0aa8c0
-> Mar 21 11:26:46 ROUTER f6fc6cc0
-> Mar 21 11:26:46 ROUTER c013bdc3
-> Mar 21 11:26:46 ROUTER 00000001
-> Mar 21 11:26:46 ROUTER c038e460
-> Mar 21 11:26:46 ROUTER 00000001
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181]
-> Mar 21 11:26:46 ROUTER ffffff8f
-> Mar 21 11:26:46 ROUTER 0099fec8
-> Mar 21 11:26:46 ROUTER f7c3bc00
-> Mar 21 11:26:46 ROUTER c0be25a0
-> Mar 21 11:26:46 ROUTER 0038e460
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER 00000003
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181]
-> Mar 21 11:26:46 ROUTER de0aa8c0
-> Mar 21 11:26:46 ROUTER be9a92c2
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER 00000000
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181] Call Trace:
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c013bdc3>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER mark_held_locks+0x41/0x5c
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c013d182>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER lock_release+0x16b/0x172
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c02825e8>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER nf_hook_slow+0xa1/0xc1
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c02871a0>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER ip_rcv_finish+0x2c/0x2f4
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c028789b>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER ip_rcv+0x202/0x22c
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c026c809>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER netif_receive_skb+0x38d/0x3ec
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c026ee8b>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER process_backlog+0x6c/0xd3
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c026ee96>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER process_backlog+0x77/0xd3
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c026e977>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER net_rx_action+0xb3/0x1d8
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c0125846>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER __do_softirq+0x6f/0xe9
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c01060ab>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER do_softirq+0x5e/0xa8
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c0146413>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER handle_fasteoi_irq+0x0/0xb6
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c01257a4>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER irq_exit+0x44/0x77
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c01061af>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER do_IRQ+0xba/0xd3
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c010438e>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER common_interrupt+0x2e/0x34
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c01300d8>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER sys_clock_nanosleep+0x19/0xb0
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c01021ba>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER mwait_idle_with_hints+0x3a/0x3e
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c0102365>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER mwait_idle+0x0/0x14
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c0102377>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER mwait_idle+0x12/0x14
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c010266d>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER cpu_idle+0x8a/0xa6
-> Mar 21 11:26:46 ROUTER [   12.125181]  [<c02b86c5>]
-> Mar 21 11:26:46 ROUTER ?
-> Mar 21 11:26:46 ROUTER rest_init+0x49/0x4b
-> Mar 21 11:26:46 ROUTER [   12.125181]  =======================
-> Mar 21 11:26:46 ROUTER [   12.125181] Code:
-> Mar 21 11:26:46 ROUTER 80
-> Mar 21 11:26:46 ROUTER 01
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 8b
-> Mar 21 11:26:46 ROUTER 55
-> Mar 21 11:26:46 ROUTER 8c
-> Mar 21 11:26:46 ROUTER f0
-> Mar 21 11:26:46 ROUTER ff
-> Mar 21 11:26:46 ROUTER 4a
-> Mar 21 11:26:46 ROUTER 04
-> Mar 21 11:26:46 ROUTER 0f
-> Mar 21 11:26:46 ROUTER 94
-> Mar 21 11:26:46 ROUTER c0
-> Mar 21 11:26:46 ROUTER 84
-> Mar 21 11:26:46 ROUTER c0
-> Mar 21 11:26:46 ROUTER 74
-> Mar 21 11:26:46 ROUTER 07
-> Mar 21 11:26:46 ROUTER 89
-> Mar 21 11:26:46 ROUTER d0
-> Mar 21 11:26:46 ROUTER e8
-> Mar 21 11:26:46 ROUTER df
-> Mar 21 11:26:46 ROUTER 02
-> Mar 21 11:26:46 ROUTER 02
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 83
-> Mar 21 11:26:46 ROUTER 7d
-> Mar 21 11:26:46 ROUTER 80
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 0f
-> Mar 21 11:26:46 ROUTER 84
-> Mar 21 11:26:46 ROUTER e2
-> Mar 21 11:26:46 ROUTER 03
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 8b
-> Mar 21 11:26:46 ROUTER 55
-> Mar 21 11:26:46 ROUTER d8
-> Mar 21 11:26:46 ROUTER 85
-> Mar 21 11:26:46 ROUTER d2
-> Mar 21 11:26:46 ROUTER 74
-> Mar 21 11:26:46 ROUTER 12
-> Mar 21 11:26:46 ROUTER unparseable log message: "<f0> "
-> Mar 21 11:26:46 ROUTER ff
-> Mar 21 11:26:46 ROUTER 4a
-> Mar 21 11:26:46 ROUTER 18
-> Mar 21 11:26:46 ROUTER 0f
-> Mar 21 11:26:46 ROUTER 94
-> Mar 21 11:26:46 ROUTER c0
-> Mar 21 11:26:46 ROUTER 84
-> Mar 21 11:26:46 ROUTER c0
-> Mar 21 11:26:46 ROUTER 74
-> Mar 21 11:26:46 ROUTER 07
-> Mar 21 11:26:46 ROUTER 89
-> Mar 21 11:26:46 ROUTER d0
-> Mar 21 11:26:46 ROUTER e8
-> Mar 21 11:26:46 ROUTER cf
-> Mar 21 11:26:46 ROUTER 7c
-> Mar 21 11:26:46 ROUTER 02
-> Mar 21 11:26:46 ROUTER 00
-> Mar 21 11:26:46 ROUTER 8b
-> Mar 21 11:26:46 ROUTER 55
-> Mar 21 11:26:46 ROUTER dc
-> Mar 21 11:26:46 ROUTER
-> Mar 21 11:26:46 ROUTER [   12.125181] EIP: [<c0285798>]
-> Mar 21 11:26:46 ROUTER ip_route_input+0xa70/0xe56
-> Mar 21 11:26:46 ROUTER SS:ESP 0068:c099fe94
-> Mar 21 11:26:46 ROUTER [   12.125181] Kernel panic - not syncing: Fatal 
-> exception in interrupt
-> Mar 21 11:26:46 ROUTER [   12.125181] Rebooting in 1 seconds..
-> 
-> 
-> 
-> --
-> Denys Fedoryshchenko
-> Technical Manager
-> Virtual ISP S.A.L.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks, applied.
+
+> -	if (current->ptrace & PT_PTRACED) {
+> -		unsigned long flags;
+> -		spin_lock_irqsave(&current->sighand->siglock, flags);
+> -		sigdelset(&current->blocked, SIGTRAP);
+> -		recalc_sigpending();
+> -		spin_unlock_irqrestore(&current->sighand->siglock, flags);
+> -	}
+> -	send_sig(SIGTRAP, current, 1);
+>  	current->thread.trap_no = trapno;
+>  	current->thread.error_code = error_code;
+> +	force_sig(SIGTRAP, current);
+>  	return 0;
+>  }
+
+for the record, this also changes semantics, because previously we'd 
+permanently unblock SIGTRAP (most certainly as a hack, to be able to do 
+the send_sig()), while now we use force_sig() which just ignores the 
+blocked mask. (and i agree with your fix of course)
+
+	Ingo
