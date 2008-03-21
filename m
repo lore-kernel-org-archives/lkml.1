@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbYCUPYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYCUP0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbYCUPYi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 11:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYCUPY2
+	id S1757401AbYCUP0T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 11:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYCUP0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 11:24:28 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:14204 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753788AbYCUPY1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 11:24:27 -0400
-Message-ID: <47E3D322.1090902@googlemail.com>
-Date: Fri, 21 Mar 2008 16:24:18 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 21 Mar 2008 11:26:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38546 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753228AbYCUP0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 11:26:09 -0400
+Date: Fri, 21 Mar 2008 16:25:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
+Message-ID: <20080321152555.GA14607@elte.hu>
+References: <47E18B8E.8080104@goop.org> <20080319220028.GA10480@elte.hu> <47E18C9D.4010007@goop.org> <20080319220431.GA11606@elte.hu> <47E19085.2020308@goop.org> <20080319235212.GA22786@elte.hu> <47E2C7E3.40109@goop.org> <20080321131738.GI27245@elte.hu> <20080321143533.GA32096@elte.hu> <47E3D0FE.2030508@goop.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Gabriel C <crazy@frugalware.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com>
-In-Reply-To: <47DF3E8B.6040502@googlemail.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E3D0FE.2030508@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0304]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Gabriel C wrote:
->> Thomas Gleixner wrote:
->>> On Mon, 17 Mar 2008, Gabriel C wrote:
->>>>> Subject		: Clocksource tsc is always unstable with 2.6.25-* kernels and CONFIG_NO_HZ=y on my box
->>>>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
->>>>> Date		: 2008-02-24 01:31 (22 days old)
->>>>> References	: http://lkml.org/lkml/2008/2/23/380
->>>>> 		  http://lkml.org/lkml/2008/2/24/281
->>>>> Handled-By	: Thomas Gleixner <tglx@linutronix.de>
->>>>>
->>>> Thomas do you want me to bisect ? 
->>> That'd be great.
->> Ok I'll start doing that later on today.
->>
-> 
-[ snip ]
 
-> still hangs when I boot with clocksource=acpi_pm so that seems to be introduced in a different commit.
-> 
-> I will try to bisect this hang also , most probably on weekend.
-> 
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Correction on this one.
+>> it just crashed again, crashlog and config attached. This time it 
+>> didnt need an irq flood.
+>
+> Hm.  I presume it happens immediately/consistently.  Is it something 
+> particular about this .config?  Do other configs work for you?
 
-Current git head boots just fine with clocksource=acpi_pm here , I just don't know which commit fixed it.
+it's a generic distro config this time around. It crashed on the first 
+attempt.
 
-Gabriel
+	Ingo
