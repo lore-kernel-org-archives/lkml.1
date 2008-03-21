@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbYCUQ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbYCUQam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759016AbYCUQ2a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 12:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYCUQ2W
+	id S1759192AbYCUQam (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 12:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYCUQaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 12:28:22 -0400
-Received: from www.tglx.de ([62.245.132.106]:51940 "EHLO www.tglx.de"
+	Fri, 21 Mar 2008 12:30:35 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:47782 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbYCUQ2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 12:28:22 -0400
-Date: Fri, 21 Mar 2008 17:26:56 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Gabriel C <crazy@frugalware.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47E3D322.1090902@googlemail.com>
-Message-ID: <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1751325AbYCUQae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 12:30:34 -0400
+Date: Fri, 21 Mar 2008 18:30:19 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: fglrx
+Message-ID: <20080321163019.GA1434@cs181133002.pp.htv.fi>
+References: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Gabriel C wrote:
- 
-> > still hangs when I boot with clocksource=acpi_pm so that seems to
-> > be introduced in a different commit.
-> > 
-> > I will try to bisect this hang also , most probably on weekend.
-> > 
-> 
-> Correction on this one.
->
-> Current git head boots just fine with clocksource=acpi_pm here , I
-> just don't know which commit fixed it.
+On Fri, Mar 21, 2008 at 04:25:00PM +0000, Justin Mattock wrote:
+> Hello; fair enough, I did ask ati about what I should do, but there
+> wasn't much help. Overall its not pretty, but If you are impatient for
+> ati to come out with an update then this should get you going(for 3D).
+> The problem I see is, SELinux is going out of whack due to fglrx
+> wanting a cap_t effective vector.  So on the secure side I probably
+> wont use fglrx until there is support for the proper capability.
+> or take you're approach and look at the open ati driver.
 
-Hmm. Very dubious. I'm a bit afraid of self healing problems. It would
-be interesting to find the commit which fixed the acpi_pm timer
-problem unvoluntary.
+Please stop discussing binary-only drivers on linux-kernel.
 
-Also, can you please reapply the reverted clocksource patch ? I have
-the feeling that the acpi_pm one was the real problem which was
-triggered the modfied watchdog.
+That's 100% off-topic here.
 
-Thanks,
+> Justin P. Mattock
 
-	tglx
+Thanks
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
