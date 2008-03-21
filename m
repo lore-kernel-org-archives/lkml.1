@@ -1,76 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbYCUSy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbYCUSz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760797AbYCUSy4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYCUSys
+	id S1760978AbYCUSz7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYCUSzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:54:48 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:42459 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbYCUSys (ORCPT
+	Fri, 21 Mar 2008 14:55:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:62155 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYCUSzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:54:48 -0400
-Date: Fri, 21 Mar 2008 11:54:34 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, Andi Kleen <ak@suse.de>,
-       shai@scalex86.org
-Subject: Re: [patch 2/4] x86: Fix build breakage when PCI is define and PARAVIRT is not
-Message-ID: <20080321185434.GB23139@localdomain>
-References: <20080320073740.GA9414@localdomain> <20080320074116.GC9414@localdomain> <47E339D1.3080509@goop.org>
+	Fri, 21 Mar 2008 14:55:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rFCtYW+jkpYFPH88A2f2gwbos/9mdO4xdkDVgVdqvesQrQfJMV5wEU9iwc6+2kCXZhGhkYlSyQgUMdENaJid41j9ynszzzJsgL58Xhb8fbRf1ImTODJJJUCd0ahPCrydt+FFUv8mdXW2ojreCfrJ7qKxAY2CkUl07C/1q3/D3o4=
+Message-ID: <f19298770803211155m2641427eo932ca00382357354@mail.gmail.com>
+Date: Fri, 21 Mar 2008 21:55:48 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Paul Mackerras" <paulus@samba.org>,
+       "David Miller" <davem@davemloft.net>
+In-Reply-To: <20080228201613.GA30999@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47E339D1.3080509@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
+	 <20080228201315.GA30736@elte.hu> <20080228201613.GA30999@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 09:30:09PM -0700, Jeremy Fitzhardinge wrote:
->Ravikiran G Thirumalai wrote:
->>- Fix the the build breakage when PARAVIRT is defined
->>  but PCI is not
->>  This fixes problem reported at:
->>	http://marc.info/?l=linux-kernel&m=120525966600698&w=2
->>- Make is_vsmp_box() available even when PARAVIRT is not defined.
->>  This is needed to determine if tsc's are reliable as a time source
->>  even when PARAVIRT is not defined.
->>- split vsmp_init to use is_vsmp_box() and set_vsmp_pv_ops()
->>  set_vsmp_pv_ops will do nothing if PCI is not enabled in the config.
->>  
+On 2/28/08, Ingo Molnar <mingo@elte.hu> wrote:
 >
->I'm a bit confused by all the config dependencies.  I had assumed that 
->VSMP depended on both PCI and PARAVIRT.  Is this not actually true?  You 
->can have a VSMP system without either or both of PCI/PARAVIRT?
+>  * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  > > Anything else I can do?
+>  >
+>  > yes, please test the patch below - does it fix the problem?
+>
+>
+> (assuming you prefer patches that build, here's an updated one below.)
+>
 
-Well, you could have a vSMPowered system without PARAVIRT, yes.  But a non
-PCI vSMPowered system does not exist to my knowledge.
+The patch was not included into the -rc6 kernel, so I thought maybe
+I should remind about it. While the jumping timestamps might
+be harmless, they for sure will confuse anyone observing some
+unrelated bugs.
+
+As I understand it, the overhead created on the architectures with
+synchronous time stamp registers is not something measurable,
+and the problem is more with the fact that some unnecessary
+operations are performed and the result looks a bit ugly.
+In this case, may I suggest to merge the patch for 2.6.25, and
+revert it right after the release, until a better solution is found?
 
 >
->The structure of the code suggests that at the very least VSMP depends 
->on PCI (it never makes sense to enable VSMP on a non-PCI system), and 
->therefore a number of your config decisions can just be predicated on VSMP.
-
-Well, vSMPowered bits in the kernel serves two objectives:
-a) Internode cacheline size
-b) paravirt irq ops
-
-A vSMPowered machine can boot without either, but both affect performance.
-Both these bits are not interdependent.  The paravirt ops
-need the PARAVIRT infrastructure and that is all that is needed.
-The internode cacheline size needs a compile time definition that's all.
-CONFIG_X86_VSMP chooses both.  However, there is no reason to have paravirt
-irq ops depend on the Internode cacheline size.  More so since pv ops
-has the capability to detect the system type dynamically and using
-appropriate pv ops.
-
-Thanks,
-Kiran
+>         Ingo
+>
+>  -------------->
+>  Subject: sched: make cpu_clock() globally synchronous
+>  From: Ingo Molnar <mingo@elte.hu>
+>  Date: Thu Feb 28 21:00:21 CET 2008
+>
+>  Alexey Zaytsev reported (and bisected) that the introduction of
+>  cpu_clock() in printk made the timestamps jump back and forth.
+>
+>  Make cpu_clock() more reliable while still keeping it fast when it's
+>  called frequently.
+>
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>  ---
+>   kernel/sched.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
+>   1 file changed, 49 insertions(+), 3 deletions(-)
+>
+>  Index: linux/kernel/sched.c
+>  ===================================================================
+>  --- linux.orig/kernel/sched.c
+>  +++ linux/kernel/sched.c
+>  @@ -710,11 +710,39 @@ static inline u64 global_rt_runtime(void
+>         return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+>   }
+>
+>  +static const unsigned long long time_sync_thresh = 100000;
+>  +
+>  +static DEFINE_PER_CPU(unsigned long long, time_offset);
+>  +static DEFINE_PER_CPU(unsigned long long, prev_cpu_time);
+>  +
+>   /*
+>  - * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
+>  - * clock constructed from sched_clock():
+>  + * Global lock which we take every now and then to synchronize
+>  + * the CPUs time. This method is not warp-safe, but it's good
+>  + * enough to synchronize slowly diverging time sources and thus
+>  + * it's good enough for tracing:
+>   */
+>  -unsigned long long cpu_clock(int cpu)
+>  +static DEFINE_SPINLOCK(time_sync_lock);
+>  +static unsigned long long prev_global_time;
+>  +
+>  +static unsigned long long __sync_cpu_clock(cycles_t time, int cpu)
+>  +{
+>  +       unsigned long flags;
+>  +
+>  +       spin_lock_irqsave(&time_sync_lock, flags);
+>  +
+>  +       if (time < prev_global_time) {
+>  +               per_cpu(time_offset, cpu) += prev_global_time - time;
+>  +               time = prev_global_time;
+>  +       } else {
+>  +               prev_global_time = time;
+>  +       }
+>  +
+>  +       spin_unlock_irqrestore(&time_sync_lock, flags);
+>  +
+>  +       return time;
+>  +}
+>  +
+>  +static unsigned long long __cpu_clock(int cpu)
+>   {
+>         unsigned long long now;
+>         unsigned long flags;
+>  @@ -735,6 +763,24 @@ unsigned long long cpu_clock(int cpu)
+>
+>         return now;
+>   }
+>  +
+>  +/*
+>  + * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
+>  + * clock constructed from sched_clock():
+>  + */
+>  +unsigned long long cpu_clock(int cpu)
+>  +{
+>  +       unsigned long long prev_cpu_time, time, delta_time;
+>  +
+>  +       prev_cpu_time = per_cpu(prev_cpu_time, cpu);
+>  +       time = __cpu_clock(cpu) + per_cpu(time_offset, cpu);
+>  +       delta_time = time-prev_cpu_time;
+>  +
+>  +       if (unlikely(delta_time > time_sync_thresh))
+>
+> +               time = __sync_cpu_clock(time, cpu);
+>
+> +
+>  +       return time;
+>  +}
+>   EXPORT_SYMBOL_GPL(cpu_clock);
+>
+>   #ifndef prepare_arch_switch
+>
