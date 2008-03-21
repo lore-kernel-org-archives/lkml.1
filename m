@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbYCUXNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbYCUXN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932748AbYCUXNe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763253AbYCUWwe
+	id S1762313AbYCUXN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932211AbYCUWwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:52:34 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41343 "EHLO
+	Fri, 21 Mar 2008 18:52:35 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41345 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762761AbYCUWwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762623AbYCUWwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 18:52:32 -0400
-Message-Id: <20080321224436.130837167@sous-sol.org>
+Message-Id: <20080321224451.150546511@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:48 -0700
+Date: Fri, 21 Mar 2008 15:44:00 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,11 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 58/76] x86: dont use P6_NOPs if compiling with CONFIG_X86_GENERIC
-Content-Disposition: inline; filename=x86-don-t-use-p6_nops-if-compiling-with-config_x86_generic.patch
+       Duane Griffin <duaneg@dghda.com>, Jan Kara <jack@suse.cz>,
+       <linux-ext4@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 70/76] jbd2: correctly unescape journal data blocks
+Content-Disposition: inline; filename=jbd2-correctly-unescape-journal-data-blocks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,42 +34,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: H. Peter Anvin <hpa@zytor.com>
+From: Duane Griffin <duaneg@dghda.com>
 
-x86: don't use P6_NOPs if compiling with CONFIG_X86_GENERIC
+Fix a long-standing typo (predating git) that will cause data corruption if a
+journal data block needs unescaping.  At the moment the wrong buffer head's
+data is being unescaped.
 
-P6_NOPs are definitely not supported on some VIA CPUs, and possibly
-(unverified) on AMD K7s.  It is also the only thing that prevents a
-686 kernel from running on Transmeta TM3x00/5x00 (Crusoe) series.
+To test this case mount a filesystem with data=journal, start creating and
+deleting a bunch of files containing only JBD2_MAGIC_NUMBER (0xc03b3998), then
+pull the plug on the device.  Without this patch the files will contain zeros
+instead of the correct data after recovery.
 
-The performance benefit over generic NOPs is very small, so when
-building for generic consumption, avoid using them.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[cebbert@redhat.com: backport take 2, with parens this time]
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+Acked-by: Jan Kara <jack@suse.cz>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ fs/jbd2/recovery.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- include/asm-x86/processor_32.h |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
---- a/include/asm-x86/processor_32.h
-+++ b/include/asm-x86/processor_32.h
-@@ -712,9 +712,10 @@ static inline unsigned int cpuid_edx(uns
- #define ASM_NOP6 K7_NOP6
- #define ASM_NOP7 K7_NOP7
- #define ASM_NOP8 K7_NOP8
--#elif defined(CONFIG_M686) || defined(CONFIG_MPENTIUMII) || \
-+#elif (defined(CONFIG_M686) || defined(CONFIG_MPENTIUMII) || \
-       defined(CONFIG_MPENTIUMIII) || defined(CONFIG_MPENTIUMM) || \
--      defined(CONFIG_MCORE2) || defined(CONFIG_PENTIUM4)
-+      defined(CONFIG_MCORE2) || defined(CONFIG_PENTIUM4)) && \
-+      !defined(CONFIG_X86_GENERIC)
- #define ASM_NOP1 P6_NOP1
- #define ASM_NOP2 P6_NOP2
- #define ASM_NOP3 P6_NOP3
+--- a/fs/jbd2/recovery.c
++++ b/fs/jbd2/recovery.c
+@@ -488,7 +488,7 @@ static int do_one_pass(journal_t *journa
+ 					memcpy(nbh->b_data, obh->b_data,
+ 							journal->j_blocksize);
+ 					if (flags & JBD2_FLAG_ESCAPE) {
+-						*((__be32 *)bh->b_data) =
++						*((__be32 *)nbh->b_data) =
+ 						cpu_to_be32(JBD2_MAGIC_NUMBER);
+ 					}
+ 
 
 -- 
