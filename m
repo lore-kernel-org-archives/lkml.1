@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbYCUQYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbYCUQZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759267AbYCUQYa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 12:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYCUQYT
+	id S1759377AbYCUQZV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 12:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbYCUQZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 12:24:19 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:35488 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755325AbYCUQYS (ORCPT
+	Fri, 21 Mar 2008 12:25:04 -0400
+Received: from el-out-1112.google.com ([209.85.162.181]:21495 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754901AbYCUQZC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 12:24:18 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neilb@suse.de, akpm@linux-foundation.org,
-       hch@infradead.org
-In-reply-to: <20080321155451.GU10722@ZenIV.linux.org.uk> (message from Al Viro
-	on Fri, 21 Mar 2008 15:54:51 +0000)
-Subject: Re: r-o bind in nfsd
-References: <E1Jciie-0001E6-Dx@pomaz-ex.szeredi.hu> <20080321155451.GU10722@ZenIV.linux.org.uk>
-Message-Id: <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 21 Mar 2008 17:24:11 +0100
+	Fri, 21 Mar 2008 12:25:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rUrKvJmANJwHzMOkHZXmSJ0N6NEaD1vT9NH5uAwghglUzF2OqX3DdFGnwBVejUrsQTDBN4Gzy3BWrQ+3j/0OZ+1rRc4+oWcz73x46k3x9kxJZvkF2Zralqj8QjGsC5EzuCwDMOuoJBNKXHSti94NqNzqIAIb1ga5wFgHQjKgwpY=
+Message-ID: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com>
+Date: Fri, 21 Mar 2008 16:25:00 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: fglrx
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I know there are a few cases, where filesystems call vfs_foo()
-> > internally, where the vfsmount isn't available, but I think the proper
-> > solution is just to fix those places, and not recurse back into the
-> > VFS (which is AFAICS in all those cases totally unnecessary anyway).
-> > This would make everybody happy, no?
-> 
-> Apparmor can go play with itself.  The proper fix is to lift the LSM nonsense
-> into callers and leave vfs_...() alone;
+Hello; fair enough, I did ask ati about what I should do, but there
+wasn't much help. Overall its not pretty, but If you are impatient for
+ati to come out with an update then this should get you going(for 3D).
+The problem I see is, SELinux is going out of whack due to fglrx
+wanting a cap_t effective vector.  So on the secure side I probably
+wont use fglrx until there is support for the proper capability.
+or take you're approach and look at the open ati driver.
 
-Maybe.  I know precious little about this security thing, so I won't
-argue about it's merits or faults.  But:
 
- a) I have a hunch that the security guys wouldn't like to see the
- order between permission() and security_foo() changed.
-
- b) I fail to see how moving functionality to callers would improve
- things
-
-> vfsmounts should *not* be passed there at all, with the exception of
-> vfs_follow_link() which gets the full nameidata.
-
-Why?
-
-Miklos
+-- 
+Justin P. Mattock
