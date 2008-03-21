@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbYCUWyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbYCUWzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932385AbYCUWyz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763656AbYCUWuB
+	id S1762950AbYCUWzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762559AbYCUWuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:50:01 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59112 "EHLO
+	Fri, 21 Mar 2008 18:50:06 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59116 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762960AbYCUWuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:50:00 -0400
-Message-Id: <20080321224402.117570915@sous-sol.org>
+	id S1763659AbYCUWuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:50:01 -0400
+Message-Id: <20080321224411.944787944@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:25 -0700
+Date: Fri, 21 Mar 2008 15:43:32 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andy Whitcroft <apw@shadowen.org>, Adam Litke <agl@us.ibm.com>,
+       Alan Cox <alan@redhat.com>, Jeff Garzik <jeff@garzik.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 35/76] hugetlb: ensure we do not reference a surplus page after handing it to buddy
-Content-Disposition: inline; filename=hugetlb-ensure-we-do-not-reference-a-surplus-page-after-handing-it-to-buddy.patch
+Subject: [patch 42/76] pata_hpt*, pata_serverworks: fix UDMA masking
+Content-Disposition: inline; filename=pata_hpt-pata_serverworks-fix-udma-masking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,45 +34,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Andy Whitcroft <apw@shadowen.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-When we free a page via free_huge_page and we detect that we are in surplus
-the page will be returned to the buddy.  After this we no longer own the page.
+[upstream commit: 6ddd6861]
 
-However at the end free_huge_page we clear out our mapping pointer from
-page private.  Even where the page is not a surplus we free the page to
-the hugepage pool, drop the pool locks and then clear page private.  In
-either case the page may have been reallocated.  BAD.
+When masking, mask out the modes that are unsupported not the ones
+that are supported.  This makes life happier.
 
-Make sure we clear out page private before we free the page.
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-Acked-by: Adam Litke <agl@us.ibm.com>
+Signed-off-by: Alan Cox <alan@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- mm/hugetlb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ata/pata_hpt366.c      |    6 +++---
+ drivers/ata/pata_hpt37x.c      |    6 +++---
+ drivers/ata/pata_serverworks.c |    2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -119,6 +119,7 @@ static void free_huge_page(struct page *
- 	struct address_space *mapping;
+--- a/drivers/ata/pata_hpt366.c
++++ b/drivers/ata/pata_hpt366.c
+@@ -27,7 +27,7 @@
+ #include <linux/libata.h>
  
- 	mapping = (struct address_space *) page_private(page);
-+	set_page_private(page, 0);
- 	BUG_ON(page_count(page));
- 	INIT_LIST_HEAD(&page->lru);
+ #define DRV_NAME	"pata_hpt366"
+-#define DRV_VERSION	"0.6.1"
++#define DRV_VERSION	"0.6.2"
  
-@@ -133,7 +134,6 @@ static void free_huge_page(struct page *
- 	spin_unlock(&hugetlb_lock);
- 	if (mapping)
- 		hugetlb_put_quota(mapping, 1);
--	set_page_private(page, 0);
+ struct hpt_clock {
+ 	u8	xfer_speed;
+@@ -180,9 +180,9 @@ static unsigned long hpt366_filter(struc
+ 		if (hpt_dma_blacklisted(adev, "UDMA",  bad_ata33))
+ 			mask &= ~ATA_MASK_UDMA;
+ 		if (hpt_dma_blacklisted(adev, "UDMA3", bad_ata66_3))
+-			mask &= ~(0x07 << ATA_SHIFT_UDMA);
++			mask &= ~(0xF8 << ATA_SHIFT_UDMA);
+ 		if (hpt_dma_blacklisted(adev, "UDMA4", bad_ata66_4))
+-			mask &= ~(0x0F << ATA_SHIFT_UDMA);
++			mask &= ~(0xF0 << ATA_SHIFT_UDMA);
+ 	}
+ 	return ata_pci_default_filter(adev, mask);
  }
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -24,7 +24,7 @@
+ #include <linux/libata.h>
  
- /*
+ #define DRV_NAME	"pata_hpt37x"
+-#define DRV_VERSION	"0.6.9"
++#define DRV_VERSION	"0.6.11"
+ 
+ struct hpt_clock {
+ 	u8	xfer_speed;
+@@ -281,7 +281,7 @@ static unsigned long hpt370_filter(struc
+ 		if (hpt_dma_blacklisted(adev, "UDMA", bad_ata33))
+ 			mask &= ~ATA_MASK_UDMA;
+ 		if (hpt_dma_blacklisted(adev, "UDMA100", bad_ata100_5))
+-			mask &= ~(0x1F << ATA_SHIFT_UDMA);
++			mask &= ~(0xE0 << ATA_SHIFT_UDMA);
+ 	}
+ 	return ata_pci_default_filter(adev, mask);
+ }
+@@ -297,7 +297,7 @@ static unsigned long hpt370a_filter(stru
+ {
+ 	if (adev->class == ATA_DEV_ATA) {
+ 		if (hpt_dma_blacklisted(adev, "UDMA100", bad_ata100_5))
+-			mask &= ~ (0x1F << ATA_SHIFT_UDMA);
++			mask &= ~(0xE0 << ATA_SHIFT_UDMA);
+ 	}
+ 	return ata_pci_default_filter(adev, mask);
+ }
+--- a/drivers/ata/pata_serverworks.c
++++ b/drivers/ata/pata_serverworks.c
+@@ -226,7 +226,7 @@ static unsigned long serverworks_csb_fil
+ 
+ 	for (i = 0; (p = csb_bad_ata100[i]) != NULL; i++) {
+ 		if (!strcmp(p, model_num))
+-			mask &= ~(0x1F << ATA_SHIFT_UDMA);
++			mask &= ~(0xE0 << ATA_SHIFT_UDMA);
+ 	}
+ 	return ata_pci_default_filter(adev, mask);
+ }
 
 -- 
