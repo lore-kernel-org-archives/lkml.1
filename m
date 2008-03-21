@@ -1,148 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbYCUU5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761866AbYCUUnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762081AbYCUU5F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYCUU4x
+	id S1761866AbYCUUnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbYCUUnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:56:53 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30965 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754803AbYCUU4w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:56:52 -0400
-Date: Fri, 21 Mar 2008 13:55:13 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [patch 2/5] infrastructure to debug (dynamic) objects
-Message-Id: <20080321135513.8f1c2a69.randy.dunlap@oracle.com>
-In-Reply-To: <20080321200321.650649403@linutronix.de>
-References: <20080321200300.310393657@linutronix.de>
-	<20080321200321.650649403@linutronix.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Mar 2008 16:43:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45128 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760956AbYCUUnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 16:43:01 -0400
+Message-ID: <47E41DD3.2040602@garzik.org>
+Date: Fri, 21 Mar 2008 16:42:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
+Subject: Re: [SCSI] fix media change events for polled devices
+References: <200803211559.m2LFxPi6017869@hera.kernel.org>	 <47E3EC67.4050404@garzik.org> <1206124426.24338.20.camel@lov.site>
+In-Reply-To: <1206124426.24338.20.camel@lov.site>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008 20:26:18 -0000 Thomas Gleixner wrote:
-
->  Documentation/kernel-parameters.txt |    2 
->  include/linux/debugobjects.h        |   90 +++
->  init/main.c                         |    3 
->  lib/Kconfig.debug                   |   23 
->  lib/Makefile                        |    1 
->  lib/debugobjects.c                  |  890 ++++++++++++++++++++++++++++++++++++
->  mm/page_alloc.c                     |   10 
->  mm/slab.c                           |   10 
->  mm/slub.c                           |    3 
->  mm/vmalloc.c                        |    2 
->  10 files changed, 1030 insertions(+), 4 deletions(-)
+Kay Sievers wrote:
+> On Fri, 2008-03-21 at 13:12 -0400, Jeff Garzik wrote:
+>> Linux Kernel Mailing List wrote:
+>>>     [SCSI] fix media change events for polled devices
+>>>     
+>>>     Commit:
+>>>       a341cd0f (SCSI: add asynchronous event notification API)
+>>>     breaks:
+>>>       285e9670 (sr,sd: send media state change modification events)
+>>>     by introducing an event filter, which is removed here, to make
+>>>     events, we are depending on, happen again.
+>>
+>> By simply reading the code history, it is trivial to verify that this 
+>> description is false:
+>>
+>> Commit 285e9670 depends on a341cd0f, so by definition it is 285e9670 -- 
+>> or rather the incomplete update of your original patch that resulted in 
+>> 285e9670 -- that is broken.
 > 
-> Index: linux-2.6/lib/Kconfig.debug
-> ===================================================================
-> --- linux-2.6.orig/lib/Kconfig.debug
-> +++ linux-2.6/lib/Kconfig.debug
-> @@ -183,6 +183,29 @@ config TIMER_STATS
->  	  (it defaults to deactivated on bootup and will only be activated
->  	  if some application like powertop activates it explicitly).
->  
-> +config DEBUG_OBJECTS
-> +	bool "Debug object operations"
-> +	depends on DEBUG_KERNEL
-> +	help
-> +	  If you say Y here, additional code will be inserted into the
-> +	  kernel to track the life time of various objects and validate
+> It worked fine with Kristen's patches, and that's where it is coming
+> from from.
 
-                              lifetime
-
-> +	  the operations on those objects.
-> +
-> +config DEBUG_OBJECTS_SELFTEST
-> +	bool "Debug objects selftest"
-> +	depends on DEBUG_OBJECTS
-> +	help
-> +	  This enables the selftest of the object debug code.
-> +
-> +config DEBUG_OBJECTS_FREE
-> +	bool "Debug objects in freed memory"
-> +	depends on DEBUG_OBJECTS
-> +	help
-> +	  This enables checks whether a k/v free operation frees an area
-
-Please say "kfree/vfree" so that we (I, others) don't have to think
-"what the heck is a k/v free operation?".
-
-> +	  which contains an object which has not been deactivated
-> +	  properly. This can make kmalloc/kfree-intensive workloads
-> +	  much slower.
-> +
->  config DEBUG_SLAB
->  	bool "Debug slab memory allocations"
->  	depends on DEBUG_KERNEL && SLAB
-
-> Index: linux-2.6/lib/debugobjects.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/lib/debugobjects.c
-> @@ -0,0 +1,890 @@
-
-...
-
-> +/*
-> + * We run out of memory. That means we probably have tons of objects
-
-         ran
-
-> + * allocated.
-> + */
-> +static void debug_objects_oom(void)
-> +{
-> +	struct debug_bucket *db = obj_hash;
-> +	struct hlist_node *node, *tmp;
-> +	struct debug_obj *obj;
-> +	unsigned long flags;
-> +	int i;
-> +
-> +	printk(KERN_WARNING "ODEBUG: Out of memory. ODEBUG disabled\n");
-> +
-> +	for (i = 0; i < ODEBUG_HASH_SIZE; i++, db++) {
-> +		spin_lock_irqsave(&db->lock, flags);
-> +		hlist_for_each_entry_safe(obj, node, tmp, &db->list, node) {
-> +			hlist_del(&obj->node);
-> +			free_object(obj);
-> +		}
-> +		spin_unlock_irqrestore(&db->lock, flags);
-> +	}
-> +}
-
-> +/**
-> + * debug_object_init_on_stack - debug checks when an object on stack is
-> + *				initialized
-
-Unfortunately the first line of kernel-doc notation ("short description")
-is limited to one line.  Even if it exceeds 80 columns.  :(
-
-> + * @addr:	address of the object
-> + * @descr:	pointer to an object specific debug description structure
-> + */
-> +void debug_object_init_on_stack(void *addr, struct debug_obj_descr *descr)
-> +{
-> +	if (!debug_objects_enabled)
-> +		return;
-> +
-> +	__debug_object_init(addr, descr, 1);
-> +}
+Neither her patches nor yours went upstream verbatim at version one. 
+You need to look at what happens upstream, not what happened in your 
+private testing six months ago.
 
 
----
-~Randy
+> You mean the read-only sysfs attribute? :)
+
+I mean the attribute with both 'show' (read) and 'store' (write) 
+functions.  The perms do need to change, thanks for noticing that bug.
+
+
+> 
+>> Did anyone bother to read any code at all?
+>>
+>> When 285e9670 was updated for the scsi_evt_* interface, it should have 
+>> initialized the supported_events mask.
+>>
+>> And that is the fix -- initialize supported_events according to sr/sd's 
+>> needs, and revert this change (4d1566ed2100d074ccc654e5cf2e44cdea3a01d0) 
+>> as obviously broken.
+> 
+> You mean adding a new flag? As every device will "support" these events.
+
+Does every device attached to every controller wish to fire these events?
+
+If so, then that wants new flag, yes.
+
+	Jeff
+
+
