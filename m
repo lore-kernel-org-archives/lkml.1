@@ -1,21 +1,21 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760664AbYCUTUV (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 21 Mar 2008 15:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYCUTUH
+	id S1762286AbYCUVcT (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 21 Mar 2008 17:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbYCUVcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:20:07 -0400
-Received: from mail.connect.com.ua ([77.120.101.67]:59295 "EHLO
+	Fri, 21 Mar 2008 17:32:04 -0400
+Received: from mail.connect.com.ua ([77.120.101.67]:56235 "EHLO
 	mail.connect.com.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754079AbYCUTUF (ORCPT
+	with ESMTP id S1756374AbYCUVcE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:20:05 -0400
+	Fri, 21 Mar 2008 17:32:04 -0400
 To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JLQsNGBINC30LDQv9GA0L7RiNGD0Y7RgtGMINC00L4g0LPRgNGD0L/QuCEg?=  =?UTF-8?B?KDIxLjAzLjIwMDggMTg6MDgp?=
-Date: Fri, 21 Mar 2008 21:20:03 +0200
+Subject: =?UTF-8?B?0JLQsNGBINC30LDQv9GA0L7RiNGD0Y7RgtGMINC00L4g0LPRgNGD0L/QuCEg?=  =?UTF-8?B?KDIxLjAzLjIwMDggMjM6NTcp?=
+Date: Fri, 21 Mar 2008 23:32:01 +0200
 From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
 	<donotreply@connect.com.ua>
 Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <9908a569a0d07606a5224a118e720dff@localhost.localdomain>
+Message-ID: <52231aed419e69ad0a3f39e0f298e19e@localhost.localdomain>
 X-Priority: 3
 X-Mailer: PHPMailer [version 1.72]
 MIME-Version: 1.0
@@ -24,19 +24,19 @@ Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760664AbYCUTUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1762286AbYCUVcT@vger.kernel.org>
 
 =D0=A2=D1=83=D1=80=D1=87=D0=B8=D0=BD=D0=B0 =D0=95=D0=B2=D0=B0 =D0=B7=D0=
 =B0=D0=BF=D1=80=D0=BE=D1=81=D0=B8=D0=BB=D0=B0 =D0=92=D0=B0=D1=81 =D0=BF=
 =D1=80=D0=B8=D1=94=D0=B4=D0=BD=D0=B0=D1=82=D0=B8=D1=81=D1=8F =D0=B4=D0=BE=
- =D0=B3=D1=80=D1=83=D0=BF=D0=B8 STOP =D0=A1=D0=9D=D0=86=D0=94!. =D0=A5=D0=
+ =D0=B3=D1=80=D1=83=D0=BF=D0=B8 OLD SCHOOL (90-=D1=82=D1=96). =D0=A5=D0=
 =BE=D1=87=D0=B5=D1=82=D0=B5 =D0=B4=D1=96=D0=B7=D0=BD=D0=B0=D1=82=D0=B8=D1=
 =81=D1=8F =D0=BF=D0=BE=D0=B4=D1=80=D0=BE=D0=B1=D0=B8=D1=86=D1=96 =D1=82=
 =D0=B0 =D0=BF=D1=80=D0=B8=D0=B9=D0=BD=D1=8F=D1=82=D0=B8 =D0=B7=D0=B0=D0=
 =BF=D1=80=D0=BE=D1=88=D0=B5=D0=BD=D0=BD=D1=8F? =D0=9D=D0=B0=D1=82=D0=B8=
 =D1=81=D0=BD=D1=96=D1=82=D1=8C =D0=BD=D0=B0 =D0=BF=D0=BE=D1=81=D0=B8=D0=
 =BB=D0=B0=D0=BD=D0=BD=D1=8F:
-http://connect.com.ua/groups/spotlight?id=3D2078
+http://connect.com.ua/groups/spotlight?id=3D2076
 
 =D0=A3=D1=81=D0=BF=D1=96=D1=85=D1=96=D0=B2,
 =D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
