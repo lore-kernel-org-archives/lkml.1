@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbYCUVCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761316AbYCUVZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbYCUVCf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 17:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYCUVC0
+	id S1761316AbYCUVZd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 17:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372AbYCUVZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:02:26 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:5780 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754624AbYCUVCZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:02:25 -0400
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 21 Mar 2008 14:02:21 -0700
-Message-ID: <adabq57x02q.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Fri, 21 Mar 2008 17:25:24 -0400
+Received: from www.tglx.de ([62.245.132.106]:38682 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757343AbYCUVZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 17:25:24 -0400
+Date: Fri, 21 Mar 2008 22:24:53 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [patch 2/5] infrastructure to debug (dynamic) objects
+In-Reply-To: <20080321135513.8f1c2a69.randy.dunlap@oracle.com>
+Message-ID: <alpine.LFD.1.00.0803212215410.3781@apollo.tec.linutronix.de>
+References: <20080321200300.310393657@linutronix.de> <20080321200321.650649403@linutronix.de> <20080321135513.8f1c2a69.randy.dunlap@oracle.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Mar 2008 21:02:24.0057 (UTC) FILETIME=[DC7CA290:01C88B96]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Fri, 21 Mar 2008, Randy Dunlap wrote:
+> > +	  If you say Y here, additional code will be inserted into the
+> > +	  kernel to track the life time of various objects and validate
+> 
+>                               lifetime
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+Fixed.
+ 
+> > +	help
+> > +	  This enables checks whether a k/v free operation frees an area
+> 
+> Please say "kfree/vfree" so that we (I, others) don't have to think
+> "what the heck is a k/v free operation?".
 
-This tree is also available from kernel.org mirrors at:
+Ooops. Missed that one. Fixed it in the docs already.
+ 
+> > +/*
+> > + * We run out of memory. That means we probably have tons of objects
+> 
+>          ran
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+Sigh. This is one of the words which hunt me since school.
 
-Chien Tung (1):
-      RDMA/nes: Fix MSS calculation on RDMA path
+> > +/**
+> > + * debug_object_init_on_stack - debug checks when an object on stack is
+> > + *				initialized
+> 
+> Unfortunately the first line of kernel-doc notation ("short description")
+> is limited to one line.  Even if it exceeds 80 columns.  :(
 
- drivers/infiniband/hw/nes/nes_cm.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Fixed
+ 
+Thanks,
 
-
-diff --git a/drivers/infiniband/hw/nes/nes_cm.c b/drivers/infiniband/hw/nes/nes_cm.c
-index 39adb26..0bef878 100644
---- a/drivers/infiniband/hw/nes/nes_cm.c
-+++ b/drivers/infiniband/hw/nes/nes_cm.c
-@@ -40,6 +40,7 @@
- #include <linux/tcp.h>
- #include <linux/init.h>
- #include <linux/if_arp.h>
-+#include <linux/if_vlan.h>
- #include <linux/notifier.h>
- #include <linux/net.h>
- #include <linux/types.h>
-@@ -1072,7 +1073,7 @@ static struct nes_cm_node *make_cm_node(struct nes_cm_core *cm_core,
- 	ts = current_kernel_time();
- 	cm_node->tcp_cntxt.loc_seq_num = htonl(ts.tv_nsec);
- 	cm_node->tcp_cntxt.mss = nesvnic->max_frame_size - sizeof(struct iphdr) -
--			sizeof(struct tcphdr) - ETH_HLEN;
-+			sizeof(struct tcphdr) - ETH_HLEN - VLAN_HLEN;
- 	cm_node->tcp_cntxt.rcv_nxt = 0;
- 	/* get a unique session ID , add thread_id to an upcounter to handle race */
- 	atomic_inc(&cm_core->node_cnt);
+	tglx
