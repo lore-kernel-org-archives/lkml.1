@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbYCUWvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbYCUWwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbYCUWvu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762870AbYCUWqt
+	id S932192AbYCUWwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762876AbYCUWqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:46:49 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58934 "EHLO
+	Fri, 21 Mar 2008 18:46:51 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58935 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762861AbYCUWqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:46:48 -0400
-Message-Id: <20080321224444.477482247@sous-sol.org>
+	id S1762865AbYCUWqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:46:49 -0400
+Message-Id: <20080321224448.555683304@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:54 -0700
+Date: Fri, 21 Mar 2008 15:43:57 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
+       davem@davemloft.net, Eric Leblond <eric@inl.fr>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 64/76] nfsd: fix oops on access from high-numbered ports
-Content-Disposition: inline; filename=nfsd-fix-oops-on-access-from-high-numbered-ports.patch
+Subject: [patch 67/76] NETFILTER: nfnetlink_queue: fix computation of allocated size for netlink skb
+Content-Disposition: inline; filename=netfilter-nfnetlink_queue-fix-computation-of-allocated-size-for-netlink-skb.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,57 +35,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: Eric Leblond <eric@inl.fr>
 
-This bug was always here, but before my commit 6fa02839bf9412e18e77
-("recheck for secure ports in fh_verify"), it could only be triggered by
-failure of a kmalloc().  After that commit it could be triggered by a
-client making a request from a non-reserved port for access to an export
-marked "secure".  (Exports are "secure" by default.)
+Upstream commit cabaa9bf:
 
-The result is a struct svc_export with a reference count one too low,
-resulting in likely oopses next time the export is accessed.
+Size of the netlink skb was wrongly computed because the formula was using
+NLMSG_ALIGN instead of NLMSG_SPACE. NLMSG_ALIGN does not add the room for
+netlink header as NLMSG_SPACE does. This was causing a failure of message
+building in some cases.
 
-The reference counting here is not straightforward; a later patch will
-clean up fh_verify().
+On my test system, all messages for packets in range [8*k+41, 8*k+48] where k
+is an integer were invalid and the corresponding packets were dropped.
 
-Thanks to Lukas Hejtmanek for the bug report and followup.
-
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Eric Leblond <eric@inl.fr>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/nfsd/nfsfh.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/fs/nfsd/nfsfh.c
-+++ b/fs/nfsd/nfsfh.c
-@@ -231,6 +231,7 @@ fh_verify(struct svc_rqst *rqstp, struct
- 		fhp->fh_dentry = dentry;
- 		fhp->fh_export = exp;
- 		nfsd_nr_verified++;
-+		cache_get(&exp->h);
- 	} else {
- 		/*
- 		 * just rechecking permissions
-@@ -240,6 +241,7 @@ fh_verify(struct svc_rqst *rqstp, struct
- 		dprintk("nfsd: fh_verify - just checking\n");
- 		dentry = fhp->fh_dentry;
- 		exp = fhp->fh_export;
-+		cache_get(&exp->h);
- 		/*
- 		 * Set user creds for this exportpoint; necessary even
- 		 * in the "just checking" case because this may be a
-@@ -251,8 +253,6 @@ fh_verify(struct svc_rqst *rqstp, struct
- 		if (error)
- 			goto out;
- 	}
--	cache_get(&exp->h);
--
+ net/netfilter/nfnetlink_queue.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/net/netfilter/nfnetlink_queue.c
++++ b/net/netfilter/nfnetlink_queue.c
+@@ -353,7 +353,7 @@ nfqnl_build_packet_message(struct nfqnl_
  
- 	error = nfsd_mode_check(rqstp, dentry->d_inode->i_mode, type);
- 	if (error)
+ 	QDEBUG("entered\n");
+ 
+-	size =    NLMSG_ALIGN(sizeof(struct nfgenmsg))
++	size =    NLMSG_SPACE(sizeof(struct nfgenmsg))
+ 		+ nla_total_size(sizeof(struct nfqnl_msg_packet_hdr))
+ 		+ nla_total_size(sizeof(u_int32_t))	/* ifindex */
+ 		+ nla_total_size(sizeof(u_int32_t))	/* ifindex */
 
 -- 
