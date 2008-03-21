@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYCUMhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbYCUMie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYCUMhb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 08:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYCUMhQ
+	id S1757179AbYCUMie (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 08:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbYCUMi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 08:37:16 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43722 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754481AbYCUMhO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 08:37:14 -0400
-X-Sasl-enc: JxXyHBYxKyRp1q8RnLXc09uHqGWV2NeiS1533Vh/8Oo/ 1206103032
-Date: Fri, 21 Mar 2008 09:37:08 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>,
-       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
-       lm-sensors@lm-sensors.org
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Message-ID: <20080321123708.GE5586@khazad-dum.debian.net>
-References: <20080316184349.GA28543@khazad-dum.debian.net> <200803161246.23909.david-b@pacbell.net> <20080318001429.896acf51.akpm@linux-foundation.org> <20080320225612.GB20788@khazad-dum.debian.net> <20080320164741.734e838c.akpm@linux-foundation.org> <20080321003604.GC20788@khazad-dum.debian.net> <20080320180802.426ad2d1.akpm@linux-foundation.org> <47E37E04.3080303@s5r6.in-berlin.de>
+	Fri, 21 Mar 2008 08:38:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41817 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754611AbYCUMiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 08:38:25 -0400
+Date: Fri, 21 Mar 2008 13:38:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Willy Tarreau <w@1wt.eu>, Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: K8, GEODE_LX, CRUSOE, EFFICEON and CORE2 support
+	the cmovxx instructions.
+Message-ID: <20080321123810.GM25225@elte.hu>
+References: <20080312200128.GA24983@mailshack.com> <47DABEFB.3050704@goop.org> <1205523826.7441.1242464129@webmail.messagingengine.com> <20080314195520.GV2522@one.firstfloor.org> <1205530409.27413.1242484373@webmail.messagingengine.com> <20080315191946.GA21817@mailshack.com> <47DC2F08.9080004@zytor.com> <1205615192.29139.1242596503@webmail.messagingengine.com> <20080315211125.GB13012@1wt.eu> <20080316131656.GA29207@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47E37E04.3080303@s5r6.in-berlin.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080316131656.GA29207@mailshack.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0428]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Stefan Richter wrote:
-> and eth1394 to deal with temporary lack of of tlabels.  Alas I just  
-> recently received a report that eth1394's workaround is unsuccessful on  
-> non-preemptible uniprocessor kernels.  I suspect the same issue exists  
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-Which, I think, is exactly the config where in_atomic() can't be used to
-mean "in_scheduleable_context()" ?
+> x86: K8, GEODE_LX, CRUSOE, EFFICEON and CORE2 support CMOV.
+> 
+> Instead of summing up the cpu's that have support for the
+> cmov instruction, sum up the cpu's that don't.
+> 
+> GEODE_LX has no entry in arch/x86/Makefile_32.cpu, so it did not get 
+> any -march or -mtune arguments at all. I quite arbitrarily added 
+> -march=i686 -mtune=pentium-mmx. This way gcc is allowed to use cmov 
+> instructions.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+thanks, applied.
+
+	Ingo
