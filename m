@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbYCUWws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763402AbYCUWxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932277AbYCUWws (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762773AbYCUWrN
+	id S1763402AbYCUWxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYCUWtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:47:13 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58950 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762606AbYCUWrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:47:10 -0400
-Message-Id: <20080321224350.867706168@sous-sol.org>
-References: <20080321224250.144333319@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:13 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Joy Latten <latten@austin.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 23/76] CRYPTO xcbc: Fix crash with IPsec
-Content-Disposition: inline; filename=crypto-xcbc-fix-crash-with-ipsec.patch
+	Fri, 21 Mar 2008 18:49:09 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:58148 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763445AbYCUWtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:49:07 -0400
+Date: Fri, 21 Mar 2008 23:49:06 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: APM crashes when IO is going on
+In-Reply-To: <200803212245.13659.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0803212347430.25810@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz>
+ <200803212215.54854.rjw@sisk.pl> <Pine.LNX.4.64.0803212216540.16100@artax.karlin.mff.cuni.cz>
+ <200803212245.13659.rjw@sisk.pl>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
 
-From: Joy Latten <latten@austin.ibm.com>
+> On Friday, 21 of March 2008, Mikulas Patocka wrote:
+> > > > I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
+> > > > 
+> > > > --- when I run three threads concurrently reading raw disk partition and 
+> > > > suspend, I get 100% reproducible failure. (with one thread running it 
+> > > > usually succeeds, sometimes fail)
+> > > 
+> > > Are they userland threads or kernel threads?
+> > 
+> > Useland threads. Just dd if=/dev/hda of=/dev/null
+> > 
+> > > > Either the on-going I/O will jam BIOS and I need to remove power to 
+> > > > continue.
+> > > > 
+> > > > Or the machine suspends, wakes up and reports "hda: lost interrupt" 
+> > > > (2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
+> > > > recover and it is not able to send any more disk IOs).
+> > > > 
+> > > > How is suspending disk IO supposed to work?
+> > > 
+> > > That depends on the driver, if I understand your question correctly.
+> > 
+> > The driver is normal IDE.
+> 
+> Do you mean IDE_GENERIC/BLK_DEV_GENERIC?
 
-[ Upstream commit: 2f40a178e70030c4712fe63807c883f34c3645eb ]
+Compaq Triflex IDE. The computer is Compaq Armada 7400 (Pentium 2/300MHz)
 
-When using aes-xcbc-mac for authentication in IPsec,
-the kernel crashes. It seems this algorithm doesn't
-account for the space IPsec may make in scatterlist for authtag.
-Thus when crypto_xcbc_digest_update2() gets called,
-nbytes may be less than sg[i].length.
-Since nbytes is an unsigned number, it wraps
-at the end of the loop allowing us to go back
-into loop and causing crash in memcpy.
+Mikulas
 
-I used update function in digest.c to model this fix.
-Please let me know if it looks ok.
-
-Signed-off-by: Joy Latten <latten@austin.ibm.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- crypto/xcbc.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
---- a/crypto/xcbc.c
-+++ b/crypto/xcbc.c
-@@ -124,6 +124,11 @@ static int crypto_xcbc_digest_update2(st
- 		unsigned int offset = sg[i].offset;
- 		unsigned int slen = sg[i].length;
- 
-+		if (unlikely(slen > nbytes))
-+			slen = nbytes;
-+
-+		nbytes -= slen;
-+
- 		while (slen > 0) {
- 			unsigned int len = min(slen, ((unsigned int)(PAGE_SIZE)) - offset);
- 			char *p = crypto_kmap(pg, 0) + offset;
-@@ -177,7 +182,6 @@ static int crypto_xcbc_digest_update2(st
- 			offset = 0;
- 			pg++;
- 		}
--		nbytes-=sg[i].length;
- 		i++;
- 	} while (nbytes>0);
- 
-
--- 
+> Rafael
+> 
