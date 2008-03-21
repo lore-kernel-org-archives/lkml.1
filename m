@@ -1,105 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765556AbYCUXJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765615AbYCUXJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765556AbYCUXJX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbYCUWwL
+	id S1765615AbYCUXJq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbYCUWwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:52:11 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:39913 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932141AbYCUWwJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:52:13 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41290 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932146AbYCUWwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 18:52:09 -0400
-Subject: Re: [SCSI] fix media change events for polled devices
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
-In-Reply-To: <47E4383F.4030804@garzik.org>
-References: <200803211559.m2LFxPi6017869@hera.kernel.org>
-	 <47E3EC67.4050404@garzik.org>
-	 <1206128662.2961.37.camel@localhost.localdomain>
-	 <47E41C50.4020406@garzik.org>
-	 <1206133280.2961.45.camel@localhost.localdomain>
-	 <47E422F1.7080806@garzik.org>
-	 <1206133787.2961.52.camel@localhost.localdomain>
-	 <47E424E2.1030801@garzik.org>
-	 <1206136150.2961.79.camel@localhost.localdomain>
-	 <47E4383F.4030804@garzik.org>
-Content-Type: text/plain
-Date: Fri, 21 Mar 2008 17:52:04 -0500
-Message-Id: <1206139925.2961.94.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Message-Id: <20080321224430.459425233@sous-sol.org>
+References: <20080321224250.144333319@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 21 Mar 2008 15:43:43 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 53/76] VT notifier fix for VT switch
+Content-Disposition: inline; filename=vt-notifier-fix-for-vt-switch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-21 at 18:35 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > Anyway, realistically, since no CD or DVD on the market today seems to
-> > support the AHCI AN method, this argument is really moot ...
-> 
-> No, it's not.  This information is published to userspace EVEN WHEN AN 
-> SUPPORT IS ABSENT.  As any sane interface would do -- report a zero value.
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-Right, it still does this.  Currently hal is taking 0 in the
-media_change file to mean I don't support AN.
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-> Thus, the interface is useful even in the absence of AN.
+VT notifier callbacks need to be aware of console switches.  This is already
+partially done from console_callback(), but at that time fg_console, cursor
+positions, etc.  are not yet updated and hence screen readers fetch the old
+values.
 
-Yes, that's why we're having the argument ... it's the use of the event
-in the absence of AN that people care about.
+This adds an update notify after all of the values are updated in
+redraw_screen(vc, 1).
 
-> Anyway, to recap...
-> 
-> before your "fix":
-> 
-> 	userspace interface always reflected list of events sent
-> 	via my new API
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/char/vt.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-It didn't show a list to userspace ... it's a single file with a 0 or 1
-value.  0 means doesn't support AN, 1 means does.
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -702,6 +702,7 @@ void redraw_screen(struct vc_data *vc, i
+ 	if (is_switch) {
+ 		set_leds();
+ 		compute_shiftstate();
++		notify_update(vc);
+ 	}
+ }
+ 
 
-> after your "fix":
-> 
-> 	events may or may not be reflected in userspace interface,
-> 	who knows?
-
-It's still a single file with a 0 or 1 value.  0 means doesn't support
-AN, 1 means does.
-
-> Is that distinction so difficult to see?
-
-Well, if they have the same userspace effect, and display the same
-information to userspace, it's a bit hard to see how a user would
-distinguish them, yes.
-
-> This interface, like it or not, is in 2.6.24, which means its published 
-> and "out there."
-> 
-> This is a clear regression from 2.6.24.
-> 
-> supported_events' value was accurate in 2.6.24.  Now it is not.
-
-The current published API is the media_events file.  HAL is using that
-to indicate support for AN.  This is why we can't simply change it to 1
-wholesale because we'll confuse HAL (HAL still has to send polling
-events if AN isn't supported).
-
-So, the best fix for 2.6.25 at the current -rc6 is to keep the meaning
-of the media_change file the same (0 for no AN, 1 for AN) and let HAL
-take the polled events via udev, which basically means it's preserving
-the behaviour and isn't a regression.
-
-For 2.6.26 we can add a new media_events_polled (or some other name)
-file, fix the sysfs ro attribute and make them true writeable filters so
-some raving user can turn off polled events if they want and everyone
-will be happy.
-
-James
-
-
+-- 
