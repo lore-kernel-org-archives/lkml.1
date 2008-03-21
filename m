@@ -1,101 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760355AbYCUTjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbYCUTnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760355AbYCUTjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 15:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYCUTjY
+	id S1758781AbYCUTnW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYCUTnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:39:24 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52685 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755371AbYCUTjX (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:39:23 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
-In-Reply-To: Your message of "Fri, 21 Mar 2008 14:41:28 BST."
-             <20080321134128.GO27245@elte.hu>
-From: Valdis.Kletnieks@vt.edu
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080312003227.a94580e8.akpm@linux-foundation.org> <4351.1205374751@turing-police.cc.vt.edu>
-            <20080321134128.GO27245@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1206128318_2979P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Mar 2008 15:38:38 -0400
-Message-ID: <3343.1206128318@turing-police.cc.vt.edu>
+	Fri, 21 Mar 2008 15:43:04 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:14299 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752336AbYCUTnB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 15:43:01 -0400
+Date: Fri, 21 Mar 2008 13:42:59 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH  6/16][BUG] ACPI pci_slot: Fix slot removal path (Not
+	for mainline!)
+Message-ID: <20080321194259.GL17292@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E3360B.1010506@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E3360B.1010506@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1206128318_2979P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <3337.1206128318.1@turing-police.cc.vt.edu>
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Current ACPI pci slot driver scans ACPI namespace and slot list on
+> pci_bus structure to find the pci_slot pointer. It is definitely
+> redundant. In addition, it scans slot list on pci_bus without holding
+> pci_bus_sem. This patch fixes those problems.
 
-On Fri, 21 Mar 2008 14:41:28 BST, Ingo Molnar said:
+Tested and merged, thanks.
+
+/ac
+
 > 
-> * Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 > 
-> > I may have to try again to figure out how to bisect the git-x86 tree - 
-> > Ingo send me a pointer to his git-x86 cheat sheet, I looked at it but 
-> > I couldn't figure out how to tell 'git bisect' that the starting good 
-> > spot was "whatever corresponded to the git-x86 patch in 24-rc8-mm1" 
-> > and bad was "25-rc3-mm1". I tried using the first commit ID listed in 
-> > the patch, but that gave me this:
+> ---
+>  drivers/acpi/pci_slot.c |  104 +++++++++++++++++++++++++-----------------------
+>  1 file changed, 55 insertions(+), 49 deletions(-)
 > 
-> the best way to bisect the x86.git-only commits is to do:
+> Index: linux-2.6.25-rc6/drivers/acpi/pci_slot.c
+> ===================================================================
+> --- linux-2.6.25-rc6.orig/drivers/acpi/pci_slot.c
+> +++ linux-2.6.25-rc6/drivers/acpi/pci_slot.c
+> @@ -55,9 +55,17 @@ ACPI_MODULE_NAME("pci_slot");
+>  				MY_NAME , ## arg);		\
+>  	} while (0)
+>  
+> +struct acpi_pci_slot {
+> +	acpi_handle root_handle;	/* handle of the root bridge */
+> +	struct pci_slot *pci_slot;	/* corresponding pci_slot */
+> +	struct list_head list;		/* node in the list of slots */
+> +};
+> +
+>  static int acpi_pci_slot_add(acpi_handle handle);
+>  static void acpi_pci_slot_remove(acpi_handle handle);
+>  
+> +static LIST_HEAD(slot_list);
+> +static DEFINE_MUTEX(slot_list_lock);
+>  static struct acpi_pci_driver acpi_pci_slot_driver = {
+>  	.add = acpi_pci_slot_add,
+>  	.remove = acpi_pci_slot_remove,
+> @@ -105,34 +113,11 @@ out:
+>  	return retval;
+>  }
+>  
+> -/*
+> - * unregister_slot
+> - *
+> - * Called once for each SxFy object in the namespace. Each call to
+> - * pci_destroy_slot decrements the refcount on the pci_slot, and
+> - * eventually calls kobject_unregister at the appropriate time.
+> - */
+> -static acpi_status
+> -unregister_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+> -{
+> -	int device;
+> -	unsigned long sun;
+> -	struct pci_slot *slot, *tmp;
+> -	struct pci_bus *pci_bus = context;
+> -
+> -	if (check_slot(handle, &device, &sun))
+> -		return AE_OK;
+> -
+> -	/* FIXME - Need pci_bus_sem to be held */
+> -	list_for_each_entry_safe(slot, tmp, &pci_bus->slots, list) {
+> -		if (slot->number == device) {
+> -			pci_destroy_slot(slot);
+> -			break;
+> -		}
+> -	}
+> -
+> -	return AE_OK;
+> -}
+> +struct callback_args {
+> +	acpi_walk_callback	user_function;	/* only for walk_p2p_bridge */
+> +	struct pci_bus		*pci_bus;
+> +	acpi_handle		root_handle;
+> +};
+>  
+>  /*
+>   * register_slot
+> @@ -150,17 +135,33 @@ register_slot(acpi_handle handle, u32 lv
+>  	int device;
+>  	unsigned long sun;
+>  	char name[KOBJ_NAME_LEN];
+> -
+> +	struct acpi_pci_slot *slot;
+>  	struct pci_slot *pci_slot;
+> -	struct pci_bus *pci_bus = context;
+> +	struct callback_args *parent_context = context;
+> +	struct pci_bus *pci_bus = parent_context->pci_bus;
+>  
+>  	if (check_slot(handle, &device, &sun))
+>  		return AE_OK;
+>  
+> +	slot = kmalloc(sizeof(*slot), GFP_KERNEL);
+> +	if (!slot) {
+> +		err("%s: cannot allocate memory\n", __FUNCTION__);
+> +		return AE_OK;
+> +	}
+> +
+>  	snprintf(name, sizeof(name), "%u", (u32)sun);
+>  	pci_slot = pci_create_slot(pci_bus, device, name);
+> -	if (IS_ERR(pci_slot))
+> +	if (IS_ERR(pci_slot)) {
+>  		err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
+> +		kfree(slot);
+> +	}
+> +
+> +	slot->root_handle = parent_context->root_handle;
+> +	slot->pci_slot = pci_slot;
+> +	INIT_LIST_HEAD(&slot->list);
+> +	mutex_lock(&slot_list_lock);
+> +	list_add(&slot->list, &slot_list);
+> +	mutex_unlock(&slot_list_lock);
+>  
+>  	dbg("pci_slot: %#lx, pci_bus: %x, device: %d, name: %s\n",
+>  		(uint64_t)pci_slot, pci_bus->number, device, name);
+> @@ -168,11 +169,6 @@ register_slot(acpi_handle handle, u32 lv
+>  	return AE_OK;
+>  }
+>  
+> -struct p2p_bridge_context {
+> -	acpi_walk_callback	user_function;
+> -	struct pci_bus		*pci_bus;
+> -};
+> -
+>  /*
+>   * walk_p2p_bridge - discover and walk p2p bridges
+>   * @handle: points to an acpi_pci_root
+> @@ -192,8 +188,8 @@ walk_p2p_bridge(acpi_handle handle, u32 
+>  
+>  	struct pci_dev *dev;
+>  	struct pci_bus *pci_bus;
+> -	struct p2p_bridge_context child_context;
+> -	struct p2p_bridge_context *parent_context = context;
+> +	struct callback_args child_context;
+> +	struct callback_args *parent_context = context;
+>  
+>  	pci_bus = parent_context->pci_bus;
+>  	user_function = parent_context->user_function;
+> @@ -213,14 +209,16 @@ walk_p2p_bridge(acpi_handle handle, u32 
+>  	if (!dev || !dev->subordinate)
+>  		goto out;
+>  
+> +	child_context.pci_bus = dev->subordinate;
+> +	child_context.user_function = user_function;
+> +	child_context.root_handle = parent_context->root_handle;
+> +
+>  	dbg("p2p bridge walk, pci_bus = %x\n", dev->subordinate->number);
+>  	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+> -				     user_function, dev->subordinate, NULL);
+> +				     user_function, &child_context, NULL);
+>  	if (ACPI_FAILURE(status))
+>  		goto out;
+>  
+> -	child_context.pci_bus = dev->subordinate;
+> -	child_context.user_function = user_function;
+>  	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+>  				     walk_p2p_bridge, &child_context, NULL);
+>  out:
+> @@ -246,7 +244,7 @@ walk_root_bridge(acpi_handle handle, acp
+>  	acpi_status status;
+>  	acpi_handle dummy_handle;
+>  	struct pci_bus *pci_bus;
+> -	struct p2p_bridge_context context;
+> +	struct callback_args context;
+>  
+>  	/* If the bridge doesn't have _STA, we assume it is always there */
+>  	status = acpi_get_handle(handle, "_STA", &dummy_handle);
+> @@ -271,14 +269,16 @@ walk_root_bridge(acpi_handle handle, acp
+>  	if (!pci_bus)
+>  		return 0;
+>  
+> +	context.pci_bus = pci_bus;
+> +	context.user_function = user_function;
+> +	context.root_handle = handle;
+> +
+>  	dbg("root bridge walk, pci_bus = %x\n", pci_bus->number);
+>  	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+> -				     user_function, pci_bus, NULL);
+> +				     user_function, &context, NULL);
+>  	if (ACPI_FAILURE(status))
+>  		return status;
+>  
+> -	context.pci_bus = pci_bus;
+> -	context.user_function = user_function;
+>  	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+>  				     walk_p2p_bridge, &context, NULL);
+>  	if (ACPI_FAILURE(status))
+> @@ -310,11 +310,17 @@ acpi_pci_slot_add(acpi_handle handle)
+>  static void
+>  acpi_pci_slot_remove(acpi_handle handle)
+>  {
+> -	acpi_status status;
+> +	struct acpi_pci_slot *slot, *tmp;
+>  
+> -	status = walk_root_bridge(handle, unregister_slot);
+> -	if (ACPI_FAILURE(status))
+> -		err("%s: unregister_slot failure - %d\n", __func__, status);
+> +	mutex_lock(&slot_list_lock);
+> +	list_for_each_entry_safe(slot, tmp, &slot_list, list) {
+> +		if (slot->root_handle == handle) {
+> +			list_del(&slot->list);
+> +			pci_destroy_slot(slot->pci_slot);
+> +			kfree(slot);
+> +		}
+> +	}
+> +	mutex_unlock(&slot_list_lock);
+>  }
+>  
+>  #ifdef CONFIG_DMI
 > 
->   git-bisect bad x86/latest
->   git-bisect good x86/base
-
-OK, *that* got the bisect running.  However, after a few bisections, things
-are getting weird...
-
-(Note - I haven't done a git pull or update for a week and a bit, so the tree is
-as of 03/14 or so...)
-
-'git bisect log' reports:
-
-git-bisect start
-# bad: [21a418440c44b6a2cdf38fea2533a5398d6fd939] Move mp_bus_id_to_node to numa.c
-git-bisect bad 21a418440c44b6a2cdf38fea2533a5398d6fd939
-# good: [dba92d3bc49c036056a48661d2d8fefe4c78375a] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband
-git-bisect good dba92d3bc49c036056a48661d2d8fefe4c78375a
-# good: [53f0f2bc547fd13a70a6adb86592301ec83b9fc7] x86 mmiotrace: comment about user space ABI
-git-bisect good 53f0f2bc547fd13a70a6adb86592301ec83b9fc7
-# good: [53f0f2bc547fd13a70a6adb86592301ec83b9fc7] x86 mmiotrace: comment about user space ABI
-git-bisect good 53f0f2bc547fd13a70a6adb86592301ec83b9fc7
-# good: [53f0f2bc547fd13a70a6adb86592301ec83b9fc7] x86 mmiotrace: comment about user space ABI
-git-bisect good 53f0f2bc547fd13a70a6adb86592301ec83b9fc7
-# good: [2702dd1be087ac7307b731d884ee48db6e1cdff6] x86: create smpcommon.c
-git-bisect good 2702dd1be087ac7307b731d884ee48db6e1cdff6
-# good: [ad42b55d36238ebb9fa4d7a538ef691a76397c46] x86: add KERN_INFO to show_unhandled_signals printout
-git-bisect good ad42b55d36238ebb9fa4d7a538ef691a76397c46
-# good: [56b412e63863ea82a5720315076c7dbd1d9888cd] x86: change x86 to use generic find_next_bit
-git-bisect good 56b412e63863ea82a5720315076c7dbd1d9888cd
-# good: [42de918f25dc9a49fb9688e22c2a3f2b156cc1bf] x86: prevent unconditional writes to DebugCtl MSR
-git-bisect good 42de918f25dc9a49fb9688e22c2a3f2b156cc1bf
-
-At this point, 'git bisect visualize' shows 9 commits left to bisect through,
-and all are dated 03/10 or later.  However, since 25-rc3-mm1 had the problem,
-it had to be something in-tree as of 03/05.
-
-Is it possible that the problem code was in the git-x86 tree when Andrew
-pulled for -rc3-mm1 and -rc5-mm1, but had been reverted by the time I grabbed
-the tree, so the /x86/base' was in fact *good* by that point?
-
-
---==_Exmh_1206128318_2979P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFH5A6+cC3lWbTT17ARApIaAKCUkw36qYrRZkiPozSWnFgJaHc99wCdHkXB
-lb0sRBjio0QU92Ci56xA9/o=
-=N84n
------END PGP SIGNATURE-----
-
---==_Exmh_1206128318_2979P--
+> 
