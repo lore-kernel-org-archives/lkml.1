@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751152AbYCUXqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762568AbYCUXqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751152AbYCUXqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYCUXpc
+	id S1762568AbYCUXqo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYCUXpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 19:45:32 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60159 "EHLO
+	Fri, 21 Mar 2008 19:45:33 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60169 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbYCUXpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 19:45:22 -0400
-Message-Id: <20080321224333.400857992@sous-sol.org>
+	id S1752410AbYCUXpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 19:45:23 -0400
+Message-Id: <20080321224338.262703483@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:42:57 -0700
+Date: Fri, 21 Mar 2008 15:43:01 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>,
+       "Denis V. Lunev" <den@openvz.org>, David S Miller <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 07/76] NIU: Bump driver version and release date.
-Content-Disposition: inline; filename=niu-bump-driver-version-and-release-date.patch
+Subject: [patch 11/76] IPV6: dst_entry leak in ip4ip6_err.
+Content-Disposition: inline; filename=ipv6-dst_entry-leak-in-ip4ip6_err.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,30 +34,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Denis V. Lunev <den@openvz.org>
 
-Upstream commit: a442585952f137bd4cdb1f2f3166e4157d383b82
+Upstream commit: 9937ded8e44de8865cba1509d24eea9d350cebf0
 
+The result of the ip_route_output is not assigned to skb. This means that
+- it is leaked
+- possible OOPS below dereferrencing skb->dst
+- no ICMP message for this case
+
+Signed-off-by: Denis V. Lunev <den@openvz.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- drivers/net/niu.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/ipv6/ip6_tunnel.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -33,8 +33,8 @@
- 
- #define DRV_MODULE_NAME		"niu"
- #define PFX DRV_MODULE_NAME	": "
--#define DRV_MODULE_VERSION	"0.6"
--#define DRV_MODULE_RELDATE	"January 5, 2008"
-+#define DRV_MODULE_VERSION	"0.7"
-+#define DRV_MODULE_RELDATE	"February 18, 2008"
- 
- static char version[] __devinitdata =
- 	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
+--- a/net/ipv6/ip6_tunnel.c
++++ b/net/ipv6/ip6_tunnel.c
+@@ -550,6 +550,7 @@ ip4ip6_err(struct sk_buff *skb, struct i
+ 			ip_rt_put(rt);
+ 			goto out;
+ 		}
++		skb2->dst = (struct dst_entry *)rt;
+ 	} else {
+ 		ip_rt_put(rt);
+ 		if (ip_route_input(skb2, eiph->daddr, eiph->saddr, eiph->tos,
 
 -- 
