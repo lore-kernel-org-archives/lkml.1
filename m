@@ -1,75 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYCUGTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYCUGTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbYCUGTF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 02:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYCUGSy
+	id S1755888AbYCUGTg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 02:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYCUGSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 21 Mar 2008 02:18:54 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53274 "EHLO relay.sgi.com"
+Received: from relay2.sgi.com ([192.48.171.30]:53276 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753385AbYCUGSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753392AbYCUGSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 02:18:53 -0400
-Message-Id: <20080321061703.921169367@sgi.com>
+Message-Id: <20080321061724.210918641@sgi.com>
+References: <20080321061703.921169367@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Mar 2008 23:17:03 -0700
+Date: Thu, 20 Mar 2008 23:17:04 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [00/14] Virtual Compound Page Support V3
+Subject: [01/14] vcompound: Return page array on vunmap
+Content-Disposition: inline; filename=0001-vcompound-Return-page-array-on-vunmap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocations of larger pages are not reliable in Linux. If larger
-pages have to be allocated then one faces various choices of allowing
-graceful fallback or using vmalloc with a performance penalty due
-to the use of a page table. Virtual Compound pages are
-a simple solution out of this dilemma.
+Make vunmap return the page array that was used at vmap. This is useful
+if one has no structures to track the page array but simply stores the
+virtual address somewhere. The disposition of the page array can be
+decided upon after vunmap. vfree() may now also be used instead of
+vunmap which will release the page array after vunmap'ping it.
 
-A virtual compound allocation means that there will be first of all
-an attempt to satisfy the request with physically contiguous memory.
-If that is not possible then a virtually contiguous memory will be
-created.
+As noted by Kamezawa: The same subsystem that provides the page array
+to vmap must must use its own method to dispose of the page array.
 
-This has two advantages:
+If vfree() is called to free the page array then the page array must either
+be
 
-1. Current uses of vmalloc can be converted to allocate virtual
-   compounds instead. In most cases physically contiguous
-   memory can be used which avoids the vmalloc performance
-   penalty. See f.e. the e1000 driver patch.
+1. Allocated via the slab allocator
 
-2. Uses of higher order allocations (stacks, buffers etc) can be
-   converted to use virtual compounds instead. Physically contiguous
-   memory will still be used for those higher order allocs in general
-   but the system can degrade to the use of vmalloc should memory
-   become heavily fragmented.
+2. Allocated via vmalloc but then VM_VPAGES must have been passed at
+   vunmap to specify that a vfree is needed.
 
-There is a compile time option to switch on fallback for
-testing purposes. Virtually mapped mmemory may behave differently
-and the CONFIG_FALLBACK_ALWAYS option will ensure that the code is
-tested to deal with virtual memory.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---
+ include/linux/vmalloc.h |    2 +-
+ mm/vmalloc.c            |   32 ++++++++++++++++++++++----------
+ 2 files changed, 23 insertions(+), 11 deletions(-)
 
-V2->V3:
-- Put the code into mm/vmalloc.c and leave the page allocator alone.
-- Add a series of examples where virtual compound pages can be used.
-- Diffed on top of the page flags and the vmalloc info patches
-  already in mm.
-- Simplify things by omitting some of the more complex code
-  that used to be in there.
-
-V1->V2
-- Remove some cleanup patches and the SLUB patches from this set.
-- Transparent vcompound support through page_address() and
-  virt_to_head_page().
-- Additional use cases.
-- Factor the code better for an easier read
-- Add configurable stack size.
-- Follow up on various suggestions made for V1
-
-RFC->V1
-- Complete support for all compound functions for virtual compound pages
-  (including the compound_nth_page() necessary for LBS mmap support)
-- Fix various bugs
-- Fix i386 build
+Index: linux-2.6.25-rc5-mm1/include/linux/vmalloc.h
+===================================================================
+--- linux-2.6.25-rc5-mm1.orig/include/linux/vmalloc.h	2008-03-18 12:20:12.295837331 -0700
++++ linux-2.6.25-rc5-mm1/include/linux/vmalloc.h	2008-03-19 18:17:42.093443900 -0700
+@@ -50,7 +50,7 @@ extern void vfree(const void *addr);
+ 
+ extern void *vmap(struct page **pages, unsigned int count,
+ 			unsigned long flags, pgprot_t prot);
+-extern void vunmap(const void *addr);
++extern struct page **vunmap(const void *addr);
+ 
+ extern int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
+ 							unsigned long pgoff);
+Index: linux-2.6.25-rc5-mm1/mm/vmalloc.c
+===================================================================
+--- linux-2.6.25-rc5-mm1.orig/mm/vmalloc.c	2008-03-18 13:48:56.344025498 -0700
++++ linux-2.6.25-rc5-mm1/mm/vmalloc.c	2008-03-19 18:17:42.125444187 -0700
+@@ -153,6 +153,7 @@ int map_vm_area(struct vm_struct *area, 
+ 	unsigned long addr = (unsigned long) area->addr;
+ 	unsigned long end = addr + area->size - PAGE_SIZE;
+ 	int err;
++	area->pages = *pages;
+ 
+ 	BUG_ON(addr >= end);
+ 	pgd = pgd_offset_k(addr);
+@@ -163,6 +164,8 @@ int map_vm_area(struct vm_struct *area, 
+ 			break;
+ 	} while (pgd++, addr = next, addr != end);
+ 	flush_cache_vmap((unsigned long) area->addr, end);
++
++	area->nr_pages = *pages - area->pages;
+ 	return err;
+ }
+ EXPORT_SYMBOL_GPL(map_vm_area);
+@@ -372,17 +375,18 @@ struct vm_struct *remove_vm_area(const v
+ 	return v;
+ }
+ 
+-static void __vunmap(const void *addr, int deallocate_pages)
++static struct page **__vunmap(const void *addr, int deallocate_pages)
+ {
+ 	struct vm_struct *area;
++	struct page **pages;
+ 
+ 	if (!addr)
+-		return;
++		return NULL;
+ 
+ 	if ((PAGE_SIZE-1) & (unsigned long)addr) {
+ 		printk(KERN_ERR "Trying to vfree() bad address (%p)\n", addr);
+ 		WARN_ON(1);
+-		return;
++		return NULL;
+ 	}
+ 
+ 	area = remove_vm_area(addr);
+@@ -390,29 +394,30 @@ static void __vunmap(const void *addr, i
+ 		printk(KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
+ 				addr);
+ 		WARN_ON(1);
+-		return;
++		return NULL;
+ 	}
+ 
++	pages = area->pages;
+ 	debug_check_no_locks_freed(addr, area->size);
+ 
+ 	if (deallocate_pages) {
+ 		int i;
+ 
+ 		for (i = 0; i < area->nr_pages; i++) {
+-			struct page *page = area->pages[i];
++			struct page *page = pages[i];
+ 
+ 			BUG_ON(!page);
+ 			__free_page(page);
+ 		}
+ 
+ 		if (area->flags & VM_VPAGES)
+-			vfree(area->pages);
++			vfree(pages);
+ 		else
+-			kfree(area->pages);
++			kfree(pages);
+ 	}
+ 
+ 	kfree(area);
+-	return;
++	return pages;
+ }
+ 
+ /**
+@@ -441,10 +446,10 @@ EXPORT_SYMBOL(vfree);
+  *
+  *	Must not be called in interrupt context.
+  */
+-void vunmap(const void *addr)
++struct page **vunmap(const void *addr)
+ {
+ 	BUG_ON(in_interrupt());
+-	__vunmap(addr, 0);
++	return __vunmap(addr, 0);
+ }
+ EXPORT_SYMBOL(vunmap);
+ 
+@@ -457,6 +462,13 @@ EXPORT_SYMBOL(vunmap);
+  *
+  *	Maps @count pages from @pages into contiguous kernel virtual
+  *	space.
++ *
++ *	The page array may be freed via vfree() on the virtual address
++ *	returned. In that case the page array must be allocated via
++ *	the slab allocator. If the page array was allocated via
++ *	vmalloc then VM_VPAGES must be specified in the flags. There is
++ *	no support for vfree() to free a page array allocated via the
++ *	page allocator.
+  */
+ void *vmap(struct page **pages, unsigned int count,
+ 		unsigned long flags, pgprot_t prot)
 
 -- 
