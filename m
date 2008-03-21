@@ -1,57 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbYCUVqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbYCUVqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759367AbYCUVqM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 17:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYCUVp5
+	id S1760925AbYCUVqv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 17:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYCUVqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:45:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43256 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755616AbYCUVp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:45:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Subject: Re: APM crashes when IO is going on
-Date: Fri, 21 Mar 2008 22:45:13 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz> <200803212215.54854.rjw@sisk.pl> <Pine.LNX.4.64.0803212216540.16100@artax.karlin.mff.cuni.cz>
-In-Reply-To: <Pine.LNX.4.64.0803212216540.16100@artax.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 21 Mar 2008 17:46:43 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48773 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755872AbYCUVqm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 17:46:42 -0400
+Date: Fri, 21 Mar 2008 21:31:08 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Madhou <madh2001@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: shell outputs anything typed when the kernel thinks@100%
+Message-ID: <20080321213108.1bb491ef@core>
+In-Reply-To: <200803212211.43833.madh2001@gmail.com>
+References: <200803212211.43833.madh2001@gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803212245.13659.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 of March 2008, Mikulas Patocka wrote:
-> > > I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
-> > > 
-> > > --- when I run three threads concurrently reading raw disk partition and 
-> > > suspend, I get 100% reproducible failure. (with one thread running it 
-> > > usually succeeds, sometimes fail)
-> > 
-> > Are they userland threads or kernel threads?
-> 
-> Useland threads. Just dd if=/dev/hda of=/dev/null
-> 
-> > > Either the on-going I/O will jam BIOS and I need to remove power to 
-> > > continue.
-> > > 
-> > > Or the machine suspends, wakes up and reports "hda: lost interrupt" 
-> > > (2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
-> > > recover and it is not able to send any more disk IOs).
-> > > 
-> > > How is suspending disk IO supposed to work?
-> > 
-> > That depends on the driver, if I understand your question correctly.
-> 
-> The driver is normal IDE.
+> The time that the kernel takes for checking usernames is about one second on 
+> my laptop which is equipped with an intel centrino 1,7GHz.
 
-Do you mean IDE_GENERIC/BLK_DEV_GENERIC?
-
-Rafael
+The kernel doesn't do anything with usernames. Most likely your user
+space login programs are configured with an intentional delay to stop
+dictionary attacks.
