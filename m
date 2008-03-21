@@ -1,55 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYCUV0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762438AbYCUV12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758462AbYCUV0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 17:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759242AbYCUVZv
+	id S1762438AbYCUV12 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 17:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYCUV1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:25:51 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:11428 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757372AbYCUVZu (ORCPT
+	Fri, 21 Mar 2008 17:27:18 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50204 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754859AbYCUV1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:25:50 -0400
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [13/14] vcompound: Use vcompound for swap_map
-References: <20080321061703.921169367@sgi.com>
-	<20080321061727.269764652@sgi.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 21 Mar 2008 22:25:47 +0100
-In-Reply-To: <20080321061727.269764652@sgi.com>
-Message-ID: <8763vfixb8.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Mar 2008 21:19:11.0050 (UTC) FILETIME=[34B392A0:01C88B99]
+	Fri, 21 Mar 2008 17:27:17 -0400
+Subject: [PATCH 1/2] sysfs: allow the group is_visible() method to return a
+	mode and add an update API
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg KH <greg@kroah.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 21 Mar 2008 16:27:12 -0500
+Message-Id: <1206134832.2961.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter <clameter@sgi.com> writes:
+We have a problem in scsi_transport_spi in that we need to customise
+not only the visibility of the attributes, but also their mode.  Fix
+this by making the is_visible() callback return a mode, with 0
+indicating is not visible.
 
-> Use virtual compound pages for the large swap maps. This only works for
-> swap maps that are smaller than a MAX_ORDER block though. If the swap map
-> is larger then there is no way around the use of vmalloc.
+Also add a sysfs_update_group() API to allow us to change either the
+visibility or mode of the files at any time on the fly.
 
-Have you considered the potential memory wastage from rounding up
-to the next page order now? (similar in all the other patches
-to change vmalloc). e.g. if the old size was 64k + 1 byte it will
-suddenly get 128k now. That is actually not a uncommon situation
-in my experience; there are often power of two buffers with 
-some small headers.
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
 
-A long time ago (in 2.4-aa) I did something similar for module loading
-as an experiment to avoid too many TLB misses. The module loader
-would first try to get a continuous range in the direct mapping and 
-only then fall back to vmalloc.
+Greg, can I take this through SCSI, please ... assuming it's OK?  We
+need this to fix up the SPI transport class.
 
-But I used a simple trick to avoid the waste problem: it allocated a
-continuous range rounded up to the next page-size order and then freed
-the excess pages back into the page allocator. That was called
-alloc_exact(). If you replace vmalloc with alloc_pages you should
-use something like that too I think.
+Thanks,
 
--Andi
+James
+
+
+ fs/sysfs/file.c       |   14 ++++++++++----
+ fs/sysfs/group.c      |   47 +++++++++++++++++++++++++++++++++++------------
+ fs/sysfs/sysfs.h      |    2 ++
+ include/linux/sysfs.h |    4 +++-
+ 4 files changed, 50 insertions(+), 17 deletions(-)
+
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 6f5954a..8f7ee10 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -490,11 +490,10 @@ const struct file_operations sysfs_file_operations = {
+ 	.poll		= sysfs_poll,
+ };
+ 
+-
+-int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
+-		   int type)
++int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
++			const struct attribute *attr, int type, mode_t amode)
+ {
+-	umode_t mode = (attr->mode & S_IALLUGO) | S_IFREG;
++	umode_t mode = (amode & S_IALLUGO) | S_IFREG;
+ 	struct sysfs_addrm_cxt acxt;
+ 	struct sysfs_dirent *sd;
+ 	int rc;
+@@ -515,6 +514,13 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
+ }
+ 
+ 
++int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
++		   int type)
++{
++	return sysfs_add_file_mode(dir_sd, attr, type, attr->mode);
++}
++
++
+ /**
+  *	sysfs_create_file - create an attribute file for an object.
+  *	@kobj:	object we're creating for. 
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index 4779049..6c1232a 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -23,30 +23,38 @@ static void remove_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+ 	int i;
+ 
+ 	for (i = 0, attr = grp->attrs; *attr; i++, attr++)
+-		if (!grp->is_visible ||
+-		    grp->is_visible(kobj, *attr, i))
+-			sysfs_hash_and_remove(dir_sd, (*attr)->name);
++		sysfs_hash_and_remove(dir_sd, (*attr)->name);
+ }
+ 
+ static int create_files(struct sysfs_dirent *dir_sd, struct kobject *kobj,
+-			const struct attribute_group *grp)
++			const struct attribute_group *grp, int update)
+ {
+ 	struct attribute *const* attr;
+ 	int error = 0, i;
+ 
+-	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++)
+-		if (!grp->is_visible ||
+-		    grp->is_visible(kobj, *attr, i))
+-			error |=
+-				sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
++	for (i = 0, attr = grp->attrs; *attr && !error; i++, attr++) {
++		mode_t mode = 0;
++
++		if (update)
++			sysfs_hash_and_remove(dir_sd, (*attr)->name);
++		if (grp->is_visible) {
++			mode = grp->is_visible(kobj, *attr, i);
++			if (!mode)
++				continue;
++		}
++		error = sysfs_add_file_mode(dir_sd, *attr, SYSFS_KOBJ_ATTR,
++					    (*attr)->mode | mode);
++		if (unlikely(error))
++			break;
++	}
+ 	if (error)
+ 		remove_files(dir_sd, kobj, grp);
+ 	return error;
+ }
+ 
+ 
+-int sysfs_create_group(struct kobject * kobj, 
+-		       const struct attribute_group * grp)
++static int internal_create_group(struct kobject * kobj, int update,
++				 const struct attribute_group * grp)
+ {
+ 	struct sysfs_dirent *sd;
+ 	int error;
+@@ -60,7 +68,7 @@ int sysfs_create_group(struct kobject * kobj,
+ 	} else
+ 		sd = kobj->sd;
+ 	sysfs_get(sd);
+-	error = create_files(sd, kobj, grp);
++	error = create_files(sd, kobj, grp, update);
+ 	if (error) {
+ 		if (grp->name)
+ 			sysfs_remove_subdir(sd);
+@@ -69,6 +77,20 @@ int sysfs_create_group(struct kobject * kobj,
+ 	return error;
+ }
+ 
++int sysfs_create_group(struct kobject * kobj,
++		       const struct attribute_group * grp)
++{
++	return internal_create_group(kobj, 0, grp);
++}
++
++int sysfs_update_group(struct kobject * kobj,
++		       const struct attribute_group * grp)
++{
++	return internal_create_group(kobj, 1, grp);
++}
++
++
++
+ void sysfs_remove_group(struct kobject * kobj, 
+ 			const struct attribute_group * grp)
+ {
+@@ -95,4 +117,5 @@ void sysfs_remove_group(struct kobject * kobj,
+ 
+ 
+ EXPORT_SYMBOL_GPL(sysfs_create_group);
++EXPORT_SYMBOL_GPL(sysfs_update_group);
+ EXPORT_SYMBOL_GPL(sysfs_remove_group);
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 52aaa8c..2915959 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -155,6 +155,8 @@ extern const struct file_operations sysfs_file_operations;
+ int sysfs_add_file(struct sysfs_dirent *dir_sd,
+ 		   const struct attribute *attr, int type);
+ 
++int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
++			const struct attribute *attr, int type, mode_t amode);
+ /*
+  * bin.c
+  */
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 0f388af..07d9c12 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -32,7 +32,7 @@ struct attribute {
+ 
+ struct attribute_group {
+ 	const char		*name;
+-	int			(*is_visible)(struct kobject *,
++	mode_t			(*is_visible)(struct kobject *,
+ 					      struct attribute *, int);
+ 	struct attribute	**attrs;
+ };
+@@ -105,6 +105,8 @@ void sysfs_remove_link(struct kobject *kobj, const char *name);
+ 
+ int __must_check sysfs_create_group(struct kobject *kobj,
+ 				    const struct attribute_group *grp);
++int sysfs_update_group(struct kobject *kobj,
++		       const struct attribute_group *grp);
+ void sysfs_remove_group(struct kobject *kobj,
+ 			const struct attribute_group *grp);
+ int sysfs_add_file_to_group(struct kobject *kobj,
+-- 
+1.5.4.3
+
+
 
