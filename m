@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYCUFjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYCUGTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbYCUFjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 01:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYCUFjQ
+	id S1754845AbYCUGTF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 02:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYCUGSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 01:39:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:57152 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbYCUFjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 01:39:16 -0400
-Message-ID: <47E34917.8030206@goop.org>
-Date: Thu, 20 Mar 2008 22:35:19 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: How to avoid spurious lockdep warnings?
-References: <47E2ECF3.2050606@goop.org> <1206056698.6437.70.camel@lappy>
-In-Reply-To: <1206056698.6437.70.camel@lappy>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 02:18:54 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:53274 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753385AbYCUGSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 02:18:53 -0400
+Message-Id: <20080321061703.921169367@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 20 Mar 2008 23:17:03 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [00/14] Virtual Compound Page Support V3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2008-03-20 at 16:02 -0700, Jeremy Fitzhardinge wrote:
->   
->> In a Xen system, when a new pagetable is about to be put in use it is 
->> "pinned", meaning that each page in the pagetable is registered with the 
->> hypervisor.  This is done in arch/x86/xen/mmu.c:pin_page().
->>
->> In order to make this efficient, the hypercalls for pinning are batched, 
->> so that multiple pages are submitted at once in a single multicall.  
->> While a page is batched pending the hypercall, its corresponding 
->> pte_lock is held.
->>
->> This means that the code can end up holding multiple pte locks at once, 
->> though it is guaranteed to never try to hold the same lock at once.  
->> However, because these locks are in the same lock class, I get a 
->> spurious warning from lockdep.  Is there some way I can get rid of this 
->> warning?
->>     
->
-> How many locks at once?
+Allocations of larger pages are not reliable in Linux. If larger
+pages have to be allocated then one faces various choices of allowing
+graceful fallback or using vmalloc with a performance penalty due
+to the use of a page table. Virtual Compound pages are
+a simple solution out of this dilemma.
 
-(We discussed this, but for the record...)
+A virtual compound allocation means that there will be first of all
+an attempt to satisfy the request with physically contiguous memory.
+If that is not possible then a virtually contiguous memory will be
+created.
 
-The main limit is the batch size, which is currently 32.  There's 
-nothing magic about this number, so it may change (I can't imagine it 
-getting much larger however, since a 32x mitigation of hypercall 
-overhead is already pretty good).
+This has two advantages:
 
-    J
+1. Current uses of vmalloc can be converted to allocate virtual
+   compounds instead. In most cases physically contiguous
+   memory can be used which avoids the vmalloc performance
+   penalty. See f.e. the e1000 driver patch.
+
+2. Uses of higher order allocations (stacks, buffers etc) can be
+   converted to use virtual compounds instead. Physically contiguous
+   memory will still be used for those higher order allocs in general
+   but the system can degrade to the use of vmalloc should memory
+   become heavily fragmented.
+
+There is a compile time option to switch on fallback for
+testing purposes. Virtually mapped mmemory may behave differently
+and the CONFIG_FALLBACK_ALWAYS option will ensure that the code is
+tested to deal with virtual memory.
+
+V2->V3:
+- Put the code into mm/vmalloc.c and leave the page allocator alone.
+- Add a series of examples where virtual compound pages can be used.
+- Diffed on top of the page flags and the vmalloc info patches
+  already in mm.
+- Simplify things by omitting some of the more complex code
+  that used to be in there.
+
+V1->V2
+- Remove some cleanup patches and the SLUB patches from this set.
+- Transparent vcompound support through page_address() and
+  virt_to_head_page().
+- Additional use cases.
+- Factor the code better for an easier read
+- Add configurable stack size.
+- Follow up on various suggestions made for V1
+
+RFC->V1
+- Complete support for all compound functions for virtual compound pages
+  (including the compound_nth_page() necessary for LBS mmap support)
+- Fix various bugs
+- Fix i386 build
+
+-- 
