@@ -1,178 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbYCUSku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbYCUSlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbYCUSku (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYCUSkk
+	id S1760064AbYCUSlv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbYCUSlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:40:40 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:2565 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753077AbYCUSki (ORCPT
+	Fri, 21 Mar 2008 14:41:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35336 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755874AbYCUSll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:40:38 -0400
-Date: Fri, 21 Mar 2008 12:40:37 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH  5/16] PCI slot: Use list_head for pci slot list (Not
-	for mainline!)
-Message-ID: <20080321184037.GK17292@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E335D6.5070909@jp.fujitsu.com>
-MIME-Version: 1.0
+	Fri, 21 Mar 2008 14:41:41 -0400
+Date: Fri, 21 Mar 2008 19:44:30 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>, andreas.herrmann3@amd.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/7] Don't use large pages to map the first 2/4MB of memory
+Message-ID: <20080321184430.GL2346@one.firstfloor.org>
+References: <20080312353.598285931@firstfloor.org> <20080312025330.AC1961B41D1@basil.firstfloor.org> <alpine.LFD.1.00.0803211843120.3781@apollo.tec.linutronix.de> <20080321175936.GJ2346@one.firstfloor.org> <alpine.LFD.1.00.0803211859410.3781@apollo.tec.linutronix.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47E335D6.5070909@jp.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.1.00.0803211859410.3781@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> To make code simple, we should use list_head for physical slot list on
-> the bus.
+On Fri, Mar 21, 2008 at 07:03:19PM +0100, Thomas Gleixner wrote:
+> On Fri, 21 Mar 2008, Andi Kleen wrote:
+> > > Also we split the first GB mapping anyway due to the various regions
+> > > (NX, RO, UC) in there.
+> > 
+> > I didn't think so unless you have DEBUG_RODATA enabled? 
+> 
+> NX is independent of DEBUG_RODATA 
 
-Merged, thanks.
+Sure, but it is still not split by default. At least I don't see any code
+for that anywhere except in my own patchkit.
 
-/ac
+> and the RODATA protection should be
+> made unconditional on anyway.
 
+Requiring hundreds instead of two TLB entries for the kernel text? 
+
+I must say I personally cannot ever remember any bug caught by RODATA
+anyways, so I am a bit dubious on its value.
+
+> > Also there
+> > should be no UC region there as known by the kernel. There might
+> > be a WC region there from the frame buffer code, but that is an MTRR,
+> > not a pageattr.
 > 
-> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> 
-> ---
->  drivers/acpi/pci_slot.c |    9 ++++++---
->  drivers/pci/probe.c     |    1 +
->  drivers/pci/slot.c      |   17 ++++++-----------
->  include/linux/pci.h     |    4 ++--
->  4 files changed, 15 insertions(+), 16 deletions(-)
-> 
-> Index: linux-2.6.25-rc6/drivers/pci/probe.c
-> ===================================================================
-> --- linux-2.6.25-rc6.orig/drivers/pci/probe.c
-> +++ linux-2.6.25-rc6/drivers/pci/probe.c
-> @@ -384,6 +384,7 @@ static struct pci_bus * pci_alloc_bus(vo
->  		INIT_LIST_HEAD(&b->node);
->  		INIT_LIST_HEAD(&b->children);
->  		INIT_LIST_HEAD(&b->devices);
-> +		INIT_LIST_HEAD(&b->slots);
->  	}
->  	return b;
->  }
-> Index: linux-2.6.25-rc6/drivers/pci/slot.c
-> ===================================================================
-> --- linux-2.6.25-rc6.orig/drivers/pci/slot.c
-> +++ linux-2.6.25-rc6/drivers/pci/slot.c
-> @@ -69,18 +69,12 @@ static int create_sysfs_files(struct pci
->  
->  static void pci_slot_release(struct kobject *kobj)
->  {
-> -	struct pci_slot **pprev;
->  	struct pci_slot *slot = to_pci_slot(kobj);
->  
->  	dbg("%s: releasing pci_slot on %x:%d\n", __func__,
->  		slot->bus->number, slot->number);
->  
-> -	for (pprev = &slot->bus->slot; *pprev; pprev = &(*pprev)->next) {
-> -		if (*pprev == slot) {
-> -			*pprev = slot->next;
-> -			break;
-> -		}
-> -	}
-> +	list_del(&slot->list);
->  
->  	if (slot->release)
->  		slot->release(slot);
-> @@ -107,11 +101,12 @@ int pci_slot_add_hotplug(struct pci_bus 
->  	/* This slot should have already been created, so look for it. If
->  	 * we can't find it, return -EEXIST.
->  	 */
-> -	for (slot = parent->slot; slot; slot = slot->next)
-> +	list_for_each_entry(slot, &parent->slots, list) {
->  		if (slot->number == slot_nr) {
->  			found = 1;
->  			break;
->  		}
-> +	}
->  
->  	if (!found) {
->  		dbg("%s: slot not found\n", __func__);
-> @@ -143,7 +138,7 @@ struct pci_slot *pci_create_slot(struct 
->  	down_write(&pci_bus_sem);
->  
->  	/* If we've already created this slot, bump refcount and return. */
-> -	for (slot = parent->slot; slot; slot = slot->next) {
-> +	list_for_each_entry(slot, &parent->slots, list) {
->  		if (slot->number == slot_nr) {
->  			kobject_get(&slot->kobj);
->  			dbg("%s: bumped refcount to %d on %x:%d\n",
-> @@ -175,8 +170,8 @@ struct pci_slot *pci_create_slot(struct 
->  	if (err)
->  		goto unregister;
->  
-> -	slot->next = parent->slot;
-> -	parent->slot = slot;
-> +	INIT_LIST_HEAD(&slot->list);
-> +	list_add(&slot->list, &parent->slots);
->  
->  	dbg("%s: created pci_slot on %x:%d\n",
->  		__func__, parent->number, slot_nr);
-> Index: linux-2.6.25-rc6/include/linux/pci.h
-> ===================================================================
-> --- linux-2.6.25-rc6.orig/include/linux/pci.h
-> +++ linux-2.6.25-rc6/include/linux/pci.h
-> @@ -131,7 +131,7 @@ struct pci_cap_saved_state {
->  /* pci_slot represents a physical slot */
->  struct pci_slot {
->  	struct pci_bus *bus;		/* The bus this slot is on */
-> -	struct pci_slot *next;		/* Next slot on this bus */
-> +	struct list_head list;		/* node in list of slots on this bus */
->  	struct hotplug_slot *hotplug;	/* Hotplug info (migrate over time) */
->  	unsigned char number;		/* PCI_SLOT(pci_dev->devfn) */
->  	struct kobject kobj;
-> @@ -269,7 +269,7 @@ struct pci_bus {
->  	struct list_head children;	/* list of child buses */
->  	struct list_head devices;	/* list of devices on this bus */
->  	struct pci_dev	*self;		/* bridge device as seen by parent */
-> -	struct pci_slot	*slot;		/* First physical slot on this bus */
-> +	struct list_head slots;		/* list of slots on this bus */
->  	struct resource	*resource[PCI_BUS_NUM_RESOURCES];
->  					/* address space routed to this bus */
->  
-> Index: linux-2.6.25-rc6/drivers/acpi/pci_slot.c
-> ===================================================================
-> --- linux-2.6.25-rc6.orig/drivers/acpi/pci_slot.c
-> +++ linux-2.6.25-rc6/drivers/acpi/pci_slot.c
-> @@ -117,15 +117,18 @@ unregister_slot(acpi_handle handle, u32 
->  {
->  	int device;
->  	unsigned long sun;
-> -	struct pci_slot *slot;
-> +	struct pci_slot *slot, *tmp;
->  	struct pci_bus *pci_bus = context;
->  
->  	if (check_slot(handle, &device, &sun))
->  		return AE_OK;
->  
-> -	for (slot = pci_bus->slot; slot; slot = slot->next) {
-> -		if (slot->number == device)
-> +	/* FIXME - Need pci_bus_sem to be held */
-> +	list_for_each_entry_safe(slot, tmp, &pci_bus->slots, list) {
-> +		if (slot->number == device) {
->  			pci_destroy_slot(slot);
-> +			break;
-> +		}
->  	}
->  
->  	return AE_OK;
-> 
-> 
+> The first ioremap of the PCI space splits the GB page as well.
+
+PCI space is normally in the fourth or sometimes third GB page,
+not in the first.  I am not aware of any system that has the PCI hole 
+in the first GB.
+
+-Andi
+
