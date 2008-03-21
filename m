@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932221AbYCUXLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbYCUXMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932221AbYCUXLx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932168AbYCUWw0
+	id S932501AbYCUXMj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbYCUWw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:52:26 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41326 "EHLO
+	Fri, 21 Mar 2008 18:52:29 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41336 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932193AbYCUWwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:52:24 -0400
-Message-Id: <20080321224425.641454874@sous-sol.org>
+	id S932199AbYCUWw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:52:27 -0400
+Message-Id: <20080321224447.336344887@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:39 -0700
+Date: Fri, 21 Mar 2008 15:43:56 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ed Tomlinson <edt@aei.ca>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 49/76] x86: move out tick_nohz_stop_sched_tick() call from the loop
-Content-Disposition: inline; filename=x86-move-out-tick_nohz_stop_sched_tick-call-from-the-loop.patch
+       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
+       davem@davemloft.net, Jan Engelhardt <jengelh@computergmbh.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 66/76] NETFILTER: xt_time: fix failure to match on Sundays
+Content-Disposition: inline; filename=netfilter-xt_time-fix-failure-to-match-on-sundays.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,40 +35,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+From: Jan Engelhardt <jengelh@computergmbh.de>
 
-[upstream commit: 3d97775a]
+Upstream commit 4f4c9430:
 
-Move out tick_nohz_stop_sched_tick() call from the loop in cpu_idle
-same as 32-bit version.
+xt_time_match() in net/netfilter/xt_time.c in kernel 2.6.24 never
+matches on Sundays. On my host I have a rule like
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ed Tomlinson <edt@aei.ca>
+iptables -A OUTPUT -m time --weekdays Sun -j REJECT
+
+and it never matches. The problem is in localtime_2(), which uses
+
+    r->weekday = (4 + r->dse) % 7;
+
+to map the epoch day onto a weekday in {0,...,6}. In particular this
+gives 0 for Sundays. But 0 has to be wrong; a weekday of 0 can never
+match. xt_time_match() has
+
+    if (!(info->weekdays_match & (1 << current_time.weekday)))
+        return false;
+
+and when current_time.weekday = 0, the result of the & is always
+zero, even when info->weekdays_match = XT_TIME_ALL_WEEKDAYS = 0xFE.
+
+Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kernel/process_64.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -212,14 +212,13 @@ void cpu_idle (void)
- 	current_thread_info()->status |= TS_POLLING;
- 	/* endless idle loop with no priority at all */
- 	while (1) {
-+		tick_nohz_stop_sched_tick();
- 		while (!need_resched()) {
- 			void (*idle)(void);
+ net/netfilter/xt_time.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- a/net/netfilter/xt_time.c
++++ b/net/netfilter/xt_time.c
+@@ -95,8 +95,11 @@ static inline void localtime_2(struct xt
+ 	 */
+ 	r->dse = time / 86400;
  
- 			if (__get_cpu_var(cpu_idle_state))
- 				__get_cpu_var(cpu_idle_state) = 0;
+-	/* 1970-01-01 (w=0) was a Thursday (4). */
+-	r->weekday = (4 + r->dse) % 7;
++	/*
++	 * 1970-01-01 (w=0) was a Thursday (4).
++	 * -1 and +1 map Sunday properly onto 7.
++	 */
++	r->weekday = (4 + r->dse - 1) % 7 + 1;
+ }
  
--			tick_nohz_stop_sched_tick();
--
- 			rmb();
- 			idle = pm_idle;
- 			if (!idle)
+ static void localtime_3(struct xtm *r, time_t time)
 
 -- 
