@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758965AbYCUSu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbYCUSv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758965AbYCUSu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbYCUSuR
+	id S1760636AbYCUSv4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbYCUSvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:50:17 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:45010 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754143AbYCUSuQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:50:16 -0400
-Subject: 2.6.25-rc regression: volume wheel does not work in 2.6.25-rc6
-From: Romano Giannetti <romanol@upcomillas.es>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Fri, 21 Mar 2008 19:48:35 +0100
-Message-Id: <1206125315.8688.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 21 Mar 2008 14:51:47 -0400
+Received: from www.tglx.de ([62.245.132.106]:60668 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753357AbYCUSvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 14:51:46 -0400
+Date: Fri, 21 Mar 2008 19:49:45 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gabriel C <crazy@frugalware.org>
+cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+In-Reply-To: <47E3FA4F.9060509@frugalware.org>
+Message-ID: <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de>
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
+ <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 21 Mar 2008, Gabriel C wrote:
+> >> Also, can you please reapply the reverted clocksource patch ? I have
+> >> the feeling that the acpi_pm one was the real problem which was
+> >> triggered the modfied watchdog.
+> > 
+> > Sure I can , will do so in some minutes and let you know.
+> 
+> It took a bit longer sorry but I have more infos now.
+> 
+> The acpi_pm was not related to that I still get the problem.
+> 
+> Of course I still can try to find the commit which magically fixed acpi_pm if you really want.
 
-I have opened a bug in bugzilla for this one: 
-http://bugzilla.kernel.org/show_bug.cgi?id=10300
+Just if you are really bored. :) I would have asked if it had fixed
+the TSC issue.
+ 
+> It seems like it breaks only when you enable HT and only on 2 socket motherboards. 
+> ( at least the ones I own , I know is old hardware but worked fine for me )
 
-Latest working kernel version:2.6.24.2
-Earliest failing kernel version:unknown
-Distribution:ubuntu 7.10
-Hardware Environment:toshiba laptop U305, sound hda-intel, realtek 268 codec
-Software Environment:
-Problem Description:
+Hmm. I wonder why a dual socket board survives the initial sync test.
+ 
+> Also disabling the second CPU and enabling HT works , enabling both
+> CPUs and disabling HT works , booting with enabled HT and both CPUs
+> but maxcpus=2 also works , booting with 2 CPUs and HT on breaks ,
+> booting with both CPUs HT on but maxcpus=3 breaks also.
+> 
+> Also I have another dual motherboard here 604 socket with 2 2,4 GHz
+> Xeon's.  The motherboard has the storage controller somewhat broken
+> but for a quick test it is still good :) and I see the same thing.
+> 
+> Does that make any sense ?
 
-Volume wheel events in 2.6.24 started to be handled by ACPI directly (no events
-to the S.O., I have a toshiba OSD appers when using it). Now it seems that
-there is no agreement between alsa and the ACPI control. Moving the wheel
-changes PCM volume (not master), sometime the two channels (left-right),
-sometime just one channel, sometime none, and each time in a seemingly random
-way.
+Not really. Can you please revert the reverted revert again and run
 
+http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
 
-Steps to reproduce: move the volume wheel. I marked this low priority because I
-use it very rarely (and if I only could map it to the mouse events 5 an 6 it
-would be much more useful than to control the volume).
+on your machine with all CPUs and HT enabled ?
 
-acpidump, alsa info, etc are available 
-at http://www.dea.icai.upcomillas.es/romano/linux/info/
-
-
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+Thanks,
+	tglx
