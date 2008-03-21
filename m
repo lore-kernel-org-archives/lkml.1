@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbYCURqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbYCURwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760232AbYCURqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbYCURqQ
+	id S1759489AbYCURwR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYCURwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:46:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:48676 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbYCURqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:46:15 -0400
-Date: Fri, 21 Mar 2008 18:45:54 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: andreas.herrmann3@amd.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [4/7] Don't use large pages to map the first 2/4MB of
- memory
-In-Reply-To: <20080312025330.AC1961B41D1@basil.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0803211843120.3781@apollo.tec.linutronix.de>
-References: <20080312353.598285931@firstfloor.org> <20080312025330.AC1961B41D1@basil.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 21 Mar 2008 13:52:06 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:5201 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753404AbYCURwE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 13:52:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YY4oe4o+2NpFcxL7wVhoyRmtkn8mKC7wpI0ogwe2nql1+5MBBYX2kHK17GvuhGl6JKGERexfPqexFB6dZAjeJANd6lEelaUeT3TtaHo+YIBGW5yhFRHe+TblwyswhE5sJBLvAKJpo0KgSCEtCssvqqqkzBwefEJWSk+3Cq7mtKY=
+Message-ID: <dd18b0c30803211052l117c990cq231b022702c65159@mail.gmail.com>
+Date: Fri, 21 Mar 2008 17:52:01 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: fglrx
+In-Reply-To: <20080321094624.7b38f430.rdunlap@xenotime.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30803210933r5c733046je28972cee893ebe8@mail.gmail.com>
+	 <20080321094624.7b38f430.rdunlap@xenotime.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Mar 2008, Andi Kleen wrote:
-> Intel recommends to not use large pages for the first 1MB 
-> of the physical memory because there are fixed size MTRRs there
-> which cause splitups in the TLBs.
-> 
-> On AMD doing so is also a good idea.
-> 
-> The implementation is a little different between 32bit and 64bit.
-> On 32bit I just taught the initial page table set up about this
-> because it was very simple to do. This also has the advantage
-> that the risk of a prefetch ever seeing the page even
-> if it only exists for a short time is minimized.
-> 
-> On 64bit that is not quite possible, so use set_memory_4k() a little
-> later (in check_bugs) instead.
+Hello;
+O.K., sorry for the confusion. I will keep my messages in the context
+of kernel-development only.
+As for reply-to-all I will do that also(hopefully I do this correctly).
+regards
+
+        Justin P. Mattock
+
+On Fri, Mar 21, 2008 at 4:46 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Fri, 21 Mar 2008 16:33:24 +0000 Justin Mattock wrote:
+>
+>  > Hello; I appoligize.
+>
+>  Hello;
+>  Could you also use reply-to-all and threaded email messages
+>  instead of a new message each time?
+>  with a decent subject line also?
+>
+>  Thanks.
+>
+>  ---
+>  ~Randy
+>
 
 
-> +	/*
-> +	 * Make sure the first 2MB area is not mapped by huge pages
-> +	 * There are typically fixed size MTRRs in there and overlapping
-> +	 * MTRRs into large pages causes slow downs.
-> +	 *
-> +	 * Right now we don't do that with gbpages because there seems
-> +	 * very little benefit for that case.
 
-And why exactly ? Does slowdown not matter with gbpages ? 
-
-Also we split the first GB mapping anyway due to the various regions
-(NX, RO, UC) in there.
-
-Thanks,
-
-	tglx
+-- 
+Justin P. Mattock
