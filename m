@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbYCUWz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbYCUW41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763416AbYCUWz6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762881AbYCUWuJ
+	id S1764175AbYCUW41 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762571AbYCUWuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:50:09 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59115 "EHLO
+	Fri, 21 Mar 2008 18:50:15 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59138 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763661AbYCUWuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:50:01 -0400
-Message-Id: <20080321224345.135865014@sous-sol.org>
+	id S1762974AbYCUWuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:50:09 -0400
+Message-Id: <20080321224358.077214520@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:08 -0700
+Date: Fri, 21 Mar 2008 15:43:21 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Aurelien Jarno <aurelien@aurel32.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 18/76] x86: Clear DF before calling signal handler
-Content-Disposition: inline; filename=x86-clear-df-before-calling-signal-handler.patch
+       Uli Luckas <u.luckas@road.de>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 31/76] ARM pxa: fix clock lookup to find specific device clocks
+Content-Disposition: inline; filename=arm-pxa-fix-clock-lookup-to-find-specific-device-clocks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,81 +35,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Aurelien Jarno <aurelien@aurel32.net>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
 
-x86: Clear DF before calling signal handler
+Ensure that the clock lookup always finds an entry for a specific
+device and ID before it falls back to finding just by ID.  This
+fixes a problem reported by Holger Schurig where the BTUART was
+assigned the wrong clock.
 
-The Linux kernel currently does not clear the direction flag before
-calling a signal handler, whereas the x86/x86-64 ABI requires that.
-This become a real problem with gcc version 4.3, which assumes that
-the direction flag is correctly cleared at the entry of a function.
+Tested-by: Holger Schurig <hs4233@mail.mn-solutions.de>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-This patches changes the setup_frame() functions to clear the
-direction before entering the signal handler.
+Uli Luckas notes:
 
-This is a backport of patch e40cd10ccff3d9fbffd57b93780bee4b7b9bff51
-("x86: clear DF before calling signal handler") that has been applied
-in 2.6.25-rc.
+  The patch fixes the otherwise unusable bluetooth uart on pxa25x. The
+  patch is written by Russell King [1] who also gave his OK for
+  stable inclusion [2].  The patch is also available as commit
+  a0dd005d1d9f4c3beab52086f3844ef9342d1e67 to Linus' tree.
+  
+  [1] http://marc.info/?l=linux-arm-kernel&m=120298366510315
+  [2] http://marc.info/?l=linux-arm-kernel&m=120384388411097
 
-Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/ia32/ia32_signal.c |    4 ++--
- arch/x86/kernel/signal_32.c |    4 ++--
- arch/x86/kernel/signal_64.c |    2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/arm/mach-pxa/clock.c |   23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -494,7 +494,7 @@ int ia32_setup_frame(int sig, struct k_s
- 	regs->ss = __USER32_DS; 
+--- a/arch/arm/mach-pxa/clock.c
++++ b/arch/arm/mach-pxa/clock.c
+@@ -23,18 +23,27 @@ static LIST_HEAD(clocks);
+ static DEFINE_MUTEX(clocks_mutex);
+ static DEFINE_SPINLOCK(clocks_lock);
  
- 	set_fs(USER_DS);
--	regs->eflags &= ~TF_MASK;
-+	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
++static struct clk *clk_lookup(struct device *dev, const char *id)
++{
++	struct clk *p;
++
++	list_for_each_entry(p, &clocks, node)
++		if (strcmp(id, p->name) == 0 && p->dev == dev)
++			return p;
++
++	return NULL;
++}
++
+ struct clk *clk_get(struct device *dev, const char *id)
+ {
+ 	struct clk *p, *clk = ERR_PTR(-ENOENT);
  
-@@ -600,7 +600,7 @@ int ia32_setup_rt_frame(int sig, struct 
- 	regs->ss = __USER32_DS; 
+ 	mutex_lock(&clocks_mutex);
+-	list_for_each_entry(p, &clocks, node) {
+-		if (strcmp(id, p->name) == 0 &&
+-		    (p->dev == NULL || p->dev == dev)) {
+-			clk = p;
+-			break;
+-		}
+-	}
++	p = clk_lookup(dev, id);
++	if (!p)
++		p = clk_lookup(NULL, id);
++	if (p)
++		clk = p;
+ 	mutex_unlock(&clocks_mutex);
  
- 	set_fs(USER_DS);
--	regs->eflags &= ~TF_MASK;
-+	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
- 
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -396,7 +396,7 @@ static int setup_frame(int sig, struct k
- 	 * The tracer may want to single-step inside the
- 	 * handler too.
- 	 */
--	regs->eflags &= ~TF_MASK;
-+	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
- 
-@@ -489,7 +489,7 @@ static int setup_rt_frame(int sig, struc
- 	 * The tracer may want to single-step inside the
- 	 * handler too.
- 	 */
--	regs->eflags &= ~TF_MASK;
-+	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
- 
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -295,7 +295,7 @@ static int setup_rt_frame(int sig, struc
- 	   see include/asm-x86_64/uaccess.h for details. */
- 	set_fs(USER_DS);
- 
--	regs->eflags &= ~TF_MASK;
-+	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
- #ifdef DEBUG_SIG
+ 	return clk;
 
 -- 
