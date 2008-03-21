@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbYCUSOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbYCUSPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbYCUSOo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbYCUSOg
+	id S1760971AbYCUSPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 14:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbYCUSO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:14:36 -0400
-Received: from phunq.net ([64.81.85.152]:42886 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754024AbYCUSOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:14:35 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [ANNOUNCE] ddtree: A git kernel tree for storage servers
-Date: Fri, 21 Mar 2008 11:14:33 -0700
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200803190102.25491.phillips@phunq.net> <20080321124921.GB5331@ucw.cz>
-In-Reply-To: <20080321124921.GB5331@ucw.cz>
+	Fri, 21 Mar 2008 14:14:59 -0400
+Received: from www.tglx.de ([62.245.132.106]:58902 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756582AbYCUSO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 14:14:58 -0400
+Date: Fri, 21 Mar 2008 19:14:41 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: andreas.herrmann3@amd.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [5/7] Readd rdmsrl_safe
+In-Reply-To: <20080321180612.GK2346@one.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0803211909501.3781@apollo.tec.linutronix.de>
+References: <20080312353.598285931@firstfloor.org> <20080312025331.B113B1B41D1@basil.firstfloor.org> <alpine.LFD.1.00.0803211756000.3781@apollo.tec.linutronix.de> <20080321171636.GE2346@one.firstfloor.org> <alpine.LFD.1.00.0803211857030.3781@apollo.tec.linutronix.de>
+ <20080321180612.GK2346@one.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803211114.33484.phillips@phunq.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 March 2008 05:49, Pavel Machek wrote:
-> > What will be in this ddtree?
+On Fri, 21 Mar 2008, Andi Kleen wrote:
+> > > Well all of paravirt.h uses macros. I did the same for consistency.
 > > 
-> >   * Block layer deadlock fixes (Status: production)
+> > consistency ?
 > 
-> Sounds like something that should be sent to linus, not hidden in git
-> tree somewhere?
+> At least I consider it clean and consistent to use similar
+> style as the other code in that file for new code I add.
 
-Various other artists think they have the One True Solution and I got
-tired of arguing, so I thought I would just make it available in my
-tree and when folks realize they need it they know where to get it.
+inlines are generally preferred and the existing macro pile is no
+excuse to add more.
 
-Trying not to hide it...
+> > > If you want inlines it would be better to just convert it all in one
+> > > go (but please only after this patch was applied)
+> > 
+> > Of course. We don't want to burden work on your shoulders.
+> 
+> Well you signed up for the work yourself last year ;-) It was your choice.
 
-Daniel
+Yeah, I signed up for maintaining. And review is one of the tasks of a
+maintainer. So when I do a review and ask for a macro -> inline change
+I don't see that this means that I have to do the change myself.
+
+Thanks,
+
+	tglx
