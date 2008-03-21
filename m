@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYCUBit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbYCUBmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758006AbYCUBit (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 21:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYCUBij
+	id S1756951AbYCUBmK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 21:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYCUBl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 21:38:39 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:13651 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYCUBii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 21:38:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=lWWtY8Gen9SfDAx1JIz4kHHtj3WTlnCdcOReYWh7Ugf1cba2yos+bkTkHcjoYACi8h1X/z/poLLb9cySOgtd8ZjYYf5PSO3lN9Hk+iIT2Zbmckc8p76gok/LhQIGIp3Oams9skzlqjhm7GD24jzJ5VSxz3nPFEQxAYzz/hMoYRs=
-Message-ID: <47E31197.70003@gmail.com>
-Date: Fri, 21 Mar 2008 10:38:31 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: "Peter F. Patel-Schneider" <pfps@verizon.net>,
-       linux-kernel@vger.kernel.org,
-       "Peter F. Patel-Schneider" <pfps@research.bell-labs.com>
-Subject: Re: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9 and Re: libata
- and legacy ide pcmcia failure
-References: <47067DB9.80200@roarinelk.homelinux.net>	<47E300B2.7000104@verizon.net> <20080321011205.4c7b4a61@core>
-In-Reply-To: <20080321011205.4c7b4a61@core>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 20 Mar 2008 21:41:58 -0400
+Received: from mga09.intel.com ([134.134.136.24]:40118 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbYCUBl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 21:41:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,534,1199692800"; 
+   d="scan'208";a="308055437"
+Subject: [PATCH] Add definitions of USHRT_MAX
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 21 Mar 2008 09:40:14 +0800
+Message-Id: <1206063614.14496.72.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> O> Mar 20 19:51:45 idefix kernel: ata12: PATA max PIO0 cmd 0xa100 ctl 
->> 0xa10e irq 3
->> Mar 20 19:52:15 idefix kernel: ata12.00: qc timeout (cmd 0x91)
->> Mar 20 19:52:15 idefix kernel: ata12.00: failed to IDENTIFY 
->> (INIT_DEV_PARAMS failed, err_mask=0x4)
-> 
-> Thinkpad T61p .. I've seen a few of these.
-> 
-> Firstly try the card and adapter in a different PC and let me know if
-> that works. So far they do. If that is the case get the latest firmware
-> updates (BIOS etc) for your thinkpad and see if the problem goes away.
-> They (or our ACPI code I guess it may be) have some serious IRQ routing
-> problems on this box.
+Add definitions of USHRT_MAX and others into kernel. ipc uses it and
+slub implementation might also use it.
 
-Any chance the thing just chokes up on INIT_DEV_PARAMS?
+The patch is against 2.6.25-rc6.
 
--- 
-tejun
+Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
+
+---
+
+--- linux-2.6.25-rc6/include/linux/kernel.h	2008-03-20 04:25:46.000000000 +0800
++++ linux-2.6.25-rc6_work/include/linux/kernel.h	2008-03-20 04:17:45.000000000 +0800
+@@ -20,6 +20,9 @@
+ extern const char linux_banner[];
+ extern const char linux_proc_banner[];
+ 
++#define USHRT_MAX	((u16)(~0U))
++#define SHRT_MAX	((s16)(USHRT_MAX>>1))
++#define SHRT_MIN	(-SHRT_MAX - 1)
+ #define INT_MAX		((int)(~0U>>1))
+ #define INT_MIN		(-INT_MAX - 1)
+ #define UINT_MAX	(~0U)
+--- linux-2.6.25-rc6/ipc/util.h	2008-03-20 04:25:46.000000000 +0800
++++ linux-2.6.25-rc6_work/ipc/util.h	2008-03-20 04:22:07.000000000 +0800
+@@ -12,7 +12,6 @@
+ 
+ #include <linux/err.h>
+ 
+-#define USHRT_MAX 0xffff
+ #define SEQ_MULTIPLIER	(IPCMNI)
+ 
+ void sem_init (void);
+
+
