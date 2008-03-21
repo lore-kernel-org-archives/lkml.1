@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764686AbYCUW6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYCUW7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764686AbYCUW6o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762982AbYCUWuq
+	id S1762099AbYCUW7M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762997AbYCUWus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:50:46 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59268 "EHLO
+	Fri, 21 Mar 2008 18:50:48 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59280 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763720AbYCUWun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:50:43 -0400
-Message-Id: <20080321224443.783675702@sous-sol.org>
+	id S1762979AbYCUWup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:50:45 -0400
+Message-Id: <20080321224352.047750900@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:53 -0700
+Date: Fri, 21 Mar 2008 15:43:14 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Subject: [patch 63/76] sched: fix race in schedule()
-Content-Disposition: inline; filename=sched-fix-race-in-schedule.patch
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Sebastian Siewior <sebastian@breakpoint.cc>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 24/76] CRYPTO xts: Use proper alignment
+Content-Disposition: inline; filename=crypto-xts-use-proper-alignment.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,136 +35,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+From: Sebastian Siewior <sebastian@breakpoint.cc>
 
-Fix a hard to trigger crash seen in the -rt kernel that also affects
-the vanilla scheduler.
+[ Upstream commit: 6212f2c7f70c591efb0d9f3d50ad29112392fee2 ]
 
-There is a race condition between schedule() and some dequeue/enqueue
-functions; rt_mutex_setprio(), __setscheduler() and sched_move_task().
+The XTS blockmode uses a copy of the IV which is saved on the stack
+and may or may not be properly aligned. If it is not, it will break
+hardware cipher like the geode or padlock.
+This patch encrypts the IV in place so we don't have to worry about
+alignment.
 
-When scheduling to idle, idle_balance() is called to pull tasks from
-other busy processor. It might drop the rq lock. It means that those 3
-functions encounter on_rq=0 and running=1. The current task should be
-put when running.
-
-Here is a possible scenario:
-
-   CPU0                               CPU1
-    |                              schedule()
-    |                              ->deactivate_task()
-    |                              ->idle_balance()
-    |                              -->load_balance_newidle()
-rt_mutex_setprio()                     |
-    |                              --->double_lock_balance()
-    *get lock                          *rel lock
-    * on_rq=0, ruuning=1               |
-    * sched_class is changed           |
-    *rel lock                          *get lock
-    :                                  |
-                                       :
-                                   ->put_prev_task_rt()
-                                   ->pick_next_task_fair()
-                                       => panic
-
-The current process of CPU1(P1) is scheduling. Deactivated P1, and the
-scheduler looks for another process on other CPU's runqueue because CPU1
-will be idle. idle_balance(), load_balance_newidle() and
-double_lock_balance() are called and double_lock_balance() could drop
-the rq lock. On the other hand, CPU0 is trying to boost the priority of
-P1. The result of boosting only P1's prio and sched_class are changed to
-RT. The sched entities of P1 and P1's group are never put. It makes
-cfs_rq invalid, because the cfs_rq has curr and no leaf, but
-pick_next_task_fair() is called, then the kernel panics.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-[chrisw@sous-sol.org: backport to 2.6.24.3]
+Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
+Tested-by: Stefan Hellermann <stefan@the2masters.de>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/sched.c |   36 ++++++++++++++++--------------------
- 1 file changed, 16 insertions(+), 20 deletions(-)
+ crypto/xts.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4028,11 +4028,10 @@ void rt_mutex_setprio(struct task_struct
- 	oldprio = p->prio;
- 	on_rq = p->se.on_rq;
- 	running = task_current(rq, p);
--	if (on_rq) {
-+	if (on_rq)
- 		dequeue_task(rq, p, 0);
--		if (running)
--			p->sched_class->put_prev_task(rq, p);
--	}
-+	if (running)
-+		p->sched_class->put_prev_task(rq, p);
+--- a/crypto/xts.c
++++ b/crypto/xts.c
+@@ -77,16 +77,16 @@ static int setkey(struct crypto_tfm *par
+ }
  
- 	if (rt_prio(prio))
- 		p->sched_class = &rt_sched_class;
-@@ -4041,9 +4040,9 @@ void rt_mutex_setprio(struct task_struct
+ struct sinfo {
+-	be128 t;
++	be128 *t;
+ 	struct crypto_tfm *tfm;
+ 	void (*fn)(struct crypto_tfm *, u8 *, const u8 *);
+ };
  
- 	p->prio = prio;
+ static inline void xts_round(struct sinfo *s, void *dst, const void *src)
+ {
+-	be128_xor(dst, &s->t, src);		/* PP <- T xor P */
++	be128_xor(dst, s->t, src);		/* PP <- T xor P */
+ 	s->fn(s->tfm, dst, dst);		/* CC <- E(Key1,PP) */
+-	be128_xor(dst, dst, &s->t);		/* C <- T xor CC */
++	be128_xor(dst, dst, s->t);		/* C <- T xor CC */
+ }
  
-+	if (running)
-+		p->sched_class->set_curr_task(rq);
- 	if (on_rq) {
--		if (running)
--			p->sched_class->set_curr_task(rq);
- 		enqueue_task(rq, p, 0);
- 		/*
- 		 * Reschedule if we are currently running on this runqueue and
-@@ -4339,18 +4338,17 @@ recheck:
- 	update_rq_clock(rq);
- 	on_rq = p->se.on_rq;
- 	running = task_current(rq, p);
--	if (on_rq) {
-+	if (on_rq)
- 		deactivate_task(rq, p, 0);
--		if (running)
--			p->sched_class->put_prev_task(rq, p);
--	}
-+	if (running)
-+		p->sched_class->put_prev_task(rq, p);
+ static int crypt(struct blkcipher_desc *d,
+@@ -101,7 +101,6 @@ static int crypt(struct blkcipher_desc *
+ 		.tfm = crypto_cipher_tfm(ctx->child),
+ 		.fn = fn
+ 	};
+-	be128 *iv;
+ 	u8 *wsrc;
+ 	u8 *wdst;
  
- 	oldprio = p->prio;
- 	__setscheduler(rq, p, policy, param->sched_priority);
+@@ -109,20 +108,20 @@ static int crypt(struct blkcipher_desc *
+ 	if (!w->nbytes)
+ 		return err;
  
-+	if (running)
-+		p->sched_class->set_curr_task(rq);
- 	if (on_rq) {
--		if (running)
--			p->sched_class->set_curr_task(rq);
- 		activate_task(rq, p, 0);
- 		/*
- 		 * Reschedule if we are currently running on this runqueue and
-@@ -7110,19 +7108,17 @@ void sched_move_task(struct task_struct 
- 	running = task_current(rq, tsk);
- 	on_rq = tsk->se.on_rq;
++	s.t = (be128 *)w->iv;
+ 	avail = w->nbytes;
  
--	if (on_rq) {
-+	if (on_rq)
- 		dequeue_task(rq, tsk, 0);
--		if (unlikely(running))
--			tsk->sched_class->put_prev_task(rq, tsk);
--	}
-+	if (unlikely(running))
-+		tsk->sched_class->put_prev_task(rq, tsk);
+ 	wsrc = w->src.virt.addr;
+ 	wdst = w->dst.virt.addr;
  
- 	set_task_cfs_rq(tsk, task_cpu(tsk));
+ 	/* calculate first value of T */
+-	iv = (be128 *)w->iv;
+-	tw(crypto_cipher_tfm(ctx->tweak), (void *)&s.t, w->iv);
++	tw(crypto_cipher_tfm(ctx->tweak), w->iv, w->iv);
  
--	if (on_rq) {
--		if (unlikely(running))
--			tsk->sched_class->set_curr_task(rq);
-+	if (unlikely(running))
-+		tsk->sched_class->set_curr_task(rq);
-+	if (on_rq)
- 		enqueue_task(rq, tsk, 0);
--	}
+ 	goto first;
  
- done:
- 	task_rq_unlock(rq, &flags);
+ 	for (;;) {
+ 		do {
+-			gf128mul_x_ble(&s.t, &s.t);
++			gf128mul_x_ble(s.t, s.t);
+ 
+ first:
+ 			xts_round(&s, wdst, wsrc);
 
 -- 
