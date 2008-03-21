@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760515AbYCUUHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761101AbYCUUEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760515AbYCUUHI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbYCUUG4
+	id S1761101AbYCUUEn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbYCUUEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:06:56 -0400
-Received: from mga11.intel.com ([192.55.52.93]:36070 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbYCUUGz convert rfc822-to-8bit (ORCPT
+	Fri, 21 Mar 2008 16:04:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47421 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754047AbYCUUEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:06:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,537,1199692800"; 
-   d="scan'208";a="537845733"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 21 Mar 2008 16:04:34 -0400
+Message-ID: <47E413B4.5050503@zytor.com>
+Date: Fri, 21 Mar 2008 12:59:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Date: Fri, 21 Mar 2008 13:04:42 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECE1391B@orsmsx424.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Thread-Index: AciLgeGmlJ9gLPKsRDayVF0qKv9/HwAASXbwAALTdtA=
-References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <1FE6DD409037234FAB833C420AA843ECE137D9@orsmsx424.amr.corp.intel.com> <20080321183149.GB15355@kernel.dk> 
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, "Jens Axboe" <jens.axboe@oracle.com>
-Cc: <linux-kernel@vger.kernel.org>, <npiggin@suse.de>, <paulus@samba.org>,
-       <tglx@linutronix.de>, <mingo@redhat.com>
-X-OriginalArrivalTime: 21 Mar 2008 20:04:50.0236 (UTC) FILETIME=[D1D95FC0:01C88B8E]
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+CC: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 00/13] x86: PAT support updated - v3
+References: <20080319000012.439150000@intel.com> <47E3B84C.6070808@zytor.com> <20080321191921.GA23347@linux-os.sc.intel.com>
+In-Reply-To: <20080321191921.GA23347@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The problem may be worse than that.  I see that you have a per-cpu
-> "call_single_queue" on which you do some list operations.
+Venki Pallipadi wrote:
+> On Fri, Mar 21, 2008 at 06:29:48AM -0700, H. Peter Anvin wrote:
+>> venkatesh.pallipadi@intel.com wrote:
+>>> * UC_MINUS in PAT to provide backward compatibility to /dem/mem mmap users.
+>> I have to say I think this looks like a good patchset.  However, I'd 
+>> like a bit more clarification with regards to the above point?
+>>
+> 
+> X seems to use (in that order)
+> - mmap the range through /dev/mem
+> - Set MTRR for the range to WC
+> 
+> I see this happening on one of my test systems with relatively new xorg.
+> 
+> In this case, when mmap does the reserve for this range, if we give UC mapping
+> then we will effectively negate the MTRR WC setting with the range being mapped
+> UC. To accomodate this special use case, we give /dev/mem mmap (only when there
+> are no other already existing mappings) a UC_MINUS attribute. With that,
+> if and when X sets MTRR the range will become WC and until that time it will be
+> UC. We ensure that all page table mappings use UC_MINUS for that range.
+> 
+> Long term, we want X to switch to /proc/ of /sys interfaces. But, we can also
+> provide backward compatibility for existing X usage like above.
+> 
 
-Simply hacking in an early call to init_call_single_data() helped
-a bit.  I saw a few more kernel messages as all the cpus were
-brought up and synchronized ITC with the boot cpu. Then the
-system hung hard.  Last messages were:
+Makes total sense.  Eventually I think we want to do /proc/mtrr 
+emulation, but for now, this is probably the best option.
 
-Total of 16 processors activated (50724.86 BogoMIPS).
-net_namespace: 296 bytes
-DMI 2.3 present
-
-
-
-
--Tony
+	-hpa
