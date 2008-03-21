@@ -1,107 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760900AbYCUUA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761267AbYCUUBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760900AbYCUUA6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbYCUUAt
+	id S1761267AbYCUUBX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYCUUBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:00:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58084 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbYCUUAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:00:48 -0400
-Date: Fri, 21 Mar 2008 21:00:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, andi@firstfloor.org, ak@suse.de,
-       clameter@sgi.com, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH] mm: fix boundary checking in free_bootmem_core
-Message-ID: <20080321200030.GD16179@elte.hu>
-References: <86802c440803111801m20349386l58a108cec13eb5ee@mail.gmail.com> <86802c440803121811i262b21bdrfb07df52fd27aaae@mail.gmail.com> <20080312182240.db32c858.akpm@linux-foundation.org> <200803132259.47063.ak@suse.de> <86802c440803131522t3d038d39gbe8eb0d38ddcb634@mail.gmail.com> <87iqzp5xfv.fsf@basil.nowhere.org> <86802c440803140944p302b300fy7515fb758221932b@mail.gmail.com> <20080314165336.GS2522@one.firstfloor.org> <86802c440803141036m4a508a91o2cf6706157231429@mail.gmail.com> <20080321124404.f9d74052.akpm@linux-foundation.org>
+	Fri, 21 Mar 2008 16:01:09 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:42869 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756439AbYCUUBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 16:01:07 -0400
+Date: Fri, 21 Mar 2008 21:01:06 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-kernel@vger.kernel.org
+Subject: APM crashes when IO is going on
+In-Reply-To: <200803210127.56437.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0803212055550.6726@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz>
+ <200803201131.25828.rjw@sisk.pl> <Pine.LNX.4.64.0803210059440.2540@artax.karlin.mff.cuni.cz>
+ <200803210127.56437.rjw@sisk.pl>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321124404.f9d74052.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > I have an old notebook with APM and I am experiencing occasional APMD 
+> > > > lockups after resume, with kernels 2.6.25rc1 snd 2.6.25rc3. They didn't 
+> > > > happen with 2.6.24 or before.
+> > > > 
+> > > > The bug happens about once a week or so.
+> > > > 
+> > > > If you have any idea how to debug it, you can send me a test code.
+> > > 
+> > > It is possible that the bug was fixed in -rc4.  Can you please test -rc6 and
+> > > see if it's still present?
+> > > 
+> > > Thanks,
+> > > Rafael
+> > 
+> > I'm now running on -rc6, so I'll see (it takes some days for the bug to 
+> > appear). Where is that patch that went to -rc4 and that may fix it?
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7a8d37a37380e2b1500592d40b7ec384dbebe7a0
+> 
+> Thanks,
+> Rafael
 
-> diff -puN mm/bootmem.c~mm-fix-boundary-checking-in-free_bootmem_core mm/bootmem.c
-> --- a/mm/bootmem.c~mm-fix-boundary-checking-in-free_bootmem_core
-> +++ a/mm/bootmem.c
-> @@ -125,6 +125,7 @@ static int __init reserve_bootmem_core(b
->  	BUG_ON(!size);
->  	BUG_ON(PFN_DOWN(addr) >= bdata->node_low_pfn);
->  	BUG_ON(PFN_UP(addr + size) > bdata->node_low_pfn);
-> +	BUG_ON(addr < bdata->node_boot_start);
->  
->  	sidx = PFN_DOWN(addr - bdata->node_boot_start);
->  	eidx = PFN_UP(addr + size - bdata->node_boot_start);
-> @@ -156,21 +157,31 @@ static void __init free_bootmem_core(boo
->  	unsigned long sidx, eidx;
->  	unsigned long i;
->  
-> +	BUG_ON(!size);
-> +
-> +	/* out range */
-> +	if (addr + size < bdata->node_boot_start ||
-> +		PFN_DOWN(addr) > bdata->node_low_pfn)
-> +		return;
->  	/*
->  	 * round down end of usable mem, partially free pages are
->  	 * considered reserved.
->  	 */
-> -	BUG_ON(!size);
-> -	BUG_ON(PFN_DOWN(addr + size) > bdata->node_low_pfn);
->  
-> -	if (addr < bdata->last_success)
-> +	if (addr >= bdata->node_boot_start && addr < bdata->last_success)
->  		bdata->last_success = addr;
->  
->  	/*
-> -	 * Round up the beginning of the address.
-> +	 * Round up to index to the range.
->  	 */
-> -	sidx = PFN_UP(addr) - PFN_DOWN(bdata->node_boot_start);
-> +	if (PFN_UP(addr) > PFN_DOWN(bdata->node_boot_start))
-> +		sidx = PFN_UP(addr) - PFN_DOWN(bdata->node_boot_start);
-> +	else
-> +		sidx = 0;
-> +
->  	eidx = PFN_DOWN(addr + size - bdata->node_boot_start);
-> +	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
-> +		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
->  
->  	for (i = sidx; i < eidx; i++) {
->  		if (unlikely(!test_and_clear_bit(i, bdata->node_bootmem_map)))
-> @@ -421,7 +432,9 @@ int __init reserve_bootmem(unsigned long
->  
->  void __init free_bootmem(unsigned long addr, unsigned long size)
->  {
-> -	free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
-> +	bootmem_data_t *bdata;
-> +	list_for_each_entry(bdata, &bdata_list, list)
-> +		free_bootmem_core(bdata, addr, size);
->  }
->  
->  unsigned long __init free_all_bootmem(void)
+I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
 
-note, this combination is quite well tested now, on various x86 systems, 
-small and large alike, and about a 100 randconfigs booted up.
+--- when I run three threads concurrently reading raw disk partition and 
+suspend, I get 100% reproducible failure. (with one thread running it 
+usually succeeds, sometimes fail)
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Ingo Molnar <mingo@elte.hu>
+Either the on-going I/O will jam BIOS and I need to remove power to 
+continue.
 
-	Ingo
+Or the machine suspends, wakes up and reports "hda: lost interrupt" 
+(2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
+recover and it is not able to send any more disk IOs).
+
+How is suspending disk IO supposed to work? And why it doesn't?
+
+Mikulas
