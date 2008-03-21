@@ -1,191 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbYCUGWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYCUGWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbYCUGWc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 02:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYCUGT1
+	id S1754066AbYCUGWv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 02:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYCUGT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 02:19:27 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:48956 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753540AbYCUGS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 02:18:56 -0400
-Message-Id: <20080321061727.013005177@sgi.com>
+	Fri, 21 Mar 2008 02:19:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49203 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753536AbYCUGSz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 02:18:55 -0400
+Message-Id: <20080321061726.782068299@sgi.com>
 References: <20080321061703.921169367@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Mar 2008 23:17:15 -0700
+Date: Thu, 20 Mar 2008 23:17:14 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [12/14] vcompound: Avoid vmalloc in e1000 driver
-Content-Disposition: inline; filename=e1000
+Subject: [11/14] vcompound: Fallbacks for order 1 stack allocations on IA64 and x86
+Content-Disposition: inline; filename=0016-vcompound-Fallbacks-for-order-2-stack-allocations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch all the uses of vmalloc in the e1000 driver to virtual compounds.
-This will result in the use of regular memory for the ring buffers etc
-avoiding page tables,
+This allows fallback for order 1 stack allocations. In the fallback
+scenario the stacks will be virtually mapped.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
 ---
- drivers/net/e1000/e1000_main.c |   23 +++++++++++------------
- drivers/net/e1000e/netdev.c    |   12 ++++++------
- 2 files changed, 17 insertions(+), 18 deletions(-)
+ include/asm-ia64/thread_info.h   |    5 +++--
+ include/asm-x86/thread_info_32.h |    6 +++---
+ include/asm-x86/thread_info_64.h |    4 ++--
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
-Index: linux-2.6.25-rc5-mm1/drivers/net/e1000e/netdev.c
+Index: linux-2.6.25-rc5-mm1/include/asm-ia64/thread_info.h
 ===================================================================
---- linux-2.6.25-rc5-mm1.orig/drivers/net/e1000e/netdev.c	2008-03-20 21:52:45.962733927 -0700
-+++ linux-2.6.25-rc5-mm1/drivers/net/e1000e/netdev.c	2008-03-20 21:57:27.212078371 -0700
-@@ -1083,7 +1083,7 @@ int e1000e_setup_tx_resources(struct e10
- 	int err = -ENOMEM, size;
+--- linux-2.6.25-rc5-mm1.orig/include/asm-ia64/thread_info.h	2008-03-20 20:03:47.165885870 -0700
++++ linux-2.6.25-rc5-mm1/include/asm-ia64/thread_info.h	2008-03-20 20:04:51.302135777 -0700
+@@ -82,8 +82,9 @@ struct thread_info {
+ #define end_of_stack(p) (unsigned long *)((void *)(p) + IA64_RBS_OFFSET)
  
- 	size = sizeof(struct e1000_buffer) * tx_ring->count;
--	tx_ring->buffer_info = vmalloc(size);
-+	tx_ring->buffer_info = __alloc_vcompound(GFP_KERNEL, get_order(size));
- 	if (!tx_ring->buffer_info)
- 		goto err;
- 	memset(tx_ring->buffer_info, 0, size);
-@@ -1102,7 +1102,7 @@ int e1000e_setup_tx_resources(struct e10
+ #define __HAVE_ARCH_TASK_STRUCT_ALLOCATOR
+-#define alloc_task_struct()	((struct task_struct *)__get_free_pages(GFP_KERNEL | __GFP_COMP, KERNEL_STACK_SIZE_ORDER))
+-#define free_task_struct(tsk)	free_pages((unsigned long) (tsk), KERNEL_STACK_SIZE_ORDER)
++#define alloc_task_struct()	((struct task_struct *)__alloc_vcompound( \
++			GFP_KERNEL, KERNEL_STACK_SIZE_ORDER))
++#define free_task_struct(tsk)	__free_vcompound(tsk)
  
- 	return 0;
- err:
--	vfree(tx_ring->buffer_info);
-+	__free_vcompound(tx_ring->buffer_info);
- 	ndev_err(adapter->netdev,
- 	"Unable to allocate memory for the transmit descriptor ring\n");
- 	return err;
-@@ -1121,7 +1121,7 @@ int e1000e_setup_rx_resources(struct e10
- 	int i, size, desc_len, err = -ENOMEM;
- 
- 	size = sizeof(struct e1000_buffer) * rx_ring->count;
--	rx_ring->buffer_info = vmalloc(size);
-+	rx_ring->buffer_info = __alloc_vcompound(GFP_KERNEL, get_order(size));
- 	if (!rx_ring->buffer_info)
- 		goto err;
- 	memset(rx_ring->buffer_info, 0, size);
-@@ -1157,7 +1157,7 @@ err_pages:
- 		kfree(buffer_info->ps_pages);
- 	}
- err:
--	vfree(rx_ring->buffer_info);
-+	__free_vcompound(rx_ring->buffer_info);
- 	ndev_err(adapter->netdev,
- 	"Unable to allocate memory for the transmit descriptor ring\n");
- 	return err;
-@@ -1204,7 +1204,7 @@ void e1000e_free_tx_resources(struct e10
- 
- 	e1000_clean_tx_ring(adapter);
- 
--	vfree(tx_ring->buffer_info);
-+	__free_vcompound(tx_ring->buffer_info);
- 	tx_ring->buffer_info = NULL;
- 
- 	dma_free_coherent(&pdev->dev, tx_ring->size, tx_ring->desc,
-@@ -1231,7 +1231,7 @@ void e1000e_free_rx_resources(struct e10
- 		kfree(rx_ring->buffer_info[i].ps_pages);
- 	}
- 
--	vfree(rx_ring->buffer_info);
-+	__free_vcompound(rx_ring->buffer_info);
- 	rx_ring->buffer_info = NULL;
- 
- 	dma_free_coherent(&pdev->dev, rx_ring->size, rx_ring->desc,
-Index: linux-2.6.25-rc5-mm1/drivers/net/e1000/e1000_main.c
+ #define tsk_set_notify_resume(tsk) \
+ 	set_ti_thread_flag(task_thread_info(tsk), TIF_NOTIFY_RESUME)
+Index: linux-2.6.25-rc5-mm1/include/asm-x86/thread_info_32.h
 ===================================================================
---- linux-2.6.25-rc5-mm1.orig/drivers/net/e1000/e1000_main.c	2008-03-20 22:06:14.462252441 -0700
-+++ linux-2.6.25-rc5-mm1/drivers/net/e1000/e1000_main.c	2008-03-20 22:08:46.582009872 -0700
-@@ -1609,14 +1609,13 @@ e1000_setup_tx_resources(struct e1000_ad
- 	int size;
+--- linux-2.6.25-rc5-mm1.orig/include/asm-x86/thread_info_32.h	2008-03-20 20:03:47.173885951 -0700
++++ linux-2.6.25-rc5-mm1/include/asm-x86/thread_info_32.h	2008-03-20 20:04:51.306136067 -0700
+@@ -96,13 +96,13 @@ static inline struct thread_info *curren
+ /* thread information allocation */
+ #ifdef CONFIG_DEBUG_STACK_USAGE
+ #define alloc_thread_info(tsk) ((struct thread_info *) \
+-	__get_free_pages(GFP_KERNEL| __GFP_ZERO, get_order(THREAD_SIZE)))
++	__alloc_vcompound(GFP_KERNEL| __GFP_ZERO, get_order(THREAD_SIZE)))
+ #else
+ #define alloc_thread_info(tsk) ((struct thread_info *) \
+-	__get_free_pages(GFP_KERNEL, get_order(THREAD_SIZE)))
++	__alloc_vcompound(GFP_KERNEL, get_order(THREAD_SIZE)))
+ #endif
  
- 	size = sizeof(struct e1000_buffer) * txdr->count;
--	txdr->buffer_info = vmalloc(size);
-+	txdr->buffer_info = __alloc_vcompound(GFP_KERNEL | __GFP_ZERO,
-+							get_order(size));
- 	if (!txdr->buffer_info) {
- 		DPRINTK(PROBE, ERR,
- 		"Unable to allocate memory for the transmit descriptor ring\n");
- 		return -ENOMEM;
- 	}
--	memset(txdr->buffer_info, 0, size);
--
- 	/* round up to nearest 4K */
+-#define free_thread_info(info)	free_pages((unsigned long)(info), get_order(THREAD_SIZE))
++#define free_thread_info(info)	__free_vcompound(info)
  
- 	txdr->size = txdr->count * sizeof(struct e1000_tx_desc);
-@@ -1625,7 +1624,7 @@ e1000_setup_tx_resources(struct e1000_ad
- 	txdr->desc = pci_alloc_consistent(pdev, txdr->size, &txdr->dma);
- 	if (!txdr->desc) {
- setup_tx_desc_die:
--		vfree(txdr->buffer_info);
-+		__free_vcompound(txdr->buffer_info);
- 		DPRINTK(PROBE, ERR,
- 		"Unable to allocate memory for the transmit descriptor ring\n");
- 		return -ENOMEM;
-@@ -1653,7 +1652,7 @@ setup_tx_desc_die:
- 			DPRINTK(PROBE, ERR,
- 				"Unable to allocate aligned memory "
- 				"for the transmit descriptor ring\n");
--			vfree(txdr->buffer_info);
-+			__free_vcompound(txdr->buffer_info);
- 			return -ENOMEM;
- 		} else {
- 			/* Free old allocation, new allocation was successful */
-@@ -1826,7 +1825,7 @@ e1000_setup_rx_resources(struct e1000_ad
- 	int size, desc_len;
+ #else /* !__ASSEMBLY__ */
  
- 	size = sizeof(struct e1000_buffer) * rxdr->count;
--	rxdr->buffer_info = vmalloc(size);
-+	rxdr->buffer_info = __alloc_vcompound(GFP_KERNEL, size);
- 	if (!rxdr->buffer_info) {
- 		DPRINTK(PROBE, ERR,
- 		"Unable to allocate memory for the receive descriptor ring\n");
-@@ -1837,7 +1836,7 @@ e1000_setup_rx_resources(struct e1000_ad
- 	rxdr->ps_page = kcalloc(rxdr->count, sizeof(struct e1000_ps_page),
- 	                        GFP_KERNEL);
- 	if (!rxdr->ps_page) {
--		vfree(rxdr->buffer_info);
-+		__free_vcompound(rxdr->buffer_info);
- 		DPRINTK(PROBE, ERR,
- 		"Unable to allocate memory for the receive descriptor ring\n");
- 		return -ENOMEM;
-@@ -1847,7 +1846,7 @@ e1000_setup_rx_resources(struct e1000_ad
- 	                            sizeof(struct e1000_ps_page_dma),
- 	                            GFP_KERNEL);
- 	if (!rxdr->ps_page_dma) {
--		vfree(rxdr->buffer_info);
-+		__free_vcompound(rxdr->buffer_info);
- 		kfree(rxdr->ps_page);
- 		DPRINTK(PROBE, ERR,
- 		"Unable to allocate memory for the receive descriptor ring\n");
-@@ -1870,7 +1869,7 @@ e1000_setup_rx_resources(struct e1000_ad
- 		DPRINTK(PROBE, ERR,
- 		"Unable to allocate memory for the receive descriptor ring\n");
- setup_rx_desc_die:
--		vfree(rxdr->buffer_info);
-+		__free_vcompound(rxdr->buffer_info);
- 		kfree(rxdr->ps_page);
- 		kfree(rxdr->ps_page_dma);
- 		return -ENOMEM;
-@@ -2175,7 +2174,7 @@ e1000_free_tx_resources(struct e1000_ada
+Index: linux-2.6.25-rc5-mm1/include/asm-x86/thread_info_64.h
+===================================================================
+--- linux-2.6.25-rc5-mm1.orig/include/asm-x86/thread_info_64.h	2008-03-20 20:03:47.189886138 -0700
++++ linux-2.6.25-rc5-mm1/include/asm-x86/thread_info_64.h	2008-03-20 20:04:51.306136067 -0700
+@@ -83,9 +83,9 @@ static inline struct thread_info *stack_
+ #endif
  
- 	e1000_clean_tx_ring(adapter, tx_ring);
+ #define alloc_thread_info(tsk) \
+-	((struct thread_info *) __get_free_pages(THREAD_FLAGS, THREAD_ORDER))
++	((struct thread_info *) __alloc_vcompound(THREAD_FLAGS, THREAD_ORDER))
  
--	vfree(tx_ring->buffer_info);
-+	__free_vcompound(tx_ring->buffer_info);
- 	tx_ring->buffer_info = NULL;
+-#define free_thread_info(ti) free_pages((unsigned long) (ti), THREAD_ORDER)
++#define free_thread_info(ti) __free_vcompound(ti)
  
- 	pci_free_consistent(pdev, tx_ring->size, tx_ring->desc, tx_ring->dma);
-@@ -2283,9 +2282,9 @@ e1000_free_rx_resources(struct e1000_ada
+ #else /* !__ASSEMBLY__ */
  
- 	e1000_clean_rx_ring(adapter, rx_ring);
- 
--	vfree(rx_ring->buffer_info);
-+	__free_vcompound(rx_ring->buffer_info);
- 	rx_ring->buffer_info = NULL;
--	kfree(rx_ring->ps_page);
-+	__free_vcompound(rx_ring->ps_page);
- 	rx_ring->ps_page = NULL;
- 	kfree(rx_ring->ps_page_dma);
- 	rx_ring->ps_page_dma = NULL;
 
 -- 
