@@ -1,80 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYCULAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYCULEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYCULAh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 07:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYCULA2
+	id S1755995AbYCULEG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 07:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYCULDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 07:00:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56659 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbYCULA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 07:00:27 -0400
-Date: Fri, 21 Mar 2008 12:00:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2/2] vmallocinfo: Add caller information
-Message-ID: <20080321110008.GW20420@elte.hu>
-References: <20080318222701.788442216@sgi.com> <20080318222827.519656153@sgi.com> <20080319214227.GA4454@elte.hu> <Pine.LNX.4.64.0803191659410.4645@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803191659410.4645@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 21 Mar 2008 07:03:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47968
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754247AbYCULDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 07:03:51 -0400
+Date: Fri, 21 Mar 2008 04:04:08 -0700 (PDT)
+Message-Id: <20080321.040408.153242166.davem@davemloft.net>
+To: denys@visp.net.lb
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: possible lockdep crash
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080321105404.M46676@visp.net.lb>
+References: <20080321093052.M39677@visp.net.lb>
+	<20080321.033530.249188954.davem@davemloft.net>
+	<20080321105404.M46676@visp.net.lb>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+Date: Fri, 21 Mar 2008 12:54:50 +0200
 
-* Christoph Lameter <clameter@sgi.com> wrote:
+> Let me know if i can improve output to help debugging.
+> If possible it must be minimal risk to hang, cause router is in very 
+> difficult to reach area.
 
-> On Wed, 19 Mar 2008, Ingo Molnar wrote:
-> 
-> > 
-> > * Christoph Lameter <clameter@sgi.com> wrote:
-> > 
-> > > Add caller information so that /proc/vmallocinfo shows where the 
-> > > allocation request for a slice of vmalloc memory originated.
-> > 
-> > please use one simple save_stack_trace() instead of polluting a dozen 
-> > architectures with:
-> 
-> save_stack_trace() depends on CONFIG_STACKTRACE which is only 
-> available when debugging is compiled it. I was more thinking about 
-> this as a generally available feature.
+Can you disable lockdep and see if the problem persists?
 
-then make STACKTRACE available generally via the patch below.
-
-	Ingo
-
-------------------------------------------->
-Subject: debugging: always enable stacktrace
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Mar 21 11:48:32 CET 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- lib/Kconfig.debug |    1 -
- 1 file changed, 1 deletion(-)
-
-Index: linux-x86.q/lib/Kconfig.debug
-===================================================================
---- linux-x86.q.orig/lib/Kconfig.debug
-+++ linux-x86.q/lib/Kconfig.debug
-@@ -387,7 +387,6 @@ config DEBUG_LOCKING_API_SELFTESTS
- 
- config STACKTRACE
- 	bool
--	depends on DEBUG_KERNEL
- 	depends on STACKTRACE_SUPPORT
- 
- config DEBUG_KOBJECT
+It's killing your routing performance anyways, I have no
+idea why you have it enabled.
