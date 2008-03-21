@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761267AbYCUUBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbYCUUBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761267AbYCUUBX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYCUUBJ
+	id S1761359AbYCUUBs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYCUUBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:01:09 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:42869 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756439AbYCUUBH (ORCPT
+	Fri, 21 Mar 2008 16:01:36 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:15003 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbYCUUBf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:01:07 -0400
-Date: Fri, 21 Mar 2008 21:01:06 +0100 (CET)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-kernel@vger.kernel.org
-Subject: APM crashes when IO is going on
-In-Reply-To: <200803210127.56437.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0803212055550.6726@artax.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz>
- <200803201131.25828.rjw@sisk.pl> <Pine.LNX.4.64.0803210059440.2540@artax.karlin.mff.cuni.cz>
- <200803210127.56437.rjw@sisk.pl>
-X-Personality-Disorder: Schizoid
+	Fri, 21 Mar 2008 16:01:35 -0400
+Date: Fri, 21 Mar 2008 14:01:33 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 7/16][BUG] PCI slot: Remove compiler warnings (Not for
+	mainline!)
+Message-ID: <20080321200133.GM17292@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E33635.5080908@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E33635.5080908@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Remove following compiler warnings.
 
-> > > > I have an old notebook with APM and I am experiencing occasional APMD 
-> > > > lockups after resume, with kernels 2.6.25rc1 snd 2.6.25rc3. They didn't 
-> > > > happen with 2.6.24 or before.
-> > > > 
-> > > > The bug happens about once a week or so.
-> > > > 
-> > > > If you have any idea how to debug it, you can send me a test code.
-> > > 
-> > > It is possible that the bug was fixed in -rc4.  Can you please test -rc6 and
-> > > see if it's still present?
-> > > 
-> > > Thanks,
-> > > Rafael
-> > 
-> > I'm now running on -rc6, so I'll see (it takes some days for the bug to 
-> > appear). Where is that patch that went to -rc4 and that may fix it?
+Merged, thanks.
+
+/ac
+
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7a8d37a37380e2b1500592d40b7ec384dbebe7a0
+> drivers/pci/slot.c: In function 'pci_create_slot':
+> drivers/pci/slot.c:146: warning: format '%d' expects type 'int', but argument 4 has type 'atomic_t'
+> drivers/pci/slot.c: In function 'pci_destroy_slot':
+> drivers/pci/slot.c:198: warning: format '%d' expects type 'int', but argument 4 has type 'atomic_t'
 > 
-> Thanks,
-> Rafael
-
-I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
-
---- when I run three threads concurrently reading raw disk partition and 
-suspend, I get 100% reproducible failure. (with one thread running it 
-usually succeeds, sometimes fail)
-
-Either the on-going I/O will jam BIOS and I need to remove power to 
-continue.
-
-Or the machine suspends, wakes up and reports "hda: lost interrupt" 
-(2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
-recover and it is not able to send any more disk IOs).
-
-How is suspending disk IO supposed to work? And why it doesn't?
-
-Mikulas
+> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> 
+> ---
+>  drivers/pci/slot.c |    7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.25-rc6/drivers/pci/slot.c
+> ===================================================================
+> --- linux-2.6.25-rc6.orig/drivers/pci/slot.c
+> +++ linux-2.6.25-rc6/drivers/pci/slot.c
+> @@ -142,8 +142,8 @@ struct pci_slot *pci_create_slot(struct 
+>  		if (slot->number == slot_nr) {
+>  			kobject_get(&slot->kobj);
+>  			dbg("%s: bumped refcount to %d on %x:%d\n",
+> -				__func__, slot->kobj.kref.refcount,
+> -				parent->number, slot_nr);
+> +			    __func__, atomic_read(&slot->kobj.kref.refcount),
+> +			    parent->number, slot_nr);
+>  			goto out;
+>  		}
+>  	}
+> @@ -196,7 +196,8 @@ int pci_destroy_slot(struct pci_slot *sl
+>  	up_write(&pci_bus_sem);
+>  
+>  	dbg("%s: decreased refcount to %d on %x:%d\n", __func__,
+> -		slot->kobj.kref.refcount, slot->bus->number, slot->number);
+> +	    atomic_read(&slot->kobj.kref.refcount), slot->bus->number,
+> +	    slot->number);
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(pci_destroy_slot);
+> 
+> 
