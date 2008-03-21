@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbYCUXsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763836AbYCUXs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763558AbYCUXsF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYCUXpl
+	id S1763836AbYCUXs0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYCUXpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 19:45:41 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60189 "EHLO
+	Fri, 21 Mar 2008 19:45:38 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60182 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752651AbYCUXp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 19:45:28 -0400
-Message-Id: <20080321224335.920240276@sous-sol.org>
+	id S1752565AbYCUXp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 19:45:26 -0400
+Message-Id: <20080321224331.992750489@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:42:59 -0700
+Date: Fri, 21 Mar 2008 15:42:55 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Matti Linnanvuori <mattilinnanvuori@yahoo.com>,
+       Matheos Worku <Matheos.Worku@Sun.COM>,
        David S Miller <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 09/76] NET: Fix race in dev_close(). (Bug 9750)
-Content-Disposition: inline; filename=net-fix-race-in-dev_close.patch
+Subject: [patch 05/76] NIU: More BMAC alt MAC address fixes.
+Content-Disposition: inline; filename=niu-more-bmac-alt-mac-address-fixes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,48 +35,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+From: Matheos Worku <Matheos.Worku@Sun.COM>
 
-Upstream commit: d8b2a4d21e0b37b9669b202867bfef19f68f786a
+Upstream commit: fa907895b7b776208a1406efe5ba7ffe0f49f507
 
-There is a race in Linux kernel file net/core/dev.c, function dev_close.
-The function calls function dev_deactivate, which calls function
-dev_watchdog_down that deletes the watchdog timer. However, after that, a
-driver can call netif_carrier_ok, which calls function
-__netdev_watchdog_up that can add the watchdog timer again. Function
-unregister_netdevice calls function dev_shutdown that traps the bug
-!timer_pending(&dev->watchdog_timer). Moving dev_deactivate after
-netif_running() has been cleared prevents function netif_carrier_on
-from calling __netdev_watchdog_up and adding the watchdog timer again.
+From: Matheos Worku <Matheos.Worku@Sun.COM>
 
-Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+1) niu_enable_alt_mac() needs to be adjusted so that the mask
+   is computed properly for the BMAC case.
+
+2) BMAC has 6 alt MAC addresses available, not 7.
+
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- net/core/dev.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/niu.c |    9 +++++----
+ drivers/net/niu.h |    2 +-
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1068,8 +1068,6 @@ int dev_close(struct net_device *dev)
- 	 */
- 	call_netdevice_notifiers(NETDEV_GOING_DOWN, dev);
+--- a/drivers/net/niu.c
++++ b/drivers/net/niu.c
+@@ -1616,12 +1616,13 @@ static int niu_enable_alt_mac(struct niu
+ 	if (index >= niu_num_alt_addr(np))
+ 		return -EINVAL;
  
--	dev_deactivate(dev);
+-	if (np->flags & NIU_FLAGS_XMAC)
++	if (np->flags & NIU_FLAGS_XMAC) {
+ 		reg = XMAC_ADDR_CMPEN;
+-	else
++		mask = 1 << index;
++	} else {
+ 		reg = BMAC_ADDR_CMPEN;
 -
- 	clear_bit(__LINK_STATE_START, &dev->state);
+-	mask = 1 << index;
++		mask = 1 << (index + 1);
++	}
  
- 	/* Synchronize to scheduled poll. We cannot touch poll list,
-@@ -1080,6 +1078,8 @@ int dev_close(struct net_device *dev)
- 	 */
- 	smp_mb__after_clear_bit(); /* Commit netif_running(). */
+ 	val = nr64_mac(reg);
+ 	if (on)
+--- a/drivers/net/niu.h
++++ b/drivers/net/niu.h
+@@ -499,7 +499,7 @@
+ #define BMAC_ADDR2			0x00110UL
+ #define  BMAC_ADDR2_ADDR2		0x000000000000ffffULL
  
-+	dev_deactivate(dev);
-+
- 	/*
- 	 *	Call the device specific close. This cannot fail.
- 	 *	Only if device is UP
+-#define BMAC_NUM_ALT_ADDR		7
++#define BMAC_NUM_ALT_ADDR		6
+ 
+ #define BMAC_ALT_ADDR0(NUM)		(0x00118UL + (NUM)*0x18UL)
+ #define  BMAC_ALT_ADDR0_ADDR0		0x000000000000ffffULL
 
 -- 
