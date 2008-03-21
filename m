@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbYCUQam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbYCUQbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759192AbYCUQam (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 12:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYCUQaf
+	id S1759426AbYCUQbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 12:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYCUQb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 12:30:35 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:47782 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbYCUQae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 12:30:34 -0400
-Date: Fri, 21 Mar 2008 18:30:19 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: fglrx
-Message-ID: <20080321163019.GA1434@cs181133002.pp.htv.fi>
-References: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com>
+	Fri, 21 Mar 2008 12:31:28 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33524 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751325AbYCUQb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 12:31:26 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47E3E2CF.5070408@s5r6.in-berlin.de>
+Date: Fri, 21 Mar 2008 17:31:11 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Martin Michlmayr <tbm@cyrius.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: nobody cared about IRQ 19 (firewire, on a HP 2510p notebook)
+References: <20080321153952.GA26354@deprecation.cyrius.com>
+In-Reply-To: <20080321153952.GA26354@deprecation.cyrius.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 04:25:00PM +0000, Justin Mattock wrote:
-> Hello; fair enough, I did ask ati about what I should do, but there
-> wasn't much help. Overall its not pretty, but If you are impatient for
-> ati to come out with an update then this should get you going(for 3D).
-> The problem I see is, SELinux is going out of whack due to fglrx
-> wanting a cap_t effective vector.  So on the secure side I probably
-> wont use fglrx until there is support for the proper capability.
-> or take you're approach and look at the open ati driver.
+Martin Michlmayr wrote:
+> I just got the following in dmesg a few minutes after booting my
+> notebook which was idle at the time this occurred.  This was with
+> 2.6.25-rc6 but I've seen the same with 2.6.22 (see the attached
+> dmesg from 2.6.22).
+> 
+> irq 19: nobody cared (try booting with the "irqpoll" option)
+> Pid: 0, comm: swapper Not tainted 2.6.25-rc6-amd64 #1
+> 
+> Call Trace:
+>  <IRQ>  [<ffffffff80271c0b>] __report_bad_irq+0x38/0x7c
+>  [<ffffffff80271e51>] note_interrupt+0x202/0x249
+>  [<ffffffff8027274e>] handle_fasteoi_irq+0xab/0xd0
+>  [<ffffffff8020f82c>] do_IRQ+0x6e/0xda
+>  [<ffffffff8020c65d>] ret_from_intr+0x0/0x19
+>  <EOI>  [<ffffffff80221831>] ? native_irq_enable+0x6/0x7
+>  [<ffffffff88006330>] ? :processor:acpi_idle_enter_bm+0x2ab/0x325
+>  [<ffffffff803b5ef3>] ? menu_select+0x70/0x99
+>  [<ffffffff803b52e1>] ? cpuidle_idle_call+0x77/0xa6
+>  [<ffffffff803b526a>] ? cpuidle_idle_call+0x0/0xa6
+>  [<ffffffff8020b187>] ? cpu_idle+0xb1/0xdb
+>  [<ffffffff8042ea16>] ? rest_init+0x5a/0x5c
+> 
+> handlers:
+> [<ffffffff8806f0f5>] (irq_handler+0x0/0x207 [firewire_ohci])
+> Disabling IRQ #19
+...
+> 02:06.1 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 04)
+...
 
-Please stop discussing binary-only drivers on linux-kernel.
+According to your 2.6.22 dmesg, this happens a while after the firewire 
+subsystem seemingly successfully initialized the controller.  Could you 
+please post "dmesg | grep firewire" from 2.6.25-rc6 though?
 
-That's 100% off-topic here.
+The __report_bad_irq() and "Disabling IRQ #..." can only have happened 
+because this condition in fw-ohci.c::irq_handler()
 
-> Justin P. Mattock
+	event = reg_read(ohci, OHCI1394_IntEventClear);
 
-Thanks
-Adrian
+	if (!event || !~event)
+		return IRQ_NONE;
 
+happened a lot of times.  This means either
+   - Some MMIO reads return bogus values (all zero or all ones in a
+     bitfield which should be sparsely populated in a proper interrupt
+     event),
+or
+   - the interrupt was misrouted by the kernel's IRQ infrastructure was
+     unable to detect the misrouting, AFAIU.
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Stefan Richter
+-=====-==--- --== =-=-=
+http://arcgraph.de/sr/
