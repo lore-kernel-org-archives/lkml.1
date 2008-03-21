@@ -1,200 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYCUPwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYCUPxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYCUPwu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 11:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYCUPwk
+	id S1757916AbYCUPxY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 11:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbYCUPxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 11:52:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40378 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbYCUPwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 11:52:39 -0400
-Date: Fri, 21 Mar 2008 16:52:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-Subject: [patch] forcedeth: fix locking bug with netconsole
-Message-ID: <20080321155213.GA22755@elte.hu>
+	Fri, 21 Mar 2008 11:53:14 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:1595 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbYCUPxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 11:53:13 -0400
+Date: Fri, 21 Mar 2008 09:53:09 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/3, v10] PCI, ACPI: Physical PCI slot objects
+Message-ID: <20080321155309.GD17292@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <47E33472.1000602@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: forcedeth: fix locking bug with netconsole
-From: Ingo Molnar <mingo@elte.hu>
+Hi Kenji-san,
 
-while using netconsole on forcedeth, lockdep noticed the following
-locking bug:
+> I've reviewed and tested the latest version of Alex's "introduce
+> pci_slot" series 
+>
+> But on the other hand, I found some bugs and some codes need to
+> be changed. 
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.24-rc6 #6
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----------------------------------
-inconsistent {softirq-on-W} -> {in-softirq-W} usage.
-udevd/719 [HC0[0]:SC1[1]:HE1:SE0] takes:
- (_xmit_ETHER){-+..}, at: [<c043062e>] dev_watchdog+0x1c/0xb9
-{softirq-on-W} state was registered at:
-  [<c0147f67>] mark_held_locks+0x4e/0x66
-  [<c014810e>] trace_hardirqs_on+0xfe/0x136
-  [<c048ae63>] _spin_unlock_irq+0x22/0x42
-  [<c02ec617>] nv_start_xmit_optimized+0x347/0x37a
-  [<c042c80d>] netpoll_send_skb+0xa4/0x147
-  [<c042d4a6>] netpoll_send_udp+0x238/0x242
-  [<c02f44f6>] write_msg+0x6d/0x9b
-  [<c012c129>] __call_console_drivers+0x4e/0x5a
-  [<c012c18c>] _call_console_drivers+0x57/0x5b
-  [<c012c2dd>] release_console_sem+0x11c/0x1b9
-  [<c012caeb>] register_console+0x1eb/0x1f3
-  [<c06ae673>] init_netconsole+0x119/0x15f
-  [<c069149b>] kernel_init+0x147/0x294
-  [<c01058cb>] kernel_thread_helper+0x7/0x10
-  [<ffffffff>] 0xffffffff
-irq event stamp: 950
-hardirqs last  enabled at (950): [<c048ae63>] _spin_unlock_irq+0x22/0x42
-hardirqs last disabled at (949): [<c048aaf7>] _spin_lock_irq+0xc/0x38
-softirqs last  enabled at (0): [<c012a29c>] copy_process+0x375/0x126d
-softirqs last disabled at (947): [<c0106d43>] do_softirq+0x61/0xc6
+Thank you very much for the review and patches!
 
-other info that might help us debug this:
-no locks held by udevd/719.
+I will get started on reviewing / merging / testing these as soon
+as I can, and will respond to each patch individually.
 
-stack backtrace:
-Pid: 719, comm: udevd Not tainted 2.6.24-rc6 #6
- [<c0105c46>] show_trace_log_lvl+0x12/0x25
- [<c01063ec>] show_trace+0xd/0x10
- [<c010670c>] dump_stack+0x57/0x5f
- [<c0147505>] print_usage_bug+0x10a/0x117
- [<c0147c38>] mark_lock+0x121/0x402
- [<c01488b6>] __lock_acquire+0x3d1/0xb64
- [<c0149405>] lock_acquire+0x4e/0x6a
- [<c048a99b>] _spin_lock+0x23/0x32
- [<c043062e>] dev_watchdog+0x1c/0xb9
- [<c0133e4a>] run_timer_softirq+0x133/0x193
- [<c0130907>] __do_softirq+0x78/0xed
- [<c0106d43>] do_softirq+0x61/0xc6
- =======================
-eth1: link down
+Thanks!
 
-the fix is to disable/restore irqs instead of disable/enable.
+/ac
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/net/forcedeth.c |   18 ++++++++++--------
- net/core/netpoll.c      |    3 +++
- 2 files changed, 13 insertions(+), 8 deletions(-)
-
-Index: linux/drivers/net/forcedeth.c
-===================================================================
---- linux.orig/drivers/net/forcedeth.c
-+++ linux/drivers/net/forcedeth.c
-@@ -1854,6 +1854,7 @@ static int nv_start_xmit(struct sk_buff 
- 	struct ring_desc* start_tx;
- 	struct ring_desc* prev_tx;
- 	struct nv_skb_map* prev_tx_ctx;
-+	unsigned long flags;
- 
- 	/* add fragments to entries count */
- 	for (i = 0; i < fragments; i++) {
-@@ -1863,10 +1864,10 @@ static int nv_start_xmit(struct sk_buff 
- 
- 	empty_slots = nv_get_empty_tx_slots(np);
- 	if (unlikely(empty_slots <= entries)) {
--		spin_lock_irq(&np->lock);
-+		spin_lock_irqsave(&np->lock, flags);
- 		netif_stop_queue(dev);
- 		np->tx_stop = 1;
--		spin_unlock_irq(&np->lock);
-+		spin_unlock_irqrestore(&np->lock, flags);
- 		return NETDEV_TX_BUSY;
- 	}
- 
-@@ -1929,13 +1930,13 @@ static int nv_start_xmit(struct sk_buff 
- 		tx_flags_extra = skb->ip_summed == CHECKSUM_PARTIAL ?
- 			 NV_TX2_CHECKSUM_L3 | NV_TX2_CHECKSUM_L4 : 0;
- 
--	spin_lock_irq(&np->lock);
-+	spin_lock_irqsave(&np->lock, flags);
- 
- 	/* set tx flags */
- 	start_tx->flaglen |= cpu_to_le32(tx_flags | tx_flags_extra);
- 	np->put_tx.orig = put_tx;
- 
--	spin_unlock_irq(&np->lock);
-+	spin_unlock_irqrestore(&np->lock, flags);
- 
- 	dprintk(KERN_DEBUG "%s: nv_start_xmit: entries %d queued for transmission. tx_flags_extra: %x\n",
- 		dev->name, entries, tx_flags_extra);
-@@ -1971,6 +1972,7 @@ static int nv_start_xmit_optimized(struc
- 	struct ring_desc_ex* prev_tx;
- 	struct nv_skb_map* prev_tx_ctx;
- 	struct nv_skb_map* start_tx_ctx;
-+	unsigned long flags;
- 
- 	/* add fragments to entries count */
- 	for (i = 0; i < fragments; i++) {
-@@ -1980,10 +1982,10 @@ static int nv_start_xmit_optimized(struc
- 
- 	empty_slots = nv_get_empty_tx_slots(np);
- 	if (unlikely(empty_slots <= entries)) {
--		spin_lock_irq(&np->lock);
-+		spin_lock_irqsave(&np->lock, flags);
- 		netif_stop_queue(dev);
- 		np->tx_stop = 1;
--		spin_unlock_irq(&np->lock);
-+		spin_unlock_irqrestore(&np->lock, flags);
- 		return NETDEV_TX_BUSY;
- 	}
- 
-@@ -2059,7 +2061,7 @@ static int nv_start_xmit_optimized(struc
- 			start_tx->txvlan = 0;
- 	}
- 
--	spin_lock_irq(&np->lock);
-+	spin_lock_irqsave(&np->lock, flags);
- 
- 	if (np->tx_limit) {
- 		/* Limit the number of outstanding tx. Setup all fragments, but
-@@ -2085,7 +2087,7 @@ static int nv_start_xmit_optimized(struc
- 	start_tx->flaglen |= cpu_to_le32(tx_flags | tx_flags_extra);
- 	np->put_tx.ex = put_tx;
- 
--	spin_unlock_irq(&np->lock);
-+	spin_unlock_irqrestore(&np->lock, flags);
- 
- 	dprintk(KERN_DEBUG "%s: nv_start_xmit_optimized: entries %d queued for transmission. tx_flags_extra: %x\n",
- 		dev->name, entries, tx_flags_extra);
-Index: linux/net/core/netpoll.c
-===================================================================
---- linux.orig/net/core/netpoll.c
-+++ linux/net/core/netpoll.c
-@@ -284,6 +284,7 @@ static void netpoll_send_skb(struct netp
- 		/* try until next clock tick */
- 		for (tries = jiffies_to_usecs(1)/USEC_PER_POLL;
- 		     tries > 0; --tries) {
-+			WARN_ON_ONCE(!irqs_disabled());
- 			if (netif_tx_trylock(dev)) {
- 				if (!netif_queue_stopped(dev) &&
- 				    !netif_subqueue_stopped(dev, skb))
-@@ -297,8 +298,10 @@ static void netpoll_send_skb(struct netp
- 
- 			/* tickle device maybe there is some cleanup */
- 			netpoll_poll(np);
-+			WARN_ON_ONCE(!irqs_disabled());
- 
- 			udelay(USEC_PER_POLL);
-+			WARN_ON_ONCE(!irqs_disabled());
- 		}
- 		local_irq_restore(flags);
- 	}
