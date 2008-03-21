@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYCULpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYCULsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYCULpX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 07:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYCULpF
+	id S1756034AbYCULsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 07:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYCULsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 07:45:05 -0400
-Received: from ihemail3.lucent.com ([135.245.0.37]:55917 "EHLO
-	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752455AbYCULpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 07:45:03 -0400
-X-Greylist: delayed 667 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Mar 2008 07:45:03 EDT
-Date: Fri, 21 Mar 2008 07:29:27 -0400 (EDT)
-Message-Id: <20080321.072927.110651403.pfps@research.bell-labs.com>
-To: alan@lxorguk.ukuu.org.uk
-Cc: pfps@verizon.net, htejun@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9 and Re: libata
- and legacy ide pcmcia failure
-From: "Peter F. Patel-Schneider" <pfps@research.bell-labs.com>
-In-Reply-To: <20080321111313.24567b9f@core>
-References: <20080321104002.27a7d19e@core>
-	<47E39963.2090908@verizon.net>
-	<20080321111313.24567b9f@core>
-X-Mailer: Mew version 5.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Mar 2008 11:33:38.0407 (UTC) FILETIME=[6803AF70:01C88B47]
+	Fri, 21 Mar 2008 07:48:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54121 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753294AbYCULsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 07:48:08 -0400
+Date: Fri, 21 Mar 2008 12:47:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Aristeu Rozanski <aris@ruivo.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
+Message-ID: <20080321114752.GA25225@elte.hu>
+References: <20080313180538.GC4620@cathedrallabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080313180538.GC4620@cathedrallabs.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9 and Re: libata and legacy ide pcmcia failure
-Date: Fri, 21 Mar 2008 11:13:13 +0000
 
->  
-> > How can I check to see if this is the case?  How would this explain that 
-> 
-> As I said before, take a CF card/adapter combination you know fails
-> on a T60p/T61p and test it on a Linux box that isn't one of those types
-> (and preferably not a Lenovo at all)
+* Aristeu Rozanski <aris@ruivo.org> wrote:
 
-Actually I was wondering if there was something that I could do on the
-box itself.
+> This patch includes code to handle NMI_IO_APIC enabling/disabling by
+> nmi_watchdog proc file.
 
-> > the adapter and card sometimes work when they are in when the system boots?
-> 
-> Ask the BIOS authors. Trying to fathom what they have done is frequently
-> interesting. Everyone else I've had do this has found the card works
-> perfectly with Linux except in the Lenovo box.
+hm:
 
-I'll investigate further.
+> +static void disable_ioapic_nmi_watchdog(void)
+> +{
+> +	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
+> +}
 
-> Alan
+stop_apic_nmi_watchdog() doesnt currently properly disable the 
+generation of NMIs when they come from an IO-APIC, so this will need 
+more fixes i believe. One approach would be to save the IO-APIC id and 
+pin when the watchdog is set up, and use it later on to poke that 
+IO-APIC register to disable NMI generation there.
 
-peter
+	Ingo
