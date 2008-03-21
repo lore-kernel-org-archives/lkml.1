@@ -1,232 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbYCUEeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYCUEsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbYCUEeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 00:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYCUEeG
+	id S1753987AbYCUEsw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 00:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYCUEsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 00:34:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:42401 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbYCUEeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 00:34:04 -0400
-Message-ID: <47E339D1.3080509@goop.org>
-Date: Thu, 20 Mar 2008 21:30:09 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, Andi Kleen <ak@suse.de>,
-       shai@scalex86.org
-Subject: Re: [patch 2/4] x86: Fix build breakage when PCI is define and PARAVIRT
- is not
-References: <20080320073740.GA9414@localdomain> <20080320074116.GC9414@localdomain>
-In-Reply-To: <20080320074116.GC9414@localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 21 Mar 2008 00:48:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42996 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752641AbYCUEsk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 00:48:40 -0400
+Date: Thu, 20 Mar 2008 21:48:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hans-Peter Jansen <hpj@urpla.net>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.24.3: regular sata drive resets - worrisome?
+Message-Id: <20080320214830.6d39876d.akpm@linux-foundation.org>
+In-Reply-To: <200803201518.32109.hpj@urpla.net>
+References: <200803201518.32109.hpj@urpla.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravikiran G Thirumalai wrote:
-> - Fix the the build breakage when PARAVIRT is defined
->   but PCI is not
->   This fixes problem reported at:
-> 	http://marc.info/?l=linux-kernel&m=120525966600698&w=2
-> - Make is_vsmp_box() available even when PARAVIRT is not defined.
->   This is needed to determine if tsc's are reliable as a time source
->   even when PARAVIRT is not defined.
-> - split vsmp_init to use is_vsmp_box() and set_vsmp_pv_ops()
->   set_vsmp_pv_ops will do nothing if PCI is not enabled in the config.
->   
 
-I'm a bit confused by all the config dependencies.  I had assumed that 
-VSMP depended on both PCI and PARAVIRT.  Is this not actually true?  You 
-can have a VSMP system without either or both of PCI/PARAVIRT?
+(cc linux-ide)
+(regression?)
 
-The structure of the code suggests that at the very least VSMP depends 
-on PCI (it never makes sense to enable VSMP on a non-PCI system), and 
-therefore a number of your config decisions can just be predicated on VSMP.
+On Thu, 20 Mar 2008 15:18:31 +0100 Hans-Peter Jansen <hpj@urpla.net> wrote:
 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
->
-> Index: linux.git.trees/arch/x86/kernel/Makefile
-> ===================================================================
-> --- linux.git.trees.orig/arch/x86/kernel/Makefile	2008-03-19 13:39:29.000000000 -0700
-> +++ linux.git.trees/arch/x86/kernel/Makefile	2008-03-19 13:46:14.400935607 -0700
-> @@ -60,7 +60,7 @@ obj-$(CONFIG_KEXEC)		+= relocate_kernel_
->  obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
->  obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
->  obj-$(CONFIG_X86_SUMMIT_NUMA)	+= summit_32.o
-> -obj-$(CONFIG_PARAVIRT)		+= vsmp_64.o
-> +obj-y				+= vsmp_64.o
->   
+> Hi,
+> 
+> since I upgraded to 2.6.24.3 on one of my production systems, I see 
+> regular device resets like these:
+> 
+> Mar 20 14:33:03 lisa5 kernel: ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> Mar 20 14:33:03 lisa5 kernel: ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+> Mar 20 14:33:03 lisa5 kernel:          res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Mar 20 14:33:03 lisa5 kernel: ata2.00: status: { DRDY }
+> Mar 20 14:33:03 lisa5 kernel: ata2: hard resetting link
+> Mar 20 14:33:05 lisa5 kernel: ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+> Mar 20 14:33:05 lisa5 kernel: ata2.00: configured for UDMA/100
+> Mar 20 14:33:05 lisa5 kernel: ata2: EH complete
+> Mar 20 14:33:05 lisa5 kernel: sd 2:0:0:0: [sdc] 488397168 512-byte hardware sectors (250059 MB)
+> Mar 20 14:33:05 lisa5 kernel: sd 2:0:0:0: [sdc] Write Protect is off
+> Mar 20 14:33:05 lisa5 kernel: sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+> Mar 20 14:33:05 lisa5 kernel: sd 2:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> Mar 20 14:36:11 lisa5 kernel: ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> Mar 20 14:36:11 lisa5 kernel: ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+> Mar 20 14:36:11 lisa5 kernel:          res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Mar 20 14:36:11 lisa5 kernel: ata3.00: status: { DRDY }
+> Mar 20 14:36:11 lisa5 kernel: ata3: hard resetting link
+> Mar 20 14:36:13 lisa5 kernel: ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+> Mar 20 14:36:13 lisa5 kernel: ata3.00: configured for UDMA/100
+> Mar 20 14:36:13 lisa5 kernel: ata3: EH complete
+> Mar 20 14:36:13 lisa5 kernel: sd 3:0:0:0: [sdd] 488397168 512-byte hardware sectors (250059 MB)
+> Mar 20 14:36:13 lisa5 kernel: sd 3:0:0:0: [sdd] Write Protect is off
+> Mar 20 14:36:13 lisa5 kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+> Mar 20 14:36:13 lisa5 kernel: sd 3:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> 
+> Should I be worried? smartd doesn't show anything suspicious on those.
+> 
+> It's been 4 samsung drives at all hanging on a sata sil 3124:
+> 
+> 29: PCI 202.0: 0104 RAID bus controller
+>   [Created at pci.273]
+>   Unique ID: LHB6.kPnnhej1LTC
+>   Parent ID: bSAa.qlvrYsPk2G3
+>   SysFS ID: /devices/pci0000:00/0000:00:0a.0/0000:02:02.0
+>   SysFS BusID: 0000:02:02.0
+>   Hardware Class: storage
+>   Model: "Silicon Image, Inc. (formerly CMD Technology Inc) SiI 3124 PCI-X Serial ATA Controller"
+>   Vendor: pci 0x1095 "Silicon Image, Inc. (formerly CMD Technology Inc)"
+>   Device: pci 0x3124 "SiI 3124 PCI-X Serial ATA Controller"
+>   SubVendor: pci 0x1095 "Silicon Image, Inc. (formerly CMD Technology Inc)"
+>   SubDevice: pci 0x7124 
+>   Revision: 0x01
+>   Driver: "sata_sil24"
+>   Memory Range: 0xfc9ffc00-0xfc9ffc7f (rw,non-prefetchable)
+>   Memory Range: 0xfc9f0000-0xfc9f7fff (rw,non-prefetchable)
+>   I/O Ports: 0xac00-0xac0f (rw)
+>   Memory Range: 0xfc900000-0xfc97ffff (ro,prefetchable,disabled)
+>   IRQ: 17 (20116954 events)
+>   Driver Info #0:
+>     Driver Status: sata_sil24 is active
+>     Driver Activation Cmd: "modprobe sata_sil24"
+>   Config Status: cfg=no, avail=yes, need=no, active=unknown
+>   Attached to: #15 (PCI bridge)
+> 
+> 27: IDE 100.0: 10600 Disk
+>   [Created at block.188]
+>   Unique ID: DQI9.0o8IZwvZth7
+>   Parent ID: LHB6.kPnnhej1LTC
+>   SysFS ID: /block/sdb
+>   SysFS BusID: 1:0:0:0
+>   SysFS Device Link: /devices/pci0000:00/0000:00:0a.0/0000:02:02.0/host1/target1:0:0/1:0:0:0
+>   Hardware Class: disk
+>   Model: "SAMSUNG SP2504C"
+>   Vendor: "SAMSUNG"
+>   Device: "SP2504C"
+>   Revision: "VT10"
+>   Serial ID: "S09QJ1GYA03006"
+>   Driver: "sata_sil24", "sd"
+>   Device File: /dev/sdb
+>   Device 
+> Files: /dev/sdb, /dev/disk/by-path/pci-0000:02:02.0-scsi-0:0:0:0, /dev/disk/by-id/1ATA_SAMSUNG_SP2504C_S09QJ1GYA03006
+>   Device Number: block 8:16-8:31
+>   Geometry (Logical): CHS 30401/255/63
+>   Size: 488397168 sectors a 512 bytes
+>   Config Status: cfg=no, avail=yes, need=no, active=unknown
+>   Attached to: #20 (RAID bus controller)
+> 
+> 28: IDE 200.0: 10600 Disk
+>   [Created at block.188]
+>   Unique ID: gbYD.jbwYSfXQ1s1
+>   Parent ID: LHB6.kPnnhej1LTC
+>   SysFS ID: /block/sdc
+>   SysFS BusID: 2:0:0:0
+>   SysFS Device Link: /devices/pci0000:00/0000:00:0a.0/0000:02:02.0/host2/target2:0:0/2:0:0:0
+>   Hardware Class: disk
+>   Model: "SAMSUNG SP2504C"
+>   Vendor: "SAMSUNG"
+>   Device: "SP2504C"
+>   Revision: "VT10"
+>   Serial ID: "S09QJ1GYA03003"
+>   Driver: "sata_sil24", "sd"
+>   Device File: /dev/sdc
+>   Device 
+> Files: /dev/sdc, /dev/disk/by-path/pci-0000:02:02.0-scsi-1:0:0:0, /dev/disk/by-id/1ATA_SAMSUNG_SP2504C_S09QJ1GYA03003
+>   Device Number: block 8:32-8:47
+>   Geometry (Logical): CHS 30401/255/63
+>   Size: 488397168 sectors a 512 bytes
+>   Config Status: cfg=no, avail=yes, need=no, active=unknown
+>   Attached to: #20 (RAID bus controller)
+> 
+> 29: IDE 300.0: 10600 Disk
+>   [Created at block.188]
+>   Unique ID: 8noH.C6Upa9vrTP5
+>   Parent ID: LHB6.kPnnhej1LTC
+>   SysFS ID: /block/sdd
+>   SysFS BusID: 3:0:0:0
+>   SysFS Device Link: /devices/pci0000:00/0000:00:0a.0/0000:02:02.0/host3/target3:0:0/3:0:0:0
+>   Hardware Class: disk
+>   Model: "SAMSUNG SP2504C"
+>   Vendor: "SAMSUNG"
+>   Device: "SP2504C"
+>   Revision: "VT10"
+>   Serial ID: "S09QJ1GYA02991"
+>   Driver: "sata_sil24", "sd"
+>   Device File: /dev/sdd
+>   Device 
+> Files: /dev/sdd, /dev/disk/by-path/pci-0000:02:02.0-scsi-2:0:0:0, /dev/disk/by-id/1ATA_SAMSUNG_SP2504C_S09QJ1GYA02991
+>   Device Number: block 8:48-8:63
+>   Geometry (Logical): CHS 30401/255/63
+>   Size: 488397168 sectors a 512 bytes
+>   Config Status: cfg=no, avail=yes, need=no, active=unknown
+>   Attached to: #20 (RAID bus controller)
+> 
+> 30: IDE 400.0: 10600 Disk
+>   [Created at block.188]
+>   Unique ID: by2M.RNPEDP68X7E
+>   Parent ID: LHB6.kPnnhej1LTC
+>   SysFS ID: /block/sde
+>   SysFS BusID: 4:0:0:0
+>   SysFS Device Link: /devices/pci0000:00/0000:00:0a.0/0000:02:02.0/host4/target4:0:0/4:0:0:0
+>   Hardware Class: disk
+>   Model: "SAMSUNG SP2504C"
+>   Vendor: "SAMSUNG"
+>   Device: "SP2504C"
+>   Revision: "VT10"
+>   Serial ID: "S09QJ1GYA02990"
+>   Driver: "sata_sil24", "sd"
+>   Device File: /dev/sde
+>   Device 
+> Files: /dev/sde, /dev/disk/by-path/pci-0000:02:02.0-scsi-3:0:0:0, /dev/disk/by-id/1ATA_SAMSUNG_SP2504C_S09QJ1GYA02990
+>   Device Number: block 8:64-8:79
+>   Geometry (Logical): CHS 30401/255/63
+>   Size: 488397168 sectors a 512 bytes
+>   Config Status: cfg=no, avail=yes, need=no, active=unknown
+>   Attached to: #20 (RAID bus controller)
+> 
 
-Couldn't this be make obj-$(CONFIG_X86_VSMP)?
-
->  obj-$(CONFIG_KPROBES)		+= kprobes.o
->  obj-$(CONFIG_MODULES)		+= module_$(BITS).o
->  obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
-> Index: linux.git.trees/arch/x86/kernel/setup_64.c
-> ===================================================================
-> --- linux.git.trees.orig/arch/x86/kernel/setup_64.c	2008-03-19 13:39:29.000000000 -0700
-> +++ linux.git.trees/arch/x86/kernel/setup_64.c	2008-03-19 13:57:43.951337318 -0700
-> @@ -353,9 +353,7 @@ void __init setup_arch(char **cmdline_p)
->  	if (efi_enabled)
->  		efi_init();
->  
-> -#ifdef	CONFIG_PARAVIRT
->  	vsmp_init();
-> -#endif
->  
->  	dmi_scan_machine();
->  
-> Index: linux.git.trees/arch/x86/kernel/vsmp_64.c
-> ===================================================================
-> --- linux.git.trees.orig/arch/x86/kernel/vsmp_64.c	2008-03-19 13:39:50.000000000 -0700
-> +++ linux.git.trees/arch/x86/kernel/vsmp_64.c	2008-03-19 20:53:34.267707163 -0700
-> @@ -19,6 +19,7 @@
->  #include <asm/io.h>
->  #include <asm/paravirt.h>
->  
-> +#if defined CONFIG_PCI && defined CONFIG_PARAVIRT
->  /*
->   * Interrupt control on vSMPowered systems:
->   * ~AC is a shadow of IF.  If IF is 'on' AC should be 'off'
-> @@ -72,39 +73,11 @@ static unsigned __init vsmp_patch(u8 typ
->  
->  }
->  
-> -static int vsmp = -1;
-> -
-> -int is_vsmp_box(void)
-> -{
-> -	if (vsmp != -1)
-> -		return vsmp;
-> -
-> -	vsmp = 0;
-> -	if (!early_pci_allowed())
-> -		return vsmp;
-> -
-> -	/* Check if we are running on a ScaleMP vSMP box */
-> -	if ((read_pci_config_16(0, 0x1f, 0, PCI_VENDOR_ID) ==
-> -	     PCI_VENDOR_ID_SCALEMP) &&
-> -	    (read_pci_config_16(0, 0x1f, 0, PCI_DEVICE_ID) ==
-> -	    PCI_DEVICE_ID_SCALEMP_VSMP_CTL))
-> -		vsmp = 1;
-> -
-> -	return vsmp;
-> -}
-> -
-> -void __init vsmp_init(void)
-> +static void __init set_vsmp_pv_ops(void)
->  {
->  	void *address;
->  	unsigned int cap, ctl, cfg;
->  
-> -	if (!is_vsmp_box())
-> -		return;
-> -
-> -	if (!early_pci_allowed())
-> -		return;
-> -
-> -	/* If we are, use the distinguished irq functions */
->  	pv_irq_ops.irq_disable = vsmp_irq_disable;
->  	pv_irq_ops.irq_enable  = vsmp_irq_enable;
->  	pv_irq_ops.save_fl  = vsmp_save_fl;
-> @@ -127,5 +100,46 @@ void __init vsmp_init(void)
->  	}
->  
->  	early_iounmap(address, 8);
-> +}
-> +#else
-> +static void __init set_vsmp_pv_ops(void)
-> +{
-> +}
-> +#endif
-> +
-> +#ifdef CONFIG_PCI
-> +static int vsmp = -1;
-> +
-> +int is_vsmp_box(void)
-> +{
-> +	if (vsmp != -1)
-> +		return vsmp;
-> +
-> +	vsmp = 0;
-> +	if (!early_pci_allowed())
-> +		return vsmp;
-> +
-> +	/* Check if we are running on a ScaleMP vSMP box */
-> +	if ((read_pci_config_16(0, 0x1f, 0, PCI_VENDOR_ID) ==
-> +	     PCI_VENDOR_ID_SCALEMP) &&
-> +	    (read_pci_config_16(0, 0x1f, 0, PCI_DEVICE_ID) ==
-> +	    PCI_DEVICE_ID_SCALEMP_VSMP_CTL))
-> +		vsmp = 1;
-> +
-> +	return vsmp;
-> +}
-> +#else
-> +int is_vsmp_box(void)
-> +{
-> +	return 0;
-> +}
-> +#endif
->   
-
-Rather than doing this, I'd propose putting
-
-#ifndef CONFIG_X86_VSMP
-static inline int is_vsmp_box(void)
-{
-    return 0;
-}
-#endif
-
-in a header, and then making the definition in vsmp_64.c unconditional 
-(or rather, the whole of vsmp_64.o conditional on CONFIG_X86_VSMP).
-
-> +
-> +void __init vsmp_init(void)
-> +{
-> +	if (!is_vsmp_box())
-> +		return;
-> +
-> +	set_vsmp_pv_ops();
->  	return;
->  }
->   
-
-Similarly with this.
-
-> Index: linux.git.trees/include/asm-x86/apic.h
-> ===================================================================
-> --- linux.git.trees.orig/include/asm-x86/apic.h	2008-03-19 13:39:29.000000000 -0700
-> +++ linux.git.trees/include/asm-x86/apic.h	2008-03-19 13:57:14.550893819 -0700
-> @@ -51,19 +51,16 @@ extern unsigned boot_cpu_id;
->   */
->  #ifdef CONFIG_PARAVIRT
->  #include <asm/paravirt.h>
-> -extern int is_vsmp_box(void);
->  #else
->  #define apic_write native_apic_write
->  #define apic_write_atomic native_apic_write_atomic
->  #define apic_read native_apic_read
->  #define setup_boot_clock setup_boot_APIC_clock
->  #define setup_secondary_clock setup_secondary_APIC_clock
-> -static int inline is_vsmp_box(void)
-> -{
-> -	return 0;
-> -}
->  #endif
->  
-> +extern int is_vsmp_box(void);
-> +
->   
-
-This was almost right, except it should have been in a #ifdef 
-CONFIG_X86_VSMP block.
-
-    J
