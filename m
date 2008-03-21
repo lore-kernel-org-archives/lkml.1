@@ -1,21 +1,21 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbYCURUV (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 21 Mar 2008 13:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbYCURUF
+	id S1760664AbYCUTUV (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 21 Mar 2008 15:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYCUTUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:20:05 -0400
-Received: from mail.connect.com.ua ([77.120.101.67]:64817 "EHLO
+	Fri, 21 Mar 2008 15:20:07 -0400
+Received: from mail.connect.com.ua ([77.120.101.67]:59295 "EHLO
 	mail.connect.com.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYCURUE (ORCPT
+	with ESMTP id S1754079AbYCUTUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:20:04 -0400
+	Fri, 21 Mar 2008 15:20:05 -0400
 To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JLQsNGBINC30LDQv9GA0L7RiNGD0Y7RgtGMINC00L4g0LPRgNGD0L/QuCEg?=  =?UTF-8?B?KDIxLjAzLjIwMDggMTg6MTIp?=
-Date: Fri, 21 Mar 2008 19:20:02 +0200
+Subject: =?UTF-8?B?0JLQsNGBINC30LDQv9GA0L7RiNGD0Y7RgtGMINC00L4g0LPRgNGD0L/QuCEg?=  =?UTF-8?B?KDIxLjAzLjIwMDggMTg6MDgp?=
+Date: Fri, 21 Mar 2008 21:20:03 +0200
 From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
-	<admin@connect.com.ua>
-Reply-to: Connect <support@connect.com.ua>
-Message-ID: <20feda085becb705f4da57a94d32cd93@localhost.localdomain>
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <9908a569a0d07606a5224a118e720dff@localhost.localdomain>
 X-Priority: 3
 X-Mailer: PHPMailer [version 1.72]
 MIME-Version: 1.0
@@ -24,7 +24,7 @@ Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759995AbYCURUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760664AbYCUTUV@vger.kernel.org>
 
 =D0=A2=D1=83=D1=80=D1=87=D0=B8=D0=BD=D0=B0 =D0=95=D0=B2=D0=B0 =D0=B7=D0=
 =B0=D0=BF=D1=80=D0=BE=D1=81=D0=B8=D0=BB=D0=B0 =D0=92=D0=B0=D1=81 =D0=BF=
