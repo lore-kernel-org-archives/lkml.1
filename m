@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbYCULoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYCULpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756256AbYCULoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 07:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYCULoq
+	id S1756723AbYCULpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 07:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYCULpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 07:44:46 -0400
-Received: from web33108.mail.mud.yahoo.com ([209.191.69.138]:20113 "HELO
-	web33108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752305AbYCULoq (ORCPT
+	Fri, 21 Mar 2008 07:45:05 -0400
+Received: from ihemail3.lucent.com ([135.245.0.37]:55917 "EHLO
+	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbYCULpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 07:44:46 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Mar 2008 07:44:45 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=n2f7+KjRQ6P0QmHRNJxQgGZVHSVs/WBx9vO6YacjP7VoO6gCfTxFweZo8LuT5ga6j/vXvYRVh6ZQv9OWw/xKOnbybDFYyHo9+1LSeJA5o2fL22eMixG5Ns5J9sqplJy8tNRxdL7lv9JLRuQQmnzjdpGAXRZq8T87ZMME7Op/9Iw=;
-X-YMail-OSG: pSXWAhcVM1mGqpko2p6AJZFAzp9KhIidObz.Ve.Hc6PFtTBZkLEurWg8EKYo3xW_lnPAGs9V.vYIutMd1vTwBL8Bq6io2L0nUbJMqwMu6PoyJQIgos8-
-Date: Fri, 21 Mar 2008 04:38:04 -0700 (PDT)
-From: Rogier Stam <r_stam3108@yahoo.com>
-Subject: [MMC Stack] Partition limitation question
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <904538.60285.qm@web33108.mail.mud.yahoo.com>
+	Fri, 21 Mar 2008 07:45:03 -0400
+X-Greylist: delayed 667 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Mar 2008 07:45:03 EDT
+Date: Fri, 21 Mar 2008 07:29:27 -0400 (EDT)
+Message-Id: <20080321.072927.110651403.pfps@research.bell-labs.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: pfps@verizon.net, htejun@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9 and Re: libata
+ and legacy ide pcmcia failure
+From: "Peter F. Patel-Schneider" <pfps@research.bell-labs.com>
+In-Reply-To: <20080321111313.24567b9f@core>
+References: <20080321104002.27a7d19e@core>
+	<47E39963.2090908@verizon.net>
+	<20080321111313.24567b9f@core>
+X-Mailer: Mew version 5.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Mar 2008 11:33:38.0407 (UTC) FILETIME=[6803AF70:01C88B47]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9 and Re: libata and legacy ide pcmcia failure
+Date: Fri, 21 Mar 2008 11:13:13 +0000
 
-I had a short question about the limitation of max. 8
-partitions in the MMC stack. Before the kernel was
-limited to 256 minor numbers, but I believe this is no
-longer the case (65536 if I recall correctly). Is
-there a way around this 8 partition limitation?
+>  
+> > How can I check to see if this is the case?  How would this explain that 
+> 
+> As I said before, take a CF card/adapter combination you know fails
+> on a T60p/T61p and test it on a Linux box that isn't one of those types
+> (and preferably not a Lenovo at all)
 
-I understand that simply renumbering all minor numbers
-is not really a preferred situation as it would
-require everyone to recreate their device nodes.
+Actually I was wondering if there was something that I could do on the
+box itself.
 
-Regards,
+> > the adapter and card sometimes work when they are in when the system boots?
+> 
+> Ask the BIOS authors. Trying to fathom what they have done is frequently
+> interesting. Everyone else I've had do this has found the card works
+> perfectly with Linux except in the Lenovo box.
 
-Rogier
+I'll investigate further.
 
+> Alan
 
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+peter
