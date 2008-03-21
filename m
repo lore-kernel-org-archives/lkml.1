@@ -1,37 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbYCURIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbYCURJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759993AbYCURIU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbYCURIM
+	id S1758960AbYCURJU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYCURJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:08:12 -0400
-Received: from www.tglx.de ([62.245.132.106]:52304 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755314AbYCURIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:08:11 -0400
-Date: Fri, 21 Mar 2008 18:07:55 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH REPOST] [3/3] Replace macro recursion with more conventional
- loop
-In-Reply-To: <20080311012322.B1E221B41CE@basil.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0803211806590.3781@apollo.tec.linutronix.de>
-References: <20080311223.655043226@firstfloor.org> <20080311012322.B1E221B41CE@basil.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Mar 2008 13:09:03 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35246 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755363AbYCURJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 13:09:00 -0400
+To: viro@ZenIV.linux.org.uk
+CC: haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, neilb@suse.de, akpm@linux-foundation.org,
+       hch@infradead.org, linux-security-module@vger.kernel.org,
+       jmorris@namei.org
+In-reply-to: <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Fri, 21 Mar 2008 17:54:57 +0100)
+Subject: Re: r-o bind in nfsd
+References: <E1Jciie-0001E6-Dx@pomaz-ex.szeredi.hu> <20080321155451.GU10722@ZenIV.linux.org.uk> <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu> <20080321163520.GV10722@ZenIV.linux.org.uk> <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu>
+Message-Id: <E1Jckjd-0001X8-IM@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 21 Mar 2008 18:08:53 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Mar 2008, Andi Kleen wrote:
-> The early exception handlers are currently set up using a macro
-> recursion. Replace that with a standard loop.
+> Nobody wants to send vfsmounts to the filesystem.  But vfs_...() are
+> still part of the "upper layer", not the filesystem, so I'm not
+> convinced yet.  For example:
 > 
-> Noop patch, just a cleanup.
+> -extern int vfs_mkdir(struct inode *, struct dentry *, int);
+> +extern int vfs_mkdir(const struct path *, struct dentry *, int);
+> 
+> There's one caller of vfs_mkdir that can't do this: cgroup_clone().
+> But that can call cgroup_mkdir() instead.
+> 
+> And having the vfsmount available within vfs_...() functions means,
+> that the mnt_want_write() check can be moved inside, which means that
+> callers get simpler and less likely to be buggy.  Those are all
+> advantages IMO, regardless of any security module issues.
 
-Cleanups before code changes please.
- 
-Thanks,
-	tglx
+Or we can introduce another set of exported functions (path_mkdir(),
+...), and leave vfs_...() alone.  And then the only question is if
+LSM's can live with ordering change.
+
+Miklos
