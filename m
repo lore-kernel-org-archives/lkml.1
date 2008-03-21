@@ -1,98 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbYCUVBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762095AbYCUUks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbYCUVBh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 17:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYCUVB0
+	id S1762095AbYCUUks (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbYCUUkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:01:26 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:55518 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755877AbYCUVBZ (ORCPT
+	Fri, 21 Mar 2008 16:40:40 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:25493 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755594AbYCUUki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:01:25 -0400
-Subject: Re: [SCSI] fix media change events for polled devices
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
-In-Reply-To: <47E41C50.4020406@garzik.org>
-References: <200803211559.m2LFxPi6017869@hera.kernel.org>
-	 <47E3EC67.4050404@garzik.org>
-	 <1206128662.2961.37.camel@localhost.localdomain>
-	 <47E41C50.4020406@garzik.org>
+	Fri, 21 Mar 2008 16:40:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:cc:in-reply-to:references:
+	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=XGuBgDgN3DDUhE7Duj6SolQYIxikUljhFpdNpgyWMNUZjyOwa+G+0sgFnhP5CG0tu
+	izUiaP0udQ3LVIbnu8yuQ==
+Subject: Re: posix-cpu-timers revamp
+From: Frank Mayhar <fmayhar@google.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080321071846.1B22B26F9A7@magilla.localdomain>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	 <20080206165045.89b809cc.akpm@linux-foundation.org>
+	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
+	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
+	 <20080207162203.3e3cf5ab@Varda>
+	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
+	 <20080207165455.04ec490b@Varda>
+	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
+	 <20080304070016.903E127010A@magilla.localdomain>
+	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
+	 <20080305040826.D0E6127010A@magilla.localdomain>
+	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
+	 <20080311075020.A93DB26F991@magilla.localdomain>
+	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
+	 <20080311213507.5BCDF26F991@magilla.localdomain>
+	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
+	 <20080321071846.1B22B26F9A7@magilla.localdomain>
 Content-Type: text/plain
-Date: Fri, 21 Mar 2008 16:01:20 -0500
-Message-Id: <1206133280.2961.45.camel@localhost.localdomain>
+Organization: Google, Inc.
+Date: Fri, 21 Mar 2008 13:40:00 -0700
+Message-Id: <1206132000.14638.42.camel@bobble.smo.corp.google.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-21 at 16:36 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > On Fri, 2008-03-21 at 13:12 -0400, Jeff Garzik wrote:
-> >> Linux Kernel Mailing List wrote:
-> >>>     [SCSI] fix media change events for polled devices
-> >>>     
-> >>>     Commit:
-> >>>       a341cd0f (SCSI: add asynchronous event notification API)
-> >>>     breaks:
-> >>>       285e9670 (sr,sd: send media state change modification events)
-> >>>     by introducing an event filter, which is removed here, to make
-> >>>     events, we are depending on, happen again.
-> >>
-> >> By simply reading the code history, it is trivial to verify that this 
-> >> description is false:
-> >>
-> >> Commit 285e9670 depends on a341cd0f, so by definition it is 285e9670 -- 
-> >> or rather the incomplete update of your original patch that resulted in 
-> >> 285e9670 -- that is broken.
-> >>
-> >> Since commit 285e9670 is broken, you fixed the wrong thing.
-> >>
-> >> Furthermore, you broke a userspace interface that was introduced by 
-> >> a341cd0f, by removing the event filter controlled by userspace.
-> > 
-> >> Did anyone bother to read any code at all?
-> > 
-> > Yes, I did.  The userspace interface has never worked as a writeable
-> > attribute because it's read only (as Kay has pointed out several times).
-> > Based on that, I just #if'd out the filter code to get polled media
-> > events working again.
-> 
-> It has a show attribute and was obviously intended as a writable 
-> interface (and I should know, I wrote it).
+On Fri, 2008-03-21 at 00:18 -0700, Roland McGrath wrote:
+> I think I misled you about the use of the it_*_expires fields, sorry.
+> The task_struct.it_*_expires fields are used solely as a cache of the
+> head of cpu_timers[].  Despite the poor choice of the same name, the
+> signal_struct.it_*_expires fields serve a different purpose.  For an
+> analogous cache of the soonest timer to expire, you need to add new
+> fields.  The signal_struct.it_{prof,virt}_{expires,incr} fields hold
+> the setitimer settings for ITIMER_{PROF,VTALRM}.  You can't change
+> those in arm_timer.  For a quick cache you need a new field that is
+> the sooner of it_foo_expires or the head cpu_timers[foo] expiry time.
 
-It's all the fault of those annoying computer systems that do what we
-tell them rather than what we intend.  In this case sysfs won't allow
-you to write a read only attribute even if it does have a store method.
+Actually, after looking at the code again and thinking about it a bit,
+it appears that the signal_struct.it_*_incr field holds the actual
+interval as set by setitimer.  Initially the it_*_expires field holds
+the expiration time as set by setitimer, but after the timer fires the
+first time that value becomes <firing time>+it_*_incr.  In other words,
+the first time it fires at the value set by setitimer() but from then on
+it fires at a time indicated by whatever the time was the last time the
+timer fired plus the value in it_*_incr.  This time is stored in
+signal_struct.it_*_expires.
 
-> > The filter can be put back with a better discriminator for 2.6.26
-> > 
-> >> When 285e9670 was updated for the scsi_evt_* interface, it should have 
-> >> initialized the supported_events mask.
-> > 
-> > That would break HAL ... it's using the presence of the media_event flag
-> > in the variable to indicate it doesn't need to poll.  We need two flags,
-> > one for polling and one for AN.
-> 
-> Oh for pete's sake.  How hard is it to create a second bit _and_ keep 
-> the existing AN featureset working?
-
-The existing feature set currently works, even with the event filter
-removed, so it's the fastest and smallest bug fix to get polling to
-work.  I'm just pointing out that your suggested fix wouldn't work ... I
-think at -rc6 the more complex one involving two bits is really a
-feature enhancement.
-
-> _YOU_ are the one that broke this stuff in the first place, can you 
-> please take two seconds to fix it without breaking other stuff?
-
-It's fixed, and nothing else is additionally broken by the current fix.
-
-James
+I guess I could be wrong about this, but it appears to be what the code
+is doing.  If my analysis is correct, I really don't need a new field,
+since the old fields work just fine.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
