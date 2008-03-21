@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbYCUFMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYCUFjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbYCUFMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 01:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYCUFMM
+	id S1754328AbYCUFjX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 01:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYCUFjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 01:12:12 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:43521 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753068AbYCUFML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 01:12:11 -0400
-Date: Fri, 21 Mar 2008 14:11:44 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Andrew Morton <akpm@linux-foundation.org>, dwmw2@infradead.org,
-       greg@kroah.com, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-       linux-mtd@vger.kernel.org
-Subject: Re: [PATCH] 1/2 Maple: Update bus driver to allow support of VMU device
-Message-ID: <20080321051144.GA16926@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	Andrew Morton <akpm@linux-foundation.org>, dwmw2@infradead.org,
-	greg@kroah.com, linux-kernel@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-mtd@vger.kernel.org
-References: <1205879413.6250.13.camel@localhost.localdomain> <1205880554.6250.25.camel@localhost.localdomain> <20080320135618.1a283b3e.akpm@linux-foundation.org> <1206051797.6274.17.camel@localhost.localdomain> <20080320153944.75b6edc1.akpm@linux-foundation.org> <1206053547.6274.28.camel@localhost.localdomain>
+	Fri, 21 Mar 2008 01:39:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:57152 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbYCUFjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 01:39:16 -0400
+Message-ID: <47E34917.8030206@goop.org>
+Date: Thu, 20 Mar 2008 22:35:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206053547.6274.28.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: How to avoid spurious lockdep warnings?
+References: <47E2ECF3.2050606@goop.org> <1206056698.6437.70.camel@lappy>
+In-Reply-To: <1206056698.6437.70.camel@lappy>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 10:52:27PM +0000, Adrian McMenamin wrote:
-> 
-> On Thu, 2008-03-20 at 15:39 -0700, Andrew Morton wrote:
-> > On Thu, 20 Mar 2008 22:23:17 +0000
-> > Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
-> > 
-> > > 
-> > > > urgh, down_trylock().  And a secret, undocumented one too.
-> > > > 
-> > > > A trylock is always an exceptional thing.  How is *any* reader of this code
-> > > > supposed to work out what the heck it's doing there?  Convert it into
-> > > > down(), run the code and decrypt the lockdep warnings, I suspect.
-> > > > 
-> > > > <looks>
-> > > > 
-> > > > Nope, I can't see any other lock being held when we call this function.
-> > > > 
-> > > > The trylocks are an utter mystery to me.  Please don't write mysterious
-> > > > code.
-> > > > 
-> > > 
-> > > OK, I am sure this is my problem but I have no idea why you are
-> > > describing down_trylock as undocumented
-> > 
-> > I'm describing your use of it!  I'm sitting here trying to work out why on
-> > earth this code is using the highly unusual (and highly suspicious) trylock
-> > idiom and this is far from clear.
-> > 
-> 
-> OK, I understand your point now. Some comments wouldn't go amiss, for
-> sure.
-> 
-Other than the fact the locking is bizarre and utterly incomprehensible,
-why are you using a semaphore here at all? You're effectively using it as
-a mutex, and you really should be using that API instead, especially for
-the debugging capabilities. This patch set looks like an excellent stress
-test for the mutex debugging code.
+Peter Zijlstra wrote:
+> On Thu, 2008-03-20 at 16:02 -0700, Jeremy Fitzhardinge wrote:
+>   
+>> In a Xen system, when a new pagetable is about to be put in use it is 
+>> "pinned", meaning that each page in the pagetable is registered with the 
+>> hypervisor.  This is done in arch/x86/xen/mmu.c:pin_page().
+>>
+>> In order to make this efficient, the hypercalls for pinning are batched, 
+>> so that multiple pages are submitted at once in a single multicall.  
+>> While a page is batched pending the hypercall, its corresponding 
+>> pte_lock is held.
+>>
+>> This means that the code can end up holding multiple pte locks at once, 
+>> though it is guaranteed to never try to hold the same lock at once.  
+>> However, because these locks are in the same lock class, I get a 
+>> spurious warning from lockdep.  Is there some way I can get rid of this 
+>> warning?
+>>     
+>
+> How many locks at once?
+
+(We discussed this, but for the record...)
+
+The main limit is the batch size, which is currently 32.  There's 
+nothing magic about this number, so it may change (I can't imagine it 
+getting much larger however, since a 32x mitigation of hypercall 
+overhead is already pretty good).
+
+    J
