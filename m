@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760493AbYCUS7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbYCUTCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760493AbYCUS7W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 14:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760636AbYCUS7M
+	id S1760767AbYCUTCA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbYCUTBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 14:59:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:42475 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbYCUS7L convert rfc822-to-8bit (ORCPT
+	Fri, 21 Mar 2008 15:01:52 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60006 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbYCUTBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 14:59:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,536,1199692800"; 
-   d="scan'208";a="308272614"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 21 Mar 2008 15:01:51 -0400
+Date: Fri, 21 Mar 2008 11:59:50 -0700
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, joel.becker@oracle.com,
+       kurt.hackel@oracle.com, mfasheh@suse.com
+Subject: [git patches] ocfs2 MAINTAINERS update
+Message-ID: <20080321185950.GR23981@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Date: Fri, 21 Mar 2008 11:56:42 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECE1387F@orsmsx424.amr.corp.intel.com>
-In-reply-to: <20080321183149.GB15355@kernel.dk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Thread-Index: AciLgeGmlJ9gLPKsRDayVF0qKv9/HwAASXbw
-References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <1FE6DD409037234FAB833C420AA843ECE137D9@orsmsx424.amr.corp.intel.com> <20080321183149.GB15355@kernel.dk>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Cc: <linux-kernel@vger.kernel.org>, <npiggin@suse.de>, <paulus@samba.org>,
-       <tglx@linutronix.de>, <mingo@redhat.com>
-X-OriginalArrivalTime: 21 Mar 2008 18:58:00.0902 (UTC) FILETIME=[7C198E60:01C88B85]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My thinking was that it may need a bit of help to ensure that the init
-> function for single call data works,
+Hi Linus,
 
-The problem may be worse than that.  I see that you have a per-cpu
-"call_single_queue" on which you do some list operations.  On ia64
-the per-cpu variables live at the same virtual address on each processor
-with a per-cpu TLB mapping directing them to a different physical
-address on each.  This makes Linux lists very confused.
+	I've taken a new job at SUSE labs, so my e-mail address needs an
+update. Going forward, I'll co-maintain Ocfs2 with Joel Becker so we need to
+put his information in there as well. Kurt deserves a very large amount of
+credit for his work on Ocfs2, but he has since moved on to other projects,
+so we'll just put Joel in his spot.
 
--Tony
+	So, it should more or less be business as usual with respect to
+Ocfs2, other than that Joel and I will share some of the maintainership
+load.
+	--Mark
+
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+
+to receive the following updates:
+
+ MAINTAINERS |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+Mark Fasheh (1):
+      ocfs2: MAINTAINERS update
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 03e4602..73883b8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2935,9 +2935,9 @@ S:	Maintained
+ 
+ ORACLE CLUSTER FILESYSTEM 2 (OCFS2)
+ P:	Mark Fasheh
+-M:	mark.fasheh@oracle.com
+-P:	Kurt Hackel
+-M:	kurt.hackel@oracle.com
++M:	mfasheh@suse.com
++P:	Joel Becker
++M:	joel.becker@oracle.com
+ L:	ocfs2-devel@oss.oracle.com
+ W:	http://oss.oracle.com/projects/ocfs2/
+ S:	Supported
