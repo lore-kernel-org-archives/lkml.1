@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764265AbYCUW4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYCUW5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764265AbYCUW4r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763670AbYCUWuW
+	id S1757635AbYCUW5X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763685AbYCUWu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:50:22 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59191 "EHLO
+	Fri, 21 Mar 2008 18:50:27 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59200 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763659AbYCUWuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:50:20 -0400
-Message-Id: <20080321224357.457392668@sous-sol.org>
+	id S1762957AbYCUWuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:50:25 -0400
+Message-Id: <20080321224336.835878555@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:20 -0700
+Date: Fri, 21 Mar 2008 15:43:00 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 30/76] x86: replace LOCK_PREFIX in futex.h
-Content-Disposition: inline; filename=x86-replace-lock_prefix-in-futex.h.patch
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David S Miller <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 10/76] IPV6: Fix IPsec datagram fragmentation
+Content-Disposition: inline; filename=ipv6-fix-ipsec-datagram-fragmentation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,89 +35,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-The exception fixup for the futex macros __futex_atomic_op1/2 and
-futex_atomic_cmpxchg_inatomic() is missing an entry when the lock
-prefix is replaced by a NOP via SMP alternatives.
+Upstream commits: 28a89453b1e8de8d777ad96fa1eef27b5d1ce074
+                  b5c15fc004ac83b7ad280acbe0fd4bbed7e2c8d4
 
-Chuck Ebert tracked this down from the information provided in:
-https://bugzilla.redhat.com/show_bug.cgi?id=429412
+This is a long-standing bug in the IPsec IPv6 code that breaks
+when we emit a IPsec tunnel-mode datagram packet.  The problem
+is that the code the emits the packet assumes the IPv6 stack
+will fragment it later, but the IPv6 stack assumes that whoever
+is emitting the packet is going to pre-fragment the packet.
 
-A possible solution would be to add another fixup after the
-LOCK_PREFIX, so both the LOCK and NOP case have their own entry in the
-exception table, but it's not really worth the trouble.
+In the long term we need to fix both sides, e.g., to get the
+datagram code to pre-fragment as well as to get the IPv6 stack
+to fragment locally generated tunnel-mode packet.
 
-Simply replace LOCK_PREFIX with lock and keep those untouched by SMP
-alternatives.
+For now this patch does the second part which should make it
+work for the IPsec host case.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-[cebbert@redhat.com: backport to 2.6.24]
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- include/asm-x86/futex_32.h |    6 +++---
- include/asm-x86/futex_64.h |    6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
---- a/include/asm-x86/futex_32.h
-+++ b/include/asm-x86/futex_32.h
-@@ -28,7 +28,7 @@
- "1:	movl	%2, %0\n\
- 	movl	%0, %3\n"					\
- 	insn "\n"						\
--"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n\
-+"2:	lock ; cmpxchgl %3, %2\n\
- 	jnz	1b\n\
- 3:	.section .fixup,\"ax\"\n\
- 4:	mov	%5, %1\n\
-@@ -68,7 +68,7 @@ futex_atomic_op_inuser (int encoded_op, 
- #endif
- 		switch (op) {
- 		case FUTEX_OP_ADD:
--			__futex_atomic_op1(LOCK_PREFIX "xaddl %0, %2", ret,
-+			__futex_atomic_op1("lock ; xaddl %0, %2", ret,
- 					   oldval, uaddr, oparg);
- 			break;
- 		case FUTEX_OP_OR:
-@@ -111,7 +111,7 @@ futex_atomic_cmpxchg_inatomic(int __user
- 		return -EFAULT;
+---
+ net/ipv6/ip6_output.c   |    6 +++++-
+ net/ipv6/xfrm6_output.c |    2 +-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -593,7 +593,7 @@ static int ip6_fragment(struct sk_buff *
+ 	 * or if the skb it not generated by a local socket.  (This last
+ 	 * check should be redundant, but it's free.)
+ 	 */
+-	if (!np || np->pmtudisc >= IPV6_PMTUDISC_DO) {
++	if (!skb->local_df) {
+ 		skb->dev = skb->dst->dev;
+ 		icmpv6_send(skb, ICMPV6_PKT_TOOBIG, 0, mtu, skb->dev);
+ 		IP6_INC_STATS(ip6_dst_idev(skb->dst), IPSTATS_MIB_FRAGFAILS);
+@@ -1389,6 +1389,10 @@ int ip6_push_pending_frames(struct sock 
+ 		tmp_skb->sk = NULL;
+ 	}
  
- 	__asm__ __volatile__(
--		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
-+		"1:	lock ; cmpxchgl %3, %1			\n"
++	/* Allow local fragmentation. */
++	if (np->pmtudisc < IPV6_PMTUDISC_DO)
++		skb->local_df = 1;
++
+ 	ipv6_addr_copy(final_dst, &fl->fl6_dst);
+ 	__skb_pull(skb, skb_network_header_len(skb));
+ 	if (opt && opt->opt_flen)
+--- a/net/ipv6/xfrm6_output.c
++++ b/net/ipv6/xfrm6_output.c
+@@ -34,7 +34,7 @@ static int xfrm6_tunnel_check_size(struc
+ 	if (mtu < IPV6_MIN_MTU)
+ 		mtu = IPV6_MIN_MTU;
  
- 		"2:	.section .fixup, \"ax\"			\n"
- 		"3:	mov     %2, %0				\n"
---- a/include/asm-x86/futex_64.h
-+++ b/include/asm-x86/futex_64.h
-@@ -27,7 +27,7 @@
- "1:	movl	%2, %0\n\
- 	movl	%0, %3\n"					\
- 	insn "\n"						\
--"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n\
-+"2:	lock ; cmpxchgl %3, %2\n\
- 	jnz	1b\n\
- 3:	.section .fixup,\"ax\"\n\
- 4:	mov	%5, %1\n\
-@@ -62,7 +62,7 @@ futex_atomic_op_inuser (int encoded_op, 
- 		__futex_atomic_op1("xchgl %0, %2", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ADD:
--		__futex_atomic_op1(LOCK_PREFIX "xaddl %0, %2", ret, oldval,
-+		__futex_atomic_op1("lock ; xaddl %0, %2", ret, oldval,
- 				   uaddr, oparg);
- 		break;
- 	case FUTEX_OP_OR:
-@@ -101,7 +101,7 @@ futex_atomic_cmpxchg_inatomic(int __user
- 		return -EFAULT;
- 
- 	__asm__ __volatile__(
--		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
-+		"1:	lock ; cmpxchgl %3, %1			\n"
- 
- 		"2:	.section .fixup, \"ax\"			\n"
- 		"3:	mov     %2, %0				\n"
+-	if (skb->len > mtu) {
++	if (!skb->local_df && skb->len > mtu) {
+ 		skb->dev = dst->dev;
+ 		icmpv6_send(skb, ICMPV6_PKT_TOOBIG, 0, mtu, skb->dev);
+ 		ret = -EMSGSIZE;
 
 -- 
