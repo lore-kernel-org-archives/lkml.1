@@ -1,97 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbYCUWRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbYCUWTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758321AbYCUWRD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYCUWQy
+	id S1758843AbYCUWTO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYCUWS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:16:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:37276 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752814AbYCUWQx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:16:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=Ad9RZffRhdeeaYR3Rxw5DtSuMgbGPdySGCU5LltRD3XiKEjYgy4qQj40QPGSu/c+WM1nliSTqxoZgO9ie0RlsGwXvvcVMPD6J5mhXOsrMJ2U40cbUZm1oCSRsS8c/Y31qzIERCkC665n+B7TAeAcMfRJKglIO0ad4oBKuLTCex8=
-Date: Fri, 21 Mar 2008 23:16:46 +0100 (CET)
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: Patrick Mochel <mochel@osdl.org>,
-       Patrick Mochel <mochelp@infinity.powertie.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-Subject: [PATCH][RFC] fix small mem leak in driver_add_kobj()
-Message-ID: <alpine.LNX.1.00.0803212309520.10052@dragon.funnycrock.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Fri, 21 Mar 2008 18:18:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44487 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753415AbYCUWS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:18:59 -0400
+Date: Fri, 21 Mar 2008 23:18:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Glauber Costa <gcosta@redhat.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/79] smpboot integration
+Message-ID: <20080321221837.GA26036@elte.hu>
+References: <86802c440803192000x41a1383fxc2b58ed68e2375b7@mail.gmail.com> <86802c440803192032r2aa15a10pb32ef15fcfc693e7@mail.gmail.com> <47E1EAD6.5080905@redhat.com> <86802c440803192159y28c186f0p98615e90da5a9345@mail.gmail.com> <20080321133327.GN27245@elte.hu> <86802c440803211218t5850ba52w78f8cb9849097ee0@mail.gmail.com> <20080321195506.GB16179@elte.hu> <86802c440803211303m50506ae5ta4c095e40fa1e40d@mail.gmail.com> <86802c440803211441v30840be4y76d63da567c9af40@mail.gmail.com> <86802c440803211514k2b3e4bcu626bd37dac0d0f6c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Jesper Juhl <jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440803211514k2b3e4bcu626bd37dac0d0f6c@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3354]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-The Coverity checker spotted that we leak the storage allocated to 'name' 
-in int driver_add_kobj().
-The leak looks legit to me - this is the code : 
+> attached patch fix that.
 
-int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
-                    const char *fmt, ...)
-{
-        va_list args;
-        char *name;
-        int ret;
+thanks Yinghai, applied.
 
-        va_start(args, fmt);
-        name = kvasprintf(GFP_KERNEL, fmt, args);
-        ^^^^^^^^ This dynamically allocates space...
-
-        va_end(args);
-
-        if (!name)
-                return -ENOMEM;
-
-        return kobject_add(kobj, &drv->p->kobj, "%s", name);
-	^^^^^^^^ This neglects to free the space allocated
-}
-
-Inside kobject_add() a copy of 'name' will be made and used. 
-As far as I can see, Coverity is correct in flagging this as a leak, but 
-I'd like some configmation before the patch is applied.
-
-This should fix it : 
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- driver.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index bf31a01..9a6537f 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -133,6 +133,7 @@ int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
- {
- 	va_list args;
- 	char *name;
-+	int ret;
- 
- 	va_start(args, fmt);
- 	name = kvasprintf(GFP_KERNEL, fmt, args);
-@@ -141,7 +142,9 @@ int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
- 	if (!name)
- 		return -ENOMEM;
- 
--	return kobject_add(kobj, &drv->p->kobj, "%s", name);
-+	ret = kobject_add(kobj, &drv->p->kobj, "%s", name);
-+	kfree(name);
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(driver_add_kobj);
- 
-
-
+	Ingo
