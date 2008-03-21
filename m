@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbYCUCYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYCUC3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758202AbYCUCYh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 22:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYCUCYX
+	id S1755441AbYCUC3o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 22:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYCUC3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 22:24:23 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:61910 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbYCUCYF (ORCPT
+	Thu, 20 Mar 2008 22:29:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38575 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752879AbYCUC32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 22:24:05 -0400
-Date: Thu, 20 Mar 2008 22:23:50 -0400
-From: "Peter F. Patel-Schneider" <pfps@verizon.net>
-Subject: Re: 2.6.23-rc9-git4: pata_pcmcia,
- disabling IRQ #9 and Re: libata and legacy ide pcmcia failure
-In-reply-to: <20080321011205.4c7b4a61@core>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Message-id: <47E31C36.20002@verizon.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <47067DB9.80200@roarinelk.homelinux.net>
- <47E300B2.7000104@verizon.net> <20080321011205.4c7b4a61@core>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 20 Mar 2008 22:29:28 -0400
+Date: Thu, 20 Mar 2008 19:27:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       David Brownell <david-b@pacbell.net>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
+       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>, lm-sensors@lm-sensors.org
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+Message-Id: <20080320192719.6a32386e.akpm@linux-foundation.org>
+In-Reply-To: <200803210236.52063.mb@bu3sch.de>
+References: <Pine.LNX.4.44L0.0803202126240.11234-100000@netrider.rowland.org>
+	<200803210236.52063.mb@bu3sch.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+On Fri, 21 Mar 2008 02:36:51 +0100 Michael Buesch <mb@bu3sch.de> wrote:
 
- >> Mar 20 19:51:45 idefix kernel: ata12: PATA max PIO0 cmd 0xa100 ctl 
-0xa10e irq 3
- >> Mar 20 19:52:15 idefix kernel: ata12.00: qc timeout (cmd 0x91)
- >> Mar 20 19:52:15 idefix kernel: ata12.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
- >
- > Thinkpad T61p .. I've seen a few of these.
+> On Friday 21 March 2008 02:31:44 Alan Stern wrote:
+> > On Thu, 20 Mar 2008, Andrew Morton wrote:
+> > 
+> > > On Thu, 20 Mar 2008 21:36:04 -0300 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> > > 
+> > > > Well, so far so good for LEDs, but what about the other users of in_atomic
+> > > > that apparently should not be doing it either?
+> > > 
+> > > Ho hum.  Lots of cc's added.
+> > 
+> > ...
+> > 
+> > > The usual pattern for most of the above is
+> > > 
+> > > 	if (!in_atomic())
+> > > 		do_something_which_might_sleep();
+> > > 
+> > > problem is, in_atomic() returns false inside spinlock on non-preptible
+> > > kernels.  So if anyone calls those functions inside spinlock they will
+> > > incorrectly schedule and another task can then come in and try take the
+> > > already-held lock.
+> > > 
+> > > Now, it happens that in_atomic() returns true on non-preemtible kernels
+> > > when running in interrupt or softirq context.  But if the above code really
+> > > is using in_atomic() to detect am-i-called-from-interrupt and NOT
+> > > am-i-called-from-inside-spinlock, they should be using in_irq(),
+> > > in_softirq() or in_interrupt().
+> > 
+> > Presumably most of these places are actually trying to detect 
+> > am-i-allowed-to-sleep.  Isn't that what in_atomic() is supposed to do?  
+> 
+> No, I think there is no such check in the kernel. Most likely for performance
+> reasons, as it would require a global flag that is set on each spinlock.
 
-(Actually a T60p. I guess I'm getting envious.)
+Yup.  non-preemptible kernels avoid the inc/dec of
+current_thread_info->preempt_count on spin_lock/spin_unlock
 
- > Firstly try the card and adapter in a different PC and let me know if
- > that works. So far they do. If that is the case get the latest firmware
- > updates (BIOS etc) for your thinkpad and see if the problem goes away.
- > They (or our ACPI code I guess it may be) have some serious IRQ routing
- > problems on this box.
- >
- > Alan
+> You simply must always _know_, if you are allowed to sleep or not. This is
+> done by defining an API. The call-context is part of any kernel API.
 
-The card and adapter (right now a Kodak picture card adapter and an old
-64MB Kodak CF card, but, as I said, the behaviour is the same with
-different adapters and different CF cards) work correctly in my Wife's
-Evo running Windows.   The adapter and card work, sometimes, when they
-are in the machine at boot (like on my last boot - I have a 
-/var/log/messages
-with this behaviour, but it isn't very illuminating).   I have had 
-several T60p's,
-they all act the same.  (The on-site service center swaps machines for us
-when we have problems.)
-
-I just updated to the current BIOS (2.21) and ECP (1.07).  Not working.
-(Just for the record the kernel is 2.6.24.3-34.fc8 #1 SMP.)
-
-Here are the /var/log/messages after inserting the card and adapter.
-
-Mar 20 22:13:19 idefix kernel: pccard: PCMCIA card inserted into slot 0
-Mar 20 22:13:19 idefix kernel: cs: memory probe 0xe4300000-0xe7ffffff: 
-excluding 0xe4300000-0xe46cffff 0xe4e70000-0xe523ffff 
-0xe5db0000-0xe617ffff 0xe6cf0000-0xe70bffff
-Mar 20 22:13:19 idefix kernel: pcmcia: registering new device pcmcia0.0
-Mar 20 22:13:19 idefix kernel: scsi6 : pata_pcmcia
-Mar 20 22:13:19 idefix kernel: ata7: PATA max PIO0 cmd 0xa100 ctl 0xa10e 
-irq 3
-Mar 20 22:13:49 idefix kernel: ata7.00: qc timeout (cmd 0x91)
-Mar 20 22:13:49 idefix kernel: ata7.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-Mar 20 22:13:49 idefix kernel: ata7: failed to recover some devices, 
-retrying in 5 secs
-Mar 20 22:14:24 idefix kernel: ata7.00: qc timeout (cmd 0x91)
-Mar 20 22:14:24 idefix kernel: ata7.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-Mar 20 22:14:24 idefix kernel: ata7: failed to recover some devices, 
-retrying in 5 secs
-Mar 20 22:14:59 idefix kernel: ata7.00: qc timeout (cmd 0x91)
-Mar 20 22:14:59 idefix kernel: ata7.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-Mar 20 22:14:59 idefix kernel: ata7: failed to recover some devices, 
-retrying in 5 secs
-
-peter
-
-
+Yup.  99.99% of kernel code manages to do this...
