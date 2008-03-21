@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbYCUWf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbYCUWhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbYCUWf7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbYCUWfr
+	id S1760310AbYCUWhj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYCUWhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:35:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33167 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754665AbYCUWfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:35:46 -0400
-Message-ID: <47E4383F.4030804@garzik.org>
-Date: Fri, 21 Mar 2008 18:35:43 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 21 Mar 2008 18:37:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:43166 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754258AbYCUWha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:37:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mjA7NLOZoIW7oi7Yb7cc+rqSRuxfpEVyH8MOaNJroEVLCxNjUvtZVyBtJjDf008SGnjHpNi2zr5wjDGbm0hIF6YFO5F7HraezDLehldqoo6QXG90SSGdj3XnuPHN7vAKNFVDvh6VXcqeNPiaCJS/sge9eqqof3crnS/yo6ykpOQ=
+Message-ID: <86802c440803211537g4921d2d1h95e60eb8692e3fc6@mail.gmail.com>
+Date: Fri, 21 Mar 2008 15:37:29 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Glauber Costa" <gcosta@redhat.com>
+Subject: Re: [PATCH 58/79] [PATCH] include mach_apic.h in smpboot_64.c and smpboot.c
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <47E273D0.40402@redhat.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
-Subject: Re: [SCSI] fix media change events for polled devices
-References: <200803211559.m2LFxPi6017869@hera.kernel.org>	 <47E3EC67.4050404@garzik.org>	 <1206128662.2961.37.camel@localhost.localdomain>	 <47E41C50.4020406@garzik.org>	 <1206133280.2961.45.camel@localhost.localdomain>	 <47E422F1.7080806@garzik.org>	 <1206133787.2961.52.camel@localhost.localdomain>	 <47E424E2.1030801@garzik.org> <1206136150.2961.79.camel@localhost.localdomain>
-In-Reply-To: <1206136150.2961.79.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <12059475744092-git-send-email-gcosta@redhat.com>
+	 <12059477273855-git-send-email-gcosta@redhat.com>
+	 <1205947732309-git-send-email-gcosta@redhat.com>
+	 <12059477371787-git-send-email-gcosta@redhat.com>
+	 <12059477421707-git-send-email-gcosta@redhat.com>
+	 <12059477472416-git-send-email-gcosta@redhat.com>
+	 <12059478321396-git-send-email-gcosta@redhat.com>
+	 <12059478362371-git-send-email-gcosta@redhat.com>
+	 <86802c440803192356l6ff7e8dg9cfbfd3bc045dcac@mail.gmail.com>
+	 <47E273D0.40402@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Anyway, realistically, since no CD or DVD on the market today seems to
-> support the AHCI AN method, this argument is really moot ...
+On Thu, Mar 20, 2008 at 7:25 AM, Glauber Costa <gcosta@redhat.com> wrote:
+>
+> Yinghai Lu wrote:
+>  > On Wed, Mar 19, 2008 at 10:25 AM, Glauber de Oliveira Costa
+>  > <gcosta@redhat.com> wrote:
+>  >> From: Glauber Costa <gcosta@redhat.com>
+>  >>
+>  >>  After the inclusion, a lot of files needs fixing for conflicts,
+>  >>  some of them in the headers themselves, to accomodate for both
+>  >>  i386 and x86_64 versions.
+>  >>
+>  >>  Signed-off-by: Glauber Costa <gcosta@redhat.com>
+>  >>  ---
+>  >>   arch/x86/kernel/acpi/boot.c                 |    2 ++
+>  >>   arch/x86/kernel/mpparse_64.c                |    2 ++
+>  >>   arch/x86/kernel/smpboot.c                   |    2 ++
+>  >>   arch/x86/kernel/smpboot_64.c                |    1 +
+>  >>   arch/x86/vdso/Makefile                      |    2 +-
+>  >>   include/asm-x86/apic.h                      |    1 -
+>  >>   include/asm-x86/apicdef.h                   |    6 ------
+>  >>   include/asm-x86/mach-default/mach_apic.h    |   11 +++++++++++
+>  >>   include/asm-x86/mach-default/mach_apicdef.h |    5 +++++
+>  >>   include/asm-x86/smp_64.h                    |    9 +--------
+>  >>   10 files changed, 25 insertions(+), 16 deletions(-)
+>  >
+>  > please don't.
+>  >
+>  > before this patch
+>  > include/asm-x86/mach_apic.h is only for x86_64 only
+>  > include/asm-x86/mach-default/mach_apic.h is for i386 only.
+>  >
+>  > and both have __ASM_MACH_APIC_H defined.
+>  >
+>  > may need another name?
+>  >
+>  > YH
+>  Another name is possible, but I'd prefer to get rid of the
+>  asm-x86/mach_apic.h. The goal here is to have things integrated, so
+>  unless really necessary, this is prefered.
 
-No, it's not.  This information is published to userspace EVEN WHEN AN 
-SUPPORT IS ABSENT.  As any sane interface would do -- report a zero value.
+anyway, before that I hope you can rename include/asm-x86/mach_apic.h
+to include/asm-x86/apic_ext.h
 
-Thus, the interface is useful even in the absence of AN.
+you may move bits from apic_ext.h to mach-default/mach_apic.h later.
 
-Anyway, to recap...
-
-before your "fix":
-
-	userspace interface always reflected list of events sent
-	via my new API
-
-after your "fix":
-
-	events may or may not be reflected in userspace interface,
-	who knows?
-
-Is that distinction so difficult to see?
-
-This interface, like it or not, is in 2.6.24, which means its published 
-and "out there."
-
-This is a clear regression from 2.6.24.
-
-supported_events' value was accurate in 2.6.24.  Now it is not.
-
-	Jeff
-
-
+YH
