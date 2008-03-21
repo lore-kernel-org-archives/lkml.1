@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbYCUUJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbYCUUMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761458AbYCUUJU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbYCUUJK
+	id S1761321AbYCUUMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbYCUUMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:09:10 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:54432 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbYCUUJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:09:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mL1dzUGYO8V1SkYM4bKQ5A8M1cCCX7lBTNYFpAyK2CFLsQwTL3JdIS6jmrGjTpUj+vTaQ5JGDdIc9dGM3NTMA5+otQYNOBNC+wgNffP5XYy3LG6YCT6ynjvJ7AICoj2e5ILlXDVYaHPSSMxapOH7JVFI40bLmawr2SLpXYRRG60=
-Message-ID: <86802c440803211309x501137ccq5eefdeab6423dd4@mail.gmail.com>
-Date: Fri, 21 Mar 2008 13:09:06 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86_64: early memtest to find bad ram
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47E4137C.3010203@zytor.com>
+	Fri, 21 Mar 2008 16:12:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35532 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755308AbYCUUMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 16:12:23 -0400
+Date: Fri, 21 Mar 2008 21:12:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
+Message-ID: <20080321201211.GA21609@elte.hu>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080312003227.a94580e8.akpm@linux-foundation.org> <4351.1205374751@turing-police.cc.vt.edu> <20080321134128.GO27245@elte.hu> <3343.1206128318@turing-police.cc.vt.edu> <20080321195813.GC16179@elte.hu> <4945.1206129958@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200803202358.33722.yhlu.kernel@gmail.com>
-	 <20080321120313.GD25225@elte.hu> <47E3B335.3020501@zytor.com>
-	 <86802c440803211208v40088eb1qe3f03977b220078@mail.gmail.com>
-	 <47E4137C.3010203@zytor.com>
+In-Reply-To: <4945.1206129958@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 12:58 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->
-> Yinghai Lu wrote:
->  > On Fri, Mar 21, 2008 at 6:08 AM, H. Peter Anvin <hpa@zytor.com> wrote:
->  >> Ingo Molnar wrote:
->  >>  >
->  >>  > very nice patch! I always thought that this was the proper way to do
->  >>  > memtest - and we could in fact also do something like this after SMP
->  >>  > bringup, and hit the memory bus via multiple CPUs. [that will need a
->  >>  > different enumeration though than e820 maps]
->  >>  >
->  >>  > one structural observation: please make this unified functionality, so
->  >>  > that 32-bit kernels can make use of it too.
->  >>  >
->  >>
->  >>  Indeed.  Of course, it would also be nice if distros shipped
->  >>  bootloader-invoked prekernel test software, like memtest86+, by default.
->  >
->  > the current memtest86 is running in 32 bit mode, and only support 64G ram.
->  >
->  > I tried to expand that a bit, to support 1024g, but it only works on
->  > some machine.
->  > could be stack provide is not big enough?
->  >
->
->  Wonder how hard it would be to make it run 64 bits...
 
-1. in 32 bit test less than 4g in 32 bit mode
-2. switch to 64 bit, set page table under 4g to cover all ram...
+* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
 
-YH
+> On Fri, 21 Mar 2008 20:58:13 BST, Ingo Molnar said:
+> 
+> > no, we frequently regenerate the x86.git tree so the dates have little 
+> > relevance. If for any particular pull, x86/base is good and x86/latest 
+> > is bad, then the bug is somewhere in those 200-300 patches inbetween. 
+> > They are lined up linearly so should be perfectly bisectable.
+> 
+> OK, off to go try the last few bisects then...
+
+well ... your git bisection log does look suspiciously 'good', so 
+something is wrong thee i think :-(
+
+the chance to get 8 'good' bisection points in a row is 1:256. OTOH, the 
+freshest x86 patches are always at the 'end' of the queue - which are 
+also the ones most likely to break anything.
+
+Are you sure the x86/base point is indeed 'good'? You can check it via:
+
+ git-checkout -b tmp x86/base
+
+and build+boot it.
+
+	Ingo
