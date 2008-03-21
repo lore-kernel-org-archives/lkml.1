@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbYCUK6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYCUK6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbYCUK6U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 06:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbYCUK6G
+	id S1756877AbYCUK6e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 06:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYCUK6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 06:58:06 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:57980 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbYCUK6F (ORCPT
+	Fri, 21 Mar 2008 06:58:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41605 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754031AbYCUK6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 06:58:05 -0400
-Date: Fri, 21 Mar 2008 11:57:59 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Message-ID: <20080321105759.GB8959@enneenne.com>
-References: <12048053463198-git-send-email-giometti@linux.it> <12048053473401-git-send-email-giometti@linux.it> <3ae72650803202050y14cb890bjce643d933dec1cb5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3ae72650803202050y14cb890bjce643d933dec1cb5@mail.gmail.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/7] LinuxPPS core support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Date: Fri, 21 Mar 2008 10:42:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: osb972ww-linuxczmil@yahoo.com
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+Message-ID: <20080321104237.72379e41@core>
+In-Reply-To: <217535.99274.qm@web34505.mail.mud.yahoo.com>
+References: <217535.99274.qm@web34505.mail.mud.yahoo.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 04:50:51AM +0100, Kay Sievers wrote:
-> On Thu, Mar 6, 2008 at 1:09 PM, Rodolfo Giometti <giometti@linux.it> wrote:
-> > This patch adds the kernel side of the PPS support currently named
-> >  "LinuxPPS".
+On Thu, 20 Mar 2008 20:04:13 -0700 (PDT)
+osb972ww-linuxczmil@yahoo.com wrote:
+
 > 
-> >  diff --git a/include/linux/pps.h b/include/linux/pps.h
-> >  new file mode 100644
-> >  index 0000000..c455443
-> >  --- /dev/null
-> >  +++ b/include/linux/pps.h
-> >  @@ -0,0 +1,204 @@
+> HI Tejun,
 > 
-> >  +/* The main struct */
-> >  +struct pps_device {
-> >  +       struct pps_source_info info;            /* PSS source info */
-> >  +
-> >  +       struct pps_kparams params;              /* PPS's current params */
-> >  +
-> >  +       __u32 assert_sequence;                  /* PPS' assert event seq # */
-> >  +       __u32 clear_sequence;                   /* PPS' clear event seq # */
-> >  +       struct pps_ktime assert_tu;
-> >  +       struct pps_ktime clear_tu;
-> >  +       int current_mode;                       /* PPS mode at event time */
-> >  +
-> >  +       int go;                                 /* PPS event is arrived? */
-> >  +       wait_queue_head_t queue;                /* PPS event queue */
-> >  +
-> >  +       unsigned int id;                        /* PPS source unique ID */
-> >  +       struct cdev cdev;
-> >  +       struct device *dev;
-> >  +       int devno;
-> >  +       struct fasync_struct *async_queue;      /* fasync method */
-> >  +       spinlock_t lock;
-> >  +
-> >  +       atomic_t usage;                         /* usage count */
-> >  +       wait_queue_head_t usage_queue;
-> >  +
-> >  +       struct class class_dev;
+>   setting irqpoll fixed both problems, and there are no "nasty grams" in dmesg now.   The original reason I was trying to use the hdparm -u on /dev/sda was because it was hanging for a few seconds when doing writes to the CFdisk, and in the past that was the kind of thing that hdparm -u would generally fix.   Now with the irqpoll kernel option, the /dev/sdb SATA drive was found, and I can mount it and write to it.  The CFcard /dev/sda is also responding to writes better than before.
 > 
-> Why is an entire class embedded into every device? :)
+> Thanks for the suggestion to use irqpoll.    What is the problem within the driver(s) that is requiring irqpoll. ?
 
-Uh! =:-o
+irqpoll works around BIOS bugs not driver bugs (well generally speaking
+anyway).
 
-Is that not right? What do you suggest to do?
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Alan
