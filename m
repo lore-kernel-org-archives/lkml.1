@@ -1,286 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbYCUGUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbYCUGVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685AbYCUGUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 02:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYCUGTU
+	id S1755781AbYCUGVO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 02:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbYCUGTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 02:19:20 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53280 "EHLO relay.sgi.com"
+	Fri, 21 Mar 2008 02:19:22 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:53282 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753429AbYCUGSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753438AbYCUGSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 02:18:54 -0400
-Message-Id: <20080321061724.956843984@sgi.com>
+Message-Id: <20080321061725.277866037@sgi.com>
 References: <20080321061703.921169367@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Mar 2008 23:17:07 -0700
+Date: Thu, 20 Mar 2008 23:17:08 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [04/14] vcompound: Core piece
-Content-Disposition: inline; filename=newcore
+Subject: [05/14] vcompound: Debugging aid
+Content-Disposition: inline; filename=0008-vcompound-Debugging-aid.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support functions to allow the creation and destruction of virtual compound
-pages. Virtual compound pages are similar to compound pages in that if
-PageTail(page) is true then page->first points to the first page.
-
-	vcompound_head_page(address)
-
-(similar to virt_to_head_page) can be used to determine the head page from an
-address.
-
-Another similarity to compound pages is that page[1].lru.next contains the
-order of the virtual compound page. However, the page structs of virtual
-compound pages are not in order. So page[1] means the second page belonging
-to the virtual compound mapping which is not necessarily the page following
-the head page.
-
-Freeing of virtual compound pages is support both from preemptible and
-non preemptible context (freeing requires a preemptible context, we simply
-defer free if we are not in a preemptible context).
-
-However, allocation of virtual compound pages must at this stage be done from
-preemptible contexts only (there are patches to implement allocations from
-atomic context but those are unecessary at this early stage).
+Virtual fallbacks are rare and thus subtle bugs may creep in if we do not
+test the fallbacks. CONFIG_VFALLBACK_ALWAYS makes all vcompound allocations
+fall back to vmalloc.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
 ---
- include/linux/vmalloc.h |   14 +++
- mm/vmalloc.c            |  197 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 211 insertions(+)
+ lib/Kconfig.debug |   11 +++++++++++
+ mm/vmalloc.c      |   18 +++++++++++++++---
+ 2 files changed, 26 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.25-rc5-mm1/include/linux/vmalloc.h
+Index: linux-2.6.25-rc5-mm1/lib/Kconfig.debug
 ===================================================================
---- linux-2.6.25-rc5-mm1.orig/include/linux/vmalloc.h	2008-03-20 23:03:14.600588151 -0700
-+++ linux-2.6.25-rc5-mm1/include/linux/vmalloc.h	2008-03-20 23:03:14.612588010 -0700
-@@ -86,6 +86,20 @@ extern struct vm_struct *alloc_vm_area(s
- extern void free_vm_area(struct vm_struct *area);
+--- linux-2.6.25-rc5-mm1.orig/lib/Kconfig.debug	2008-03-20 23:05:12.910212550 -0700
++++ linux-2.6.25-rc5-mm1/lib/Kconfig.debug	2008-03-20 23:06:21.599135107 -0700
+@@ -158,6 +158,17 @@ config DETECT_SOFTLOCKUP
+ 	   can be detected via the NMI-watchdog, on platforms that
+ 	   support it.)
  
- /*
-+ * Support for virtual compound pages.
-+ *
-+ * Calls to vcompound alloc will result in the allocation of normal compound
-+ * pages unless memory is fragmented.  If insufficient physical linear memory
-+ * is available then a virtually contiguous area of memory will be created
-+ * using the vmalloc functionality.
-+ */
-+struct page *alloc_vcompound_alloc(gfp_t flags, int order);
-+void free_vcompound(struct page *);
-+void *__alloc_vcompound(gfp_t flags, int order);
-+void __free_vcompound(void *addr);
-+struct page *vcompound_head_page(const void *x);
++config VFALLBACK_ALWAYS
++	bool "Always fall back to virtually mapped compound pages"
++	default y
++	help
++	  Virtual compound pages are only allocated if there is no linear
++	  memory available. They are a fallback and errors created by the
++	  use of virtual mappings instead of linear ones may not surface
++	  because of their infrequent use. This option makes every
++	  allocation that allows a fallback to a virtual mapping use
++	  the virtual mapping. May have a significant performance impact.
 +
-+/*
-  *	Internals.  Dont't use..
-  */
- extern rwlock_t vmlist_lock;
+ config SCHED_DEBUG
+ 	bool "Collect scheduler debugging info"
+ 	depends on DEBUG_KERNEL && PROC_FS
 Index: linux-2.6.25-rc5-mm1/mm/vmalloc.c
 ===================================================================
---- linux-2.6.25-rc5-mm1.orig/mm/vmalloc.c	2008-03-20 23:03:14.600588151 -0700
-+++ linux-2.6.25-rc5-mm1/mm/vmalloc.c	2008-03-20 23:06:43.703428350 -0700
-@@ -989,3 +989,200 @@ const struct seq_operations vmalloc_op =
- };
- #endif
+--- linux-2.6.25-rc5-mm1.orig/mm/vmalloc.c	2008-03-20 23:06:14.875045176 -0700
++++ linux-2.6.25-rc5-mm1/mm/vmalloc.c	2008-03-20 23:06:21.599135107 -0700
+@@ -1159,7 +1159,13 @@ struct page *alloc_vcompound(gfp_t flags
+ 	struct vm_struct *vm;
+ 	struct page *page;
  
-+/*
-+ * Virtual Compound Page support.
-+ *
-+ * Virtual Compound Pages are used to fall back to order 0 allocations if large
-+ * linear mappings are not available. They are formatted according to compound
-+ * page conventions. I.e. following page->first_page if PageTail(page) is set
-+ * can be used to determine the head page.
-+ */
-+
-+/*
-+ * Determine the appropriate page struct given a virtual address
-+ * (including vmalloced areas).
-+ *
-+ * Return the head page if this is a compound page.
-+ *
-+ * Cannot be inlined since VMALLOC_START and VMALLOC_END may contain
-+ * complex calculations that depend on multiple arch includes or
-+ * even variables.
-+ */
-+struct page *vcompound_head_page(const void *x)
-+{
-+	unsigned long addr = (unsigned long)x;
-+	struct page *page;
-+
-+	if (unlikely(is_vmalloc_addr(x)))
-+		page = vmalloc_to_page(x);
+-	page = alloc_pages(flags | __GFP_NORETRY | __GFP_NOWARN, order);
++#ifdef CONFIG_VFALLBACK_ALWAYS
++	if (system_state == SYSTEM_RUNNING && order)
++		page = NULL;
 +	else
-+		page = virt_to_page(addr);
-+
-+	return compound_head(page);
-+}
-+
-+static void __vcompound_free(void *addr)
-+{
-+
-+	struct page **pages;
-+	int i;
-+	int order;
-+
-+	pages = vunmap(addr);
-+	order = (unsigned long)pages[1]->lru.prev;
-+
-+	/*
-+	 * First page will have zero refcount since it maintains state
-+	 * for the compound and was decremented before we got here.
-+	 */
-+	set_page_address(pages[0], NULL);
-+	__ClearPageVcompound(pages[0]);
-+	free_hot_page(pages[0]);
-+
-+	for (i = 1; i < (1 << order); i++) {
-+		struct page *page = pages[i];
-+		BUG_ON(!PageTail(page) || !PageVcompound(page));
-+		set_page_address(page, NULL);
-+		__ClearPageVcompound(page);
-+		__free_page(page);
-+	}
-+	kfree(pages);
-+}
-+
-+static void vcompound_free_work(struct work_struct *w)
-+{
-+	__vcompound_free((void *)w);
-+}
-+
-+static void vcompound_free(void *addr, struct page *page)
-+{
-+	struct work_struct *w = addr;
-+
-+	BUG_ON((!PageVcompound(page) || !PageHead(page)));
-+
-+	if (!put_page_testzero(page))
-+		return;
-+
-+	if (!preemptible()) {
-+		/*
-+		 * Need to defer the free until we are in
-+		 * a preemptible context.
-+		 */
-+		INIT_WORK(w, vcompound_free_work);
-+		schedule_work(w);
-+	} else
-+		__vcompound_free(addr);
-+}
-+
-+
-+void __free_vcompound(void *addr)
-+{
-+	struct page *page;
-+
-+	if (unlikely(is_vmalloc_addr(addr)))
-+		vcompound_free(addr, vmalloc_to_page(addr));
-+	else {
-+		page = virt_to_page(addr);
-+		free_pages((unsigned long)addr, compound_order(page));
-+	}
-+}
-+
-+void free_vcompound(struct page *page)
-+{
-+	if (unlikely(PageVcompound(page)))
-+		vcompound_free(page_address(page), page);
-+	else
-+		__free_pages(page, compound_order(page));
-+}
-+
-+static struct vm_struct *____alloc_vcompound(gfp_t gfp_mask, unsigned long order,
-+								void *caller)
-+{
-+	struct page *page;
-+	int i;
-+	struct vm_struct *vm;
-+	int nr_pages = 1 << order;
-+	struct page **pages = kmalloc(nr_pages * sizeof(struct page *),
-+						gfp_mask & GFP_RECLAIM_MASK);
-+	struct page **pages2;
-+
-+	if (!pages)
-+		return NULL;
-+
-+	for (i = 0; i < nr_pages; i++) {
-+		page = alloc_page(gfp_mask);
-+		if (!page)
-+			goto abort;
-+
-+		/* Sets PageCompound which makes PageHead(page) true */
-+		__SetPageVcompound(page);
-+		pages[i] = page;
-+	}
-+
-+	vm = __get_vm_area_node(nr_pages << PAGE_SHIFT, VM_VCOMPOUND,
-+		VMALLOC_START, VMALLOC_END, -1, gfp_mask, caller);
-+
-+	if (!vm)
-+		goto abort;
-+
-+	vm->caller = caller;
-+	pages2 = pages;
-+	if (map_vm_area(vm, PAGE_KERNEL, &pages2))
-+		goto abort;
-+
-+	pages[1]->lru.prev = (void *)order;
-+
-+	for (i = 0; i < nr_pages; i++) {
-+		struct page *page = pages[i];
-+
-+		__SetPageTail(page);
-+		page->first_page = pages[0];
-+		set_page_address(page, vm->addr + (i << PAGE_SHIFT));
-+	}
-+	return vm;
-+
-+abort:
-+	while (i-- > 0) {
-+		page = pages[i];
-+		if (!page)
-+			continue;
-+		set_page_address(page, NULL);
-+		__ClearPageVcompound(page);
-+		__free_page(page);
-+	}
-+	kfree(pages);
-+	return NULL;
-+}
-+
-+struct page *alloc_vcompound(gfp_t flags, int order)
-+{
-+	struct vm_struct *vm;
-+	struct page *page;
-+
-+	page = alloc_pages(flags | __GFP_NORETRY | __GFP_NOWARN, order);
-+	if (page || !order)
-+		return page;
-+
-+	vm = ____alloc_vcompound(flags, order, __builtin_return_address(0));
-+	if (vm)
-+		return vm->pages[0];
-+
-+	return NULL;
-+}
-+
-+void *__alloc_vcompound(gfp_t flags, int order)
-+{
-+	struct vm_struct *vm;
-+	void *addr;
-+
-+	addr = (void *)__get_free_pages(flags | __GFP_NORETRY | __GFP_NOWARN,
++#endif
++		page = alloc_pages(flags | __GFP_NORETRY | __GFP_NOWARN,
 +								order);
-+	if (addr || !order)
-+		return addr;
+ 	if (page || !order)
+ 		return page;
+ 
+@@ -1175,8 +1181,14 @@ void *__alloc_vcompound(gfp_t flags, int
+ 	struct vm_struct *vm;
+ 	void *addr;
+ 
+-	addr = (void *)__get_free_pages(flags | __GFP_NORETRY | __GFP_NOWARN,
+-								order);
++#ifdef CONFIG_VFALLBACK_ALWAYS
++	if (system_state == SYSTEM_RUNNING && order)
++		addr = NULL;
++	else
++#endif
++		addr = (void *)__get_free_pages(
++			flags | __GFP_NORETRY | __GFP_NOWARN, order);
 +
-+	vm = ____alloc_vcompound(flags, order, __builtin_return_address(0));
-+	if (vm)
-+		return vm->addr;
-+
-+	return NULL;
-+}
+ 	if (addr || !order)
+ 		return addr;
+ 
 
 -- 
