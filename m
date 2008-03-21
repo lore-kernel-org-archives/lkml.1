@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYCUOok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYCUOpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbYCUOok (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 10:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbYCUOoc
+	id S1757940AbYCUOpq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 10:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYCUOpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 10:44:32 -0400
-Received: from ag-out-0708.google.com ([72.14.246.247]:6948 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbYCUOob (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 10:44:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=uL7IUYYHQUFNNJn1Zh8QbSAeNqw4its1PtaWAH4G4SL3qOCakfbq+N6ZqYdSSvO+CAtS25eHAXG2dbwKnuDlA/FBQqIAWTqmzenNSdCRsfjfc5vbw/9q2J6vLMwMpa9rOaiRL+3fAePLOC3dYsb6DVjHiptbqJpYBDfTK/UYVjo=
-Date: Fri, 21 Mar 2008 09:44:16 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: "Sreen Tallam" <tallam.sreen@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Device tree file customization for 2.6.18
-Message-ID: <20080321094416.58f827ba@hansolo.jdub.homelinux.org>
-In-Reply-To: <5b1d25eb0803201000s7b60143fl61afd832140c2ac4@mail.gmail.com>
-References: <5b1d25eb0803201000s7b60143fl61afd832140c2ac4@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 10:45:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59808 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753078AbYCUOpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 10:45:35 -0400
+Date: Fri, 21 Mar 2008 15:45:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: quicklists confuse meminfo
+Message-ID: <20080321144517.GA1545@elte.hu>
+References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de> <20080309114640.85c9c3eb.akpm@linux-foundation.org> <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com> <200803111507.20870.nickpiggin@yahoo.com.au> <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Mar 2008 10:00:54 -0700
-"Sreen Tallam" <tallam.sreen@gmail.com> wrote:
 
-> Hi All,
-> 
-> I have been using 2.6.10 until now and moving over 2.6.18.
-> And I trying to build a 2.6.18 kernel for a PowerPC 405GP.
+* Bart Van Assche <bart.vanassche@gmail.com> wrote:
 
-2.6.18 is fairly old at this point.
+> Is anyone currently working on this 
+> (http://bugzilla.kernel.org/show_bug.cgi?id=9991) ? I think this 
+> should either be fixed or documented as a known issue.
 
-> I discovered that there is a .dts file needed by the kernel.
-> I have no idea how to customize this file. Any tips, suggestions or
-> Documentation that I can look at?
+it should be fixed in latest -git (by commit 985a34bd75cc8c9) - can you 
+still see it?
 
-There's Documentation/powerpc/booting-without-of.txt.  Though if you're
-going to use 2.6.18, I'd suggest sticking with arch/ppc instead of
-arch/powerpc.  The former doesn't require the device tree.
-
-> I am using u-boot as my board's FW.
-> Also, I have a Walnut like board for which I am building the kernel.
-
-Walnut has a dts in the kernel already.  You should be able to derive
-from that fairly easily.  If you really want to use an arch/powerpc
-based kernel I suggest using 2.6.24 as your starting point.
-
-josh
+	Ingo
