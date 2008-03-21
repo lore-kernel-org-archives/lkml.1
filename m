@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbYCUQ4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbYCUQ5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbYCUQ4U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 12:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbYCUQzz
+	id S1759960AbYCUQ5A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 12:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYCUQ4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 12:55:55 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:41392 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758116AbYCUQzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 12:55:53 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neilb@suse.de, akpm@linux-foundation.org,
-       hch@infradead.org, linux-security-module@vger.kernel.org,
-       jmorris@namei.org
-In-reply-to: <20080321163520.GV10722@ZenIV.linux.org.uk> (message from Al Viro
-	on Fri, 21 Mar 2008 16:35:20 +0000)
-Subject: Re: r-o bind in nfsd
-References: <E1Jciie-0001E6-Dx@pomaz-ex.szeredi.hu> <20080321155451.GU10722@ZenIV.linux.org.uk> <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu> <20080321163520.GV10722@ZenIV.linux.org.uk>
-Message-Id: <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 21 Mar 2008 17:54:57 +0100
+	Fri, 21 Mar 2008 12:56:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41713 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757292AbYCUQ4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 12:56:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pozsar Balazs <pozsy@uhulinux.hu>
+Subject: Re: suspend not working on macbook pro
+Date: Fri, 21 Mar 2008 17:56:10 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+References: <20080308110626.GE4491@ojjektum.uhulinux.hu> <20080309090155.GB3866@ucw.cz> <20080321085619.GA12152@ojjektum.uhulinux.hu>
+In-Reply-To: <20080321085619.GA12152@ojjektum.uhulinux.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803211756.10987.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > I know there are a few cases, where filesystems call vfs_foo()
-> > > > internally, where the vfsmount isn't available, but I think the proper
-> > > > solution is just to fix those places, and not recurse back into the
-> > > > VFS (which is AFAICS in all those cases totally unnecessary anyway).
-> > > > This would make everybody happy, no?
+On Friday, 21 of March 2008, Pozsar Balazs wrote:
+> On Sun, Mar 09, 2008 at 10:01:55AM +0100, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > I'm using a macbook pro 3,1 (mid-2007), and suspend worked ok with 
+> > > kernel 2.6.23.x, but with 2.6.25-rc{1,2,3,4} it just freezes during 
+> > > suspend. The console is still on, the disk is powered off, but no 
+> > > response or poweroff...
 > > > 
-> > > Apparmor can go play with itself.  The proper fix is to lift the LSM nonsense
-> > > into callers and leave vfs_...() alone;
+> > > Did anyone else met the same thing? How could I help debug it?
+> > > What other info would you need?
 > > 
-> > Maybe.  I know precious little about this security thing, so I won't
-> > argue about it's merits or faults.  But:
-> > 
-> >  a) I have a hunch that the security guys wouldn't like to see the
-> >  order between permission() and security_foo() changed.
+> > Find more exact version when it broke? git bisect?
 > 
-> It's their problem.  Adjusting LSM methods, if needed, is up to LSM
-> maintainers, whenever moving the hooks or code around those become
-> convenient for kernel proper.  According to Linus, IIRC.
-> 
-> Especially since in this case they want to change prototypes anyway, so the
-> churn is not an issue and having the hook called earlier is very unlikely to
-> cause any problems.
+> I did not have time for bisect, but I have found that if I boot an 
+> initrd and do not load the ata_piix module, suspend works, if I load it, 
+> it hangs during suspend.
 
-CC-d linux-security-module, James Morris.
+Hm, we have an ata_piix vs suspend problem on this box, then.
 
-> 
-> >  b) I fail to see how moving functionality to callers would improve
-> >  things
-> > 
-> > > vfsmounts should *not* be passed there at all, with the exception of
-> > > vfs_follow_link() which gets the full nameidata.
-> > 
-> > Why?
-> 
-> Because filesystem shouldn't _care_ where it is mounted.  Anything
-> vfsmount-dependent belongs to upper layers.  The same goes for passing
-> nameidata to fs methods, BTW - again, ->follow_link() is an obvious
-> legitimate exception.
+Any chance to verify if 2.6.24.x works?
 
-Nobody wants to send vfsmounts to the filesystem.  But vfs_...() are
-still part of the "upper layer", not the filesystem, so I'm not
-convinced yet.  For example:
+Thanks,
+Rafael
 
--extern int vfs_mkdir(struct inode *, struct dentry *, int);
-+extern int vfs_mkdir(const struct path *, struct dentry *, int);
-
-There's one caller of vfs_mkdir that can't do this: cgroup_clone().
-But that can call cgroup_mkdir() instead.
-
-And having the vfsmount available within vfs_...() functions means,
-that the mnt_want_write() check can be moved inside, which means that
-callers get simpler and less likely to be buggy.  Those are all
-advantages IMO, regardless of any security module issues.
-
-Miklos
