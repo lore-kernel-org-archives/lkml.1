@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYCUT3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYCUTah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbYCUT3U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 15:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYCUT3J
+	id S1758178AbYCUTah (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYCUTa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:29:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:31918 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbYCUT3I (ORCPT
+	Fri, 21 Mar 2008 15:30:27 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47916 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbYCUTa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:29:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=au/pS2dNpffMGFyLiFIoPaLhqGXuuBx2PqevjYsofnyJSaIkX50E2LCAT3BrvphodpJh7uRq60H5CCgxHtCJZvlW5DTtlVkSsR9uyRRfEb+JA8GNNwobMl29wKLJft44rz58VbbAkMT+qDlWOiklKs0ESFnru3NIG0CkJz+Az+Y=
-Date: Fri, 21 Mar 2008 20:30:40 -0700
-To: rjw@sisk.pl
-Cc: linux-main <linux-kernel@vger.kernel.org>
-Subject: Proper way to invoke suspend?
-Message-Id: <20080321203040.99655491.Kristoffer.Ericson@Gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Fri, 21 Mar 2008 15:30:26 -0400
+Date: Fri, 21 Mar 2008 13:30:09 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       warthog19@eaglescrag.net, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH  9/16] PCI slot: Remove unused slot member from pci_dev (Not for mainline!)
+Message-ID: <20080321193009.GI424@parisc-linux.org>
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E33693.7080102@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E33693.7080102@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
+On Fri, Mar 21, 2008 at 01:16:19PM +0900, Kenji Kaneshige wrote:
+> The 'slot' member in struct pci_dev is not used. Remove this unused
+> member.
 
-Been looking around for examples, but obviously something I don't understand. 
-Currently I set apm_queue_event(APM_USER_SUSPEND) inside the power button interrupt, this does nothing.
+It *ought* to be used.  If it isn't yet, I guess that part of my patch
+has been dropped, and it should be re-added.
 
-However if I cat the state, it goes into suspend. Resume fails but thats another question.
-
-Best Wishes
 -- 
-Kristoffer Ericson <Kristoffer.Ericson@Gmail.com>
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
