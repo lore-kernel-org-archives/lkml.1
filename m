@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbYCUMvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYCUMqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756357AbYCUMvt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 08:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYCUMvk
+	id S1756815AbYCUMqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 08:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYCUMqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 08:51:40 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53539 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754193AbYCUMvk (ORCPT
+	Fri, 21 Mar 2008 08:46:09 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37609 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754481AbYCUMqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 08:51:40 -0400
-X-Sasl-enc: ptp4yatuBb7du1YPS5uYPkgx9/aFnxd/otlJKc2UX4SM 1206103898
-Date: Fri, 21 Mar 2008 09:51:35 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Peter F. Patel-Schneider" <pfps@verizon.net>,
-       Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       "Peter F. Patel-Schneider" <pfps@research.bell-labs.com>,
-       Thomas Renninger <trenn@suse.de>
-Subject: Reporting ThinkPad BIOS bugs
-Message-ID: <20080321125135.GF5586@khazad-dum.debian.net>
-References: <47067DB9.80200@roarinelk.homelinux.net> <47E300B2.7000104@verizon.net> <20080321011205.4c7b4a61@core> <47E31197.70003@gmail.com> <20080321104002.27a7d19e@core> <47E39963.2090908@verizon.net> <20080321111313.24567b9f@core>
+	Fri, 21 Mar 2008 08:46:07 -0400
+Message-ID: <47E3ADE3.4030304@bull.net>
+Date: Fri, 21 Mar 2008 13:45:23 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321111313.24567b9f@core>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Scalability requirements for sysv ipc (was: ipc: store ipcs into
+ IDRs)
+References: <47E382DB.70503@colorfullife.com>
+In-Reply-To: <47E382DB.70503@colorfullife.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Alan Cox wrote:
-> > How can I check to see if this is the case?  How would this explain that 
+Manfred Spraul wrote:
+> Hi all,
 > 
-> As I said before, take a CF card/adapter combination you know fails
-> on a T60p/T61p and test it on a Linux box that isn't one of those types
-> (and preferably not a Lenovo at all)
+> I noticed that sysv ipc now uses very special locking: first a global 
+> rw-semaphore, then within that semaphore rcu:
+>  > linux-2.6.25-rc3:/ipc/util.c:
 > 
-> > the adapter and card sometimes work when they are in when the system boots?
+>> struct kern_ipc_perm *ipc_lock(struct ipc_ids *ids, int id)
+>> {
+>>         struct kern_ipc_perm *out;
+>>         int lid = ipcid_to_idx(id);
+>>
+>>         down_read(&ids->rw_mutex);
+>>
+>>         rcu_read_lock();
+>>         out = idr_find(&ids->ipcs_idr, lid);
 > 
-> Ask the BIOS authors. Trying to fathom what they have done is frequently
+> ids->rw_mutex is a per-namespace (i.e.: usually global) semaphore. Thus 
+> ipc_lock writes into a global cacheline. Everything else is based on 
+> per-object locking, especially sysv sem doesn't contain a single global 
+> lock/statistic counter/...
+> That can't be the Right Thing (tm): Either there are cases where we need 
+> the scalability (then using IDRs is impossible), or the scalability is 
+> never needed (then the remaining parts from RCU should be removed).
+> I don't have a suitable test setup, has anyone performed benchmarks 
+> recently?
+> Is sysv semaphore still important, or have all apps moved to posix 
+> semaphores/futexes?
+> Nadia: Do you have access to a suitable benchmark?
+> 
+> A microbenchmark on a single-cpu system doesn't help much (except that 
+> 2.6.25 is around factor 2 slower for sysv msg ping-pong between two 
+> tasks compared to the numbers I remember from older kernels....)
+> 
 
-I can actually try to do just that.  So can Thomas Renninger, added to cc.
+If I remember well, at that time I had used ctxbench and I wrote some 
+other small scripts.
+And the results I had were around 2 or 3% slowdown, but I have to 
+confirm that by checking in my archives.
 
-Please someone send either of us a *detailed*, ready for "upstream
-submission" bug report of the thinkpad BIOS IRQ routing issues, and we might
-be able to get it to someone who can fix it for good.
+I'll also have a look at the remaining RCU critical sections in the code.
 
-Be clear, concise, and remember that whomever will read it has no obligation
-to know much about Linux kernel internals, so explain things from a
-*hardware* and ACPI model (as in what is in the ACPI spec, not what ACPICA
-code does) point of view.
+Regards,
+Nadia
 
-Do attach the trimmed kernel logs showing the bugs and ACPI/IOAPIC init.
-Even if the person reading the report doesn't know Linux well, they can be
-helpful.  And if he does know Linux well...
 
-The report should be done with the latest available BIOS when possible, and
-include the dmidecode BIOS information (version, date), as well as the
-dmidecode System Information/Product Name (i.e. the numeric model number).
-
-Reports about non-Lenovo ThinkPad BIOSes are unlikely to be acted upon.  I
-have made a bunch of those, but they couldn't do much about it.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
