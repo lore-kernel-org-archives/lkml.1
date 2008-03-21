@@ -1,117 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbYCUEVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYCUEVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbYCUEVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 00:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYCUEU7
+	id S1757188AbYCUEVi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 00:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbYCUEVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 00:20:59 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45254 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752262AbYCUEU5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 00:20:57 -0400
-Message-ID: <47E3375B.4020606@jp.fujitsu.com>
-Date: Fri, 21 Mar 2008 13:19:39 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 21 Mar 2008 00:21:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:52470 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756623AbYCUEVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 00:21:21 -0400
+Message-ID: <47E336D6.4020807@goop.org>
+Date: Thu, 20 Mar 2008 21:17:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>
-CC: Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: [PATCH 12/16] PCI slot: Use .default_attrs for address file (Not
- for mainline!)
-References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com>
-In-Reply-To: <47E33472.1000602@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Mark McLoughlin <markmc@redhat.com>
+CC: linux-kernel@vger.kernel.org,
+       Christian Limpach <Christian.Limpach@xensource.com>
+Subject: Re: [PATCH] xen blkfront: Delay wait for block devices until after
+ the disk is added.
+References: <1206005390-18306-1-git-send-email-markmc@redhat.com>
+In-Reply-To: <1206005390-18306-1-git-send-email-markmc@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use .default_attrs for 'address' file. This can simplify the code.
+Mark McLoughlin wrote:
+> From: Christian Limpach <Christian.Limpach@xensource.com>
+>
+> When the xen block frontend driver is built as a module the module load
+> is only synchronous up to the point where the frontend and the backend
+> become connected rather than when the disk is added.
+>
+> This means that there can be a race on boot between loading the module and
+> loading the dm-* modules and doing the scan for LVM physical volumes (all
+> in the initrd). In the failure case the disk is not present until after the
+> scan for physical volumes is complete.
+>   
 
-Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Thanks, I've queued this.
 
----
- drivers/pci/slot.c |   36 +++++++++---------------------------
- 1 file changed, 9 insertions(+), 27 deletions(-)
-
-Index: linux-2.6.25-rc6/drivers/pci/slot.c
-===================================================================
---- linux-2.6.25-rc6.orig/drivers/pci/slot.c
-+++ linux-2.6.25-rc6/drivers/pci/slot.c
-@@ -39,25 +39,6 @@ static ssize_t address_read_file(struct 
- 					slot->bus->number, slot->number);
- }
- 
--static struct pci_slot_attribute pci_slot_attr_address = {
--	.attr = { .name = "address", .mode = S_IFREG | S_IRUGO },
--	.show = address_read_file,
--};
--
--static void remove_sysfs_files(struct pci_slot *slot)
--{
--	sysfs_remove_file(&slot->kobj, &pci_slot_attr_address.attr);
--}
--
--static int create_sysfs_files(struct pci_slot *slot)
--{
--	int result;
--
--	result = sysfs_create_file(&slot->kobj, &pci_slot_attr_address.attr);
--
--	return result;
--}
--
- static void pci_slot_release(struct kobject *kobj)
- {
- 	struct pci_slot *slot = to_pci_slot(kobj);
-@@ -67,13 +48,21 @@ static void pci_slot_release(struct kobj
- 
- 	list_del(&slot->list);
- 
--	remove_sysfs_files(slot);
- 	kfree(slot);
- }
- 
-+static struct pci_slot_attribute pci_slot_attr_address =
-+	__ATTR(address, (S_IFREG | S_IRUGO), address_read_file, NULL);
-+
-+static struct attribute *pci_slot_default_attrs[] = {
-+	&pci_slot_attr_address.attr,
-+	NULL,
-+};
-+
- static struct kobj_type pci_slot_ktype = {
- 	.sysfs_ops = &pci_slot_sysfs_ops,
- 	.release = &pci_slot_release,
-+	.default_attrs = pci_slot_default_attrs,
- };
- 
- struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
-@@ -114,10 +103,6 @@ struct pci_slot *pci_create_slot(struct 
- 		goto err;
- 	}
- 
--	err = create_sysfs_files(slot);
--	if (err)
--		goto unregister;
--
- 	INIT_LIST_HEAD(&slot->list);
- 	list_add(&slot->list, &parent->slots);
- 
-@@ -127,9 +112,6 @@ struct pci_slot *pci_create_slot(struct 
-  out:
- 	up_write(&pci_bus_sem);
- 	return slot;
--
-- unregister:
--	kobject_put(&slot->kobj);
-  err:
- 	kfree(slot);
- 	slot = ERR_PTR(err);
-
-
+    J
