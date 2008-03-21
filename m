@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbYCUWFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbYCUWK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbYCUWFy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYCUWFr
+	id S1756860AbYCUWK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYCUWKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:05:47 -0400
-Received: from mail.tuxonice.net ([67.207.135.122]:58347 "EHLO
-	mail.tuxonice.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbYCUWFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:05:47 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org>
-Content-Type: text/plain
-Date: Sat, 22 Mar 2008 09:05:47 +1100
-Message-Id: <1206137147.30885.6.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 18:10:18 -0400
+Received: from www.tglx.de ([62.245.132.106]:41198 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751412AbYCUWKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:10:17 -0400
+Date: Fri, 21 Mar 2008 23:09:32 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gabriel C <crazy@frugalware.org>
+cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+In-Reply-To: <47E42FAB.6000906@frugalware.org>
+Message-ID: <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de>
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
+ <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org>
+ <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, 21 Mar 2008, Gabriel C wrote:
+> > So the rotating watchdog triggers for a yet to figure out reason.
+> > 
+> > Oh, now that the pm timer seems to work again, can you try the following:
+> > 
+> > apply the reverted patch again and let the box boot. At some point the
+> > TSC is marked unstable and is replaced by acpi_pm clocksource.
+> > 
+> > What result does timewarp.c show in that situation ?
+> 
+> Here it is , same kernel + Andi's patch :
+> 
+> ./time-warp-test
+> 4 CPUs, running 4 parallel test-tasks.
+> checking for time-warps via:
+> - read time stamp counter (RDTSC) instruction (cycle resolution)
+> - gettimeofday (TOD) syscall (usec resolution)
+> - clock_gettime(CLOCK_MONOTONIC) syscall (nsec resolution)
+> 
+> | 1.78 us, TSC-warps:0 | 19.27 us, TOD-warps:0 | 19.37 us, CLOCK-warps:0
 
-On Thu, 2008-03-20 at 20:52 -0400, Alan Stern wrote:
-> For an S5 hibernation, the interpreter state within the image is wrong.  
-> The image kernel needs to have the interpreter state from the boot 
-> kernel -- I don't know if this is possible.
+Ok. So the watchdog trigger is a false positive. 
 
-It's possible.
+Thinking more about it, it looks like Andi's change triggers some
+hidden bug in the combination of NO_HZ and add_timer_on(), where the
+CPU on which the timer is added is likely in a long idle sleep. I look
+into this tomorrow.
 
-1) When hibernating, allocate a page (or pages if one isn't enough) for
-the data to end up in after the atomic restore.
-2) Put the location(s) in the image header.
-3) At resume time, allocate an equivalent number of extra 'safe' pages
-and set up extra pbes for the atomic restore to copy data from the extra
-pages to the ones allocated when hibernating.
-4) At the appropriate point in time, copy the NVS data to the extra
-'safe' pages allocated in step 3.
+Thanks for testing
 
-The data will then be available to the resumed kernel post-resume.
-
-I've been using this method to pass data from the boot kernel to the
-resumed kernel for a while now. (I'm using it for I/O speed statistics
-and state preservation).
-
-Regards,
-
-Nigel
-
+       tglx
