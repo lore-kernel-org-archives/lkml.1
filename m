@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbYCUTGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYCUTIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbYCUTGe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 15:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbYCUTG0
+	id S1758009AbYCUTIj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 15:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYCUTIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 15:06:26 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:46387 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754661AbYCUTG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 15:06:26 -0400
-Date: Fri, 21 Mar 2008 12:04:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Miller <davem@davemloft.net>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on
- IA64 and x86
-In-Reply-To: <20080321190258.GF6571@elte.hu>
-Message-ID: <Pine.LNX.4.64.0803211201530.19432@schroedinger.engr.sgi.com>
-References: <20080321061703.921169367@sgi.com> <20080321061726.782068299@sgi.com>
- <20080321.002502.223136918.davem@davemloft.net> <20080321083952.GA20454@elte.hu>
- <Pine.LNX.4.64.0803211032390.18671@schroedinger.engr.sgi.com>
- <20080321190258.GF6571@elte.hu>
+	Fri, 21 Mar 2008 15:08:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:18135 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbYCUTIa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 15:08:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WvFl7H3C4K0SJ7k7RqXVfZVvWtPL7cvkL122AkS8dbORfdksP/mB+MXlGKE3hua/fjNGoC95wY3HfuvRBO6B6Hm4rHqILLRpAoNcCcPoxrdc2QjCCQ/oI6r9GcZop1P9R+F6VMm7freyN5VahAY6tmMJhuHi+wJB80OzbZFdKfA=
+Message-ID: <86802c440803211208v40088eb1qe3f03977b220078@mail.gmail.com>
+Date: Fri, 21 Mar 2008 12:08:29 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86_64: early memtest to find bad ram
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47E3B335.3020501@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803202358.33722.yhlu.kernel@gmail.com>
+	 <20080321120313.GD25225@elte.hu> <47E3B335.3020501@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Ingo Molnar wrote:
+On Fri, Mar 21, 2008 at 6:08 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Ingo Molnar wrote:
+>  >
+>  > very nice patch! I always thought that this was the proper way to do
+>  > memtest - and we could in fact also do something like this after SMP
+>  > bringup, and hit the memory bus via multiple CPUs. [that will need a
+>  > different enumeration though than e820 maps]
+>  >
+>  > one structural observation: please make this unified functionality, so
+>  > that 32-bit kernels can make use of it too.
+>  >
+>
+>  Indeed.  Of course, it would also be nice if distros shipped
+>  bootloader-invoked prekernel test software, like memtest86+, by default.
 
-> your patch indeed does not introduce it here, but 
-> KERNEL_STACK_SIZE_ORDER shows up in the x86 portion of your patch and 
-> you refer to multi-order stack allocations in your 0/14 mail :-)
+the current memtest86 is running in 32 bit mode, and only support 64G ram.
 
-Ahh. I see. Remnants from V2 in IA64 code. That portion has to be removed 
-because of the software TLB issues on IA64 as pointed out by Dave.
+I tried to expand that a bit, to support 1024g, but it only works on
+some machine.
+could be stack provide is not big enough?
 
+YH
