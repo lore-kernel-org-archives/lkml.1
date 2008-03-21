@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbYCUGVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbYCUGVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbYCUGVf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 02:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYCUGTX
+	id S1758704AbYCUGVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 02:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbYCUGTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 02:19:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49199 "EHLO
+	Fri, 21 Mar 2008 02:19:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49197 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753498AbYCUGSz (ORCPT
+	with ESMTP id S1753489AbYCUGSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 02:18:55 -0400
-Message-Id: <20080321061726.035952517@sgi.com>
+Message-Id: <20080321061725.476134262@sgi.com>
 References: <20080321061703.921169367@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Mar 2008 23:17:11 -0700
+Date: Thu, 20 Mar 2008 23:17:09 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [08/14] vcompound: Fallback for zone wait table
-Content-Disposition: inline; filename=0010-vcompound-Fallback-for-wait-table.patch
+Cc: linux-kernel@vger.kernel.org, apw@shadowen.org
+Subject: [06/14] vcompound: Virtual fallback for sparsemem
+Content-Disposition: inline; filename=0009-vcompound-Virtual-fallback-for-sparsemem.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently vmalloc may be used for allocating zone wait table.
-Use virtual compound page in order to be able to use a physically contiguous
-page that can then use the large kernel TLBs.
+Sparsemem currently attempts to do a physically contiguous mapping
+and then falls back to vmalloc. The same thing can now be accomplished
+using virtual compound pages.
 
-Drawback: The zone wait table is rounded up to the next power of two which
-may cost some memory.
-
+Cc: apw@shadowen.org
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- mm/page_alloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ mm/sparse.c |   25 ++-----------------------
+ 1 file changed, 2 insertions(+), 23 deletions(-)
 
-Index: linux-2.6.25-rc5-mm1/mm/page_alloc.c
+Index: linux-2.6.25-rc5-mm1/mm/sparse.c
 ===================================================================
---- linux-2.6.25-rc5-mm1.orig/mm/page_alloc.c	2008-03-20 20:03:50.885900600 -0700
-+++ linux-2.6.25-rc5-mm1/mm/page_alloc.c	2008-03-20 20:04:43.282104684 -0700
-@@ -2866,7 +2866,8 @@ int zone_wait_table_init(struct zone *zo
- 		 * To use this new node's memory, further consideration will be
- 		 * necessary.
- 		 */
--		zone->wait_table = vmalloc(alloc_size);
-+		zone->wait_table = __alloc_vcompound(GFP_KERNEL,
-+						get_order(alloc_size));
- 	}
- 	if (!zone->wait_table)
- 		return -ENOMEM;
+--- linux-2.6.25-rc5-mm1.orig/mm/sparse.c	2008-03-20 18:04:45.345133447 -0700
++++ linux-2.6.25-rc5-mm1/mm/sparse.c	2008-03-20 19:32:53.361317058 -0700
+@@ -327,24 +327,7 @@ static void __kfree_section_memmap(struc
+ #else
+ static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+ {
+-	struct page *page, *ret;
+-	unsigned long memmap_size = sizeof(struct page) * nr_pages;
+-
+-	page = alloc_pages(GFP_KERNEL|__GFP_NOWARN, get_order(memmap_size));
+-	if (page)
+-		goto got_map_page;
+-
+-	ret = vmalloc(memmap_size);
+-	if (ret)
+-		goto got_map_ptr;
+-
+-	return NULL;
+-got_map_page:
+-	ret = (struct page *)pfn_to_kaddr(page_to_pfn(page));
+-got_map_ptr:
+-	memset(ret, 0, memmap_size);
+-
+-	return ret;
++	return __alloc_vcompound(GFP_KERNEL, get_order(memmap_size)));
+ }
+ 
+ static inline struct page *kmalloc_section_memmap(unsigned long pnum, int nid,
+@@ -355,11 +338,7 @@ static inline struct page *kmalloc_secti
+ 
+ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+ {
+-	if (is_vmalloc_addr(memmap))
+-		vfree(memmap);
+-	else
+-		free_pages((unsigned long)memmap,
+-			   get_order(sizeof(struct page) * nr_pages));
++	__free_vcompound(memmap);
+ }
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+ 
 
 -- 
