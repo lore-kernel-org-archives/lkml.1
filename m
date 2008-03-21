@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbYCUBhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYCUBit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbYCUBhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 21:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYCUBhf
+	id S1758006AbYCUBit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 21:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYCUBij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 21:37:35 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:39583 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751610AbYCUBhe (ORCPT
+	Thu, 20 Mar 2008 21:38:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:13651 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYCUBii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 21:37:34 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Date: Fri, 21 Mar 2008 02:36:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       David Brownell <david-b@pacbell.net>,
-       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, lm-sensors@lm-sensors.org
-References: <Pine.LNX.4.44L0.0803202126240.11234-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803202126240.11234-100000@netrider.rowland.org>
+	Thu, 20 Mar 2008 21:38:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=lWWtY8Gen9SfDAx1JIz4kHHtj3WTlnCdcOReYWh7Ugf1cba2yos+bkTkHcjoYACi8h1X/z/poLLb9cySOgtd8ZjYYf5PSO3lN9Hk+iIT2Zbmckc8p76gok/LhQIGIp3Oams9skzlqjhm7GD24jzJ5VSxz3nPFEQxAYzz/hMoYRs=
+Message-ID: <47E31197.70003@gmail.com>
+Date: Fri, 21 Mar 2008 10:38:31 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Peter F. Patel-Schneider" <pfps@verizon.net>,
+       linux-kernel@vger.kernel.org,
+       "Peter F. Patel-Schneider" <pfps@research.bell-labs.com>
+Subject: Re: 2.6.23-rc9-git4: pata_pcmcia, disabling IRQ #9 and Re: libata
+ and legacy ide pcmcia failure
+References: <47067DB9.80200@roarinelk.homelinux.net>	<47E300B2.7000104@verizon.net> <20080321011205.4c7b4a61@core>
+In-Reply-To: <20080321011205.4c7b4a61@core>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803210236.52063.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 March 2008 02:31:44 Alan Stern wrote:
-> On Thu, 20 Mar 2008, Andrew Morton wrote:
+Alan Cox wrote:
+> O> Mar 20 19:51:45 idefix kernel: ata12: PATA max PIO0 cmd 0xa100 ctl 
+>> 0xa10e irq 3
+>> Mar 20 19:52:15 idefix kernel: ata12.00: qc timeout (cmd 0x91)
+>> Mar 20 19:52:15 idefix kernel: ata12.00: failed to IDENTIFY 
+>> (INIT_DEV_PARAMS failed, err_mask=0x4)
 > 
-> > On Thu, 20 Mar 2008 21:36:04 -0300 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > 
-> > > Well, so far so good for LEDs, but what about the other users of in_atomic
-> > > that apparently should not be doing it either?
-> > 
-> > Ho hum.  Lots of cc's added.
+> Thinkpad T61p .. I've seen a few of these.
 > 
-> ...
-> 
-> > The usual pattern for most of the above is
-> > 
-> > 	if (!in_atomic())
-> > 		do_something_which_might_sleep();
-> > 
-> > problem is, in_atomic() returns false inside spinlock on non-preptible
-> > kernels.  So if anyone calls those functions inside spinlock they will
-> > incorrectly schedule and another task can then come in and try take the
-> > already-held lock.
-> > 
-> > Now, it happens that in_atomic() returns true on non-preemtible kernels
-> > when running in interrupt or softirq context.  But if the above code really
-> > is using in_atomic() to detect am-i-called-from-interrupt and NOT
-> > am-i-called-from-inside-spinlock, they should be using in_irq(),
-> > in_softirq() or in_interrupt().
-> 
-> Presumably most of these places are actually trying to detect 
-> am-i-allowed-to-sleep.  Isn't that what in_atomic() is supposed to do?  
+> Firstly try the card and adapter in a different PC and let me know if
+> that works. So far they do. If that is the case get the latest firmware
+> updates (BIOS etc) for your thinkpad and see if the problem goes away.
+> They (or our ACPI code I guess it may be) have some serious IRQ routing
+> problems on this box.
 
-No, I think there is no such check in the kernel. Most likely for performance
-reasons, as it would require a global flag that is set on each spinlock.
-You simply must always _know_, if you are allowed to sleep or not. This is
-done by defining an API. The call-context is part of any kernel API.
+Any chance the thing just chokes up on INIT_DEV_PARAMS?
 
 -- 
-Greetings Michael.
+tejun
