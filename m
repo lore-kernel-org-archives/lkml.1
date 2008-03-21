@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYCURCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbYCURC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbYCURCj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbYCURCa
+	id S1760026AbYCURC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759833AbYCURCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:02:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:57512 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754736AbYCURC3 (ORCPT
+	Fri, 21 Mar 2008 13:02:48 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34195 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756004AbYCURCr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:02:29 -0400
-Subject: Re: [PATCH 1/7] LinuxPPS core support.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20080321105759.GB8959@enneenne.com>
-References: <12048053463198-git-send-email-giometti@linux.it>
-	 <12048053473401-git-send-email-giometti@linux.it>
-	 <3ae72650803202050y14cb890bjce643d933dec1cb5@mail.gmail.com>
-	 <20080321105759.GB8959@enneenne.com>
-Content-Type: text/plain
-Date: Fri, 21 Mar 2008 18:01:45 +0100
-Message-Id: <1206118905.24338.10.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Fri, 21 Mar 2008 13:02:47 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47E3EA27.7020800@s5r6.in-berlin.de>
+Date: Fri, 21 Mar 2008 18:02:31 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+References: <20080320192719.6a32386e.akpm@linux-foundation.org>	<Pine.LNX.4.44L0.0803202301140.16520-100000@netrider.rowland.org>	<20080320201723.b87b3732.akpm@linux-foundation.org> <200803220011.CEC82820.QSOtJOVFFHFMLO@I-love.SAKURA.ne.jp> <47E3E83F.3070508@s5r6.in-berlin.de>
+In-Reply-To: <47E3E83F.3070508@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/ADXfSqqUQfk5FRwwDasBkxo1ukTdI1zi3hF0
- h/nmJdVmx4DT0hxoxtA2Uq7kx+BolLb54B5yCP42RHwvMJ0can
- OFHHFnxKfWQlgg4/ka5FSDWTOx+9Fo7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-21 at 11:57 +0100, Rodolfo Giometti wrote:
-> On Fri, Mar 21, 2008 at 04:50:51AM +0100, Kay Sievers wrote:
-> > On Thu, Mar 6, 2008 at 1:09 PM, Rodolfo Giometti <giometti@linux.it> wrote:
-> > > This patch adds the kernel side of the PPS support currently named
-> > >  "LinuxPPS".
-> > 
-> > >  diff --git a/include/linux/pps.h b/include/linux/pps.h
-> > >  new file mode 100644
-> > >  index 0000000..c455443
-> > >  --- /dev/null
-> > >  +++ b/include/linux/pps.h
-> > >  @@ -0,0 +1,204 @@
-> > 
-> > >  +/* The main struct */
-> > >  +struct pps_device {
-> > >  +       struct pps_source_info info;            /* PSS source info */
-> > >  +
-> > >  +       struct pps_kparams params;              /* PPS's current params */
-> > >  +
-> > >  +       __u32 assert_sequence;                  /* PPS' assert event seq # */
-> > >  +       __u32 clear_sequence;                   /* PPS' clear event seq # */
-> > >  +       struct pps_ktime assert_tu;
-> > >  +       struct pps_ktime clear_tu;
-> > >  +       int current_mode;                       /* PPS mode at event time */
-> > >  +
-> > >  +       int go;                                 /* PPS event is arrived? */
-> > >  +       wait_queue_head_t queue;                /* PPS event queue */
-> > >  +
-> > >  +       unsigned int id;                        /* PPS source unique ID */
-> > >  +       struct cdev cdev;
-> > >  +       struct device *dev;
-> > >  +       int devno;
-> > >  +       struct fasync_struct *async_queue;      /* fasync method */
-> > >  +       spinlock_t lock;
-> > >  +
-> > >  +       atomic_t usage;                         /* usage count */
-> > >  +       wait_queue_head_t usage_queue;
-> > >  +
-> > >  +       struct class class_dev;
-> > 
-> > Why is an entire class embedded into every device? :)
-> 
-> Uh! =:-o
-> 
-> Is that not right? What do you suggest to do?
+PS,
+I wrote:
+> Tetsuo Handa wrote:
+>> So, it is impossible to know whether I am inside a spinlock or not.
+>> OK. That's not what I want to do.
+>>
+>> I want to make sure that my code (not a device driver) is called only 
+>> from a context where use of down()/mutex_lock()/kmalloc(GFP_KERNEL)/
+>> get_user_pages()/kmap() etc. are permitted.
+>> Is "if (in_atomic()) return;" check a correct method for avoiding 
+>> deadlocks when my code was accidentally called from a context
+>> where use of down()/mutex_lock()/kmalloc(GFP_KERNEL)/get_user_pages()/
+>> kmap() etc. are not permitted?
 
-It looks wrong. Do you use it for anything? I guess, you can just remove
-it.
+No.  Quoting Andrew:  "in_atomic() returns false inside spinlock on 
+non-preemptible kernels."
 
-Kay
+> You shouldn't sleep while holding a spinlock.  As soon as another thread 
 
+or interrupt handler or tasklet
+
+> attempts to take the spinlock, it will be stuck in a busy-wait loop.
+-- 
+Stefan Richter
+-=====-==--- --== =-=-=
+http://arcgraph.de/sr/
