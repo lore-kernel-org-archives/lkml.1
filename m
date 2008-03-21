@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYCUMxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYCUMyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbYCUMxR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 08:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYCUMxD
+	id S1757298AbYCUMyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 08:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYCUMyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 08:53:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:23951 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752471AbYCUMxA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 08:53:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=l1DgfFdgQiB6QKZJp6L/fK7Q3VWarnfqtXt0r+nvuT7MulcYAeFqKpBWW5hxKy3bcVWbW/5ic6I++KDKgzwYfKV1Lx5EOTUwZPu5Vf3y875PiWeOI3vQpo5WnIBjpPK6ll22ypdd2KqjiEnn27G/Os6ZpIqv15lk1yCj0n6+VaM=
-Message-ID: <e2e108260803210552i4cdef6a5qf8f5076eaac2cf03@mail.gmail.com>
-Date: Fri, 21 Mar 2008 13:52:59 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: quicklists confuse meminfo
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <200803111507.20870.nickpiggin@yahoo.com.au>
+	Fri, 21 Mar 2008 08:54:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39587 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753098AbYCUMyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 08:54:04 -0400
+Date: Fri, 21 Mar 2008 13:53:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com, eranian@googlemail.com
+Subject: Re: [patch] x86, ptrace: support pebs in ds.c and disable ptrace
+	and ds support
+Message-ID: <20080321125338.GB27245@elte.hu>
+References: <20080312125318.A15510@sedona.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.1.00.0803090919481.3099@apollo.tec.linutronix.de>
-	 <20080309114640.85c9c3eb.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0803100851560.23575@schroedinger.engr.sgi.com>
-	 <200803111507.20870.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080312125318.A15510@sedona.ch.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 11, 2008 at 5:07 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->  [ ... ]
->
->  This is insane. We add more and more of this NUMA and cpuset and anti-frag
->  and page zeroing logic to the page allocator, and then decide that we
->  don't actually need to obey any of those rules when we're running lat_proc.
->
->  You will never be able to make the page allocator faster than a single list
->  of pages. The reason is because we actually *want* some of these checks and
->  heuristics in the page allocator.
->
->  And I doubt a list of zeroed pages is the right approach. That's just
->  adding more complexity for lat_proc AFAIKS.
 
-Is anyone currently working on this
-(http://bugzilla.kernel.org/show_bug.cgi?id=9991) ? I think this
-should either be fixed or documented as a known issue.
+* Markus Metzger <markus.t.metzger@intel.com> wrote:
 
-Bart.
+> Polish the ds.h interface and add support for PEBS.
+> 
+> Guard DS support and the ptrace interface to BTS by CONFIG macros;
+> disabled per default.
+> 
+> Ds.c is meant to be the resource allocator for per-thread and per-cpu
+> BTS and PEBS recording.
+> It is used by ptrace to provide execution tracing of debugged tasks.
+> It will be used by utrace for the same purpose.
+> It will be used by profilers (e.g. perfmon2).
+> It may be used by kernel debuggers to provide a kernel execution trace.
+
+we could apply this if Roland Acks it - but i guess a precondition for 
+that is to not include more ptrace extensions and to also start working 
+on utrace support for it. Ptrace is something we want to reduce usage 
+of, not extend.
+
+	Ingo
