@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbYCUKkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYCUKo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbYCUKkP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 06:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYCUKkE
+	id S1754907AbYCUKo1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 06:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbYCUKoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 06:40:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59495 "EHLO mx3.mail.elte.hu"
+	Fri, 21 Mar 2008 06:44:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57645 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753508AbYCUKkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 06:40:01 -0400
-Date: Fri, 21 Mar 2008 11:39:46 +0100
+	id S1752570AbYCUKoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 06:44:19 -0400
+Date: Fri, 21 Mar 2008 11:44:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 handle_vm86_trap cleanup
-Message-ID: <20080321103946.GO20420@elte.hu>
-References: <20080317092108.EC6C626F995@magilla.localdomain>
+To: yhlu.kernel@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, steve@lobefin.net,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: trim mtrr don't close gap for resource allocation.
+Message-ID: <20080321104402.GP20420@elte.hu>
+References: <200803181237.33861.yhlu.kernel@gmail.com> <200803181255.10402.yhlu.kernel@gmail.com> <200803181644.20356.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080317092108.EC6C626F995@magilla.localdomain>
+In-Reply-To: <200803181644.20356.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: -1.1
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0236]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Roland McGrath <roland@redhat.com> wrote:
+* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
 
-> Use force_sig in handle_vm86_trap like other machine traps do.
+> [PATCH] x86: trim mtrr don't close gap for resource allocation.
+> 
+> for
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=10232
+> 
+> use update_memory_range instead of add_memory_range directly to avoid 
+> closing that gap.
 
-thanks, applied.
-
-> -	if (current->ptrace & PT_PTRACED) {
-> -		unsigned long flags;
-> -		spin_lock_irqsave(&current->sighand->siglock, flags);
-> -		sigdelset(&current->blocked, SIGTRAP);
-> -		recalc_sigpending();
-> -		spin_unlock_irqrestore(&current->sighand->siglock, flags);
-> -	}
-> -	send_sig(SIGTRAP, current, 1);
->  	current->thread.trap_no = trapno;
->  	current->thread.error_code = error_code;
-> +	force_sig(SIGTRAP, current);
->  	return 0;
->  }
-
-for the record, this also changes semantics, because previously we'd 
-permanently unblock SIGTRAP (most certainly as a hack, to be able to do 
-the send_sig()), while now we use force_sig() which just ignores the 
-blocked mask. (and i agree with your fix of course)
+thanks Yinghai, applied, and queued up for 2.6.25.
 
 	Ingo
