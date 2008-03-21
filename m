@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbYCUWzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbYCUWz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762950AbYCUWzb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762559AbYCUWuG
+	id S1763416AbYCUWz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762881AbYCUWuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:50:06 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59116 "EHLO
+	Fri, 21 Mar 2008 18:50:09 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59115 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763659AbYCUWuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763661AbYCUWuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Mar 2008 18:50:01 -0400
-Message-Id: <20080321224411.944787944@sous-sol.org>
+Message-Id: <20080321224345.135865014@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:32 -0700
+Date: Fri, 21 Mar 2008 15:43:08 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 42/76] pata_hpt*, pata_serverworks: fix UDMA masking
-Content-Disposition: inline; filename=pata_hpt-pata_serverworks-fix-udma-masking.patch
+       Aurelien Jarno <aurelien@aurel32.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 18/76] x86: Clear DF before calling signal handler
+Content-Disposition: inline; filename=x86-clear-df-before-calling-signal-handler.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,86 +34,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Aurelien Jarno <aurelien@aurel32.net>
 
-[upstream commit: 6ddd6861]
+x86: Clear DF before calling signal handler
 
-When masking, mask out the modes that are unsupported not the ones
-that are supported.  This makes life happier.
+The Linux kernel currently does not clear the direction flag before
+calling a signal handler, whereas the x86/x86-64 ABI requires that.
+This become a real problem with gcc version 4.3, which assumes that
+the direction flag is correctly cleared at the entry of a function.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+This patches changes the setup_frame() functions to clear the
+direction before entering the signal handler.
+
+This is a backport of patch e40cd10ccff3d9fbffd57b93780bee4b7b9bff51
+("x86: clear DF before calling signal handler") that has been applied
+in 2.6.25-rc.
+
+Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/ata/pata_hpt366.c      |    6 +++---
- drivers/ata/pata_hpt37x.c      |    6 +++---
- drivers/ata/pata_serverworks.c |    2 +-
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ arch/x86/ia32/ia32_signal.c |    4 ++--
+ arch/x86/kernel/signal_32.c |    4 ++--
+ arch/x86/kernel/signal_64.c |    2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/ata/pata_hpt366.c
-+++ b/drivers/ata/pata_hpt366.c
-@@ -27,7 +27,7 @@
- #include <linux/libata.h>
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -494,7 +494,7 @@ int ia32_setup_frame(int sig, struct k_s
+ 	regs->ss = __USER32_DS; 
  
- #define DRV_NAME	"pata_hpt366"
--#define DRV_VERSION	"0.6.1"
-+#define DRV_VERSION	"0.6.2"
+ 	set_fs(USER_DS);
+-	regs->eflags &= ~TF_MASK;
++	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
+ 	if (test_thread_flag(TIF_SINGLESTEP))
+ 		ptrace_notify(SIGTRAP);
  
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -180,9 +180,9 @@ static unsigned long hpt366_filter(struc
- 		if (hpt_dma_blacklisted(adev, "UDMA",  bad_ata33))
- 			mask &= ~ATA_MASK_UDMA;
- 		if (hpt_dma_blacklisted(adev, "UDMA3", bad_ata66_3))
--			mask &= ~(0x07 << ATA_SHIFT_UDMA);
-+			mask &= ~(0xF8 << ATA_SHIFT_UDMA);
- 		if (hpt_dma_blacklisted(adev, "UDMA4", bad_ata66_4))
--			mask &= ~(0x0F << ATA_SHIFT_UDMA);
-+			mask &= ~(0xF0 << ATA_SHIFT_UDMA);
- 	}
- 	return ata_pci_default_filter(adev, mask);
- }
---- a/drivers/ata/pata_hpt37x.c
-+++ b/drivers/ata/pata_hpt37x.c
-@@ -24,7 +24,7 @@
- #include <linux/libata.h>
+@@ -600,7 +600,7 @@ int ia32_setup_rt_frame(int sig, struct 
+ 	regs->ss = __USER32_DS; 
  
- #define DRV_NAME	"pata_hpt37x"
--#define DRV_VERSION	"0.6.9"
-+#define DRV_VERSION	"0.6.11"
+ 	set_fs(USER_DS);
+-	regs->eflags &= ~TF_MASK;
++	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
+ 	if (test_thread_flag(TIF_SINGLESTEP))
+ 		ptrace_notify(SIGTRAP);
  
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -281,7 +281,7 @@ static unsigned long hpt370_filter(struc
- 		if (hpt_dma_blacklisted(adev, "UDMA", bad_ata33))
- 			mask &= ~ATA_MASK_UDMA;
- 		if (hpt_dma_blacklisted(adev, "UDMA100", bad_ata100_5))
--			mask &= ~(0x1F << ATA_SHIFT_UDMA);
-+			mask &= ~(0xE0 << ATA_SHIFT_UDMA);
- 	}
- 	return ata_pci_default_filter(adev, mask);
- }
-@@ -297,7 +297,7 @@ static unsigned long hpt370a_filter(stru
- {
- 	if (adev->class == ATA_DEV_ATA) {
- 		if (hpt_dma_blacklisted(adev, "UDMA100", bad_ata100_5))
--			mask &= ~ (0x1F << ATA_SHIFT_UDMA);
-+			mask &= ~(0xE0 << ATA_SHIFT_UDMA);
- 	}
- 	return ata_pci_default_filter(adev, mask);
- }
---- a/drivers/ata/pata_serverworks.c
-+++ b/drivers/ata/pata_serverworks.c
-@@ -226,7 +226,7 @@ static unsigned long serverworks_csb_fil
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -396,7 +396,7 @@ static int setup_frame(int sig, struct k
+ 	 * The tracer may want to single-step inside the
+ 	 * handler too.
+ 	 */
+-	regs->eflags &= ~TF_MASK;
++	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
+ 	if (test_thread_flag(TIF_SINGLESTEP))
+ 		ptrace_notify(SIGTRAP);
  
- 	for (i = 0; (p = csb_bad_ata100[i]) != NULL; i++) {
- 		if (!strcmp(p, model_num))
--			mask &= ~(0x1F << ATA_SHIFT_UDMA);
-+			mask &= ~(0xE0 << ATA_SHIFT_UDMA);
- 	}
- 	return ata_pci_default_filter(adev, mask);
- }
+@@ -489,7 +489,7 @@ static int setup_rt_frame(int sig, struc
+ 	 * The tracer may want to single-step inside the
+ 	 * handler too.
+ 	 */
+-	regs->eflags &= ~TF_MASK;
++	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
+ 	if (test_thread_flag(TIF_SINGLESTEP))
+ 		ptrace_notify(SIGTRAP);
+ 
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -295,7 +295,7 @@ static int setup_rt_frame(int sig, struc
+ 	   see include/asm-x86_64/uaccess.h for details. */
+ 	set_fs(USER_DS);
+ 
+-	regs->eflags &= ~TF_MASK;
++	regs->eflags &= ~(TF_MASK | X86_EFLAGS_DF);
+ 	if (test_thread_flag(TIF_SINGLESTEP))
+ 		ptrace_notify(SIGTRAP);
+ #ifdef DEBUG_SIG
 
 -- 
