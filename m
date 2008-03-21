@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbYCUNdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbYCUNef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbYCUNdj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 09:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYCUNdb
+	id S1758059AbYCUNef (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 09:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbYCUNe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 09:33:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:41044 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755138AbYCUNda (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 09:33:30 -0400
-Message-ID: <47E3B924.3000304@colorfullife.com>
-Date: Fri, 21 Mar 2008 14:33:24 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Scalability requirements for sysv ipc
-References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net>
-In-Reply-To: <47E3ADE3.4030304@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 09:34:27 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:36921 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755196AbYCUNe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 09:34:26 -0400
+Date: Fri, 21 Mar 2008 08:34:25 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, ak@suse.de, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] - Allow NODES_SHIFT to be a config option on x86_64
+Message-ID: <20080321133425.GA11095@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia Derbey wrote:
-> Manfred Spraul wrote:
->>
->> A microbenchmark on a single-cpu system doesn't help much (except 
->> that 2.6.25 is around factor 2 slower for sysv msg ping-pong between 
->> two tasks compared to the numbers I remember from older kernels....)
->>
->
-> If I remember well, at that time I had used ctxbench and I wrote some 
-> other small scripts.
-> And the results I had were around 2 or 3% slowdown, but I have to 
-> confirm that by checking in my archives.
->
-Do you have access to multi-core systems? The "best case" for the rcu 
-code would be
-- 8 or 16 cores
-- one instance of ctxbench running on each core, bound to that core.
+Allow the maximum number of nodes in an x86_64 system to
+be configurable. This patch does NOT change the default value
+but allows the value to be a config option.
 
-I'd expect a significant slowdown. The big question is if it matters.
 
---
-    Manfred
+	Signed-off-by: Jack Steiner <steiner@sgi.com>
+
+---
+ arch/x86/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/arch/x86/Kconfig
+===================================================================
+--- linux.orig/arch/x86/Kconfig	2008-03-18 08:11:19.000000000 -0500
++++ linux/arch/x86/Kconfig	2008-03-18 08:23:35.000000000 -0500
+@@ -905,7 +905,7 @@ config NUMA_EMU
+ 	  number of nodes. This is only useful for debugging.
+ 
+ config NODES_SHIFT
+-	int
++	int "Max num nodes shift(1-15)"
+ 	range 1 15  if X86_64
+ 	default "6" if X86_64
+ 	default "4" if X86_NUMAQ
