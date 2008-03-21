@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYCUC3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbYCUCfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbYCUC3o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 22:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYCUC3a
+	id S1756602AbYCUCfV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 22:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYCUCfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 22:29:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38575 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752879AbYCUC32 (ORCPT
+	Thu, 20 Mar 2008 22:35:08 -0400
+Received: from mga10.intel.com ([192.55.52.92]:43795 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752879AbYCUCfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 22:29:28 -0400
-Date: Thu, 20 Mar 2008 19:27:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       David Brownell <david-b@pacbell.net>,
-       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, lm-sensors@lm-sensors.org
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Message-Id: <20080320192719.6a32386e.akpm@linux-foundation.org>
-In-Reply-To: <200803210236.52063.mb@bu3sch.de>
-References: <Pine.LNX.4.44L0.0803202126240.11234-100000@netrider.rowland.org>
-	<200803210236.52063.mb@bu3sch.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 20 Mar 2008 22:35:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,534,1199692800"; 
+   d="scan'208";a="537421950"
+Subject: Re: 2.6.25-rc4-git3: Reported regressions from 2.6.24
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>
+In-Reply-To: <200803122339.32662.rjw@sisk.pl>
+References: <200803100132.57160.rjw@sisk.pl>
+	 <1205311874.3215.29.camel@ymzhang>  <200803122339.32662.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 21 Mar 2008 10:30:12 +0800
+Message-Id: <1206066612.14496.80.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008 02:36:51 +0100 Michael Buesch <mb@bu3sch.de> wrote:
-
-> On Friday 21 March 2008 02:31:44 Alan Stern wrote:
-> > On Thu, 20 Mar 2008, Andrew Morton wrote:
-> > 
-> > > On Thu, 20 Mar 2008 21:36:04 -0300 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+On Wed, 2008-03-12 at 23:39 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 12 of March 2008, Zhang, Yanmin wrote:
+> > On Mon, 2008-03-10 at 01:32 +0100, Rafael J. Wysocki wrote:
+> > > [Due to the lack of time for reviewing all of the email threads related to the
+> > > regressions marked as "unresolved" below, I might have missed some patches
+> > > fixing them.  If you are involved in debugging/fixing any of them, please let
+> > > me know if I should update the list.  Thanks!]
 > > > 
-> > > > Well, so far so good for LEDs, but what about the other users of in_atomic
-> > > > that apparently should not be doing it either?
+> > > This message contains a list of some regressions from 2.6.24 reported since
+> > > 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> > > of.  If any of them have been fixed already, please let me know.
 > > > 
-> > > Ho hum.  Lots of cc's added.
-> > 
-> > ...
-> > 
-> > > The usual pattern for most of the above is
+> > > If you know of any other unresolved regressions from 2.6.24, please let me know
+> > > either and I'll add them to the list.  Also, please let me know if any of the
+> > > entries below are invalid.
 > > > 
-> > > 	if (!in_atomic())
-> > > 		do_something_which_might_sleep();
 > > > 
-> > > problem is, in_atomic() returns false inside spinlock on non-preptible
-> > > kernels.  So if anyone calls those functions inside spinlock they will
-> > > incorrectly schedule and another task can then come in and try take the
-> > > already-held lock.
+> > > Listed regressions statistics:
 > > > 
-> > > Now, it happens that in_atomic() returns true on non-preemtible kernels
-> > > when running in interrupt or softirq context.  But if the above code really
-> > > is using in_atomic() to detect am-i-called-from-interrupt and NOT
-> > > am-i-called-from-inside-spinlock, they should be using in_irq(),
-> > > in_softirq() or in_interrupt().
-> > 
-> > Presumably most of these places are actually trying to detect 
-> > am-i-allowed-to-sleep.  Isn't that what in_atomic() is supposed to do?  
+> > >   Date          Total  Pending  Unresolved
+> > >   ----------------------------------------
+> > >   2008-03-10      138       66          47
+> > >   2008-03-03      115       65          49
+> > >   2008-02-25       90       51          39
+> > >   2008-02-17       61       45          37
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10013
+> > > Subject		: tbench regression in 2.6.25-rc1
+> > > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > > Date		: 2008-02-15 02:52
+> > > References	: http://lkml.org/lkml/2008/2/14/546
+> > > Handled-By	: Eric Dumazet <dada1@cosmosbay.com>
+> > > 		  David Miller <davem@davemloft.net>
+> > > Patch		: http://lkml.org/lkml/2008/2/18/66
+> > > 		  http://lkml.org/lkml/2008/2/18/117
+> > > 
+> > The latest patch is http://lkml.org/lkml/2008/2/20/83. 2.6.25-rc5 doesn't
+> > include it. tbench regression still exists on my tigerton machine.
 > 
-> No, I think there is no such check in the kernel. Most likely for performance
-> reasons, as it would require a global flag that is set on each spinlock.
+> I updated the entry with this information.
+2.6.25-rc6 includes the latest patch and I tested 2.6.25-rc6 on my 16-core tigerton. The
+issue is fixed. Pls. close the bug report.
 
-Yup.  non-preemptible kernels avoid the inc/dec of
-current_thread_info->preempt_count on spin_lock/spin_unlock
+-yanmin
 
-> You simply must always _know_, if you are allowed to sleep or not. This is
-> done by defining an API. The call-context is part of any kernel API.
 
-Yup.  99.99% of kernel code manages to do this...
