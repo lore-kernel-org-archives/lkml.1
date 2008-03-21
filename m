@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759731AbYCURM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbYCURN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759731AbYCURM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbYCURMQ
+	id S1760115AbYCURN7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757743AbYCURNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:12:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45678 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754699AbYCURMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:12:15 -0400
-Message-ID: <47E3EC67.4050404@garzik.org>
-Date: Fri, 21 Mar 2008 13:12:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
+	Fri, 21 Mar 2008 13:13:50 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:38033 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756195AbYCURNt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 13:13:49 -0400
+Date: Fri, 21 Mar 2008 13:13:45 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
-Subject: Re: [SCSI] fix media change events for polled devices
-References: <200803211559.m2LFxPi6017869@hera.kernel.org>
-In-Reply-To: <200803211559.m2LFxPi6017869@hera.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: what's with the "pre-releases" directory?
+Message-ID: <alpine.LFD.1.00.0803211312500.30701@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Mailing List wrote:
->     [SCSI] fix media change events for polled devices
->     
->     Commit:
->       a341cd0f (SCSI: add asynchronous event notification API)
->     breaks:
->       285e9670 (sr,sd: send media state change modification events)
->     by introducing an event filter, which is removed here, to make
->     events, we are depending on, happen again.
 
+  just curious about this:
 
-By simply reading the code history, it is trivial to verify that this 
-description is false:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/pre-releases
 
-Commit 285e9670 depends on a341cd0f, so by definition it is 285e9670 -- 
-or rather the incomplete update of your original patch that resulted in 
-285e9670 -- that is broken.
+given that it seems filled with really old 2.6.0 content, what's the
+value in it?  just curious.
 
-Since commit 285e9670 is broken, you fixed the wrong thing.
+rday
+--
 
-Furthermore, you broke a userspace interface that was introduced by 
-a341cd0f, by removing the event filter controlled by userspace.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-Did anyone bother to read any code at all?
-
-When 285e9670 was updated for the scsi_evt_* interface, it should have 
-initialized the supported_events mask.
-
-And that is the fix -- initialize supported_events according to sr/sd's 
-needs, and revert this change (4d1566ed2100d074ccc654e5cf2e44cdea3a01d0) 
-as obviously broken.
-
-	Jeff
-
-
-
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
