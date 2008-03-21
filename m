@@ -1,150 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYCUBKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYCUBRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYCUBKX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Mar 2008 21:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYCUBKJ
+	id S1757601AbYCUBRB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Mar 2008 21:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYCUBQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Mar 2008 21:10:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50234 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752458AbYCUBKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Mar 2008 21:10:06 -0400
-Date: Thu, 20 Mar 2008 18:08:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: David Brownell <david-b@pacbell.net>, Richard Purdie <rpurdie@rpsys.net>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, netdev@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, video4linux-list@redhat.com,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, lm-sensors@lm-sensors.org
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Message-Id: <20080320180802.426ad2d1.akpm@linux-foundation.org>
-In-Reply-To: <20080321003604.GC20788@khazad-dum.debian.net>
-References: <20080316184349.GA28543@khazad-dum.debian.net>
-	<200803161246.23909.david-b@pacbell.net>
-	<20080318001429.896acf51.akpm@linux-foundation.org>
-	<20080320225612.GB20788@khazad-dum.debian.net>
-	<20080320164741.734e838c.akpm@linux-foundation.org>
-	<20080321003604.GC20788@khazad-dum.debian.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 20 Mar 2008 21:16:51 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46349 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752267AbYCUBQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Mar 2008 21:16:50 -0400
+Date: Fri, 21 Mar 2008 04:15:54 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Laurent Riffard <laurent.riffard@free.fr>,
+       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] ptrace: it is fun to strace /sbin/init
+Message-ID: <20080321011554.GA121@tv-sign.ru>
+References: <20080316155455.GA20848@tv-sign.ru> <20080320162718.GA4397@ucw.cz> <20080320165756.GA11197@tv-sign.ru> <20080320232503.GG17431@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080320232503.GG17431@elf.ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Mar 2008 21:36:04 -0300 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+On 03/21, Pavel Machek wrote:
+>
+> On Thu 2008-03-20 19:57:56, Oleg Nesterov wrote:
+> > On 03/20, Pavel Machek wrote:
+> > > 
+> > > > Ptracing of /sbin/init is not allowed. Of course, this is very dangerous, but
+> > > > may be useful. Introduce the kernel boot parameter to allow this.
+> > > ...
+> > > > @@ -803,6 +803,8 @@ and is between 256 and 4096 characters. 
+> > > >  			Run specified binary instead of /sbin/init as init
+> > > >  			process.
+> > > >  
+> > > > +	init_ptrace	[KNL] Allows to ptrace init. Very dangerous. Don't use.
+> > > > +
+> > > 
+> > > I don't know what ptracing init is good for, and I believe people
+> > > wanting to do this kind of special stuff can patch their own kernel...
+> > 
+> > Yes sure. But could you explain why this can be bad given that ptracing
+> > init needs the explicit boot parameter? IOW, could you explain why you
+> > don't like this small and trivial change which adds a minimal impact?
+> 
+> "It can't be bad, its optional".
+> 
+> It is bad exactly _because_ it is optional. Anything that adds boot
+> parameter is *not* trivial... 
 
-> Well, so far so good for LEDs, but what about the other users of in_atomic
-> that apparently should not be doing it either?
+You are right. I'd prefer to make /sbin/init ptraceable unconditionally,
+the root should know what it does. But this will change the historical
+behaviour.
 
-Ho hum.  Lots of cc's added.
+> Why not add
+> 
+> please_randomly_corrupt_memory boot parameter? It may be useful for
+> something...
+> 								Pavel
 
+Nice argument.
 
-
-./arch/x86/mm/pageattr.c
-
-  Looks wrong.
-
-./arch/m68k/atari/time.c
-
-  Possibly buggy: deadlockable
-
-./sound/core/seq/seq_virmidi.c
-
-  Possibly buggy
-
-./net/iucv/iucv.c
-./kernel/power/process.c
-
-  Just a debug check.
-
-./drivers/s390/char/sclp_tty.c
-
-  Possibly buggy: deadlockable
-  
-./drivers/s390/char/sclp_vt220.c
-
-  Possibly buggy: deadlockable
-
-./drivers/s390/net/netiucv.c
-
-  Possibly buggy: deadlockable
-
-./drivers/char/isicom.c
-
-  Possibly buggy: deadlockable
-
-./drivers/usb/misc/sisusbvga/sisusb_con.c
-
-  Possibly buggy: deadlockable
-
-./drivers/net/usb/pegasus.c
-
-  Possibly buggy: deadlockable (I assume)
-
-./drivers/net/wireless/airo.c
-
-  Possibly buggy: deadlockable
-
-./drivers/net/wireless/rt2x00/rt73usb.c
-
-  Possibly buggy: deadlockable (I assume)
-
-./drivers/net/wireless/rt2x00/rt2500usb.c
-
-  Possibly buggy: deadlockable (I assume)
-
-./drivers/net/wireless/hostap/hostap_ioctl.c
-
-  Possibly buggy: deadlockable (I assume)
-
-./drivers/net/wireless/zd1211rw/zd_usb.c
-
-  Possibly buggy: deadlockable (I assume)
-
-./drivers/net/irda/sir_dev.c
-
-  Possibly buggy: deadlockable
-
-./drivers/net/netxen/netxen_nic_niu.c
-
-  Possibly buggy: deadlockable
-
-./drivers/net/netxen/netxen_nic_init.c
-
-  Possibly buggy: deadlockable
-
-./drivers/ieee1394/ieee1394_transactions.c
-
-  Possibly buggy: deadlockable
-
-./drivers/video/amba-clcd.c
-
-  Possibly buggy: deadlockable
-
-./drivers/i2c/i2c-core.c
-
-  Possibly buggy: deadlockable
-
-
-The usual pattern for most of the above is
-
-	if (!in_atomic())
-		do_something_which_might_sleep();
-
-problem is, in_atomic() returns false inside spinlock on non-preptible
-kernels.  So if anyone calls those functions inside spinlock they will
-incorrectly schedule and another task can then come in and try take the
-already-held lock.
-
-Now, it happens that in_atomic() returns true on non-preemtible kernels
-when running in interrupt or softirq context.  But if the above code really
-is using in_atomic() to detect am-i-called-from-interrupt and NOT
-am-i-called-from-inside-spinlock, they should be using in_irq(),
-in_softirq() or in_interrupt().
+Oleg.
 
