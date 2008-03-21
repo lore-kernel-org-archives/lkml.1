@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbYCUViQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbYCUVnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757776AbYCUViQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 17:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbYCUViA
+	id S1759280AbYCUVnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 17:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbYCUVnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:38:00 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46679 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757681AbYCUViA (ORCPT
+	Fri, 21 Mar 2008 17:43:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:15370 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbYCUVnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:38:00 -0400
-Date: Fri, 21 Mar 2008 22:37:59 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Madhou <madh2001@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: shell outputs anything typed when the kernel thinks@100%
-In-Reply-To: <200803212211.43833.madh2001@gmail.com>
-Message-ID: <alpine.LNX.1.00.0803212235130.10642@fbirervta.pbzchgretzou.qr>
-References: <200803212211.43833.madh2001@gmail.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Fri, 21 Mar 2008 17:43:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RPSDqpbK521IxaiQMvdFucrJwCLVtehikUSRNcc4cJKEuUcA2ttdpiwq9toot6wM4u8z2NwVFT75zMb6mwVMyaoUKmNZHmgpwg7WI6ujPy3r09TtftLzB0oHpuIsTknmuqlWKLwBkn2TU0pVO5IY3zBZXL5xHh/+F8iz6lLS7bg=
+Message-ID: <86802c440803211443o7bbc539fx762e06f51c6f0fdb@mail.gmail.com>
+Date: Fri, 21 Mar 2008 14:43:08 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] x86_64: early memtest to find bad ram
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LNX.1.00.0803212221390.10642@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803202358.33722.yhlu.kernel@gmail.com>
+	 <20080321120313.GD25225@elte.hu>
+	 <alpine.LNX.1.00.0803212221390.10642@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mar 21 2008 22:11, Madhou wrote:
+On Fri, Mar 21, 2008 at 2:22 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
 >
-> This is a long time annoying misconception i'm reporting here:
+>  On Mar 21 2008 13:03, Ingo Molnar wrote:
+>  > * Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+>  >
+>  >> do simple memtest after init_memory_mapping
+>  >> use find_e820_area_size to find all ram range that is not reserved.
+>  >> and do some simple bits test to find some bad ram.
+>  >> if find some bad ram, use reserve_early to exclude that range.
+>  >
+>  > very nice patch! I always thought that this was the proper way to do
+>  > memtest - and we could in fact also do something like this after SMP
+>  > bringup, and hit the memory bus via multiple CPUs. [that will need a
+>  > different enumeration though than e820 maps]
 >
-> When a command is run from a shell and drives the kernel to use 100% of cpu
-> for a while, linux lets printing on screen anything that is typed.
+>  Perhaps this can even be used to provide on-the-fly badram
+>  patch semantics?
 
-[For techies: "But I can type text on the tty even if I run sleep 
-1000!"]
+yes. but bad ranges can not be too many. otherwise early_res array
+will overflow. then need to use memmap=nn$ss to exclude range already
+found.
 
-Oh yeah wow. It's been like that for what, 15+ years?
-This is a shell feature - or bug, depending on how you look at it,
-the kernel merely does what the shell did to the tty.
+YH
