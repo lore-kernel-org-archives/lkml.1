@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbYCUV4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762442AbYCUV5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762059AbYCUV4k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 17:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbYCUV43
+	id S1762442AbYCUV5N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 17:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYCUV44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:56:29 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58658 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757446AbYCUV41 (ORCPT
+	Fri, 21 Mar 2008 17:56:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51835
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758438AbYCUV44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:56:27 -0400
-Message-Id: <1206136586.14058.1243686863@webmail.messagingengine.com>
-X-Sasl-Enc: JUFh180J5Q5aJUjGxX2E2O2yA4mT7hAUuabI2a4+G0NL 1206136586
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <rpurdie@rpsys.net>
-Content-Disposition: inline
+	Fri, 21 Mar 2008 17:56:56 -0400
+Date: Fri, 21 Mar 2008 14:57:12 -0700 (PDT)
+Message-Id: <20080321.145712.198736315.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on
+ IA64 and x86
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
+References: <20080321061726.782068299@sgi.com>
+	<20080321.002502.223136918.davem@davemloft.net>
+	<Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1205698451-1640-1-git-send-email-hmh@hmh.eng.br>
-   <20080321160048.ZZRA012@mailhub.coreip.homeip.net>
-Subject: Re: [PATCH] Input: add flags bitfield
-In-Reply-To: <20080321160048.ZZRA012@mailhub.coreip.homeip.net>
-Date: Fri, 21 Mar 2008 18:56:26 -0300
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008 16:07:01 -0400, "Dmitry Torokhov"
-<dmitry.torokhov@gmail.com> said:
-> On Sun, Mar 16, 2008 at 05:14:11PM -0300, Henrique de Moraes Holschuh wrote:
-> > Add a flags bitfield to the input_dev structure, which can be used for
-> > internal coordination among kernel input devices and input handlers without
-> > the need to use ever-expanding blacklists on the input handlers.
-> > 
-> > Add initial flag bits which allows an input driver to request that joystick
-> > emulation (joydev) or mouse emulation (mousedev) not be attached to an
-> > input device.
-> > 
-> > This will be used by accelerometer drivers exporting a raw interface which
-> > is not to be used as a joystick device (not to confuse this with the usual
-> > fuzzed joystick interface these drivers export for enhanced Neverball
-> > productivity), for example.
+From: Christoph Lameter <clameter@sgi.com>
+Date: Fri, 21 Mar 2008 10:40:18 -0700 (PDT)
+
+> On Fri, 21 Mar 2008, David Miller wrote:
 > 
-> I'd rather not apply this patch because it pushes kowledge of existing
-> input interfaces into device drivers. What we could do instead is add
-> a 'type' field to the input device structure and then input interfaces
-> (evdev/mousedev, etc) could have an option of matching either by device
-> type or by device capabilities or both. Your raw devices could have type
-> of accelerometer and joydev would bind to devices with type "joystick"
-> or "unknown" + certain capabilities. Will this work?
+> > I would be very careful with this especially on IA64.
+> > 
+> > If the TLB miss or other low-level trap handler depends upon being
+> > able to dereference thread info, task struct, or kernel stack stuff
+> > without causing a fault outside of the linear PAGE_OFFSET area, this
+> > patch will cause problems.
+> 
+> Hmmm. Does not sound good for arches that cannot handle TLB misses in 
+> hardware. I wonder how arch specific this is? Last time around I was told 
+> that some arches already virtually map their stacks.
 
-It would solve my problem, yes.
+I'm not saying there is a problem, I'm saying "tread lightly"
+because there might be one.
 
-But I'd prefer if joydev and mousedev did not bind to
-unknown+capabilities,
-just in case.  Looks like bad form to me, and might bite us back later
-on.
-We can properly fix all drivers in-tree to have suitable types for
-joydev
-and/or mousedev binds, rfkill binds, and so on after all.
+The thing to do is to first validate the way that IA64
+handles recursive TLB misses occuring during an initial
+TLB miss, and if there are any limitations therein.
 
-What did I miss?  Are there drivers for some sort of generic device that
-would be unable to set their type bitfields at runtime?
-
-BTW: as far as I can see, type should be a bitfield or a list, to allow
-a
-device to have more than one type.  Is that fine with you?
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
-
+That's the kind of thing I'm talking about.
