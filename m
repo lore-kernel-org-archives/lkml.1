@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbYCUUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbYCUU5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761894AbYCUUjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759709AbYCUUjb
+	id S1762302AbYCUU5q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 16:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759103AbYCUU5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 16:39:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45083 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756832AbYCUUj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 16:39:29 -0400
-Message-ID: <47E41CFF.9000303@garzik.org>
-Date: Fri, 21 Mar 2008 16:39:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
+	Fri, 21 Mar 2008 16:57:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:50627 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757702AbYCUU5f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 16:57:35 -0400
+Subject: Re: [SCSI] fix media change events for polled devices
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org
-Subject: Re: [SCSI] fix media change events for polled devices
-References: <200803211559.m2LFxPi6017869@hera.kernel.org> <47E3EC67.4050404@garzik.org> <alpine.LFD.1.00.0803211031010.3020@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803211031010.3020@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <47E41DD3.2040602@garzik.org>
+References: <200803211559.m2LFxPi6017869@hera.kernel.org>
+	 <47E3EC67.4050404@garzik.org> <1206124426.24338.20.camel@lov.site>
+	 <47E41DD3.2040602@garzik.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 21 Mar 2008 21:57:20 +0100
+Message-Id: <1206133040.24338.30.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX1/TgaJtTRSt+p+n+vuhqUgoepnDWu1uDdxPDjn
+ TlZ/0xljH19ttoof/omn0ZORJ1V24pC8dVtWEk4qR/lG0VMoUZ
+ XhNzqhyXEY5KDcBRSxomQgttw+sLtxI
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Fri, 2008-03-21 at 16:42 -0400, Jeff Garzik wrote:
+> Kay Sievers wrote:
+> > On Fri, 2008-03-21 at 13:12 -0400, Jeff Garzik wrote:
+> >> Linux Kernel Mailing List wrote:
+
+
+> >> When 285e9670 was updated for the scsi_evt_* interface, it should have 
+> >> initialized the supported_events mask.
+> >>
+> >> And that is the fix -- initialize supported_events according to sr/sd's 
+> >> needs, and revert this change (4d1566ed2100d074ccc654e5cf2e44cdea3a01d0) 
+> >> as obviously broken.
+> > 
+> > You mean adding a new flag? As every device will "support" these events.
 > 
-> On Fri, 21 Mar 2008, Jeff Garzik wrote:
->> And that is the fix -- initialize supported_events according to sr/sd's needs,
->> and revert this change (4d1566ed2100d074ccc654e5cf2e44cdea3a01d0) as obviously
->> broken.
+> Does every device attached to every controller wish to fire these events?
 > 
-> Patches, please? I can do the revert, but the patch to supported_events 
-> and the testing, please?
+> If so, then that wants new flag, yes.
 
-James was the one who wrote the incomplete/broken changes,
+Yes, ﻿a new flag sounds good. Every device that detects a media change
+should send such event, so userspace can possibly update it's
+representation of the volume.
+That way, userspace can switch to a single generic event, regardless if
+the device is periodically polled, or supports AN.
 
-	commit 285e9670d91cdeb6b6693729950339cb45410fdc
-	Author: Kay Sievers <kay.sievers@vrfy.org>
-	Date:   Tue Aug 14 14:10:39 2007 +0200
-
-	    [SCSI] sr,sd: send media state change modification events
-[...]
-	[jejb: modified for new event API]
-
-so I'm hoping he will fix it up.
-
-I'll send a patch if he doesn't, though.
-
-	Jeff
-
+Thanks,
+Kay
 
