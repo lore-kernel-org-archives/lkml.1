@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759800AbYCURif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbYCURls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759800AbYCURif (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 13:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYCURi1
+	id S1759951AbYCURls (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 13:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYCURlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 13:38:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56898 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752727AbYCURi0 (ORCPT
+	Fri, 21 Mar 2008 13:41:40 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39118 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbYCURlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 13:38:26 -0400
-Date: Fri, 21 Mar 2008 10:37:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Michael Buesch <mb@bu3sch.de>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       David Brownell <david-b@pacbell.net>,
-       Richard Purdie <rpurdie@rpsys.net>, <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Message-Id: <20080321103732.ea08e189.akpm@linux-foundation.org>
-In-Reply-To: <20080321105311.1a55cc0f@hyperion.delvare>
-References: <20080320192719.6a32386e.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0803202301140.16520-100000@netrider.rowland.org>
-	<20080320201723.b87b3732.akpm@linux-foundation.org>
-	<20080321105311.1a55cc0f@hyperion.delvare>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 13:41:39 -0400
+Date: Fri, 21 Mar 2008 13:41:36 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Adrian Bunk <bunk@kernel.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what's with the "pre-releases" directory?
+In-Reply-To: <20080321173415.GB1434@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.00.0803211336350.7227@localhost.localdomain>
+References: <alpine.LFD.1.00.0803211312500.30701@localhost.localdomain> <20080321173415.GB1434@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008 10:53:11 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+On Fri, 21 Mar 2008, Adrian Bunk wrote:
 
-> On Thu, 20 Mar 2008 20:17:23 -0700, Andrew Morton wrote:
-> > in_atomic() is for core kernel use only.  (...)
-> 
-> Then why is it made available to drivers through <linux/hardirq.h>?
+> On Fri, Mar 21, 2008 at 01:13:45PM -0400, Robert P. J. Day wrote:
+> >
+> >   just curious about this:
+> >
+> > ftp://ftp.kernel.org/pub/linux/kernel/v2.6/pre-releases
+>
+> These were the -test kernels that preceeded 2.6.0.
+>
+> > given that it seems filled with really old 2.6.0 content, what's the
+> > value in it?  just curious.
+>
+> just curious about this:
+>
+> ftp://ftp.kernel.org/pub/linux/kernel/Historic
+>
+> given that it seems filled with really old content, what's the
+> value in it?  just curious.
+>
+> ;-)
 
-Because we suck.
+um ... i'm going to assume you were being facetious since i can
+certainly see the value in the very, very first "official" release of
+linux, while still not seeing the point in a directory labelled
+"pre-releases" which contains nothing but pre-2.6.0 patches that go
+back to 2003.  on the other hand, that *would* make sense under the
+Historic directory.
 
-> If
-> it's such a dangerous macro to call from drivers, it shouldn't be made
-> available, or at the very least there should be a big fat warning in
-> <linux/hardirq.h> that drivers aren't supposed to use it. This would
-> have avoided the 23 uses cases in drivers we have right now.
+rday
 
-True.
+p.s.  and while i'm whining, would it be possible to clear the
+obsolete "LATEST-IS" files out of:
+
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.6/testing
+
+i have a script that grabs the latest rc tarball out of that
+directory, and it got confused by seeing more than one LATEST-IS file.
+not hard to work around but, still ...
+
+ --
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
