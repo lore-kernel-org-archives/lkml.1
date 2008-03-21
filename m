@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbYCUJMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYCUJQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbYCUJMT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 05:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYCUJML
+	id S1754566AbYCUJQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 05:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYCUJQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 05:12:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38164 "EHLO mx2.mail.elte.hu"
+	Fri, 21 Mar 2008 05:16:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56974 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752606AbYCUJMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 05:12:10 -0400
-Date: Fri, 21 Mar 2008 10:11:39 +0100
+	id S1752866AbYCUJQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 05:16:05 -0400
+Date: Fri, 21 Mar 2008 10:15:42 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Ravikiran G Thirumalai <kiran@scalex86.org>
 Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Glauber de Oliveira Costa <gcosta@redhat.com>, Andi Kleen <ak@suse.de>,
        shai@scalex86.org
-Subject: Re: [patch 1/4] x86: vSMP: Fix is_vsmp_box()
-Message-ID: <20080321091139.GD20420@elte.hu>
-References: <20080320073740.GA9414@localdomain> <20080320073902.GB9414@localdomain> <86802c440803200044g54617517k4530db76ebe2cabb@mail.gmail.com> <20080320184045.GA6085@localdomain>
+Subject: Re: [patch 4/4] x86: apic_is_clustered_box to indicate unsynched
+	TSC's on multiboard vSMP systems
+Message-ID: <20080321091542.GE20420@elte.hu>
+References: <20080320073740.GA9414@localdomain> <20080320074508.GE9414@localdomain> <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com> <20080320190240.GB6085@localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080320184045.GA6085@localdomain>
+In-Reply-To: <20080320190240.GB6085@localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,78 +40,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 
-> >>         /* Check if we are running on a ScaleMP vSMP box */
-> >>  -       if (read_pci_config(0, 0x1f, 0, PCI_VENDOR_ID) ==
-> >>  -            (PCI_VENDOR_ID_SCALEMP || (PCI_DEVICE_ID_SCALEMP_VSMP_CTL << 16)))
-> >>  +       if ((read_pci_config_16(0, 0x1f, 0, PCI_VENDOR_ID) ==
-> >>  +            PCI_VENDOR_ID_SCALEMP) &&
-> >>  +           (read_pci_config_16(0, 0x1f, 0, PCI_DEVICE_ID) ==
-> >>  +           PCI_DEVICE_ID_SCALEMP_VSMP_CTL))
-> >>                 vsmp = 1;
-> >>
-> >>         return vsmp;
-> >
-> >why read two times
-> >
-> 
-> Well, the pci cfg space read happens just _once_ during the boot, as 
-> the result is cached in a static flag. The above code is better 
-> readable. So readability is better than micro-optimization here.
+> >>  -       if (!is_vsmp_box() && (boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
+> >>  +       if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && !is_vsmp_box())
+> >>                 return 0;
 
-i think the patch below results in even more readable and a bit smaller 
-code - because it's such a simple check?
+> Yes.  The first call is to state that TSC's are synced if it is an AMD 
+> box and if it is _not_ a vSMPowered box (for the apic id lifting case 
+> on Sun boxes), the second call is for _any_ vSMPowered system with 
+> more than one board -- TSC's are not guaranteed to be synched in that 
+> case.  Both these calls are needed.
 
-OTOH, you are right in general, for example in mmconf-fam10h_64.c's 
-get_fam10h_pci_mmconf_base() function, we do this:
-
-                id = read_pci_config(bus, slot, 0, PCI_VENDOR_ID);
-
-                vendor = id & 0xffff;
-                device = (id>>16) & 0xffff;
-                if (pci_probes[i].vendor == vendor &&
-                    pci_probes[i].device == device) {
-
-here it would indeed be cleaner to simply do:
-
-                vendor = read_pci_config_16(bus, slot, 0, PCI_VENDOR_ID);
-                device = read_pci_config_16(bus, slot, 0, PCI_DEVICE_ID);
-
-instead of open-coding the 16-bit splitting.
+i suspect there are two questions here: firstly, your change only flips 
+the condition around which should not have any effect _normally_. But 
+the thing is that is_vsmp_box() has side-effects: it reads the PCI 
+config space and sets a flag. It would be cleaner if there was a 
+separate, explicit detect_vsmp_box() call early during bootup which did 
+the PCI config space access, and is_vsmp_box() would only return the 
+current state of the vsmp flag. Then your above change would be 
+unnecessary.
 
 	Ingo
-
------------->
-Subject: x86: vsmp fix x86 vsmp fix is vsmp box cleanup
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Mar 21 09:55:06 CET 2008
-
-code got a bit smaller:
-
-arch/x86/kernel/vsmp_64.o:
-
-   text	   data	    bss	    dec	    hex	filename
-    205	      4	      0	    209	     d1	vsmp_64.o.before
-    181	      4	      0	    185	     b9	vsmp_64.o.after
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/vsmp_64.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-Index: linux-x86.q/arch/x86/kernel/vsmp_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/vsmp_64.c
-+++ linux-x86.q/arch/x86/kernel/vsmp_64.c
-@@ -120,10 +120,8 @@ int is_vsmp_box(void)
- 		return vsmp;
- 
- 	/* Check if we are running on a ScaleMP vSMP box */
--	if ((read_pci_config_16(0, 0x1f, 0, PCI_VENDOR_ID) ==
--	     PCI_VENDOR_ID_SCALEMP) &&
--	    (read_pci_config_16(0, 0x1f, 0, PCI_DEVICE_ID) ==
--	    PCI_DEVICE_ID_SCALEMP_VSMP_CTL))
-+	if (read_pci_config(0, 0x1f, 0, PCI_VENDOR_ID) ==
-+	     (PCI_VENDOR_ID_SCALEMP | (PCI_DEVICE_ID_SCALEMP_VSMP_CTL << 16)))
- 		vsmp = 1;
- 
- 	return vsmp;
