@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbYCUWwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbYCUWws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932192AbYCUWwX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762876AbYCUWqv
+	id S932277AbYCUWws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762773AbYCUWrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:46:51 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58935 "EHLO
+	Fri, 21 Mar 2008 18:47:13 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58950 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762865AbYCUWqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:46:49 -0400
-Message-Id: <20080321224448.555683304@sous-sol.org>
+	id S1762606AbYCUWrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:47:10 -0400
+Message-Id: <20080321224350.867706168@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:57 -0700
+Date: Fri, 21 Mar 2008 15:43:13 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
-       davem@davemloft.net, Eric Leblond <eric@inl.fr>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 67/76] NETFILTER: nfnetlink_queue: fix computation of allocated size for netlink skb
-Content-Disposition: inline; filename=netfilter-nfnetlink_queue-fix-computation-of-allocated-size-for-netlink-skb.patch
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Joy Latten <latten@austin.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 23/76] CRYPTO xcbc: Fix crash with IPsec
+Content-Disposition: inline; filename=crypto-xcbc-fix-crash-with-ipsec.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,37 +34,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Eric Leblond <eric@inl.fr>
+From: Joy Latten <latten@austin.ibm.com>
 
-Upstream commit cabaa9bf:
+[ Upstream commit: 2f40a178e70030c4712fe63807c883f34c3645eb ]
 
-Size of the netlink skb was wrongly computed because the formula was using
-NLMSG_ALIGN instead of NLMSG_SPACE. NLMSG_ALIGN does not add the room for
-netlink header as NLMSG_SPACE does. This was causing a failure of message
-building in some cases.
+When using aes-xcbc-mac for authentication in IPsec,
+the kernel crashes. It seems this algorithm doesn't
+account for the space IPsec may make in scatterlist for authtag.
+Thus when crypto_xcbc_digest_update2() gets called,
+nbytes may be less than sg[i].length.
+Since nbytes is an unsigned number, it wraps
+at the end of the loop allowing us to go back
+into loop and causing crash in memcpy.
 
-On my test system, all messages for packets in range [8*k+41, 8*k+48] where k
-is an integer were invalid and the corresponding packets were dropped.
+I used update function in digest.c to model this fix.
+Please let me know if it looks ok.
 
-Signed-off-by: Eric Leblond <eric@inl.fr>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Joy Latten <latten@austin.ibm.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ crypto/xcbc.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
- net/netfilter/nfnetlink_queue.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/net/netfilter/nfnetlink_queue.c
-+++ b/net/netfilter/nfnetlink_queue.c
-@@ -353,7 +353,7 @@ nfqnl_build_packet_message(struct nfqnl_
+--- a/crypto/xcbc.c
++++ b/crypto/xcbc.c
+@@ -124,6 +124,11 @@ static int crypto_xcbc_digest_update2(st
+ 		unsigned int offset = sg[i].offset;
+ 		unsigned int slen = sg[i].length;
  
- 	QDEBUG("entered\n");
++		if (unlikely(slen > nbytes))
++			slen = nbytes;
++
++		nbytes -= slen;
++
+ 		while (slen > 0) {
+ 			unsigned int len = min(slen, ((unsigned int)(PAGE_SIZE)) - offset);
+ 			char *p = crypto_kmap(pg, 0) + offset;
+@@ -177,7 +182,6 @@ static int crypto_xcbc_digest_update2(st
+ 			offset = 0;
+ 			pg++;
+ 		}
+-		nbytes-=sg[i].length;
+ 		i++;
+ 	} while (nbytes>0);
  
--	size =    NLMSG_ALIGN(sizeof(struct nfgenmsg))
-+	size =    NLMSG_SPACE(sizeof(struct nfgenmsg))
- 		+ nla_total_size(sizeof(struct nfqnl_msg_packet_hdr))
- 		+ nla_total_size(sizeof(u_int32_t))	/* ifindex */
- 		+ nla_total_size(sizeof(u_int32_t))	/* ifindex */
 
 -- 
