@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbYCUWZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbYCUW05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760858AbYCUWZm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYCUWZe
+	id S1761581AbYCUW05 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYCUW0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:25:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60256 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754192AbYCUWZd (ORCPT
+	Fri, 21 Mar 2008 18:26:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38255 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbYCUW0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:25:33 -0400
-Date: Fri, 21 Mar 2008 22:09:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, arjan@infradead.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [1/2] vmalloc: Show vmalloced areas via /proc/vmallocinfo
-Message-ID: <20080321220941.6b441801@core>
-In-Reply-To: <20080321151935.6a330536.akpm@linux-foundation.org>
-References: <20080318222701.788442216@sgi.com>
-	<20080318222827.291587297@sgi.com>
-	<20080319210436.191bb8fe@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0803201141250.10592@schroedinger.engr.sgi.com>
-	<20080321151935.6a330536.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Mar 2008 18:26:47 -0400
+Date: Fri, 21 Mar 2008 15:26:35 -0700
+From: Greg KH <greg@kroah.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Hannes Reinecke <hare@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] sysfs: allow the group is_visible() method to
+	return a mode and add an update API
+Message-ID: <20080321222635.GA2674@kroah.com>
+References: <1206134832.2961.64.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206134832.2961.64.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That makes the feature somewhat less useful.  Let's think this through more
-> carefully - it is, after all, an unrevokable, unalterable addition to the
-> kernel ABI.
+On Fri, Mar 21, 2008 at 04:27:12PM -0500, James Bottomley wrote:
+> We have a problem in scsi_transport_spi in that we need to customise
+> not only the visibility of the attributes, but also their mode.  Fix
+> this by making the is_visible() callback return a mode, with 0
+> indicating is not visible.
+> 
+> Also add a sysfs_update_group() API to allow us to change either the
+> visibility or mode of the files at any time on the fly.
+> 
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+> 
+> Greg, can I take this through SCSI, please ... assuming it's OK?  We
+> need this to fix up the SPI transport class.
 
-Which means it does not belong in /proc.
+Sure.  But can you document that "update" field a bit more so we can
+remember what it means in the future?
 
-Alan
+thanks,
+
+greg k-h
