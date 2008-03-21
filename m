@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYCUOvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYCUOyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbYCUOvV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 10:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYCUOvN
+	id S1757831AbYCUOyT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 10:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYCUOyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 10:51:13 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:48863 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754359AbYCUOvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 10:51:12 -0400
-Date: Fri, 21 Mar 2008 20:21:47 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+	Fri, 21 Mar 2008 10:54:08 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:57444 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753805AbYCUOyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 10:54:07 -0400
+Date: Fri, 21 Mar 2008 09:54:03 -0500
+From: Jack Steiner <steiner@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Yakov Lerner <iler.ml@gmail.com>, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] Subject: kprobes-x86: correct post-eip value in
-	post_hander()
-Message-ID: <20080321145147.GC7394@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <E1Jao7N-0005OC-Fe@io.site5.com> <20080321110804.GY20420@elte.hu> <20080321113134.GA7620@in.ibm.com> <20080321143229.GE31719@elte.hu>
-MIME-Version: 1.0
+Cc: ak@suse.de, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Allow NODES_SHIFT to be a config option on x86_64
+Message-ID: <20080321145401.GA10303@sgi.com>
+References: <20080321133425.GA11095@sgi.com> <20080321142648.GB31719@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080321143229.GE31719@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080321142648.GB31719@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 03:32:29PM +0100, Ingo Molnar wrote:
+On Fri, Mar 21, 2008 at 03:26:49PM +0100, Ingo Molnar wrote:
 > 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> * Jack Steiner <steiner@sgi.com> wrote:
 > 
-> > > thanks, i've added your patch to the .26 bucket of x86.git, but it 
-> > > would be nice to get an Ack/Nack from a kprobes person as well.
-> >  
-> > Ingo,
-> > 
-> > I've tested Yakov's more comprehensive patch on powerpc too. This has 
-> > my ack.
-> > 
-> > Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > Allow the maximum number of nodes in an x86_64 system to be 
+> > configurable. This patch does NOT change the default value but allows 
+> > the value to be a config option.
 > 
-> thanks, i've queued up the x86-only patch below for .26 merging. (that 
-> is all that is needed for x86, and no .25 urgency, right?)
+> i've applied your patch - but i'm wondering, shouldnt we auto-scale the 
+> default according to max number of CPUs? (with some sensible scaling 
+> that happens to meet your expected large-system needs as well ;-) All 
+> the current manual configuration of nodes shift is ugly.
 
-Yup. This can wait for .26
+I would prefer to auto-scale, too, but our hardware platform allows
+too many options to make it easy. The current system configs will support
+from 0 to 32 cpus per node (some nodes have memory only).
 
-Ananth
+However, I'm open to suggestions if you have any ideas....
+
+
+--- jack
