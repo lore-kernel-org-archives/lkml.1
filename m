@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764820AbYCUXIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765691AbYCUXKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764820AbYCUXIw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932133AbYCUWwF
+	id S1765691AbYCUXKU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 19:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932174AbYCUWwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:52:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43575 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932131AbYCUWwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:52:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Subject: Re: APM crashes when IO is going on
-Date: Fri, 21 Mar 2008 23:51:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz> <200803212245.13659.rjw@sisk.pl> <Pine.LNX.4.64.0803212347430.25810@artax.karlin.mff.cuni.cz>
-In-Reply-To: <Pine.LNX.4.64.0803212347430.25810@artax.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803212351.20186.rjw@sisk.pl>
+	Fri, 21 Mar 2008 18:52:18 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41301 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758011AbYCUWwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:52:14 -0400
+Message-Id: <20080321224452.154449336@sous-sol.org>
+References: <20080321224250.144333319@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 21 Mar 2008 15:44:01 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Duane Griffin <duaneg@dghda.com>, Jan Kara <jack@suse.cz>,
+       <linux-ext4@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 71/76] jbd: correctly unescape journal data blocks
+Content-Disposition: inline; filename=jbd-correctly-unescape-journal-data-blocks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 of March 2008, Mikulas Patocka wrote:
-> On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
-> 
-> > On Friday, 21 of March 2008, Mikulas Patocka wrote:
-> > > > > I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
-> > > > > 
-> > > > > --- when I run three threads concurrently reading raw disk partition and 
-> > > > > suspend, I get 100% reproducible failure. (with one thread running it 
-> > > > > usually succeeds, sometimes fail)
-> > > > 
-> > > > Are they userland threads or kernel threads?
-> > > 
-> > > Useland threads. Just dd if=/dev/hda of=/dev/null
-> > > 
-> > > > > Either the on-going I/O will jam BIOS and I need to remove power to 
-> > > > > continue.
-> > > > > 
-> > > > > Or the machine suspends, wakes up and reports "hda: lost interrupt" 
-> > > > > (2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
-> > > > > recover and it is not able to send any more disk IOs).
-> > > > > 
-> > > > > How is suspending disk IO supposed to work?
-> > > > 
-> > > > That depends on the driver, if I understand your question correctly.
-> > > 
-> > > The driver is normal IDE.
-> > 
-> > Do you mean IDE_GENERIC/BLK_DEV_GENERIC?
-> 
-> Compaq Triflex IDE. The computer is Compaq Armada 7400 (Pentium 2/300MHz)
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-Can you attach a dmesg output taken after a fresh boot?
+From: Duane Griffin <duaneg@dghda.com>
 
-Thanks,
-Rafael
+Fix a long-standing typo (predating git) that will cause data corruption if a
+journal data block needs unescaping.  At the moment the wrong buffer head's
+data is being unescaped.
+
+To test this case mount a filesystem with data=journal, start creating and
+deleting a bunch of files containing only JFS_MAGIC_NUMBER (0xc03b3998), then
+pull the plug on the device.  Without this patch the files will contain zeros
+instead of the correct data after recovery.
+
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+Acked-by: Jan Kara <jack@suse.cz>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/jbd/recovery.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/jbd/recovery.c
++++ b/fs/jbd/recovery.c
+@@ -478,7 +478,7 @@ static int do_one_pass(journal_t *journa
+ 					memcpy(nbh->b_data, obh->b_data,
+ 							journal->j_blocksize);
+ 					if (flags & JFS_FLAG_ESCAPE) {
+-						*((__be32 *)bh->b_data) =
++						*((__be32 *)nbh->b_data) =
+ 						cpu_to_be32(JFS_MAGIC_NUMBER);
+ 					}
+ 
+
+-- 
