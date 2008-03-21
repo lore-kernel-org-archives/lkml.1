@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764606AbYCUW6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764686AbYCUW6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764606AbYCUW6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 18:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763707AbYCUWuh
+	id S1764686AbYCUW6o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 18:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762982AbYCUWuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 18:50:37 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59233 "EHLO
+	Fri, 21 Mar 2008 18:50:46 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:59268 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763698AbYCUWue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 18:50:34 -0400
-Message-Id: <20080321224409.665063393@sous-sol.org>
+	id S1763720AbYCUWun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 18:50:43 -0400
+Message-Id: <20080321224443.783675702@sous-sol.org>
 References: <20080321224250.144333319@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 21 Mar 2008 15:43:29 -0700
+Date: Fri, 21 Mar 2008 15:43:53 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
-       davem@davemloft.net, Joonwoo Park <joonwpark81@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 39/76] NETFILTER: Fix incorrect use of skb_make_writable
-Content-Disposition: inline; filename=netfilter-fix-incorrect-use-of-skb_make_writable.patch
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: [patch 63/76] sched: fix race in schedule()
+Content-Disposition: inline; filename=sched-fix-race-in-schedule.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,69 +33,136 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Upstream commit eb1197bc0:
+Fix a hard to trigger crash seen in the -rt kernel that also affects
+the vanilla scheduler.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9920
-The function skb_make_writable returns true or false.
+There is a race condition between schedule() and some dequeue/enqueue
+functions; rt_mutex_setprio(), __setscheduler() and sched_move_task().
 
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+When scheduling to idle, idle_balance() is called to pull tasks from
+other busy processor. It might drop the rq lock. It means that those 3
+functions encounter on_rq=0 and running=1. The current task should be
+put when running.
+
+Here is a possible scenario:
+
+   CPU0                               CPU1
+    |                              schedule()
+    |                              ->deactivate_task()
+    |                              ->idle_balance()
+    |                              -->load_balance_newidle()
+rt_mutex_setprio()                     |
+    |                              --->double_lock_balance()
+    *get lock                          *rel lock
+    * on_rq=0, ruuning=1               |
+    * sched_class is changed           |
+    *rel lock                          *get lock
+    :                                  |
+                                       :
+                                   ->put_prev_task_rt()
+                                   ->pick_next_task_fair()
+                                       => panic
+
+The current process of CPU1(P1) is scheduling. Deactivated P1, and the
+scheduler looks for another process on other CPU's runqueue because CPU1
+will be idle. idle_balance(), load_balance_newidle() and
+double_lock_balance() are called and double_lock_balance() could drop
+the rq lock. On the other hand, CPU0 is trying to boost the priority of
+P1. The result of boosting only P1's prio and sched_class are changed to
+RT. The sched entities of P1 and P1's group are never put. It makes
+cfs_rq invalid, because the cfs_rq has curr and no leaf, but
+pick_next_task_fair() is called, then the kernel panics.
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+[chrisw@sous-sol.org: backport to 2.6.24.3]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ kernel/sched.c |   36 ++++++++++++++++--------------------
+ 1 file changed, 16 insertions(+), 20 deletions(-)
 
- net/bridge/netfilter/ebt_dnat.c     |    2 +-
- net/bridge/netfilter/ebt_redirect.c |    2 +-
- net/bridge/netfilter/ebt_snat.c     |    2 +-
- net/ipv4/netfilter/arpt_mangle.c    |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/net/bridge/netfilter/ebt_dnat.c
-+++ b/net/bridge/netfilter/ebt_dnat.c
-@@ -20,7 +20,7 @@ static int ebt_target_dnat(struct sk_buf
- {
- 	struct ebt_nat_info *info = (struct ebt_nat_info *)data;
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4028,11 +4028,10 @@ void rt_mutex_setprio(struct task_struct
+ 	oldprio = p->prio;
+ 	on_rq = p->se.on_rq;
+ 	running = task_current(rq, p);
+-	if (on_rq) {
++	if (on_rq)
+ 		dequeue_task(rq, p, 0);
+-		if (running)
+-			p->sched_class->put_prev_task(rq, p);
+-	}
++	if (running)
++		p->sched_class->put_prev_task(rq, p);
  
--	if (skb_make_writable(skb, 0))
-+	if (!skb_make_writable(skb, 0))
- 		return NF_DROP;
+ 	if (rt_prio(prio))
+ 		p->sched_class = &rt_sched_class;
+@@ -4041,9 +4040,9 @@ void rt_mutex_setprio(struct task_struct
  
- 	memcpy(eth_hdr(skb)->h_dest, info->mac, ETH_ALEN);
---- a/net/bridge/netfilter/ebt_redirect.c
-+++ b/net/bridge/netfilter/ebt_redirect.c
-@@ -21,7 +21,7 @@ static int ebt_target_redirect(struct sk
- {
- 	struct ebt_redirect_info *info = (struct ebt_redirect_info *)data;
+ 	p->prio = prio;
  
--	if (skb_make_writable(skb, 0))
-+	if (!skb_make_writable(skb, 0))
- 		return NF_DROP;
++	if (running)
++		p->sched_class->set_curr_task(rq);
+ 	if (on_rq) {
+-		if (running)
+-			p->sched_class->set_curr_task(rq);
+ 		enqueue_task(rq, p, 0);
+ 		/*
+ 		 * Reschedule if we are currently running on this runqueue and
+@@ -4339,18 +4338,17 @@ recheck:
+ 	update_rq_clock(rq);
+ 	on_rq = p->se.on_rq;
+ 	running = task_current(rq, p);
+-	if (on_rq) {
++	if (on_rq)
+ 		deactivate_task(rq, p, 0);
+-		if (running)
+-			p->sched_class->put_prev_task(rq, p);
+-	}
++	if (running)
++		p->sched_class->put_prev_task(rq, p);
  
- 	if (hooknr != NF_BR_BROUTING)
---- a/net/bridge/netfilter/ebt_snat.c
-+++ b/net/bridge/netfilter/ebt_snat.c
-@@ -22,7 +22,7 @@ static int ebt_target_snat(struct sk_buf
- {
- 	struct ebt_nat_info *info = (struct ebt_nat_info *) data;
+ 	oldprio = p->prio;
+ 	__setscheduler(rq, p, policy, param->sched_priority);
  
--	if (skb_make_writable(skb, 0))
-+	if (!skb_make_writable(skb, 0))
- 		return NF_DROP;
++	if (running)
++		p->sched_class->set_curr_task(rq);
+ 	if (on_rq) {
+-		if (running)
+-			p->sched_class->set_curr_task(rq);
+ 		activate_task(rq, p, 0);
+ 		/*
+ 		 * Reschedule if we are currently running on this runqueue and
+@@ -7110,19 +7108,17 @@ void sched_move_task(struct task_struct 
+ 	running = task_current(rq, tsk);
+ 	on_rq = tsk->se.on_rq;
  
- 	memcpy(eth_hdr(skb)->h_source, info->mac, ETH_ALEN);
---- a/net/ipv4/netfilter/arpt_mangle.c
-+++ b/net/ipv4/netfilter/arpt_mangle.c
-@@ -19,7 +19,7 @@ target(struct sk_buff *skb,
- 	unsigned char *arpptr;
- 	int pln, hln;
+-	if (on_rq) {
++	if (on_rq)
+ 		dequeue_task(rq, tsk, 0);
+-		if (unlikely(running))
+-			tsk->sched_class->put_prev_task(rq, tsk);
+-	}
++	if (unlikely(running))
++		tsk->sched_class->put_prev_task(rq, tsk);
  
--	if (skb_make_writable(skb, skb->len))
-+	if (!skb_make_writable(skb, skb->len))
- 		return NF_DROP;
+ 	set_task_cfs_rq(tsk, task_cpu(tsk));
  
- 	arp = arp_hdr(skb);
+-	if (on_rq) {
+-		if (unlikely(running))
+-			tsk->sched_class->set_curr_task(rq);
++	if (unlikely(running))
++		tsk->sched_class->set_curr_task(rq);
++	if (on_rq)
+ 		enqueue_task(rq, tsk, 0);
+-	}
+ 
+ done:
+ 	task_rq_unlock(rq, &flags);
 
 -- 
