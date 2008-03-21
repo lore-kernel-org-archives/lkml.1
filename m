@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYCUQqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbYCUQrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759017AbYCUQqP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 12:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbYCUQp7
+	id S1757305AbYCUQrA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 12:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbYCUQqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 12:45:59 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:5350 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756270AbYCUQp6 (ORCPT
+	Fri, 21 Mar 2008 12:46:49 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:58481 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbYCUQqt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 12:45:58 -0400
-Date: Fri, 21 Mar 2008 10:45:56 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH  1/16][BUG] Export kobject_rename for pci_hotplug_core
-	(Not for mainline!)
-Message-ID: <20080321164556.GH17292@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Greg KH <gregkh@suse.de>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Gary Hade <garyhade@us.ibm.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E334E2.6060306@jp.fujitsu.com> <20080321155605.GE17292@ldl.fc.hp.com> <20080321161532.GA2349@suse.de>
+	Fri, 21 Mar 2008 12:46:49 -0400
+Message-ID: <47E3E66F.9040006@frugalware.org>
+Date: Fri, 21 Mar 2008 17:46:39 +0100
+From: Gabriel C <crazy@frugalware.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321161532.GA2349@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <gregkh@suse.de>:
-> On Fri, Mar 21, 2008 at 09:56:05AM -0600, Alex Chiang wrote:
-> > Hi Greg,
-> > 
-> > This patch looks like a candidate for the current 2.6.25 cycle.
-> > Any chance of getting it in there?
+Thomas Gleixner wrote:
+> On Fri, 21 Mar 2008, Gabriel C wrote:
+>  
+>>> still hangs when I boot with clocksource=acpi_pm so that seems to
+>>> be introduced in a different commit.
+>>>
+>>> I will try to bisect this hang also , most probably on weekend.
+>>>
+>> Correction on this one.
+>>
+>> Current git head boots just fine with clocksource=acpi_pm here , I
+>> just don't know which commit fixed it.
 > 
-> Is this a problem today?  I don't see it being one, so when you need
-> this function exported, we can do it then.  Otherwise people will just
-> start sending me patches unexporting it as they don't see any in-kernel
-> users of it :)
+> Hmm. Very dubious. I'm a bit afraid of self healing problems. It would
+> be interesting to find the commit which fixed the acpi_pm timer
+> problem unvoluntary.
+
+I can try to find it.
+
 > 
-> So just keep it as part of your patchset, it's easier for everyone that
-> way.
+> Also, can you please reapply the reverted clocksource patch ? I have
+> the feeling that the acpi_pm one was the real problem which was
+> triggered the modfied watchdog.
 
-Ok, sounds fair to me.
+Sure I can , will do so in some minutes and let you know.
 
-> And it will remind me to verify that you really should be calling
-> kobject_rename and not just getting the name correctly the first time
-> around...{hint}
+> 
+> Thanks,
+> 
+> 	tglx
 
-I'm pretty sure we really do need to call it, but I appreciate
-your future review. ;)
 
-/ac
-
+Gabriel
