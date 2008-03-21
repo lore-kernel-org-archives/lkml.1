@@ -1,77 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYCUHCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYCUHFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbYCUHCm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 03:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYCUHCb
+	id S1755834AbYCUHFc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 03:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbYCUHFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 03:02:31 -0400
-Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr ([84.96.92.124]:58656
-	"EHLO neuf-infra-smtp-out-sp604003av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753507AbYCUHCa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 03:02:30 -0400
-Message-ID: <47E35D73.6060703@cosmosbay.com>
-Date: Fri, 21 Mar 2008 08:02:11 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	Fri, 21 Mar 2008 03:05:21 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:48939 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753540AbYCUHFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 03:05:20 -0400
+Date: Fri, 21 Mar 2008 00:03:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        Linux Netdev List <netdev@vger.kernel.org>
 Subject: Re: [14/14] vcompound: Avoid vmalloc for ehash_locks
+In-Reply-To: <47E35D73.6060703@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0803210002450.15903@schroedinger.engr.sgi.com>
 References: <20080321061703.921169367@sgi.com> <20080321061727.491610308@sgi.com>
-In-Reply-To: <20080321061727.491610308@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+ <47E35D73.6060703@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> Avoid the use of vmalloc for the ehash locks.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  include/net/inet_hashtables.h |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.25-rc5-mm1/include/net/inet_hashtables.h
-> ===================================================================
-> --- linux-2.6.25-rc5-mm1.orig/include/net/inet_hashtables.h	2008-03-20 22:21:02.680501729 -0700
-> +++ linux-2.6.25-rc5-mm1/include/net/inet_hashtables.h	2008-03-20 22:22:15.416565317 -0700
-> @@ -164,7 +164,8 @@ static inline int inet_ehash_locks_alloc
->  	if (sizeof(rwlock_t) != 0) {
->  #ifdef CONFIG_NUMA
->  		if (size * sizeof(rwlock_t) > PAGE_SIZE)
-> -			hashinfo->ehash_locks = vmalloc(size * sizeof(rwlock_t));
-> +			hashinfo->ehash_locks = __alloc_vcompound(GFP_KERNEL,
-> +				get_order(size * sizeof(rwlock_t)));
->  		else
->  #endif
->  		hashinfo->ehash_locks =	kmalloc(size * sizeof(rwlock_t),
-> @@ -185,7 +186,7 @@ static inline void inet_ehash_locks_free
->  		unsigned int size = (hashinfo->ehash_locks_mask + 1) *
->  							sizeof(rwlock_t);
->  		if (size > PAGE_SIZE)
-> -			vfree(hashinfo->ehash_locks);
-> +			__free_vcompound(hashinfo->ehash_locks);
->  		else
->  #endif
->  		kfree(hashinfo->ehash_locks);
-> 
+On Fri, 21 Mar 2008, Eric Dumazet wrote:
 
-But, isnt it defeating the purpose of this *particular* vmalloc() use ?
+> But, isnt it defeating the purpose of this *particular* vmalloc() use ?
 
-CONFIG_NUMA and vmalloc() at boot time means :
-
-Try to distribute the pages on several nodes.
-
-Memory pressure on ehash_locks[] is so high we definitly want to spread it.
-
-(for similar uses of vmalloc(), see also hashdist=1 )
-
-Also, please CC netdev for network patches :)
-
-Thank you
-
+I thought that was controlled by hashdist? I did not see it used here and 
+so I assumed that the RR was not intended here.
