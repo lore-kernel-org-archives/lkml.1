@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbYCUIkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYCUIpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbYCUIkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 04:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYCUIkM
+	id S1753882AbYCUIpq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 04:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYCUIpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 04:40:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33619 "EHLO mx2.mail.elte.hu"
+	Fri, 21 Mar 2008 04:45:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36104 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbYCUIkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 04:40:10 -0400
-Date: Fri, 21 Mar 2008 09:39:52 +0100
+	id S1750845AbYCUIpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 04:45:33 -0400
+Date: Fri, 21 Mar 2008 09:45:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on
-	IA64 and x86
-Message-ID: <20080321083952.GA20454@elte.hu>
-References: <20080321061703.921169367@sgi.com> <20080321061726.782068299@sgi.com> <20080321.002502.223136918.davem@davemloft.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Daniel Drake <dsd@gentoo.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH/RFC v4] introduce HAVE_UNALIGNED_ACCESS_SUPPORT Kconfig
+	symbol
+Message-ID: <20080321084516.GA20420@elte.hu>
+References: <1206023695.16475.137.camel@johannes.berg> <20080320181310.GA17884@uranus.ravnborg.org> <1206038373.16475.150.camel@johannes.berg> <1206038734.16475.153.camel@johannes.berg> <20080320194101.GC17884@uranus.ravnborg.org> <1206042658.16475.158.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080321.002502.223136918.davem@davemloft.net>
+In-Reply-To: <1206042658.16475.158.camel@johannes.berg>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,43 +38,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Johannes Berg <johannes@sipsolutions.net> wrote:
 
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Thu, 20 Mar 2008 23:17:14 -0700
-> 
-> > This allows fallback for order 1 stack allocations. In the fallback
-> > scenario the stacks will be virtually mapped.
-> > 
-> > Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> I would be very careful with this especially on IA64.
-> 
-> If the TLB miss or other low-level trap handler depends upon being 
-> able to dereference thread info, task struct, or kernel stack stuff 
-> without causing a fault outside of the linear PAGE_OFFSET area, this 
-> patch will cause problems.
-> 
-> It will be difficult to debug the kinds of crashes this will cause 
-> too. [...]
+> --- everything.orig/arch/x86/Kconfig	2008-03-20 15:30:38.000000000 +0100
+> +++ everything/arch/x86/Kconfig	2008-03-20 19:38:08.000000000 +0100
+> @@ -23,6 +23,7 @@ config X86
+>  	select HAVE_KPROBES
+>  	select HAVE_KRETPROBES
+>  	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+> +	select HAVE_UNALIGNED_ACCESS_SUPPORT
 
-another thing is that this patchset includes KERNEL_STACK_SIZE_ORDER 
-which has been NACK-ed before on x86 by several people and i'm nacking 
-this "configurable stack size" aspect of it again.
-
-although it's not being spelled out in the changelog, i believe the 
-fundamental problem comes from a cpumask_t taking 512 bytes with 
-nr_cpus=4096, and if a few of them are on the kernel stack it can be a 
-problem. The correct answer is to not put them on the stack and we've 
-been taking patches to that end. Every other object allocator in the 
-kernel is able to not put stuff on the kernel stack. We _dont_ want 
-higher-order kernel stacks and we dont want to make a special exception 
-for cpumask_t either.
-
-i believe time might be better spent increasing PAGE_SIZE on these 
-ridiculously large systems and making that work well with our binary 
-formats - instead of complicating our kernel VM with virtually mapped 
-buffers. That will also solve the kernel stack problem, in a very 
-natural way.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
