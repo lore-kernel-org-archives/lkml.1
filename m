@@ -1,37 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYCVM5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYCVNGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbYCVM5a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 08:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYCVM5W
+	id S1756772AbYCVNGT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 09:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYCVNGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 08:57:22 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:17375 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbYCVM5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 08:57:21 -0400
-Date: Sat, 22 Mar 2008 13:57:11 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Adrian McMenamin <adrian@mcmen.demon.co.uk>,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH 5/5] cdrom: make unregister_cdrom() return void
-Message-ID: <20080322125711.GG15355@kernel.dk>
-References: <20080322030948.GA3665@APFDCB5C> <20080322031047.GB3665@APFDCB5C> <20080322031204.GC3665@APFDCB5C> <20080322031248.GD3665@APFDCB5C> <20080322031413.GE3665@APFDCB5C>
+	Sat, 22 Mar 2008 09:06:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33305 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754028AbYCVNGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 09:06:10 -0400
+X-Authenticated: #19095397
+X-Provags-ID: V01U2FsdGVkX1/R2Yw4amzRPdy/XYhTjxUkZ3OYs3AWjXrT71BO5S
+	mFKMjrq5qsAAgt
+From: Bernd Schubert <bernd-schubert@gmx.de>
+To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
+Subject: Re: deadline unfairness
+Date: Sat, 22 Mar 2008 14:06:01 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200803221225.26728.bernd-schubert@gmx.de> <47E4F6F7.40401@gelato.unsw.edu.au>
+In-Reply-To: <47E4F6F7.40401@gelato.unsw.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080322031413.GE3665@APFDCB5C>
+Message-Id: <200803221406.02621.bernd-schubert@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22 2008, Akinobu Mita wrote:
-> Now unregister_cdrom() always returns 0.
-> Make it return void and update all callers that check the return value.
+Hello Aron,
 
-Patches 1-3 and 5 are fine, thanks. If you can rediff #4 with the list
-init part added, it's good to go.
+On Saturday 22 March 2008, Aaron Carroll wrote:
+> Bernd Schubert wrote:
+> > Hello,
+> >
+> > some it seems the deadline scheduler is rather unfair. Below is an
+> > example of md-raid6 initialization of md3, md4 and md5. All three
+> > md-devices do share the same blockdevices (we have patched md to allow
+> > parallel rebuild of shared block devices, since for us the cpu is the
+> > bottleneck and not the block device).
+> >
+> > All rebuilds started basically at the same time, as you can see, md3 is
+> > already done and now md4 rebuilds substantially faster than md5.
+> > [..]
+> > This is basically with a 2.6.22 kernel + lustre + md-backports, but
+> > nothing done to the scheduler.
+>
+> Hi Bernd,
+>
+> There is a deadline bug in pre-2.6.24 kernels where lower-sector requests
+> can starve higher-sector requests; you might be hitting this bug.  It was
+> fixed by commit: 6f5d8aa6382eef2b26032c88656270bdae7f0c42
 
--- 
-Jens Axboe
+thanks a lot for your help! I will build a new kernel later on today and then 
+report back if it helps. Commit dfb3d72a9aa519672c9ae06f0d2f93eccb35482f also 
+looks useful...
 
+Thanks again,
+Bernd
