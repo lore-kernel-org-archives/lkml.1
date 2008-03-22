@@ -1,160 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbYCVWlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYCVWqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbYCVWlb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 18:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYCVWlW
+	id S1757366AbYCVWqY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 18:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYCVWqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 18:41:22 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:58922 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753222AbYCVWlV (ORCPT
+	Sat, 22 Mar 2008 18:46:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40094
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753601AbYCVWqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 18:41:21 -0400
-Message-ID: <47E58B06.8020905@frugalware.org>
-Date: Sat, 22 Mar 2008 23:41:10 +0100
-From: Gabriel C <crazy@frugalware.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org> <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org> <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org> <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Mar 2008 18:46:16 -0400
+Date: Sat, 22 Mar 2008 15:46:27 -0700 (PDT)
+Message-Id: <20080322.154627.54355549.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: jesper.juhl@gmail.com, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, jmforbes@linuxtx.org, zwane@arm.linux.org.uk,
+       tytso@mit.edu, rdunlap@xenotime.net, davej@redhat.com,
+       chuckw@quantumlinux.com, reviews@ml.cw.f00f.org, mkrufky@linuxtv.org,
+       cebbert@redhat.com, cavokz@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de
+Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080321.222125.245725675.davem@davemloft.net>
+References: <20080321.171401.49157146.davem@davemloft.net>
+	<adalk4bv62r.fsf@cisco.com>
+	<20080321.222125.245725675.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Sat, 22 Mar 2008, Thomas Gleixner wrote:
->> On Sat, 22 Mar 2008, Gabriel C wrote:
->>> With this one TSC is fine but now I get a warning on boot :
->> Good. It confirms my assumptions about the root cause.
->>
->>> [    0.041037] ------------[ cut here ]------------
->>> [    0.041052] WARNING: at arch/x86/kernel/smp_32.c:562 native_smp_call_function_mask+0x23/0x11e()
->> Grr. I'll work out a solution for that one.
+From: David Miller <davem@davemloft.net>
+Date: Fri, 21 Mar 2008 22:21:25 -0700 (PDT)
+
+> From: Roland Dreier <rdreier@cisco.com>
+> Date: Fri, 21 Mar 2008 19:35:40 -0700
 > 
-> Gabriel,
+> >  > It makes a difference for driver maintainers when users
+> >  > report bugs and we ask them for the version printed
+> >  > by the driver so that we know which fixes have been
+> >  > applied.
+> > 
+> > I'm not sure if this series of patches really accomplishes that...
+> > you're leaving out some patches such as "[NIU]: Fix 1G PHY link state
+> > handling." that are in the real 0.7.  So the 2.6.24.stable version 0.7
+> > has a different set of fixes than the 2.6.25 version 0.7.
 > 
-> I'm happy to rack your nerves some more.
+> That was an oversight and not intentional, thanks for
+> for catching that.
 
-No worries :) 
+Actually Roland, that 1G fix you mention was put in during the
+2.6.23 development series.
 
-> 
-> After discussing the issue with Peter and Ingo the following solution
-> seems to be the one which is the least intrusive. 
-> 
-> Can you please give it a test ride ?
+If you ask git for all the NIU driver changes since 2.6.24
+you get:
 
-Done , git head + Andi's patch + this version of your patch does work here.
+davem@sunset:~/src/GIT/linux-2.6$ git log v2.6.24.. drivers/net/niu.[ch]
+commit fa907895b7b776208a1406efe5ba7ffe0f49f507
+Author: Matheos Worku <Matheos.Worku@Sun.COM>
+Date:   Wed Feb 20 00:18:09 2008 -0800
 
-Also time-warp-test is just fine and everything else seems to work.
+    [NIU]: More BMAC alt MAC address fixes.
+    
+    From: Matheos Worku <Matheos.Worku@Sun.COM>
+    
+    1) niu_enable_alt_mac() needs to be adjusted so that the mask
+       is computed properly for the BMAC case.
+    
+    2) BMAC has 6 alt MAC addresses available, not 7.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
+commit a442585952f137bd4cdb1f2f3166e4157d383b82
+Author: David S. Miller <davem@davemloft.net>
+Date:   Mon Feb 18 21:30:48 2008 -0800
 
-> ---
->  include/linux/sched.h |    6 ++++++
->  kernel/sched.c        |   42 ++++++++++++++++++++++++++++++++++++++++++
->  kernel/timer.c        |   10 +++++++++-
->  3 files changed, 57 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sched.h
-> +++ linux-2.6/include/linux/sched.h
-> @@ -1541,6 +1541,12 @@ static inline void idle_task_exit(void) 
->  
->  extern void sched_idle_next(void);
->  
-> +#ifdef CONFIG_NO_HZ
-> +extern void wake_up_idle_cpu(int cpu);
-> +#else
-> +static inline void wake_up_idle_cpu(int cpu) { }
-> +#endif
-> +
->  #ifdef CONFIG_SCHED_DEBUG
->  extern unsigned int sysctl_sched_latency;
->  extern unsigned int sysctl_sched_min_granularity;
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -848,6 +848,48 @@ static inline void resched_task(struct t
->  	__resched_task(p, TIF_NEED_RESCHED);
->  }
->  
-> +#ifdef CONFIG_NO_HZ
-> +/*
-> + * When add_timer_on() enqueues a timer into the timer wheel of an
-> + * idle CPU then this timer might expire before the next timer event
-> + * which is scheduled to wake up that CPU. In case of a completely
-> + * idle system the next event might even be infinite time into the
-> + * future. wake_up_idle_cpu() ensures that the CPU is woken up and
-> + * leaves the inner idle loop so the newle added timer is taken into
-> + * account when the CPU goes back to idle and evaluates the timer
-> + * wheel for the next timer event.
-> + */
-> +void wake_up_idle_cpu(int cpu)
-> +{
-> +	struct rq *rq = cpu_rq(cpu);
-> +
-> +	if (cpu == smp_processor_id())
-> +		return;
-> +
-> +	/*
-> +	 * This is safe, as this function is called with the timer
-> +	 * wheel base lock of (cpu) held. When the CPU is on the way
-> +	 * to idle and has not yet set rq->curr to idle then it will
-> +	 * be serialized on the timer wheel base lock and take the new
-> +	 * timer into account automatically.
-> +	 */
-> +	if (rq->curr != rq->idle)
-> +		return;
-> +
-> +	/*
-> +	 * We can set TIF_RESCHED on the idle task of the other CPU
-> +	 * lockless. The worst case is that the other CPU runs the
-> +	 * idle task through an additional NOOP schedule()
-> +	 */
-> +	set_tsk_thread_flag(rq->idle, TIF_NEED_RESCHED);
-> +
-> +	/* NEED_RESCHED must be visible before we test polling */
-> +	smp_mb();
-> +	if (!tsk_is_polling(rq->idle))
-> +		smp_send_reschedule(cpu);
-> +}
-> +#endif
-> +
->  #ifdef CONFIG_SCHED_HRTICK
->  /*
->   * Use HR-timers to deliver accurate preemption points.
-> Index: linux-2.6/kernel/timer.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/timer.c
-> +++ linux-2.6/kernel/timer.c
-> @@ -451,10 +451,18 @@ void add_timer_on(struct timer_list *tim
->  	spin_lock_irqsave(&base->lock, flags);
->  	timer_set_base(timer, base);
->  	internal_add_timer(base, timer);
-> +	/*
-> +	 * Check whether the other CPU is idle and needs to be
-> +	 * triggered to reevaluate the timer wheel when nohz is
-> +	 * active. We are protected against the other CPU fiddling
-> +	 * with the timer by holding the timer base lock. This also
-> +	 * makes sure that a CPU on the way to idle can not evaluate
-> +	 * the timer wheel.
-> +	 */
-> +	wake_up_idle_cpu(cpu);
->  	spin_unlock_irqrestore(&base->lock, flags);
->  }
->  
-> -
->  /**
->   * mod_timer - modify a timer's timeout
->   * @timer: the timer to be modified
+    [NIU]: Bump driver version and release date.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit 3b5bcedeeb755b6e813537fcf4c32f010b490aef
+Author: Matheos Worku <matheos.worku@sun.com>
+Date:   Mon Feb 18 21:30:03 2008 -0800
+
+    [NIU]: Fix BMAC alternate MAC address indexing.
+    
+    BMAC port alternate MAC address index needs to start at 1. Index 0 is
+    used for the main MAC address.
+    
+    Signed-off-by: Matheos Worku <matheos.worku@sun.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+commit 2caf62f6cae46e36b1c4a1b0f2d9ef82af89cad2
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Dec 20 04:07:35 2007 -0800
+
+    [NIU]: Use print_mac
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+davem@sunset:~/src/GIT/linux-2.6$ 
+
+Since using print_mac is a one-liner cleanup rather than a bug fix,
+it's reasonable to leave it out for 2.6.24-stable
+
+What's left is exactly what I submitted for -stable.
