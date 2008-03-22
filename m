@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbYCVCfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbYCVCla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756934AbYCVCfu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 22:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYCVCfm
+	id S1762711AbYCVCla (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 22:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYCVCi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 22:35:42 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:56339 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbYCVCfl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 22:35:41 -0400
-To: David Miller <davem@davemloft.net>
-Cc: jesper.juhl@gmail.com, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org, jmforbes@linuxtx.org, zwane@arm.linux.org.uk,
-       tytso@mit.edu, rdunlap@xenotime.net, davej@redhat.com,
-       chuckw@quantumlinux.com, reviews@ml.cw.f00f.org, mkrufky@linuxtv.org,
-       cebbert@redhat.com, cavokz@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de
-Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
-X-Message-Flag: Warning: May contain useful information
-References: <20080321224250.144333319@sous-sol.org>
-	<20080321224333.400857992@sous-sol.org>
-	<9a8748490803211710u4c5d1d67x2a5a891347e0adf6@mail.gmail.com>
-	<20080321.171401.49157146.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 21 Mar 2008 19:35:40 -0700
-In-Reply-To: <20080321.171401.49157146.davem@davemloft.net> (David Miller's message of "Fri, 21 Mar 2008 17:14:01 -0700 (PDT)")
-Message-ID: <adalk4bv62r.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Fri, 21 Mar 2008 22:38:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:40003 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754687AbYCVCiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 22:38:55 -0400
+Message-ID: <47E4701B.6060203@goop.org>
+Date: Fri, 21 Mar 2008 19:34:03 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 22 Mar 2008 02:35:40.0445 (UTC) FILETIME=[6B434CD0:01C88BC5]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: [PATCH 00 of 31] x86: unification and xen updates
+References: <47E18B8E.8080104@goop.org> <20080319220028.GA10480@elte.hu> <47E18C9D.4010007@goop.org> <20080319220431.GA11606@elte.hu> <47E19085.2020308@goop.org> <20080319235212.GA22786@elte.hu> <47E2C7E3.40109@goop.org> <20080321131738.GI27245@elte.hu> <20080321143533.GA32096@elte.hu> <47E3D0FE.2030508@goop.org> <20080321152555.GA14607@elte.hu>
+In-Reply-To: <20080321152555.GA14607@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > It makes a difference for driver maintainers when users
- > report bugs and we ask them for the version printed
- > by the driver so that we know which fixes have been
- > applied.
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>>> it just crashed again, crashlog and config attached. This time it 
+>>> didnt need an irq flood.
+>>>       
+>> Hm.  I presume it happens immediately/consistently.  Is it something 
+>> particular about this .config?  Do other configs work for you?
+>>     
+>
+> it's a generic distro config this time around. It crashed on the first 
+> attempt.
 
-I'm not sure if this series of patches really accomplishes that...
-you're leaving out some patches such as "[NIU]: Fix 1G PHY link state
-handling." that are in the real 0.7.  So the 2.6.24.stable version 0.7
-has a different set of fixes than the 2.6.25 version 0.7.
+I haven't had a chance to try this on real hardware yet, but could you 
+confirm that booting with "nosep" avoids the problem?  If not, then some 
+deep voodoo is going on...
 
- - R.
-
+Thanks,
+    J
