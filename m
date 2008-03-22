@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbYCVXpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYCVXvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758390AbYCVXpY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 19:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYCVXpL
+	id S1758413AbYCVXvR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 19:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYCVXvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 19:45:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48464 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753497AbYCVXpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 19:45:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 2)
-Date: Sun, 23 Mar 2008 00:44:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0803221920150.8044-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803221920150.8044-100000@netrider.rowland.org>
+	Sat, 22 Mar 2008 19:51:05 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57350 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754894AbYCVXvE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 19:51:04 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47E59B39.90306@s5r6.in-berlin.de>
+Date: Sun, 23 Mar 2008 00:50:17 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Thomas Meyer <thomas@m3y3r.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+ regressions from 2.6.24)
+References: <200803220259.48534.rjw@sisk.pl> <47E5350D.101@s5r6.in-berlin.de> <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803230044.29132.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 23 of March 2008, Alan Stern wrote:
-> On Sat, 22 Mar 2008, Rafael J. Wysocki wrote:
+Linus Torvalds wrote:
 > 
-[--snip--]
+> On Sat, 22 Mar 2008, Linus Torvalds wrote:
+>> AND no, I don't think our x86-32 ioremap() actually works for this case, 
+>> because while the resource data may have the full 64 bits, when the 
+>> ioremap() happens it gets truncated to 32 bits.
 > 
-> No, you have missed the entire point.  The problem doesn't exist in the
-> current code; it exists only if we switch over to using a single list.  
-> Routines like dpm_suspend() won't be able to use list_for_each_entry()
-> to traverse the list because entries may be removed by other threads
-> during the traversal.  Even list_for_each_entry_safe() won't work
-> correctly without careful attention to details.
+> Does this patch make any difference?
+> 
+> (ENTIRELY untested, I checked that it compiles on x86-64, but didn't even 
+> test a 32-bit build, I'm hoping whoever sees this issue can also fix up 
+> the inevitable small missed pieces)
+> 
+> 		Linus
+> 
+> ---
+>  arch/x86/mm/ioremap.c   |    6 +++---
+>  include/asm-x86/io_32.h |    6 +++---
+>  include/asm-x86/io_64.h |    6 +++---
+>  lib/iomap.c             |    2 +-
+>  4 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+> index 8fe576b..4afaba0 100644
+> --- a/arch/x86/mm/ioremap.c
+> +++ b/arch/x86/mm/ioremap.c
+> @@ -106,7 +106,7 @@ static int ioremap_change_attr(unsigned long vaddr, unsigned long size,
+>   * have to convert them into an offset in a page-aligned mapping, but the
+>   * caller shouldn't need to know that small detail.
+>   */
+> -static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+> +static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
+>  			       enum ioremap_mode mode)
+[...]
 
-Ah, ok.  Thanks for the clarification.
+On my x86-32 test system, none of the devices gets an MMIO region above 
+the 4G map.  (Reconfigured with CONFIG_RESOURCES_64BIT=y while having 
+CONFIG_HIGHMEM4G=y, like in Thomas M's .config.)
 
-Doesn't it help that we traverse the list under dpm_list_mtx?  Anyone who
-removes an entry is required to take dpm_list_mtx that we're holding while
-the list is traversed except when the callbacks are invoked.
-
-The only problem I see is when the device currently being handled is removed
-from the list by a concurrent thread.  Is that you were referring to?
-
-Rafael
+So the only thing I can confirm is that the patch builds and runs fine 
+on x86-64.
+-- 
+Stefan Richter
+-=====-==--- --== =-===
+http://arcgraph.de/sr/
