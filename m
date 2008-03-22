@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbYCVWJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYCVWKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758535AbYCVWJZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 18:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbYCVWJH
+	id S1758232AbYCVWKb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 18:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYCVWKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 18:09:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46430 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757681AbYCVWJF (ORCPT
+	Sat, 22 Mar 2008 18:10:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:10906 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbYCVWKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 18:09:05 -0400
-Date: Sat, 22 Mar 2008 15:08:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.25-rc6: kernel BUG at fs/sysfs/file.c:89
-Message-Id: <20080322150848.bf165996.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.00.0803222128570.6948@sheep.housecafe.de>
-References: <alpine.DEB.1.00.0803212319130.17137@sheep.housecafe.de>
-	<200803220226.35552.rjw@sisk.pl>
-	<20080321222606.16407d74.akpm@linux-foundation.org>
-	<alpine.DEB.1.00.0803221942050.4470@sheep.housecafe.de>
-	<alpine.DEB.1.00.0803222128570.6948@sheep.housecafe.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Mar 2008 18:10:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ee3Xd/KdKxA8o7e5xJaqPkSVk1HMoAQHvYjATFAUUInDmwyV88iHFIyrK2ZWsHBJaG4kicoe6V42ja996OGZGBpW4eIic4oNAg/XBdcddtpb268MYN7IBmIwF5H5jmF3HUSbnfaDGYBuWO9GKOKtLRsQPgY8kIdUolu7kPWfV+k=
+Message-ID: <1ba2fa240803221510n8d5800ft32e0ffa179542aba@mail.gmail.com>
+Date: Sun, 23 Mar 2008 00:10:19 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Pierre Ossman" <drzeus@drzeus.cx>
+Subject: Re: SDIO: IO-Ready Bit
+Cc: lkml <linux-kernel@vger.kernel.org>, benzizbit@gmail.com
+In-Reply-To: <20080318192018.1815fd57@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1ba2fa240803180400y1d7a2740t2c21b8b73a755016@mail.gmail.com>
+	 <20080318123325.0843b854@mjolnir.drzeus.cx>
+	 <1ba2fa240803181043v511df0b6tbe43174feb2f7537@mail.gmail.com>
+	 <20080318192018.1815fd57@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Mar 2008 22:54:51 +0100 (CET) Christian Kujau <lists@nerdbynature.de> wrote:
+On Tue, Mar 18, 2008 at 8:20 PM, Pierre Ossman <drzeus@drzeus.cx> wrote:
+> On Tue, 18 Mar 2008 19:43:40 +0200
+>
+> "Tomas Winkler" <tomasw@gmail.com> wrote:
+>
+>
+> > On Tue, Mar 18, 2008 at 1:33 PM, Pierre Ossman <drzeus@drzeus.cx> wrote:
+>  > >
+>
+> > >  A better approach is to simply have the drivers for your subfunctions synchronize things. Make sure noone calls sdio_enable_func() until the firmware has been loaded.
+>  >
+>  > This could even be done from user space in case you want to use a
+>  > standard driver.
+>  >
+>  > Won't this prevent us from compiling the drivers into kernel?
+>  > Second how this possible especially with standard driver as they are
+>  > loaded. I know you can enforce module loading but how can you enforce
+>  > probing order form user space?
+>
+>  You can tell the kernel to not automatically attach drivers to devices.
+>  That way you can have a user space process control exactly the order
+>  and timing of things. I haven't played around with this feature myself
+>  though, so I can't really provide you with any good information on how
+>  to use it. You should be able to google up something useful.
 
-> On Sat, 22 Mar 2008, Christian Kujau wrote:
-> >> If so, the below (already merged) patch should fix this crash.
-> >> If this patch does not fix it then please apply this debug patch:
-> >> http://userweb.kernel.org/~akpm/mmotm/broken-out/gregkh-driver-driver-core-debug-for-bad-dev_attr_show-return-value.patch
-> >> then rerun the test.
-> >
-> > Ah, sorry, I misread your post: I applied the aforementioned dm-crypt 
-> > patch[0] and Greg's debug patch and got quite nasty SCSI errors, leading to a 
-> > complete lockup. I'll try again and only apply Neil's patch...stay tuned...
-> 
-> Hm, this was strange: I applied Neil's patch (and the dm-crypt patch) on 
-> 2.6.25-rc6 and I kept getting SCSI errors (and lockups) when doing "tar 
-> -cf - | dd of=/dev/null" - which I did to generate disk I/O.
+I couldn't find anything that can prevent the probe function to be
+called in case the module is already loaded. I've looked at udev and
+HAL and no much I found.
+I will dig into kernel sources, maybe finding out how can be bus
+enumeration triggered again or something like this.
+Any pointers will be appreciated.
 
-Please send all the details about this, retaining all cc's.
-
+Thanks
+Tomas
