@@ -1,69 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYCVQd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYCVQfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbYCVQd4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 12:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYCVQds
+	id S1755044AbYCVQfv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 12:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYCVQfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 12:33:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:32793 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753003AbYCVQds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 12:33:48 -0400
-Date: Sat, 22 Mar 2008 17:32:49 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <crazy@frugalware.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+	Sat, 22 Mar 2008 12:35:44 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51989 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbYCVQfn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 12:35:43 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47E5350D.101@s5r6.in-berlin.de>
+Date: Sat, 22 Mar 2008 17:34:21 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Meyer <thomas@m3y3r.de>
+CC: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47E5221B.5040900@frugalware.org>
-Message-ID: <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
- <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org>
- <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org>
- <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported regressions
+ from 2.6.24)
+References: <200803220259.48534.rjw@sisk.pl>
+In-Reply-To: <200803220259.48534.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Mar 2008, Gabriel C wrote:
-> Thomas Gleixner wrote:
-> > On Sat, 22 Mar 2008, Gabriel C wrote:
-> >  > Now some time later CPU1 gets woken by an interrupt/IPI and runs the
-> >>> timer wheel. At this point the pm_timer which is the reference clock
-> >>> has already wrapped around, so the watchdog thinks that there is a
-> >>> huge time difference and marks the TSC unstable.
-> >>>
-> >>> Aside of that watchdog issue this also affects the other users of
-> >>> add_timer_on(): e.g. queue_delayed_work_on().
-> >>>
-> >>> Can you please apply the patch below and verify it with Andi's
-> >>> watchdog patch applied ? 
-> >>
-> >> Did that , git head , Andi's + your patch but TSC is still marked unstable.
-> > 
-> > Doh, stupid me. We do not reevaluate the timer wheel, when we just
-> > wake up via the smp_reschedule IPI when the resched flag on the other
-> > CPU is not set. That's a separate vector which is not going through
-> > irq_enter() / irq_exit(). 
-> > 
-> > Does the patch below solve the problem ?
-> 
-> With this one TSC is fine but now I get a warning on boot :
+Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10080
+> Subject		: 2.6.25-rc2: ohci1394 problem (MMIO broken)
+> Submitter	: Thomas Meyer <thomas@m3y3r.de>
+> Date		: 2008-02-20 08:47 (31 days old)
+> References	: http://lkml.org/lkml/2008/2/20/58
+> Handled-By	: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Good. It confirms my assumptions about the root cause.
+This bug is alas an orphan.  It is /not/ handled by me, because it is 
+not an IEEE 1394 subsystem bug and I have no idea what to do about it.
 
-> [    0.041037] ------------[ cut here ]------------
-> [    0.041052] WARNING: at arch/x86/kernel/smp_32.c:562 native_smp_call_function_mask+0x23/0x11e()
+Note the following:
 
-Grr. I'll work out a solution for that one.
+   - Several or all of ohci1394's MMIO reads return ~0 (all bits set
+     to one) --- or 0 --- where different values are expected.
 
-Thanks,
+   - In http://lkml.org/lkml/2008/2/23/244 we get to see a
+     WARNING: at arch/x86/mm/ioremap.c:137 __ioremap+0xa7/0x16a()
+     which is "WARN_ON_ONCE(page_is_ram(pfn));".
+     After that, the failures start.
+     But before that, "Unknown symbol" messages pop up when ohci1394
+     is loaded.  These symbols are implemented by ieee1394 on which
+     ohci1394 depends.
 
-	tglx
+More context from http://lkml.org/lkml/2008/2/23/244:
+
+> [  199.908169] ath_pci: wifi0: Atheros 5424/2424: mem=0x94300000, irq=17
+
+ath_hal taints the kernel.
+
+> [  847.318678] ohci1394: Unknown symbol hpsb_iso_wake
+> [  847.318791] ohci1394: Unknown symbol hpsb_resume_host
+...
+
+Some unexplained build problem.
+
+> [  856.789954] ACPI: PCI Interrupt 0000:0c:03.0[A] -> GSI 19 (level, 
+> low) -> IRQ 19
+> [  856.790040] ------------[ cut here ]------------
+> [  856.790044] WARNING: at arch/x86/mm/ioremap.c:137 __ioremap+0xa7/0x16a()
+> [  856.790048] Modules linked in: ohci1394(+) ieee1394 wlan_wep 
+> wlan_scan_sta ath_rate_sample ath_pci wlan ath_hal(P) firmware_class 
+> fuse snd_seq snd_seq_device nls_iso8859_15 nls_cp850 vfat fat usbhid 
+> appletouch applesmc input_polldev led_class dummy binfmt_misc tun 
+> pktcdvd loop msr cpuid coretemp hwmon eeprom cpufreq_powersave 
+> cpufreq_conservative acpi_cpufreq thermal ehci_hcd tpm_infineon i2c_i801 
+> i2c_core tpm uhci_hcd usbcore tpm_bios processor ac battery sr_mod 
+> rng_core iTCO_wdt button firewire_ohci firewire_core sg snd_hda_intel 
+> snd_pcm snd_timer snd soundcore snd_page_alloc evdev intel_agp cdrom 
+> [last unloaded: microcode]
+> [  856.790119] Pid: 7140, comm: insmod Tainted: P         2.6.25-rc2 #115
+> [  856.790125]  [<c011e5ab>] warn_on_slowpath+0x40/0x4f
+> [  856.790143]  [<c0118045>] __wake_up+0x29/0x39
+> [  856.790154]  [<c0277305>] netlink_broadcast+0x26e/0x2af
+> [  856.790169]  [<c01cc36b>] kobject_uevent_env+0x33d/0x361
+> [  856.790178]  [<c025ef2b>] pci_mmcfg_write+0xc4/0xd5
+> [  856.790187]  [<c0260157>] raw_pci_write+0x3e/0x46
+> [  856.790200]  [<c01148f8>] __ioremap+0xa7/0x16a
+> [  856.790210]  [<f8b14425>] ohci1394_pci_probe+0x20c/0x5a6 [ohci1394]
+> [  856.790226]  [<c01d63f1>] pci_device_probe+0x36/0x55
+> [  856.790236]  [<c02226cb>] driver_probe_device+0x9d/0x114
+...
+> [  856.790598] ---[ end trace 5b0384c17c339107 ]---
+> [  856.943807] ohci1394: fw-host0: Get PHY Reg timeout 
+> [0x00008400/0x00000000/100]
+
+MMIO read expected 0x00008400, got 0x00000000.
+
+...
+> [  921.826439] ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+
+MMIO read got random bits in the interrupt event register.
+
+...
+> [  994.471724] ohci1394: fw-host0: OHCI-1394 0.35 (PCI): IRQ=[19]  
+> MMIO=[100000000-1000007ff]  Max Packet=[65536]  IR/IT contexts=[32/32]
+
+The values for Max Packet and IR/IT contexts came from bogus MMIO reads.
+
+Thomas, you wrote in http://lkml.org/lkml/2008/3/17/316 that the problem 
+resurfaced.
+   - Are the "Unknown symbol"s still there?  These are not supposed to
+     happen.
+   - Is the "WARNING: at arch/x86/mm/ioremap.c" still there?
+   - Can you reproduce it without the atheros driver?
+
+Rafael, no matter how it looks, this is not "handled-by: me". :-)
+I don't know nothing about kbuild nor about arch/x86/mm nor about WLAN.
+The IEEE 1394 bits in the bug of which I know something about are purely 
+accidental.
+-- 
+Stefan Richter
+-=====-==--- --== =-==-
+http://arcgraph.de/sr/
