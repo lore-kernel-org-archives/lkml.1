@@ -1,81 +1,30 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762286AbYCUVcT (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 21 Mar 2008 17:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbYCUVcE
+	id S1755847AbYCVUfG (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 22 Mar 2008 16:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYCVUez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 17:32:04 -0400
-Received: from mail.connect.com.ua ([77.120.101.67]:56235 "EHLO
-	mail.connect.com.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756374AbYCUVcE (ORCPT
+	Sat, 22 Mar 2008 16:34:55 -0400
+Received: from d09.dinaserver.com ([82.98.136.13]:46300 "EHLO
+	d09.dinaserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbYCVUez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 17:32:04 -0400
+	Sat, 22 Mar 2008 16:34:55 -0400
+X-Greylist: delayed 15049 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Mar 2008 16:34:54 EDT
+Date: Sat, 22 Mar 2008 17:24:01 +0100
+Message-Id: <200803221624.m2MGO1jY011815@d09.dinaserver.com>
 To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?0JLQsNGBINC30LDQv9GA0L7RiNGD0Y7RgtGMINC00L4g0LPRgNGD0L/QuCEg?=  =?UTF-8?B?KDIxLjAzLjIwMDggMjM6NTcp?=
-Date: Fri, 21 Mar 2008 23:32:01 +0200
-From: =?UTF-8?B?0JrQvtC80LDQvdC00LAg0JrQvtC90L3QtdC60YLQsA==?= 
-	<donotreply@connect.com.ua>
-Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <52231aed419e69ad0a3f39e0f298e19e@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.72]
+Subject: hi
+From: Elena <ramsdams@gmail.com>
+Reply-To: ramsdams@gmail.com
 MIME-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1762286AbYCUVcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755847AbYCVUfG@vger.kernel.org>
 
-=D0=A2=D1=83=D1=80=D1=87=D0=B8=D0=BD=D0=B0 =D0=95=D0=B2=D0=B0 =D0=B7=D0=
-=B0=D0=BF=D1=80=D0=BE=D1=81=D0=B8=D0=BB=D0=B0 =D0=92=D0=B0=D1=81 =D0=BF=
-=D1=80=D0=B8=D1=94=D0=B4=D0=BD=D0=B0=D1=82=D0=B8=D1=81=D1=8F =D0=B4=D0=BE=
- =D0=B3=D1=80=D1=83=D0=BF=D0=B8 OLD SCHOOL (90-=D1=82=D1=96). =D0=A5=D0=
-=BE=D1=87=D0=B5=D1=82=D0=B5 =D0=B4=D1=96=D0=B7=D0=BD=D0=B0=D1=82=D0=B8=D1=
-=81=D1=8F =D0=BF=D0=BE=D0=B4=D1=80=D0=BE=D0=B1=D0=B8=D1=86=D1=96 =D1=82=
-=D0=B0 =D0=BF=D1=80=D0=B8=D0=B9=D0=BD=D1=8F=D1=82=D0=B8 =D0=B7=D0=B0=D0=
-=BF=D1=80=D0=BE=D1=88=D0=B5=D0=BD=D0=BD=D1=8F? =D0=9D=D0=B0=D1=82=D0=B8=
-=D1=81=D0=BD=D1=96=D1=82=D1=8C =D0=BD=D0=B0 =D0=BF=D0=BE=D1=81=D0=B8=D0=
-=BB=D0=B0=D0=BD=D0=BD=D1=8F:
-http://connect.com.ua/groups/spotlight?id=3D2076
+Hi dear!! My letter will surprise you!!  My name - Elena. My age-26 years. I live in Russia!! Private life didn\'t turn out well. I decided to find a foreign man. I dream to meet a decent, kind and clever man!! It is difficult to tell about myself. If this is of any interest to you, write to me.My address - ramsdams@gmail.com   I\'ll wait!! Kisses Elena
 
-=D0=A3=D1=81=D0=BF=D1=96=D1=85=D1=96=D0=B2,
-=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 =D0=9A=D0=BE=D0=BD=D0=BD=D0=B5=
-=D0=BA=D1=82=D0=B0
 
-2007 - 2008  http://connect.com.ua
 
-PS: =D0=9D=D0=B0=D0=B3=D0=B0=D0=B4=D0=B0=D1=83=D1=94=D0=BC=D0=BE, =D1=87=
-=D1=82=D0=BE =D0=B2=D1=96=D0=B4=D0=BC=D0=BE=D0=B2=D0=B8=D1=82=D0=B8=D1=81=
-=D1=8F =D0=B2=D1=96=D0=B4 =D0=BB=D0=B8=D1=81=D1=82=D1=83=D0=B2=D0=B0=D0=
-=BD=D0=BD=D1=8F =D0=BC=D0=BE=D0=B6=D0=BD=D0=B0 =D1=83 =D1=80=D0=BE=D0=B7=
-=D0=B4=D1=96=D0=BB=D1=96 "=D0=9D=D0=B0=D0=BB=D0=B0=D1=88=D1=82=D1=83=D0=
-=B2=D0=B0=D0=BD=D0=BD=D1=8F" http://connect.com.ua/my/privacy
-
-PS: =D0=94=D1=80=D1=83=D0=B7=D1=96, =D1=80=D0=B0=D0=B4=D1=96 =D1=81=D0=BF=
-=D0=BE=D0=B2=D1=96=D1=81=D1=82=D0=B8=D1=82=D0=B8, =D1=89=D0=BE =D0=9A=D0=
-=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82 =D1=82=D0=B5=D0=BF=D0=B5=D1=80 =D1=80=
-=D0=BE=D0=B7=D0=BC=D0=BE=D0=B2=D0=BB=D1=8F=D1=94 i =D1=80i=D0=B4=D0=BD=D0=
-=BE=D1=8E =D0=BC=D0=BE=D0=B2=D0=BE=D1=8E.
-=D0=97=D0=BC=D1=96=D0=BD=D0=B8=D1=82=D0=B8 =D0=BC=D0=BE=D0=B2=D1=83 =D1=
-=96=D0=BD=D1=82=D0=B5=D1=80=D1=84=D0=B5=D0=B9=D1=81=D1=83 =D0=BC=D0=BE=D0=
-=B6=D0=BD=D0=B0 =D1=83 =D0=B2=D0=B5=D1=80=D1=85=D0=BD=D1=8C=D0=BE=D0=BC=
-=D1=83 =D0=BC=D0=B5=D0=BD=D1=8E.
------------------------------------------------------------------------=
---
-=D0=94=D1=80=D1=83=D0=B7=D1=8C=D1=8F, =D1=80=D0=B0=D0=B4=D1=8B =D1=81=D0=
-=BE=D0=BE=D0=B1=D1=89=D0=B8=D1=82=D1=8C, =D1=87=D1=82=D0=BE =D0=9A=D0=BE=
-=D0=BD=D0=BD=D0=B5=D0=BA=D1=82 =D1=82=D0=B5=D0=BF=D0=B5=D1=80=D1=8C =D1=
-=80=D0=B0=D0=B7=D0=B3=D0=BE=D0=B2=D0=B0=D1=80=D0=B8=D0=B2=D0=B0=D0=B5=D1=
-=82 =D0=BD=D0=B0 =D1=83=D0=BA=D1=80=D0=B0=D0=B8=D0=BD=D1=81=D0=BA=D0=BE=
-=D0=BC =D1=8F=D0=B7=D1=8B=D0=BA=D0=B5.
-=D0=98=D0=B7=D0=BC=D0=B5=D0=BD=D0=B8=D1=82=D1=8C =D1=8F=D0=B7=D1=8B=D0=BA=
- =D0=B8=D0=BD=D1=82=D0=B5=D1=80=D1=84=D0=B5=D0=B9=D1=81=D0=B0 =D0=BC=D0=
-=BE=D0=B6=D0=BD=D0=BE =D0=B2 =D0=B2=D0=B5=D1=80=D1=85=D0=BD=D0=B5=D0=BC=
- =D0=BC=D0=B5=D0=BD=D1=8E.
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
