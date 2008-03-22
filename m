@@ -1,106 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYCVTEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYCVTE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbYCVTEB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 15:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYCVTDy
+	id S1758053AbYCVTE2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 15:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757718AbYCVTES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 15:03:54 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53973 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753415AbYCVTDx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 15:03:53 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47E557D5.9020604@s5r6.in-berlin.de>
-Date: Sat, 22 Mar 2008 20:02:45 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Sat, 22 Mar 2008 15:04:18 -0400
+Received: from www.tglx.de ([62.245.132.106]:60884 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753439AbYCVTER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 15:04:17 -0400
+Date: Sat, 22 Mar 2008 20:03:30 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [GIT pull] x86 revert dma32 gart
+Message-ID: <alpine.LFD.1.00.0803221926580.3781@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
- regressions from 2.6.24)
-References: <200803220259.48534.rjw@sisk.pl> <47E5350D.101@s5r6.in-berlin.de> <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de>
-In-Reply-To: <47E54FA6.3060809@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Thomas Meyer wrote:
->> Stefan Richter schrieb:
->>>   - Is the "WARNING: at arch/x86/mm/ioremap.c" still there?
->> No. I couldn't reproduce this warning, yet.
->>
->>>   - Can you reproduce it without the atheros driver?
->> Yes.
->>
->> See http://bugzilla.kernel.org/show_bug.cgi?id=10080.
-> 
-> Thanks.  Summary from today's bugzilla comments:
-> No ioremap warning, but MMIO reads still give bogus values and let 
-> ohci1394 fail.  ohci1394 still got the MMIO region 0x1'0000'0000 - 
-> 0x1'0000'07ff, FWIW.  The length of the region is correct, but its 
-> contents bogus.
+Linus,
 
-Can an MMIO region reside above 0x1'0000'0000 on x86-32? ... Apparently 
-yes, if CONFIG_RESOURCES_64BIT=y.
+please pull from
 
- From Thomas' dmesg:
-http://bugzilla.kernel.org/attachment.cgi?id=15397
+ ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git for-linus
 
-BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-  BIOS-e820: 00000000000ede00 - 0000000000100000 (reserved)
-  BIOS-e820: 0000000000100000 - 000000007f0c8000 (usable)
-  BIOS-e820: 000000007f0c8000 - 000000007f2c9000 (ACPI NVS)
-  BIOS-e820: 000000007f2c9000 - 000000007feb9000 (ACPI data)
-  BIOS-e820: 000000007feb9000 - 000000007feef000 (ACPI NVS)
-  BIOS-e820: 000000007feef000 - 000000007ff00000 (ACPI data)
-  BIOS-e820: 000000007ff00000 - 0000000080000000 (reserved)
-  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
-  BIOS-e820: 00000000fed1c000 - 00000000fed20000 (reserved)
-  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-  BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
-1136MB HIGHMEM available.
-896MB LOWMEM available.
-...
-ACPI: RSDP 000FE020, 0024 (r2 APPLE )
-ACPI: XSDT 7FEFD120, 0074 (r1 APPLE   Apple00       55       1000013)
-ACPI: FACP 7FEFB000, 00F4 (r3 APPLE   Apple00       55 Loki       5F)
-ACPI: DSDT 7FEF0000, 48C0 (r1 APPLE  MacBookP    10001 INTL 20050309)
+the revert below.
 
- From Thomas' .config:
-http://bugzilla.kernel.org/attachment.cgi?id=15396
-CONFIG_RESOURCES_64BIT=y
+Thanks,
 
-I have a Mac mini but run x86-64 on it.  However, I've got another 
-i945GM based PC with x86-32 and three OHCI-1394 controllers in it.
-I always had CONFIG_RESOURCES_64BIT switched off.  I shall try 
-CONFIG_RESOURCES_64BIT=y on that PC.
+	tglx
 
-Thomas, did you use CONFIG_RESOURCES_64BIT=y already under Linux 2.6.24?
+---
+x86: revert: reserve dma32 early for gart
 
-All, is there anything special that drivers need to take care of for 
-CONFIG_RESOURCES_64BIT=y?
+Revert
 
-We use resource_size_t ohci_base to request the MMIO region in 
-drivers/ieee1394/ohci1394.c::ohci1394_pci_probe().  And we use struct 
-ti_ohci::void __iomem *registers to store the MMIO base we get from 
-ioremap, and readl(ohci->registers + (int)offset) and writel((u32)data, 
-ohci->registers + (int)offset) to peek and poke in them; see 
-drivers/ieee1394/ohci1394.h.
--- 
-Stefan Richter
--=====-==--- --== =-==-
-http://arcgraph.de/sr/
+commit f62f1fc9ef94f74fda2b456d935ba2da69fa0a40
+Author: Yinghai Lu <yhlu.kernel@gmail.com>
+Date:   Fri Mar 7 15:02:50 2008 -0800
+
+    x86: reserve dma32 early for gart
+
+The patch has a dependency on bootmem modifications which are not .25
+material that late in the -rc cycle. The problem which is addressed by
+the patch is limited to machines with 256G and more memory booted with
+NUMA disabled. This is not a .25 regression and the audience which is
+affected by this problem is very limited, so it's safer to do the
+revert than pulling in intrusive bootmem changes right now.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/pci-dma_64.c |   49 -------------------------------------------
+ arch/x86/kernel/setup_64.c   |    2 -
+ include/asm-x86/pci_64.h     |    1 
+ 3 files changed, 52 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/pci-dma_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/pci-dma_64.c
++++ linux-2.6/arch/x86/kernel/pci-dma_64.c
+@@ -8,8 +8,6 @@
+ #include <linux/pci.h>
+ #include <linux/module.h>
+ #include <linux/dmar.h>
+-#include <linux/bootmem.h>
+-#include <asm/proto.h>
+ #include <asm/io.h>
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+@@ -288,55 +286,8 @@ static __init int iommu_setup(char *p)
+ }
+ early_param("iommu", iommu_setup);
+ 
+-static __initdata void *dma32_bootmem_ptr;
+-static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
+-
+-static int __init parse_dma32_size_opt(char *p)
+-{
+-	if (!p)
+-		return -EINVAL;
+-	dma32_bootmem_size = memparse(p, &p);
+-	return 0;
+-}
+-early_param("dma32_size", parse_dma32_size_opt);
+-
+-void __init dma32_reserve_bootmem(void)
+-{
+-	unsigned long size, align;
+-	if (end_pfn <= MAX_DMA32_PFN)
+-		return;
+-
+-	align = 64ULL<<20;
+-	size = round_up(dma32_bootmem_size, align);
+-	dma32_bootmem_ptr = __alloc_bootmem_nopanic(size, align,
+-				 __pa(MAX_DMA_ADDRESS));
+-	if (dma32_bootmem_ptr)
+-		dma32_bootmem_size = size;
+-	else
+-		dma32_bootmem_size = 0;
+-}
+-static void __init dma32_free_bootmem(void)
+-{
+-	int node;
+-
+-	if (end_pfn <= MAX_DMA32_PFN)
+-		return;
+-
+-	if (!dma32_bootmem_ptr)
+-		return;
+-
+-	for_each_online_node(node)
+-		free_bootmem_node(NODE_DATA(node), __pa(dma32_bootmem_ptr),
+-				  dma32_bootmem_size);
+-
+-	dma32_bootmem_ptr = NULL;
+-	dma32_bootmem_size = 0;
+-}
+-
+ void __init pci_iommu_alloc(void)
+ {
+-	/* free the range so iommu could get some range less than 4G */
+-	dma32_free_bootmem();
+ 	/*
+ 	 * The order of these functions is important for
+ 	 * fall-back/fail-over reasons
+Index: linux-2.6/arch/x86/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_64.c
++++ linux-2.6/arch/x86/kernel/setup_64.c
+@@ -389,8 +389,6 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	early_res_to_bootmem();
+ 
+-	dma32_reserve_bootmem();
+-
+ #ifdef CONFIG_ACPI_SLEEP
+ 	/*
+ 	 * Reserve low memory region for sleep support.
+Index: linux-2.6/include/asm-x86/pci_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/pci_64.h
++++ linux-2.6/include/asm-x86/pci_64.h
+@@ -25,7 +25,6 @@ extern int (*pci_config_write)(int seg, 
+ 
+ 
+ 
+-extern void dma32_reserve_bootmem(void);
+ extern void pci_iommu_alloc(void);
+ 
+ /* The PCI address space does equal the physical memory
