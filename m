@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYCVHOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbYCVHPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755735AbYCVHOl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 03:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYCVHOe
+	id S1753404AbYCVHPU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 03:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYCVHPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 03:14:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52542 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbYCVHOd (ORCPT
+	Sat, 22 Mar 2008 03:15:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58089 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754025AbYCVHPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 03:14:33 -0400
-Date: Sat, 22 Mar 2008 00:19:26 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.25-rc6: kernel BUG at fs/sysfs/file.c:89
-Message-ID: <20080322071926.GA1743@kroah.com>
-References: <alpine.DEB.1.00.0803212319130.17137@sheep.housecafe.de> <200803220226.35552.rjw@sisk.pl> <20080321222606.16407d74.akpm@linux-foundation.org> <20080322062025.GA28146@kroah.com> <20080321232632.84a2af8a.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Sat, 22 Mar 2008 03:15:04 -0400
+Date: Sat, 22 Mar 2008 08:17:55 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Message-ID: <20080322071755.GP2346@one.firstfloor.org>
+References: <20080318095715.27120788.akpm@linux-foundation.org> <20080318172045.GI11966@one.firstfloor.org> <20080318104437.966c10ec.akpm@linux-foundation.org> <20080319083228.GM11966@one.firstfloor.org> <20080319020440.80379d50.akpm@linux-foundation.org> <a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com> <20080320090005.GA25734@one.firstfloor.org> <a36005b50803211015l64005f6emb80dbfc21dcfad9f@mail.gmail.com> <20080321172644.GG2346@one.firstfloor.org> <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080321232632.84a2af8a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 11:26:32PM -0700, Andrew Morton wrote:
-> On Fri, 21 Mar 2008 23:20:25 -0700 Greg KH <greg@kroah.com> wrote:
+On Fri, Mar 21, 2008 at 09:36:51PM -0700, Ulrich Drepper wrote:
+> On Fri, Mar 21, 2008 at 10:26 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> >  Concrete suggestions please.
 > 
-> > > - we're killing people's machines.  Can we switch it to a
-> > >   WARN_ON()+fix-up-the-mess?
-> > 
-> > The patch above does just that, it's queued up for .26, but I have no
-> > objection to add it now if you want.
-> 
-> It'd be best to do so, I think.
-> 
-> Upsides: we get more debug info and we might save people's machines
-> 
-> Downsides: ???
+> I already spelled it out.  Add a new program header entry, point it to
+> a bit array large enough to cover all loadable segments.
 
-Ok, I'll move it up the stack to send to Linus on Monday.
+Ah that's easy, the program header is already supported in the kernel code
+(PT_PRESENT_BITMAP)
 
-thanks,
+The additional SHDR is just there for easier testing/migration.
+> 
+> It is not worth creating problems with this invalid extension just for
 
-greg k-h
+You still didn't say why it was invalid.
+
+Anyways I disagree on the value of supporting old binaries. I believe
+it is important.
+
+-Andi
