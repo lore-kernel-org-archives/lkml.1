@@ -1,349 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYCVCA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYCVCUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbYCVCA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 22:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYCVCAS
+	id S1755512AbYCVCUj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 22:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbYCVCUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 22:00:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44229 "EHLO ogre.sisk.pl"
+	Fri, 21 Mar 2008 22:20:11 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:62604 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbYCVCAP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 22:00:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.25-rc6-git6: Reported regressions from 2.6.24
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Date: Sat, 22 Mar 2008 02:59:47 +0100
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200803220259.48534.rjw@sisk.pl>
+	id S1750737AbYCVCUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 22:20:09 -0400
+To: miklos@szeredi.hu, viro@ZenIV.linux.org.uk
+Cc: haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, neilb@suse.de, akpm@linux-foundation.org,
+       hch@infradead.org, linux-security-module@vger.kernel.org,
+       jmorris@namei.org
+Subject: Re: r-o bind in nfsd
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <E1Jckjd-0001X8-IM@pomaz-ex.szeredi.hu>
+	<20080321181105.GW10722@ZenIV.linux.org.uk>
+	<E1JcmLz-0001n1-RC@pomaz-ex.szeredi.hu>
+	<20080321194931.GX10722@ZenIV.linux.org.uk>
+	<E1Jcnm7-00020F-7o@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Jcnm7-00020F-7o@pomaz-ex.szeredi.hu>
+Message-Id: <200803221120.ADB21850.SLtOJMFFOVOFQH@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sat, 22 Mar 2008 11:20:03 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message contains a list of some regressions from 2.6.24 reported since
-2.6.25-rc1 was released, for which there are no fixes in the mainline I know
-of.  If any of them have been fixed already, please let me know.
-
-If you know of any other unresolved regressions from 2.6.24, please let me know
-either and I'll add them to the list.  Also, please let me know if any of the
-entries below are invalid.
-
-
-Listed regressions statistics:
-
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  2008-03-22      159       35          31
-  2008-03-17      148       38          30
-  2008-03-16      146       42          35
-  2008-03-14      145       45          39
-  2008-03-12      143       51          41
-  2008-03-11      141       58          43
-  2008-03-10      138       66          47
-  2008-03-03      115       65          49
-  2008-02-25       90       51          39
-  2008-02-17       61       45          37
-
-
-Unresolved regressions
-----------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9412
-Subject		: Since commit 'x86: enable iommu_merge by default' (948062683004d13ca21c8c05ac052d387978a449) 2.6 is no go on SB600 AHCI
-Submitter	: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-Date		: 2007-11-19 14:43 (124 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9962
-Subject		: mount: could not find filesystem
-Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date		: 2008-02-12 14:34 (39 days old)
-References	: http://lkml.org/lkml/2008/2/12/91
-Handled-By	: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-		  Yinghai Lu <yhlu.kernel@gmail.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9976
-Subject		: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-Submitter	: Ben Nizette <bn@niasdigital.com>
-Date		: 2008-02-12 12:46 (39 days old)
-References	: http://lkml.org/lkml/2008/2/12/148
-Handled-By	: Haavard Skinnemoen <hskinnemoen@atmel.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
-Subject		: 2.6.25-rc1: volanoMark regression
-Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Date		: 2008-02-13 10:30 (38 days old)
-References	: http://lkml.org/lkml/2008/2/13/128
-		  http://lkml.org/lkml/2008/3/12/52
-		  http://lkml.org/lkml/2008/3/18/81
-Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-		  Balbir Singh <balbir@linux.vnet.ibm.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9980
-Subject		: 2.6.25-rc1 on Sun Ultra 40- HPET clocksource which causes it to hang
-Submitter	: Jasper Bryant-Greene <jasper@unix.geek.nz>
-Date		: 2008-02-13 12:25 (38 days old)
-References	: http://lkml.org/lkml/2008/2/13/181
-Handled-By	: Yinghai Lu <Yinghai.Lu@sun.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9995
-Subject		: 2.6.25-rc1 regression - backlight controlls do not work - ThinkPad T61
-Submitter	: Lukas Hejtmanek <xhejtman@fi.muni.cz>
-Date		: 2008-02-15 04:51 (36 days old)
-Handled-By	: Zhang Rui <rui.zhang@intel.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10011
-Subject		: The computer is blocked when X is started - unless max_cstate=2 - Acer Travelmate 4001 Lmi
-Submitter	: François Valenduc <francois.valenduc@tvcablenet.be>
-Date		: 2008-02-17 06:28 (34 days old)
-Handled-By	: Thomas Gleixner <tglx@linutronix.de>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10027
-Subject		: 2.6.25-rc[12] Video4Linux Bttv Regression
-Submitter	: Bongani Hlope <bonganilinux@mweb.co.za>
-Date		: 2008-02-17 09:36 (34 days old)
-References	: http://lkml.org/lkml/2008/2/17/55
-Handled-By	: Mauro Carvalho Chehab <mchehab@infradead.org>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10041
-Subject		: 2.6.25-rc1/2 regression: first-time login into gnome fails
-Submitter	: Romano Giannetti <romanol@upcomillas.es>
-Date		: 2008-02-18 11:56 (33 days old)
-References	: http://lkml.org/lkml/2008/2/18/145
-Handled-By	: Ray Lee <ray-lk@madrabbit.org>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10051
-Subject		: Spurious messages at boot, eventually hangs the usb subsustem
-Submitter	: Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-Date		: 2008-02-20 09:10 (31 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10065
-Subject		: 2.6.25-rc2 regression - hang on suspend
-Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-Date		: 2008-02-19 12:59 (32 days old)
-References	: http://lkml.org/lkml/2008/2/19/165
-		  http://lkml.org/lkml/2008/2/17/381
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10067
-Subject		: TUNER_TDA8290=y, VIDEO_DEV=n build error
-Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-Date		: 2008-02-22 10:36 (29 days old)
-References	: http://lkml.org/lkml/2008/2/19/262
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10080
-Subject		: 2.6.25-rc2: ohci1394 problem (MMIO broken)
-Submitter	: Thomas Meyer <thomas@m3y3r.de>
-Date		: 2008-02-20 08:47 (31 days old)
-References	: http://lkml.org/lkml/2008/2/20/58
-Handled-By	: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10082
-Subject		: 2.6.25-rc2-git4 - Kernel oops while running kernbench and tbench on powerpc
-Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date		: 2008-02-20 16:01 (31 days old)
-References	: http://lkml.org/lkml/2008/2/20/218
-		  http://lkml.org/lkml/2008/1/18/71
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10093
-Subject		: 2.6.25-current-git hangs on boot unless CONFIG_CPU_IDLE=n - Apple
-Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-Date		: 2008-02-23 18:55 (28 days old)
-References	: http://lkml.org/lkml/2008/2/23/263
-		  http://marc.info/?l=linux-acpi&amp;m=120387537018467&amp;w=4
-Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10117
-Subject		: 2.6.25-current-git hangs on boot (pci=nommconf helps)
-Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-Date		: 2008-02-23 18:55 (28 days old)
-References	: http://lkml.org/lkml/2008/2/23/263
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10133
-Subject		: INFO: possible circular locking in the resume
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-02-27 (24 days old)
-References	: http://lkml.org/lkml/2008/2/26/479
-Handled-By	: Gautham R Shenoy <ego@in.ibm.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10146
-Subject		: 2.6.25-rc: complete lockup on boot/start of X (bisected)
-Submitter	: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date		: 2008-03-02 20:00 (20 days old)
-References	: http://lkml.org/lkml/2008/3/2/91
-Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10156
-Subject		: KVM &amp; Qemu crashed with infinite recursive kernel loop in the guest
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-02-28 11:25 (23 days old)
-References	: http://lkml.org/lkml/2008/2/28/106
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10172
-Subject		: kvm: INFO: inconsistent lock state
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-03-05 03:26 (17 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10235
-Subject		: 2.6.25-rc5: Blank Screen with Intel 945
-Submitter	: Justin Madru <jdm64@gawab.com>
-Date		: 2008-03-12 12:02 (10 days old)
-References	: http://lkml.org/lkml/2008/3/12/290
-Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10242
-Subject		: rm command hangs
-Submitter	: Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-Date		: 2008-03-14 05:47 (8 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10271
-Subject		: dm raid1: bitops bug
-Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date		: 2008-03-17 16:45 (5 days old)
-References	: http://lkml.org/lkml/2008/3/17/174
-Handled-By	: Alasdair G Kergon <agk@redhat.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10290
-Subject		: [BUG] Linux 2.6.25-rc6 - kernel BUG at fs/mpage.c:476! on powerpc
-Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date		: 2008-03-20 13:13 (2 days old)
-References	: http://lkml.org/lkml/2008/3/20/39
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10291
-Subject		: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini Core Duo
-Submitter	: Tino Keitel <tino.keitel@gmx.de>
-Date		: 2008-03-20 07:05 (2 days old)
-References	: http://lkml.org/lkml/2008/3/20/23
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10295
-Subject		: rfkill continous console output
-Submitter	: Bruce Duncan <bwduncan@gmail.com>
-Date		: 2008-03-21 02:01 (1 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10300
-Subject		: volume wheel does not work in 2.6.25-rc6
-Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-Date		: 2008-03-21 11:42 (1 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10302
-Subject		: 2.6.25-git regression with snd-hda-intel on Dell XPS M1330, no analog sound
-Submitter	: Andre Tomt <andre@tomt.net>
-Date		: 2008-03-21 20:03 (1 days old)
-References	: http://lkml.org/lkml/2008/3/21/295
-Handled-By	: Matthew Ranostay <mranostay@embeddedalley.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10303
-Subject		: [BUG] oopses in different processes since 2.6.25-rc5-git4
-Submitter	: Markus Rehbach <markus.rehbach@gmx.de>
-Date		: 2008-03-21 17:18 (1 days old)
-References	: http://lkml.org/lkml/2008/3/21/202
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10304
-Subject		: 2.6.25-rc5-git5 KVM memory not freed
-Submitter	: Ioan Ionita <opslynx@gmail.com>
-Date		: 2008-03-20 18:41 (2 days old)
-References	: http://lkml.org/lkml/2008/3/20/136
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10305
-Subject		: 2.6.25-rc6: kernel BUG at fs/sysfs/file.c:89
-Submitter	: Christian Kujau <lists@nerdbynature.de>
-Date		: 2008-03-21 23:35 (1 days old)
-References	: http://lkml.org/lkml/2008/3/21/408
-
-
-Regressionn with patches
-------------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9969
-Subject		: 2.6.24-git15 Keyboard Issue?
-Submitter	: Chris Holvenstot <cholvenstot@comcast.net>
-Date		: 2008-02-06 14:02 (45 days old)
-References	: http://lkml.org/lkml/2008/2/6/100
-		  http://lkml.org/lkml/2008/2/13/82
-Handled-By	: Thomas Gleixner <tglx@linutronix.de>
-Patch		: http://lkml.org/lkml/2008/2/15/343
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10153
-Subject		: (regression) kernel/timeconst.h bugs with HZ=128
-Submitter	: David Brownell <david-b@pacbell.net>
-Date		: 2008-02-26 19:32 (25 days old)
-References	: http://lkml.org/lkml/2008/2/26/294
-Handled-By	: H. Peter Anvin <hpa@zytor.com>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=15114&amp;action=view
-		  http://bugzilla.kernel.org/attachment.cgi?id=15115&amp;action=view
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10186
-Subject		: SCSI_AIC94XX must depend on SCSI
-Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-Date		: 2008-03-06 19:09 (16 days old)
-References	: http://marc.info/?l=linux-kernel&amp;m=120483073617232&amp;w=2
-Handled-By	: Adrian Bunk <bunk@kernel.org>
-Patch		: http://marc.info/?l=linux-kernel&amp;m=120483499725928&amp;w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10207
-Subject		: INFO: task mount:11202 blocked for more than 120 seconds
-Submitter	: Christian Kujau <lists@nerdbynature.de>
-Date		: 2008-03-07 21:32 (15 days old)
-References	: http://lkml.org/lkml/2008/3/7/308
-		  http://lkml.org/lkml/2008/3/9/186
-Handled-By	: David Chinner <dgc@sgi.com>
-		  Milan Broz <mbroz@redhat.com>
-Patch		: http://lkml.org/lkml/2008/3/14/71
-		  http://lkml.org/lkml/2008/3/17/214
-
-
-For details, please visit the bug entries and follow the links given in
-references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions from 2.6.24,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9832
-
-Please let me know if there are any Bugzilla entries that should be added to
-the list in there.
-
-Thanks,
-Rafael
-
+Hello.
+
+> As for the apparmor and friends...  I'm far past the point of trying to
+> give them feedback, seeing how any such feedback is ignored, if not worse
+> (the ugliness of some of the suggested kludges is bloody astonishing - e.g.
+> some guy proposed to stuff a reference to vfsmount into task_struct, etc.)
+TOMOYO is one of AppArmor's friends, and I am the guy who proposed to pass
+a reference to vfsmount via task_struct as if that reference is passed via stack memory.
+
+> > Because filesystem shouldn't _care_ where it is mounted.  Anything
+> > vfsmount-dependent belongs to upper layers.  The same goes for passing
+> > nameidata to fs methods, BTW - again, ->follow_link() is an obvious
+> > legitimate exception.
+> 
+> Nobody wants to send vfsmounts to the filesystem.  But vfs_...() are
+> still part of the "upper layer", not the filesystem, so I'm not
+> convinced yet.  For example:
+I'm not asking to pass the vfsmount parameter to individual filesystem's "vfs functions".
+I'm asking to pass the vfsmount parameter to the "vfs *helper* functions".
+So, filesytem will not care where it is mounted
+even if the vfsmount is passed to "vfs *helper* functions".
+The vfs helper functions are designed to aggregate common checks (permission checks,
+inode_operations->foo existence checks etc.) to avoid scattering same code everywhere
+in the kernel, didn't they?
+
+> Assuming of course, that all valid users _do_ have the vfsmount
+> available, which I think is true.  If you have a counterexample,
+> please let us know.
+At least, calls to vfs helper functions from userland code
+_do_ have the vfsmount available because they are called immediately after the name resolution.
+
+Calls to vfs helper functions from kernel code does not always have the vfsmount available,
+but that's beyond what the LSM can do.
+We must trust kernel code, because kernel code can bypass the LSM check
+if the kernel code is malicious enough to directly call "vfs functions" instead of
+calling "vfs helper functions".
+(Or, more simply, kernel code can rewrite the call to the LSM check to no-op
+like funny workaround for vmsplice's vulnerability).
+
+I think attempt to receive the vfsmount from kernel code won't help guaranteeing that
+LSM's security checks are always performed.
+Routes to access "vfs functions" from kernel code is undeterminable.
+In other words, LSM can't guarantee that LSM's security checks are always performed
+against the kernel code regardless of the security model.
+
+But, at least, LSM can guarantee that LSM's security checks are always performed
+against the userland code regardless of the security model.
+Routes to access "vfs functions" from userland code is determinable.
+
+So, making the vfsmount available to LSM make sense.
+I don't care if the vfsmount is unavailable when the vfs helper function call was
+issued from kernel code.
