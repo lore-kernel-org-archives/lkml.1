@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYCVOmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbYCVPEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbYCVOmU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 10:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYCVOmL
+	id S1755281AbYCVPEs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 11:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYCVPEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 10:42:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:45080 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751236AbYCVOmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 10:42:11 -0400
-Date: Sat, 22 Mar 2008 15:41:01 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Gabriel C <crazy@frugalware.org>, Gabriel C <nix.or.die@googlemail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <20080322142502.GA10687@one.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0803221530290.3781@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org>
- <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de>
- <20080322142502.GA10687@one.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sat, 22 Mar 2008 11:04:38 -0400
+Received: from ns3.octant-fr.com ([91.121.71.136]:44042 "EHLO
+	ns3.octant-fr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbYCVPEh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 11:04:37 -0400
+Message-ID: <47E51FEC.8010501@octant-fr.com>
+Date: Sat, 22 Mar 2008 16:04:12 +0100
+From: Tobias Oed <tobias.oed@octant-fr.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Piel <eric.piel@tremplin-utc.net>
+CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, matthew@wil.cx,
+       Randy Dunlap <randy.dunlap@oracle.com>, tobias.oed@octant-fr.com
+Subject: Re: 2.6.25-rc6 compile error in drivers/acpi/osl.c
+References: <47E508B3.8070801@octant-fr.com> <47E51864.5000107@tremplin-utc.net>
+In-Reply-To: <47E51864.5000107@tremplin-utc.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Mar 2008, Andi Kleen wrote:
-> > CPU0 runs the watchdog timer and schedules it on CPU1.
-> > 
-> > With NO_HZ enabled CPU1 is in a long idle sleep. At this point of the
-> > boot process there is probably no timer pending on CPU1, which means
-> > the idle sleep is infinite.
-> > 
-> > Now some time later CPU1 gets woken by an interrupt/IPI and runs the
-> > timer wheel. At this point the pm_timer which is the reference clock
-> > has already wrapped around, so the watchdog thinks that there is a
+Eric Piel wrote:
+> (added Randy as CC just in case it ends up being a problem with 
+> 7ce9573e093891f5807e6e50f3bd2012f1e5d0fe)
+> Tobias Oed wrote:
+>> Hello,
+>> compiling 2.6.25-rc6 on my up to date fedora 8 system ends with
+>>
+>>   CC      drivers/acpi/osl.o
+>> drivers/acpi/osl.c:60:38: error: n: No such file or directory
+>> drivers/acpi/osl.c: In function ‘acpi_os_table_override’:
+>> drivers/acpi/osl.c:334: error: ‘AmlCode’ undeclared (first use in this 
+>> function)
+>> drivers/acpi/osl.c:334: error: (Each undeclared identifier is reported 
+>> only once
+>> drivers/acpi/osl.c:334: error: for each function it appears in.)
+>> make[2]: *** [drivers/acpi/osl.o] Error 1
+>> make[1]: *** [drivers/acpi] Error 2
+>> make: *** [drivers] Error 2
+>>
+>> Config attached
+> Hi Tobias,
+> First, you haven't sent the correct .config file (this one is dated "Fri 
+> Mar 14 21:06:35 2008").
+
+Oups, I took it from the wrong dir.
+
+> To fix your problem you just need to "make menuconfig" and change 
+> ACPI_CUSTOM_DSDT_FILE from "n" to "".
 > 
-> In my old original own noidletick code I simply limited all sleeps 
-> to below the wrap around of the primary timer.  Wouldn't something 
-> like that work?
+> Now the question is: how did you end up with this error? Is it just you 
+> who mistook while answering the questions of "make oldconfig" or did 
+> this "n" appeared automatically because was not ACPI_CUSTOM_DSDT is set. 
+> In which case this is a bug in the kernel.
+> 
+> Eric
 
-No, it does not solve the real problem of not reevaluating the timer
-wheel on the idle CPU when a timer gets added from some other CPU. We
-would paper over the watchdog issue, but postponing a timer event,
-which was added cross CPU to some artifical expiry time is simply
-wrong.
+I ran make oldconfig on my config for 2.6.25-rc5, and I answered n to 
+the question
 
-> I'm not sure just doing this for add_timer_on() only is correct.
-> After all it could affect any other code not run by add_timer_on()
-> couldn't it?
+   Custom DSDT Table file to include (ACPI_CUSTOM_DSDT_FILE) [] (NEW)
 
-No, it's limited to add_timer_on() simply because no other code can
-add a new timer (timer_list or hrtimer) which modifies the next event
-on another CPU. There is also the rare case, when one CPU runs the
-timer callback and the other one modifies the timer, but that's not
-relevant for the NOHZ problem because the CPU which runs the callback
-is not idle at this point.
+Somehow not putting anything didn't seem right at the time. I see my 
+error now.
+Thanks for the quick answer and sorry for the noise.
+Tobias Oed
 
-All other timer operations are CPU local and reevaluated before the
-CPU goes idle again.
 
-Thanks,
-
-	tglx
+-- 
+*Tobias Oed* - Octant Informatique <http://www.octant-fr.com>
+contact | tobias.oed@octant-fr.com <mailto:tobias.oed@octant-fr.com> -
+04 76 50 82 38
+image
