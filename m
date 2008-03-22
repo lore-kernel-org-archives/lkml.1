@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYCVAHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbYCVAKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbYCVAHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 20:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbYCVAHF
+	id S1758148AbYCVAKy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 20:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYCVAKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 20:07:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:28490 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753363AbYCVAHD convert rfc822-to-8bit (ORCPT
+	Fri, 21 Mar 2008 20:10:46 -0400
+Received: from hs-out-0708.google.com ([64.233.178.248]:22200 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752956AbYCVAKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 20:07:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,537,1199692800"; 
-   d="scan'208";a="221560504"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 21 Mar 2008 20:10:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nEdlDpGRELzAv67n+EdNtYEkp1DVNDUFolCQ2ENWiGt/xELYOw21Zle+NN3i80u5jKbddJB2eJhoGGHz5Kj+iaj6If9OHrlNF3jyyS5q8y6AMlLbTsZYsWGor/A1m3PqygPSqU0IGbkV4jnKmCRBEfL4csucudJw47P4U6/Up9k=
+Message-ID: <9a8748490803211710u4c5d1d67x2a5a891347e0adf6@mail.gmail.com>
+Date: Sat, 22 Mar 2008 01:10:40 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Chris Wright" <chrisw@sous-sol.org>
+Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       "Justin Forbes" <jmforbes@linuxtx.org>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Michael Krufky" <mkrufky@linuxtv.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Domenico Andreoli" <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "David S. Miller" <davem@davemloft.net>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+In-Reply-To: <20080321224333.400857992@sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH, RFC] Create 'slot' sysfs attributein/sys/devices/system/cpu/cpuN/topology/
-Date: Fri, 21 Mar 2008 16:58:30 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com>
-In-reply-to: <20080319233140.GD16237@ldl.fc.hp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH, RFC] Create 'slot' sysfs attributein/sys/devices/system/cpu/cpuN/topology/
-Thread-Index: AciKGWkWI+JsGF1mSza4u/9FKmYOyQBlP1BQ
-References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Alex Chiang" <achiang@hp.com>
-Cc: <lenb@kernel.org>, <linux-ia64@vger.kernel.org>,
-       <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 21 Mar 2008 23:58:31.0974 (UTC) FILETIME=[7774CC60:01C88BAF]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080321224250.144333319@sous-sol.org>
+	 <20080321224333.400857992@sous-sol.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-+	if (ACPI_SUCCESS(acpi_get_handle(pr->handle, "_SUN", &handle))) {
-+		status = acpi_evaluate_object(pr->handle,
-+						"_SUN", NULL, &buffer);
-+		if (ACPI_FAILURE(status))
-+			object.integer.value = -1;
-+	} else {
-+		object.integer.value = -1;
-+	}
-+	arch_set_topology_slot(pr->id, object.integer.value);
-+
- 	if (!object.processor.pblk_address)
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No PBLK (NULL address)\n"));
- 	else if (object.processor.pblk_length != 6)
+On 21/03/2008, Chris Wright <chrisw@sous-sol.org> wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
+>  ---------------------
+>
+I don't see how this one fits this criteria from
+Documentation/stable_kernel_rules.txt :
 
-I'm still seeing these messages:
+...
+ - It must fix a real bug that bothers people (not a, "This could be a
+   problem..." type thing).
+...
 
- "ACPI: Invalid PBLK length [0]"
+As I see it, this patch is quite trivial and does not fix any "real problem".
+How come this is suitable for -stable?
 
-for every cpu.  Presumably because "object" is a union and when
-you did the "object.integer.value = -1;" you scribbled on some bits
-that were needed in the subsequent code.
+I have no objections to the patch "as such", I just don't think it
+makes sense for -stable.
 
--Tony
+
+>  From: David S. Miller <davem@davemloft.net>
+>
+>  Upstream commit: a442585952f137bd4cdb1f2f3166e4157d383b82
+>
+>  Signed-off-by: David S. Miller <davem@davemloft.net>
+>  Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>  Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+>
+>  ---
+>   drivers/net/niu.c |    4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+>  --- a/drivers/net/niu.c
+>  +++ b/drivers/net/niu.c
+>  @@ -33,8 +33,8 @@
+>
+>   #define DRV_MODULE_NAME                "niu"
+>   #define PFX DRV_MODULE_NAME    ": "
+>  -#define DRV_MODULE_VERSION     "0.6"
+>  -#define DRV_MODULE_RELDATE     "January 5, 2008"
+>  +#define DRV_MODULE_VERSION     "0.7"
+>  +#define DRV_MODULE_RELDATE     "February 18, 2008"
+>
+>   static char version[] __devinitdata =
+>         DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
+>
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
