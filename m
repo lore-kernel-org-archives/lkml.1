@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYCVXL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYCVXXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758753AbYCVXL6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 19:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbYCVXLf
+	id S1757731AbYCVXXt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 19:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYCVXXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 19:11:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:24305 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYCVXLd (ORCPT
+	Sat, 22 Mar 2008 19:23:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:40237 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754143AbYCVXXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 19:11:33 -0400
+	Sat, 22 Mar 2008 19:23:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=D990yENt9mJAyzkmjdrp5E2v5x0lORNVal5sjL2IB0VZCoa29z3rW4JoYzdch0yshiFR++iKGmnToI/rmnBduPgWgT3dp93rERtx5Kev+lyooXvi/K2KhFafm8teE26cLiCMgpiCluV9W1nJwth4lDlH2U/X83P9asBzHtOR9R0=
-Date: Sun, 23 Mar 2008 02:09:12 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, adaplas@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] nv: drop useless CONFIG_PCI checks
-Message-ID: <20080322230912.GA14426@martell.zuzino.mipt.ru>
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=NJ3ILh63AwyP5o0dpq2it75q+6uauQheVzxje+T+jixdidsNfo4RBIDq3VmZCJK8eBRN7lCrLombCYp9brJyjkxv3DkouJF3dDK/syVpAHtmwjkictshu20KLa7SpFlgPuzBV53v4td5okW3CLDHYqf0MrHHA544XUp+4nTnjoQ=
+Message-ID: <dd18b0c30803221623p16d6e47fjedd15a0ce34a576a@mail.gmail.com>
+Date: Sat, 22 Mar 2008 23:23:34 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: rh_timer_func
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both FB_RIVA and FB_NVIDIA depends on PCI, so
-CONFIG_PCI always defined for them.
+Hello;
+I'm not going to talk about fglrx. My goal right now is to make sure
+everything is up and running i.g. keyboard,isight,ati,infrared
+receiver etc... So I can focus on tyring
+to get the macbook to four hours of battery life. here is a list of
+problems I see, Hopefully I can get some answers  so linux can reach
+the spec on a mac, or even better:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+drivers/hid/usbhid/hid-core.c: couldn't find an input interrupt endpoint.
 
- drivers/video/riva/fbdev.c     |    4 ----
- drivers/video/riva/nv_driver.c |    5 -----
- 2 files changed, 9 deletions(-)
+this error occurs randomly every so often:
+drivers/input/mouse/appletouch.c: could not do mode read request from
+device (Geyser Raw mode)
+appletouch: probe of 1-2:1.1
 
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -56,10 +56,6 @@
- #include "rivafb.h"
- #include "nvreg.h"
- 
--#ifndef CONFIG_PCI		/* sanity check */
--#error This driver requires PCI support.
--#endif
--
- /* version number of this driver */
- #define RIVAFB_VERSION "0.9.5b"
- 
---- a/drivers/video/riva/nv_driver.c
-+++ b/drivers/video/riva/nv_driver.c
-@@ -41,11 +41,6 @@
- #include "rivafb.h"
- #include "nvreg.h"
- 
--
--#ifndef CONFIG_PCI		/* sanity check */
--#error This driver requires PCI support.
--#endif
--
- #define PFX "rivafb: "
- 
- static inline unsigned char MISCin(struct riva_par *par)
+suspend was working at around 2.6.21, then never worked.
 
+When using powertop I was able to reach around 3:10hrs at 16W, running
+OSX I see around 4:17 on a fresh battery.
+ I've noticed the processor goes to the C3 state, but stays at 100%
+due to too many interrupts: a main interrupt I see is this one =
+<kernel modules> : usb_hcd_poll_rh_status (rh_timer_func); when the
+system is powered on this timer is around 1.1% then when powering down
+the system; i.g. turning of daemons, and rrmod, this timer goes to
+around 80-90%. I've read the usb documentation; but seem to be missing
+something to have this timer fall asleep.
+any help would be appreciated.
+
+-- 
+Justin P. Mattock
