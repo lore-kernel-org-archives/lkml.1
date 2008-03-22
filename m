@@ -1,157 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbYCVV5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbYCVV6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbYCVV5W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 17:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYCVV5O
+	id S1758021AbYCVV6m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 17:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYCVV6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 17:57:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:33618 "EHLO www.tglx.de"
+	Sat, 22 Mar 2008 17:58:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46408 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753901AbYCVV5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 17:57:13 -0400
-Date: Sat, 22 Mar 2008 22:55:58 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <crazy@frugalware.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47DDB969.1060200@googlemail.com> <alpine.LFD.1.00.0803171716130.3781@apollo.tec.linutronix.de> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com>
- <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org>
- <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org>
- <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org> <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1754205AbYCVV6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 17:58:32 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Frank Mayhar <fmayhar@google.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: posix-cpu-timers revamp
+In-Reply-To: Frank Mayhar's message of  Friday, 21 March 2008 10:57:20 -0700 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	<20080206165045.89b809cc.akpm@linux-foundation.org>
+	<1202345893.8525.33.camel@peace.smo.corp.google.com>
+	<alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
+	<20080207162203.3e3cf5ab@Varda>
+	<alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+	<alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
+	<20080207165455.04ec490b@Varda>
+	<alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	<alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+	<1204314904.4850.23.camel@peace.smo.corp.google.com>
+	<20080304070016.903E127010A@magilla.localdomain>
+	<1204660376.9768.1.camel@bobble.smo.corp.google.com>
+	<20080305040826.D0E6127010A@magilla.localdomain>
+	<1204830243.20004.31.camel@bobble.smo.corp.google.com>
+	<20080311075020.A93DB26F991@magilla.localdomain>
+	<1205269507.23124.57.camel@bobble.smo.corp.google.com>
+	<20080311213507.5BCDF26F991@magilla.localdomain>
+	<1205455050.19551.16.camel@bobble.smo.corp.google.com>
+	<20080321071846.1B22B26F9A7@magilla.localdomain>
+	<1206122240.14638.31.camel@bobble.smo.corp.google.com>
+X-Shopping-List: (1) Gaelic Beef chains
+   (2) Felonious compasses
+   (3) Flammable consoles
+   (4) Callous bees
+   (5) Prevalent honey
+Message-Id: <20080322215829.D69D026F9A7@magilla.localdomain>
+Date: Sat, 22 Mar 2008 14:58:29 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Mar 2008, Thomas Gleixner wrote:
-> On Sat, 22 Mar 2008, Gabriel C wrote:
-> > With this one TSC is fine but now I get a warning on boot :
-> 
-> Good. It confirms my assumptions about the root cause.
-> 
-> > [    0.041037] ------------[ cut here ]------------
-> > [    0.041052] WARNING: at arch/x86/kernel/smp_32.c:562 native_smp_call_function_mask+0x23/0x11e()
-> 
-> Grr. I'll work out a solution for that one.
+> I would really like to just ignore the 2-cpu scenario and just have two
+> versions, the UP version and the n-way SMP version.  It would make life,
+> and maintenance, simpler.
 
-Gabriel,
+Like I've said, it's only something to investigate for best performance.
+If the conditional code is encapsulated well, it will be simple to add
+another variant later and experiment with it.
 
-I'm happy to rack your nerves some more.
+> Okay, I'll go back over this and make sure I got it right.  It's
+> interesting, though, that my current patch (written without this
+> particular bit of knowledge) actually performs no differently from the
+> existing mechanism.
 
-After discussing the issue with Peter and Ingo the following solution
-seems to be the one which is the least intrusive. 
+Except for correctness in scenarios other than the one you are testing. :-)
 
-Can you please give it a test ride ?
+> 	Testing was performed using a heavily-modified version of the test
+> 	that originally showed the problem.  The test sets ITIMER_PROF (if
+> 	not run with "nohang" in the name of the executable) [...]
+
+There are several important scenarios you did not test.
+Analysis of combinations of all these variables is needed.
+1. Tests with a few threads, like as many threads as CPUs or only 2x as many.
+2. Tests with a process CPU timer set for a long expiration time.
+   i.e. a timer set, but that never goes off in your entire run.
+   (This is what a non-infinity RLIMIT_CPU limit does.)
+   With the old code, a long enough timer and a small enough number
+   of threads will never trigger a "rebalance".
+
+> Actually, after looking at the code again and thinking about it a bit,
+> it appears that the signal_struct.it_*_incr field holds the actual
+> interval as set by setitimer.  Initially the it_*_expires field holds
+> the expiration time as set by setitimer, but after the timer fires the
+> first time that value becomes <firing time>+it_*_incr.  In other words,
+> the first time it fires at the value set by setitimer() but from then on
+> it fires at a time indicated by whatever the time was the last time the
+> timer fired plus the value in it_*_incr.  This time is stored in
+> signal_struct.it_*_expires.
+
+That's correct.  The it_*_expires fields store itimerval.it_value (the
+current timer) and the it_*_incr fields store itimerval.it_interval (the
+timer reload setting).
+
+> I guess I could be wrong about this, but it appears to be what the code
+> is doing.  If my analysis is correct, I really don't need a new field,
+> since the old fields work just fine.
+
+The analysis above is correct but your conclusion here is wrong.
+The current value of an itimer is a user feature, not just a piece
+of internal bookkeeping.
+
+getitimer returns in it_value the amount of time until the itimer
+fires, regardless of whether or not it will reload after it fires or
+with what value it will be reloaded.  In a setitimer call, the
+it_value sets the time at which the itimer must fire, regardless of
+the reload setting in it_interval.  Consider the case where
+it_interval={0,0}; it_value is still meaningful.  
+
+Your code causes any timer_settime or timer_delete call on a process
+CPU timer or any setrlimit call on RLIMIT_CPU to suddenly change the
+itimer setting just as if the user had made some setitimer call that
+was never made or intended.  That's wrong.
+
 
 Thanks,
-
-	tglx
----
- include/linux/sched.h |    6 ++++++
- kernel/sched.c        |   42 ++++++++++++++++++++++++++++++++++++++++++
- kernel/timer.c        |   10 +++++++++-
- 3 files changed, 57 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1541,6 +1541,12 @@ static inline void idle_task_exit(void) 
- 
- extern void sched_idle_next(void);
- 
-+#ifdef CONFIG_NO_HZ
-+extern void wake_up_idle_cpu(int cpu);
-+#else
-+static inline void wake_up_idle_cpu(int cpu) { }
-+#endif
-+
- #ifdef CONFIG_SCHED_DEBUG
- extern unsigned int sysctl_sched_latency;
- extern unsigned int sysctl_sched_min_granularity;
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -848,6 +848,48 @@ static inline void resched_task(struct t
- 	__resched_task(p, TIF_NEED_RESCHED);
- }
- 
-+#ifdef CONFIG_NO_HZ
-+/*
-+ * When add_timer_on() enqueues a timer into the timer wheel of an
-+ * idle CPU then this timer might expire before the next timer event
-+ * which is scheduled to wake up that CPU. In case of a completely
-+ * idle system the next event might even be infinite time into the
-+ * future. wake_up_idle_cpu() ensures that the CPU is woken up and
-+ * leaves the inner idle loop so the newle added timer is taken into
-+ * account when the CPU goes back to idle and evaluates the timer
-+ * wheel for the next timer event.
-+ */
-+void wake_up_idle_cpu(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+
-+	if (cpu == smp_processor_id())
-+		return;
-+
-+	/*
-+	 * This is safe, as this function is called with the timer
-+	 * wheel base lock of (cpu) held. When the CPU is on the way
-+	 * to idle and has not yet set rq->curr to idle then it will
-+	 * be serialized on the timer wheel base lock and take the new
-+	 * timer into account automatically.
-+	 */
-+	if (rq->curr != rq->idle)
-+		return;
-+
-+	/*
-+	 * We can set TIF_RESCHED on the idle task of the other CPU
-+	 * lockless. The worst case is that the other CPU runs the
-+	 * idle task through an additional NOOP schedule()
-+	 */
-+	set_tsk_thread_flag(rq->idle, TIF_NEED_RESCHED);
-+
-+	/* NEED_RESCHED must be visible before we test polling */
-+	smp_mb();
-+	if (!tsk_is_polling(rq->idle))
-+		smp_send_reschedule(cpu);
-+}
-+#endif
-+
- #ifdef CONFIG_SCHED_HRTICK
- /*
-  * Use HR-timers to deliver accurate preemption points.
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c
-+++ linux-2.6/kernel/timer.c
-@@ -451,10 +451,18 @@ void add_timer_on(struct timer_list *tim
- 	spin_lock_irqsave(&base->lock, flags);
- 	timer_set_base(timer, base);
- 	internal_add_timer(base, timer);
-+	/*
-+	 * Check whether the other CPU is idle and needs to be
-+	 * triggered to reevaluate the timer wheel when nohz is
-+	 * active. We are protected against the other CPU fiddling
-+	 * with the timer by holding the timer base lock. This also
-+	 * makes sure that a CPU on the way to idle can not evaluate
-+	 * the timer wheel.
-+	 */
-+	wake_up_idle_cpu(cpu);
- 	spin_unlock_irqrestore(&base->lock, flags);
- }
- 
--
- /**
-  * mod_timer - modify a timer's timeout
-  * @timer: the timer to be modified
+Roland
