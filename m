@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYCVRv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbYCVRyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbYCVRv0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 13:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYCVRvU
+	id S1756917AbYCVRyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 13:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYCVRyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 13:51:20 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:38348 "EHLO WNmonitoring"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754681AbYCVRvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 13:51:19 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 1/1] Arch-x86: pgtable, document pde bits
-Date: Sat, 22 Mar 2008 18:50:22 +0100
-Message-Id: <1206208222-9671-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.4.1
+	Sat, 22 Mar 2008 13:54:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47184 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754755AbYCVRyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 13:54:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc6-git6: Reported regressions from 2.6.24
+Date: Sat, 22 Mar 2008 18:53:42 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Jeff Garzik <jeff@garzik.org>
+References: <200803220259.48534.rjw@sisk.pl> <20080321223315.3e0e042f.akpm@linux-foundation.org> <20080322111535.GC13264@elte.hu>
+In-Reply-To: <20080322111535.GC13264@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803221853.43669.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some of pde bits weren't documented, add the short description to them.
+On Saturday, 22 of March 2008, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > ...
+> > > 
+> > > Date		: 2007-11-19 14:43 (124 days old)
+> 
+> btw., this one appears to be an accounting artifact: two regressions 
+> with similar (same?) symptoms in the same bugzilla. The first regression 
+> was resolved after 7 days, the second was reopened 10 days ago. (It 
+> could easily be about the same underlying (hw?) problem, but the 
+> regression window for users was very small.)
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
----
- include/asm-x86/pgtable.h |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+Hm, perhaps we should create another bugzilla entry for the problem
+described in http://bugzilla.kernel.org/show_bug.cgi?id=9412#c5.
 
-diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
-index 174b877..986204a 100644
---- a/include/asm-x86/pgtable.h
-+++ b/include/asm-x86/pgtable.h
-@@ -4,13 +4,13 @@
- #define USER_PTRS_PER_PGD	((TASK_SIZE-1)/PGDIR_SIZE+1)
- #define FIRST_USER_ADDRESS	0
- 
--#define _PAGE_BIT_PRESENT	0
--#define _PAGE_BIT_RW		1
--#define _PAGE_BIT_USER		2
--#define _PAGE_BIT_PWT		3
--#define _PAGE_BIT_PCD		4
--#define _PAGE_BIT_ACCESSED	5
--#define _PAGE_BIT_DIRTY		6
-+#define _PAGE_BIT_PRESENT	0	/* is present */
-+#define _PAGE_BIT_RW		1	/* writeable */
-+#define _PAGE_BIT_USER		2	/* userspace addressable */
-+#define _PAGE_BIT_PWT		3	/* page write through */
-+#define _PAGE_BIT_PCD		4	/* page cache disabled */
-+#define _PAGE_BIT_ACCESSED	5	/* was accessed (raised by CPU) */
-+#define _PAGE_BIT_DIRTY		6	/* was written to (raised by CPU) */
- #define _PAGE_BIT_FILE		6
- #define _PAGE_BIT_PSE		7	/* 4 MB (or 2MB) page */
- #define _PAGE_BIT_PAT		7	/* on 4KB pages */
--- 
-1.5.4.1
+If that turns out to be a duplicate of bug #9412, it'll be easy to close.
+Otherwise, it's just _very_ confusing.
 
+Thanks,
+Rafael
