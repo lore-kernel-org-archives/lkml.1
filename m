@@ -1,103 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbYCVBFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYCVB1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbYCVBFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 21:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYCVBFl
+	id S1755990AbYCVB1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 21:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYCVB10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 21:05:41 -0400
-Received: from flusers.ccur.com ([12.192.68.2]:28828 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752933AbYCVBFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 21:05:40 -0400
-Date: Fri, 21 Mar 2008 21:02:35 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/76] 2.6.24-stable review
-Message-ID: <20080322010235.GB29191@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <20080321224250.144333319@sous-sol.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Mar 2008 21:27:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44130 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbYCVB1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 21:27:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: 2.6.25-rc6: kernel BUG at fs/sysfs/file.c:89
+Date: Sat, 22 Mar 2008 02:26:34 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.1.00.0803212319130.17137@sheep.housecafe.de>
+In-Reply-To: <alpine.DEB.1.00.0803212319130.17137@sheep.housecafe.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080321224250.144333319@sous-sol.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200803220226.35552.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 03:42:50PM -0700, Chris Wright wrote:
-> This is the start of the stable review cycle for the 2.6.24.4 release.
+On Friday, 21 of March 2008, Christian Kujau wrote:
+> Hi,
 
-Hi Chris,
-The below is also a candidate for 2.6.24.4.  It should apply cleanly.
-Joe
+Hi,
 
-Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6d2144d355d2a532e5cc3fc12a6ba2a8d4ef15e4
-Commit:     6d2144d355d2a532e5cc3fc12a6ba2a8d4ef15e4
-Parent:     b6210386787728b84db25adc4f1eba70440a4c73
-Author:     Joe Korty <joe.korty@ccur.com>
-AuthorDate: Wed Mar 5 15:04:59 2008 -0800
-Committer:  Christoph Lameter <clameter@sgi.com>
-CommitDate: Thu Mar 6 16:21:50 2008 -0800
+> while attempting to test the patch which should fix the dm-crypt hang[0], 
+> I applied the diff to -rc6. After rebooting I increased disk i/o and 
+> shortly after the box rebooted - I noticed this earlier with -rc5 too, but 
+> had no debug messages at hand. Well, the box is running again and tar(1) 
+> is reading with 32MB/s for some time now - but is not rebooting, which is 
+> good :)
+> (I changed kernel.panic and kernel.panic_on_oops to zero).
+> However, it's printing stuff like this:
 
-    slab: NUMA slab allocator migration bugfix
-    
-    NUMA slab allocator cpu migration bugfix
-    
-    The NUMA slab allocator (specifically, cache_alloc_refill)
-    is not refreshing its local copies of what cpu and what
-    numa node it is on, when it drops and reacquires the irq
-    block that it inherited from its caller.  As a result
-    those values become invalid if an attempt to migrate the
-    process to another numa node occured while the irq block
-    had been dropped.
-    
-    The solution is to make cache_alloc_refill reload these
-    variables whenever it drops and reacquires the irq block.
-    
-    The error is very difficult to hit.  When it does occur,
-    one gets the following oops + stack traceback bits in
-    check_spinlock_acquired:
-    
-    	kernel BUG at mm/slab.c:2417
-    	cache_alloc_refill+0xe6
-    	kmem_cache_alloc+0xd0
-    	...
-    
-    This patch was developed against 2.6.23, ported to and
-    compiled-tested only against 2.6.25-rc4.
-    
-    Signed-off-by: Joe Korty <joe.korty@ccur.com>
-    Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
- mm/slab.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+This looks worrisome (some experts added to the CC list).
 
-diff --git a/mm/slab.c b/mm/slab.c
-index f7faff7..e6c698f 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2964,11 +2964,10 @@ static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags)
- 	struct array_cache *ac;
- 	int node;
- 
--	node = numa_node_id();
--
-+retry:
- 	check_irq_off();
-+	node = numa_node_id();
- 	ac = cpu_cache_get(cachep);
--retry:
- 	batchcount = ac->batchcount;
- 	if (!ac->touched && batchcount > BATCHREFILL_LIMIT) {
- 		/*
+> [ 2632.423419] ------------[ cut here ]------------
+> [ 2632.423762] kernel BUG at fs/sysfs/file.c:89!
+> [ 2632.424089] invalid opcode: 0000 [#1] 
+> [ 2632.424398] Modules linked in: sha256_generic act_police sch_ingress cls_u32 sch_sfq sch_cbq ipt_ULOG x_tables nfsd lockd nfs_acl auth_rpcgss exportfs tun sunrpc fuse twofish_i586 twofish_common eeprom w83l785ts asb100 hwmon_vid usb_storage zd1211rw firmware_class mac80211 i2c_nforce2 snd_intel8x0 snd_ac97_codec i2c_core cfg80211 ac97_bus snd_pcm snd_timer snd soundcore snd_page_alloc
+> [ 2632.426407] 
+> [ 2632.426651] Pid: 10297, comm: tar Not tainted (2.6.25-rc6 #3)
+> [ 2632.427019] EIP: 0060:[<c01a8add>] EFLAGS: 00010212 CPU: 0
+> [ 2632.427386] EIP is at sysfs_read_file+0xdd/0xf0
+> [ 2632.427717] EAX: 00000001 EBX: f5691f00 ECX: 00000003 EDX: f7ca1e70
+> [ 2632.428100] ESI: 00001000 EDI: f7ca1ed0 EBP: f5691f14 ESP: f6f3ff54
+> [ 2632.428482]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> [ 2632.428758] Process tar (pid: 10297, ti=f6f3f000 task=f6290d60 task.ti=f6f3f000)
+> [ 2632.428921] Stack: c0164ff7 f5ca6000 00001000 0866ce00 c0550d50 f7d8fab8 f776b180 0866ce00 
+> [ 2632.429174]        c01a8a00 00001000 c016868d f6f3ffa0 00000003 f776b180 fffffff7 0866ce00 
+> [ 2632.429430]        f6f3f000 c0168a91 f6f3ffa0 00000000 00000000 00000000 00000003 00001000 
+> [ 2632.429688] Call Trace:
+> [ 2632.429884]  [<c0164ff7>] kmem_cache_free+0xa7/0xf0
+> [ 2632.430023]  [<c01a8a00>] sysfs_read_file+0x0/0xf0
+> [ 2632.430159]  [<c016868d>] vfs_read+0x9d/0x140
+> [ 2632.430333]  [<c0168a91>] sys_read+0x41/0x70
+> [ 2632.430657]  [<c0102dee>] sysenter_past_esp+0x5f/0xa5
+> [ 2632.431006]  =======================
+> [ 2632.431308] Code: 18 89 f0 5b 5e 5f 5d c3 be ed ff ff ff eb e8 b8 d0 00 00 00 be f4 ff ff ff e8 e0 31 fa ff 85 c0 89 43 0c 0f 85 6d ff ff ff eb cc <0f> 0b 90 eb fd 8d b4 26 00 00 00 00 8d bc 27 00 00 00 00 83 ec 
+> [ 2632.432467] EIP: [<c01a8add>] sysfs_read_file+0xdd/0xf0 SS:ESP 0068:f6f3ff54
+> [ 2632.432630] ---[ end trace 9959fa4f11f46a8e ]---
+> 
+> Please see the full dmesg and .config: http://nerdbynature.de/bits/2.6.25-rc6/
+> 
+> Thanks,
+> Christian.
+> 
+> [0] http://lkml.org/lkml/2008/3/17/214
 
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
