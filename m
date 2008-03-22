@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbYCVUD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbYCVURA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbYCVUD2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 16:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYCVUDU
+	id S1754641AbYCVURA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 16:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYCVUQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 16:03:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34750 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbYCVUDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 16:03:19 -0400
-Date: Sat, 22 Mar 2008 21:02:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, shai@scalex86.org
-Subject: Re: [patch 4/4] x86: apic_is_clustered_box to indicate unsynched
-	TSC's on multiboard vSMP systems
-Message-ID: <20080322200251.GB5508@elte.hu>
-References: <20080320073740.GA9414@localdomain> <20080320074508.GE9414@localdomain> <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com> <20080320190240.GB6085@localdomain> <20080321091542.GE20420@elte.hu> <20080321185225.GA23139@localdomain> <20080321185821.GE6571@elte.hu> <20080322185948.GD23139@localdomain>
+	Sat, 22 Mar 2008 16:16:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39484 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbYCVUQu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 16:16:50 -0400
+Date: Sat, 22 Mar 2008 16:16:48 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: tracing and mmiotrace
+In-Reply-To: <20080322173245.01e69743@daedalus.pq.iki.fi>
+Message-ID: <Pine.LNX.4.58.0803221609550.12942@gandalf.stny.rr.com>
+References: <20080321233955.66e75a57@daedalus.pq.iki.fi> <20080322120746.GF13264@elte.hu>
+ <20080322173245.01e69743@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080322185948.GD23139@localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0006]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+Hi Pekka,
 
-> OK. Something like this?
+I'm on vacation at the moment, but will start up helping Ingo with ftrace
+on Monday.
 
-yeah.
+On Sat, 22 Mar 2008, Pekka Paalanen wrote:
 
-small nit:
+> >
+> > that's weird - _entry_ is NULL?
+>
+> Yes. See the patch, and my kernel log at
+> http://jumi.lut.fi/~paalanen/scratch/tracing-dmesg1.txt
+>
+> First you see my check in __trace_special() trigger, and then NULL
+> pointer dereference BUG at ffffffff80259332 which translates to
+> kernel/trace/trace.c:639 in tracing_generic_entry_update(), line:
+> 	entry->preempt_count	= pc & 0xff;
+> I don't understand why it tries to dereference NULL even when I
+> check for it.
 
-> +int is_vsmp_box(void)
-> +{
-> +	if (is_vsmp != -1)
-> +		return is_vsmp;
-> +	else {
-> +		printk("ScaleMP vSMPowered system detection called too early!\n");
-> +		return 0;
-> +	}
->  }
+Interesting. I'll have to look into that more on Monday.
 
-since this is an "impossible" scenario, just stick in a WARN_ON_ONCE().
+>
+> ---
+> Oh, and during bootup there is an error about -fstack-protector-all
+> test failed.
+>
+> > > btw. currently 'cat /debug/tracing/trace' gives the
+> > > print_func_help_header() and quits, it never stays waiting for more
+> > > data.
+> >
+> > yeah - try "cat /debug/tracing/trace_pipe" for the waiting variant -
+> > does that work better?
+>
+> Not really. IIRC it said "resource temporarily unavailable" until
+> mmiotrace actually tried to produce data. No header there. So I
+> cannot make "cat" ready to read and after that start tracing.
 
-	Ingo
+I'll have to clean up the trace_pipe code to be a bit more robust.
+
+Thanks for doing this. I'll be getting more involved starting Monday.
+
+-- Steve
+
