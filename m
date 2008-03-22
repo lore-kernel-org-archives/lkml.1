@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYCVCUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYCVCYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYCVCUj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 22:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbYCVCUL
+	id S1756497AbYCVCYv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 22:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYCVCYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 22:20:11 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:62604 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 21 Mar 2008 22:24:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:49452 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbYCVCUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 22:20:09 -0400
-To: miklos@szeredi.hu, viro@ZenIV.linux.org.uk
-Cc: haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neilb@suse.de, akpm@linux-foundation.org,
-       hch@infradead.org, linux-security-module@vger.kernel.org,
-       jmorris@namei.org
-Subject: Re: r-o bind in nfsd
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <E1Jckjd-0001X8-IM@pomaz-ex.szeredi.hu>
-	<20080321181105.GW10722@ZenIV.linux.org.uk>
-	<E1JcmLz-0001n1-RC@pomaz-ex.szeredi.hu>
-	<20080321194931.GX10722@ZenIV.linux.org.uk>
-	<E1Jcnm7-00020F-7o@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1Jcnm7-00020F-7o@pomaz-ex.szeredi.hu>
-Message-Id: <200803221120.ADB21850.SLtOJMFFOVOFQH@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sat, 22 Mar 2008 11:20:03 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753242AbYCVCYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 22:24:43 -0400
+Message-ID: <47E46CC7.8080503@goop.org>
+Date: Fri, 21 Mar 2008 19:19:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>, Andi Kleen <ak@suse.de>,
+       shai@scalex86.org
+Subject: Re: [patch 2/4] x86: Fix build breakage when PCI is define and PARAVIRT
+ is not
+References: <20080320073740.GA9414@localdomain> <20080320074116.GC9414@localdomain> <47E339D1.3080509@goop.org> <20080321185434.GB23139@localdomain>
+In-Reply-To: <20080321185434.GB23139@localdomain>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Ravikiran G Thirumalai wrote:
+> Well, vSMPowered bits in the kernel serves two objectives:
+> a) Internode cacheline size
+> b) paravirt irq ops
+>
+> A vSMPowered machine can boot without either, but both affect performance.
+> Both these bits are not interdependent.  The paravirt ops
+> need the PARAVIRT infrastructure and that is all that is needed.
+> The internode cacheline size needs a compile time definition that's all.
+> CONFIG_X86_VSMP chooses both.  However, there is no reason to have paravirt
+> irq ops depend on the Internode cacheline size.  More so since pv ops
+> has the capability to detect the system type dynamically and using
+> appropriate pv ops.
+>   
 
-> As for the apparmor and friends...  I'm far past the point of trying to
-> give them feedback, seeing how any such feedback is ignored, if not worse
-> (the ugliness of some of the suggested kludges is bloody astonishing - e.g.
-> some guy proposed to stuff a reference to vfsmount into task_struct, etc.)
-TOMOYO is one of AppArmor's friends, and I am the guy who proposed to pass
-a reference to vfsmount via task_struct as if that reference is passed via stack memory.
+So are you saying that X86_VSMP is just to select the internode 
+cacheline size, and is independent of the pvops side of things?
 
-> > Because filesystem shouldn't _care_ where it is mounted.  Anything
-> > vfsmount-dependent belongs to upper layers.  The same goes for passing
-> > nameidata to fs methods, BTW - again, ->follow_link() is an obvious
-> > legitimate exception.
-> 
-> Nobody wants to send vfsmounts to the filesystem.  But vfs_...() are
-> still part of the "upper layer", not the filesystem, so I'm not
-> convinced yet.  For example:
-I'm not asking to pass the vfsmount parameter to individual filesystem's "vfs functions".
-I'm asking to pass the vfsmount parameter to the "vfs *helper* functions".
-So, filesytem will not care where it is mounted
-even if the vfsmount is passed to "vfs *helper* functions".
-The vfs helper functions are designed to aggregate common checks (permission checks,
-inode_operations->foo existence checks etc.) to avoid scattering same code everywhere
-in the kernel, didn't they?
+If so, I think it would be worth adding a separate config variable so 
+that you have the following:
 
-> Assuming of course, that all valid users _do_ have the vfsmount
-> available, which I think is true.  If you have a counterexample,
-> please let us know.
-At least, calls to vfs helper functions from userland code
-_do_ have the vfsmount available because they are called immediately after the name resolution.
+VSMP (depends on PCI) - master selector for all vsmp-related code; 
+enables vsmp detection code
+VSMP && PARAVIRT - installs paravirt irq ops on a vsmp system
+VSMP_CACHELINE_SIZE (depends on VSMP) - selects internode cacheline size
 
-Calls to vfs helper functions from kernel code does not always have the vfsmount available,
-but that's beyond what the LSM can do.
-We must trust kernel code, because kernel code can bypass the LSM check
-if the kernel code is malicious enough to directly call "vfs functions" instead of
-calling "vfs helper functions".
-(Or, more simply, kernel code can rewrite the call to the LSM check to no-op
-like funny workaround for vmsplice's vulnerability).
+that way vsmp_64.o can just depend on VSMP, and at the very least 
+contains the query code, and the other features are independently 
+selectable.
 
-I think attempt to receive the vfsmount from kernel code won't help guaranteeing that
-LSM's security checks are always performed.
-Routes to access "vfs functions" from kernel code is undeterminable.
-In other words, LSM can't guarantee that LSM's security checks are always performed
-against the kernel code regardless of the security model.
-
-But, at least, LSM can guarantee that LSM's security checks are always performed
-against the userland code regardless of the security model.
-Routes to access "vfs functions" from userland code is determinable.
-
-So, making the vfsmount available to LSM make sense.
-I don't care if the vfsmount is unavailable when the vfs helper function call was
-issued from kernel code.
+    J
