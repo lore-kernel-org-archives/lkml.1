@@ -1,73 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbYCVAQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYCVA34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760357AbYCVAQw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 20:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYCVAQp
+	id S1755679AbYCVA34 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 20:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYCVA3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 20:16:45 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:35400 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbYCVAQo (ORCPT
+	Fri, 21 Mar 2008 20:29:47 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:58925 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbYCVA3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 20:16:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=c4Inl/uIkI1w3GPxyWPkYy2wl6hAMsqS2FfmHIr9y2eMwpVdGWjMjofOf5Q1BT/fJ+lrxa7sXRfF0M5RtkKV9xewHMqDPBtXKmuoCaVbNh7Fgv9iBI6AwyGW/qI4tWXc8XijycdzZS3w/9Vg3tj68SHUEc4uXUxa5h+ailLKvxQ=
-Message-ID: <9a8748490803211716j333f40f1vdf9d1ffd0c67448c@mail.gmail.com>
-Date: Sat, 22 Mar 2008 01:16:42 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
-Cc: chrisw@sous-sol.org, linux-kernel@vger.kernel.org, stable@kernel.org,
-       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
-       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
-       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
-       cavokz@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de
-In-Reply-To: <20080321.171401.49157146.davem@davemloft.net>
+	Fri, 21 Mar 2008 20:29:45 -0400
+Date: Sat, 22 Mar 2008 01:29:44 +0100 (CET)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: APM crashes when IO is going on
+In-Reply-To: <200803212351.20186.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.64.0803220126460.2982@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz>
+ <200803212245.13659.rjw@sisk.pl> <Pine.LNX.4.64.0803212347430.25810@artax.karlin.mff.cuni.cz>
+ <200803212351.20186.rjw@sisk.pl>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080321224250.144333319@sous-sol.org>
-	 <20080321224333.400857992@sous-sol.org>
-	 <9a8748490803211710u4c5d1d67x2a5a891347e0adf6@mail.gmail.com>
-	 <20080321.171401.49157146.davem@davemloft.net>
+Content-Type: MULTIPART/MIXED; BOUNDARY="1908636959-412644717-1206145784=:2982"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/03/2008, David Miller <davem@davemloft.net> wrote:
-> From: "Jesper Juhl" <jesper.juhl@gmail.com>
->  Date: Sat, 22 Mar 2008 01:10:40 +0100
->
->
->  > As I see it, this patch is quite trivial and does not fix any "real problem".
->  > How come this is suitable for -stable?
->  >
->  > I have no objections to the patch "as such", I just don't think it
->  > makes sense for -stable.
->
->
-> It makes a difference for driver maintainers when users
->  report bugs and we ask them for the version printed
->  by the driver so that we know which fixes have been
->  applied.
->
-Ok, fair enough.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->  You know, if people are going to be jerky about this,
->  I'll just include the version bump in the actual bug
->  fixes which I sometimes do anyways.
->
->  Thanks for bringing this up, it's a useful use of
->  everyone's time :-/
->
-Excuse me for reading patches, trying to spot problems and thinking
-about where they are applied and what rules apply etc.
+--1908636959-412644717-1206145784=:2982
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+
+
+On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
+
+> On Friday, 21 of March 2008, Mikulas Patocka wrote:
+> > On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
+> > 
+> > > On Friday, 21 of March 2008, Mikulas Patocka wrote:
+> > > > > > I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
+> > > > > > 
+> > > > > > --- when I run three threads concurrently reading raw disk partition and 
+> > > > > > suspend, I get 100% reproducible failure. (with one thread running it 
+> > > > > > usually succeeds, sometimes fail)
+> > > > > 
+> > > > > Are they userland threads or kernel threads?
+> > > > 
+> > > > Useland threads. Just dd if=/dev/hda of=/dev/null
+> > > > 
+> > > > > > Either the on-going I/O will jam BIOS and I need to remove power to 
+> > > > > > continue.
+> > > > > > 
+> > > > > > Or the machine suspends, wakes up and reports "hda: lost interrupt" 
+> > > > > > (2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
+> > > > > > recover and it is not able to send any more disk IOs).
+> > > > > > 
+> > > > > > How is suspending disk IO supposed to work?
+> > > > > 
+> > > > > That depends on the driver, if I understand your question correctly.
+> > > > 
+> > > > The driver is normal IDE.
+> > > 
+> > > Do you mean IDE_GENERIC/BLK_DEV_GENERIC?
+> > 
+> > Compaq Triflex IDE. The computer is Compaq Armada 7400 (Pentium 2/300MHz)
+> 
+> Can you attach a dmesg output taken after a fresh boot?
+> 
+> Thanks,
+> Rafael
+
+Here it is.
+
+Mikulas
+--1908636959-412644717-1206145784=:2982
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name=dm
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0803220129440.2982@artax.karlin.mff.cuni.cz>
+Content-Description: 
+Content-Disposition: attachment; filename=dm
+
+TGludXggdmVyc2lvbiAyLjYuMjUtcmM2IChyb290QGdlcmxpbmRhKSAoZ2Nj
+IHZlcnNpb24gNC4xLjIgMjAwNjExMTUgKHByZXJlbGVhc2UpIChEZWJpYW4g
+NC4xLjEtMjEpKSAjMSBQUkVFTVBUIFdlZCBNYXIgMTkgMjM6MzE6NTIgQ0VU
+IDIwMDgNCkJJT1MtcHJvdmlkZWQgcGh5c2ljYWwgUkFNIG1hcDoNCiBCSU9T
+LWU4MjA6IDAwMDAwMDAwMDAwMDAwMDAgLSAwMDAwMDAwMDAwMDlmYzAwICh1
+c2FibGUpDQogQklPUy1lODIwOiAwMDAwMDAwMDAwMDlmYzAwIC0gMDAwMDAw
+MDAwMDBhMDAwMCAocmVzZXJ2ZWQpDQogQklPUy1lODIwOiAwMDAwMDAwMDAw
+MGYwMDAwIC0gMDAwMDAwMDAwMDEwMDAwMCAocmVzZXJ2ZWQpDQogQklPUy1l
+ODIwOiAwMDAwMDAwMDAwMTAwMDAwIC0gMDAwMDAwMDAwN2ZmODAwMCAodXNh
+YmxlKQ0KIEJJT1MtZTgyMDogMDAwMDAwMDAwN2ZmODAwMCAtIDAwMDAwMDAw
+MDgwMDAwMDAgKEFDUEkgTlZTKQ0KMTI3TUIgTE9XTUVNIGF2YWlsYWJsZS4N
+CkVudGVyaW5nIGFkZF9hY3RpdmVfcmFuZ2UoMCwgMCwgMzI3NjApIDAgZW50
+cmllcyBvZiAyNTYgdXNlZA0KWm9uZSBQRk4gcmFuZ2VzOg0KICBETUEgICAg
+ICAgICAgICAgMCAtPiAgICAgNDA5Ng0KICBOb3JtYWwgICAgICAgNDA5NiAt
+PiAgICAzMjc2MA0KTW92YWJsZSB6b25lIHN0YXJ0IFBGTiBmb3IgZWFjaCBu
+b2RlDQplYXJseV9ub2RlX21hcFsxXSBhY3RpdmUgUEZOIHJhbmdlcw0KICAg
+IDA6ICAgICAgICAwIC0+ICAgIDMyNzYwDQpPbiBub2RlIDAgdG90YWxwYWdl
+czogMzI3NjANCiAgRE1BIHpvbmU6IDMyIHBhZ2VzIHVzZWQgZm9yIG1lbW1h
+cA0KICBETUEgem9uZTogMCBwYWdlcyByZXNlcnZlZA0KICBETUEgem9uZTog
+NDA2NCBwYWdlcywgTElGTyBiYXRjaDowDQogIE5vcm1hbCB6b25lOiAyMjMg
+cGFnZXMgdXNlZCBmb3IgbWVtbWFwDQogIE5vcm1hbCB6b25lOiAyODQ0MSBw
+YWdlcywgTElGTyBiYXRjaDo3DQogIE1vdmFibGUgem9uZTogMCBwYWdlcyB1
+c2VkIGZvciBtZW1tYXANCkRNSSBub3QgcHJlc2VudCBvciBpbnZhbGlkLg0K
+QWxsb2NhdGluZyBQQ0kgcmVzb3VyY2VzIHN0YXJ0aW5nIGF0IDEwMDAwMDAw
+IChnYXA6IDA4MDAwMDAwOmY4MDAwMDAwKQ0KQnVpbHQgMSB6b25lbGlzdHMg
+aW4gWm9uZSBvcmRlciwgbW9iaWxpdHkgZ3JvdXBpbmcgb24uICBUb3RhbCBw
+YWdlczogMzI1MDUNCktlcm5lbCBjb21tYW5kIGxpbmU6IEJPT1RfSU1BR0U9
+TGludXgtY3VycmVudCBybyByb290PTMwMg0KRW5hYmxpbmcgZmFzdCBGUFUg
+c2F2ZSBhbmQgcmVzdG9yZS4uLiBkb25lLg0KSW5pdGlhbGl6aW5nIENQVSMw
+DQpQcmVlbXB0aWJsZSBSQ1UgaW1wbGVtZW50YXRpb24uDQpDUFUgMCBpcnFz
+dGFja3MsIGhhcmQ9YzAzM2UwMDAgc29mdD1jMDMzZDAwMA0KUElEIGhhc2gg
+dGFibGUgZW50cmllczogNTEyIChvcmRlcjogOSwgMjA0OCBieXRlcykNCkRl
+dGVjdGVkIDMwMC4wMTQgTUh6IHByb2Nlc3Nvci4NCkNvbnNvbGU6IGNvbG91
+ciBWR0ErIDgweDMwDQpjb25zb2xlIFt0dHkwXSBlbmFibGVkDQpMb2NrIGRl
+cGVuZGVuY3kgdmFsaWRhdG9yOiBDb3B5cmlnaHQgKGMpIDIwMDYgUmVkIEhh
+dCwgSW5jLiwgSW5nbyBNb2xuYXINCi4uLiBNQVhfTE9DS0RFUF9TVUJDTEFT
+U0VTOiAgICA4DQouLi4gTUFYX0xPQ0tfREVQVEg6ICAgICAgICAgIDQ4DQou
+Li4gTUFYX0xPQ0tERVBfS0VZUzogICAgICAgIDIwNDgNCi4uLiBDTEFTU0hB
+U0hfU0laRTogICAgICAgICAgIDEwMjQNCi4uLiBNQVhfTE9DS0RFUF9FTlRS
+SUVTOiAgICAgODE5Mg0KLi4uIE1BWF9MT0NLREVQX0NIQUlOUzogICAgICAx
+NjM4NA0KLi4uIENIQUlOSEFTSF9TSVpFOiAgICAgICAgICA4MTkyDQogbWVt
+b3J5IHVzZWQgYnkgbG9jayBkZXBlbmRlbmN5IGluZm86IDk5MiBrQg0KIHBl
+ciB0YXNrLXN0cnVjdCBtZW1vcnkgZm9vdHByaW50OiAxOTIwIGJ5dGVzDQpE
+ZW50cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6
+IDQsIDY1NTM2IGJ5dGVzKQ0KSW5vZGUtY2FjaGUgaGFzaCB0YWJsZSBlbnRy
+aWVzOiA4MTkyIChvcmRlcjogMywgMzI3NjggYnl0ZXMpDQpNZW1vcnk6IDEy
+NTczNmsvMTMxMDQwayBhdmFpbGFibGUgKDE0MzhrIGtlcm5lbCBjb2RlLCA0
+ODAwayByZXNlcnZlZCwgNjkyayBkYXRhLCAxNDRrIGluaXQsIDBrIGhpZ2ht
+ZW0pDQp2aXJ0dWFsIGtlcm5lbCBtZW1vcnkgbGF5b3V0Og0KICAgIGZpeG1h
+cCAgOiAweGZmZmZiMDAwIC0gMHhmZmZmZjAwMCAgICggIDE2IGtCKQ0KICAg
+IHZtYWxsb2MgOiAweGM4ODAwMDAwIC0gMHhmZmZmOTAwMCAgICggODg3IE1C
+KQ0KICAgIGxvd21lbSAgOiAweGMwMDAwMDAwIC0gMHhjN2ZmODAwMCAgICgg
+MTI3IE1CKQ0KICAgICAgLmluaXQgOiAweGMwMzE2MDAwIC0gMHhjMDMzYTAw
+MCAgICggMTQ0IGtCKQ0KICAgICAgLmRhdGEgOiAweGMwMjY3YmE0IC0gMHhj
+MDMxNGVjOCAgICggNjkyIGtCKQ0KICAgICAgLnRleHQgOiAweGMwMTAwMDAw
+IC0gMHhjMDI2N2JhNCAgICgxNDM4IGtCKQ0KQ2hlY2tpbmcgaWYgdGhpcyBw
+cm9jZXNzb3IgaG9ub3VycyB0aGUgV1AgYml0IGV2ZW4gaW4gc3VwZXJ2aXNv
+ciBtb2RlLi4uT2suDQpDUEE6IHBhZ2UgcG9vbCBpbml0aWFsaXplZCAxIG9m
+IDEgcGFnZXMgcHJlYWxsb2NhdGVkDQpTTFVCOiBHZW5zbGFicz0xMiwgSFdh
+bGlnbj0zMiwgT3JkZXI9MC0xLCBNaW5PYmplY3RzPTQsIENQVXM9MSwgTm9k
+ZXM9MQ0KQ2FsaWJyYXRpbmcgZGVsYXkgdXNpbmcgdGltZXIgc3BlY2lmaWMg
+cm91dGluZS4uIDYwMS4xNCBCb2dvTUlQUyAobHBqPTEwMDE4MzEpDQpNb3Vu
+dC1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDUxMg0KQ1BVOiBMMSBJIGNh
+Y2hlOiAxNkssIEwxIEQgY2FjaGU6IDE2Sw0KQ1BVOiBMMiBjYWNoZTogNTEy
+Sw0KSW50ZWwgbWFjaGluZSBjaGVjayBhcmNoaXRlY3R1cmUgc3VwcG9ydGVk
+Lg0KSW50ZWwgbWFjaGluZSBjaGVjayByZXBvcnRpbmcgZW5hYmxlZCBvbiBD
+UFUjMC4NCkNvbXBhdCB2RFNPIG1hcHBlZCB0byBmZmZmZTAwMC4NCkNQVTog
+SW50ZWwgUGVudGl1bSBJSSAoRGVzY2h1dGVzKSBzdGVwcGluZyAwMg0KQ2hl
+Y2tpbmcgJ2hsdCcgaW5zdHJ1Y3Rpb24uLi4gT0suDQpGcmVlaW5nIFNNUCBh
+bHRlcm5hdGl2ZXM6IDBrIGZyZWVkDQpraGVscGVyIHVzZWQgZ3JlYXRlc3Qg
+c3RhY2sgZGVwdGg6IDMxODAgYnl0ZXMgbGVmdA0KbmV0X25hbWVzcGFjZTog
+MjE2IGJ5dGVzDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2
+DQpQQ0k6IEZhdGFsOiBObyBjb25maWcgc3BhY2UgYWNjZXNzIGZ1bmN0aW9u
+IGZvdW5kDQpTZXR0aW5nIHVwIHN0YW5kYXJkIFBDSSByZXNvdXJjZXMNCmto
+ZWxwZXIgdXNlZCBncmVhdGVzdCBzdGFjayBkZXB0aDogMzExNiBieXRlcyBs
+ZWZ0DQpMaW51eCBQbHVnIGFuZCBQbGF5IFN1cHBvcnQgdjAuOTcgKGMpIEFk
+YW0gQmVsYXkNClBDSTogU3lzdGVtIGRvZXMgbm90IHN1cHBvcnQgUENJDQpQ
+Q0k6IFN5c3RlbSBkb2VzIG5vdCBzdXBwb3J0IFBDSQ0KVGltZTogdHNjIGNs
+b2Nrc291cmNlIGhhcyBiZWVuIGluc3RhbGxlZC4NCk5FVDogUmVnaXN0ZXJl
+ZCBwcm90b2NvbCBmYW1pbHkgMg0KSVAgcm91dGUgY2FjaGUgaGFzaCB0YWJs
+ZSBlbnRyaWVzOiAxMDI0IChvcmRlcjogMCwgNDA5NiBieXRlcykNClRDUCBl
+c3RhYmxpc2hlZCBoYXNoIHRhYmxlIGVudHJpZXM6IDQwOTYgKG9yZGVyOiAz
+LCAzMjc2OCBieXRlcykNClRDUCBiaW5kIGhhc2ggdGFibGUgZW50cmllczog
+NDA5NiAob3JkZXI6IDUsIDEzMTA3MiBieXRlcykNClRDUDogSGFzaCB0YWJs
+ZXMgY29uZmlndXJlZCAoZXN0YWJsaXNoZWQgNDA5NiBiaW5kIDQwOTYpDQpU
+Q1AgcmVubyByZWdpc3RlcmVkDQpraGVscGVyIHVzZWQgZ3JlYXRlc3Qgc3Rh
+Y2sgZGVwdGg6IDMxMTIgYnl0ZXMgbGVmdA0KaW8gc2NoZWR1bGVyIG5vb3Ag
+cmVnaXN0ZXJlZA0KaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkIChkZWZh
+dWx0KQ0KaXNhcG5wOiBTY2FubmluZyBmb3IgUG5QIGNhcmRzLi4uDQppc2Fw
+bnA6IE5vIFBsdWcgJiBQbGF5IGRldmljZSBmb3VuZA0KVW5pZm9ybSBNdWx0
+aS1QbGF0Zm9ybSBFLUlERSBkcml2ZXINCmlkZTogQXNzdW1pbmcgNTBNSHog
+c3lzdGVtIGJ1cyBzcGVlZCBmb3IgUElPIG1vZGVzOyBvdmVycmlkZSB3aXRo
+IGlkZWJ1cz14eA0KUHJvYmluZyBJREUgaW50ZXJmYWNlIGlkZTAuLi4NCmhk
+YjogQ0QtMjI0RSwgQVRBUEkgQ0QvRFZELVJPTSBkcml2ZQ0KaGRhOiBUT1NI
+SUJBIE1LNjQwOU1BViwgQVRBIERJU0sgZHJpdmUNClByb2JpbmcgSURFIGlu
+dGVyZmFjZSBpZGUxLi4uDQpQcm9iaW5nIElERSBpbnRlcmZhY2UgaWRlMi4u
+Lg0KUHJvYmluZyBJREUgaW50ZXJmYWNlIGlkZTMuLi4NClByb2JpbmcgSURF
+IGludGVyZmFjZSBpZGU0Li4uDQpQcm9iaW5nIElERSBpbnRlcmZhY2UgaWRl
+NS4uLg0KaWRlMCBhdCAweDFmMC0weDFmNywweDNmNiBvbiBpcnEgMTQNCmhk
+YTogbWF4IHJlcXVlc3Qgc2l6ZTogMTI4S2lCDQpoZGE6IDEyNjg1NjgwIHNl
+Y3RvcnMgKDY0OTUgTUIpLCBDSFM9MTM0MjQvMTUvNjMNCmhkYTogY2FjaGUg
+Zmx1c2hlcyBub3Qgc3VwcG9ydGVkDQogaGRhOiBoZGExIGhkYTINClBOUDog
+Tm8gUFMvMiBjb250cm9sbGVyIGZvdW5kLiBQcm9iaW5nIHBvcnRzIGRpcmVj
+dGx5Lg0Kc2VyaW86IGk4MDQyIEtCRCBwb3J0IGF0IDB4NjAsMHg2NCBpcnEg
+MQ0Kc2VyaW86IGk4MDQyIEFVWCBwb3J0IGF0IDB4NjAsMHg2NCBpcnEgMTIN
+Cm1pY2U6IFBTLzIgbW91c2UgZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1pY2UN
+CmNwdWlkbGU6IHVzaW5nIGdvdmVybm9yIGxhZGRlcg0KY3B1aWRsZTogdXNp
+bmcgZ292ZXJub3IgbWVudQ0KVENQIGN1YmljIHJlZ2lzdGVyZWQNClVzaW5n
+IElQSSBTaG9ydGN1dCBtb2RlDQppbnB1dDogQVQgVHJhbnNsYXRlZCBTZXQg
+MiBrZXlib2FyZCBhcyAvY2xhc3MvaW5wdXQvaW5wdXQwDQpWRlM6IE1vdW50
+ZWQgcm9vdCAoZXh0MiBmaWxlc3lzdGVtKSByZWFkb25seS4NCkZyZWVpbmcg
+dW51c2VkIGtlcm5lbCBtZW1vcnk6IDE0NGsgZnJlZWQNCldyaXRlIHByb3Rl
+Y3RpbmcgdGhlIGtlcm5lbCB0ZXh0OiAxNDQwaw0KV3JpdGUgcHJvdGVjdGlu
+ZyB0aGUga2VybmVsIHJlYWQtb25seSBkYXRhOiA1NzJrDQptb2Rwcm9iZSB1
+c2VkIGdyZWF0ZXN0IHN0YWNrIGRlcHRoOiAyNzA0IGJ5dGVzIGxlZnQNCm1v
+ZHByb2JlIHVzZWQgZ3JlYXRlc3Qgc3RhY2sgZGVwdGg6IDE3MjAgYnl0ZXMg
+bGVmdA0KTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxDQpob3Rw
+bHVnIHVzZWQgZ3JlYXRlc3Qgc3RhY2sgZGVwdGg6IDEzOTIgYnl0ZXMgbGVm
+dA0KUmVhbCBUaW1lIENsb2NrIERyaXZlciB2MS4xMmFjDQpkZXZpY2UtbWFw
+cGVyOiBpb2N0bDogNC4xMy4wLWlvY3RsICgyMDA3LTEwLTE4KSBpbml0aWFs
+aXNlZDogZG0tZGV2ZWxAcmVkaGF0LmNvbQ0KdXNiY29yZTogcmVnaXN0ZXJl
+ZCBuZXcgaW50ZXJmYWNlIGRyaXZlciB1c2Jmcw0KdXNiY29yZTogcmVnaXN0
+ZXJlZCBuZXcgaW50ZXJmYWNlIGRyaXZlciBodWINCnVzYmNvcmU6IHJlZ2lz
+dGVyZWQgbmV3IGRldmljZSBkcml2ZXIgdXNiDQpvaGNpX2hjZDogMjAwNiBB
+dWd1c3QgMDQgVVNCIDEuMSAnT3BlbicgSG9zdCBDb250cm9sbGVyIChPSENJ
+KSBEcml2ZXINCmhkYjogQVRBUEkgMjRYIENELVJPTSBkcml2ZSwgNTEya0Ig
+Q2FjaGUNClVuaWZvcm0gQ0QtUk9NIGRyaXZlciBSZXZpc2lvbjogMy4yMA0K
+cGFycG9ydDA6IFBDLXN0eWxlIGF0IDB4Mzc4LCBpcnEgNyBbUENTUFAsVFJJ
+U1RBVEUsRVBQXQ0KTkVUMyBQTElQIHZlcnNpb24gMi40LXBhcnBvcnQgZ25p
+aWJlQG1yaS5jby5qcA0KcGxpcDA6IFBhcmFsbGVsIHBvcnQgYXQgMHgzNzgs
+IHVzaW5nIElSUSA3Lg0KYXBtOiBCSU9TIHZlcnNpb24gMS4yIEZsYWdzIDB4
+MDMgKERyaXZlciB2ZXJzaW9uIDEuMTZhYykNCmlucHV0OiBQQyBTcGVha2Vy
+IGFzIC9jbGFzcy9pbnB1dC9pbnB1dDENCmlucHV0OiBQUy8yIEdlbmVyaWMg
+TW91c2UgYXMgL2NsYXNzL2lucHV0L2lucHV0Mg0KU2VyaWFsOiA4MjUwLzE2
+NTUwIGRyaXZlciAkUmV2aXNpb246IDEuOTAgJCAyIHBvcnRzLCBJUlEgc2hh
+cmluZyBkaXNhYmxlZA0Kc2VyaWFsODI1MDogdHR5UzAgYXQgSS9PIDB4M2Y4
+IChpcnEgPSA0KSBpcyBhIDE2NTUwQQ0Kc2VyaWFsODI1MDogdHR5UzEgYXQg
+SS9PIDB4MmY4IChpcnEgPSAzKSBpcyBhIDE2NTUwQQ0K
+
+--1908636959-412644717-1206145784=:2982--
