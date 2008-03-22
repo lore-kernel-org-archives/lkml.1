@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYCVITG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbYCVIbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbYCVITG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 04:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbYCVISu
+	id S1756359AbYCVIbX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 04:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYCVIbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 04:18:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:23987 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753367AbYCVISs (ORCPT
+	Sat, 22 Mar 2008 04:31:10 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:33211 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753464AbYCVIbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 04:18:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=UVY2XNPYIbqF/ypui6V/qv7M2QuLOO408SO5GjofInJaOpDcPUPKLn6+Z07lD9hiVvyWV7AsX1c3Wdrtnz1qTpYBevyXUmXbiw9+k3QHd889QpmDX1Tg+DlBLBRvkkEHBh4md9tyTbpr00Ji6wfvVaxNgp2aq3PtJItIDifFVKU=
-Message-ID: <47E4C0E0.4080307@gmail.com>
-Date: Sat, 22 Mar 2008 17:18:40 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: osb972ww-linuxczmil@yahoo.com
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Fw: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-References: <810485.52126.qm@web34507.mail.mud.yahoo.com>
-In-Reply-To: <810485.52126.qm@web34507.mail.mud.yahoo.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 22 Mar 2008 04:31:09 -0400
+Date: Sat, 22 Mar 2008 09:30:52 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Tomasz Koprowski <tomek@koprowski.org>
+Subject: [PATCH] PCI: Revert SMBus unhide on HP Compaq nx6110
+Message-ID: <20080322093052.2705ce63@hyperion.delvare>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This reverts commit 3c0a654e390d00fef9d8faed758f5e1e8078adb5 and
+fixes kernel bug #10245.
+http://bugzilla.kernel.org/show_bug.cgi?id=10245
 
-osb972ww-linuxczmil@yahoo.com wrote:
-> Tejun, Alan,
-> 
-> Everything works when I disable the USB in the bios settings.  I was
-> also able to remove the irqpoll kernel parameter after turning off
-> bios USB. The particularly interesting thing is that the USB mouse
-> still works, as does a USB 2.0 drive I have connected.  The Compact
-> Flash drive at /dev/sda works fine, and the connected SATA drive
-> works as well, though I need to do some testing to see how well these
-> devices are performing.
+The HP Compaq nc6120 has the same PCI sub-device ID as the nx6110, and the
+SMBus is used by ACPI for thermal management on the nc6120, so Linux should
+not attach a native driver to it. This means that this quirk is unsafe and
+has to be removed.
 
-Hmmm.. Can you please file a bug report against USB subsystem on
-bugzilla.kernel.org and cc me?  USB on your system is triggering IRQ storm.
+I also added a comment to help developers realize that adding new IDs
+to this SMBus unhiding quirk table should be done only with great care,
+and in particular only after checking that ACPI is not making use of
+the SMBus.
 
-> Using the irqpoll also made things work except for once.  In that
-> case, I got the same errors, delayed bootup, and missing SATA drive.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Tomasz Koprowski <tomek@koprowski.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+This 2.6.25 material.
 
-Hmmm.. Do you have logs?
+ drivers/pci/quirks.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-> Is there a new "hdparm like" tool for working with the new
-> drives/drivers to be able to read/set parameters, run various tests,
-> etc?
+--- linux-2.6.25-rc6.orig/drivers/pci/quirks.c	2008-03-05 16:44:21.000000000 +0100
++++ linux-2.6.25-rc6/drivers/pci/quirks.c	2008-03-21 10:08:46.000000000 +0100
+@@ -951,6 +951,12 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
+  * accesses to the SMBus registers, with potentially bad effects. Thus you
+  * should be very careful when adding new entries: if SMM is accessing the
+  * Intel SMBus, this is a very good reason to leave it hidden.
++ *
++ * Likewise, many recent laptops use ACPI for thermal management. If the
++ * ACPI DSDT code accesses the SMBus, then Linux should not access it
++ * natively, and keeping the SMBus hidden is the right thing to do. If you
++ * are about to add an entry in the table below, please first disassemble
++ * the DSDT and double-check that there is no code accessing the SMBus.
+  */
+ static int asus_hides_smbus;
+ 
+@@ -1028,11 +1034,6 @@ static void __init asus_hides_smbus_host
+ 			case 0x12bf: /* HP xw4100 */
+ 				asus_hides_smbus = 1;
+ 			}
+-		else if (dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB)
+-			switch (dev->subsystem_device) {
+-			case 0x099c: /* HP Compaq nx6110 */
+-				asus_hides_smbus = 1;
+-			}
+        } else if (unlikely(dev->subsystem_vendor == PCI_VENDOR_ID_SAMSUNG)) {
+                if (dev->device ==  PCI_DEVICE_ID_INTEL_82855PM_HB)
+                        switch(dev->subsystem_device) {
 
-hdparm will still be the utility of choice but libata doesn't allow many
-settings IDE used to and libata probably will never implement some of
-IDE's tunables.  Is there any specific setting you have in mind?
-
-Thanks.
 
 -- 
-tejun
+Jean Delvare
