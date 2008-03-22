@@ -1,107 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbYCVRoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbYCVRpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbYCVRoY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 13:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYCVRoP
+	id S1757159AbYCVRpm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 13:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbYCVRpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 13:44:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36549 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756582AbYCVRoO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 13:44:14 -0400
-Subject: Re: [PATCH] fix rcu_try_flip_waitack_needed() to prevent
-	grace-period stall
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080321203821.GA16316@linux.vnet.ibm.com>
-References: <20080321203821.GA16316@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Sat, 22 Mar 2008 18:43:48 +0100
-Message-Id: <1206207828.6437.84.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Sat, 22 Mar 2008 13:45:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47142 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753719AbYCVRpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 13:45:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Date: Sat, 22 Mar 2008 18:45:12 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
+       Len Brown <len.brown@intel.com>
+References: <200803210040.33982.rjw@sisk.pl> <Pine.LNX.4.44L0.0803202049550.11234-100000@netrider.rowland.org> <20080322162110.GA32058@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20080322162110.GA32058@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803221845.13826.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-21 at 13:38 -0700, Paul E. McKenney wrote:
-> The comment was correct -- need to make the code match the comment.
-> Without this patch, if a CPU goes dynticks idle (and stays there forever)
-> in just the right phase of preemptible-RCU grace-period processing,
-> grace periods stall.  The offending sequence of events (courtesy
-> of Promela/spin, at least after I got the liveness criterion coded
-> correctly...) is as follows:
+On Saturday, 22 of March 2008, Pavel Machek wrote:
+> > On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
+> > 
+> > > > > > Well, in fact ACPI has something called the NVS memory, which we're supposed
+> > > > > > to restore during the resume and which we're not doing.  The problem may be
+> > > > > > related to this.
+> > > > > 
+> > > > > No, it can't be.  ACPI won't expect the NVS memory to be restored 
+> > > > > following an S5-shutdown.  In fact, as far as ACPI is concerned, 
+> > > > > resuming from an S5-type hibernation should not be considered a resume 
+> > > > > at all but just an ordinary reboot.
+> > > 
+> > > I agree here.
+> > > 
+> > > > > All ACPI-related memory areas in the boot kernel should be passed directly
+> > > > > through to the image kernel.
+> > > 
+> > > However, the image kernel is supposed to restore the NVS area (from the
+> > > image) before executing _WAK.
+> > 
+> > It's supposed to do that when resuming from an S4 hibernation, not 
+> > when resuming from an S5 hibernation.
+> > 
+> > > > How can we pass interpretter state? I do not think we do this kind of
+> > > > passing.
+> > > 
+> > > The interpreter state is passed withing the image.  The platform state is not.
+> > 
+> > For an S5 hibernation, the interpreter state within the image is wrong.  
+> > The image kernel needs to have the interpreter state from the boot 
+> > kernel -- I don't know if this is possible.
 > 
-> o	CPU 0 is in dynticks-idle mode.  Its dynticks_progress_counter
-> 	is (say) 10.
-> 
-> o	CPU 0 takes an interrupt, so rcu_irq_enter() increments CPU 0's
-> 	dynticks_progress_counter to 11.
-> 
-> o	CPU 1 is doing RCU grace-period processing in rcu_try_flip_idle(),
-> 	sees rcu_pending(), so invokes dyntick_save_progress_counter(),
-> 	which in turn takes a snapshot of CPU 0's dynticks_progress_counter
-> 	into CPU 0's rcu_dyntick_snapshot -- now set to 11.  CPU 1 then
-> 	updates the RCU grace-period state to rcu_try_flip_waitack().
-> 
-> o	CPU 0 returns from its interrupt, so rcu_irq_exit() increments
-> 	CPU 0's dynticks_progress_counter to 12.
-> 
-> o	CPU 1 later invokes rcu_try_flip_waitack(), which notices that
-> 	CPU 0 has not yet responded, and hence in turn invokes
-> 	rcu_try_flip_waitack_needed().  This function examines the
-> 	state of CPU 0's dynticks_progress_counter and rcu_dyntick_snapshot
-> 	variables, which it copies to curr (== 12) and snap (== 11),
-> 	respectively.
-> 
-> 	Because curr!=snap, the first condition fails.
-> 
-> 	Because curr-snap is only 1 and snap is odd, the second
-> 	condition fails.
-> 
-> 	rcu_try_flip_waitack_needed() therefore incorrectly concludes
-> 	that it must wait for CPU 0 to explicitly acknowledge the
-> 	counter flip.
-> 
-> o	CPU 0 remains forever in dynticks-idle mode, never taking
-> 	any more hardware interrupts or any NMIs, and never running
-> 	any more tasks.  (Of course, -something- will usually eventually
-> 	happen, which might be why we haven't seen this one in the
-> 	wild.  Still should be fixed!)
-> 
-> Therefore the grace period never ends.  Fix is to make the code match
-> the comment, as shown below.  With this fix, the above scenario
-> would be satisfied with curr being even, and allow the grace period
-> to proceed.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> yes, nosave pages could be used to do this passing -- if we can put
+> interpretter state into pre-allocated memory block.
 
-Paul, should this go upstream ASAP?
+On x86-64 there's no guarantee that the "nosave" pages will be at the same
+locations in both the image kernel and the boot kernel.  What we could do
+is to pass the data in the image header, preallocate some "safe" pages from
+the boot kernel, put the data in there and pass a pointer to them to the
+image kernel.
 
-> ---
-> 
->  rcupreempt.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -urpNa -X dontdiff linux-2.6.25-rc6/kernel/rcupreempt.c linux-2.6.25-rc6-rcunohz-if/kernel/rcupreempt.c
-> --- linux-2.6.25-rc6/kernel/rcupreempt.c	2008-03-16 17:45:17.000000000 -0700
-> +++ linux-2.6.25-rc6-rcunohz-if/kernel/rcupreempt.c	2008-03-18 20:27:47.000000000 -0700
-> @@ -569,7 +569,7 @@ rcu_try_flip_waitack_needed(int cpu)
->  	 * that this CPU already acknowledged the counter.
->  	 */
->  
-> -	if ((curr - snap) > 2 || (snap & 0x1) == 0)
-> +	if ((curr - snap) > 2 || (curr & 0x1) == 0)
->  		return 0;
->  
->  	/* We need this CPU to explicitly acknowledge the counter flip. */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+However, as far as the ACPI NVS area is concerned, this is probably not
+necessary, because the spec wants us to restore the ACPI NVS before calling
+_WAK, which is just after the image kernel gets the control back.  So, in
+theory, the ACPI NVS data could be stored in the image and restored by
+the image kernel from a location known to it (the procedure may be to copy
+the ACPI NVS data into a region of regular RAM before creating the image and
+copy them back into the ACPI NVS area in platform->leave(), for example), but
+I suspect that for this to work we'll have to switch ACPI off in the boot
+kernel, just prior to passing control back to the image kernel.
 
+Thanks,
+Rafael
