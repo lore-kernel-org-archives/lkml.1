@@ -1,165 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbYCVKvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYCVKwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616AbYCVKvl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 06:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYCVKvc
+	id S1756055AbYCVKwF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 06:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbYCVKvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 06:51:32 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:29810 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbYCVKvb (ORCPT
+	Sat, 22 Mar 2008 06:51:52 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:49586 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194AbYCVKvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 06:51:31 -0400
+	Sat, 22 Mar 2008 06:51:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ooaaNsimYuMRhf2mMgig59LM1Czu49YiCBKHx95rXVeOphi5KSNpSOFYmQ86ru6nRk1/84OaAJKZEf3IqRaQK0EcMrqIZSQDyCEKejFnnGKlmJGZdaO4ZsIIVeytdvuxWNh8s/qxpTlsIuLTzCgxdy4FSohV/WGsGVv5/HQocxI=
-Message-ID: <42212ce70803220351p7fc14327m1e616dca0fec7b34@mail.gmail.com>
-Date: Sat, 22 Mar 2008 11:51:28 +0100
-From: "Marco Mangiante" <marco.mangiante@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PROBLEM]: onda h600 express card don't work inside the elan u132 usb adapter
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=c3Q7lWyB2MO1pW5ce8PQ83o95AeF03D+KHqHaGnrNwES4biwoAYNVBBU1oIKuULcDACt2mxk3dvyP3J1EI/zG8OVk6RiLj0JRZRlaxGurWLbBomJPpBO7SV1Keo2peWEkv7yNjhxu1xNeaUuV4Oo+/6DPuGjHUiRQFQ3N7CEiYs=
+Message-ID: <47E4E4AE.6030308@gmail.com>
+Date: Sat, 22 Mar 2008 11:51:26 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sudheer Divakaran <sudheerd@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: enabling serial port caused kernel crash in an old pc
+References: <211620.40633.qm@web54504.mail.re2.yahoo.com>
+In-Reply-To: <211620.40633.qm@web54504.mail.re2.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to use the onda h600 (a pcmcia express card for UMTS-HSDPA)
-on an assembled desktop under kubuntu 7.04 (kernel 2.6.22-14-generic),
-but the problem is present even in 7.10 and 8.04 alpha 6 (this has a
-2.6.24-8-generic kernel). The card apparentely have a ZTE MF330
-chipset, and is OHCI compliant.
+On 03/22/2008 07:47 AM, Sudheer Divakaran wrote:
+> Hi,
+> I have an old pc (Intel P2 400 MHz, 128MB), which has
+> FC5 installed in
+> it.  I was trying to compile & install the kernel
+> 2.6.24.3. I have
+> succeeded in bringing up the kernel without serial
+> port support.  Since
+> I'm still using serial mouse, I have added serial
+> ports  support and
+> recompiled the kernel. When I'm booting with this
+> kernel (having serial
+> port support), it is crashing (while booting itself).
+> 
+> Here is the crash dump (I have written it down), I
+> might have missed
+> some starting lines since it has scrolled up
+> 
+> sysfs_create_link
+> pciserial_init_one
+> pci_device_probe
+> driver_probe_device
+> klist_next
+> __driver_attach
+> bus_for_each_dev
+> __driver_attach
+> bus_add_driver
+> bus_add_driver
+> __pci_register_driver
+> kernel_init
+> kernel_init
+> kernel_thread_helper
+> ==============================
+> 
+> serial_pci_guess_board+0x49/0x170 SS:ESP 0068:c7c11ea4
+> 
+> Code: 03 07 00 00 74 0b b8 ed ff ff ff 5a 5b 5e 5f 5d
+> c3 25 ff 00 00 00
+>      83 f8 06 77 eb 0f b7 4e 24 31 d2 eb 08 83 c2 1c
+> 83 fa 34 74 1c <3b>
+>  8a 1c 29 2b c0 75 f0 0f b7 46 26 3b 82 20 29 2b c0 74
+> c7 83
 
-I want to use it with elan u132, an usb external adapter for
-UMTS-HSDPA express cards. In a document found on the net and written
-by Tony Olech (the author and maintainer of the elan u132 linux driver
-in Elan Digital Systems), I read that the device (u132) must load 2
-modules: the ftdi-u132 when it is plugged in the usb port, and the
-u132-hcd, when it recognize an express card inside it.
+confused.
+   1f:   31 d2                   xor    %edx,%edx
+   21:   eb 08                   jmp    2b <p+0x2b>
+   23:   83 c2 1c                add    $0x1c,%edx
+   26:   83 fa 34                cmp    $0x34,%edx
+   29:   74 1c                   je     47 <p+0x47>
+   2b:   3b 8a 1c 29 2b c0       cmp    -0x3fd4d6e4(%edx),%ecx
 
-What happen is that, when I insert the card in the u132 device, the
-green light (it flashes, is not fix) of the u132 becomes red. On what
-I understand, the module ftdi-u132 is loaded but not the u132-hcd.
+What's the compiler used here? How can edx be ever 0x34 if the increment is 
+0x1c? What's in edx when the crash occurs, could you see it in the oops? Are you 
+sure you didn't mistype it? Maybe a shot from camera would be good...
 
-With an dmesg command I received these data, when I plug the u132 in
-the usb port:
+I suppose c02b291b is softmodem_blacklist in System.map?
 
-[   15.628000] driver ftdi-elan built at 23:19:53 on Oct 14 2007
-
-[   15.628000] usb 2-1: interface 0 has I=81 O=02
-
-[   15.628000] usb 2-1: USB FDTI=e9209000 JTAG interface 0 now
-attached to ftdi192
-
-[   15.628000] usb 2-1: interface 1 has I=83 O=04
-
-[   15.628000] usb 2-1: USB FDTI=eb7bd000 ELAN interface 1 now activated
-
-[   15.628000] usbcore: registered new interface driver ftdi-elan
-
-[   22.132000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   23.176000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   24.220000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   25.264000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   26.308000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   28.396000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   29.440000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   30.484000] usb 2-1: initialized failed - trying again in 10 seconds
-
-[   31.528000] usb 2-1: initialized failed - trying again in 10 seconds
-
-
-N.B.: I deleted many other lines similar to the last above.
-
-
-The part wiht the failed initialization starts when you enter the onda
-h600 in the u132, or starts soon as you have already plugged the onda
-h600 in.
-
-
-I see on ubuntu that there is a bug (129433) that maybe is related:
-the user of the onda h600 must place in the blacklist the driver
-ehci_hcd, but even if I do that I obtain no good results.
-
-It seems that the second module driver, u132-hcd, have problem when it
-try to load itself and u132 so don't recognize the onda h600.
-
-I also include data from scripts/ver_linux:
-
-Linux kubuntu 2.6.22-14-generic #1 SMP Sun Oct 14 23:05:12 GMT 2007
-i686 GNU/Linux
-
-
-
-Gnu C                  4.1.3
-
-Gnu make               3.81
-
-binutils               Binutils
-
-util-linux             2.13
-
-mount                  2.13
-
-module-init-tools      3.3-pre2
-
-e2fsprogs              1.40.2
-
-reiserfsprogs          3.6.19
-
-pcmciautils            014
-
-PPP                    2.4.4
-
-Linux C Library        2.6.1
-
-Dynamic linker (ldd)   2.6.1
-
-Procps                 3.2.7
-
-Net-tools              1.60
-
-Console-tools          0.2.3
-
-Sh-utils               5.97
-
-udev                   113
-
-wireless-tools         29
-
-Modules Loaded         rfcomm l2cap bluetooth radeon drm ppdev
-cpufreq_userspace cpufreq_conservative cpufreq_powersave
-cpufreq_ondemand cpufreq_stats freq_table container button dock sbs
-video ac battery nls_iso8859_1 nls_cp437 vfat fat lp loop snd_via82xx
-snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm
-snd_page_alloc snd_seq_dummy snd_mpu401 snd_mpu401_uart snd_seq_oss
-snd_seq_midi snd_rawmidi snd_seq_midi_event parport_pc parport analog
-gameport pcspkr ftdi_elan psmouse snd_seq snd_timer snd_seq_device
-i2c_viapro i2c_core via_ircc irda snd soundcore serio_raw crc_ccitt
-shpchp pci_hotplug via_agp agpgart evdev ext3 jbd mbcache ide_cd cdrom
-ide_disk ata_generic libata scsi_mod floppy via_rhine mii via82cxxx
-ide_core uhci_hcd usbcore thermal processor fan fuse apparmor
-commoncap
-
-
-
-Help is appreciated.
-
-Please CC your response (if possible) to this mail to my address
-because I'm not subscrived to the mailing list.
-
-
--- 
-Regards,
-
-Marco Mangiante
+Could you send
+drivers/serial/8250_pci.s
+product of:
+make drivers/serial/8250_pci.s
+?
