@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbYCVR4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYCVR5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbYCVR4g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 13:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYCVR43
+	id S1757488AbYCVR5B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 13:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757303AbYCVR4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 13:56:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47210 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754845AbYCVR42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 13:56:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: 2.6.25-rc6-git6: Reported regressions from 2.6.24
-Date: Sat, 22 Mar 2008 18:56:10 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Alasdair G Kergon <agk@redhat.com>
-References: <200803220259.48534.rjw@sisk.pl> <20080322163216.GB6367@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20080322163216.GB6367@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 22 Mar 2008 13:56:49 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:43147 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754875AbYCVR4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 13:56:48 -0400
+X-Trace: 684339771/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApAFAJDl5EdRAVlC/2dsb2JhbACBW6ZD
+Subject: Re: [PATCH] 1/3 mtd: add Kbuild support and makefile support for
+	Dreamcast VMU
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: dwmw2 <dwmw2@infradead.org>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       Paul Mundt <lethal@users.sourceforge.net>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <1206207805.6324.13.camel@localhost.localdomain>
+References: <1206207805.6324.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 22 Mar 2008 17:56:32 +0000
+Message-Id: <1206208592.6324.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803221856.11535.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 22 of March 2008, Heiko Carstens wrote:
-> On Sat, Mar 22, 2008 at 02:59:47AM +0100, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10271
-> > Subject		: dm raid1: bitops bug
-> > Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Date		: 2008-03-17 16:45 (5 days old)
-> > References	: http://lkml.org/lkml/2008/3/17/174
-> > Handled-By	: Alasdair G Kergon <agk@redhat.com>
-> 
-> For this one a patch is available in -mm. Qouted patch can be seen
-> via the lkml.org link above ;)
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
+diff -ruN a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+--- a/drivers/mtd/maps/Kconfig	2008-03-22 17:26:24.000000000 +0000
++++ b/drivers/mtd/maps/Kconfig	2008-03-22 17:20:45.000000000 +0000
+@@ -590,5 +590,19 @@
+ 
+ 	  This selection automatically selects the map_ram driver.
+ 
++config MTD_VMU_FLASH
++	tristate "Dreamcast Visual Memory devices and clones"
++	depends on SH_DREAMCAST
++	select MAPLE
++	help
++	  Flash map driver for the SEGA Dreamcast Visual Memory Unit
++	  and clones.
++
++	  Most Dreamcast users will have one of these and so will want
++	  to say Y here.
++
++	  To compile this driver as a module choose M here: the module
++	  will be called vmu-flash.
++
+ endmenu
+ 
+diff -ruN a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+--- a/drivers/mtd/maps/Makefile	2008-03-22 17:26:24.000000000 +0000
++++ b/drivers/mtd/maps/Makefile	2008-03-22 17:20:45.000000000 +0000
+@@ -68,3 +68,4 @@
+ obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
+ obj-$(CONFIG_MTD_MTX1)		+= mtx-1_flash.o
+ obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
++obj-$(CONFIG_MTD_VMU_FLASH)	+= vmu_flash.o
 
-Well, I tried to find a link to this patch, but I gave up after some time.
 
-Please attach it to bug #10271 or put the link to it in there.
-
-Thanks,
-Rafael
