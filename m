@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYCUX4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYCVAET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbYCUX4p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 19:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYCUX4g
+	id S1756916AbYCVAET (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 20:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYCVAEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 19:56:36 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41599 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752132AbYCUX4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 19:56:35 -0400
-Date: Fri, 21 Mar 2008 16:56:31 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com
-Subject: [PATCH] cpufreq: Document the currently undocumented parts of the
-	sysfs interface
-Message-ID: <20080321235631.GS5529@tree.beaverton.ibm.com>
-References: <20080321004354.GQ5529@tree.beaverton.ibm.com> <20080321154124.668969a2.akpm@linux-foundation.org>
+	Fri, 21 Mar 2008 20:04:06 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:52938 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbYCVAED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 20:04:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EvnE/k/X5ArDNf3X7km2/nz6lnyekMfZddYS/HMsrj7WSOt6MVpgufgO/A22zIMS7x1C0uaFkJltA3h3dbrAO7QtDGMNciurPXYlm9m4n/AtvgHaw5KU9yXXoH//qoM7lXcQn81SZgWaeNxWF33a/5ETRuqyfvNyhlZfGirkiug=
+Message-ID: <86802c440803211704u4fb07074w934f32d2f95bf6a7@mail.gmail.com>
+Date: Fri, 21 Mar 2008 17:04:03 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86_64: early memtest to find bad ram
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080321120313.GD25225@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080321154124.668969a2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <200803202358.33722.yhlu.kernel@gmail.com>
+	 <20080321120313.GD25225@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 03:41:24PM -0700, Andrew Morton wrote:
+On Fri, Mar 21, 2008 at 5:03 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+>
+>  > do simple memtest after init_memory_mapping
+>  >
+>  > use find_e820_area_size to find all ram range that is not reserved.
+>  >
+>  > and do some simple bits test to find some bad ram.
+>  >
+>  > if find some bad ram, use reserve_early to exclude that range.
+>
+>  very nice patch! I always thought that this was the proper way to do
+>  memtest - and we could in fact also do something like this after SMP
+>  bringup, and hit the memory bus via multiple CPUs. [that will need a
+>  different enumeration though than e820 maps]
+or
+1. core0/node0 check all memory at first
+2. every core0 will check all memory later one by one.
 
-> I was going to ding you for not updating the kernel->userspace API
-> documentation.  But it seems that none of this interface is documented
-> anyway :(
+>
+>  one structural observation: please make this unified functionality, so
+>  that 32-bit kernels can make use of it too.
 
-Actually, I deserve the ding, for there _is_ a description of some of
-the sysfs files.  However, there are some that are not mentioned in the
-documentation, so add them to the user's guide.
+that will need to use PAE to switch 2G windows ....
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+>
+>  a small style nit from scripts/checkpatch.pl:
+>
+>
+>  > +//           printk(KERN_DEBUG "find_e820_area_size : e820 %d [%llx, %lx]\n", i, ei->addr, ei_last);
+>
+>  remove such lines or make them pr_debug(). (checkpatch also found more
+>  such cases)
+>
+>  also, please add a CONFIG_BOOTPARAM_MEMTEST=y option so that
+>  distributions can enable this by default in their debug kernels.
+>
+>  i've applied your current version to get some testing, please send delta
+>  patches against x86/latest.
 
- Documentation/cpu-freq/user-guide.txt |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+thanks. will submit delta patch.
 
-diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
-index af3b925..6c442d8 100644
---- a/Documentation/cpu-freq/user-guide.txt
-+++ b/Documentation/cpu-freq/user-guide.txt
-@@ -154,6 +154,11 @@ scaling_governor,		and by "echoing" the name of another
- 				that some governors won't load - they only
- 				work on some specific architectures or
- 				processors.
-+
-+cpuinfo_cur_freq :		Current speed of the CPU, in KHz.
-+
-+scaling_available_frequencies : List of available frequencies, in KHz.
-+
- scaling_min_freq and
- scaling_max_freq		show the current "policy limits" (in
- 				kHz). By echoing new values into these
-@@ -162,6 +167,15 @@ scaling_max_freq		show the current "policy limits" (in
- 				first set scaling_max_freq, then
- 				scaling_min_freq.
- 
-+affected_cpus :			List of CPUs that require software coordination
-+				of frequency.
-+
-+related_cpus :			List of CPUs that need some sort of frequency
-+				coordination, whether software or hardware.
-+
-+scaling_driver :		Hardware driver for cpufreq.
-+
-+scaling_cur_freq :		Current frequency of the CPU, in KHz.
- 
- If you have selected the "userspace" governor which allows you to
- set the CPU operating frequency to a specific value, you can read out
+YH
