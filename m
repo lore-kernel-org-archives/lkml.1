@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYCVWwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbYCVWzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbYCVWwn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 18:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYCVWwg
+	id S1758109AbYCVWzx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 18:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYCVWzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 18:52:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:38990 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbYCVWwg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 18:52:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IJPdbnrh98DBF+MyrBazZp6fvGXuAxUPAUnLqXuQ+acg9OYuPIFYRVdakXYTa+rxU+xjEaZlf7O3mBWaZmSHhhyaEoJ6t7EOfS1kOkG+T9Tv2Xv/f194+BmkV0R9/GPxfh2PFL/x/TZjwa8e8BpipWf7XkZDRQwyDKaXzywAqfE=
-Date: Sun, 23 Mar 2008 01:50:16 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Gerhard Mack <gmack@innerfire.net>
-Cc: Justin Mattock <justinmattock@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: fglrx
-Message-ID: <20080322225016.GA8068@martell.zuzino.mipt.ru>
-References: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com> <alpine.DEB.1.00.0803221641570.24807@mtl.rackplans.net>
+	Sat, 22 Mar 2008 18:55:46 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:34696 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753518AbYCVWzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 18:55:46 -0400
+Date: Sat, 22 Mar 2008 23:55:35 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, xfs-masters@oss.sgi.com
+Subject: Re: 2.6.25-rc6: kernel BUG at fs/sysfs/file.c:89
+In-Reply-To: <20080322151339.adb146bd.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.00.0803222350550.6948@sheep.housecafe.de>
+References: <alpine.DEB.1.00.0803212319130.17137@sheep.housecafe.de> <200803220226.35552.rjw@sisk.pl> <20080321222606.16407d74.akpm@linux-foundation.org> <alpine.DEB.1.00.0803221942050.4470@sheep.housecafe.de> <alpine.DEB.1.00.0803222128570.6948@sheep.housecafe.de>
+ <20080322151339.adb146bd.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0803221641570.24807@mtl.rackplans.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22, 2008 at 04:44:04PM -0400, Gerhard Mack wrote:
->                                        The fglrx driver has been crap for 
-> over two years and the open sourced versions are slow leaving me to give 
-> up and just buy something else.
+On Sat, 22 Mar 2008, Andrew Morton wrote:
+> That's an XFS bug.
+> To clarify, I believe you are running
+>
+> 	2.6.25-rc6
+> plus	http://lkml.org/lkml/2008/3/22/8
 
-Slow with what exactly?
+Yes, Neil's patch you posted in this message.
 
+> plus	some dm-crypt patch?
+
+The dm-crypt patch is http://lkml.org/lkml/2008/3/17/214
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #93:
+
+Feature not yet implemented
