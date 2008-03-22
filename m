@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYCVUtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYCVUuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYCVUtk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 16:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYCVUtc
+	id S1754025AbYCVUuV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 16:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYCVUuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 16:49:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50939 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbYCVUtb (ORCPT
+	Sat, 22 Mar 2008 16:50:06 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4118 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754966AbYCVUuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 16:49:31 -0400
-Date: Sat, 22 Mar 2008 13:46:56 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: How to avoid spurious lockdep warnings?
-Message-ID: <20080322134656.173de045@laptopd505.fenrus.org>
-In-Reply-To: <47E2ECF3.2050606@goop.org>
-References: <47E2ECF3.2050606@goop.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 22 Mar 2008 16:50:04 -0400
+Date: Sat, 22 Mar 2008 16:49:59 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pavel Machek <pavel@ucw.cz>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+In-Reply-To: <200803221845.13826.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803221645190.27399-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Mar 2008 16:02:11 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Sat, 22 Mar 2008, Rafael J. Wysocki wrote:
 
-> In a Xen system, when a new pagetable is about to be put in use it is 
-> "pinned", meaning that each page in the pagetable is registered with
-> the hypervisor.  This is done in arch/x86/xen/mmu.c:pin_page().
-> 
-> In order to make this efficient, the hypercalls for pinning are
-> batched, so that multiple pages are submitted at once in a single
-> multicall. While a page is batched pending the hypercall, its
-> corresponding pte_lock is held.
-> 
-> This means that the code can end up holding multiple pte locks at
-> once, though it is guaranteed to never try to hold the same lock at
-> once. However, because these locks are in the same lock class, I get
-> a spurious warning from lockdep.  Is there some way I can get rid of
-> this warning?
+> However, as far as the ACPI NVS area is concerned, this is probably not
+> necessary, because the spec wants us to restore the ACPI NVS before calling
+> _WAK, which is just after the image kernel gets the control back.  So, in
+> theory, the ACPI NVS data could be stored in the image and restored by
+> the image kernel from a location known to it (the procedure may be to copy
+> the ACPI NVS data into a region of regular RAM before creating the image and
+> copy them back into the ACPI NVS area in platform->leave(), for example), but
+> I suspect that for this to work we'll have to switch ACPI off in the boot
+> kernel, just prior to passing control back to the image kernel.
 
+That sounds by far the simplest solution.  If the boot kernel can tell
+(by looking at some header field in the image or any other way) that
+the hibernation used S5 instead of S4, then it should just turn off 
+ACPI before passing control to the image kernel.  Then the image kernel 
+can turn ACPI back on and all should be well.  If you do this, does the 
+NVS region still need to be preserved?
 
-what's the ordering guarantee between these locks ?
+Alan Stern
 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
