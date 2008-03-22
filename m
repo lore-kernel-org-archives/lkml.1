@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYCVAET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYCVAGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbYCVAET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 20:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYCVAEG
+	id S1757189AbYCVAGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 20:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYCVAGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 20:04:06 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:52938 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbYCVAED (ORCPT
+	Fri, 21 Mar 2008 20:06:31 -0400
+Received: from igraine.blacknight.ie ([81.17.252.25]:37614 "EHLO
+	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbYCVAGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 20:04:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EvnE/k/X5ArDNf3X7km2/nz6lnyekMfZddYS/HMsrj7WSOt6MVpgufgO/A22zIMS7x1C0uaFkJltA3h3dbrAO7QtDGMNciurPXYlm9m4n/AtvgHaw5KU9yXXoH//qoM7lXcQn81SZgWaeNxWF33a/5ETRuqyfvNyhlZfGirkiug=
-Message-ID: <86802c440803211704u4fb07074w934f32d2f95bf6a7@mail.gmail.com>
-Date: Fri, 21 Mar 2008 17:04:03 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86_64: early memtest to find bad ram
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080321120313.GD25225@elte.hu>
+	Fri, 21 Mar 2008 20:06:30 -0400
+Date: Sat, 22 Mar 2008 00:05:57 +0000
+From: Robert Fitzsimons <robfitz@273k.net>
+To: Bongani Hlope <bonganilinux@mweb.co.za>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Robert Fitzsimons <robfitz@273k.net>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] bttv: Add a radio compat_ioctl file operation.
+Message-ID: <20080322000557.GA21314@localhost>
+References: <200802171036.19619.bonganilinux@mweb.co.za> <200803172351.56717.bonganilinux@mweb.co.za> <20080320142212.2361f6d8@gaivota> <200803211655.31085.bonganilinux@mweb.co.za>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200803202358.33722.yhlu.kernel@gmail.com>
-	 <20080321120313.GD25225@elte.hu>
+In-Reply-To: <200803211655.31085.bonganilinux@mweb.co.za>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: 1JcrF6-0002jc-6Z
+X-blacknight-igraine-MailScanner: Found to be clean
+X-blacknight-igraine-MailScanner-SpamCheck: not spam,
+	SpamAssassin (not cached, score=1.608, required 7,
+	autolearn=disabled, HELO_LOCALHOST 4.50, RCVD_IN_NERDS_IE -3.50,
+	RCVD_IN_PBL 0.51, RDNS_NONE 0.10)
+X-blacknight-igraine-MailScanner-SpamScore: s
+X-MailScanner-From: robfitz@273k.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 5:03 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
->
->  > do simple memtest after init_memory_mapping
->  >
->  > use find_e820_area_size to find all ram range that is not reserved.
->  >
->  > and do some simple bits test to find some bad ram.
->  >
->  > if find some bad ram, use reserve_early to exclude that range.
->
->  very nice patch! I always thought that this was the proper way to do
->  memtest - and we could in fact also do something like this after SMP
->  bringup, and hit the memory bus via multiple CPUs. [that will need a
->  different enumeration though than e820 maps]
-or
-1. core0/node0 check all memory at first
-2. every core0 will check all memory later one by one.
+Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
+---
+ drivers/media/video/bt8xx/bttv-driver.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
->
->  one structural observation: please make this unified functionality, so
->  that 32-bit kernels can make use of it too.
 
-that will need to use PAE to switch 2G windows ....
+Hi Bongani
 
->
->  a small style nit from scripts/checkpatch.pl:
->
->
->  > +//           printk(KERN_DEBUG "find_e820_area_size : e820 %d [%llx, %lx]\n", i, ei->addr, ei_last);
->
->  remove such lines or make them pr_debug(). (checkpatch also found more
->  such cases)
->
->  also, please add a CONFIG_BOOTPARAM_MEMTEST=y option so that
->  distributions can enable this by default in their debug kernels.
->
->  i've applied your current version to get some testing, please send delta
->  patches against x86/latest.
+I only noticed that you might be using a 32 bit userspace, so the radio
+compat_ioctl needs to be implmented.
 
-thanks. will submit delta patch.
+Robert
 
-YH
+
+
+diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
+index 5404fcc..1bdb726 100644
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -3601,6 +3601,7 @@ static const struct file_operations radio_fops =
+ 	.read     = radio_read,
+ 	.release  = radio_release,
+ 	.ioctl	  = video_ioctl2,
++	.compat_ioctl	= v4l_compat_ioctl32,
+ 	.llseek	  = no_llseek,
+ 	.poll     = radio_poll,
+ };
+-- 
+1.5.4.3.484.g60e3
+
