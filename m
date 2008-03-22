@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYCVFqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYCVFr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757212AbYCVFqG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 01:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYCVFp7
+	id S1758260AbYCVFr4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 01:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYCVFrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 01:45:59 -0400
-Received: from 1wt.eu ([62.212.114.60]:1027 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbYCVFp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 01:45:58 -0400
-Date: Sat, 22 Mar 2008 06:45:37 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, yhlu.kernel@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: early memtest to find bad ram
-Message-ID: <20080322054537.GA23796@1wt.eu>
-References: <200803202358.33722.yhlu.kernel@gmail.com> <20080321120313.GD25225@elte.hu> <47E3B335.3020501@zytor.com> <20080321142919.GD31719@elte.hu>
+	Sat, 22 Mar 2008 01:47:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49291 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752339AbYCVFrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 01:47:48 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19PC6RxFEBPx6AmB8Mojy1lFWKjXDZVkCRbuzL5ML
+	9WqJ+9iGiHfQbP
+Subject: Re: Scalability requirements for sysv ipc
+From: Mike Galbraith <efault@gmx.de>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: paulmck@linux.vnet.ibm.com, Nadia Derbey <Nadia.Derbey@bull.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <47E3DD8C.4000904@colorfullife.com>
+References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net>
+	 <47E3B924.3000304@colorfullife.com>
+	 <20080321141339.GB9618@linux.vnet.ibm.com>
+	 <47E3DD8C.4000904@colorfullife.com>
+Content-Type: text/plain
+Date: Sat, 22 Mar 2008 06:43:28 +0100
+Message-Id: <1206164608.3659.11.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321142919.GD31719@elte.hu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 03:29:19PM +0100, Ingo Molnar wrote:
-> 
-> * H. Peter Anvin <hpa@zytor.com> wrote:
-> 
-> >> very nice patch! I always thought that this was the proper way to do 
-> >> memtest - and we could in fact also do something like this after SMP 
-> >> bringup, and hit the memory bus via multiple CPUs. [that will need a 
-> >> different enumeration though than e820 maps]
-> >>
-> >> one structural observation: please make this unified functionality, 
-> >> so that 32-bit kernels can make use of it too.
-> >>
+
+On Fri, 2008-03-21 at 17:08 +0100, Manfred Spraul wrote: 
+> Paul E. McKenney wrote:
+> > I could give it a spin -- though I would need to be pointed to the
+> > patch and the test.
 > >
-> > Indeed.  Of course, it would also be nice if distros shipped 
-> > bootloader-invoked prekernel test software, like memtest86+, by 
-> > default.
+> >   
+> I'd just compare a recent kernel with something older, pre Fri Oct 19 
+> 11:53:44 2007
 > 
-> some do (Fedora for example), but it's still a bit quirky for users to 
-> invoke and it would be nice to see those results in the kernel log as 
-> well and flag possibly flaky systems that way. (add a taint bit, etc., 
-> etc.)
+> Then download ctxbench, run one instance on each core, bound with taskset.
+> http://www.tmr.com/%7Epublic/source/
+> (I don't juse ctxbench myself, if it doesn't work then I could post my 
+> own app. It would be i386 only with RDTSCs inside)
 
-It may even make sense to merge in the full memtest86. The code is small
-(both source and binary) and IIRC it shares a lot of init code with x86.
-The remaining problem would then be how to maintain its tests up do date.
+(test gizmos are always welcome)
 
-Willy
+Results for Q6600 box don't look particularly wonderful.
+
+taskset -c 3 ./ctx -s 
+
+2.6.24.3
+3766962 itterations in 9.999845 seconds = 376734/sec
+
+2.6.22.18-cfs-v24.1
+4375920 itterations in 10.006199 seconds = 437330/sec
+
+for i in 0 1 2 3; do taskset -c $i ./ctx -s& done
+
+2.6.22.18-cfs-v24.1
+4355784 itterations in 10.005670 seconds = 435361/sec
+4396033 itterations in 10.005686 seconds = 439384/sec
+4390027 itterations in 10.006511 seconds = 438739/sec
+4383906 itterations in 10.006834 seconds = 438128/sec
+
+2.6.24.3
+1269937 itterations in 9.999757 seconds = 127006/sec
+1266723 itterations in 9.999663 seconds = 126685/sec
+1267293 itterations in 9.999348 seconds = 126742/sec
+1265793 itterations in 9.999766 seconds = 126592/sec
+
+	-Mike
 
