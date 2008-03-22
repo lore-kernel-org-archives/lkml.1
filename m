@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYCVHpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYCVINi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbYCVHpQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 03:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYCVHpE
+	id S1756545AbYCVINi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 04:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbYCVINZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 03:45:04 -0400
-Received: from www.tglx.de ([62.245.132.106]:36925 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753004AbYCVHpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 03:45:01 -0400
-Date: Sat, 22 Mar 2008 08:37:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Wright <chrisw@sous-sol.org>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Lennert Buytenhek <buytenh@wantstofly.org>,
-       Riku Voipio <riku.voipio@movial.fi>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 33/76] futex: runtime enable pi and robust
- functionality
-In-Reply-To: <20080321224400.674465387@sous-sol.org>
-Message-ID: <alpine.LFD.1.00.0803220833040.3781@apollo.tec.linutronix.de>
-References: <20080321224250.144333319@sous-sol.org> <20080321224400.674465387@sous-sol.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sat, 22 Mar 2008 04:13:25 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:16982 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753404AbYCVINX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 04:13:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=p1uFhjctkmSLsBP6nNkQ4bTEqQLA5rkfg+SEuPD/QSADXFBXsmLTn95Zg1pBu78PynH5IH/n9gK8M963Miqu3VMMsAR+irLlI491Y09EKZfgVF/7Ra68LBeXWSEI3rzIsvAaiJ3SqSSsHrGEIF8JDUzwruajCy0tsVvPOxzwvfU=
+Message-ID: <47E4BF9D.8020405@gmail.com>
+Date: Sat, 22 Mar 2008 17:13:17 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Kasprzak <kas@fi.muni.cz>
+CC: =?UTF-8?B?TWFsdGUgU2NocsO2ZGVy?= <maltesch@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot (resend)
+References: <20080214184700.0bd3837d@highlander.home.lan> <47B4D02E.9030101@gmail.com> <20080215191215.430ee2e0@highlander.home.lan> <47BCE71F.2000309@gmail.com> <20080221172757.44882428@highlander.home.lan> <20080317210045.GG3189@fi.muni.cz> <20080318140116.GC8480@fi.muni.cz> <47E08762.9090704@gmail.com> <20080319061958.GK3189@fi.muni.cz> <47E0B46C.6030302@gmail.com> <20080321164320.GA32699@fi.muni.cz>
+In-Reply-To: <20080321164320.GA32699@fi.muni.cz>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Chris Wright wrote:
+Jan Kasprzak wrote:
+> Tejun Heo wrote:
+> : Jan Kasprzak wrote:
+> : > Tejun Heo wrote:
+> : > : Hmm... I still wanna know why it got broke in the first place.  The only
+> : > : thing I can think of is IRQ routing problem in which case pci=nomsi or
+> : > : irqpoll should help.  Any chance you can test the old BIOS?
+> : > 
+> : > 	Yes, I can. What data are you interested in? Boot logs with
+> : > pci=nomsi and irqpoll ? Anything else?
+> : 
+> : pci=nomsi, then, irqpoll should be enough for now.
+> : 
+> 	I have tried to do this, but unfortunately ASUS BIOS flash
+> utility does not let me to downgrade to the 0906 bios, where the problem
+> occurs. It lets me only downgrade from 1101 to 100x, but not to 0906
+> (even when called from the 100x BIOS).
 
-> -stable review patch.  If anyone has any objections, please let us know.
-> ---------------------
+Eee... Let's hope someone else reports again.
 
-For this one you need the S390 fixes:
+Thanks for the trouble.
 
-504e75d0ed3389747e40a4aaa4b1f4e569576665
-Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date:   Thu Mar 20 17:33:38 2008 +0100
-
-    [S390] futex: let futex_atomic_cmpxchg_pt survive early functional tests.
-
-commit d5b02b3ff1d9a2e1074f559c84ed378cfa6fc3c0
-Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date:   Tue Feb 19 15:29:34 2008 +0100
-
-    [S390] Fix futex_atomic_cmpxchg_std inline assembly.
-
-Thanks,
-
-	tglx
-
+-- 
+tejun
