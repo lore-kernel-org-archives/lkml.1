@@ -1,62 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYCVO1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYCVO33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbYCVO1F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 10:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYCVO04
+	id S1756874AbYCVO33 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 10:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYCVO3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 10:26:56 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46504 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753679AbYCVO0z (ORCPT
+	Sat, 22 Mar 2008 10:29:21 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:38163 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbYCVO3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 10:26:55 -0400
-Date: Sat, 22 Mar 2008 15:29:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Nicholas Miell <nmiell@comcast.net>
-Cc: Andi Kleen <andi@firstfloor.org>, Ulrich Drepper <drepper@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
-Message-ID: <20080322142949.GB10687@one.firstfloor.org>
-References: <20080319020440.80379d50.akpm@linux-foundation.org> <a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com> <20080320090005.GA25734@one.firstfloor.org> <a36005b50803211015l64005f6emb80dbfc21dcfad9f@mail.gmail.com> <20080321172644.GG2346@one.firstfloor.org> <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com> <20080322071755.GP2346@one.firstfloor.org> <1206170695.2438.39.camel@entropy> <20080322091001.GA7264@one.firstfloor.org> <1206180991.2438.43.camel@entropy>
-Mime-Version: 1.0
+	Sat, 22 Mar 2008 10:29:19 -0400
+Date: Sat, 22 Mar 2008 19:59:15 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: linux-rt-users <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RT] [PATCH] Make scheduler root_domain modular (sched_class
+	specific)
+Message-ID: <20080322142915.GA9478@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+Mail-Followup-To: Ankita Garg <ankita@in.ibm.com>,
+	linux-rt-users <linux-rt-users@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+	Gregory Haskins <ghaskins@novell.com>,
+	LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1206180991.2438.43.camel@entropy>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22, 2008 at 03:16:31AM -0700, Nicholas Miell wrote:
-> 
-> *sigh* this is probably true
+Hello,
 
-Actually it is a relatively weak argument assuming the standard
-4k xattrs, but still an issue.
+Thanks Gregory for clarifying my question on root_domains infrastructure. What
+I was effectively mentioning on irc the other day was to make the root_domain
+infrastructure modular, ie sched_class specific. Currently, only rt is making
+use of this infrasture. Making it modular would enable ease of extension to
+other sched_classes if required. Trivial patch to that effect.
 
-The other stronger argument against it is that larger xattrs tend to be
-outside the inode so you would have another seek again.
+Patch compile and boot tested.
 
-> > and a mess to manage (a lot of tools don't know about them)
-> 
-> At this point in time, all tools that don't support xattrs are
-> defective,
 
-Good joke.
+Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
 
-> I just have an instinctive aversion towards the kernel mucking around in
-> ELF objects -- for one thing, you're going to have to blacklist
-> cryptographically signed binaries.
+Index: linux-2.6.24.3-rt3/kernel/sched.c
+===================================================================
+--- linux-2.6.24.3-rt3.orig/kernel/sched.c	2008-03-21 22:57:04.000000000 +0530
++++ linux-2.6.24.3-rt3/kernel/sched.c	2008-03-21 23:04:56.000000000 +0530
+@@ -337,11 +337,8 @@
+  * object.
+  *
+  */
+-struct root_domain {
+-	atomic_t refcount;
+-	cpumask_t span;
+-	cpumask_t online;
+ 
++struct rt_root_domain {
+ 	/*
+ 	 * The "RT overload" flag: it gets set if a CPU has more than
+ 	 * one runnable RT task.
+@@ -353,6 +350,14 @@
+ #endif
+ };
+ 
++struct root_domain {
++	atomic_t refcount;
++	cpumask_t span;
++	cpumask_t online;
++
++	struct rt_root_domain rt_dom;
++};
++
+ /*
+  * By default the system creates a single root-domain with all cpus as
+  * members (mimicking the global state we have today).
+@@ -6332,7 +6337,7 @@
+ 	cpus_clear(rd->span);
+ 	cpus_clear(rd->online);
+ 
+-	cpupri_init(&rd->cpupri);
++	cpupri_init(&rd->rt_dom.cpupri);
+ 
+ }
+ 
+Index: linux-2.6.24.3-rt3/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.24.3-rt3.orig/kernel/sched_rt.c	2008-03-21 22:57:04.000000000 +0530
++++ linux-2.6.24.3-rt3/kernel/sched_rt.c	2008-03-21 23:04:39.000000000 +0530
+@@ -7,12 +7,12 @@
+ 
+ static inline int rt_overloaded(struct rq *rq)
+ {
+-	return atomic_read(&rq->rd->rto_count);
++	return atomic_read(&rq->rd->rt_dom.rto_count);
+ }
+ 
+ static inline void rt_set_overload(struct rq *rq)
+ {
+-	cpu_set(rq->cpu, rq->rd->rto_mask);
++	cpu_set(rq->cpu, rq->rd->rt_dom.rto_mask);
+ 	/*
+ 	 * Make sure the mask is visible before we set
+ 	 * the overload count. That is checked to determine
+@@ -21,14 +21,14 @@
+ 	 * updated yet.
+ 	 */
+ 	wmb();
+-	atomic_inc(&rq->rd->rto_count);
++	atomic_inc(&rq->rd->rt_dom.rto_count);
+ }
+ 
+ static inline void rt_clear_overload(struct rq *rq)
+ {
+ 	/* the order here really doesn't matter */
+-	atomic_dec(&rq->rd->rto_count);
+-	cpu_clear(rq->cpu, rq->rd->rto_mask);
++	atomic_dec(&rq->rd->rt_dom.rto_count);
++	cpu_clear(rq->cpu, rq->rd->rt_dom.rto_mask);
+ }
+ 
+ static void update_rt_migration(struct rq *rq)
+@@ -78,7 +78,7 @@
+ #ifdef CONFIG_SMP
+ 	if (p->prio < rq->rt.highest_prio) {
+ 		rq->rt.highest_prio = p->prio;
+-		cpupri_set(&rq->rd->cpupri, rq->cpu, p->prio);
++		cpupri_set(&rq->rd->rt_dom.cpupri, rq->cpu, p->prio);
+ 	}
+ 	if (p->nr_cpus_allowed > 1)
+ 		rq->rt.rt_nr_migratory++;
+@@ -114,7 +114,7 @@
+ 	}
+ 
+ 	if (rq->rt.highest_prio != highest_prio)
+-		cpupri_set(&rq->rd->cpupri, rq->cpu, rq->rt.highest_prio);
++		cpupri_set(&rq->rd->rt_dom.cpupri, rq->cpu, rq->rt.highest_prio);
+ 
+ 	update_rt_migration(rq);
+ #endif /* CONFIG_SMP */
+@@ -363,7 +363,7 @@
+ {
+ 	int count;
+ 
+-	count = cpupri_find(&task_rq(task)->rd->cpupri, task, lowest_mask);
++	count = cpupri_find(&task_rq(task)->rd->rt_dom.cpupri, task, lowest_mask);
+ 
+ 	/*
+ 	 * cpupri cannot efficiently tell us how many bits are set, so it only
+@@ -599,7 +599,7 @@
+ 
+ 	next = pick_next_task_rt(this_rq);
+ 
+-	for_each_cpu_mask(cpu, this_rq->rd->rto_mask) {
++	for_each_cpu_mask(cpu, this_rq->rd->rt_dom.rto_mask) {
+ 		if (this_cpu == cpu)
+ 			continue;
+ 
+@@ -763,7 +763,7 @@
+ 	if (rq->rt.overloaded)
+ 		rt_set_overload(rq);
+ 
+-	cpupri_set(&rq->rd->cpupri, rq->cpu, rq->rt.highest_prio);
++	cpupri_set(&rq->rd->rt_dom.cpupri, rq->cpu, rq->rt.highest_prio);
+ }
+ 
+ /* Assumes rq->lock is held */
+@@ -772,7 +772,7 @@
+ 	if (rq->rt.overloaded)
+ 		rt_clear_overload(rq);
+ 
+-	cpupri_set(&rq->rd->cpupri, rq->cpu, CPUPRI_INVALID);
++	cpupri_set(&rq->rd->rt_dom.cpupri, rq->cpu, CPUPRI_INVALID);
+ }
+ 
+ /*
 
-What signed binaries? 
-
-Anyways there are two ways to deal with this:
-
-- Run the executable through a little filter that zeroes the bitmap before
-computing the checksum.  That is how rpm -V deals with prelinked binaries which 
-have a similar issue. You can probably reuse the scripts from rpm.
-- Disable the pbitmap header before you sign, either by never adding
-one or disabling it by turning the phdr type into a nop (should be very simple) 
-
--Andi
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
