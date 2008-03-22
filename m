@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbYCVEF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYCVELs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbYCVEF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 00:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbYCVEFP
+	id S1754496AbYCVELs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 00:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbYCVELh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 00:05:15 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:47663 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750812AbYCVEFN (ORCPT
+	Sat, 22 Mar 2008 00:11:37 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41793 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbYCVELg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 00:05:13 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvQAAA8i5EdBXyn6/2dsb2JhbAAIqR8
-Message-ID: <47E48575.7040009@sympatico.ca>
-Date: Sat, 22 Mar 2008 00:05:09 -0400
-From: Allan Menezes <amenezes007@sympatico.ca>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.2) Gecko/20040804 Netscape/7.2 (ax)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: HPL benchmarking linux kernel for shared memory performance.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Mar 2008 00:11:36 -0400
+Date: Sat, 22 Mar 2008 04:11:32 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Trond.Myklebust@netapp.com, dhowells@redhat.com
+Subject: Re: [patch 3/6] vfs: mountinfo stable peer group id
+Message-ID: <20080322041131.GA10722@ZenIV.linux.org.uk>
+References: <20080313212641.989467982@szeredi.hu> <20080313212735.741834181@szeredi.hu> <20080319114844.GK10722@ZenIV.linux.org.uk> <E1Jc1Ln-0003jm-Bt@pomaz-ex.szeredi.hu> <20080319182005.GP10722@ZenIV.linux.org.uk> <E1Jc3Ad-0004Xu-58@pomaz-ex.szeredi.hu> <20080320214319.GS10722@ZenIV.linux.org.uk> <20080322034950.GY10722@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080322034950.GY10722@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   Sorry to have bothered you all but there is no degradation of 
-performance with hpl and kernel upto 2.6.25-rc6. It was my silly error!
-The motherboards I use are two Asus p5e vm do and 3 ASus p5k-vm with 
-intel Q6600 quad cpus with GO stepping oveclocking them slightly i now 
-get 165 GFlops for my 5 node quad core cluster
-with gotoblas v1.24 and hpl and opensource openmpi v 1.3 alpha.
-My error was that the CPUID LIMIT was enabled in bios which is for older 
-windows systems which prevents the cpuid instruction on boot up from 
-filling the register EAX with values above 0x03
-So I was seeing only 2 cores for a quad core in cat /proc/cpuinfo on all 
-nodes giving me lousy performance for every kernel except some like 
-2.6.23.13 and 2.6.23.14.since i was oversubscribibg each node with 4 
-processes and top -H  confirmed that.
-Now I disabled CPUID LIMIT for each node and i see alll 4 processors on 
-eac node with cat /proc/cpuinfo for kernel ver 2.6.25-rc6 and i get 
-38.44 -38.9 Gflops per node. Ofcourse i am stably overclocking each 
-q6600 by approx 480mhz to get that otherwise for the kentsfiel q6600 
-intel at 2.4 GHZ the peak is 38.4 GFlops( reference paper by Dr. Jack 
-Dongarra et al.)
-The bios message is misleading : It says " Disable for Windows Xp" and 
-since I am running linux I enable it till i Googled for CPUID LIMIT and 
-found out and experimented!
-So for your info disable CPUID LIMIT in bios when running quad core 
-linux or more! It's meant for old oses like win98 etc.
-Thank you and and sorry for the bother it was my error and not a fault 
-in the kernels. This is FYI only.
-Cheers,
-Allan Menezes
+On Sat, Mar 22, 2008 at 03:49:50AM +0000, Al Viro wrote:
+
+> 	Shifting increment from mnt_set_mountpoint() and commit_tree()
+> to theirs callers and collapsing where possible, we get the following:
+> 	* decrement in release_mounts() when resetting ->mnt_parent
+> 	* increment in propagate_mnt() after call of mnt_set_mountpoint()
+> 	* decrement in attach_recursive_mnt() in the loop calling
+> commit_tree() for clones (on mountpoint of each clone).
+> 	* increment in umount_tree() at the point where we update d_mounted.
+
+... except that it'd give a leak in case of mount to shared mountpoint
+failing halfway through - we'll get double increments since umount_tree()
+would hit the mountpoints of cloned trees with extra increment, even though 
+reference from root of cloned to its mountpoint is _already_ a ghost.
+
+OTOH, we probably don't want to bother with counting those anyway - i.e.
+it's simply a bad definition and the right one would be along the lines of
+"number of vfsmounts that are doomed to be eaten by release_mounts() and
+that have ->mnt_parent pointing to us".  IOW, dropping the 2nd and 3rd
+in the above would do the right thing - anything chewed by umount_tree()
+*will* go to release_mounts() and ones in flight are what we are interested
+in...
