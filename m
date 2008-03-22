@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbYCVXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYCVXL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbYCVXLn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 19:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCVXLe
+	id S1758753AbYCVXL6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 19:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbYCVXLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 19:11:34 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:29479 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752240AbYCVXLd (ORCPT
+	Sat, 22 Mar 2008 19:11:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:24305 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751279AbYCVXLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 22 Mar 2008 19:11:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bDP/LC/vfS1+CypAyRTRvUsvCTE8/s8xe+iLmUu78rfZxTsT2a4eDiINtZcJJwhKc4ktYLvjJMrqGqmifVDdU8V8uiurPiwhymmalgqcvfUoNz5B1Y6i7Cq9LT8YAyNd59XhnkU4r4BVCTzci4hVMHA7FLzXo37Ru/fueKQFhrg=
-Message-ID: <524f69650803221611y62967b20g4e15a7f73b03a565@mail.gmail.com>
-Date: Sat, 22 Mar 2008 18:11:31 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [GIT] CIFS Fixes
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Q (Igor Mammedov)" <qwerty0987654321@mail.ru>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=D990yENt9mJAyzkmjdrp5E2v5x0lORNVal5sjL2IB0VZCoa29z3rW4JoYzdch0yshiFR++iKGmnToI/rmnBduPgWgT3dp93rERtx5Kev+lyooXvi/K2KhFafm8teE26cLiCMgpiCluV9W1nJwth4lDlH2U/X83P9asBzHtOR9R0=
+Date: Sun, 23 Mar 2008 02:09:12 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, adaplas@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] nv: drop useless CONFIG_PCI checks
+Message-ID: <20080322230912.GA14426@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-Please pull.
+Both FB_RIVA and FB_NVIDIA depends on PCI, so
+CONFIG_PCI always defined for them.
 
-The following changes since commit dba92d3bc49c036056a48661d2d8fefe4c78375a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-are available in the git repository at:
+ drivers/video/riva/fbdev.c     |    4 ----
+ drivers/video/riva/nv_driver.c |    5 -----
+ 2 files changed, 9 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git master
+--- a/drivers/video/riva/fbdev.c
++++ b/drivers/video/riva/fbdev.c
+@@ -56,10 +56,6 @@
+ #include "rivafb.h"
+ #include "nvreg.h"
+ 
+-#ifndef CONFIG_PCI		/* sanity check */
+-#error This driver requires PCI support.
+-#endif
+-
+ /* version number of this driver */
+ #define RIVAFB_VERSION "0.9.5b"
+ 
+--- a/drivers/video/riva/nv_driver.c
++++ b/drivers/video/riva/nv_driver.c
+@@ -41,11 +41,6 @@
+ #include "rivafb.h"
+ #include "nvreg.h"
+ 
+-
+-#ifndef CONFIG_PCI		/* sanity check */
+-#error This driver requires PCI support.
+-#endif
+-
+ #define PFX "rivafb: "
+ 
+ static inline unsigned char MISCin(struct riva_par *par)
 
-Harvey Harrison (1):
-      [CIFS] cifs: replace remaining __FUNCTION__ occurrences
-
-Igor Mammedov (1):
-      [CIFS]  DFS patch that connects inode with dfs handling ops
-
-Steve French (6):
-      Merge branch 'master' of /.../torvalds/linux-2.6
-      [CIFS] Fix build problem
-      [CIFS] Fix mtime on cp -p when file data cached but written out too late
-      Merge branch 'master' of /.../torvalds/linux-2.6
-      [CIFS] file create with acl support enabled is slow
-      [CIFS] Fix mem leak on dfs referral
-
- fs/cifs/cifs_dfs_ref.c |   18 +++---
- fs/cifs/cifsacl.c      |   25 +++++---
- fs/cifs/cifsproto.h    |    9 ++-
- fs/cifs/dir.c          |    5 +-
- fs/cifs/dns_resolve.c  |    8 +-
- fs/cifs/file.c         |    4 +-
- fs/cifs/inode.c        |  161 +++++++++++++++++++++++++++---------------------
- fs/cifs/link.c         |    2 +-
- 8 files changed, 130 insertions(+), 102 deletions(-)
-
--- 
-Thanks,
-
-Steve
