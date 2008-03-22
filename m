@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYCVMKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYCVMKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756644AbYCVMKR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 08:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYCVMKE
+	id S1757136AbYCVMKl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 08:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbYCVMKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 08:10:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56840 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754641AbYCVMKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 08:10:02 -0400
-Date: Sat, 22 Mar 2008 13:09:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Hoo-fscking-ray - (was Re: 2.6.25-rc3-mm1 - BUG at system
-	shutdown time
-Message-ID: <20080322120949.GA941@elte.hu>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080312003227.a94580e8.akpm@linux-foundation.org> <4351.1205374751@turing-police.cc.vt.edu> <20080321134128.GO27245@elte.hu> <3343.1206128318@turing-police.cc.vt.edu> <20080321195813.GC16179@elte.hu> <4945.1206129958@turing-police.cc.vt.edu> <20080321201211.GA21609@elte.hu> <3370.1206155478@turing-police.cc.vt.edu>
+	Sat, 22 Mar 2008 08:10:32 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45217 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756688AbYCVMKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 08:10:31 -0400
+Date: Sat, 22 Mar 2008 21:10:20 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [04/14] vcompound: Core piece
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080321061724.956843984@sgi.com>
+References: <20080321061703.921169367@sgi.com> <20080321061724.956843984@sgi.com>
+Message-Id: <20080322205729.B317.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3370.1206155478@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0171]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+in general, I like this patch and I found no bug :)
 
-> Given that -mmotm isn't showing the problem, I'm having a hard time 
-> coming up with enthusiasm to keep chasing it.  If I see it happen 
-> again in a -mm or Linus kernel, I'll restart the chase then....
+> Index: linux-2.6.25-rc5-mm1/include/linux/vmalloc.h
+> ===================================================================
+> --- linux-2.6.25-rc5-mm1.orig/include/linux/vmalloc.h	2008-03-20 23:03:14.600588151 -0700
+> +++ linux-2.6.25-rc5-mm1/include/linux/vmalloc.h	2008-03-20 23:03:14.612588010 -0700
+> @@ -86,6 +86,20 @@ extern struct vm_struct *alloc_vm_area(s
+>  extern void free_vm_area(struct vm_struct *area);
+>  
+>  /*
+> + * Support for virtual compound pages.
+> + *
+> + * Calls to vcompound alloc will result in the allocation of normal compound
+> + * pages unless memory is fragmented.  If insufficient physical linear memory
+> + * is available then a virtually contiguous area of memory will be created
+> + * using the vmalloc functionality.
+> + */
+> +struct page *alloc_vcompound_alloc(gfp_t flags, int order);
 
-if it ever reappears then please check x86/latest first (without any 
-other -mm bits) and notify us.
+where exist alloc_vcompound_alloc?
 
-	Ingo
+
+> +/*
+> + * Virtual Compound Page support.
+> + *
+> + * Virtual Compound Pages are used to fall back to order 0 allocations if large
+> + * linear mappings are not available. They are formatted according to compound
+> + * page conventions. I.e. following page->first_page if PageTail(page) is set
+> + * can be used to determine the head page.
+> + */
+> +
+
+Hmm,
+IMHO we need vcompound documentation more for the beginner in the Documentation/ directory.
+if not, nobody understand mean of vcompound flag at /proc/vmallocinfo.
+
+
+> +void __free_vcompound(void *addr)
+> +void free_vcompound(struct page *page)
+> +struct page *alloc_vcompound(gfp_t flags, int order)
+> +void *__alloc_vcompound(gfp_t flags, int order)
+
+may be, we need DocBook style comment at the head of these 4 functions.
+
+
+
