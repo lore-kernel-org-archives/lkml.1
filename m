@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYCVSxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbYCVS4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYCVSxB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 14:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbYCVSww
+	id S1757101AbYCVS4c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 14:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbYCVS4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 14:52:52 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:44523 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752273AbYCVSwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 14:52:51 -0400
-Date: Sat, 22 Mar 2008 19:52:34 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: ext Andrew Morton <akpm@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.25-rc6: kernel BUG at fs/sysfs/file.c:89
-In-Reply-To: <20080321222606.16407d74.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.00.0803221942050.4470@sheep.housecafe.de>
-References: <alpine.DEB.1.00.0803212319130.17137@sheep.housecafe.de> <200803220226.35552.rjw@sisk.pl> <20080321222606.16407d74.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sat, 22 Mar 2008 14:56:25 -0400
+Received: from lazybastard.de ([212.112.238.170]:42811 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbYCVS4Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 14:56:24 -0400
+Date: Sat, 22 Mar 2008 19:56:01 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: dwmw2 <dwmw2@infradead.org>, Andrew Morton <akpm@osdl.org>,
+       linux-sh <linux-sh@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Paul Mundt <lethal@users.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>
+Subject: Re: [PATCH] 2/3 mtd: add support for flash on the SEGA Dreamcast Visual Memory Unit
+Message-ID: <20080322185600.GE19347@logfs.org>
+References: <1206207805.6324.13.camel@localhost.localdomain> <1206209035.6324.29.camel@localhost.localdomain> <20080322183200.GD19347@logfs.org> <1206211147.6324.48.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1206211147.6324.48.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, ext Andrew Morton wrote:
-> Is MD (ie: raid) in use?
+On Sat, 22 March 2008 18:39:07 +0000, Adrian McMenamin wrote:
+> On Sat, 2008-03-22 at 19:32 +0100, Jörn Engel wrote:
+> 
+> > Given that you have ignored most of my previous comments, NAK. 
+> 
+> Not good enough, frankly. What comments have I ignored? I didn't
+> implement your suggestion that a void* memory type become be32* because
+> it was totally inappropriate for a type that is passed in both be32 and
+> le32 and as u8.
 
-Yes, indeed. LUKS/dm-crypt on top of raid-1:
+Your argument would make sense if referring to a transport layer where
+some structure is just passed along as payload data.  But you are
+dereferencing a structure.  And instead of declaring a structure, you
+still do this:
+	((unsigned long *)sendbuf)[0] = cpu_to_be32(MAPLE_FUNC_MEMCARD);
+	((unsigned long *)sendbuf)[1] = cpu_to_be32(partition << 24 | num);
 
-> If so, the below (already merged) patch should fix this crash.
-> If this patch does not fix it then please apply this debug patch:
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/gregkh-driver-driver-core-debug-for-bad-dev_attr_show-return-value.patch
-> then rerun the test.
+If that is a valid description of "appropriate" in your dictionary then
+we clearly don't speak the same language.  Even your own suggestion to
+change the cast to (u32*) would have been an improvement.
 
-Ah, sorry, I misread your post: I applied the aforementioned dm-crypt 
-patch[0] and Greg's debug patch and got quite nasty SCSI errors, leading 
-to a complete lockup. I'll try again and only apply Neil's patch...stay tuned...
+> I'm sorry that you feel that way, but as you took the hump when I said
+> that this:
+> 
+> "Possibly the big-endian annotations need to trickly though the layers
+> here as well."
+> 
+> Isn't good english (and it's not) and asked you - twice - to explain
+> what you meant. I cannot accept your summary.
 
-Thanks,
-Christian.
+s/trickly/trickle/
 
-[0] http://lkml.org/lkml/2008/3/17/214
-[0] http://nerdbynature.de/bits/2.6.25-rc6/fill_read_buffer.log
+I tried to help you by a) reviewing the code and b) even converting the
+function myself after deciding that you don't understand what I meant.  
+Clearly this didn't work.  And maybe the problem is me, either because
+my English is insufficient or I am a d***head.  Quite possible.
+
+But even if I am the problem, you should be able to understand
+somebody's review comments and act accordingly.  If not, I have a really
+bad feeling about this.  And I hope someone else has more patience than
+me, because this code still needs work.
+
+Jörn
+
 -- 
-BOFH excuse #197:
-
-I'm sorry a pentium won't do, you need an SGI to connect with us.
+It is better to die of hunger having lived without grief and fear,
+than to live with a troubled spirit amid abundance.
+-- Epictetus
