@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYCVELs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYCVEhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbYCVELs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 00:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbYCVELh
+	id S1754220AbYCVEhF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 00:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYCVEgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 00:11:37 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41793 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbYCVELg (ORCPT
+	Sat, 22 Mar 2008 00:36:53 -0400
+Received: from hs-out-0708.google.com ([64.233.178.250]:3673 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbYCVEgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 00:11:36 -0400
-Date: Sat, 22 Mar 2008 04:11:32 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trond.Myklebust@netapp.com, dhowells@redhat.com
-Subject: Re: [patch 3/6] vfs: mountinfo stable peer group id
-Message-ID: <20080322041131.GA10722@ZenIV.linux.org.uk>
-References: <20080313212641.989467982@szeredi.hu> <20080313212735.741834181@szeredi.hu> <20080319114844.GK10722@ZenIV.linux.org.uk> <E1Jc1Ln-0003jm-Bt@pomaz-ex.szeredi.hu> <20080319182005.GP10722@ZenIV.linux.org.uk> <E1Jc3Ad-0004Xu-58@pomaz-ex.szeredi.hu> <20080320214319.GS10722@ZenIV.linux.org.uk> <20080322034950.GY10722@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 22 Mar 2008 00:36:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TwtdLlT9IGQ4rHNtDLpVLotgZk01gdkLTmexvUjabEjffAgoEgluy9eC1lenBcq9efHtnZLKODvr8FmNTfp5f3RZlkbJtPZGacBy0IGtdfmG1ktk9Z4wSgIUvvOCORm+kqbJx9+o9CKd9oxDconitsEUd+k5f2JAnj26PlF7JTY=
+Message-ID: <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com>
+Date: Fri, 21 Mar 2008 21:36:51 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080321172644.GG2346@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080322034950.GY10722@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.3i
+References: <20080318003620.d84efb95.akpm@linux-foundation.org>
+	 <20080318095715.27120788.akpm@linux-foundation.org>
+	 <20080318172045.GI11966@one.firstfloor.org>
+	 <20080318104437.966c10ec.akpm@linux-foundation.org>
+	 <20080319083228.GM11966@one.firstfloor.org>
+	 <20080319020440.80379d50.akpm@linux-foundation.org>
+	 <a36005b50803191545h33d1a443y57d09176f8324186@mail.gmail.com>
+	 <20080320090005.GA25734@one.firstfloor.org>
+	 <a36005b50803211015l64005f6emb80dbfc21dcfad9f@mail.gmail.com>
+	 <20080321172644.GG2346@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22, 2008 at 03:49:50AM +0000, Al Viro wrote:
+On Fri, Mar 21, 2008 at 10:26 AM, Andi Kleen <andi@firstfloor.org> wrote:
+>  Concrete suggestions please.
 
-> 	Shifting increment from mnt_set_mountpoint() and commit_tree()
-> to theirs callers and collapsing where possible, we get the following:
-> 	* decrement in release_mounts() when resetting ->mnt_parent
-> 	* increment in propagate_mnt() after call of mnt_set_mountpoint()
-> 	* decrement in attach_recursive_mnt() in the loop calling
-> commit_tree() for clones (on mountpoint of each clone).
-> 	* increment in umount_tree() at the point where we update d_mounted.
+I already spelled it out.  Add a new program header entry, point it to
+a bit array large enough to cover all loadable segments.
 
-... except that it'd give a leak in case of mount to shared mountpoint
-failing halfway through - we'll get double increments since umount_tree()
-would hit the mountpoints of cloned trees with extra increment, even though 
-reference from root of cloned to its mountpoint is _already_ a ghost.
-
-OTOH, we probably don't want to bother with counting those anyway - i.e.
-it's simply a bad definition and the right one would be along the lines of
-"number of vfsmounts that are doomed to be eaten by release_mounts() and
-that have ->mnt_parent pointing to us".  IOW, dropping the 2nd and 3rd
-in the above would do the right thing - anything chewed by umount_tree()
-*will* go to release_mounts() and ones in flight are what we are interested
-in...
+It is not worth creating problems with this invalid extension just for
+old binaries.  Just let those go.  New binaries can automatically get
+the array and then there are no extra seeks, the format is well
+defined, etc.
