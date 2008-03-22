@@ -1,226 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYCVA34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYCVAqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbYCVA34 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 20:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYCVA3r
+	id S1758519AbYCVAqw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 20:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYCVAql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 20:29:47 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:58925 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbYCVA3p (ORCPT
+	Fri, 21 Mar 2008 20:46:41 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:34834 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbYCVAqj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 20:29:45 -0400
-Date: Sat, 22 Mar 2008 01:29:44 +0100 (CET)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: APM crashes when IO is going on
-In-Reply-To: <200803212351.20186.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0803220126460.2982@artax.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0803191608500.25941@artax.karlin.mff.cuni.cz>
- <200803212245.13659.rjw@sisk.pl> <Pine.LNX.4.64.0803212347430.25810@artax.karlin.mff.cuni.cz>
- <200803212351.20186.rjw@sisk.pl>
-X-Personality-Disorder: Schizoid
+	Fri, 21 Mar 2008 20:46:39 -0400
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: possible lockdep crash
+Date: Sat, 22 Mar 2008 02:46:32 +0200
+Message-Id: <20080322004502.M78412@visp.net.lb>
+In-Reply-To: <20080321.040408.153242166.davem@davemloft.net>
+References: <20080321093052.M39677@visp.net.lb> <20080321.033530.249188954.davem@davemloft.net> <20080321105404.M46676@visp.net.lb> <20080321.040408.153242166.davem@davemloft.net>
+X-Mailer: OpenWebMail 2.52 
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1908636959-412644717-1206145784=:2982"
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---1908636959-412644717-1206145784=:2982
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
+Here is panic without lockdep. Note - i am using FIB_TRIE.
 
-On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
+Mar 22 02:42:23 205.177.186.74 [    6.891998] BUG: unable to handle kernel
+Mar 22 02:42:23 205.177.186.74 NULL pointer dereference
+Mar 22 02:42:23 205.177.186.74 at 0000009f
+Mar 22 02:42:23 205.177.186.74 [    6.892094] IP:
+Mar 22 02:42:23 205.177.186.74 [<c0276f0a>] ip_route_input+0x872/0xbd9
+Mar 22 02:42:23 205.177.186.74 [    6.892166] Oops: 0002 [#1]
+Mar 22 02:42:23 205.177.186.74 SMP
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892258] Modules linked in:
+Mar 22 02:42:23 205.177.186.74 netconsole
+Mar 22 02:42:23 205.177.186.74 configfs
+Mar 22 02:42:23 205.177.186.74 hangcheck_timer
+Mar 22 02:42:23 205.177.186.74 xt_tcpudp
+Mar 22 02:42:23 205.177.186.74 ipt_TTL
+Mar 22 02:42:23 205.177.186.74 ipt_ttl
+Mar 22 02:42:23 205.177.186.74 xt_NOTRACK
+Mar 22 02:42:23 205.177.186.74 iptable_raw
+Mar 22 02:42:23 205.177.186.74 iptable_mangle
+Mar 22 02:42:23 205.177.186.74 ifb
+Mar 22 02:42:23 205.177.186.74 e1000e
+Mar 22 02:42:23 205.177.186.74 em_nbyte
+Mar 22 02:42:23 205.177.186.74 cls_tcindex
+Mar 22 02:42:23 205.177.186.74 act_gact
+Mar 22 02:42:23 205.177.186.74 cls_rsvp
+Mar 22 02:42:23 205.177.186.74 sch_htb
+Mar 22 02:42:23 205.177.186.74 cls_fw
+Mar 22 02:42:23 205.177.186.74 act_mirred
+Mar 22 02:42:23 205.177.186.74 em_u32
+Mar 22 02:42:23 205.177.186.74 sch_red
+Mar 22 02:42:23 205.177.186.74 sch_sfq
+Mar 22 02:42:23 205.177.186.74 sch_tbf
+Mar 22 02:42:23 205.177.186.74 sch_teql
+Mar 22 02:42:23 205.177.186.74 cls_basic
+Mar 22 02:42:23 205.177.186.74 act_police
+Mar 22 02:42:23 205.177.186.74 sch_gred
+Mar 22 02:42:23 205.177.186.74 act_pedit
+Mar 22 02:42:23 205.177.186.74 sch_hfsc
+Mar 22 02:42:23 205.177.186.74 cls_rsvp6
+Mar 22 02:42:23 205.177.186.74 sch_ingress
+Mar 22 02:42:23 205.177.186.74 em_meta
+Mar 22 02:42:23 205.177.186.74 em_text
+Mar 22 02:42:23 205.177.186.74 act_ipt
+Mar 22 02:42:23 205.177.186.74 sch_dsmark
+Mar 22 02:42:23 205.177.186.74 sch_prio
+Mar 22 02:42:23 205.177.186.74 sch_netem
+Mar 22 02:42:23 205.177.186.74 act_simple
+Mar 22 02:42:23 205.177.186.74 cls_u32
+Mar 22 02:42:23 205.177.186.74 em_cmp
+Mar 22 02:42:23 205.177.186.74 sch_cbq
+Mar 22 02:42:23 205.177.186.74 cls_route
+Mar 22 02:42:23 205.177.186.74 xt_TCPMSS
+Mar 22 02:42:23 205.177.186.74 iptable_nat
+Mar 22 02:42:23 205.177.186.74 nf_conntrack_ipv4
+Mar 22 02:42:23 205.177.186.74 ipt_LOG
+Mar 22 02:42:23 205.177.186.74 ipt_MASQUERADE
+Mar 22 02:42:23 205.177.186.74 ipt_REDIRECT
+Mar 22 02:42:23 205.177.186.74 nf_nat
+Mar 22 02:42:23 205.177.186.74 nf_conntrack
+Mar 22 02:42:23 205.177.186.74 nfnetlink
+Mar 22 02:42:23 205.177.186.74 iptable_filter
+Mar 22 02:42:23 205.177.186.74 ip_tables
+Mar 22 02:42:23 205.177.186.74 x_tables
+Mar 22 02:42:23 205.177.186.74 8021q
+Mar 22 02:42:23 205.177.186.74 tun
+Mar 22 02:42:23 205.177.186.74 tulip
+Mar 22 02:42:23 205.177.186.74 r8169
+Mar 22 02:42:23 205.177.186.74 sky2
+Mar 22 02:42:23 205.177.186.74 via_velocity
+Mar 22 02:42:23 205.177.186.74 via_rhine
+Mar 22 02:42:23 205.177.186.74 sis900
+Mar 22 02:42:23 205.177.186.74 ne2k_pci
+Mar 22 02:42:23 205.177.186.74 8390
+Mar 22 02:42:23 205.177.186.74 skge
+Mar 22 02:42:23 205.177.186.74 tg3
+Mar 22 02:42:23 205.177.186.74 8139too
+Mar 22 02:42:23 205.177.186.74 e1000
+Mar 22 02:42:23 205.177.186.74 e100
+Mar 22 02:42:23 205.177.186.74 usb_storage
+Mar 22 02:42:23 205.177.186.74 mtdblock
+Mar 22 02:42:23 205.177.186.74 mtd_blkdevs
+Mar 22 02:42:23 205.177.186.74 usbhid
+Mar 22 02:42:23 205.177.186.74 uhci_hcd
+Mar 22 02:42:23 205.177.186.74 ehci_hcd
+Mar 22 02:42:23 205.177.186.74 ohci_hcd
+Mar 22 02:42:23 205.177.186.74 usbcore
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892973]
+Mar 22 02:42:23 205.177.186.74 [    6.892973] Pid: 1880, comm: modprobe Not 
+tainted (2.6.25-rc6-git2-build-0024 #10)
+Mar 22 02:42:23 205.177.186.74 [    6.892973] EIP: 0060:[<c0276f0a>] EFLAGS: 
+00010206 CPU: 1
+Mar 22 02:42:23 205.177.186.74 [    6.892973] EIP is at ip_route_input+0x872/
+0xbd9
+Mar 22 02:42:23 205.177.186.74 [    6.892973] EAX: c0927100 EBX: 000000c0 
+ECX: c092ee08 EDX: 00000087
+Mar 22 02:42:23 205.177.186.74 [    6.892973] ESI: ffffff8f EDI: c092ee98 
+EBP: c092eec4 ESP: c092ee28
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  DS: 007b ES: 007b FS: 00d8 GS: 
+0033 SS: 0068
+Mar 22 02:42:23 205.177.186.74 [    6.892973] Process modprobe (pid: 1880, 
+ti=c092e000 task=f711d050 task.ti=f77fa000)
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892973] Stack:
+Mar 22 02:42:23 205.177.186.74 c092ee5c
+Mar 22 02:42:23 205.177.186.74 201ea8c0
+Mar 22 02:42:23 205.177.186.74 201ea8c0
+Mar 22 02:42:23 205.177.186.74 f7fecc00
+Mar 22 02:42:23 205.177.186.74 00000286
+Mar 22 02:42:23 205.177.186.74 c092ee60
+Mar 22 02:42:23 205.177.186.74 f88d2d1e
+Mar 22 02:42:23 205.177.186.74 f88d219b
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892973]
+Mar 22 02:42:23 205.177.186.74 00000001
+Mar 22 02:42:23 205.177.186.74 00000286
+Mar 22 02:42:23 205.177.186.74 f7f50d00
+Mar 22 02:42:23 205.177.186.74 c096d800
+Mar 22 02:42:23 205.177.186.74 00422000
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74 00000004
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892973]
+Mar 22 02:42:23 205.177.186.74 201ea8c0
+Mar 22 02:42:23 205.177.186.74 201ea8c0
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74 00000000
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892973] Call Trace:
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<f88d2d1e>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 e100_exec_cb+0xef/0xfa [e100]
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<f88d219b>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 e100_xmit_prepare+0x0/0x7c [e100]
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0295233>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 arp_process+0x1a5/0x508
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c01554ec>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 add_partial+0x11/0x44
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0155fec>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 __slab_free+0x54/0x201
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c01554ec>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 add_partial+0x11/0x44
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0155fec>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 __slab_free+0x54/0x201
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c029567b>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 arp_rcv+0xe5/0xf8
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c025ecf2>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 netif_receive_skb+0x33e/0x3a9
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<f88d3a3e>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 e100_poll+0x17e/0x2de [e100]
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c01315b3>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 run_hrtimer_pending+0xd/0x84
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0260bcb>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 net_rx_action+0x8f/0x191
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0123f8b>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 __do_softirq+0x64/0xcd
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0105f0a>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 do_softirq+0x55/0x89
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c013f39a>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 handle_fasteoi_irq+0x0/0xaa
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0123ef4>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 irq_exit+0x38/0x6b
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0105ff8>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 do_IRQ+0xba/0xd2
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0104287>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 common_interrupt+0x23/0x28
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c01e6456>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 vsnprintf+0x29c/0x40c
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c016e5ab>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 seq_printf+0x2b/0x4b
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0139d05>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 m_show+0x2a/0x11f
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c016eb52>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 seq_read+0x18b/0x261
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c016e9c7>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 seq_read+0x0/0x261
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c01822d0>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 proc_reg_read+0x56/0x6a
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c018227a>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 proc_reg_read+0x0/0x6a
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0159e9d>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 vfs_read+0x86/0xf6
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c015a2a2>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 sys_read+0x3b/0x60
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c0103876>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 sysenter_past_esp+0x5f/0x85
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  [<c02a0000>]
+Mar 22 02:42:23 205.177.186.74 ?
+Mar 22 02:42:23 205.177.186.74 fib_hash_table+0x58/0x7b
+Mar 22 02:42:23 205.177.186.74 [    6.892973]  =======================
+Mar 22 02:42:23 205.177.186.74 [    6.892973] Code:
+Mar 22 02:42:23 205.177.186.74 84
+Mar 22 02:42:23 205.177.186.74 01
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 8b
+Mar 22 02:42:23 205.177.186.74 55
+Mar 22 02:42:23 205.177.186.74 8c
+Mar 22 02:42:23 205.177.186.74 f0
+Mar 22 02:42:23 205.177.186.74 ff
+Mar 22 02:42:23 205.177.186.74 4a
+Mar 22 02:42:23 205.177.186.74 04
+Mar 22 02:42:23 205.177.186.74 0f
+Mar 22 02:42:23 205.177.186.74 94
+Mar 22 02:42:23 205.177.186.74 c0
+Mar 22 02:42:23 205.177.186.74 84
+Mar 22 02:42:23 205.177.186.74 c0
+Mar 22 02:42:23 205.177.186.74 74
+Mar 22 02:42:23 205.177.186.74 07
+Mar 22 02:42:23 205.177.186.74 89
+Mar 22 02:42:23 205.177.186.74 d0
+Mar 22 02:42:23 205.177.186.74 e8
+Mar 22 02:42:23 205.177.186.74 d9
+Mar 22 02:42:23 205.177.186.74 f8
+Mar 22 02:42:23 205.177.186.74 01
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 83
+Mar 22 02:42:23 205.177.186.74 7d
+Mar 22 02:42:23 205.177.186.74 84
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 0f
+Mar 22 02:42:23 205.177.186.74 84
+Mar 22 02:42:23 205.177.186.74 64
+Mar 22 02:42:23 205.177.186.74 03
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 8b
+Mar 22 02:42:23 205.177.186.74 55
+Mar 22 02:42:23 205.177.186.74 d8
+Mar 22 02:42:23 205.177.186.74 85
+Mar 22 02:42:23 205.177.186.74 d2
+Mar 22 02:42:23 205.177.186.74 74
+Mar 22 02:42:23 205.177.186.74 12
+Mar 22 02:42:23 205.177.186.74 unparseable log message: "<f0> "
+Mar 22 02:42:23 205.177.186.74 ff
+Mar 22 02:42:23 205.177.186.74 4a
+Mar 22 02:42:23 205.177.186.74 18
+Mar 22 02:42:23 205.177.186.74 0f
+Mar 22 02:42:23 205.177.186.74 94
+Mar 22 02:42:23 205.177.186.74 c0
+Mar 22 02:42:23 205.177.186.74 84
+Mar 22 02:42:23 205.177.186.74 c0
+Mar 22 02:42:23 205.177.186.74 74
+Mar 22 02:42:23 205.177.186.74 07
+Mar 22 02:42:23 205.177.186.74 89
+Mar 22 02:42:23 205.177.186.74 d0
+Mar 22 02:42:23 205.177.186.74 e8
+Mar 22 02:42:23 205.177.186.74 b9
+Mar 22 02:42:23 205.177.186.74 6c
+Mar 22 02:42:23 205.177.186.74 02
+Mar 22 02:42:23 205.177.186.74 00
+Mar 22 02:42:23 205.177.186.74 8b
+Mar 22 02:42:23 205.177.186.74 55
+Mar 22 02:42:23 205.177.186.74 dc
+Mar 22 02:42:23 205.177.186.74
+Mar 22 02:42:23 205.177.186.74 [    6.892973] EIP: [<c0276f0a>]
+Mar 22 02:42:23 205.177.186.74 ip_route_input+0x872/0xbd9
+Mar 22 02:42:23 205.177.186.74 SS:ESP 0068:c092ee28
+Mar 22 02:42:23 205.177.186.74 [    6.892974] Kernel panic - not syncing: 
+Fatal exception in interrupt
+Mar 22 02:42:23 205.177.186.74 [    6.893021] Rebooting in 10 seconds..
 
-> On Friday, 21 of March 2008, Mikulas Patocka wrote:
-> > On Fri, 21 Mar 2008, Rafael J. Wysocki wrote:
-> > 
-> > > On Friday, 21 of March 2008, Mikulas Patocka wrote:
-> > > > > > I found another problem --- present in 2.6.23.1, 2.6.25rc3, 2.6.25rc6
-> > > > > > 
-> > > > > > --- when I run three threads concurrently reading raw disk partition and 
-> > > > > > suspend, I get 100% reproducible failure. (with one thread running it 
-> > > > > > usually succeeds, sometimes fail)
-> > > > > 
-> > > > > Are they userland threads or kernel threads?
-> > > > 
-> > > > Useland threads. Just dd if=/dev/hda of=/dev/null
-> > > > 
-> > > > > > Either the on-going I/O will jam BIOS and I need to remove power to 
-> > > > > > continue.
-> > > > > > 
-> > > > > > Or the machine suspends, wakes up and reports "hda: lost interrupt" 
-> > > > > > (2.6.23.1 was able to recover from this condition, 2.6.25rc3,6 does not 
-> > > > > > recover and it is not able to send any more disk IOs).
-> > > > > > 
-> > > > > > How is suspending disk IO supposed to work?
-> > > > > 
-> > > > > That depends on the driver, if I understand your question correctly.
-> > > > 
-> > > > The driver is normal IDE.
-> > > 
-> > > Do you mean IDE_GENERIC/BLK_DEV_GENERIC?
-> > 
-> > Compaq Triflex IDE. The computer is Compaq Armada 7400 (Pentium 2/300MHz)
+
+On Fri, 21 Mar 2008 04:04:08 -0700 (PDT), David Miller wrote
+> From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+> Date: Fri, 21 Mar 2008 12:54:50 +0200
 > 
-> Can you attach a dmesg output taken after a fresh boot?
+> > Let me know if i can improve output to help debugging.
+> > If possible it must be minimal risk to hang, cause router is in very 
+> > difficult to reach area.
 > 
-> Thanks,
-> Rafael
+> Can you disable lockdep and see if the problem persists?
+> 
+> It's killing your routing performance anyways, I have no
+> idea why you have it enabled.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Here it is.
 
-Mikulas
---1908636959-412644717-1206145784=:2982
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=dm
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0803220129440.2982@artax.karlin.mff.cuni.cz>
-Content-Description: 
-Content-Disposition: attachment; filename=dm
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
-TGludXggdmVyc2lvbiAyLjYuMjUtcmM2IChyb290QGdlcmxpbmRhKSAoZ2Nj
-IHZlcnNpb24gNC4xLjIgMjAwNjExMTUgKHByZXJlbGVhc2UpIChEZWJpYW4g
-NC4xLjEtMjEpKSAjMSBQUkVFTVBUIFdlZCBNYXIgMTkgMjM6MzE6NTIgQ0VU
-IDIwMDgNCkJJT1MtcHJvdmlkZWQgcGh5c2ljYWwgUkFNIG1hcDoNCiBCSU9T
-LWU4MjA6IDAwMDAwMDAwMDAwMDAwMDAgLSAwMDAwMDAwMDAwMDlmYzAwICh1
-c2FibGUpDQogQklPUy1lODIwOiAwMDAwMDAwMDAwMDlmYzAwIC0gMDAwMDAw
-MDAwMDBhMDAwMCAocmVzZXJ2ZWQpDQogQklPUy1lODIwOiAwMDAwMDAwMDAw
-MGYwMDAwIC0gMDAwMDAwMDAwMDEwMDAwMCAocmVzZXJ2ZWQpDQogQklPUy1l
-ODIwOiAwMDAwMDAwMDAwMTAwMDAwIC0gMDAwMDAwMDAwN2ZmODAwMCAodXNh
-YmxlKQ0KIEJJT1MtZTgyMDogMDAwMDAwMDAwN2ZmODAwMCAtIDAwMDAwMDAw
-MDgwMDAwMDAgKEFDUEkgTlZTKQ0KMTI3TUIgTE9XTUVNIGF2YWlsYWJsZS4N
-CkVudGVyaW5nIGFkZF9hY3RpdmVfcmFuZ2UoMCwgMCwgMzI3NjApIDAgZW50
-cmllcyBvZiAyNTYgdXNlZA0KWm9uZSBQRk4gcmFuZ2VzOg0KICBETUEgICAg
-ICAgICAgICAgMCAtPiAgICAgNDA5Ng0KICBOb3JtYWwgICAgICAgNDA5NiAt
-PiAgICAzMjc2MA0KTW92YWJsZSB6b25lIHN0YXJ0IFBGTiBmb3IgZWFjaCBu
-b2RlDQplYXJseV9ub2RlX21hcFsxXSBhY3RpdmUgUEZOIHJhbmdlcw0KICAg
-IDA6ICAgICAgICAwIC0+ICAgIDMyNzYwDQpPbiBub2RlIDAgdG90YWxwYWdl
-czogMzI3NjANCiAgRE1BIHpvbmU6IDMyIHBhZ2VzIHVzZWQgZm9yIG1lbW1h
-cA0KICBETUEgem9uZTogMCBwYWdlcyByZXNlcnZlZA0KICBETUEgem9uZTog
-NDA2NCBwYWdlcywgTElGTyBiYXRjaDowDQogIE5vcm1hbCB6b25lOiAyMjMg
-cGFnZXMgdXNlZCBmb3IgbWVtbWFwDQogIE5vcm1hbCB6b25lOiAyODQ0MSBw
-YWdlcywgTElGTyBiYXRjaDo3DQogIE1vdmFibGUgem9uZTogMCBwYWdlcyB1
-c2VkIGZvciBtZW1tYXANCkRNSSBub3QgcHJlc2VudCBvciBpbnZhbGlkLg0K
-QWxsb2NhdGluZyBQQ0kgcmVzb3VyY2VzIHN0YXJ0aW5nIGF0IDEwMDAwMDAw
-IChnYXA6IDA4MDAwMDAwOmY4MDAwMDAwKQ0KQnVpbHQgMSB6b25lbGlzdHMg
-aW4gWm9uZSBvcmRlciwgbW9iaWxpdHkgZ3JvdXBpbmcgb24uICBUb3RhbCBw
-YWdlczogMzI1MDUNCktlcm5lbCBjb21tYW5kIGxpbmU6IEJPT1RfSU1BR0U9
-TGludXgtY3VycmVudCBybyByb290PTMwMg0KRW5hYmxpbmcgZmFzdCBGUFUg
-c2F2ZSBhbmQgcmVzdG9yZS4uLiBkb25lLg0KSW5pdGlhbGl6aW5nIENQVSMw
-DQpQcmVlbXB0aWJsZSBSQ1UgaW1wbGVtZW50YXRpb24uDQpDUFUgMCBpcnFz
-dGFja3MsIGhhcmQ9YzAzM2UwMDAgc29mdD1jMDMzZDAwMA0KUElEIGhhc2gg
-dGFibGUgZW50cmllczogNTEyIChvcmRlcjogOSwgMjA0OCBieXRlcykNCkRl
-dGVjdGVkIDMwMC4wMTQgTUh6IHByb2Nlc3Nvci4NCkNvbnNvbGU6IGNvbG91
-ciBWR0ErIDgweDMwDQpjb25zb2xlIFt0dHkwXSBlbmFibGVkDQpMb2NrIGRl
-cGVuZGVuY3kgdmFsaWRhdG9yOiBDb3B5cmlnaHQgKGMpIDIwMDYgUmVkIEhh
-dCwgSW5jLiwgSW5nbyBNb2xuYXINCi4uLiBNQVhfTE9DS0RFUF9TVUJDTEFT
-U0VTOiAgICA4DQouLi4gTUFYX0xPQ0tfREVQVEg6ICAgICAgICAgIDQ4DQou
-Li4gTUFYX0xPQ0tERVBfS0VZUzogICAgICAgIDIwNDgNCi4uLiBDTEFTU0hB
-U0hfU0laRTogICAgICAgICAgIDEwMjQNCi4uLiBNQVhfTE9DS0RFUF9FTlRS
-SUVTOiAgICAgODE5Mg0KLi4uIE1BWF9MT0NLREVQX0NIQUlOUzogICAgICAx
-NjM4NA0KLi4uIENIQUlOSEFTSF9TSVpFOiAgICAgICAgICA4MTkyDQogbWVt
-b3J5IHVzZWQgYnkgbG9jayBkZXBlbmRlbmN5IGluZm86IDk5MiBrQg0KIHBl
-ciB0YXNrLXN0cnVjdCBtZW1vcnkgZm9vdHByaW50OiAxOTIwIGJ5dGVzDQpE
-ZW50cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6
-IDQsIDY1NTM2IGJ5dGVzKQ0KSW5vZGUtY2FjaGUgaGFzaCB0YWJsZSBlbnRy
-aWVzOiA4MTkyIChvcmRlcjogMywgMzI3NjggYnl0ZXMpDQpNZW1vcnk6IDEy
-NTczNmsvMTMxMDQwayBhdmFpbGFibGUgKDE0MzhrIGtlcm5lbCBjb2RlLCA0
-ODAwayByZXNlcnZlZCwgNjkyayBkYXRhLCAxNDRrIGluaXQsIDBrIGhpZ2ht
-ZW0pDQp2aXJ0dWFsIGtlcm5lbCBtZW1vcnkgbGF5b3V0Og0KICAgIGZpeG1h
-cCAgOiAweGZmZmZiMDAwIC0gMHhmZmZmZjAwMCAgICggIDE2IGtCKQ0KICAg
-IHZtYWxsb2MgOiAweGM4ODAwMDAwIC0gMHhmZmZmOTAwMCAgICggODg3IE1C
-KQ0KICAgIGxvd21lbSAgOiAweGMwMDAwMDAwIC0gMHhjN2ZmODAwMCAgICgg
-MTI3IE1CKQ0KICAgICAgLmluaXQgOiAweGMwMzE2MDAwIC0gMHhjMDMzYTAw
-MCAgICggMTQ0IGtCKQ0KICAgICAgLmRhdGEgOiAweGMwMjY3YmE0IC0gMHhj
-MDMxNGVjOCAgICggNjkyIGtCKQ0KICAgICAgLnRleHQgOiAweGMwMTAwMDAw
-IC0gMHhjMDI2N2JhNCAgICgxNDM4IGtCKQ0KQ2hlY2tpbmcgaWYgdGhpcyBw
-cm9jZXNzb3IgaG9ub3VycyB0aGUgV1AgYml0IGV2ZW4gaW4gc3VwZXJ2aXNv
-ciBtb2RlLi4uT2suDQpDUEE6IHBhZ2UgcG9vbCBpbml0aWFsaXplZCAxIG9m
-IDEgcGFnZXMgcHJlYWxsb2NhdGVkDQpTTFVCOiBHZW5zbGFicz0xMiwgSFdh
-bGlnbj0zMiwgT3JkZXI9MC0xLCBNaW5PYmplY3RzPTQsIENQVXM9MSwgTm9k
-ZXM9MQ0KQ2FsaWJyYXRpbmcgZGVsYXkgdXNpbmcgdGltZXIgc3BlY2lmaWMg
-cm91dGluZS4uIDYwMS4xNCBCb2dvTUlQUyAobHBqPTEwMDE4MzEpDQpNb3Vu
-dC1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDUxMg0KQ1BVOiBMMSBJIGNh
-Y2hlOiAxNkssIEwxIEQgY2FjaGU6IDE2Sw0KQ1BVOiBMMiBjYWNoZTogNTEy
-Sw0KSW50ZWwgbWFjaGluZSBjaGVjayBhcmNoaXRlY3R1cmUgc3VwcG9ydGVk
-Lg0KSW50ZWwgbWFjaGluZSBjaGVjayByZXBvcnRpbmcgZW5hYmxlZCBvbiBD
-UFUjMC4NCkNvbXBhdCB2RFNPIG1hcHBlZCB0byBmZmZmZTAwMC4NCkNQVTog
-SW50ZWwgUGVudGl1bSBJSSAoRGVzY2h1dGVzKSBzdGVwcGluZyAwMg0KQ2hl
-Y2tpbmcgJ2hsdCcgaW5zdHJ1Y3Rpb24uLi4gT0suDQpGcmVlaW5nIFNNUCBh
-bHRlcm5hdGl2ZXM6IDBrIGZyZWVkDQpraGVscGVyIHVzZWQgZ3JlYXRlc3Qg
-c3RhY2sgZGVwdGg6IDMxODAgYnl0ZXMgbGVmdA0KbmV0X25hbWVzcGFjZTog
-MjE2IGJ5dGVzDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2
-DQpQQ0k6IEZhdGFsOiBObyBjb25maWcgc3BhY2UgYWNjZXNzIGZ1bmN0aW9u
-IGZvdW5kDQpTZXR0aW5nIHVwIHN0YW5kYXJkIFBDSSByZXNvdXJjZXMNCmto
-ZWxwZXIgdXNlZCBncmVhdGVzdCBzdGFjayBkZXB0aDogMzExNiBieXRlcyBs
-ZWZ0DQpMaW51eCBQbHVnIGFuZCBQbGF5IFN1cHBvcnQgdjAuOTcgKGMpIEFk
-YW0gQmVsYXkNClBDSTogU3lzdGVtIGRvZXMgbm90IHN1cHBvcnQgUENJDQpQ
-Q0k6IFN5c3RlbSBkb2VzIG5vdCBzdXBwb3J0IFBDSQ0KVGltZTogdHNjIGNs
-b2Nrc291cmNlIGhhcyBiZWVuIGluc3RhbGxlZC4NCk5FVDogUmVnaXN0ZXJl
-ZCBwcm90b2NvbCBmYW1pbHkgMg0KSVAgcm91dGUgY2FjaGUgaGFzaCB0YWJs
-ZSBlbnRyaWVzOiAxMDI0IChvcmRlcjogMCwgNDA5NiBieXRlcykNClRDUCBl
-c3RhYmxpc2hlZCBoYXNoIHRhYmxlIGVudHJpZXM6IDQwOTYgKG9yZGVyOiAz
-LCAzMjc2OCBieXRlcykNClRDUCBiaW5kIGhhc2ggdGFibGUgZW50cmllczog
-NDA5NiAob3JkZXI6IDUsIDEzMTA3MiBieXRlcykNClRDUDogSGFzaCB0YWJs
-ZXMgY29uZmlndXJlZCAoZXN0YWJsaXNoZWQgNDA5NiBiaW5kIDQwOTYpDQpU
-Q1AgcmVubyByZWdpc3RlcmVkDQpraGVscGVyIHVzZWQgZ3JlYXRlc3Qgc3Rh
-Y2sgZGVwdGg6IDMxMTIgYnl0ZXMgbGVmdA0KaW8gc2NoZWR1bGVyIG5vb3Ag
-cmVnaXN0ZXJlZA0KaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkIChkZWZh
-dWx0KQ0KaXNhcG5wOiBTY2FubmluZyBmb3IgUG5QIGNhcmRzLi4uDQppc2Fw
-bnA6IE5vIFBsdWcgJiBQbGF5IGRldmljZSBmb3VuZA0KVW5pZm9ybSBNdWx0
-aS1QbGF0Zm9ybSBFLUlERSBkcml2ZXINCmlkZTogQXNzdW1pbmcgNTBNSHog
-c3lzdGVtIGJ1cyBzcGVlZCBmb3IgUElPIG1vZGVzOyBvdmVycmlkZSB3aXRo
-IGlkZWJ1cz14eA0KUHJvYmluZyBJREUgaW50ZXJmYWNlIGlkZTAuLi4NCmhk
-YjogQ0QtMjI0RSwgQVRBUEkgQ0QvRFZELVJPTSBkcml2ZQ0KaGRhOiBUT1NI
-SUJBIE1LNjQwOU1BViwgQVRBIERJU0sgZHJpdmUNClByb2JpbmcgSURFIGlu
-dGVyZmFjZSBpZGUxLi4uDQpQcm9iaW5nIElERSBpbnRlcmZhY2UgaWRlMi4u
-Lg0KUHJvYmluZyBJREUgaW50ZXJmYWNlIGlkZTMuLi4NClByb2JpbmcgSURF
-IGludGVyZmFjZSBpZGU0Li4uDQpQcm9iaW5nIElERSBpbnRlcmZhY2UgaWRl
-NS4uLg0KaWRlMCBhdCAweDFmMC0weDFmNywweDNmNiBvbiBpcnEgMTQNCmhk
-YTogbWF4IHJlcXVlc3Qgc2l6ZTogMTI4S2lCDQpoZGE6IDEyNjg1NjgwIHNl
-Y3RvcnMgKDY0OTUgTUIpLCBDSFM9MTM0MjQvMTUvNjMNCmhkYTogY2FjaGUg
-Zmx1c2hlcyBub3Qgc3VwcG9ydGVkDQogaGRhOiBoZGExIGhkYTINClBOUDog
-Tm8gUFMvMiBjb250cm9sbGVyIGZvdW5kLiBQcm9iaW5nIHBvcnRzIGRpcmVj
-dGx5Lg0Kc2VyaW86IGk4MDQyIEtCRCBwb3J0IGF0IDB4NjAsMHg2NCBpcnEg
-MQ0Kc2VyaW86IGk4MDQyIEFVWCBwb3J0IGF0IDB4NjAsMHg2NCBpcnEgMTIN
-Cm1pY2U6IFBTLzIgbW91c2UgZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1pY2UN
-CmNwdWlkbGU6IHVzaW5nIGdvdmVybm9yIGxhZGRlcg0KY3B1aWRsZTogdXNp
-bmcgZ292ZXJub3IgbWVudQ0KVENQIGN1YmljIHJlZ2lzdGVyZWQNClVzaW5n
-IElQSSBTaG9ydGN1dCBtb2RlDQppbnB1dDogQVQgVHJhbnNsYXRlZCBTZXQg
-MiBrZXlib2FyZCBhcyAvY2xhc3MvaW5wdXQvaW5wdXQwDQpWRlM6IE1vdW50
-ZWQgcm9vdCAoZXh0MiBmaWxlc3lzdGVtKSByZWFkb25seS4NCkZyZWVpbmcg
-dW51c2VkIGtlcm5lbCBtZW1vcnk6IDE0NGsgZnJlZWQNCldyaXRlIHByb3Rl
-Y3RpbmcgdGhlIGtlcm5lbCB0ZXh0OiAxNDQwaw0KV3JpdGUgcHJvdGVjdGlu
-ZyB0aGUga2VybmVsIHJlYWQtb25seSBkYXRhOiA1NzJrDQptb2Rwcm9iZSB1
-c2VkIGdyZWF0ZXN0IHN0YWNrIGRlcHRoOiAyNzA0IGJ5dGVzIGxlZnQNCm1v
-ZHByb2JlIHVzZWQgZ3JlYXRlc3Qgc3RhY2sgZGVwdGg6IDE3MjAgYnl0ZXMg
-bGVmdA0KTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxDQpob3Rw
-bHVnIHVzZWQgZ3JlYXRlc3Qgc3RhY2sgZGVwdGg6IDEzOTIgYnl0ZXMgbGVm
-dA0KUmVhbCBUaW1lIENsb2NrIERyaXZlciB2MS4xMmFjDQpkZXZpY2UtbWFw
-cGVyOiBpb2N0bDogNC4xMy4wLWlvY3RsICgyMDA3LTEwLTE4KSBpbml0aWFs
-aXNlZDogZG0tZGV2ZWxAcmVkaGF0LmNvbQ0KdXNiY29yZTogcmVnaXN0ZXJl
-ZCBuZXcgaW50ZXJmYWNlIGRyaXZlciB1c2Jmcw0KdXNiY29yZTogcmVnaXN0
-ZXJlZCBuZXcgaW50ZXJmYWNlIGRyaXZlciBodWINCnVzYmNvcmU6IHJlZ2lz
-dGVyZWQgbmV3IGRldmljZSBkcml2ZXIgdXNiDQpvaGNpX2hjZDogMjAwNiBB
-dWd1c3QgMDQgVVNCIDEuMSAnT3BlbicgSG9zdCBDb250cm9sbGVyIChPSENJ
-KSBEcml2ZXINCmhkYjogQVRBUEkgMjRYIENELVJPTSBkcml2ZSwgNTEya0Ig
-Q2FjaGUNClVuaWZvcm0gQ0QtUk9NIGRyaXZlciBSZXZpc2lvbjogMy4yMA0K
-cGFycG9ydDA6IFBDLXN0eWxlIGF0IDB4Mzc4LCBpcnEgNyBbUENTUFAsVFJJ
-U1RBVEUsRVBQXQ0KTkVUMyBQTElQIHZlcnNpb24gMi40LXBhcnBvcnQgZ25p
-aWJlQG1yaS5jby5qcA0KcGxpcDA6IFBhcmFsbGVsIHBvcnQgYXQgMHgzNzgs
-IHVzaW5nIElSUSA3Lg0KYXBtOiBCSU9TIHZlcnNpb24gMS4yIEZsYWdzIDB4
-MDMgKERyaXZlciB2ZXJzaW9uIDEuMTZhYykNCmlucHV0OiBQQyBTcGVha2Vy
-IGFzIC9jbGFzcy9pbnB1dC9pbnB1dDENCmlucHV0OiBQUy8yIEdlbmVyaWMg
-TW91c2UgYXMgL2NsYXNzL2lucHV0L2lucHV0Mg0KU2VyaWFsOiA4MjUwLzE2
-NTUwIGRyaXZlciAkUmV2aXNpb246IDEuOTAgJCAyIHBvcnRzLCBJUlEgc2hh
-cmluZyBkaXNhYmxlZA0Kc2VyaWFsODI1MDogdHR5UzAgYXQgSS9PIDB4M2Y4
-IChpcnEgPSA0KSBpcyBhIDE2NTUwQQ0Kc2VyaWFsODI1MDogdHR5UzEgYXQg
-SS9PIDB4MmY4IChpcnEgPSAzKSBpcyBhIDE2NTUwQQ0K
-
---1908636959-412644717-1206145784=:2982--
