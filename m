@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYCVEhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYCVEij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbYCVEhF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 00:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYCVEgx
+	id S1755288AbYCVEij (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 00:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYCVEic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 00:36:53 -0400
-Received: from hs-out-0708.google.com ([64.233.178.250]:3673 "EHLO
+	Sat, 22 Mar 2008 00:38:32 -0400
+Received: from hs-out-0708.google.com ([64.233.178.245]:4606 "EHLO
 	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751305AbYCVEgx (ORCPT
+	with ESMTP id S1751409AbYCVEic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 00:36:53 -0400
+	Sat, 22 Mar 2008 00:38:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TwtdLlT9IGQ4rHNtDLpVLotgZk01gdkLTmexvUjabEjffAgoEgluy9eC1lenBcq9efHtnZLKODvr8FmNTfp5f3RZlkbJtPZGacBy0IGtdfmG1ktk9Z4wSgIUvvOCORm+kqbJx9+o9CKd9oxDconitsEUd+k5f2JAnj26PlF7JTY=
-Message-ID: <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com>
-Date: Fri, 21 Mar 2008 21:36:51 -0700
+        b=K2jiwROyPGaZuMEsckbqdk/gSfu/1LG4/1F9b1xPDJX7ewXDi+arIPxIfWC4x4h7Dq41VFM6GSymVR/6qxI4dsv9wHv5POwvgf8MjLVIudCar99/wqo68NTpZT9vPOTiexCNMp8kh/IfG//OGgU2MA+QGyq8m6aDa6ED8h0eD2U=
+Message-ID: <a36005b50803212138m1c37dd9evcecb0ebda569670c@mail.gmail.com>
+Date: Fri, 21 Mar 2008 21:38:29 -0700
 From: "Ulrich Drepper" <drepper@gmail.com>
 To: "Andi Kleen" <andi@firstfloor.org>
 Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
@@ -41,12 +41,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, Mar 21, 2008 at 10:26 AM, Andi Kleen <andi@firstfloor.org> wrote:
->  Concrete suggestions please.
+>  When would that time be? I cannot think of a single heuristic that would
+>  work for both "/bin/true" and a OpenOffice start.
 
-I already spelled it out.  Add a new program header entry, point it to
-a bit array large enough to cover all loadable segments.
-
-It is not worth creating problems with this invalid extension just for
-old binaries.  Just let those go.  New binaries can automatically get
-the array and then there are no extra seeks, the format is well
-defined, etc.
+In both cases the stable state is reached after, say, 4 seconds.  It's
+just that true terminates before the time is up.  I think something
+like "trace the first N seconds" is a reasonable heuristics.
