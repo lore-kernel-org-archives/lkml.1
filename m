@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYCWQy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbYCWRFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbYCWQy4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 12:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYCWQyt
+	id S1758322AbYCWRFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 13:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYCWRF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 12:54:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38908 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbYCWQyt (ORCPT
+	Sun, 23 Mar 2008 13:05:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39791 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753599AbYCWRF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 12:54:49 -0400
-Message-ID: <47E68B50.7060503@zytor.com>
-Date: Sun, 23 Mar 2008 09:54:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: "John T." <j.thomast@yahoo.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-Subject: Re: UTF-8 and Alt key in the console
-References: <349800.20247.qm@web45701.mail.sp1.yahoo.com>
-In-Reply-To: <349800.20247.qm@web45701.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Mar 2008 13:05:29 -0400
+Date: Sun, 23 Mar 2008 18:08:27 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andi Kleen <andi@firstfloor.org>, Nicholas Miell <nmiell@comcast.net>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH prototype] [0/8] Predictive bitmaps for ELF executables
+Message-ID: <20080323170827.GB5082@one.firstfloor.org>
+References: <20080320090005.GA25734@one.firstfloor.org> <a36005b50803211015l64005f6emb80dbfc21dcfad9f@mail.gmail.com> <20080321172644.GG2346@one.firstfloor.org> <a36005b50803212136s78dc2e4bx5ac715ebc7a6e48a@mail.gmail.com> <20080322071755.GP2346@one.firstfloor.org> <1206170695.2438.39.camel@entropy> <20080322091001.GA7264@one.firstfloor.org> <1206180991.2438.43.camel@entropy> <20080322142949.GB10687@one.firstfloor.org> <20080323132517.GB4580@ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080323132517.GB4580@ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John T. wrote:
+> Is this good idea? Attacker can send you binary with the bitmap
+> inverted, it is now slow on your system and signature matches.
+
+The first run will fix up any missing bits in the bitmap. Right 
+now it cannot get rid of unnecessary pages though unless you
+disable early_fault.
+
+> ...might be important for benchmarks... 'here, see, Oracle is slow.
+> Feel free to verify the signature'.
 > 
-> That's because you are working in "meta sends ESC" mode.
-> Although this is OK for most applications, for some it isn't.
-> Thus there have always been two modes, "meta sends ESC"
-> and "meta sets 8th bit". (toggled with setmetamode on the
-> console)
-> 
-> Vim relies on "meta sets 8th bit". Unfortunatelly the code
-> for this options does not work in UTF-8 in the console. What
-> I'd like to do is make this a viable option in UTF-8.
-> 
+> ...ok, I guess it is not too serious, because it is similar to
+> fragmentation....
 
-No, fix vim instead.
+It is actually far better than fragmentation because the bitmap
+loader does IO always in big chunks -- not much seeking will go on. 
+The only problem is some wasted mmeory and more IO bandwidth
+usage (but typically binaries are not bigger than a few MB so 
+it's not too dramatic)
 
-"Meta sets 8th bit" is so obviously and totally broken, since it maps 
-onto real characters, and has been doing so for at least 20 years. 
-Meta-L maps onto LATIN CAPITAL LETTER I WITH GRAVE, both in 8-bit mode 
-and in your proposed UTF-8 mode.  It just becomes even more obvious how 
-unbelievably broken it is when you try to map it onto UTF-8.
+So in summary I don't think it's an issue.
 
-Seriously, fix the crap.
-
-	-hpa
+-Andi
