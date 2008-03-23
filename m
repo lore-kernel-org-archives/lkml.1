@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764726AbYCWIhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764787AbYCWIiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764726AbYCWIhc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759137AbYCWIKU
+	id S1764787AbYCWIiB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbYCWIKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:10:20 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2300 "EHLO
+	Sun, 23 Mar 2008 04:10:21 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2301 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759727AbYCWIKP (ORCPT
+	with ESMTP id S1759265AbYCWIKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:10:15 -0400
+	Sun, 23 Mar 2008 04:10:16 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 123/148] include/asm-x86/sync_bitops.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:03:38 -0700
-Message-Id: <1206259443-13210-124-git-send-email-joe@perches.com>
+Subject: [PATCH 116/148] include/asm-x86/spinlock.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:03:31 -0700
+Message-Id: <1206259443-13210-117-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,129 +26,165 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/sync_bitops.h |   56 ++++++++++++++++++++--------------------
- 1 files changed, 28 insertions(+), 28 deletions(-)
+ include/asm-x86/spinlock.h |  105 +++++++++++++++++++++-----------------------
+ 1 files changed, 50 insertions(+), 55 deletions(-)
 
-diff --git a/include/asm-x86/sync_bitops.h b/include/asm-x86/sync_bitops.h
-index bc249f4..f1078a5 100644
---- a/include/asm-x86/sync_bitops.h
-+++ b/include/asm-x86/sync_bitops.h
-@@ -13,7 +13,7 @@
-  * bit 0 is the LSB of addr; bit 32 is the LSB of (addr+1).
-  */
- 
--#define ADDR (*(volatile long *) addr)
-+#define ADDR (*(volatile long *)addr)
- 
- /**
-  * sync_set_bit - Atomically set a bit in memory
-@@ -26,12 +26,12 @@
-  * Note that @nr may be almost arbitrarily large; this function is not
-  * restricted to acting on a single-word quantity.
-  */
--static inline void sync_set_bit(int nr, volatile unsigned long * addr)
-+static inline void sync_set_bit(int nr, volatile unsigned long *addr)
+diff --git a/include/asm-x86/spinlock.h b/include/asm-x86/spinlock.h
+index 23804c1..47dfe26 100644
+--- a/include/asm-x86/spinlock.h
++++ b/include/asm-x86/spinlock.h
+@@ -82,7 +82,7 @@ static inline void __raw_spin_lock(raw_spinlock_t *lock)
  {
--	__asm__ __volatile__("lock; btsl %1,%0"
--			     :"+m" (ADDR)
--			     :"Ir" (nr)
--			     : "memory");
-+	asm volatile("lock; btsl %1,%0"
-+		     : "+m" (ADDR)
-+		     : "Ir" (nr)
-+		     : "memory");
+ 	short inc = 0x0100;
+ 
+-	__asm__ __volatile__ (
++	asm volatile (
+ 		LOCK_PREFIX "xaddw %w0, %1\n"
+ 		"1:\t"
+ 		"cmpb %h0, %b0\n\t"
+@@ -92,9 +92,9 @@ static inline void __raw_spin_lock(raw_spinlock_t *lock)
+ 		/* don't need lfence here, because loads are in-order */
+ 		"jmp 1b\n"
+ 		"2:"
+-		:"+Q" (inc), "+m" (lock->slock)
++		: "+Q" (inc), "+m" (lock->slock)
+ 		:
+-		:"memory", "cc");
++		: "memory", "cc");
  }
  
- /**
-@@ -44,12 +44,12 @@ static inline void sync_set_bit(int nr, volatile unsigned long * addr)
-  * you should call smp_mb__before_clear_bit() and/or smp_mb__after_clear_bit()
-  * in order to ensure changes are visible on other processors.
-  */
--static inline void sync_clear_bit(int nr, volatile unsigned long * addr)
-+static inline void sync_clear_bit(int nr, volatile unsigned long *addr)
- {
--	__asm__ __volatile__("lock; btrl %1,%0"
--			     :"+m" (ADDR)
--			     :"Ir" (nr)
--			     : "memory");
-+	asm volatile("lock; btrl %1,%0"
-+		     : "+m" (ADDR)
-+		     : "Ir" (nr)
-+		     : "memory");
+ #define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
+@@ -104,30 +104,28 @@ static inline int __raw_spin_trylock(raw_spinlock_t *lock)
+ 	int tmp;
+ 	short new;
+ 
+-	asm volatile(
+-		"movw %2,%w0\n\t"
+-		"cmpb %h0,%b0\n\t"
+-		"jne 1f\n\t"
+-		"movw %w0,%w1\n\t"
+-		"incb %h1\n\t"
+-		"lock ; cmpxchgw %w1,%2\n\t"
+-		"1:"
+-		"sete %b1\n\t"
+-		"movzbl %b1,%0\n\t"
+-		:"=&a" (tmp), "=Q" (new), "+m" (lock->slock)
+-		:
+-		: "memory", "cc");
++	asm volatile("movw %2,%w0\n\t"
++		     "cmpb %h0,%b0\n\t"
++		     "jne 1f\n\t"
++		     "movw %w0,%w1\n\t"
++		     "incb %h1\n\t"
++		     "lock ; cmpxchgw %w1,%2\n\t"
++		     "1:"
++		     "sete %b1\n\t"
++		     "movzbl %b1,%0\n\t"
++		     : "=&a" (tmp), "=Q" (new), "+m" (lock->slock)
++		     :
++		     : "memory", "cc");
+ 
+ 	return tmp;
  }
  
- /**
-@@ -61,12 +61,12 @@ static inline void sync_clear_bit(int nr, volatile unsigned long * addr)
-  * Note that @nr may be almost arbitrarily large; this function is not
-  * restricted to acting on a single-word quantity.
-  */
--static inline void sync_change_bit(int nr, volatile unsigned long * addr)
-+static inline void sync_change_bit(int nr, volatile unsigned long *addr)
+ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
  {
--	__asm__ __volatile__("lock; btcl %1,%0"
--			     :"+m" (ADDR)
--			     :"Ir" (nr)
--			     : "memory");
-+	asm volatile("lock; btcl %1,%0"
-+		     : "+m" (ADDR)
-+		     : "Ir" (nr)
-+		     : "memory");
+-	__asm__ __volatile__(
+-		UNLOCK_LOCK_PREFIX "incb %0"
+-		:"+m" (lock->slock)
+-		:
+-		:"memory", "cc");
++	asm volatile(UNLOCK_LOCK_PREFIX "incb %0"
++		     : "+m" (lock->slock)
++		     :
++		     : "memory", "cc");
+ }
+ #else
+ static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
+@@ -149,21 +147,20 @@ static inline void __raw_spin_lock(raw_spinlock_t *lock)
+ 	int inc = 0x00010000;
+ 	int tmp;
+ 
+-	__asm__ __volatile__ (
+-		"lock ; xaddl %0, %1\n"
+-		"movzwl %w0, %2\n\t"
+-		"shrl $16, %0\n\t"
+-		"1:\t"
+-		"cmpl %0, %2\n\t"
+-		"je 2f\n\t"
+-		"rep ; nop\n\t"
+-		"movzwl %1, %2\n\t"
+-		/* don't need lfence here, because loads are in-order */
+-		"jmp 1b\n"
+-		"2:"
+-		:"+Q" (inc), "+m" (lock->slock), "=r" (tmp)
+-		:
+-		:"memory", "cc");
++	asm volatile("lock ; xaddl %0, %1\n"
++		     "movzwl %w0, %2\n\t"
++		     "shrl $16, %0\n\t"
++		     "1:\t"
++		     "cmpl %0, %2\n\t"
++		     "je 2f\n\t"
++		     "rep ; nop\n\t"
++		     "movzwl %1, %2\n\t"
++		     /* don't need lfence here, because loads are in-order */
++		     "jmp 1b\n"
++		     "2:"
++		     : "+Q" (inc), "+m" (lock->slock), "=r" (tmp)
++		     :
++		     : "memory", "cc");
  }
  
- /**
-@@ -77,13 +77,13 @@ static inline void sync_change_bit(int nr, volatile unsigned long * addr)
-  * This operation is atomic and cannot be reordered.
-  * It also implies a memory barrier.
-  */
--static inline int sync_test_and_set_bit(int nr, volatile unsigned long * addr)
-+static inline int sync_test_and_set_bit(int nr, volatile unsigned long *addr)
- {
- 	int oldbit;
+ #define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
+@@ -173,31 +170,29 @@ static inline int __raw_spin_trylock(raw_spinlock_t *lock)
+ 	int tmp;
+ 	int new;
  
--	__asm__ __volatile__("lock; btsl %2,%1\n\tsbbl %0,%0"
--			     :"=r" (oldbit),"+m" (ADDR)
--			     :"Ir" (nr) : "memory");
-+	asm volatile("lock; btsl %2,%1\n\tsbbl %0,%0"
-+		     : "=r" (oldbit), "+m" (ADDR)
-+		     : "Ir" (nr) : "memory");
- 	return oldbit;
+-	asm volatile(
+-		"movl %2,%0\n\t"
+-		"movl %0,%1\n\t"
+-		"roll $16, %0\n\t"
+-		"cmpl %0,%1\n\t"
+-		"jne 1f\n\t"
+-		"addl $0x00010000, %1\n\t"
+-		"lock ; cmpxchgl %1,%2\n\t"
+-		"1:"
+-		"sete %b1\n\t"
+-		"movzbl %b1,%0\n\t"
+-		:"=&a" (tmp), "=r" (new), "+m" (lock->slock)
+-		:
+-		: "memory", "cc");
++	asm volatile("movl %2,%0\n\t"
++		     "movl %0,%1\n\t"
++		     "roll $16, %0\n\t"
++		     "cmpl %0,%1\n\t"
++		     "jne 1f\n\t"
++		     "addl $0x00010000, %1\n\t"
++		     "lock ; cmpxchgl %1,%2\n\t"
++		     "1:"
++		     "sete %b1\n\t"
++		     "movzbl %b1,%0\n\t"
++		     : "=&a" (tmp), "=r" (new), "+m" (lock->slock)
++		     :
++		     : "memory", "cc");
+ 
+ 	return tmp;
  }
  
-@@ -95,13 +95,13 @@ static inline int sync_test_and_set_bit(int nr, volatile unsigned long * addr)
-  * This operation is atomic and cannot be reordered.
-  * It also implies a memory barrier.
-  */
--static inline int sync_test_and_clear_bit(int nr, volatile unsigned long * addr)
-+static inline int sync_test_and_clear_bit(int nr, volatile unsigned long *addr)
+ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
  {
- 	int oldbit;
- 
--	__asm__ __volatile__("lock; btrl %2,%1\n\tsbbl %0,%0"
--			     :"=r" (oldbit),"+m" (ADDR)
--			     :"Ir" (nr) : "memory");
-+	asm volatile("lock; btrl %2,%1\n\tsbbl %0,%0"
-+		     : "=r" (oldbit), "+m" (ADDR)
-+		     : "Ir" (nr) : "memory");
- 	return oldbit;
+-	__asm__ __volatile__(
+-		UNLOCK_LOCK_PREFIX "incw %0"
+-		:"+m" (lock->slock)
+-		:
+-		:"memory", "cc");
++	asm volatile(UNLOCK_LOCK_PREFIX "incw %0"
++		     : "+m" (lock->slock)
++		     :
++		     : "memory", "cc");
  }
- 
-@@ -113,13 +113,13 @@ static inline int sync_test_and_clear_bit(int nr, volatile unsigned long * addr)
-  * This operation is atomic and cannot be reordered.
-  * It also implies a memory barrier.
-  */
--static inline int sync_test_and_change_bit(int nr, volatile unsigned long* addr)
-+static inline int sync_test_and_change_bit(int nr, volatile unsigned long *addr)
- {
- 	int oldbit;
- 
--	__asm__ __volatile__("lock; btcl %2,%1\n\tsbbl %0,%0"
--			     :"=r" (oldbit),"+m" (ADDR)
--			     :"Ir" (nr) : "memory");
-+	asm volatile("lock; btcl %2,%1\n\tsbbl %0,%0"
-+		     : "=r" (oldbit), "+m" (ADDR)
-+		     : "Ir" (nr) : "memory");
- 	return oldbit;
- }
+ #endif
  
 -- 
 1.5.4.rc2
