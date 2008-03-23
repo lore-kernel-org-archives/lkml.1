@@ -1,50 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYCWC6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYCWDWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbYCWC6Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 22:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYCWC6P
+	id S1757453AbYCWDWB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 23:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYCWDVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 22:58:15 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42944 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517AbYCWC6O (ORCPT
+	Sat, 22 Mar 2008 23:21:51 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:53753 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbYCWDVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 22:58:14 -0400
-Message-ID: <47E5C2C8.9030201@kernel.org>
-Date: Sat, 22 Mar 2008 19:39:04 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sat, 22 Mar 2008 23:21:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ZUfA3rTZcln3RBWfccAp/7QgUIUfqqrdpJHYVLyHcqIne2/+NIrtOX+JihiRgqMPPdbnB3Ul6uHaDJYZ6n+nTPsybePJH9atid+Gefs/qcuD2xRFSOLDq7WYLwW87OCCFkzCHXOP/zW7cF0AH7sI59Dfvd/VNPxx1Qa0bOcvER0=
+Message-ID: <47E5CCC3.3000301@gmail.com>
+Date: Sun, 23 Mar 2008 12:21:39 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Thomas Meyer <thomas@m3y3r.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
- regressions from 2.6.24)
-References: <200803220259.48534.rjw@sisk.pl> <47E5350D.101@s5r6.in-berlin.de>	 <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de>	 <47E557D5.9020604@s5r6.in-berlin.de>	 <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org>	 <47E5815B.4080002@kernel.org>	 <86802c440803221628p60ebab7co3c4a6c1bef39d709@mail.gmail.com>	 <47E596DE.2090801@kernel.org> <86802c440803221900w1516e565yc6e5e26293acf5fe@mail.gmail.com>
-In-Reply-To: <86802c440803221900w1516e565yc6e5e26293acf5fe@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: jeff@garzik.org, kurt@roeckx.be, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.25-rc6] sata_promise: fix hardreset hotplug quirk
+References: <200803221421.m2MEL1oY021558@harpo.it.uu.se>
+In-Reply-To: <200803221421.m2MEL1oY021558@harpo.it.uu.se>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Sat, Mar 22, 2008 at 4:31 PM, H. Peter Anvin <hpa@kernel.org> wrote:
->> Yinghai Lu wrote:
->>  > Opteron system with coprocessor on socket or HTX slot. will use 64bit
->>  > BAR above 4g and size is more than 4g too.
->>
->>  And it's working, with a 32-bit kernel?
-> 
-> don't think so.
+Hello, Mikael.
 
-Would you mind trying it out, with Linus' patch?
+Mikael Pettersson wrote:
+> There is an undocumented hardware quirk in Promise's SATA controllers,
+> where a SATA COMRESET causes the controller to signal hotplug events.
+> These unexpected interrupts confuse libata's error handler and cause
+> a sequence of failed reset attempts until EH finally gives up.
 
-	-hpa
+Actually, this is common to many SATA controllers.  Lots of them raise
+PHY event or hotplug interrupt during COMRESET and they all plug PHY
+events from ->freeze.
+
+> Although SATA hotplug status and control is per-port, it resides in
+> a single register shared by all ports. Therefore accesses to it must
+> be serialised: the controller's host->lock is used for that. The
+> interrupt handler is also adjusted so its hotplug register accesses
+> are inside the region protected by host->lock.
+
+Hmmm... This is supposed to be handled by setting ap->lock appropriately
+and ap->lock already is initialized to &host->lock, so sticking with
+ap->lock is the right thing to do.
+
+> +static void pdc_sata_disable_hotplug(const struct ata_port *ap)
+> +{
+> +	struct ata_host *host = ap->host;
+> +	void __iomem *host_mmio = host->iomap[PDC_MMIO_BAR];
+> +	unsigned int hotplug_offset = pdc_sata_hotplug_offset(ap);
+> +	unsigned int ata_no = pdc_sata_ata_port_to_ata_no(ap);
+> +	u32 hotplug_status;
+> +
+> +	spin_lock(&host->lock);
+> +
+> +	hotplug_status = readl(host_mmio + hotplug_offset);
+> +	hotplug_status |= 0x11 << (ata_no + 16);
+> +	writel(hotplug_status, host_mmio + hotplug_offset);
+> +	readl(host_mmio + hotplug_offset); /* flush */
+> +
+> +	spin_unlock(&host->lock);
+> +}
+> +
+> +static void pdc_sata_enable_hotplug(const struct ata_port *ap)
+> +{
+> +	struct ata_host *host = ap->host;
+> +	void __iomem *host_mmio = host->iomap[PDC_MMIO_BAR];
+> +	unsigned int hotplug_offset = pdc_sata_hotplug_offset(ap);
+> +	unsigned int ata_no = pdc_sata_ata_port_to_ata_no(ap);
+> +	u32 hotplug_status;
+> +
+> +	spin_lock(&host->lock);
+> +
+> +	hotplug_status = readl(host_mmio + hotplug_offset);
+> +	hotplug_status |= 0x11 << ata_no;
+> +	hotplug_status &= ~(0x11 << (ata_no + 16));
+> +	writel(hotplug_status, host_mmio + hotplug_offset);
+> +	readl(host_mmio + hotplug_offset); /* flush */
+> +
+> +	spin_unlock(&host->lock);
+> +}
+> +
+>  static void pdc_freeze(struct ata_port *ap)
+>  {
+>  	void __iomem *mmio = ap->ioaddr.cmd_addr;
+> @@ -643,6 +717,12 @@ static void pdc_freeze(struct ata_port *
+>  	readl(mmio + PDC_CTLSTAT); /* flush */
+>  }
+>  
+> +static void pdc_sata_freeze(struct ata_port *ap)
+> +{
+> +	pdc_sata_disable_hotplug(ap);
+> +	pdc_freeze(ap);
+> +}
+
+->freeze() is called with ap->lock held, trying to lock host->lock
+inside pdc_sata_enable/disable_hotplug() will result in deadlock.  Have
+you tested w/ SMP configuration or spinlock debugging turned on?
+
+-- 
+tejun
