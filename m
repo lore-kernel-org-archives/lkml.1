@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbYCWLBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbYCWLH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760606AbYCWLBx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 07:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbYCWLBp
+	id S1760249AbYCWLH0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 07:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbYCWLHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 07:01:45 -0400
-Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:56566 "EHLO
-	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754195AbYCWLBo (ORCPT
+	Sun, 23 Mar 2008 07:07:13 -0400
+Received: from ns01.unsolicited.net ([69.10.132.115]:35156 "EHLO
+	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754195AbYCWLHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 07:01:44 -0400
-Date: Sun, 23 Mar 2008 13:01:33 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: tracing and mmiotrace
-Message-ID: <20080323130133.4104c552@daedalus.pq.iki.fi>
-In-Reply-To: <Pine.LNX.4.58.0803221609550.12942@gandalf.stny.rr.com>
-References: <20080321233955.66e75a57@daedalus.pq.iki.fi>
- <20080322120746.GF13264@elte.hu>
- <20080322173245.01e69743@daedalus.pq.iki.fi>
- <Pine.LNX.4.58.0803221609550.12942@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 23 Mar 2008 07:07:12 -0400
+X-Greylist: delayed 1336 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Mar 2008 07:07:12 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
+	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
+	b=eOcVeth2u/JEsxxB74/u0QoaNI8anX18+Ig0ZQrhzzV4dmAdxgv53D3yImY+292LTSzINuv6xP6P3vfj1qozFw/uYE2kqlpmMn0tdQVGIy5vaeps7d/g3tjSf/v+4a+ZQAopyC2vdmonZEsm6lMcdvnehLoHBld6tySsJuSC+Ak=;
+Message-ID: <47E63476.4020304@unsolicited.net>
+Date: Sun, 23 Mar 2008 10:44:06 +0000
+From: David <david@unsolicited.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Kai <epimetreus@fastmail.fm>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Serious performance regression in Wine applications and Linux
+ 2.6.24.*
+References: <1206240595.9045.1243810639@webmail.messagingengine.com>
+In-Reply-To: <1206240595.9045.1243810639@webmail.messagingengine.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Mar 2008 16:16:48 -0400 (EDT)
-Steven Rostedt <rostedt@goodmis.org> wrote:
+Kai wrote:
+> Performance degrades by about 60% when I run Wine under any of the
+> 2.6.24.* kernels. Attached are the output of lspci -vv and the two
+> config files of each kernel.
+>
+> I upgraded to 2.6.24, back to 2.6.23.(not sure), then tried 2.6.24.1 and
+> 2.6.24.3 and the issue is present in both; it's severe enough that Wine
+> apps are virtually unusable for me with this version of the kernel; I'm
+> having to use 2.6.23 until this somehow is resolved.
+>
+> I'd like some help figuring out why this performance regression exists,
+> and what can be done to mitigate it.
+>
+> Please CC replies; I'm not on the list.
+>   
+This is strange, as my (two) Windows apps ran (and run) just fine under 
+2.6.24 (and now under 2.6.25-rc6). Could you specify the applications 
+you're having problems with?
 
-> On Sat, 22 Mar 2008, Pekka Paalanen wrote:
-> 
-> > First you see my check in __trace_special() trigger, and then NULL
-> > pointer dereference BUG at ffffffff80259332 which translates to
-> > kernel/trace/trace.c:639 in tracing_generic_entry_update(), line:
-> > 	entry->preempt_count	= pc & 0xff;
-> > I don't understand why it tries to dereference NULL even when I
-> > check for it.
-> 
-> Interesting. I'll have to look into that more on Monday.
-
-I found the culprit.
-
-My code never calls tracing_reset(). If I had enabled
-FTRACE_STARTUP_TEST, the selftest code would run tracing_reset().
-So I copied stack_reset() from trace_sysprof.c and now recording works.
-My bad.
-
-btw. the semantics of verbose iter_ctrl seem inverted from user point
-of view. I also noticed that 'trace' file does not consume the data and
-'trace_pipe' does consume the data. This is important information for the
-user.
-
-I think it would be nice, if iter_ctrl listed only the flags the current
-tracer supports. This would also imply, that the tracer is not started
-automatically when selected. Most of the flags are not useful for
-mmiotrace.
-
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+David
