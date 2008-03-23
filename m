@@ -1,242 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbYCWKIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbYCWKKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759177AbYCWKIA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 06:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYCWKHq
+	id S1759402AbYCWKKT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 06:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbYCWKKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 06:07:46 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:36256 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYCWKHp (ORCPT
+	Sun, 23 Mar 2008 06:10:05 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:54661 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755241AbYCWKKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 06:07:45 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.5-rc1
-cc: linux-kernel@vger.kernel.org
-Date: Sun, 23 Mar 2008 03:07:28 -0700
-Message-ID: <7vprtl92jj.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 23 Mar 2008 06:10:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nicRqhFLJ195nyrEr21qjju893lhCgr3wGmc1WJJa5ZP9CN/HVP+fHr9Q/904H6J/iVkLCNu4IRwWiacvzRaTtbubRtNBprzEmPMwgLma8hpJBeG6vy3yveueP/U9Zpam2iGNdHUphaNzpIwLrRorzzQhA3cbMiircT8nvSjxbw=
+Message-ID: <42212ce70803230310l446bff1cs33740a43d81eeb96@mail.gmail.com>
+Date: Sun, 23 Mar 2008 11:10:02 +0100
+From: "Marco Mangiante" <marco.mangiante@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [PROBLEM]: onda h600 express card don't work inside the elan u132 usb adapter
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <Pine.LNX.4.44L0.0803222208050.13906-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080322173147.d94740b7.akpm@linux-foundation.org>
+	 <Pine.LNX.4.44L0.0803222208050.13906-100000@netrider.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GIT 1.5.5-rc1 was tagged tonight, and it is available from the usual
-places.
-
-  http://www.kernel.org/pub/software/scm/git/
-
-  git-1.5.5.rc1.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.5.rc1.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.5.rc1.tar.{gz,bz2}		(preformatted docs)
-  testing/git-*-1.5.5.rc1-1.$arch.rpm		(RPM)
-
-Attached, please find the draft release notes as of rc1.
-
-----------------------------------------------------------------
-
-GIT v1.5.5 Release Notes
-========================
-
-Updates since v1.5.4
---------------------
-
-(subsystems)
-
- * Comes with git-gui 0.9.3.
-
-(portability)
-
- * We shouldn't ask for BSD group ownership semantics by setting g+s bit
-   on directories on older BSD systems that refuses chmod() by non root
-   users.  BSD semantics is the default there anyway.
-
- * Bunch of portability improvement patches coming from an effort to port
-   to Solaris has been applied.
-
-(performance)
-
- * On platforms with suboptimal qsort(3) implementation, there
-   is an option to use more reasonable substitute we ship with
-   our software.
-
- * New configuration variable "pack.packsizelimit" can be used
-   in place of command line option --max-pack-size.
-
- * "git fetch" over the native git protocol used to make a
-   connection to find out the set of current remote refs and
-   another to actually download the pack data.  We now use only
-   one connection for these tasks.
-
- * "git commit" does not run lstat(2) more than necessary
-   anymore.
-
-(usability, bells and whistles)
-
- * Bash completion script (in contrib) are aware of more commands and
-   options.
-
- * You can be warned when core.autocrlf conversion is applied in
-   such a way that results in an irreversible conversion.
-
- * A catch-all "color.ui" configuration variable can be used to
-   enable coloring of all color-capable commands, instead of
-   individual ones such as "color.status" and "color.branch".
-
- * The commands refused to take absolute pathnames where they
-   require pathnames relative to the work tree or the current
-   subdirectory.  They now can take absolute pathnames in such a
-   case as long as the pathnames do not refer outside of the
-   work tree.  E.g. "git add $(pwd)/foo" now works.
-
- * Error messages used to be sent to stderr, only to get hidden,
-   when $PAGER was in use.  They now are sent to stdout along
-   with the command output to be shown in the $PAGER.
-
- * A pattern "foo/" in .gitignore file now matches a directory
-   "foo".  Pattern "foo" also matches as before.
-
- * bash completion's prompt helper function can talk about
-   operation in-progress (e.g. merge, rebase, etc.).
-
- * Configuration variables "url.<usethis>.insteadof = <otherurl>" can be
-   used to tell "git-fetch" and "git-push" to use different URL than what
-   is given from the command line.
-
- * "git add -i" behaves better even before you make an initial commit.
-
- * "git am" refused to run from a subdirectory without a good reason.
-
- * After "git apply --whitespace=fix" fixes whitespace errors in a patch,
-   a line before the fix can appear as a context or preimage line in a
-   later patch, causing the patch not to apply.  The command now knows to
-   see through whitespace fixes done to context lines to successfully
-   apply such a patch series.
-
- * "git branch" (and "git checkout -b") to branch from a local branch can
-   optionally set "branch.<name>.merge" to mark the new branch to build on
-   the other local branch, when "branch.autosetupmerge" is set to
-   "always".  By default, this does not happen when branching from a local
-   branch.
-
- * "git checkout" to switch to a branch that has "branch.<name>.merge" set
-   (i.e. marked to build on another branch) reports how much the branch
-   and the other branch diverged.
-
- * When "git checkout" has to update a lot of paths, it used to be silent
-   for 4 seconds before it showed any progress report.  It is now a bit
-   more impatient and starts showing progress report early.
-
- * "git commit" learned a new hook "prepare-commit-msg" that can
-   inspect what is going to be committed and prepare the commit
-   log message template to be edited.
-
- * "git cvsimport" can now take more than one -M options.
-
- * "git describe" learned to limit the tags to be used for
-   naming with --match option.
-
- * "git describe --contains" now barfs when the named commit
-   cannot be described.
-
- * "git describe --exact-match" describes only commits that are tagged.
-
- * "git describe --long" describes a tagged commit as $tag-0-$sha1,
-   instead of just showing the exact tagname.
-
- * "git describe" warns when using a tag whose name and path contradict
-   with each other.
-
- * "git diff" learned "--relative" option to limit and output paths
-   relative to the current directory when working in a subdirectory.
-
- * "git diff" learned "--dirstat" option to show birds-eye-summary of
-   changes more concisely than "--diffstat".
-
- * "git format-patch" learned --cover-letter option to generate a cover
-   letter template.
-
- * "git gc" learned --quiet option.
-
- * "git gc" now automatically prunes unreachable objects that are two
-   weeks old or older.
-
- * "git gc --auto" can be disabled more easily by just setting gc.auto
-   to zero.  It also tolerates more packfiles by default.
-
- * "git grep" now knows "--name-only" is a synonym for the "-l" option.
-
- * "git help <alias>" now reports "'git <alias>' is alias to <what>",
-   instead of saying "No manual entry for git-<alias>".
-
- * "git help" can use different backends to show manual pages and this can
-   be configured using "man.viewer" configuration.
-
- * "gitk" does not restore window position from $HOME/.gitk anymore (it
-   still restores the size).
-
- * "git log --grep=<what>" learned "--fixed-strings" option to look for
-   <what> without treating it as a regular expression.
-
- * "git gui" learned an auto-spell checking.
-
- * "git push <somewhere> HEAD" and "git push <somewhere> +HEAD" works as
-   expected; they push the current branch (and only the current branch).
-   In addition, HEAD can be written as the value of "remote.<there>.push"
-   configuration variable.
-
- * When the configuration variable "pack.threads" is set to 0, "git
-   repack" auto detects the number of CPUs and uses that many threads.
-
- * "git send-email" learned to prompt for passwords
-   interactively.
-
- * "git send-email" learned an easier way to suppress CC
-   recipients.
-
- * "git stash" learned "pop" command, that applies the latest stash and
-   removes it from the stash, and "drop" command to discard the named
-   stash entry.
-
- * "git submodule" learned a new subcommand "summary" to show the
-   symmetric difference between the HEAD version and the work tree version
-   of the submodule commits.
-
- * Various "git cvsimport", "git cvsexportcommit", "git svn" and
-   "git p4" improvements.
-
-(internal)
-
- * Duplicated code between git-help and git-instaweb that
-   launches user's preferred browser has been refactored.
-
- * It is now easier to write test scripts that records known
-   breakages.
-
- * "git checkout" is rewritten in C.
-
- * "git remote" is rewritten in C.
-
- * Two conflict hunks that are separated by a very short span of common
-   lines are now coalesced into one larger hunk, to make the result easier
-   to read.
-
- * Run-command API's use of file descriptors is documented clearer and
-   is more consistent now.
-
- * diff output can be sent to FILE * that is different from stdout.  This
-   will help reimplementing more things in C.
-
-Fixes since v1.5.4
-------------------
-
-All of the fixes in v1.5.4 maintenance series are included in
-this release, unless otherwise noted.
-
- * "git-http-push" did not allow deletion of remote ref with the usual
-   "push <remote> :<branch>" syntax.
-
- * "git-rebase --abort" did not go back to the right location if
-   "git-reset" was run during the "git-rebase" session.
+Hello Alan,
+
+> > > I want to use it with elan u132, an usb external adapter for
+> > > UMTS-HSDPA express cards. In a document found on the net and written
+> > > by Tony Olech (the author and maintainer of the elan u132 linux driver
+> > > in Elan Digital Systems), I read that the device (u132) must load 2
+> > > modules: the ftdi-u132 when it is plugged in the usb port, and the
+> > > u132-hcd, when it recognize an express card inside it.
+>
+> As far as I know, the u132-hcd driver isn't being maintained by anybody
+> except the author Tony Olech -- and maybe not even by him.
+
+thanks for your response. This means that the elan u132 device is no
+more supported because the u132-hcd is not supported? If not, what is
+the substitute for it, if any exists?
+
+-- 
+Regards,
+
+Marco Mangiante
