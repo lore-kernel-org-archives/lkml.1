@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbYCWIWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761448AbYCWIXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760503AbYCWIWq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbYCWIJI
+	id S1761448AbYCWIXk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbYCWIJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:09:08 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2269 "EHLO
+	Sun, 23 Mar 2008 04:09:11 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2271 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758835AbYCWIJG (ORCPT
+	with ESMTP id S1758952AbYCWIJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:09:06 -0400
+	Sun, 23 Mar 2008 04:09:09 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 064/148] include/asm-x86/local.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:02:39 -0700
-Message-Id: <1206259443-13210-65-git-send-email-joe@perches.com>
+Subject: [PATCH 066/148] include/asm-x86/mca_dma.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:02:41 -0700
+Message-Id: <1206259443-13210-67-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,190 +26,138 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/local.h |  105 ++++++++++++++++++++++------------------------
- 1 files changed, 50 insertions(+), 55 deletions(-)
+ include/asm-x86/mca_dma.h |   34 +++++++++++++++++-----------------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/include/asm-x86/local.h b/include/asm-x86/local.h
-index f852c62..330a724 100644
---- a/include/asm-x86/local.h
-+++ b/include/asm-x86/local.h
-@@ -18,32 +18,28 @@ typedef struct {
+diff --git a/include/asm-x86/mca_dma.h b/include/asm-x86/mca_dma.h
+index fbb1f3b..c3dca6e 100644
+--- a/include/asm-x86/mca_dma.h
++++ b/include/asm-x86/mca_dma.h
+@@ -12,18 +12,18 @@
+  *   count by 2 when using 16-bit dma; that is not handled by these functions.
+  *
+  * Ramen Noodles are yummy.
+- * 
+- *  1998 Tymm Twillman <tymm@computer.org>  
++ *
++ *  1998 Tymm Twillman <tymm@computer.org>
+  */
  
- static inline void local_inc(local_t *l)
+ /*
+- * Registers that are used by the DMA controller; FN is the function register 
++ * Registers that are used by the DMA controller; FN is the function register
+  *   (tell the controller what to do) and EXE is the execution register (how
+  *   to do it)
+  */
+ 
+ #define MCA_DMA_REG_FN  0x18
+-#define MCA_DMA_REG_EXE 0x1A 
++#define MCA_DMA_REG_EXE 0x1A
+ 
+ /*
+  * Functions that the DMA controller can do
+@@ -43,9 +43,9 @@
+ 
+ /*
+  * Modes (used by setting MCA_DMA_FN_MODE in the function register)
+- * 
++ *
+  * Note that the MODE_READ is read from memory (write to device), and
+- *   MODE_WRITE is vice-versa.  
++ *   MODE_WRITE is vice-versa.
+  */
+ 
+ #define MCA_DMA_MODE_XFER  0x04  /* read by default */
+@@ -63,7 +63,7 @@
+  *	IRQ context.
+  */
+ 
+-static __inline__ void mca_enable_dma(unsigned int dmanr)
++static inline void mca_enable_dma(unsigned int dmanr)
  {
--	__asm__ __volatile__(
--		_ASM_INC "%0"
--		:"+m" (l->a.counter));
-+	asm volatile(_ASM_INC "%0"
-+		     : "+m" (l->a.counter));
+ 	outb(MCA_DMA_FN_RESET_MASK | dmanr, MCA_DMA_REG_FN);
  }
+@@ -76,7 +76,7 @@ static __inline__ void mca_enable_dma(unsigned int dmanr)
+  *	IRQ context.
+  */
  
- static inline void local_dec(local_t *l)
+-static __inline__ void mca_disable_dma(unsigned int dmanr)
++static inline void mca_disable_dma(unsigned int dmanr)
  {
--	__asm__ __volatile__(
--		_ASM_DEC "%0"
--		:"+m" (l->a.counter));
-+	asm volatile(_ASM_DEC "%0"
-+		     : "+m" (l->a.counter));
+ 	outb(MCA_DMA_FN_MASK | dmanr, MCA_DMA_REG_FN);
  }
+@@ -87,10 +87,10 @@ static __inline__ void mca_disable_dma(unsigned int dmanr)
+  *	@a: 24bit bus address
+  *
+  *	Load the address register in the DMA controller. This has a 24bit
+- *	limitation (16Mb). 
++ *	limitation (16Mb).
+  */
  
- static inline void local_add(long i, local_t *l)
+-static __inline__ void mca_set_dma_addr(unsigned int dmanr, unsigned int a)
++static inline void mca_set_dma_addr(unsigned int dmanr, unsigned int a)
  {
--	__asm__ __volatile__(
--		_ASM_ADD "%1,%0"
--		:"+m" (l->a.counter)
--		:"ir" (i));
-+	asm volatile(_ASM_ADD "%1,%0"
-+		     : "+m" (l->a.counter)
-+		     : "ir" (i));
- }
+ 	outb(MCA_DMA_FN_SET_ADDR | dmanr, MCA_DMA_REG_FN);
+ 	outb(a & 0xff, MCA_DMA_REG_EXE);
+@@ -106,14 +106,14 @@ static __inline__ void mca_set_dma_addr(unsigned int dmanr, unsigned int a)
+  *	limitation (16Mb). The return is a bus address.
+  */
  
- static inline void local_sub(long i, local_t *l)
+-static __inline__ unsigned int mca_get_dma_addr(unsigned int dmanr)
++static inline unsigned int mca_get_dma_addr(unsigned int dmanr)
  {
--	__asm__ __volatile__(
--		_ASM_SUB "%1,%0"
--		:"+m" (l->a.counter)
--		:"ir" (i));
-+	asm volatile(_ASM_SUB "%1,%0"
-+		     : "+m" (l->a.counter)
-+		     : "ir" (i));
- }
+ 	unsigned int addr;
  
- /**
-@@ -59,10 +55,9 @@ static inline int local_sub_and_test(long i, local_t *l)
+ 	outb(MCA_DMA_FN_GET_ADDR | dmanr, MCA_DMA_REG_FN);
+ 	addr = inb(MCA_DMA_REG_EXE);
+ 	addr |= inb(MCA_DMA_REG_EXE) << 8;
+-	addr |= inb(MCA_DMA_REG_EXE) << 16;  
++	addr |= inb(MCA_DMA_REG_EXE) << 16;
+ 
+ 	return addr;
+ }
+@@ -127,7 +127,7 @@ static __inline__ unsigned int mca_get_dma_addr(unsigned int dmanr)
+  *	Setting a count of zero will not do what you expect.
+  */
+ 
+-static __inline__ void mca_set_dma_count(unsigned int dmanr, unsigned int count)
++static inline void mca_set_dma_count(unsigned int dmanr, unsigned int count)
  {
- 	unsigned char c;
+ 	count--;  /* transfers one more than count -- correct for this */
  
--	__asm__ __volatile__(
--		_ASM_SUB "%2,%0; sete %1"
--		:"+m" (l->a.counter), "=qm" (c)
--		:"ir" (i) : "memory");
-+	asm volatile(_ASM_SUB "%2,%0; sete %1"
-+		     : "+m" (l->a.counter), "=qm" (c)
-+		     : "ir" (i) : "memory");
- 	return c;
- }
+@@ -144,7 +144,7 @@ static __inline__ void mca_set_dma_count(unsigned int dmanr, unsigned int count)
+  *	on this DMA channel.
+  */
  
-@@ -78,10 +73,9 @@ static inline int local_dec_and_test(local_t *l)
+-static __inline__ unsigned int mca_get_dma_residue(unsigned int dmanr)
++static inline unsigned int mca_get_dma_residue(unsigned int dmanr)
  {
- 	unsigned char c;
+ 	unsigned short count;
  
--	__asm__ __volatile__(
--		_ASM_DEC "%0; sete %1"
--		:"+m" (l->a.counter), "=qm" (c)
--		: : "memory");
-+	asm volatile(_ASM_DEC "%0; sete %1"
-+		     : "+m" (l->a.counter), "=qm" (c)
-+		     : : "memory");
- 	return c != 0;
- }
+@@ -164,12 +164,12 @@ static __inline__ unsigned int mca_get_dma_residue(unsigned int dmanr)
+  *	with an I/O port target.
+  */
  
-@@ -97,10 +91,9 @@ static inline int local_inc_and_test(local_t *l)
+-static __inline__ void mca_set_dma_io(unsigned int dmanr, unsigned int io_addr)
++static inline void mca_set_dma_io(unsigned int dmanr, unsigned int io_addr)
  {
- 	unsigned char c;
- 
--	__asm__ __volatile__(
--		_ASM_INC "%0; sete %1"
--		:"+m" (l->a.counter), "=qm" (c)
--		: : "memory");
-+	asm volatile(_ASM_INC "%0; sete %1"
-+		     : "+m" (l->a.counter), "=qm" (c)
-+		     : : "memory");
- 	return c != 0;
- }
- 
-@@ -117,10 +110,9 @@ static inline int local_add_negative(long i, local_t *l)
- {
- 	unsigned char c;
- 
--	__asm__ __volatile__(
--		_ASM_ADD "%2,%0; sets %1"
--		:"+m" (l->a.counter), "=qm" (c)
--		:"ir" (i) : "memory");
-+	asm volatile(_ASM_ADD "%2,%0; sets %1"
-+		     : "+m" (l->a.counter), "=qm" (c)
-+		     : "ir" (i) : "memory");
- 	return c;
- }
- 
-@@ -141,10 +133,9 @@ static inline long local_add_return(long i, local_t *l)
- #endif
- 	/* Modern 486+ processor */
- 	__i = i;
--	__asm__ __volatile__(
--		_ASM_XADD "%0, %1;"
--		:"+r" (i), "+m" (l->a.counter)
--		: : "memory");
-+	asm volatile(_ASM_XADD "%0, %1;"
-+		     : "+r" (i), "+m" (l->a.counter)
-+		     : : "memory");
- 	return i + __i;
- 
- #ifdef CONFIG_M386
-@@ -182,11 +173,11 @@ static inline long local_sub_return(long i, local_t *l)
- #define local_add_unless(l, a, u)				\
- ({								\
- 	long c, old;						\
--	c = local_read(l);					\
-+	c = local_read((l));					\
- 	for (;;) {						\
- 		if (unlikely(c == (u)))				\
- 			break;					\
--		old = local_cmpxchg((l), c, c + (a));	\
-+		old = local_cmpxchg((l), c, c + (a));		\
- 		if (likely(old == c))				\
- 			break;					\
- 		c = old;					\
-@@ -214,26 +205,30 @@ static inline long local_sub_return(long i, local_t *l)
- 
- /* Need to disable preemption for the cpu local counters otherwise we could
-    still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
-+#define cpu_local_wrap_v(l)		\
-+({					\
-+	local_t res__;			\
-+	preempt_disable(); 		\
-+	res__ = (l);			\
-+	preempt_enable();		\
-+	res__;				\
-+})
- #define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
-+({					\
-+	preempt_disable();		\
-+	(l);				\
-+	preempt_enable();		\
-+})					\
+ 	/*
+ 	 * DMA from a port address -- set the io address
+ 	 */
+-	
 +
-+#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var((l))))
-+#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var((l)), (i)))
-+#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
-+#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var((l))))
-+#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var((l))))
-+#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var((l))))
-+
-+#define __cpu_local_inc(l)	cpu_local_inc((l))
-+#define __cpu_local_dec(l)	cpu_local_dec((l))
- #define __cpu_local_add(i, l)	cpu_local_add((i), (l))
- #define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
+ 	outb(MCA_DMA_FN_SET_IO | dmanr, MCA_DMA_REG_FN);
+ 	outb(io_addr & 0xff, MCA_DMA_REG_EXE);
+ 	outb((io_addr >>  8) & 0xff, MCA_DMA_REG_EXE);
+@@ -192,7 +192,7 @@ static __inline__ void mca_set_dma_io(unsigned int dmanr, unsigned int io_addr)
+  *	%MCA_DMA_MODE_16 to do 16bit transfers.
+  */
  
+-static __inline__ void mca_set_dma_mode(unsigned int dmanr, unsigned int mode)
++static inline void mca_set_dma_mode(unsigned int dmanr, unsigned int mode)
+ {
+ 	outb(MCA_DMA_FN_SET_MODE | dmanr, MCA_DMA_REG_FN);
+ 	outb(mode, MCA_DMA_REG_EXE);
 -- 
 1.5.4.rc2
 
