@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761474AbYCWNNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761930AbYCWNQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761474AbYCWNNz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 09:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYCWNNq
+	id S1761930AbYCWNQr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 09:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbYCWNQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 09:13:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47092 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755684AbYCWNNp (ORCPT
+	Sun, 23 Mar 2008 09:16:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60932
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756020AbYCWNQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 09:13:45 -0400
-Date: Sun, 23 Mar 2008 12:57:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.25-rc6-git6: Reported regressions from 2.6.24
-Message-ID: <20080323125725.63274c7f@core>
-In-Reply-To: <200803220259.48534.rjw@sisk.pl>
-References: <200803220259.48534.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 23 Mar 2008 09:16:35 -0400
+Date: Sun, 23 Mar 2008 06:16:50 -0700 (PDT)
+Message-Id: <20080323.061650.239772151.davem@davemloft.net>
+To: vda.linux@googlemail.com
+Cc: xemul@openvz.org, akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       adobriyan@openvz.org
+Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200803231400.41397.vda.linux@googlemail.com>
+References: <47CE8FF7.7000701@openvz.org>
+	<200803231400.41397.vda.linux@googlemail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9412
-> Subject		: Since commit 'x86: enable iommu_merge by default' (948062683004d13ca21c8c05ac052d387978a449) 2.6 is no go on SB600 AHCI
-> Submitter	: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-> Date		: 2007-11-19 14:43 (124 days old)
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Sun, 23 Mar 2008 14:00:41 +0100
 
-Probably fixed - hardware limit on the SB600 shown up by merging I/Os
- 
+> On Wednesday 05 March 2008 13:20, Pavel Emelyanov wrote:
+> > Current /proc/net is done with so called "shadows", but current
+> > implementation is broken and has little chances to get fixed.
+> > 
+> > The problem is that dentries subtree of /proc/net directory has
+> > fancy revalidation rules to make processes living in different
+> > net namespaces see different entries in /proc/net subtree, but
+> > currently, tasks see in the /proc/net subdir the contents of any
+> > other namespace, depending on who opened the file first.
+> > 
+> > The proposed fix is to turn /proc/net into a symlink, which points
+> > to /proc/self/net, which in turn shows what previously was in
+> > /proc/net - the network-related info, from the net namespace the
+> > appropriate task lives in.
+> > 
+> > # ls -l /proc/net
+> > lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
+> 
+> This broke tools which read /proc/net/dev. Under non-root,
+> they are no longer working. This is a regression.
+
+This is fixed with a commit that was made yesterday.
