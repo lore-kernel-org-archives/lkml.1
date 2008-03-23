@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbYCWI4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbYCWI4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbYCWI4A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760190AbYCWILu
+	id S933401AbYCWI4f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760198AbYCWILv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:11:50 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2346 "EHLO
+	Sun, 23 Mar 2008 04:11:51 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2345 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760103AbYCWILn (ORCPT
+	with ESMTP id S1760140AbYCWILo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:11:43 -0400
+	Sun, 23 Mar 2008 04:11:44 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 037/148] include/asm-x86/futex.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:02:12 -0700
-Message-Id: <1206259443-13210-38-git-send-email-joe@perches.com>
+Subject: [PATCH 145/148] include/asm-x86/voyager.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:04:00 -0700
+Message-Id: <1206259443-13210-146-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,142 +26,129 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/futex.h |  101 +++++++++++++++++++++++++---------------------
- 1 files changed, 55 insertions(+), 46 deletions(-)
+ include/asm-x86/voyager.h |   51 +++++++++++++++++++++++++++-----------------
+ 1 files changed, 31 insertions(+), 20 deletions(-)
 
-diff --git a/include/asm-x86/futex.h b/include/asm-x86/futex.h
-index c9952ea..ac0fbf2 100644
---- a/include/asm-x86/futex.h
-+++ b/include/asm-x86/futex.h
-@@ -12,35 +12,32 @@
- #include <asm/uaccess.h>
+diff --git a/include/asm-x86/voyager.h b/include/asm-x86/voyager.h
+index 91a9932..9c811d2 100644
+--- a/include/asm-x86/voyager.h
++++ b/include/asm-x86/voyager.h
+@@ -91,8 +91,7 @@
+ #define VOYAGER_WRITE_CONFIG			0x2
+ #define VOYAGER_BYPASS				0xff
  
- #define __futex_atomic_op1(insn, ret, oldval, uaddr, oparg)	\
--  __asm__ __volatile(						\
--"1:	" insn "\n"						\
--"2:	.section .fixup,\"ax\"\n				\
--3:	mov	%3, %1\n					\
--	jmp	2b\n						\
--	.previous\n"						\
--	_ASM_EXTABLE(1b,3b)					\
--	: "=r" (oldval), "=r" (ret), "+m" (*uaddr)		\
--	: "i" (-EFAULT), "0" (oparg), "1" (0))
-+	asm volatile("1:\t" insn "\n"				\
-+		     "2:\t.section .fixup,\"ax\"\n"		\
-+		     "3:\tmov\t%3, %1\n"			\
-+		     "\tjmp\t2b\n"				\
-+		     "\t.previous\n"				\
-+		     _ASM_EXTABLE(1b, 3b)			\
-+		     : "=r" (oldval), "=r" (ret), "+m" (*uaddr)	\
-+		     : "i" (-EFAULT), "0" (oparg), "1" (0))
+-typedef struct voyager_asic 
+-{
++typedef struct voyager_asic {
+ 	__u8	asic_addr;	/* ASIC address; Level 4 */
+ 	__u8	asic_type;      /* ASIC type */
+ 	__u8	asic_id;	/* ASIC id */
+@@ -113,7 +112,7 @@ typedef struct voyager_module {
+ 	__u16   largest_reg;		/* Largest register in the scan path */
+ 	__u16   smallest_reg;		/* Smallest register in the scan path */
+ 	voyager_asic_t   *asic;		/* First ASIC in scan path (CAT_I) */
+-	struct   voyager_module *submodule;	/* Submodule pointer */ 
++	struct   voyager_module *submodule;	/* Submodule pointer */
+ 	struct   voyager_module *next;		/* Next module in linked list */
+ } voyager_module_t;
  
- #define __futex_atomic_op2(insn, ret, oldval, uaddr, oparg)	\
--  __asm__ __volatile(						\
--"1:	movl	%2, %0\n					\
--	movl	%0, %3\n"					\
--	insn "\n"						\
--"2:	lock; cmpxchgl %3, %2\n					\
--	jnz	1b\n						\
--3:	.section .fixup,\"ax\"\n				\
--4:	mov	%5, %1\n					\
--	jmp	3b\n						\
--	.previous\n"						\
--	_ASM_EXTABLE(1b,4b)					\
--	_ASM_EXTABLE(2b,4b)					\
--	: "=&a" (oldval), "=&r" (ret), "+m" (*uaddr),		\
--	  "=&r" (tem)						\
--	: "r" (oparg), "i" (-EFAULT), "1" (0))
--
--static inline int
--futex_atomic_op_inuser(int encoded_op, int __user *uaddr)
-+	asm volatile("1:\tmovl	%2, %0\n"			\
-+		     "\tmovl\t%0, %3\n"				\
-+		     "\t" insn "\n"				\
-+		     "2:\tlock; cmpxchgl %3, %2\n"		\
-+		     "\tjnz\t1b\n"				\
-+		     "3:\t.section .fixup,\"ax\"\n"		\
-+		     "4:\tmov\t%5, %1\n"			\
-+		     "\tjmp\t3b\n"				\
-+		     "\t.previous\n"				\
-+		     _ASM_EXTABLE(1b, 4b)			\
-+		     _ASM_EXTABLE(2b, 4b)			\
-+		     : "=&a" (oldval), "=&r" (ret),		\
-+		       "+m" (*uaddr), "=&r" (tem)		\
-+		     : "r" (oparg), "i" (-EFAULT), "1" (0))
+@@ -135,7 +134,7 @@ typedef struct voyager_eeprom_hdr {
+ 	 __u16 cct_offset;
+ 	 __u16 log_length;	/* length of err log */
+ 	 __u16 xsum_end;	/* offset to end of
+-							   checksum */
++				   checksum */
+ 	 __u8  reserved[4];
+ 	 __u8  sflag;		/* starting sentinal */
+ 	 __u8  part_number[13];	/* prom part number */
+@@ -148,7 +147,8 @@ typedef struct voyager_eeprom_hdr {
+ 
+ 
+ 
+-#define VOYAGER_EPROM_SIZE_OFFSET   ((__u16)(&(((voyager_eprom_hdr_t *)0)->ee_size)))
++#define VOYAGER_EPROM_SIZE_OFFSET				\
++	((__u16)(&(((voyager_eprom_hdr_t *)0)->ee_size)))
+ #define VOYAGER_XSUM_END_OFFSET		0x2a
+ 
+ /* the following three definitions are for internal table layouts
+@@ -199,7 +199,7 @@ typedef struct voyager_asic_data_table {
+ #define VOYAGER_WCBIC_TOM_L	0x4
+ #define VOYAGER_WCBIC_TOM_H	0x5
+ 
+-/* register defines for Voyager Memory Contol (VMC) 
++/* register defines for Voyager Memory Contol (VMC)
+  * these are present on L4 machines only */
+ #define	VOYAGER_VMC1		0x81
+ #define VOYAGER_VMC2		0x91
+@@ -334,7 +334,7 @@ typedef struct {
+ 
+ struct QuadDescription {
+ 	__u8  Type;	/* for type 0 (DYADIC or MONADIC) all fields
+-                         * will be zero except for slot */
++			 * will be zero except for slot */
+ 	__u8 StructureVersion;
+ 	__u32 CPI_BaseAddress;
+ 	__u32  LARC_BankSize;
+@@ -342,7 +342,7 @@ struct QuadDescription {
+ 	__u8  Slot; /* Processor slots 1 - 4 */
+ } __attribute__((packed));
+ 
+-struct ProcBoardInfo { 
++struct ProcBoardInfo {
+ 	__u8 Type;
+ 	__u8 StructureVersion;
+ 	__u8 NumberOfBoards;
+@@ -382,19 +382,30 @@ struct CPU_Info {
+  * packed in it by our friend the compiler.
+  */
+ typedef struct {
+-	__u8	Mailbox_SUS;		/* Written to by SUS to give commands/response to the OS */
+-	__u8	Mailbox_OS;		/* Written to by the OS to give commands/response to SUS */
+-	__u8	SUS_MailboxVersion;	/* Tells the OS which iteration of the interface SUS supports */
+-	__u8	OS_MailboxVersion;	/* Tells SUS which iteration of the interface the OS supports */
+-	__u32	OS_Flags;		/* Flags set by the OS as info for SUS */
+-	__u32	SUS_Flags;		/* Flags set by SUS as info for the OS */
+-	__u32	WatchDogPeriod;		/* Watchdog period (in seconds) which the DP uses to see if the OS is dead */
++	__u8	Mailbox_SUS;		/* Written to by SUS to give
++					   commands/response to the OS */
++	__u8	Mailbox_OS;		/* Written to by the OS to give
++					   commands/response to SUS */
++	__u8	SUS_MailboxVersion;	/* Tells the OS which iteration of the
++					   interface SUS supports */
++	__u8	OS_MailboxVersion;	/* Tells SUS which iteration of the
++					   interface the OS supports */
++	__u32	OS_Flags;		/* Flags set by the OS as info for
++					   SUS */
++	__u32	SUS_Flags;		/* Flags set by SUS as info
++					   for the OS */
++	__u32	WatchDogPeriod;		/* Watchdog period (in seconds) which
++					   the DP uses to see if the OS
++					   is dead */
+ 	__u32	WatchDogCount;		/* Updated by the OS on every tic. */
+-	__u32	MemoryFor_SUS_ErrorLog;	/* Flat 32 bit address which tells SUS where to stuff the SUS error log on a dump */
+-	MC_SlotInformation_t  MC_SlotInfo[NUMBER_OF_MC_BUSSES*SLOTS_PER_MC_BUS];	/* Storage for MCA POS data */
++	__u32	MemoryFor_SUS_ErrorLog;	/* Flat 32 bit address which tells SUS
++					   where to stuff the SUS error log
++					   on a dump */
++	MC_SlotInformation_t MC_SlotInfo[NUMBER_OF_MC_BUSSES*SLOTS_PER_MC_BUS];
++					/* Storage for MCA POS data */
+ 	/* All new SECOND_PASS_INTERFACE fields added from this point */
+-        struct ProcBoardInfo    *BoardData;
+-        struct CPU_Info         *CPU_Data;
++	struct ProcBoardInfo    *BoardData;
++	struct CPU_Info         *CPU_Data;
+ 	/* All new fields must be added from this point */
+ } Voyager_KernelSUS_Mbox_t;
+ 
+@@ -478,7 +489,7 @@ struct voyager_SUS {
+ 	__u32	SUS_errorlog;
+ 	/* lots of system configuration stuff under here */
+ };
+-	
 +
-+static inline int futex_atomic_op_inuser(int encoded_op, int __user *uaddr)
- {
- 	int op = (encoded_op >> 28) & 7;
- 	int cmp = (encoded_op >> 24) & 15;
-@@ -87,20 +84,33 @@ futex_atomic_op_inuser(int encoded_op, int __user *uaddr)
- 
- 	if (!ret) {
- 		switch (cmp) {
--		case FUTEX_OP_CMP_EQ: ret = (oldval == cmparg); break;
--		case FUTEX_OP_CMP_NE: ret = (oldval != cmparg); break;
--		case FUTEX_OP_CMP_LT: ret = (oldval < cmparg); break;
--		case FUTEX_OP_CMP_GE: ret = (oldval >= cmparg); break;
--		case FUTEX_OP_CMP_LE: ret = (oldval <= cmparg); break;
--		case FUTEX_OP_CMP_GT: ret = (oldval > cmparg); break;
--		default: ret = -ENOSYS;
-+		case FUTEX_OP_CMP_EQ:
-+			ret = (oldval == cmparg);
-+			break;
-+		case FUTEX_OP_CMP_NE:
-+			ret = (oldval != cmparg);
-+			break;
-+		case FUTEX_OP_CMP_LT:
-+			ret = (oldval < cmparg);
-+			break;
-+		case FUTEX_OP_CMP_GE:
-+			ret = (oldval >= cmparg);
-+			break;
-+		case FUTEX_OP_CMP_LE:
-+			ret = (oldval <= cmparg);
-+			break;
-+		case FUTEX_OP_CMP_GT:
-+			ret = (oldval > cmparg);
-+			break;
-+		default:
-+			ret = -ENOSYS;
- 		}
- 	}
- 	return ret;
- }
- 
--static inline int
--futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
-+static inline int futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval,
-+						int newval)
- {
- 
- #if defined(CONFIG_X86_32) && !defined(CONFIG_X86_BSWAP)
-@@ -112,16 +122,15 @@ futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
- 	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
- 		return -EFAULT;
- 
--	__asm__ __volatile__(
--		"1:	lock; cmpxchgl %3, %1			\n"
--		"2:	.section .fixup, \"ax\"			\n"
--		"3:	mov     %2, %0				\n"
--		"	jmp     2b				\n"
--		"	.previous				\n"
--		_ASM_EXTABLE(1b,3b)
--		: "=a" (oldval), "+m" (*uaddr)
--		: "i" (-EFAULT), "r" (newval), "0" (oldval)
--		: "memory"
-+	asm volatile("1:\tlock; cmpxchgl %3, %1\n"
-+		     "2:\t.section .fixup, \"ax\"\n"
-+		     "3:\tmov     %2, %0\n"
-+		     "\tjmp     2b\n"
-+		     "\t.previous\n"
-+		     _ASM_EXTABLE(1b, 3b)
-+		     : "=a" (oldval), "+m" (*uaddr)
-+		     : "i" (-EFAULT), "r" (newval), "0" (oldval)
-+		     : "memory"
- 	);
- 
- 	return oldval;
+ /* Variables exported by voyager_smp */
+ extern __u32 voyager_extended_vic_processors;
+ extern __u32 voyager_allowed_boot_processors;
 -- 
 1.5.4.rc2
 
