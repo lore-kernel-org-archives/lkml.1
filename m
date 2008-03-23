@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbYCWBFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYCWBMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbYCWBFo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 21:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYCWBFg
+	id S1756705AbYCWBMu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 21:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYCWBMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 21:05:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55798
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754921AbYCWBFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 21:05:35 -0400
-Date: Sat, 22 Mar 2008 18:05:52 -0700 (PDT)
-Message-Id: <20080322.180552.238705480.davem@davemloft.net>
-To: julia@diku.dk
-Cc: ericvh@gmail.com, rminnich@sandia.gov, lucho@ionkov.net,
-       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/7] net/9p/trans_fd.c: remove unused variable
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0803151702380.24178@ask.diku.dk>
-References: <Pine.LNX.4.64.0803151702380.24178@ask.diku.dk>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Mar 2008 21:12:39 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:40164 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754835AbYCWBMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 21:12:38 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Libor Pechacek <lpechacek@suse.cz>, bonding-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] bonding: Fix sysfs attribute handling 
+In-reply-to: <20080322172704.49fa557b.akpm@linux-foundation.org> 
+References: <200803211452.55982.lpechacek@suse.cz> <20080322172704.49fa557b.akpm@linux-foundation.org>
+Comments: In-reply-to Andrew Morton <akpm@linux-foundation.org>
+   message dated "Sat, 22 Mar 2008 17:27:04 -0700."
+X-Mailer: MH-E 8.0.3; nmh 1.1-RC4; GNU Emacs 22.0.95
+Date: Sat, 22 Mar 2008 18:12:34 -0700
+Message-ID: <18749.1206234754@death>
+From: Jay Vosburgh <fubar@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
-Date: Sat, 15 Mar 2008 17:02:58 +0100 (CET)
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> The variable cb is initialized but never used otherwise.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
- ...
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+>On Fri, 21 Mar 2008 14:52:55 +0100 Libor Pechacek <lpechacek@suse.cz> wrote:
+>
+>> bonding: Fix sysfs attribute handling
+>> 
+>> For bonding interfaces any attempt to read the sysfs directory contents after
+>> module removal results in an oops.  The fix is to release sysfs attributes
+>> for the interfaces upon module unload.
+>> 
+>> Signed-off-by: Libor Pechacek <lpechacek@suse.cz>
+>> --
+>>  drivers/net/bonding/bond_main.c |    3 +--
+>>  1 files changed, 1 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+>> index 0942d82..33767d4 100644
+>> --- a/drivers/net/bonding/bond_main.c
+>> +++ b/drivers/net/bonding/bond_main.c
+>> @@ -4528,8 +4528,7 @@ static void bond_free_all(void)
+>>  		netif_tx_unlock_bh(bond_dev);
+>>  		/* Release the bonded slaves */
+>>  		bond_release_all(bond_dev);
+>> -		bond_deinit(bond_dev);
+>> -		unregister_netdevice(bond_dev);
+>> +		bond_destroy(bond);
+>>  	}
+>
+>Is this also needed in 2.6.24.x?
 
-Applied, thanks.
+	Yes (I haven't tested it personally, but the affected code is
+the same).  I was going to forward this to stable when it was accepted
+upstream.  The oops is fairly straightforward to create:
+
+# modprobe bonding
+# cd /sys/class/net/bond0/bonding
+# rmmod bonding
+# ls
+
+	-J
+
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
