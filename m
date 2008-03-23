@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbYCWIRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbYCWISM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760771AbYCWIRv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbYCWIIl
+	id S1761928AbYCWISM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbYCWIIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:08:41 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2255 "EHLO
+	Sun, 23 Mar 2008 04:08:42 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2256 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759203AbYCWIIg (ORCPT
+	with ESMTP id S1759227AbYCWIIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:08:36 -0400
+	Sun, 23 Mar 2008 04:08:38 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 055/148] include/asm-x86/irqflags.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:02:30 -0700
-Message-Id: <1206259443-13210-56-git-send-email-joe@perches.com>
+Subject: [PATCH 141/148] include/asm-x86/vdso.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:03:56 -0700
+Message-Id: <1206259443-13210-142-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,64 +26,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/irqflags.h |   30 +++++++++++++-----------------
- 1 files changed, 13 insertions(+), 17 deletions(-)
+ include/asm-x86/vdso.h |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/include/asm-x86/irqflags.h b/include/asm-x86/irqflags.h
-index 92021c1..c242527 100644
---- a/include/asm-x86/irqflags.h
-+++ b/include/asm-x86/irqflags.h
-@@ -12,25 +12,21 @@ static inline unsigned long native_save_fl(void)
- {
- 	unsigned long flags;
+diff --git a/include/asm-x86/vdso.h b/include/asm-x86/vdso.h
+index 9bb8689..6ac2a06 100644
+--- a/include/asm-x86/vdso.h
++++ b/include/asm-x86/vdso.h
+@@ -8,9 +8,11 @@ extern const char VDSO64_PRELINK[];
+  * Given a pointer to the vDSO image, find the pointer to VDSO64_name
+  * as that symbol is defined in the vDSO sources or linker script.
+  */
+-#define VDSO64_SYMBOL(base, name) ({		\
+-	extern const char VDSO64_##name[];	\
+-	(void *) (VDSO64_##name - VDSO64_PRELINK + (unsigned long) (base)); })
++#define VDSO64_SYMBOL(base, name)
++({									\
++	extern const char VDSO64_##name[];				\
++	(void *)(VDSO64_##name - VDSO64_PRELINK + (unsigned long)(base)); \
++})
+ #endif
  
--	__asm__ __volatile__(
--		"# __raw_save_flags\n\t"
--		"pushf ; pop %0"
--		: "=g" (flags)
--		: /* no input */
--		: "memory"
--	);
-+	asm volatile("# __raw_save_flags\n\t"
-+		     "pushf ; pop %0"
-+		     : "=g" (flags)
-+		     : /* no input */
-+		     : "memory");
+ #if defined CONFIG_X86_32 || defined CONFIG_COMPAT
+@@ -20,9 +22,11 @@ extern const char VDSO32_PRELINK[];
+  * Given a pointer to the vDSO image, find the pointer to VDSO32_name
+  * as that symbol is defined in the vDSO sources or linker script.
+  */
+-#define VDSO32_SYMBOL(base, name) ({		\
+-	extern const char VDSO32_##name[];	\
+-	(void *) (VDSO32_##name - VDSO32_PRELINK + (unsigned long) (base)); })
++#define VDSO32_SYMBOL(base, name)					\
++({									\
++	extern const char VDSO32_##name[];				\
++	(void *)(VDSO32_##name - VDSO32_PRELINK + (unsigned long)(base)); \
++})
+ #endif
  
- 	return flags;
- }
- 
- static inline void native_restore_fl(unsigned long flags)
- {
--	__asm__ __volatile__(
--		"push %0 ; popf"
--		: /* no output */
--		:"g" (flags)
--		:"memory", "cc"
--	);
-+	asm volatile("push %0 ; popf"
-+		     : /* no output */
-+		     :"g" (flags)
-+		     :"memory", "cc");
- }
- 
- static inline void native_irq_disable(void)
-@@ -131,11 +127,11 @@ static inline unsigned long __raw_local_irq_save(void)
- #endif /* CONFIG_PARAVIRT */
- 
- #ifndef __ASSEMBLY__
--#define raw_local_save_flags(flags) \
--		do { (flags) = __raw_local_save_flags(); } while (0)
-+#define raw_local_save_flags(flags)				\
-+	do { (flags) = __raw_local_save_flags(); } while (0)
- 
--#define raw_local_irq_save(flags) \
--		do { (flags) = __raw_local_irq_save(); } while (0)
-+#define raw_local_irq_save(flags)				\
-+	do { (flags) = __raw_local_irq_save(); } while (0)
- 
- static inline int raw_irqs_disabled_flags(unsigned long flags)
- {
+ /*
 -- 
 1.5.4.rc2
 
