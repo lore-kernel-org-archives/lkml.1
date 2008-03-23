@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYCWDaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbYCWDjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYCWDaa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 23:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYCWDaT
+	id S1757590AbYCWDjs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 23:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbYCWDjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 23:30:19 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:57676 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbYCWDaS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 23:30:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UFq154c0L/DlmrHCTSYmofG1xkmwP7A/oJtnAjYR894VQ0oAAFYgCuBvWmRU1DBJPKc2EEJ2UpL0B6INBc07kfeYd4M1ejwRWvtfHo+oZV5OuiFra59XrPi4xTiprPd2dPVMK90TCpk3qAUpoDZXOseQ232GiYxQs9/Rgrjo1Ho=
-Message-ID: <86802c440803222030m31ffbb71v622b3e735966a9bf@mail.gmail.com>
-Date: Sat, 22 Mar 2008 20:30:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@kernel.org>, myles@mouselemur.cs.byu.edu
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported regressions from 2.6.24)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
-       "Thomas Meyer" <thomas@m3y3r.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Natalie Protasevich" <protasnb@gmail.com>
-In-Reply-To: <47E5C2C8.9030201@kernel.org>
+	Sat, 22 Mar 2008 23:39:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43398 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753768AbYCWDjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 23:39:36 -0400
+Message-ID: <47E5D0B6.6090307@redhat.com>
+Date: Sat, 22 Mar 2008 23:38:30 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: wait until PHY configuration packet was transmitted
+References: <tkrat.47c2348a94015e02@s5r6.in-berlin.de> <200803212312.41277.jwilson@redhat.com> <47E4DDFB.4050600@s5r6.in-berlin.de>
+In-Reply-To: <47E4DDFB.4050600@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803220259.48534.rjw@sisk.pl> <47E540E7.7030108@m3y3r.de>
-	 <47E54FA6.3060809@s5r6.in-berlin.de>
-	 <47E557D5.9020604@s5r6.in-berlin.de>
-	 <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org>
-	 <47E5815B.4080002@kernel.org>
-	 <86802c440803221628p60ebab7co3c4a6c1bef39d709@mail.gmail.com>
-	 <47E596DE.2090801@kernel.org>
-	 <86802c440803221900w1516e565yc6e5e26293acf5fe@mail.gmail.com>
-	 <47E5C2C8.9030201@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22, 2008 at 7:39 PM, H. Peter Anvin <hpa@kernel.org> wrote:
->
-> Yinghai Lu wrote:
->  > On Sat, Mar 22, 2008 at 4:31 PM, H. Peter Anvin <hpa@kernel.org> wrote:
->  >> Yinghai Lu wrote:
->  >>  > Opteron system with coprocessor on socket or HTX slot. will use 64bit
->  >>  > BAR above 4g and size is more than 4g too.
->  >>
->  >>  And it's working, with a 32-bit kernel?
->  >
->  > don't think so.
->
->  Would you mind trying it out, with Linus' patch?
+Stefan Richter wrote:
+> Jarod Wilson wrote:
+>> Will double-check Monday that this solves never-ending (until panic) bus
+> 
+> s/that/whether/? :-)
 
-myles may test that with 32 bit kernel on his setup.
+Either one works here. I went with "that", because I'm reasonably 
+certain that it does solve the problem and I'll just be confirming it, 
+vs. suspecting it might and finding out whether it does or not... Or 
+something like that. :)
 
-YH
+>> resets with a jmicron controller in the office, but this does indeed 
+>> prevent a very similar looking case with a via vt6307 ohci 1.0 
+>> controller + iogear hub + unibrain fire-i camera:
+>>
+>>   http://bugzilla.kernel.org/show_bug.cgi?id=10128
+> 
+> The wonders of brainstorming on IRC.  Let's implement all far-off and 
+> weird ideas we can possibly get, distill those which don't cause 
+> regressions, and we will end up with perfectly working drivers. :-)
+
+Definitely! We've certainly been getting closer and closer, anyhow...
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
