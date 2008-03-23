@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYCWPqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYCWPzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbYCWPqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 11:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYCWPq3
+	id S1755846AbYCWPzE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 11:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYCWPyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 11:46:29 -0400
-Received: from n67.bullet.mail.sp1.yahoo.com ([98.136.44.47]:32300 "HELO
-	n67.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751649AbYCWPq3 (ORCPT
+	Sun, 23 Mar 2008 11:54:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35620 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752359AbYCWPyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 11:46:29 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 536368.68575.bm@omp404.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=akRVN6G12F/Hyk1GvoNfGUyrLWFHMwld+z6J/wvY1clbtA0YyrxSSt9yqYCHpv9N/9fGN6m02N00s9PI9BNOnECotelwPXofKSMRQMUfH0LW8guO9HoBZkcpgciYVQKx6qrM0Qq+IOcJiESVP6+pMzikHrvS2puxmqN4whFNRak=;
-X-YMail-OSG: 4vsNwqEVM1nswM9ZBkj0970mAFk40igEN5q01lo4D2lZVAIOe6Z5bAgNUnxWjNesFJUHBTIpRfFyesgaH.7yKdN2tw--
-Date: Sun, 23 Mar 2008 08:46:28 -0700 (PDT)
-From: "John T." <j.thomast@yahoo.com>
-Subject: Re: UTF-8 and Alt key in the console
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.00.0803231627430.3157@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <349800.20247.qm@web45701.mail.sp1.yahoo.com>
+	Sun, 23 Mar 2008 11:54:52 -0400
+Subject: Re: 2.6.25-rc: complete lockup on boot/start of X (bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080323154416.GA6817@joi>
+References: <20080302185935.GA6100@joi> <1204485071.6240.56.camel@lappy>
+	 <20080302194748.GA6005@joi> <1204487917.6240.64.camel@lappy>
+	 <20080323154416.GA6817@joi>
+Content-Type: text/plain
+Date: Sun, 23 Mar 2008 16:54:29 +0100
+Message-Id: <1206287670.6437.113.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Jan Engelhardt <jengelh@computergmbh.de> wrote:
-
+On Sun, 2008-03-23 at 16:44 +0100, Marcin Slusarz wrote:
+> On Sun, Mar 02, 2008 at 08:58:37PM +0100, Peter Zijlstra wrote:
+> > 
+> > On Sun, 2008-03-02 at 20:47 +0100, Marcin Slusarz wrote:
+> > > On Sun, Mar 02, 2008 at 08:11:11PM +0100, Peter Zijlstra wrote:
+> > > > 
+> > > > On Sun, 2008-03-02 at 20:00 +0100, Marcin Slusarz wrote:
+> > > > > Hi
+> > > > > Since early 2.6.25 days I'm having strange lockup on boot. As it happens
+> > > > > rarely (in ~10% of boots), I couldn't bisect it. No kernel panic, SysRq
+> > > > > didn't work, so I couldn't provide any useful informations to LK community.
+> > > > > I hoped someone else would fix it... :)
+> > > > > 
+> > > > > It's rc3 so I decided to narrow it down myself. I enabled netconsole 
+> > > > > to see whether some other informations are printed before lockup.
+> > > > > It didn't help, but I noticed that lockup happens much more frequenly! (~50%)
+> > > > > So I bisected it down to:
+> > > > > 
+> > > > > 8f4d37ec073c17e2d4aa8851df5837d798606d6f is first bad commit
+> > > > > commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
+> > > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > > Date:   Fri Jan 25 21:08:29 2008 +0100
+> > > > > 
+> > > > >     sched: high-res preemption tick
+> > > > > 
+> > > > >     Use HR-timers (when available) to deliver an accurate preemption tick.
+> > > > > 
+> > > > >     The regular scheduler tick that runs at 1/HZ can be too coarse when nice
+> > > > >     level are used. The fairness system will still keep the cpu utilisation 'fair'
+> > > > >     by then delaying the task that got an excessive amount of CPU time but try to
+> > > > >     minimize this by delivering preemption points spot-on.
+> > > > > 
+> > > > >     The average frequency of this extra interrupt is sched_latency / nr_latency.
+> > > > >     Which need not be higher than 1/HZ, its just that the distribution within the
+> > > > >     sched_latency period is important.
+> > > > > 
+> > > > >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > > > 
+> > > > > :040000 040000 ab225228500f7a19d5ad20ca12ca3fc8ff5f5ad1 f1742e1d225a72aecea9d6961ed989b5943d31d8 M      arch
+> > > > > :040000 040000 25d85e4ef7a71b0cc76801a2526ebeb4dce180fe ae61510186b4fad708ef0211ac169decba16d4e5 M      include
+> > > > > :040000 040000 9247cec7dd506c648ac027c17e5a07145aa41b26 950832cc1dc4d30923f593ecec883a06b45d62e9 M      kernel
+> > > > > 
+> > > > > I can't revert it on top of rc3 because of conflicts.
+> > > > 
+> > > > This should do, I guess. Weird though, I haven't had trouble with this
+> > > > patch in a long long while. Nor I suppose has Ingo's QA setup.
+> > > Ok. It did the trick. But it's temporary fix, right?
+> > 
+> > Yeah, for a proper fix I'd need to understand what goes wrong.. and that
+> > requires I get more information. Hopefully I can reproduce your issue.
+> > 
+> > > > Will try if I can reproduce using your .config.
+> > > I think this lockup might depend on use of dhcp and/or parallel
+> > > starting of services...
+> > 
+> > It _should_ not.. :-) I can try dhcp quite easily, if nothing comes up I
+> > can try installing gentoo on a test box, stage3 installs are easy
+> > enough.
 > 
-> On Sunday 2008-03-23 16:15, John T. wrote:
-> >
-> > It is understood that although the Meta-key sequences
-> > work in an xterm with vim on UTF-8, they don't on the
-> > linux console.
-> 
-> They also seem work on the console; I can use Alt-L in
-> mcedit to jump to a line.
-> 
+> I'm still having this lockup on 2.6.25-rc6 (028011e1391eab27e7bc113c2ac08d4f55584a75).
+> What informations do you need?
 
-That's because you are working in "meta sends ESC" mode.
-Although this is OK for most applications, for some it isn't.
-Thus there have always been two modes, "meta sends ESC"
-and "meta sets 8th bit". (toggled with setmetamode on the
-console)
+Does the NMI watchdog (append nmi_watchdog=2) report anything?
 
-Vim relies on "meta sets 8th bit". Unfortunatelly the code
-for this options does not work in UTF-8 in the console. What
-I'd like to do is make this a viable option in UTF-8.
-
-
-      ____________________________________________________________________________________
-Looking for last minute shopping deals?  
-Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
+I've never been able to reproduce myself :-/
 
