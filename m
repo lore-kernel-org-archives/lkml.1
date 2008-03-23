@@ -1,68 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbYCWWWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbYCWWle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757129AbYCWWWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 18:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbYCWWWI
+	id S1758001AbYCWWle (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 18:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbYCWWlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 18:22:08 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:42829 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbYCWWWG (ORCPT
+	Sun, 23 Mar 2008 18:41:24 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59047 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755929AbYCWWlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 18:22:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=E+KELHzWVn5jVr0+59OhznvRSelIibdDl14y56TwuQVdgVxtpUIDFghjnGKJ9/L4l83P3FY0V3j2vCg5dDlkH/DXfg31ZwVJodIz+GhApZBfjzA7f3SuaMOfi0NdCJcCraED1dGdkzNWL09u/QMdE1MO29JSH/FnP/obbwdz1vk=
-Message-ID: <2c0942db0803231522w7c66f168xf7fea72d135ba395@mail.gmail.com>
-Date: Sun, 23 Mar 2008 15:22:02 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: Kai <epimetreus@fastmail.fm>
-Subject: Re: Serious performance regression in Wine applications and Linux 2.6.24.*
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1206310206.17373.1243881033@webmail.messagingengine.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Mar 2008 18:41:19 -0400
+Date: Sun, 23 Mar 2008 22:34:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, paulus@samba.org,
+       ralf@linux-mips.org, davem@davemloft.net, lethal@linux-sh.org,
+       jdike@addtoit.com
+Subject: Re: tick-common.c hack for s390 needed
+Message-ID: <20080323223455.GA746@flint.arm.linux.org.uk>
+References: <20080318093119.GA8669@osiris.boeblingen.de.ibm.com> <20080319054545.GA18834@infradead.org> <20080321101504.GI20420@elte.hu> <20080321132559.GA4128@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0803211545160.3781@apollo.tec.linutronix.de> <20080322203223.GA31521@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1206310206.17373.1243881033@webmail.messagingengine.com>
-X-Google-Sender-Auth: ef0d5078de53caf6
+In-Reply-To: <20080322203223.GA31521@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Please don't top post. If we figure out who to CC: who knows more
-about this than I do -- which wouldn't be hard -- then they're going
-to want to see all this in order. Also, please always do a
-reply-to-all on this list, it's preferred.)
+On Sat, Mar 22, 2008 at 09:32:23PM +0100, Heiko Carstens wrote:
+> Generic code is not supposed to include irq.h. Replace this include
+> by linux/hardirq.h instead and add/replace an include of linux/irq.h
+> in asm header files where necessary.
+> This change should only matter for architectures that make use of
+> GENERIC_CLOCKEVENTS.
+> Architectures in question are mips, x86, arm, sh, powerpc, uml and sparc64.
+> 
+> I did some cross compile tests for mips, x86_64, arm, powerpc and sparc64.
+> This patch fixes also build breakages caused by the include replacement in
+> tick-common.h.
 
-On Sun, Mar 23, 2008 at 3:10 PM, Kai <epimetreus@fastmail.fm> wrote:
-> > Kai wrote:
->  > > Performance degrades by about 60% when I run Wine under any of the
->  > > 2.6.24.* kernels. Attached are the output of lspci -vv and the two
->  > > config files of each kernel.
->  > >
->  > > I upgraded to 2.6.24, back to 2.6.23.(not sure), then tried 2.6.24.1 and
->  > > 2.6.24.3 and the issue is present in both; it's severe enough that Wine
->  > > apps are virtually unusable for me with this version of the kernel; I'm
->  > > having to use 2.6.23 until this somehow is resolved.
->  > >
->  > > I'd like some help figuring out why this performance regression exists,
->  > > and what can be done to mitigate it.
->  > >
->  > > Please CC replies; I'm not on the list.
->  > >
->  > This is strange, as my (two) Windows apps ran (and run) just fine under
->  > 2.6.24 (and now under 2.6.25-rc6). Could you specify the applications
->  > you're having problems with?
->
-> Originally, it was just about everything -- Wine itself, and most any
->  app I tried to run with it.
->
->  In my most recent tests, however, it only seems to affect Age of Wonders
->  II and Age of Wonders Shadow Magic, which use very similar engines.
+I generally dislike adding optional linux/* includes in asm/* includes -
+I'm nervous about this causing include loops.
 
-What version of X? What version of WINE? Which video driver are you
-using? Does the speed issue show up with glxgears, or something else
-that would be much easier for someone else to reproduce (tuxracer,
-etc.)? Is your system using software or hardware rendering?
+However, there's a separate point to be discussed here.
+
+That is, what interfaces are expected of every architecture in the kernel.
+If generic code wants to be able to set the affinity of interrupts, then
+that needs to become part of the interfaces listed in linux/interrupt.h
+rather than linux/irq.h.
+
+So what I suggest is this approach instead (against Linus' tree of a
+couple of days ago) - we move irq_set_affinity() and irq_can_set_affinity()
+to linux/interrupt.h, change the linux/irq.h includes to linux/interrupt.h
+and include asm/irq_regs.h where needed (asm/irq_regs.h is supposed to be
+rarely used include since not much touches the stacked parent context
+registers.)
+
+Build tested on ARM PXA family kernels and ARM's Realview platform
+kernels which both use genirq.
+
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index f8ab4ce..355e3b0 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -102,6 +102,25 @@ extern void disable_irq_nosync(unsigned int irq);
+ extern void disable_irq(unsigned int irq);
+ extern void enable_irq(unsigned int irq);
+ 
++#ifdef CONFIG_SMP
++
++extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
++extern int irq_can_set_affinity(unsigned int irq);
++
++#else /* CONFIG_SMP */
++
++static inline int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
++{
++	return -EINVAL;
++}
++
++static inline int irq_can_set_affinity(unsigned int irq)
++{
++	return 0;
++}
++
++#endif /* CONFIG_SMP */
++
+ #ifdef CONFIG_GENERIC_HARDIRQS
+ /*
+  * Special lockdep variants of irq disabling/enabling.
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 176e5e7..1883a85 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -228,21 +228,11 @@ static inline void set_pending_irq(unsigned int irq, cpumask_t mask)
+ 
+ #endif /* CONFIG_GENERIC_PENDING_IRQ */
+ 
+-extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
+-extern int irq_can_set_affinity(unsigned int irq);
+-
+ #else /* CONFIG_SMP */
+ 
+ #define move_native_irq(x)
+ #define move_masked_irq(x)
+ 
+-static inline int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
+-{
+-	return -EINVAL;
+-}
+-
+-static inline int irq_can_set_affinity(unsigned int irq) { return 0; }
+-
+ #endif /* CONFIG_SMP */
+ 
+ #ifdef CONFIG_IRQBALANCE
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index e1bd50c..fdfa0c7 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -14,7 +14,7 @@
+ #include <linux/cpu.h>
+ #include <linux/err.h>
+ #include <linux/hrtimer.h>
+-#include <linux/irq.h>
++#include <linux/interrupt.h>
+ #include <linux/percpu.h>
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+index 1bea399..4f38865 100644
+--- a/kernel/time/tick-common.c
++++ b/kernel/time/tick-common.c
+@@ -14,12 +14,14 @@
+ #include <linux/cpu.h>
+ #include <linux/err.h>
+ #include <linux/hrtimer.h>
+-#include <linux/irq.h>
++#include <linux/interrupt.h>
+ #include <linux/percpu.h>
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+ #include <linux/tick.h>
+ 
++#include <asm/irq_regs.h>
++
+ #include "tick-internal.h"
+ 
+ /*
+diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
+index 0258d31..450c049 100644
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -14,7 +14,7 @@
+ #include <linux/cpu.h>
+ #include <linux/err.h>
+ #include <linux/hrtimer.h>
+-#include <linux/irq.h>
++#include <linux/interrupt.h>
+ #include <linux/percpu.h>
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
