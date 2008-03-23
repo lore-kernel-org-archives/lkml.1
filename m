@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYCWVLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbYCWVRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbYCWVLx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 17:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYCWVLp
+	id S1757053AbYCWVRT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 17:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYCWVRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 17:11:45 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40374 "EHLO pasmtpB.tele.dk"
+	Sun, 23 Mar 2008 17:17:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52040 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753780AbYCWVLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 17:11:44 -0400
-Date: Sun, 23 Mar 2008 22:12:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: A few words from the kbuild maintainer
-Message-ID: <20080323211206.GC5087@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753780AbYCWVRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 17:17:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 2)
+Date: Sun, 23 Mar 2008 22:16:43 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200803210101.04706.rjw@sisk.pl> <20080321081536.GA25009@uranus.ravnborg.org>
+In-Reply-To: <20080321081536.GA25009@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200803232216.44627.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+On Friday, 21 of March 2008, Sam Ravnborg wrote:
+> Hi Rafael.
 
-After a period with pretty high activity with my Linux stuff
-I have been forced to scale down a lot.
-Mostly due to my day-time that demands a bit more than a full
-working week at the moment.
-But building a new house and some family stuff has also
-and continue to consume additional time.
+Hi Sam,
 
-I do not see the situation improve until autumn this year so
-until then do not expect too much feedback or activity from me.
+> Is it possible to extend this in some way so we avoid the
+> #ifdef stuff in the drivers?
 
-I have a few patches queued that I actually planned to take a
-look at this weekend but on top of everything else my new
-quad-core machine died - the power supply I guess. A new one
-is ordered but it will take a few days before it arrives.
-With luck I will look after the pending patches in the following
-week so they are ready for the upcoming merge window.
+Well, I'd love to do something like this.
 
-	Sam
+> We could introduce a few special sections that we discard if
+> PM is not in use.
+> We have a reliable build time infrastructure to detect
+> inconsistencies if needed.
+> 
+> Something like:
+> #define __suspend     __section(.suspend.text)
+> #define __suspenddata __section(.suspend.data)
+> 
+> #define __hibernate     __section(.hibernate.text)
+> #define __hibernatedata __section(.hibernate.data)
+> 
+> A few more tricks will be needed when we assign the functon pointers.
+> We have __devexit_p(*) and we may use something similar.
+
+Unfortunately, I have a little experience with linkers and I don't think I'll
+be able to do anything like this in a reasonable time without any help.
+
+Thanks,
+Rafael
