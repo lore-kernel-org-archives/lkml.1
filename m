@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbYCWIv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932883AbYCWIwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932842AbYCWIv4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYCWILj
+	id S932883AbYCWIwU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760128AbYCWILk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:11:39 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2339 "EHLO
+	Sun, 23 Mar 2008 04:11:40 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2337 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758081AbYCWILg (ORCPT
+	with ESMTP id S1760081AbYCWILg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 23 Mar 2008 04:11:36 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 031/148] include/asm-x86/edac.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:02:06 -0700
-Message-Id: <1206259443-13210-32-git-send-email-joe@perches.com>
+Subject: [PATCH 041/148] include/asm-x86/hw_irq_64.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:02:16 -0700
+Message-Id: <1206259443-13210-42-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,31 +26,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/edac.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ include/asm-x86/hw_irq_64.h |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/include/asm-x86/edac.h b/include/asm-x86/edac.h
-index cf3200a..a8088f6 100644
---- a/include/asm-x86/edac.h
-+++ b/include/asm-x86/edac.h
-@@ -3,7 +3,7 @@
+diff --git a/include/asm-x86/hw_irq_64.h b/include/asm-x86/hw_irq_64.h
+index 312a58d..0062ef3 100644
+--- a/include/asm-x86/hw_irq_64.h
++++ b/include/asm-x86/hw_irq_64.h
+@@ -36,7 +36,7 @@
+  * cleanup after irq migration.
+  */
+ #define IRQ_MOVE_CLEANUP_VECTOR	FIRST_EXTERNAL_VECTOR
+- 
++
+ /*
+  * Vectors 0x30-0x3f are used for ISA interrupts.
+  */
+@@ -159,13 +159,12 @@ extern atomic_t irq_mis_count;
+  *	SMP has a few special interrupts for IPI messages
+  */
  
- /* ECC atomic, DMA, SMP and interrupt safe scrub function */
+-#define BUILD_IRQ(nr) \
+-asmlinkage void IRQ_NAME(nr); \
+-__asm__( \
+-"\n.p2align\n" \
+-"IRQ" #nr "_interrupt:\n\t" \
+-	"push $~(" #nr ") ; " \
+-	"jmp common_interrupt");
++#define BUILD_IRQ(nr)				\
++	asmlinkage void IRQ_NAME(nr);		\
++	asm("\n.p2align\n"			\
++	    "IRQ" #nr "_interrupt:\n\t"		\
++	    "push $~(" #nr ") ; "		\
++	    "jmp common_interrupt");
  
--static __inline__ void atomic_scrub(void *va, u32 size)
-+static inline void atomic_scrub(void *va, u32 size)
- {
- 	u32 i, *virt_addr = va;
+ #define platform_legacy_irq(irq)	((irq) < 16)
  
-@@ -12,7 +12,7 @@ static __inline__ void atomic_scrub(void *va, u32 size)
- 	 * are interrupt, DMA and SMP safe.
- 	 */
- 	for (i = 0; i < size / 4; i++, virt_addr++)
--		__asm__ __volatile__("lock; addl $0, %0"::"m"(*virt_addr));
-+		asm volatile("lock; addl $0, %0"::"m" (*virt_addr));
- }
- 
- #endif
 -- 
 1.5.4.rc2
 
