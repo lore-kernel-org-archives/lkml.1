@@ -1,30 +1,30 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbYCVUfG (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 22 Mar 2008 16:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYCVUez
+	id S1760300AbYCWK2d (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 23 Mar 2008 06:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbYCWK2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 16:34:55 -0400
-Received: from d09.dinaserver.com ([82.98.136.13]:46300 "EHLO
-	d09.dinaserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752242AbYCVUez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 16:34:55 -0400
-X-Greylist: delayed 15049 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Mar 2008 16:34:54 EDT
-Date: Sat, 22 Mar 2008 17:24:01 +0100
-Message-Id: <200803221624.m2MGO1jY011815@d09.dinaserver.com>
+	Sun, 23 Mar 2008 06:28:21 -0400
+Received: from polystaff.ru ([77.246.144.129]:48514 "EHLO vp01.e-planet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754809AbYCWK2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 06:28:21 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Mar 2008 06:28:20 EDT
+Date: Sun, 23 Mar 2008 13:21:26 +0300
+From: "CODER-ENTERPRISE.RU" <support@coder-enterprise.ru>
+X-Mailer: The Bat! (v3.85.03) Professional
+Reply-To: "CODER-ENTERPRISE.RU" <support@coder-enterprise.ru>
+Organization: =?windows-1251?B?zs7OICLK7uTl8C3d7fLl8O/w4OnnIg==?=
+X-Priority: 3 (Normal)
+Message-ID: <1727888791.20080323132126@coder-enterprise.ru>
 To: linux-kernel@vger.kernel.org
-Subject: hi
-From: Elena <ramsdams@gmail.com>
-Reply-To: ramsdams@gmail.com
+Subject: test2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755847AbYCVUfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760300AbYCWK2d@vger.kernel.org>
 
-Hi dear!! My letter will surprise you!!  My name - Elena. My age-26 years. I live in Russia!! Private life didn\'t turn out well. I decided to find a foreign man. I dream to meet a decent, kind and clever man!! It is difficult to tell about myself. If this is of any interest to you, write to me.My address - ramsdams@gmail.com   I\'ll wait!! Kisses Elena
-
-
+test2
 
