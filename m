@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbYCWIRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbYCWIRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761625AbYCWIRd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759215AbYCWIIg
+	id S1760771AbYCWIRv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbYCWIIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:08:36 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2254 "EHLO
+	Sun, 23 Mar 2008 04:08:41 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2255 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759183AbYCWIIf (ORCPT
+	with ESMTP id S1759203AbYCWIIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:08:35 -0400
+	Sun, 23 Mar 2008 04:08:36 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 140/148] include/asm-x86/user_64.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:03:55 -0700
-Message-Id: <1206259443-13210-141-git-send-email-joe@perches.com>
+Subject: [PATCH 055/148] include/asm-x86/irqflags.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:02:30 -0700
+Message-Id: <1206259443-13210-56-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,57 +26,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/user_64.h |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ include/asm-x86/irqflags.h |   30 +++++++++++++-----------------
+ 1 files changed, 13 insertions(+), 17 deletions(-)
 
-diff --git a/include/asm-x86/user_64.h b/include/asm-x86/user_64.h
-index 9636164..6037b63 100644
---- a/include/asm-x86/user_64.h
-+++ b/include/asm-x86/user_64.h
-@@ -45,12 +45,13 @@
-  */
+diff --git a/include/asm-x86/irqflags.h b/include/asm-x86/irqflags.h
+index 92021c1..c242527 100644
+--- a/include/asm-x86/irqflags.h
++++ b/include/asm-x86/irqflags.h
+@@ -12,25 +12,21 @@ static inline unsigned long native_save_fl(void)
+ {
+ 	unsigned long flags;
  
- /* This matches the 64bit FXSAVE format as defined by AMD. It is the same
--   as the 32bit format defined by Intel, except that the selector:offset pairs for
--   data and eip are replaced with flat 64bit pointers. */
-+   as the 32bit format defined by Intel, except that the selector:offset pairs
-+   for data and eip are replaced with flat 64bit pointers. */
- struct user_i387_struct {
- 	unsigned short	cwd;
- 	unsigned short	swd;
--	unsigned short	twd; /* Note this is not the same as the 32bit/x87/FSAVE twd */
-+	unsigned short	twd;	/* Note this is not the same as
-+				   the 32bit/x87/FSAVE twd */
- 	unsigned short	fop;
- 	__u64	rip;
- 	__u64	rdp;
-@@ -97,13 +98,14 @@ struct user_regs_struct {
- /* When the kernel dumps core, it starts by dumping the user struct -
-    this will be used by gdb to figure out where the data and stack segments
-    are within the file, and what virtual addresses to use. */
--struct user{
-+
-+struct user {
- /* We start with the registers, to mimic the way that "memory" is returned
-    from the ptrace(3,...) function.  */
--  struct user_regs_struct regs;		/* Where the registers are actually stored */
-+  struct user_regs_struct regs;	/* Where the registers are actually stored */
- /* ptrace does not yet supply these.  Someday.... */
-   int u_fpvalid;		/* True if math co-processor being used. */
--                                /* for this mess. Not yet used. */
-+				/* for this mess. Not yet used. */
-   int pad0;
-   struct user_i387_struct i387;	/* Math Co-processor registers. */
- /* The rest of this junk is to help gdb figure out what goes where */
-@@ -120,7 +122,7 @@ struct user{
-   int pad1;
-   unsigned long u_ar0;		/* Used by gdb to help find the values for */
- 				/* the registers. */
--  struct user_i387_struct* u_fpstate;	/* Math Co-processor pointer. */
-+  struct user_i387_struct *u_fpstate;	/* Math Co-processor pointer. */
-   unsigned long magic;		/* To uniquely identify a core file */
-   char u_comm[32];		/* User command that was responsible */
-   unsigned long u_debugreg[8];
+-	__asm__ __volatile__(
+-		"# __raw_save_flags\n\t"
+-		"pushf ; pop %0"
+-		: "=g" (flags)
+-		: /* no input */
+-		: "memory"
+-	);
++	asm volatile("# __raw_save_flags\n\t"
++		     "pushf ; pop %0"
++		     : "=g" (flags)
++		     : /* no input */
++		     : "memory");
+ 
+ 	return flags;
+ }
+ 
+ static inline void native_restore_fl(unsigned long flags)
+ {
+-	__asm__ __volatile__(
+-		"push %0 ; popf"
+-		: /* no output */
+-		:"g" (flags)
+-		:"memory", "cc"
+-	);
++	asm volatile("push %0 ; popf"
++		     : /* no output */
++		     :"g" (flags)
++		     :"memory", "cc");
+ }
+ 
+ static inline void native_irq_disable(void)
+@@ -131,11 +127,11 @@ static inline unsigned long __raw_local_irq_save(void)
+ #endif /* CONFIG_PARAVIRT */
+ 
+ #ifndef __ASSEMBLY__
+-#define raw_local_save_flags(flags) \
+-		do { (flags) = __raw_local_save_flags(); } while (0)
++#define raw_local_save_flags(flags)				\
++	do { (flags) = __raw_local_save_flags(); } while (0)
+ 
+-#define raw_local_irq_save(flags) \
+-		do { (flags) = __raw_local_irq_save(); } while (0)
++#define raw_local_irq_save(flags)				\
++	do { (flags) = __raw_local_irq_save(); } while (0)
+ 
+ static inline int raw_irqs_disabled_flags(unsigned long flags)
+ {
 -- 
 1.5.4.rc2
 
