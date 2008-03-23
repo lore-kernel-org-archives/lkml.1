@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbYCWJsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYCWJzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbYCWJsy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 05:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYCWJsp
+	id S1758691AbYCWJzP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 05:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYCWJzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 05:48:45 -0400
-Received: from mx3.orcon.net.nz ([219.88.242.53]:50209 "EHLO mx3.orcon.net.nz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbYCWJsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 05:48:43 -0400
-Message-ID: <47E62776.9000107@orcon.net.nz>
-Date: Sun, 23 Mar 2008 22:48:38 +1300
-From: Michael Cree <mcree@orcon.net.nz>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sun, 23 Mar 2008 05:55:00 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:26494 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753874AbYCWJy7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 05:54:59 -0400
+Message-ID: <47E628DF.6070301@panasas.com>
+Date: Sun, 23 Mar 2008 11:54:39 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Bob Tracy <rct@frus.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080311180831.8CE90DBA3@gherkin.frus.com> <ED0F0070-B876-4D8B-8F88-879E01AB4326@orcon.net.nz>
-In-Reply-To: <ED0F0070-B876-4D8B-8F88-879E01AB4326@orcon.net.nz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ultrastor.c is a bit-rot
+References: <47DE8736.8020405@panasas.com> <20080317152344.GE26285@parisc-linux.org> <47E41D7D.9050409@zytor.com>
+In-Reply-To: <47E41D7D.9050409@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-DSPAM-Check: by mx3.orcon.net.nz on Sun, 23 Mar 2008 22:48:40 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Sun Mar 23 22:48:41 2008
-X-DSPAM-Confidence: 0.7776
-X-DSPAM-Improbability: 1 in 351 chance of being spam
-X-DSPAM-Probability: 0.0000
+X-OriginalArrivalTime: 23 Mar 2008 09:54:44.0296 (UTC) FILETIME=[EBD5B480:01C88CCB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Cree wrote:
->> I can't tell you exactly *when* it used to work, or even *if* it did
->> with 2.6 kernels.  I'll try to explain...
+On Fri, Mar 21 2008 at 22:41 +0200, "H. Peter Anvin" <hpa@zytor.com> wrote:
+> Matthew Wilcox wrote:
+>> VESA Local Bus.  It was (in some sense) the predecessor of AGP.  We
+>> treat it like ISA inside the kernel.  On x86, EISA depends on ISA, so
+>> the dependency, while wrong, does not affect any x86 users who have an
+>> EISA card.
 >>
->> Sometime back in the 2.6.14 to 2.6.16 timeframe there was an issue with
->> the ALSA driver not recognizing interrupts (causing looping)
 > 
-> Yes, the ESS1888 driver failed to work on Alpha about the 2.6.14 to 
-> 2.6.16 kernel.   It came right with alsa release 1.0.13 (IIRC) and I 
-> have been running the ESS1888 driver on an Alpha XP1000 without problems 
-> for about a year.
+> Well, one can say VLB was to ISA (a souped-up ISA bus with some of the 
+> worst limitations removed) what AGP is to PCI...
+> 
+> 	-hpa
 
-After thinking about this more, I am wondering if the appearance of the 
-ESS1888 not working then coming right at about the 1.0.13 alsa release 
-is an artefact of when I shifted from mainly using the PWS600au to 
-mainly using  the XP1000, and then trying out the es18xx driver at some 
-stage, finding it works on the XP1000, but forgetting that it was on the 
-PWS600au that it didn't work.  It's in the distant past now and memory 
-is getting hazy...
+Hmm interesting, so someone took the VGA thing and made a storage device
+for it. Did that ever happen with AGP? Any AGP scsi cards. I guess I can
+Google for it.
 
-Michael.
+Boaz
