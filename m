@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbYCWIvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbYCWIv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932798AbYCWIvj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760074AbYCWILi
+	id S932842AbYCWIv4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYCWILj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:11:38 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2334 "EHLO
+	Sun, 23 Mar 2008 04:11:39 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2339 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760089AbYCWILc (ORCPT
+	with ESMTP id S1758081AbYCWILg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:11:32 -0400
+	Sun, 23 Mar 2008 04:11:36 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 018/148] include/asm-x86/compat.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:01:53 -0700
-Message-Id: <1206259443-13210-19-git-send-email-joe@perches.com>
+Subject: [PATCH 031/148] include/asm-x86/edac.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:02:06 -0700
+Message-Id: <1206259443-13210-32-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,22 +26,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/compat.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/asm-x86/edac.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/asm-x86/compat.h b/include/asm-x86/compat.h
-index d3e8f3e..1793ac3 100644
---- a/include/asm-x86/compat.h
-+++ b/include/asm-x86/compat.h
-@@ -204,7 +204,7 @@ static inline compat_uptr_t ptr_to_compat(void __user *uptr)
- 	return (u32)(unsigned long)uptr;
+diff --git a/include/asm-x86/edac.h b/include/asm-x86/edac.h
+index cf3200a..a8088f6 100644
+--- a/include/asm-x86/edac.h
++++ b/include/asm-x86/edac.h
+@@ -3,7 +3,7 @@
+ 
+ /* ECC atomic, DMA, SMP and interrupt safe scrub function */
+ 
+-static __inline__ void atomic_scrub(void *va, u32 size)
++static inline void atomic_scrub(void *va, u32 size)
+ {
+ 	u32 i, *virt_addr = va;
+ 
+@@ -12,7 +12,7 @@ static __inline__ void atomic_scrub(void *va, u32 size)
+ 	 * are interrupt, DMA and SMP safe.
+ 	 */
+ 	for (i = 0; i < size / 4; i++, virt_addr++)
+-		__asm__ __volatile__("lock; addl $0, %0"::"m"(*virt_addr));
++		asm volatile("lock; addl $0, %0"::"m" (*virt_addr));
  }
  
--static __inline__ void __user *compat_alloc_user_space(long len)
-+static inline void __user *compat_alloc_user_space(long len)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	return (void __user *)regs->sp - len;
+ #endif
 -- 
 1.5.4.rc2
 
