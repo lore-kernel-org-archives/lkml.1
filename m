@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYCWBMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYCWBnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbYCWBMu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 21:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbYCWBMj
+	id S1756686AbYCWBnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 21:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbYCWBnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 21:12:39 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:40164 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754835AbYCWBMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 21:12:38 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Libor Pechacek <lpechacek@suse.cz>, bonding-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] bonding: Fix sysfs attribute handling 
-In-reply-to: <20080322172704.49fa557b.akpm@linux-foundation.org> 
-References: <200803211452.55982.lpechacek@suse.cz> <20080322172704.49fa557b.akpm@linux-foundation.org>
-Comments: In-reply-to Andrew Morton <akpm@linux-foundation.org>
-   message dated "Sat, 22 Mar 2008 17:27:04 -0700."
-X-Mailer: MH-E 8.0.3; nmh 1.1-RC4; GNU Emacs 22.0.95
-Date: Sat, 22 Mar 2008 18:12:34 -0700
-Message-ID: <18749.1206234754@death>
-From: Jay Vosburgh <fubar@us.ibm.com>
+	Sat, 22 Mar 2008 21:43:01 -0400
+Received: from bay0-omc3-s40.bay0.hotmail.com ([65.54.246.240]:41155 "EHLO
+	bay0-omc3-s40.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752331AbYCWBnA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Mar 2008 21:43:00 -0400
+Message-ID: <BAY101-W56F344A741AF8E16D0E80AC8030@phx.gbl>
+X-Originating-IP: [99.140.203.94]
+From: Adam Turk <bofh1234@hotmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: warnings during compile and boot
+Date: Sat, 22 Mar 2008 21:43:00 -0400
+Importance: Normal
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 23 Mar 2008 01:43:00.0352 (UTC) FILETIME=[3A1D2000:01C88C87]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
->On Fri, 21 Mar 2008 14:52:55 +0100 Libor Pechacek <lpechacek@suse.cz> wrote:
->
->> bonding: Fix sysfs attribute handling
->> 
->> For bonding interfaces any attempt to read the sysfs directory contents after
->> module removal results in an oops.  The fix is to release sysfs attributes
->> for the interfaces upon module unload.
->> 
->> Signed-off-by: Libor Pechacek <lpechacek@suse.cz>
->> --
->>  drivers/net/bonding/bond_main.c |    3 +--
->>  1 files changed, 1 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
->> index 0942d82..33767d4 100644
->> --- a/drivers/net/bonding/bond_main.c
->> +++ b/drivers/net/bonding/bond_main.c
->> @@ -4528,8 +4528,7 @@ static void bond_free_all(void)
->>  		netif_tx_unlock_bh(bond_dev);
->>  		/* Release the bonded slaves */
->>  		bond_release_all(bond_dev);
->> -		bond_deinit(bond_dev);
->> -		unregister_netdevice(bond_dev);
->> +		bond_destroy(bond);
->>  	}
->
->Is this also needed in 2.6.24.x?
+Hello,
 
-	Yes (I haven't tested it personally, but the affected code is
-the same).  I was going to forward this to stable when it was accepted
-upstream.  The oops is fairly straightforward to create:
+I just compiled 2.6.25-rc6 and got a bunch of warnings which are annoying.  I also see new informational warnings during boot:
+driver 'sd' needs updating - please use bus_type methods
+driver 'sr' needs updating - please use bus_type methods
 
-# modprobe bonding
-# cd /sys/class/net/bond0/bonding
-# rmmod bonding
-# ls
+warnings:
+  CC      kernel/power/pm.o
+kernel/power/pm.c:203: warning: 'pm_register' is deprecated (declared at kernel/power/pm.c:62)
+kernel/power/pm.c:203: warning: 'pm_register' is deprecated (declared at kernel/power/pm.c:62)
+kernel/power/pm.c:204: warning: 'pm_send_all' is deprecated (declared at kernel/power/pm.c:178)
+kernel/power/pm.c:204: warning: 'pm_send_all' is deprecated (declared at kernel/power/pm.c:178)
+  CC      kernel/power/process.o
 
-	-J
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+ CC [M]  fs/cifs/connect.o
+  CC [M]  fs/cifs/dir.o
+fs/cifs/dir.c: In function 'cifs_ci_compare':
+fs/cifs/dir.c:582: warning: passing argument 1 of '__constant_memcpy' discards qualifiers from pointer target type
+fs/cifs/dir.c:582: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+  CC [M]  fs/cifs/file.o
+
+  CC      fs/partitions/check.o
+fs/partitions/check.c: In function 'add_partition':
+fs/partitions/check.c:381: warning: ignoring return value of 'device_add', declared with attribute warn_unused_result
+
+ CC      drivers/message/i2o/device.o
+drivers/message/i2o/device.c: In function 'i2o_device_add':
+drivers/message/i2o/device.c:247: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c:254: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c:260: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c:267: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+
+
+  CC      drivers/pci/search.o
+drivers/pci/search.c: In function 'pci_find_slot':
+drivers/pci/search.c:135: warning: 'pci_find_device' is deprecated (declared at include/linux/pci.h:506)
+drivers/pci/search.c: At top level:
+drivers/pci/search.c:478: warning: 'pci_find_device' is deprecated (declared at drivers/pci/search.c:283)
+drivers/pci/search.c:478: warning: 'pci_find_device' is deprecated (declared at drivers/pci/search.c:283)
+drivers/pci/search.c:479: warning: 'pci_find_slot' is deprecated (declared at drivers/pci/search.c:132)
+drivers/pci/search.c:479: warning: 'pci_find_slot' is deprecated (declared at drivers/pci/search.c:132)
+
+Just an FYI,
+
+_________________________________________________________________
+How well do you know your celebrity gossip?
+http://originals.msn.com/thebigdebate?ocid=T002MSN03N0707A
