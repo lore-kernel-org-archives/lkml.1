@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYCWHOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbYCWHP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbYCWHOk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 03:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYCWHOd
+	id S1758564AbYCWHP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 03:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYCWHPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 03:14:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:1584 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbYCWHOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 03:14:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=uPZeMTv146sDyCWsVIymlEPXo4WVpjAjKltR0TLG8coSnptM0RaMf9uvPS1vueyc9MewVabYnMxWZitcAi8CEYjRap2ysT/lhHUh54hYktln9Hb7k+vWPQUCuh0F3oyUC3ndaKfJZc+LBfIcalUdH8Kgf61NYDDYKTQqyAdgreg=
-Reply-To: yhlu.kernel@gmail.com
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] x86_32: fix trim mtrr not to setup_memory two times
-Date: Sun, 23 Mar 2008 00:16:49 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 23 Mar 2008 03:15:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48418 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752867AbYCWHPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 03:15:14 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+2OAlwX6G2HGNjiaC2b0fxVn64937MKgCMDaJdlj
+	qBsO/3hOWuvPhV
+Subject: Re: Scalability requirements for sysv ipc
+From: Mike Galbraith <efault@gmx.de>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: paulmck@linux.vnet.ibm.com, Nadia Derbey <Nadia.Derbey@bull.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <47E5FAF2.2060508@colorfullife.com>
+References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net>
+	 <47E3B924.3000304@colorfullife.com>
+	 <20080321141339.GB9618@linux.vnet.ibm.com>
+	 <47E3DD8C.4000904@colorfullife.com>
+	 <1206164608.3659.11.camel@marge.simson.net>
+	 <47E4DB06.3020003@colorfullife.com>
+	 <1206186832.4545.1.camel@marge.simson.net>
+	 <47E51637.8060102@colorfullife.com>
+	 <1206214504.4538.8.camel@marge.simson.net>
+	 <47E5FAF2.2060508@colorfullife.com>
+Content-Type: text/plain
+Date: Sun, 23 Mar 2008 08:15:11 +0100
+Message-Id: <1206256511.4367.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803230016.50063.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-we could call find_max_pfn() directly instead of setup_memory() to get
-max_pfn needed for mtrr trimming.
+On Sun, 2008-03-23 at 07:38 +0100, Manfred Spraul wrote:
+> Mike Galbraith wrote:
+> > On Sat, 2008-03-22 at 15:22 +0100, Manfred Spraul wrote:
+> >   
+> >> Mike Galbraith wrote:
+> >>     
+> >>> Total: 4691827                                Total: 3942000
+> >>>   
+> >>>       
+> >> Thanks. Unfortunately the test was buggy, it bound the tasks to the 
+> >> wrong cpu :-(
+> >> Could you run it again? Actually 1 cpu and 4 cpus are probably enough.
+> >>     
+> >
+> > Sure.  (ran as before, hopefully no transcription errors)
+> >
+> >   
+> Thanks:
+> sysv sem:
+> - 2.6.22 had almost linear scaling (up to 4 cores).
+> - 2.6.24.3 scales to 2 cpus, then it collapses. with 4 cores, it's 75% 
+> slower than 2.6.22.
+> 
+> sysv msg:
+> - neither 2.6.22 nor 2.6.24 scale very good. That's more or less 
+> expected, the message queue code contains a few global statistic 
+> counters (msg_hdrs, msg_bytes).
 
-otherwise setup_mempry is called two times... that is duplicated...
+Actually, 2.6.22 is fine, and 2.6.24.3 is not, just as sysv sem.  I just
+noticed that pmsg didn't get recompiled last night (fat finger) , and
+sent a correction. 
+ 
+	-Mike
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -448,8 +448,6 @@ static unsigned long __init setup_memory
- 	 */
- 	min_low_pfn = PFN_UP(init_pg_tables_end);
- 
--	find_max_pfn();
--
- 	max_low_pfn = find_max_low_pfn();
- 
- #ifdef CONFIG_HIGHMEM
-@@ -811,12 +809,13 @@ void __init setup_arch(char **cmdline_p)
- 	if (efi_enabled)
- 		efi_init();
- 
--	max_low_pfn = setup_memory();
--
- 	/* update e820 for memory not covered by WB MTRRs */
-+	find_max_pfn();
- 	mtrr_bp_init();
- 	if (mtrr_trim_uncached_memory(max_pfn))
--		max_low_pfn = setup_memory();
-+		find_max_pfn();
-+
-+	max_low_pfn = setup_memory();
- 
- #ifdef CONFIG_VMI
- 	/*
-Index: linux-2.6/arch/x86/mm/discontig_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/discontig_32.c
-+++ linux-2.6/arch/x86/mm/discontig_32.c
-@@ -324,7 +324,6 @@ unsigned long __init setup_memory(void)
- 	 * this space and use it to adjust the boundary between ZONE_NORMAL
- 	 * and ZONE_HIGHMEM.
- 	 */
--	find_max_pfn();
- 	get_memcfg_numa();
- 
- 	kva_pages = calculate_numa_remap_pages();
