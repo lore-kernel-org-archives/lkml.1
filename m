@@ -1,79 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbYCWJeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbYCWJlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbYCWJeR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 05:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYCWJeF
+	id S1760583AbYCWJlg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 05:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbYCWJlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 05:34:05 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4117 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755703AbYCWJeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 05:34:04 -0400
-Date: Sun, 23 Mar 2008 10:33:46 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: David Newall <davidn@davidnewall.com>, david@lang.hm,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Ramback: faster than a speeding bullet
-Message-ID: <20080323093346.GA4580@ucw.cz>
-References: <200803092346.17556.phillips@phunq.net> <200803162252.58274.phillips@phunq.net> <47DE1A4C.9080109@davidnewall.com> <200803170125.28827.phillips@phunq.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803170125.28827.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+	Sun, 23 Mar 2008 05:41:24 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:21521 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbYCWJlX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 05:41:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=WXxc/lnU9T8rwTJ2oO4/1TkWv8mWmRHrsoUxqK8cbfzVHuy8N+FpmPz92/33Z+7W7rzQrJd4AALdAokb6GSOeLtm3DDWUxgx5jBPSFQeKx0ceUaO9sZT+ULihvAx80m8pj2PuzYULXGxmDxXEh4A/MB3TC3ak29Cric3mvWfgto=
+From: "Roy Lee" <roylee17@gmail.com>
+To: <Valdis.Kletnieks@vt.edu>
+Cc: <linux-kernel@vger.kernel.org>
+References: <000101c889f3$ef5989e0$ce0c9da0$@com> <25483.1206248760@turing-police.cc.vt.edu>
+In-Reply-To: <25483.1206248760@turing-police.cc.vt.edu>
+Subject: RE: [PATCH] give elf_check_arch() a chance for checking endian mismatch
+Date: Sun, 23 Mar 2008 17:41:11 +0800
+Message-ID: <001701c88cca$0b7c3130$22749390$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AciMo5bx8Y+9twxmSNG0ai9fAcxfzQAH2e3w
+Content-Language: zh-tw
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-03-17 00:25:27, Daniel Phillips wrote:
-> On Monday 17 March 2008 00:14, David Newall wrote:
-> > >> if you are depending on replication over the network you have just limited 
-> > >> your throughput to your network speed and latency.
-> > >
-> > > Replication does not work that way.  On each replication cycle, the
-> > > differences between the most recent two volume snapshots go over the
-> > > network. [...]
-> > > Mirroring on the other hand, makes a realtime copy of a volume, that is
-> > > never out of date.
-> > 
-> > I think you've just tried to obfuscate the truth.  As you have
-> > described, replication does not provide full protection against data
-> > loss; it loses all changes since last cycle.  Recall that it was you who
-> > introduced the word "replication", in the context of guaranteeing no
-> > loss of data.
+
+> -----Original Message-----
+> From: Valdis.Kletnieks@vt.edu [mailto:Valdis.Kletnieks@vt.edu]
+> Sent: Sunday, March 23, 2008 1:06 PM
+> To: Roy Lee
+> Cc: linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] give elf_check_arch() a chance for checking endian
+> mismatch
 > 
-> You are twisting words.  I may have said that replication provides a
-> point-in-time copy of a volume, which is exactly what it does, no more,
-> no less.
+> On Thu, 20 Mar 2008 03:03:30 +0800, Roy Lee said:
 > 
-> > You still haven't investigated the benefit of your idea over a whopping
-> > great buffer cache.  What's the point in all of this if it turns out, as
-> > Alan hinted should be the case, that a big buffer cache gives much the
-> > same performance?  You appear to have gone to a great deal of effort
-> > without having performed quite simple yet obvious experiments.
+> (Sorry for late reply, catching up finally)
 > 
-> A big buffer cache does not provide a guarantee that the dirty cache
-> data saved to disk when line power is lost.  If you would like to
+> > I'd like to warn for endianess mismatch, or unsupported feature(
+> > hardware float point support) when loading an ELF file.
+> 
+> > -       if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type !=
+> ET_DYN)
+> > -               goto out;
+> >         if (!elf_check_arch(&loc->elf_ex))
+> >                 goto out;
+> > +       if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type !=
+> ET_DYN)
+> > +               goto out;
+> 
+> It would seem to me that if it isn't an ET_EXEC or ET_DYN, the question of
+> whether it passes elf_check_arch() would be rather moot?  In any case, you
+> don't get to actually *warn* for it, because you end up with a 'goto out'
+> in either case, and elf_check_arch is a pretty small macro on most archs.
+> 
 
-on_battery_power:
+Endianness mismatch is not uncommon for bi-endian processors if their user
+didn't 
+carefully choose their tool-chain or missing flags during compilation.
+It makes sense to add some logics for checking and issuing warning when this
+happens.
 
-sync
-mount / -oremount sync
+Without changing the order of elf_check_arch(), even if the loaded file is
+an 
+ET_EXEC or ET_DYN, wrong endianness result in misinterpretation of
+'elf_ex.e_type', and
+end up skipping elf_check_arch() in which we implement endianness checking
+as well as 
+other ABI checking logics.
 
-...will of course work okay on any reasonable system. Not on yours,
-because you have to do
+Changing the order of elf_check_arch() should not break current logics on
+most archs.
+If the loaded file isn't an ET_EXEC, ET_DYN or even not an ELF at all,
+it has great chance to return false in the elf_check_arch() since the loaded
 
-echo i_really_mean_sync_when_i_say_sync > /hidden/file/somewhere
-sync
+file will not satisfy their checking logic. Even if that's not the case, the
+postponed
+checking of ET_EXEC and ET_DYN will still redirect the flow to 'goto out'.
 
-(...which also shows that you are cheating).
+> Also, if you change the order there, do you want to also change the order
+> in load_elf_interp(), where the equivalent test is done?
+> 
 
-Now, will you either do your homework and show that page cache is
-somehow unsuitable for your job, or just stop wasting the bandwidth
-with useless rants?
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes, I forgot to add them :)
+
