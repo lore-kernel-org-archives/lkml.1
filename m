@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbYCWNut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbYCWOus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762023AbYCWNut (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 09:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758840AbYCWNum
+	id S1760117AbYCWOus (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 10:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbYCWOuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 09:50:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43701 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758351AbYCWNum (ORCPT
+	Sun, 23 Mar 2008 10:50:39 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:46473 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbYCWOui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 09:50:42 -0400
-Date: Sun, 23 Mar 2008 10:50:17 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Bongani Hlope <bonganilinux@mweb.co.za>
-Cc: Robert Fitzsimons <robfitz@273k.net>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bttv: Add a radio compat_ioctl file operation.
-Message-ID: <20080323105017.38d2107b@gaivota>
-In-Reply-To: <200803231525.22278.bonganilinux@mweb.co.za>
-References: <200802171036.19619.bonganilinux@mweb.co.za>
-	<200803222017.40862.bonganilinux@mweb.co.za>
-	<Pine.LNX.4.64.0803222027350.6294@bombadil.infradead.org>
-	<200803231525.22278.bonganilinux@mweb.co.za>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 23 Mar 2008 10:50:38 -0400
+Date: Sun, 23 Mar 2008 20:20:29 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: linux-rt-users <linux-rt-users@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RT] [PATCH 0/3] Few cleanups and RT updates to sched_debug
+Message-ID: <20080323145029.GB15554@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+Mail-Followup-To: Ankita Garg <ankita@in.ibm.com>,
+	linux-rt-users <linux-rt-users@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Gregory Haskins <ghaskins@novell.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Mar 2008 15:25:22 +0200
-Bongani Hlope <bonganilinux@mweb.co.za> wrote:
+Hi,
 
-> 
-> rpm -qa | grep radio
-> radio-3.95-7mdv2008.0
+The following 3 patches,
 
-Hmm... exactly the same version I have here.
+o Modify the names of several fields in the rt_rq, to be consistent
+with the general naming convention. For eg, s/rt_nr_running/nr_running
+in the rt_rq, 'rt' being implied by being associated with the rt_rq.
 
-> 00:00.0 Host bridge: VIA Technologies, Inc. VT8385 [K8T800 AGP] Host Bridge  (rev 01)
-> 00:01.0 PCI bridge: VIA Technologies, Inc. VT8237 PCI bridge [K8T800/K8T890 South]
-> 00:11.0 ISA bridge: VIA Technologies, Inc. VT8237 ISA bridge [KT600/K8T800/K8T890 South]
+o Initialize rt.nr_running and rt.nr_uninterruptible fields explicitly.
 
-It used to have some issues with VIA and PCI, if you're using overlay mode
-(this is the default, for xawtv).
+o Update sched_debug to print values of the recently added fields to
+rt_rq.
 
-This is due to some issues on buggy VIA bridges, when handling PCI2PCI data
-transfers, used in overlay mode. If a PCI2PCI conflicts with a PCI2MEM transfer
-(or a MEM2PCI), you may suffer data loss.
+Some of these changes are not rt specific. But there are bits which are
+missing from sched-devel latest, like rt_nr_uniterruptible, which is
+added by preempt-realtime-sched.patch. I am not sure how to write
+patches in this scenario. Pl do let me know if I need to generate patch
+against the git tree instead, wherever possible.
 
-Are you trying to use radio just after a clean reboot, or are you experiencing
-those troubles after running a video application that might be using overlay
-mode?
-
-Could you please send me your .config? I'll try to run the same config as you,
-with the latest -rc.
-
-Cheers,
-Mauro
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
