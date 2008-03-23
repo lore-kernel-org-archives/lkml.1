@@ -1,63 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbYCWKbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbYCWKdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760843AbYCWKbT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 06:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbYCWKbA
+	id S1760614AbYCWKdX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 06:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbYCWKdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 06:31:00 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:42046
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755130AbYCWKbA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 06:31:00 -0400
-Message-ID: <47E63161.90002@qumranet.com>
-Date: Sun, 23 Mar 2008 12:30:57 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 23 Mar 2008 06:33:16 -0400
+Received: from dom495.ru ([77.246.144.129]:49305 "EHLO vp01.e-planet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756696AbYCWKdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 06:33:16 -0400
+Date: Sun, 23 Mar 2008 13:33:02 +0300
+From: "CODER-ENTERPRISE.RU" <support@coder-enterprise.ru>
+X-Mailer: The Bat! (v3.85.03) Professional
+Reply-To: "CODER-ENTERPRISE.RU" <support@coder-enterprise.ru>
+Organization: =?windows-1251?B?zs7OICLK7uTl8C3d7fLl8O/w4OnnIg==?=
+X-Priority: 3 (Normal)
+Message-ID: <197176551.20080323133302@coder-enterprise.ru>
+To: linux-kernel@vger.kernel.org
+Subject: Strange error when mounting
 MIME-Version: 1.0
-To: Ioan Ionita <opslynx@gmail.com>
-CC: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc5-git5 KVM memory not freed
-References: <df47b87a0803200941q7cbee10ev5a57f7cb25406896@mail.gmail.com>
-In-Reply-To: <df47b87a0803200941q7cbee10ev5a57f7cb25406896@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ioan Ionita wrote:
-> Hi,
->
-> I'm using KVM and the qemu kvm modified to run a windows guest. I'm
-> allocating 900 MB to the guest. Seems that when I terminate a qemu
-> process, the memory that was allocated to qemu is not freed:
->
->
-> Mem:       2058140    1739156     318984          0     226944     425140
-> -/+ buffers/cache:    1087072     971068
-> Swap:            0          0          0
->
-> So I'm using 1GB of ram even though I've terminated qemu. If I attempt
-> to start qemu again, the machine locks up. No message in the logs.
->
-> Command to start qemu:
-> /usr/local/kvm/bin/qemu-system-x86_64 b.data -no-acpi -m 900 -net nic
-> -net user -hdb temp.raw -usbdevice tablet
->
-> uname -a
-> Linux ops-desktop 2.6.25-rc5-git5 #1 SMP PREEMPT Sat Mar 15 14:47:25
-> EET 2008 x86_64 GNU/Linux
->
->
-> Not sure whether this is a problem on the kernel side.  I don't
-> pretend to understand linux memory management. But it wasn't occurring
-> with older kernels. I'll attempt to bisect.
->   
-
-I reproduced this and am investigating.
-
-
--- 
-error compiling committee.c: too many arguments to function
+Strange error when mounting /cdrom device twice. First one -
+everything is ok, and the second one - the system fails to kernel
+panik! My kernel is 2.6.18.2
 
