@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933116AbYCWIxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbYCWIxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933116AbYCWIxx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760154AbYCWILo
+	id S933044AbYCWIxa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbYCWILn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:11:44 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2341 "EHLO
+	Sun, 23 Mar 2008 04:11:43 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2340 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760112AbYCWILg (ORCPT
+	with ESMTP id S1760109AbYCWILg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 23 Mar 2008 04:11:36 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 125/148] include/asm-x86/tce.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:03:40 -0700
-Message-Id: <1206259443-13210-126-git-send-email-joe@perches.com>
+Subject: [PATCH 032/148] include/asm-x86/efi.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:02:07 -0700
+Message-Id: <1206259443-13210-33-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,22 +26,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/tce.h |    2 +-
+ include/asm-x86/efi.h |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/asm-x86/tce.h b/include/asm-x86/tce.h
-index cd955d3..b1a4ea0 100644
---- a/include/asm-x86/tce.h
-+++ b/include/asm-x86/tce.h
-@@ -39,7 +39,7 @@ struct iommu_table;
- #define TCE_RPN_MASK     0x0000fffffffff000ULL
+diff --git a/include/asm-x86/efi.h b/include/asm-x86/efi.h
+index ea9734b..d53004b 100644
+--- a/include/asm-x86/efi.h
++++ b/include/asm-x86/efi.h
+@@ -20,7 +20,7 @@ extern unsigned long asmlinkage efi_call_phys(void *, ...);
+  */
  
- extern void tce_build(struct iommu_table *tbl, unsigned long index,
--        unsigned int npages, unsigned long uaddr, int direction);
-+		      unsigned int npages, unsigned long uaddr, int direction);
- extern void tce_free(struct iommu_table *tbl, long index, unsigned int npages);
- extern void * __init alloc_tce_table(void);
- extern void __init free_tce_table(void *tbl);
+ #define efi_call_virt(f, args...) \
+-     ((efi_##f##_t __attribute__((regparm(0)))*)efi.systab->runtime->f)(args)
++	((efi_##f##_t __attribute__((regparm(0)))*)efi.systab->runtime->f)(args)
+ 
+ #define efi_call_virt0(f)		efi_call_virt(f)
+ #define efi_call_virt1(f, a1)		efi_call_virt(f, a1)
 -- 
 1.5.4.rc2
 
