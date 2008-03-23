@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759103AbYCWXcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbYCWXdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759103AbYCWXcB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 19:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbYCWXbw
+	id S1759687AbYCWXdm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 19:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbYCWXde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 19:31:52 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:44361 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756115AbYCWXbv (ORCPT
+	Sun, 23 Mar 2008 19:33:34 -0400
+Received: from mail.tmr.com ([64.65.253.246]:47444 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756673AbYCWXde convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 19:31:51 -0400
-Message-ID: <47E6E85E.9030008@frugalware.org>
-Date: Mon, 24 Mar 2008 00:31:42 +0100
-From: Gabriel C <crazy@frugalware.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 23 Mar 2008 19:33:34 -0400
+Message-ID: <47E6E8B4.5000602@tmr.com>
+Date: Sun, 23 Mar 2008 19:33:08 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-References: <200803170018.52663.rjw@sisk.pl> <47DEB65A.9080907@googlemail.com> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org> <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org> <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org> <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de> <47E58B06.8020905@frugalware.org> <47E63851.7000702@frugalware.org>
-In-Reply-To: <47E63851.7000702@frugalware.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+CC: axboe@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH][RESEND][v3] Modify loop device to be able to manage 
+  partitions of the disk image
+References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>	 <47E17673.4040302@tmr.com> <1205958752.4758.13.camel@frecb07144>
+In-Reply-To: <1205958752.4758.13.camel@frecb07144>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C wrote:
-> Gabriel C wrote:
->> Thomas Gleixner wrote:
->>> On Sat, 22 Mar 2008, Thomas Gleixner wrote:
->>>> On Sat, 22 Mar 2008, Gabriel C wrote:
->>>>> With this one TSC is fine but now I get a warning on boot :
->>>> Good. It confirms my assumptions about the root cause.
->>>>
->>>>> [    0.041037] ------------[ cut here ]------------
->>>>> [    0.041052] WARNING: at arch/x86/kernel/smp_32.c:562 native_smp_call_function_mask+0x23/0x11e()
->>>> Grr. I'll work out a solution for that one.
->>> Gabriel,
+Laurent Vivier wrote:
+> Le mercredi 19 mars 2008 à 16:24 -0400, Bill Davidsen a écrit :
+>> Laurent Vivier wrote:
+>>> v3 is an updated version of v2, replacing a "%d" by a "%lu".
 >>>
->>> I'm happy to rack your nerves some more.
->> No worries :) 
->>
->>> After discussing the issue with Peter and Ingo the following solution
->>> seems to be the one which is the least intrusive. 
+>>> This patch allows to use loop device with partitionned disk image.
 >>>
->>> Can you please give it a test ride ?
->> Done , git head + Andi's patch + this version of your patch does work here.
->>
->> Also time-warp-test is just fine and everything else seems to work.
+>> How does this compare in overhead to using nbd?
 > 
-> Also I've tested with my other motherboard and is fine too :)
+> What do you mean ?
 > 
-> Feel free to add my Tested-by when you push this patch.
+> NBD doesn't manage partitions... but I also have a patch to do that.
+> NBD implies an NBD server and an NBD client in userspace, so loop is
+> better when disk image is in a raw format.
+> 
+Actually the usual partitioning tools will create partitions on nbd 
+volumes, but without inodes they are not useful. I thought we used to 
+have that working, to work on virtual machine "disk" files which were 
+partitioned, but that was several years ago and I could be 
+misremembering. I did use fdisk on an nbd device before I asked about 
+overhead, but I didn't try to use the partitions.
 
-Heh :/
+In any case, if you have code to make nbd partitions work in a currently 
+useful way, that might be useful for keeping disk images handy for 
+mount. The kvm copy on write might let the fresh install image be shared 
+and VMs customize as needed.
 
-...
-
-[ 5902.632878] Clocksource tsc unstable (delta = 4686687272 ns)
-[ 5920.650516] Time: acpi_pm clocksource has been installed.
-
-...
-
-Seems like something still triggers that :/ 
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
