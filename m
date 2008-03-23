@@ -1,97 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYCWPzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYCWQA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbYCWPzE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 11:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYCWPyx
+	id S1756839AbYCWQA2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 12:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbYCWQAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 11:54:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35620 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbYCWPyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 11:54:52 -0400
-Subject: Re: 2.6.25-rc: complete lockup on boot/start of X (bisected)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080323154416.GA6817@joi>
-References: <20080302185935.GA6100@joi> <1204485071.6240.56.camel@lappy>
-	 <20080302194748.GA6005@joi> <1204487917.6240.64.camel@lappy>
-	 <20080323154416.GA6817@joi>
+	Sun, 23 Mar 2008 12:00:12 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:36812 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752560AbYCWQAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 12:00:10 -0400
+Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       ?ric Piel <Eric.Piel@tremplin-utc.net>, Tilman Schmidt <tilman@imap.cc>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Arjan van de Ven <arjanv@redhat.com>,
+       Eric Biederman <ebiederm@xmission.com>
+In-Reply-To: <20080321131737.GC5331@ucw.cz>
+References: <1205517802.12763.18.camel@nimitz.home.sr71.net>
+	 <1205525184.12763.32.camel@nimitz.home.sr71.net>
+	 <47DAE55C.3080506@tremplin-utc.net>
+	 <1205530551.8167.20.camel@nimitz.home.sr71.net>
+	 <47DB013D.3060102@tremplin-utc.net>
+	 <1205537395.8167.31.camel@nimitz.home.sr71.net> <47DBC578.7050101@imap.cc>
+	 <alpine.LFD.1.00.0803151212180.3020@woody.linux-foundation.org>
+	 <47DC26BC.7060502@tremplin-utc.net>
+	 <alpine.LFD.1.00.0803151315250.3020@woody.linux-foundation.org>
+	 <20080321131737.GC5331@ucw.cz>
 Content-Type: text/plain
-Date: Sun, 23 Mar 2008 16:54:29 +0100
-Message-Id: <1206287670.6437.113.camel@lappy>
+Date: Sun, 23 Mar 2008 09:00:04 -0700
+Message-Id: <1206288004.30471.45.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-03-23 at 16:44 +0100, Marcin Slusarz wrote:
-> On Sun, Mar 02, 2008 at 08:58:37PM +0100, Peter Zijlstra wrote:
+On Fri, 2008-03-21 at 14:17 +0100, Pavel Machek wrote:
+> > So what's the reason for pushing for this insanely-early workaround in the 
+> > first place, instead of letting user-space do something like
 > > 
-> > On Sun, 2008-03-02 at 20:47 +0100, Marcin Slusarz wrote:
-> > > On Sun, Mar 02, 2008 at 08:11:11PM +0100, Peter Zijlstra wrote:
-> > > > 
-> > > > On Sun, 2008-03-02 at 20:00 +0100, Marcin Slusarz wrote:
-> > > > > Hi
-> > > > > Since early 2.6.25 days I'm having strange lockup on boot. As it happens
-> > > > > rarely (in ~10% of boots), I couldn't bisect it. No kernel panic, SysRq
-> > > > > didn't work, so I couldn't provide any useful informations to LK community.
-> > > > > I hoped someone else would fix it... :)
-> > > > > 
-> > > > > It's rc3 so I decided to narrow it down myself. I enabled netconsole 
-> > > > > to see whether some other informations are printed before lockup.
-> > > > > It didn't help, but I noticed that lockup happens much more frequenly! (~50%)
-> > > > > So I bisected it down to:
-> > > > > 
-> > > > > 8f4d37ec073c17e2d4aa8851df5837d798606d6f is first bad commit
-> > > > > commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
-> > > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > > Date:   Fri Jan 25 21:08:29 2008 +0100
-> > > > > 
-> > > > >     sched: high-res preemption tick
-> > > > > 
-> > > > >     Use HR-timers (when available) to deliver an accurate preemption tick.
-> > > > > 
-> > > > >     The regular scheduler tick that runs at 1/HZ can be too coarse when nice
-> > > > >     level are used. The fairness system will still keep the cpu utilisation 'fair'
-> > > > >     by then delaying the task that got an excessive amount of CPU time but try to
-> > > > >     minimize this by delivering preemption points spot-on.
-> > > > > 
-> > > > >     The average frequency of this extra interrupt is sched_latency / nr_latency.
-> > > > >     Which need not be higher than 1/HZ, its just that the distribution within the
-> > > > >     sched_latency period is important.
-> > > > > 
-> > > > >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > > > 
-> > > > > :040000 040000 ab225228500f7a19d5ad20ca12ca3fc8ff5f5ad1 f1742e1d225a72aecea9d6961ed989b5943d31d8 M      arch
-> > > > > :040000 040000 25d85e4ef7a71b0cc76801a2526ebeb4dce180fe ae61510186b4fad708ef0211ac169decba16d4e5 M      include
-> > > > > :040000 040000 9247cec7dd506c648ac027c17e5a07145aa41b26 950832cc1dc4d30923f593ecec883a06b45d62e9 M      kernel
-> > > > > 
-> > > > > I can't revert it on top of rc3 because of conflicts.
-> > > > 
-> > > > This should do, I guess. Weird though, I haven't had trouble with this
-> > > > patch in a long long while. Nor I suppose has Ingo's QA setup.
-> > > Ok. It did the trick. But it's temporary fix, right?
+> >       cat my-dsdt-image > /proc/sys/acpi/DSDT
 > > 
-> > Yeah, for a proper fix I'd need to understand what goes wrong.. and that
-> > requires I get more information. Hopefully I can reproduce your issue.
-> > 
-> > > > Will try if I can reproduce using your .config.
-> > > I think this lockup might depend on use of dhcp and/or parallel
-> > > starting of services...
-> > 
-> > It _should_ not.. :-) I can try dhcp quite easily, if nothing comes up I
-> > can try installing gentoo on a test box, stage3 installs are easy
-> > enough.
+> > or whatever at runtime?
 > 
-> I'm still having this lockup on 2.6.25-rc6 (028011e1391eab27e7bc113c2ac08d4f55584a75).
-> What informations do you need?
+> You have interpretted code runing (AML), and you want to replace it
+> with different code?
+> 
+> Akin to changing from one kernel to different during runtime?
 
-Does the NMI watchdog (append nmi_watchdog=2) report anything?
+Heh.  That gave me an idea.
 
-I've never been able to reproduce myself :-/
+Can we use kexec for this?  Let's say you get as far in boot as the
+initrd and realize that you're running on one of these screwed up
+systems.  Can you stick the new DSDT somewhere known (and safe) in
+memory, and kexec yourself back to the beginning of the kernel boot?
+
+When you boot up the second time, you have the new, shiny DSDT there
+which is, of course, used instead of the bogus BIOS one.
+
+It costs you some bootup time, but we're talking about working around
+really busted hardware here.  
+
+-- Dave
 
