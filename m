@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764511AbYCWIf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbYCWIfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764511AbYCWIf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbYCWIKL
+	id S1764616AbYCWIfz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759122AbYCWIKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:10:11 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2294 "EHLO
+	Sun, 23 Mar 2008 04:10:14 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2297 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759660AbYCWIKD (ORCPT
+	with ESMTP id S1759727AbYCWIKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:10:03 -0400
+	Sun, 23 Mar 2008 04:10:08 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 003/148] include/asm-x86/a.out-core.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:01:38 -0700
-Message-Id: <1206259443-13210-4-git-send-email-joe@perches.com>
+Subject: [PATCH 122/148] include/asm-x86/swiotlb.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:03:37 -0700
+Message-Id: <1206259443-13210-123-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,53 +26,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/a.out-core.h |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ include/asm-x86/swiotlb.h |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/include/asm-x86/a.out-core.h b/include/asm-x86/a.out-core.h
-index d2b6e11..714207a 100644
---- a/include/asm-x86/a.out-core.h
-+++ b/include/asm-x86/a.out-core.h
-@@ -29,8 +29,9 @@ static inline void aout_dump_thread(struct pt_regs *regs, struct user *dump)
- 	dump->magic = CMAGIC;
- 	dump->start_code = 0;
- 	dump->start_stack = regs->sp & ~(PAGE_SIZE - 1);
--	dump->u_tsize = ((unsigned long) current->mm->end_code) >> PAGE_SHIFT;
--	dump->u_dsize = ((unsigned long) (current->mm->brk + (PAGE_SIZE-1))) >> PAGE_SHIFT;
-+	dump->u_tsize = ((unsigned long)current->mm->end_code) >> PAGE_SHIFT;
-+	dump->u_dsize = ((unsigned long)(current->mm->brk + (PAGE_SIZE - 1)))
-+			>> PAGE_SHIFT;
- 	dump->u_dsize -= dump->u_tsize;
- 	dump->u_ssize = 0;
- 	dump->u_debugreg[0] = current->thread.debugreg0;
-@@ -43,7 +44,8 @@ static inline void aout_dump_thread(struct pt_regs *regs, struct user *dump)
- 	dump->u_debugreg[7] = current->thread.debugreg7;
+diff --git a/include/asm-x86/swiotlb.h b/include/asm-x86/swiotlb.h
+index f9c5895..f5d9e74 100644
+--- a/include/asm-x86/swiotlb.h
++++ b/include/asm-x86/swiotlb.h
+@@ -8,15 +8,15 @@
+ extern dma_addr_t swiotlb_map_single(struct device *hwdev, void *ptr,
+ 				     size_t size, int dir);
+ extern void *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+-                       dma_addr_t *dma_handle, gfp_t flags);
++				    dma_addr_t *dma_handle, gfp_t flags);
+ extern void swiotlb_unmap_single(struct device *hwdev, dma_addr_t dev_addr,
+-				  size_t size, int dir);
++				 size_t size, int dir);
+ extern void swiotlb_sync_single_for_cpu(struct device *hwdev,
+-					 dma_addr_t dev_addr,
+-					 size_t size, int dir);
++					dma_addr_t dev_addr,
++					size_t size, int dir);
+ extern void swiotlb_sync_single_for_device(struct device *hwdev,
+-					    dma_addr_t dev_addr,
+-					    size_t size, int dir);
++					   dma_addr_t dev_addr,
++					   size_t size, int dir);
+ extern void swiotlb_sync_single_range_for_cpu(struct device *hwdev,
+ 					      dma_addr_t dev_addr,
+ 					      unsigned long offset,
+@@ -26,18 +26,18 @@ extern void swiotlb_sync_single_range_for_device(struct device *hwdev,
+ 						 unsigned long offset,
+ 						 size_t size, int dir);
+ extern void swiotlb_sync_sg_for_cpu(struct device *hwdev,
+-				     struct scatterlist *sg, int nelems,
+-				     int dir);
++				    struct scatterlist *sg, int nelems,
++				    int dir);
+ extern void swiotlb_sync_sg_for_device(struct device *hwdev,
+-					struct scatterlist *sg, int nelems,
+-					int dir);
++				       struct scatterlist *sg, int nelems,
++				       int dir);
+ extern int swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg,
+-		      int nents, int direction);
++			  int nents, int direction);
+ extern void swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sg,
+-			 int nents, int direction);
++			     int nents, int direction);
+ extern int swiotlb_dma_mapping_error(dma_addr_t dma_addr);
+-extern void swiotlb_free_coherent (struct device *hwdev, size_t size,
+-				   void *vaddr, dma_addr_t dma_handle);
++extern void swiotlb_free_coherent(struct device *hwdev, size_t size,
++				  void *vaddr, dma_addr_t dma_handle);
+ extern int swiotlb_dma_supported(struct device *hwdev, u64 mask);
+ extern void swiotlb_init(void);
  
- 	if (dump->start_stack < TASK_SIZE)
--		dump->u_ssize = ((unsigned long) (TASK_SIZE - dump->start_stack)) >> PAGE_SHIFT;
-+		dump->u_ssize = ((unsigned long)(TASK_SIZE - dump->start_stack))
-+				>> PAGE_SHIFT;
- 
- 	dump->regs.bx = regs->bx;
- 	dump->regs.cx = regs->cx;
-@@ -55,7 +57,7 @@ static inline void aout_dump_thread(struct pt_regs *regs, struct user *dump)
- 	dump->regs.ds = (u16)regs->ds;
- 	dump->regs.es = (u16)regs->es;
- 	dump->regs.fs = (u16)regs->fs;
--	savesegment(gs,gs);
-+	savesegment(gs, gs);
- 	dump->regs.orig_ax = regs->orig_ax;
- 	dump->regs.ip = regs->ip;
- 	dump->regs.cs = (u16)regs->cs;
-@@ -63,7 +65,7 @@ static inline void aout_dump_thread(struct pt_regs *regs, struct user *dump)
- 	dump->regs.sp = regs->sp;
- 	dump->regs.ss = (u16)regs->ss;
- 
--	dump->u_fpvalid = dump_fpu (regs, &dump->i387);
-+	dump->u_fpvalid = dump_fpu(regs, &dump->i387);
- }
- 
- #endif /* CONFIG_X86_32 */
 -- 
 1.5.4.rc2
 
