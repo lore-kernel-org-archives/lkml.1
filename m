@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbYCWIfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764668AbYCWIg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764616AbYCWIfz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 04:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759122AbYCWIKO
+	id S1764668AbYCWIg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 04:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759749AbYCWIKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 04:10:14 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2297 "EHLO
+	Sun, 23 Mar 2008 04:10:16 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2298 "EHLO
 	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759727AbYCWIKI (ORCPT
+	with ESMTP id S1759735AbYCWIKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 04:10:08 -0400
+	Sun, 23 Mar 2008 04:10:12 -0400
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 122/148] include/asm-x86/swiotlb.h: checkpatch cleanups - formatting only
-Date: Sun, 23 Mar 2008 01:03:37 -0700
-Message-Id: <1206259443-13210-123-git-send-email-joe@perches.com>
+Subject: [PATCH 119/148] include/asm-x86/string_64.h: checkpatch cleanups - formatting only
+Date: Sun, 23 Mar 2008 01:03:34 -0700
+Message-Id: <1206259443-13210-120-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.4.rc2
 In-Reply-To: <1206259443-13210-1-git-send-email-joe@perches.com>
 References: <1206259443-13210-1-git-send-email-joe@perches.com>
@@ -26,61 +26,101 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-x86/swiotlb.h |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+ include/asm-x86/string_64.h |   66 +++++++++++++++++++++---------------------
+ 1 files changed, 33 insertions(+), 33 deletions(-)
 
-diff --git a/include/asm-x86/swiotlb.h b/include/asm-x86/swiotlb.h
-index f9c5895..f5d9e74 100644
---- a/include/asm-x86/swiotlb.h
-+++ b/include/asm-x86/swiotlb.h
-@@ -8,15 +8,15 @@
- extern dma_addr_t swiotlb_map_single(struct device *hwdev, void *ptr,
- 				     size_t size, int dir);
- extern void *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
--                       dma_addr_t *dma_handle, gfp_t flags);
-+				    dma_addr_t *dma_handle, gfp_t flags);
- extern void swiotlb_unmap_single(struct device *hwdev, dma_addr_t dev_addr,
--				  size_t size, int dir);
-+				 size_t size, int dir);
- extern void swiotlb_sync_single_for_cpu(struct device *hwdev,
--					 dma_addr_t dev_addr,
--					 size_t size, int dir);
-+					dma_addr_t dev_addr,
-+					size_t size, int dir);
- extern void swiotlb_sync_single_for_device(struct device *hwdev,
--					    dma_addr_t dev_addr,
--					    size_t size, int dir);
-+					   dma_addr_t dev_addr,
-+					   size_t size, int dir);
- extern void swiotlb_sync_single_range_for_cpu(struct device *hwdev,
- 					      dma_addr_t dev_addr,
- 					      unsigned long offset,
-@@ -26,18 +26,18 @@ extern void swiotlb_sync_single_range_for_device(struct device *hwdev,
- 						 unsigned long offset,
- 						 size_t size, int dir);
- extern void swiotlb_sync_sg_for_cpu(struct device *hwdev,
--				     struct scatterlist *sg, int nelems,
--				     int dir);
-+				    struct scatterlist *sg, int nelems,
-+				    int dir);
- extern void swiotlb_sync_sg_for_device(struct device *hwdev,
--					struct scatterlist *sg, int nelems,
--					int dir);
-+				       struct scatterlist *sg, int nelems,
-+				       int dir);
- extern int swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg,
--		      int nents, int direction);
-+			  int nents, int direction);
- extern void swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sg,
--			 int nents, int direction);
-+			     int nents, int direction);
- extern int swiotlb_dma_mapping_error(dma_addr_t dma_addr);
--extern void swiotlb_free_coherent (struct device *hwdev, size_t size,
--				   void *vaddr, dma_addr_t dma_handle);
-+extern void swiotlb_free_coherent(struct device *hwdev, size_t size,
-+				  void *vaddr, dma_addr_t dma_handle);
- extern int swiotlb_dma_supported(struct device *hwdev, u64 mask);
- extern void swiotlb_init(void);
+diff --git a/include/asm-x86/string_64.h b/include/asm-x86/string_64.h
+index e583da7..52b5ab3 100644
+--- a/include/asm-x86/string_64.h
++++ b/include/asm-x86/string_64.h
+@@ -3,26 +3,24 @@
+ 
+ #ifdef __KERNEL__
+ 
+-/* Written 2002 by Andi Kleen */ 
++/* Written 2002 by Andi Kleen */
+ 
+-/* Only used for special circumstances. Stolen from i386/string.h */ 
+-static __always_inline void *
+-__inline_memcpy(void * to, const void * from, size_t n)
++/* Only used for special circumstances. Stolen from i386/string.h */
++static __always_inline void *__inline_memcpy(void *to, const void *from, size_t n)
+ {
+-unsigned long d0, d1, d2;
+-__asm__ __volatile__(
+-	"rep ; movsl\n\t"
+-	"testb $2,%b4\n\t"
+-	"je 1f\n\t"
+-	"movsw\n"
+-	"1:\ttestb $1,%b4\n\t"
+-	"je 2f\n\t"
+-	"movsb\n"
+-	"2:"
+-	: "=&c" (d0), "=&D" (d1), "=&S" (d2)
+-	:"0" (n/4), "q" (n),"1" ((long) to),"2" ((long) from)
+-	: "memory");
+-return (to);
++	unsigned long d0, d1, d2;
++	asm volatile("rep ; movsl\n\t"
++		     "testb $2,%b4\n\t"
++		     "je 1f\n\t"
++		     "movsw\n"
++		     "1:\ttestb $1,%b4\n\t"
++		     "je 2f\n\t"
++		     "movsb\n"
++		     "2:"
++		     : "=&c" (d0), "=&D" (d1), "=&S" (d2)
++		     : "0" (n / 4), "q" (n), "1" ((long)to), "2" ((long)from)
++		     : "memory");
++	return to;
+ }
+ 
+ /* Even with __builtin_ the compiler may decide to use the out of line
+@@ -32,28 +30,30 @@ return (to);
+ #if (__GNUC__ == 4 && __GNUC_MINOR__ >= 3) || __GNUC__ > 4
+ extern void *memcpy(void *to, const void *from, size_t len);
+ #else
+-extern void *__memcpy(void *to, const void *from, size_t len); 
+-#define memcpy(dst,src,len) \
+-	({ size_t __len = (len);				\
+-	   void *__ret;						\
+-	   if (__builtin_constant_p(len) && __len >= 64)	\
+-		 __ret = __memcpy((dst),(src),__len);		\
+-	   else							\
+-		 __ret = __builtin_memcpy((dst),(src),__len);	\
+-	   __ret; }) 
++extern void *__memcpy(void *to, const void *from, size_t len);
++#define memcpy(dst, src, len)					\
++({								\
++	size_t __len = (len);					\
++	void *__ret;						\
++	if (__builtin_constant_p(len) && __len >= 64)		\
++		__ret = __memcpy((dst), (src), __len);		\
++	else							\
++		__ret = __builtin_memcpy((dst), (src), __len);	\
++	__ret;							\
++})
+ #endif
+ 
+ #define __HAVE_ARCH_MEMSET
+ void *memset(void *s, int c, size_t n);
+ 
+ #define __HAVE_ARCH_MEMMOVE
+-void * memmove(void * dest,const void *src,size_t count);
++void *memmove(void *dest, const void *src, size_t count);
+ 
+-int memcmp(const void * cs,const void * ct,size_t count);
+-size_t strlen(const char * s);
+-char *strcpy(char * dest,const char *src);
+-char *strcat(char * dest, const char * src);
+-int strcmp(const char * cs,const char * ct);
++int memcmp(const void *cs, const void *ct, size_t count);
++size_t strlen(const char *s);
++char *strcpy(char *dest, const char *src);
++char *strcat(char *dest, const char *src);
++int strcmp(const char *cs, const char *ct);
+ 
+ #endif /* __KERNEL__ */
  
 -- 
 1.5.4.rc2
