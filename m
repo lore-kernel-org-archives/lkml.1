@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbYCWKKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbYCWKKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbYCWKKT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 06:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbYCWKKF
+	id S1759914AbYCWKKh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 06:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759482AbYCWKKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 06:10:05 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:54661 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755241AbYCWKKD (ORCPT
+	Sun, 23 Mar 2008 06:10:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45927
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759422AbYCWKKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 06:10:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nicRqhFLJ195nyrEr21qjju893lhCgr3wGmc1WJJa5ZP9CN/HVP+fHr9Q/904H6J/iVkLCNu4IRwWiacvzRaTtbubRtNBprzEmPMwgLma8hpJBeG6vy3yveueP/U9Zpam2iGNdHUphaNzpIwLrRorzzQhA3cbMiircT8nvSjxbw=
-Message-ID: <42212ce70803230310l446bff1cs33740a43d81eeb96@mail.gmail.com>
-Date: Sun, 23 Mar 2008 11:10:02 +0100
-From: "Marco Mangiante" <marco.mangiante@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [PROBLEM]: onda h600 express card don't work inside the elan u132 usb adapter
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <Pine.LNX.4.44L0.0803222208050.13906-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 23 Mar 2008 06:10:22 -0400
+Date: Sun, 23 Mar 2008 03:10:36 -0700 (PDT)
+Message-Id: <20080323.031036.09404846.davem@davemloft.net>
+To: khaled.linux@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: spinlock BUG in qdisc_restart
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <89cb5ede0803230023h49563614h57cad4a25d7753a4@mail.gmail.com>
+References: <89cb5ede0803230023h49563614h57cad4a25d7753a4@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080322173147.d94740b7.akpm@linux-foundation.org>
-	 <Pine.LNX.4.44L0.0803222208050.13906-100000@netrider.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Alan,
+From: "Khaled Al-Hamwi" <khaled.linux@gmail.com>
+Date: Sun, 23 Mar 2008 10:23:20 +0300
 
-> > > I want to use it with elan u132, an usb external adapter for
-> > > UMTS-HSDPA express cards. In a document found on the net and written
-> > > by Tony Olech (the author and maintainer of the elan u132 linux driver
-> > > in Elan Digital Systems), I read that the device (u132) must load 2
-> > > modules: the ftdi-u132 when it is plugged in the usb port, and the
-> > > u132-hcd, when it recognize an express card inside it.
->
-> As far as I know, the u132-hcd driver isn't being maintained by anybody
-> except the author Tony Olech -- and maybe not even by him.
+> [<c02845af>] netif_receive_skb+0x1fc/0x23e
+> [<e033b560>] MM_IndicateRxPackets+0x2be/0x379 [bcm5700]
+> [<e0342c26>] LM_ServiceInterrupts+0xac/0xc5 [bcm5700]
+> [<e0337768>] bcm5700_interrupt+0x13c/0x2bd [bcm5700]
 
-thanks for your response. This means that the elan u132 device is no
-more supported because the u132-hcd is not supported? If not, what is
-the substitute for it, if any exists?
+This backtrace is not from a driver that is in the upstream kernel
+sources.
 
--- 
-Regards,
+Please use the supported and upstream "tg3" driver for this hardware.
 
-Marco Mangiante
+Thank you.
