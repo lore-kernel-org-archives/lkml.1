@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYCWEUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYCWEhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbYCWEUg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 00:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYCWEU0
+	id S1756264AbYCWEhY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 00:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbYCWEhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 00:20:26 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:51589 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbYCWEUZ (ORCPT
+	Sun, 23 Mar 2008 00:37:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:21614 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbYCWEhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 00:20:25 -0400
-To: David Miller <davem@davemloft.net>
-Cc: jesper.juhl@gmail.com, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org, jmforbes@linuxtx.org, zwane@arm.linux.org.uk,
-       tytso@mit.edu, rdunlap@xenotime.net, davej@redhat.com,
-       chuckw@quantumlinux.com, reviews@ml.cw.f00f.org, mkrufky@linuxtv.org,
-       cebbert@redhat.com, cavokz@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de
-Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
-X-Message-Flag: Warning: May contain useful information
-References: <20080321.171401.49157146.davem@davemloft.net>
-	<adalk4bv62r.fsf@cisco.com>
-	<20080321.222125.245725675.davem@davemloft.net>
-	<20080322.154627.54355549.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 22 Mar 2008 21:20:22 -0700
-In-Reply-To: <20080322.154627.54355549.davem@davemloft.net> (David Miller's message of "Sat, 22 Mar 2008 15:46:27 -0700 (PDT)")
-Message-ID: <adar6e2t6k9.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Sun, 23 Mar 2008 00:37:10 -0400
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: RFC: /dev/stdin, symlinks & permissions
+Date: Sun, 23 Mar 2008 05:35:39 +0100
+User-Agent: KMail/1.8.2
+Cc: Theodore Tso <tytso@mit.edu>, Michael Tokarev <mjt@tls.msk.ru>,
+       Andreas Schwab <schwab@suse.de>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+References: <47DEFE26.80101@msgid.tls.msk.ru> <20080318125445.GS8368@mit.edu> <20080318143222.GF10722@ZenIV.linux.org.uk>
+In-Reply-To: <20080318143222.GF10722@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Mar 2008 04:20:22.0620 (UTC) FILETIME=[3624E1C0:01C88C9D]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803230535.40020.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Actually Roland, that 1G fix you mention was put in during the
- > 2.6.23 development series.
- > 
- > If you ask git for all the NIU driver changes since 2.6.24
- > you get:
+On Tuesday 18 March 2008 15:32, Al Viro wrote:
+> On Tue, Mar 18, 2008 at 08:54:45AM -0400, Theodore Tso wrote:
+> 
+> > The main issue is that at the moment, when you open /proc/self/fd/X,
+> > what you get is a new struct file, since the inode is opened a second
+> > time.  That is why you have to go through the access control checks a
+> > second time, and why there are issues when you have /dev/stdin
+> > pointing to a tty which was owned by user 1, and then when you su to
+> > user 2, you get a "permission denied" error.
+> > 
+> > On other operating systems, opening /proc/self/fd/X gives you a
+> > duplicate of the file descriptor.  That means that the seek pointer is
+> > also duplicated.  This has been remarked upon before.  Linux 1.2 did
+> > things "right" (as in, the same as Plan 9 and Solaris), but it was
+> > changed in Linux 2.0.  Please see:
+> > 
+> > http://www.ussg.iu.edu/hypermail/linux/kernel/9609.2/0371.html
+> 
+> The real issue is that it was not Plan 9 semantics to start with.
+> 
+> See 9/port/devproc.c and 9/port/devdup.c; the former is procfs and
+> while it does have <pid>/fd, the sucker is not a directory - it's
+> a text file containing (more or less) the pathnames of opened files
+> of that process.  The latter is an entirely different thing - it's
+> a separate filesystem (#d instead of #p, FWIW).  There you have
+> per-descriptor files to open and yes, that'll give you dup().  What
+> you do not have there is per-process part.
 
-Sorry for the noise... I did
+/me puts his admin hat on
 
-    git log cb77df3e..a4425859 drivers/net/niu.c
+This issue (that /proc/self/fd/0,1,2 don't always work)
+is a real problem. I was bitten by it more than once, thrying to do
+something like:
 
-to get all the niu changes between when you bumped the version to 0.6
-and when you bumped it to 0.7.  I didn't think to check which post-0.6
-changes were already in 2.6.24.
+setuidgid http_user httpd --log-to-file /proc/self/fd/2
 
-As long as the version helps you out, I guess it's all good.
+Doesn't work. Which is sort of stupid - I _already_
+have fd 2 open, what's the point in prohibiting me from
+opening it again?
 
- - R.
+(As to why: there are lots of software which insist of logging
+either to syslog or the file, whereas I really prefer to log
+to stdout/stderr.)
+
+> We could implement Plan 9 style dupfs, but to do that without excessive
+> ugliness we'd need to change prototype of ->open() - it must be able to
+> return a reference to struct file different from anything it got from
+> caller; probably the least painful way would be to make it return
+
+I am not an expert, so my question might be stupid, but:
+can open("/proc/PID/fd/N") be special-cased to always succeed
+if PID = current process' PID and fd N is already open?
+--
+vda
