@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbYCWWtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759237AbYCWWvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbYCWWtn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 18:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbYCWWtf
+	id S1759237AbYCWWvL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 18:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbYCWWu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 18:49:35 -0400
-Received: from mail1.ugh.no ([80.239.42.168]:43231 "EHLO mail1.ugh.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755983AbYCWWte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 18:49:34 -0400
-Message-ID: <47E6DE7C.1050903@tomt.net>
-Date: Sun, 23 Mar 2008 23:49:32 +0100
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sun, 23 Mar 2008 18:50:57 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:1779 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756048AbYCWWu4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 18:50:56 -0400
+Date: Sun, 23 Mar 2008 18:50:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Marco Mangiante <marco.mangiante@gmail.com>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>,
+       <akpm@linux-foundation.org>
+Subject: Re: [PROBLEM]: onda h600 express card don't work inside the elan
+ u132 usb adapter
+In-Reply-To: <42212ce70803230310l446bff1cs33740a43d81eeb96@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0803231849550.6631-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       mranostay@embeddedalley.com
-Subject: Re: 2.6.25-git regression with snd-hda-intel on Dell XPS M1330, no
- analog sound
-References: <47E40684.2030608@tomt.net> <s5hwsnuzp1c.wl%tiwai@suse.de>
-In-Reply-To: <s5hwsnuzp1c.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Fri, 21 Mar 2008 20:03:32 +0100,
-> Andre Tomt wrote:
->> [Rafael & Matthew: this is a resend - original was sent to wrong 
->> linux-kernel address. Also updated, so just ignore the earlier emails.]
->>
->> With 2.6.25-git I lost sound on my Dell XPS M1330 laptop. There seems to 
->> be two issues at hand here: 1. Analog output is listed, but emits no 
->> sound (just silence), and 2. Digital out device is missing.
->>
->> Issue #1 is bisected in this thread. #2 is still work in progress, and 
->> will be posted as a separate thread.
+On Sun, 23 Mar 2008, Marco Mangiante wrote:
+
+> Hello Alan,
 > 
-> Please try my ALSA git tree
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
-> One patch (removing master hack from headphone pin) would fix your
-> problem.  At least, I have some reports that the latest ALSA tree
-> works.  If it still doesn't work, give the alsa-info.sh output (the
-> script is found in www.alsa-project.org "Debug" section).
+> > > > I want to use it with elan u132, an usb external adapter for
+> > > > UMTS-HSDPA express cards. In a document found on the net and written
+> > > > by Tony Olech (the author and maintainer of the elan u132 linux driver
+> > > > in Elan Digital Systems), I read that the device (u132) must load 2
+> > > > modules: the ftdi-u132 when it is plugged in the usb port, and the
+> > > > u132-hcd, when it recognize an express card inside it.
+> >
+> > As far as I know, the u132-hcd driver isn't being maintained by anybody
+> > except the author Tony Olech -- and maybe not even by him.
+> 
+> thanks for your response. This means that the elan u132 device is no
+> more supported because the u132-hcd is not supported? If not, what is
+> the substitute for it, if any exists?
 
-Yep. Analog out is working with sound-2.6.git. Thanks. What is the 
-commit id of the removing master hack commit?
+I have no idea, sorry.  Maybe someone at Elan Digital Systems can help 
+you.
 
-> If the issue #2 is about HDMI, I'm afraid it won't work until Nvidia
-> video driver supports the HDMI audio output.
+Alan Stern
 
-I must admit I never tested it in Linux, and testing it now using 2.6.24 
-I cannot get it to work either. In the windows drivers the port is 
-simply labeled as a spdif output on the same codec, but I have no idea 
-on how this is put together..
