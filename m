@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbYCWKKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760017AbYCWKLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759914AbYCWKKh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 06:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759482AbYCWKKY
+	id S1760017AbYCWKLl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 06:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYCWKLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 06:10:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45927
+	Sun, 23 Mar 2008 06:11:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45930
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759422AbYCWKKW (ORCPT
+	by vger.kernel.org with ESMTP id S1755676AbYCWKL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 06:10:22 -0400
-Date: Sun, 23 Mar 2008 03:10:36 -0700 (PDT)
-Message-Id: <20080323.031036.09404846.davem@davemloft.net>
-To: khaled.linux@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: spinlock BUG in qdisc_restart
+	Sun, 23 Mar 2008 06:11:29 -0400
+Date: Sun, 23 Mar 2008 03:11:39 -0700 (PDT)
+Message-Id: <20080323.031139.17629653.davem@davemloft.net>
+To: denys@visp.net.lb
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: kernel panic, ip_route_input, 2.6.25-rc6-git2
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <89cb5ede0803230023h49563614h57cad4a25d7753a4@mail.gmail.com>
-References: <89cb5ede0803230023h49563614h57cad4a25d7753a4@mail.gmail.com>
+In-Reply-To: <20080323073638.M89709@visp.net.lb>
+References: <20080323073638.M89709@visp.net.lb>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,17 +26,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Khaled Al-Hamwi" <khaled.linux@gmail.com>
-Date: Sun, 23 Mar 2008 10:23:20 +0300
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+Date: Sun, 23 Mar 2008 09:36:38 +0200
 
-> [<c02845af>] netif_receive_skb+0x1fc/0x23e
-> [<e033b560>] MM_IndicateRxPackets+0x2be/0x379 [bcm5700]
-> [<e0342c26>] LM_ServiceInterrupts+0xac/0xc5 [bcm5700]
-> [<e0337768>] bcm5700_interrupt+0x13c/0x2bd [bcm5700]
+> Recently tested, it crashes also -git6 without lockdep compiled. So it seems 
+> actually networking code bug.
 
-This backtrace is not from a driver that is in the upstream kernel
-sources.
+I'm still not so sure.
 
-Please use the supported and upstream "tg3" driver for this hardware.
+The IP is at ip_route_input but the rest of your backtrace
+shows an entirely different code path.
 
-Thank you.
+Nothing in the trace matches up, which severely decreases the
+usability of the debugging information you've provided.
+ 
