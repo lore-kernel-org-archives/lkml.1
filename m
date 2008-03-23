@@ -1,109 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbYCWAiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYCWA4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756330AbYCWAiC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 20:38:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYCWAhz
+	id S1756446AbYCWA4K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 20:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbYCWAz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 20:37:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50124 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753516AbYCWAhy (ORCPT
+	Sat, 22 Mar 2008 20:55:59 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:50566 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752379AbYCWAz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 20:37:54 -0400
-Date: Sat, 22 Mar 2008 17:36:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wakko Warner <wakko@animx.eu.org>
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       stable@kernel.org
-Subject: Re: 2.6.24.3 bug in sysfs with md.
-Message-Id: <20080322173651.61bff26d.akpm@linux-foundation.org>
-In-Reply-To: <20080322222531.GA12182@animx.eu.org>
-References: <20080322222531.GA12182@animx.eu.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Mar 2008 20:55:57 -0400
+Date: Sat, 22 Mar 2008 17:55:53 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] fix rcu_try_flip_waitack_needed() to prevent grace-period stall
+Message-ID: <20080323005553.GA4555@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080321203821.GA16316@linux.vnet.ibm.com> <1206207828.6437.84.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206207828.6437.84.camel@lappy>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Mar 2008 18:25:31 -0400 Wakko Warner <wakko@animx.eu.org> wrote:
-
-> I was poking around with the files laying in /sys/block/md*/md/dev-*/super
-> and found this bug (NOTE: I attempted to read the file 2 times):
+On Sat, Mar 22, 2008 at 06:43:48PM +0100, Peter Zijlstra wrote:
+> On Fri, 2008-03-21 at 13:38 -0700, Paul E. McKenney wrote:
+> > The comment was correct -- need to make the code match the comment.
+> > Without this patch, if a CPU goes dynticks idle (and stays there forever)
+> > in just the right phase of preemptible-RCU grace-period processing,
+> > grace periods stall.  The offending sequence of events (courtesy
+> > of Promela/spin, at least after I got the liveness criterion coded
+> > correctly...) is as follows:
+> > 
+> > o	CPU 0 is in dynticks-idle mode.  Its dynticks_progress_counter
+> > 	is (say) 10.
+> > 
+> > o	CPU 0 takes an interrupt, so rcu_irq_enter() increments CPU 0's
+> > 	dynticks_progress_counter to 11.
+> > 
+> > o	CPU 1 is doing RCU grace-period processing in rcu_try_flip_idle(),
+> > 	sees rcu_pending(), so invokes dyntick_save_progress_counter(),
+> > 	which in turn takes a snapshot of CPU 0's dynticks_progress_counter
+> > 	into CPU 0's rcu_dyntick_snapshot -- now set to 11.  CPU 1 then
+> > 	updates the RCU grace-period state to rcu_try_flip_waitack().
+> > 
+> > o	CPU 0 returns from its interrupt, so rcu_irq_exit() increments
+> > 	CPU 0's dynticks_progress_counter to 12.
+> > 
+> > o	CPU 1 later invokes rcu_try_flip_waitack(), which notices that
+> > 	CPU 0 has not yet responded, and hence in turn invokes
+> > 	rcu_try_flip_waitack_needed().  This function examines the
+> > 	state of CPU 0's dynticks_progress_counter and rcu_dyntick_snapshot
+> > 	variables, which it copies to curr (== 12) and snap (== 11),
+> > 	respectively.
+> > 
+> > 	Because curr!=snap, the first condition fails.
+> > 
+> > 	Because curr-snap is only 1 and snap is odd, the second
+> > 	condition fails.
+> > 
+> > 	rcu_try_flip_waitack_needed() therefore incorrectly concludes
+> > 	that it must wait for CPU 0 to explicitly acknowledge the
+> > 	counter flip.
+> > 
+> > o	CPU 0 remains forever in dynticks-idle mode, never taking
+> > 	any more hardware interrupts or any NMIs, and never running
+> > 	any more tasks.  (Of course, -something- will usually eventually
+> > 	happen, which might be why we haven't seen this one in the
+> > 	wild.  Still should be fixed!)
+> > 
+> > Therefore the grace period never ends.  Fix is to make the code match
+> > the comment, as shown below.  With this fix, the above scenario
+> > would be satisfied with curr being even, and allow the grace period
+> > to proceed.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> [ 5591.212764] ------------[ cut here ]------------
-> [ 5591.212773] kernel BUG at /usr/src/linux/dist/2.6.24.3/fs/sysfs/file.c:126!
+> Paul, should this go upstream ASAP?
 
-hm, I didn't know 2.6.24 was affected.
+Given that any activity (task wakeup, interrupt, NMI) on the offending CPU
+gets things going again, I have a hard time labeling it as super urgent.
+So I could argue for it being added to the last release candidate,
+but not to the final release itself.
 
-Neil, should we backport this?
+Seem reasonable?
 
+							Thanx, Paul
 
-From: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-To: git-commits-head@vger.kernel.org
-Subject: md: remove the 'super' sysfs attribute from devices in an 'md' array
-Date: 	Thu, 20 Mar 2008 02:59:10 GMT
-Sender: git-commits-head-owner@vger.kernel.org
-
-Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0e82989d95cc46cc58622381eafa54f7428ee679
-Commit:     0e82989d95cc46cc58622381eafa54f7428ee679
-Parent:     43d8eac44f28d384d2377dcdd1407f51f79dda55
-Author:     NeilBrown <neilb@suse.de>
-AuthorDate: Wed Mar 19 17:00:44 2008 -0700
-Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-CommitDate: Wed Mar 19 18:53:35 2008 -0700
-
-    md: remove the 'super' sysfs attribute from devices in an 'md' array
-    
-    Exposing the binary blob which is the md 'super-block' via sysfs doesn't
-    really fit with the whole sysfs model, and ever since commit
-    8118a859dc7abd873193986c77a8d9bdb877adc8 ("sysfs: fix off-by-one error
-    in fill_read_buffer()") it doesn't actually work at all (as the size of
-    the blob is often one page).
-    
-    (akpm: as in, fs/sysfs/file.c:fill_read_buffer() goes BUG)
-    
-    So just remove it altogether.  It isn't really useful.
-    
-    Signed-off-by: Neil Brown <neilb@suse.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- drivers/md/md.c |   12 ------------
- 1 files changed, 0 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index ccbbf63..61ccbd2 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -1864,17 +1864,6 @@ static struct rdev_sysfs_entry rdev_state =
- __ATTR(state, S_IRUGO|S_IWUSR, state_show, state_store);
- 
- static ssize_t
--super_show(mdk_rdev_t *rdev, char *page)
--{
--	if (rdev->sb_loaded && rdev->sb_size) {
--		memcpy(page, page_address(rdev->sb_page), rdev->sb_size);
--		return rdev->sb_size;
--	} else
--		return 0;
--}
--static struct rdev_sysfs_entry rdev_super = __ATTR_RO(super);
--
--static ssize_t
- errors_show(mdk_rdev_t *rdev, char *page)
- {
- 	return sprintf(page, "%d\n", atomic_read(&rdev->corrected_errors));
-@@ -2060,7 +2049,6 @@ __ATTR(size, S_IRUGO|S_IWUSR, rdev_size_show, rdev_size_store);
- 
- static struct attribute *rdev_default_attrs[] = {
- 	&rdev_state.attr,
--	&rdev_super.attr,
- 	&rdev_errors.attr,
- 	&rdev_slot.attr,
- 	&rdev_offset.attr,
---
-To unsubscribe from this list: send the line "unsubscribe git-commits-head" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > ---
+> > 
+> >  rcupreempt.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff -urpNa -X dontdiff linux-2.6.25-rc6/kernel/rcupreempt.c linux-2.6.25-rc6-rcunohz-if/kernel/rcupreempt.c
+> > --- linux-2.6.25-rc6/kernel/rcupreempt.c	2008-03-16 17:45:17.000000000 -0700
+> > +++ linux-2.6.25-rc6-rcunohz-if/kernel/rcupreempt.c	2008-03-18 20:27:47.000000000 -0700
+> > @@ -569,7 +569,7 @@ rcu_try_flip_waitack_needed(int cpu)
+> >  	 * that this CPU already acknowledged the counter.
+> >  	 */
+> >  
+> > -	if ((curr - snap) > 2 || (snap & 0x1) == 0)
+> > +	if ((curr - snap) > 2 || (curr & 0x1) == 0)
+> >  		return 0;
+> >  
+> >  	/* We need this CPU to explicitly acknowledge the counter flip. */
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> 
