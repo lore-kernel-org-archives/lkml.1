@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbYCWLH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761094AbYCWLHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760249AbYCWLH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 07:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbYCWLHN
+	id S1761094AbYCWLHo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 07:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759678AbYCWLHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 07:07:13 -0400
-Received: from ns01.unsolicited.net ([69.10.132.115]:35156 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbYCWLHM (ORCPT
+	Sun, 23 Mar 2008 07:07:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50172 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759393AbYCWLHV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 07:07:12 -0400
-X-Greylist: delayed 1336 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Mar 2008 07:07:12 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
-	b=eOcVeth2u/JEsxxB74/u0QoaNI8anX18+Ig0ZQrhzzV4dmAdxgv53D3yImY+292LTSzINuv6xP6P3vfj1qozFw/uYE2kqlpmMn0tdQVGIy5vaeps7d/g3tjSf/v+4a+ZQAopyC2vdmonZEsm6lMcdvnehLoHBld6tySsJuSC+Ak=;
-Message-ID: <47E63476.4020304@unsolicited.net>
-Date: Sun, 23 Mar 2008 10:44:06 +0000
-From: David <david@unsolicited.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Kai <epimetreus@fastmail.fm>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Serious performance regression in Wine applications and Linux
- 2.6.24.*
-References: <1206240595.9045.1243810639@webmail.messagingengine.com>
-In-Reply-To: <1206240595.9045.1243810639@webmail.messagingengine.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 23 Mar 2008 07:07:21 -0400
+Subject: Re: ext3 lockdep warning in 2.6.25-rc6
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200803222234.m2MMYRJo005108@agora.fsl.cs.sunysb.edu>
+References: <200803222234.m2MMYRJo005108@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain
+Date: Sun, 23 Mar 2008 12:06:27 +0100
+Message-Id: <1206270388.6437.90.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kai wrote:
-> Performance degrades by about 60% when I run Wine under any of the
-> 2.6.24.* kernels. Attached are the output of lspci -vv and the two
-> config files of each kernel.
->
-> I upgraded to 2.6.24, back to 2.6.23.(not sure), then tried 2.6.24.1 and
-> 2.6.24.3 and the issue is present in both; it's severe enough that Wine
-> apps are virtually unusable for me with this version of the kernel; I'm
-> having to use 2.6.23 until this somehow is resolved.
->
-> I'd like some help figuring out why this performance regression exists,
-> and what can be done to mitigate it.
->
-> Please CC replies; I'm not on the list.
->   
-This is strange, as my (two) Windows apps ran (and run) just fine under 
-2.6.24 (and now under 2.6.25-rc6). Could you specify the applications 
-you're having problems with?
+On Sat, 2008-03-22 at 18:34 -0400, Erez Zadok wrote:
+> In message <1206207527.6437.83.camel@lappy>, Peter Zijlstra writes:
+> > On Sat, 2008-03-22 at 10:37 -0400, Erez Zadok wrote:
+> > > I was building a kernel using "make -j 4" inside a unionfs, mounted on top
+> > > of ext3.  The kernel is vanilla 2.6.25-rc6 plus unionfs patches.  At some
+> > > point I forced a cache flush using "echo 3 > /proc/sys/vm/drop_caches" and I
+> > > got the lockdep warning below.  Note that unionfs doesn't appear to be
+> > > involved in this lockdep warning at all, so I suspect this is probably an
+> > > issue between jbd and ext3 directly.
+> > 
+> > Known issue, drop_caches isn't production quality.
+> 
+> Is this a general problem with drop_caches, or its interaction with
+> ext3/jbd?  If I get a similar lockdep warning with other file systems,
+> should I bother to report this to the respective f/s maintainers?
 
-David
+Its a generic problem with drop_caches. If you look in the lkml archives
+you'll find similar reports against XFS and others.
+
+Some time ago Andrew outlined a fix for it, but so far that hasn't
+happened:  http://lkml.org/lkml/2007/2/23/46
+
+
+
