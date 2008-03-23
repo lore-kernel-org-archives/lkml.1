@@ -1,135 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbYCWDoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbYCWDrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758964AbYCWDoW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 23:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756286AbYCWDoH
+	id S1758346AbYCWDrY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Mar 2008 23:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbYCWDrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 23:44:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:52873 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755121AbYCWDoF (ORCPT
+	Sat, 22 Mar 2008 23:47:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:24209 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbYCWDrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 23:44:05 -0400
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/3] debloat aic7xxx and aic79xx drivers
-Date: Sun, 23 Mar 2008 04:42:35 +0100
-User-Agent: KMail/1.8.2
-Cc: Hannes Reinecke <hare@suse.de>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200803230440.40685.vda.linux@googlemail.com> <200803230441.22926.vda.linux@googlemail.com> <200803230442.02771.vda.linux@googlemail.com>
-In-Reply-To: <200803230442.02771.vda.linux@googlemail.com>
+	Sat, 22 Mar 2008 23:47:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QgFPrQqK/hdYrU9ohtz2VWPGYLXoE46Th1OkUUuLVio0TiMKmXLFq3uj7UzMj2ATvi2q+hALWMJrV8RY0pAO6D8TRUeixhymq7JqYuW59QGA6upLNTOcnEvU8Ks6eOZMtpkHZXVxha5FhgXs3F4UrPyPzxIUIxzfjxd0lc5ySv0=
+Date: Sun, 23 Mar 2008 00:47:25 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: riel@redhat.com, rjw@sisk.pl
+Subject: Re: 103 sec. latency: sync_page() with TASK_UNINTERRUPTIBLE (?)
+	(bisected)
+Message-ID: <20080323034725.GA3781@localhost.ift.unesp.br>
+Mail-Followup-To: linux-kernel@vger.kernel.org, riel@redhat.com,
+	rjw@sisk.pl
+References: <20080322220134.GA4559@localhost.ift.unesp.br>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_rGd5HPwUqSDFaHN"
-Message-Id: <200803230442.35311.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080322220134.GA4559@localhost.ift.unesp.br>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_rGd5HPwUqSDFaHN
-Content-Type: text/plain;
-  charset="koi8-r"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> Cause                                                Maximum     Percentage
+> sync_page __lock_page handle_mm_fault do_page_faul103659.0 msec         59.8 %
+> get_request_wait __make_request generic_make_reque1992.0 msec         10.2 %
+> get_request_wait __make_request generic_make_reque1620.7 msec          4.6 %
+> sync_page __lock_page find_lock_page filemap_fault399.3 msec          3.4 %
+> sync_buffer __wait_on_buffer __bread ext3_get_bran292.9 msec          1.3 %
+> sync_page __lock_page handle_mm_fault do_page_faul200.5 msec          0.3 %
+> Scheduler: waiting for cpu                        155.9 msec         18.9 %
+> sync_page __lock_page handle_mm_fault do_page_faul117.5 msec          0.1 %
+> congestion_wait try_to_free_pages __alloc_pages re103.5 msec          0.2 %
+> r_code
+> 
+> 
+> Process X (2910)
+> sync_page __lock_page handle_mm_fault do_page_faul103659.0 msec         98.5 %
+> Scheduler: waiting for cpu                         64.6 msec          1.3 %
+> sync_page __lock_page find_lock_page filemap_fault 51.4 msec          0.2 %lt do_page_fault error_code
+> sync_buffer __wait_on_buffer __bread ext3_get_bran 17.8 msec          0.0 % ext3_get_block do_mpage_readpage mpage_readpa
+> sync_page __lock_page handle_mm_fault do_page_faul  9.1 msec          0.0 %ig ault
+> 
+> The experience goes like this:
+> 
+> 1) Boot with 2.6.25-rc6-00243-g028011e
+> 2) Log into X 
+> 3) Open a 380MB file with xjed
+> 
+> It takes more than 6 minutes to load the file, and meanwhile
+> I experience very bad desktop interactivity (like 1 minute to
+> the result of pressing F12 in Window Maker to appear in the
+> screen).
+> 
+> If, after step 2), I start using firefox, thunderbird, play some
+> music etc and then close all these apps and go to step 3),
+> the loading finishes in about 2 minutes (and I have very
+> good interactivity meanwhile).
+> 
+> So I noticed that when xjed is opening the file it is in
+> 'D' state (reported by ps), and while greping the kernel
+> source code for 'sync_page' I've found this comment 
+> in mm/filemap.c:
+> 
+> /**
+>  * __lock_page - get a lock on the page, assuming we need to sleep to get it
+>  * @page: the page to lock
+>  *
+>  * Ugly. Running sync_page() in state TASK_UNINTERRUPTIBLE is scary.  If some
+>  * random driver's requestfn sets TASK_RUNNING, we could busywait.  However
+>  * chances are that on the second loop, the block layer's plug list is empty,
+>  * so sync_page() will then return in state TASK_UNINTERRUPTIBLE.
+>  */
+> 
+> "Ugly. Running sync_page() in state TASK_UNINTERRUPTIBLE is scary."
+> 
+> It appears that my problem with xjed in 'D' state while loading,
+> and sync_page() appearing in latencytop with 103 secs of latency
+> may be related through the "ugliness" described above.
+> 
+> So I was wondering if there is a way to fix this. Note that 
+> this issue does not happen if I load the file after using the
+> computer for a while, so it is not impossible to have good
+> interactivity while loading that big file.
 
-Adds more consts
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
+After lots of tests, it turned out to be a regression from
+2.6.24.
 
+I bisected it down to f1a9ee758de7de1e040de849fdef46e6802ea117
+("kswapd should only wait on IO if there is IO").
 
---Boundary-00=_rGd5HPwUqSDFaHN
-Content-Type: application/x-bzip2;
-  name="linux-2.6.25-rc6-aic3-addconst.diff.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="linux-2.6.25-rc6-aic3-addconst.diff.bz2"
+If a revert the above commit from the latest git kernel
+(v2.6.25-rc6-243-g028011e), then I get an very good interactivity
+while xjed is loading the 380MB file (meaning that I can do other things
+during the load). Otherwise it takes almost 3 times longer to load,
+and interactivity is very bad in the meanwhile. I doubled checked it.
 
-QlpoOTFBWSZTWSA8MRIAGZf/gH5wAfN7////f////r/v//pgGP999M3lG7Wa1XnGvPTO966d01xF
-29DkIU9Hmt10N3GV5Gnp6otgFAKGQUFANO2ByGhoeWEkmk0mFPIpmU3ompoepkANGmRo0DQeoA0A
-AAAJTQgQIyk9FTJ+U0mj1PE9UZHqHlAeoD1DQAAAGnlA4AGgNA0ADTTIADRpkAGjJggMQAAJT9VJ
-JNpNI8oeoyaaAAAAANAAAAAAABEkU0aENTNJtUaeTIRk0NGgZAMJoaaaBp6mhpkAAVFEECAmI0BN
-GUxKfpRk/Sh7Sm0I3qNQPU0DJ6gYh6npN07bEtWqj4A/PiMxBXhVp7ffZZSfsfdLh5r1HJlqZIQc
-hEoOQs1Z8jWRtmJCMLVtvmsFvtVnBsxqlZoUyRmC0hVTH+zlLLhgYETrn1PKP5R2qppqhJDMbhJZ
-rKJHp4trRjM9VM1FDLFghYkizHXRXY0WVS0Z0TOGEspjFqWyqmBjAxlolVmlMYtYtqqmi2rWtGZW
-hQlyIzI1MjMTMpIdrM1UxcnWP+iRECTQIhk/lNPfpJa0EJkd7I/aYCUyoefhZzRgo16w2BM0mIqI
-j/1GbdIwspEswY2uG4t1dDfpEHFw8SGQsO7H80xlkPQPjmBoQionKIbAl6dQ3Om9E0M3mx3ZekzG
-tr0ESmkQUNKIUgpP9wdqDhSJLqR/RSgxRH5YX3Gz6MDpiW5oOtFhBl6cK8DBHiph4Bpwt0cmOW6z
-OmUqUyBGjHSUIWISQubNScFUNTWFZsx2Y4wZQkkw5nq8OKWjIkQncgh9nB0I9Us8GyxWBW3VZphb
-XVWvbULcQ9UFEkUTcqhSoXswh9f2L9HaOO88fqNsxOBxcJyKprpnL27JxP3HxwP2KfB4Nom+nqWp
-fsjl5MUWfkEjbZAkK52kiQm8LY4H9wCR2sjbDO38i4ntbEPLm5c6zzJndqk0drZqcTVubGUgfqR6
-OUPXADup04yG3E7kDtQO4Q6d6vD+a4r/BEj4B7Q9Un11HpEm4PZ8FzA8RLSRNhDegQ8iHnnGc44z
-i4vNmyh0OKTHOjd1tX0MstPTPOvRbYttlr3LHso0s9l8+504OviciO7qJ3xiF056OU+wDcBe14Ef
-vtmM1VE2d87AwPYV8N+0xVAqNFElw/dxohNUzVKfmXyvtMuNtl+2NE8fK42ve7e4DnvyOVEUWx9H
-5BIw/ldvCQPVAD4xAZUdwebyCKEwzLJkU1KUnMzuSBlDmZI7MVMOMNVYY8pQ37afAeRLtbDSjqZ+
-Ex7y7sVeHx30eOJ9+MSVYtJrHD9EqdzpyzPJw6bNtW9HsdHOolqpYK6lfjyVioiunQRaTrbkCSSS
-6/bOXo87Xp/GAAAAB1e7c8AcbZsADZrk39bx5zcd1l091y82b7m/fg6fSuhy9K5MBW5BMZjB2WNJ
-uXc5BTOjl1ZC52h6R4LN085IRSTJRmGNZc5di3a01u2zZdRwM2Y4NaODVqFbpZaoBpaAEkocHDtD
-fsOsoI9h4G8HCrSv+JzzbQNEJVHd0nNZBkkjix0qenwlkyO4TNJqXhqMKhylx3bbtmGXBwjboTUm
-2641h8VP0v4Zlel1YbMksCVa4plEriIwwafA/UDfzm0XlAgQCc7uDc1F0NIwYQI9Q9Msj3HfydK6
-nYm7tB0d8u+L8EgcuIQaHxccNFQoAzAyRQbA6i6mOeDlfFbN3Hi2Phnx4931+VHCjSiSt3VvTqvh
-YQrus8ps4k5g0KhmswmJf3g5paBbvD4CbYwymGuJx75fppkTV0KMG0S8WZLbvtep1TMWFTszWwg8
-zmCDPjLRh42k2ejHe1KPofd7K10dRhwwav1sPS5/S73Gf7X00r2WXKTJaSSRsUtC2AIQWmmBAhQU
-q8wYYSfNZE0KGFSFKssLYyPzIPtCqFDMSFkk9r+1+Hvw/B36PIyGo3HMsOTmie/GY94Yn0AJBpD1
-ZSaQ2tNdRT9ZBPlUnHVn4PF5P4DxSW21RSkrguEtfDH+tM3xSHoIcpPoPAFz5wd+gQSui5xCR41Z
-lmS6R3Akha/EJJLmG31Q3PzrfN4hQuKu9h3iZesYtWVNrLGCtonFpwrXqRa7isSTNIvWtiMUdb67
-ab533ucvkkP8wVQocAfkJ8leQFNwWRO7u/3PB/B/i+M9+djgH+N1niB+s8gMyJqF4p+Tk85421aq
-u7gHIADsAA+T1Q558J3eYeE47wTMy5MzMkvEsWve9y9b4HYA6g+Y5a5SD44njJ9cPcOAYRsliYOz
-8P/L+F1g7gKSdpT0eKqqySSSSSSSSSSSRV8wPUDqoOb6/Vi53/VNTtIlfP2c+DO+mmqxwBgGuAfs
-BrqDgDZmfgD8rEys+0GH7m7jy0dzqcdQaMYBz3nVLOf7nJwcH0zi4xO/UyyX9hgqVmw47GNBfj9Q
-QIsAFjfgQkuCwSZBSmQ7iFyqV5lKZNQCxMuJ9vh3SoVHsAVtoOVFH5oNznV62uv5s73V35Z/kMef
-oeXjovMD7AeDujmDTr4TuXObbaDXw6PMDTW3s5LjPU5MZxGZ+LWc0zNwWO71Hkz3l3Bt3A3zyd+K
-eSbvSvS3DRhl9zfVOWmx+Ici4SkLqfjhJLoM7xy5jzO0jGZzOmTFzYTtUVOQk9AAKAHAXM8xUbYU
-mwwilMxP6aAERggYRpppnhJ8xPOcunjkAB1gAdwRkcjg7utiN96nHK00pKeEsAEMMbqg/ObS823X
-V2u7Dtaa4mlHORSHZgwgnScTl0zk7zMuMByO400h3obCk43A7mYA9oKZZjHB7UjOIRsJjXWgcuqZ
-S5DvF2YSBg9f1l5veXTVQUgF4V8AKxEj2GXD06uibkt2yLvR3SR1yaYkd+lSTxCY+C2pORmSXNhz
-Ygzu1NSxBqFtiT6+34SnNbS4tD7Y1yrqXEdVHx7FpA2BBcLuxqmGyN9aqSxviTYaGaaM2Q2n2oBt
-jU0LmKXac8hhhW3VacePXo168dGn0T6QiJ5YoHbDooHhEUs9pFIInd94O983PKL9VcPSjGA962Eo
-77Iib26/yOqqfA4QR+UsukE44fC5mstLOxWgL4qYwTCddsbwGZyui5SGV0EQ8L8l6MiXCE1XQtLa
-IFxb6TG0fYPyZNflQN4PWcIFVuUAV/5dw6Wed04x6q5GH6O5pHT+jnPFiTQq9bualWVrRmbkJu1i
-wj1CQkI1InAPfAQz80HJtt+QE6JsWcoUZFrSgPiuWjbO2SIPfUjJUYYF5tJSgecARmHUOz74Os9u
-TweHwOmgOtxDtgW7thuw3MbnNy1mr66HaJmmlcMby1Gl2duzkEFAd/Y7EdbahqByiQkZArSEBgOz
-m0tA2uHfVuGbQIYzVHZPs7dEXrm6oWazvliI2aa682Qsxr/NB2eD+zmfP0T2uo7SnU6eTExZ/YdS
-vxfEsYhIfP8hYHkhs1Ju8W2nZPh8RPj+KVVG7YpgwliB1Acu/Oczn0X8Nccfdd4kCLeJJFJiCoNp
-g2i4ieI00tc73Z8YZQOE2pzE4c5DByzeI8c6kU650HNBMQJ5U/JD9CeoNY2wuZYFvncCLDpgdhgR
-raMnel32x4D2OCat/2snA4cLbVtwSxguvH1stLeehxlWjZocLP6GFV0ZnAsKF5DLnFFBSFXoViEE
-CkcpJEAqsTqwP6ITjjhE4ai221ZZuU1u84417nIOAdvDnPu2zFXDvhxVtKSttuOrfiAGs2zUqVrU
-oEYkiSRIS3XeYia1+xsMbNJ0MbroyvX9XVDDNrgMPtZZteZ9Py2R4DbnS2ySpHWjpj1fLM4T0t5j
-GHf4f0jRZPv2ajGa2KYzk8HXb0gy0x0jzNWTTO2xjw3FK6F5mDCmDWGATPuGKfZOqTpLt+1uMRpJ
-7nfpPx/Gj8ab2mf+P6sNS6GLhWqjFLddcRGatQuhrUWrYQ55iIYmr1Uy1QgHZEDukEIYHQCVNcJl
-RapZJVtkS24A3Zj78LX8Y/78GrDJGKSGKRij7P5/b7PXDv+eF2+xTZnIcZw256UCbHGl7/lrZxnY
-c9I3ysAeNLOjI5QxlmDVz/OWcCJtUhpnsOGmgVNy7XJlMVy6k6zHeI8KduvFsIo4zIegA7+zD2vc
-5tGp/0E8tOdyTuJGnzNYkaEskjwaClTtGQOPgBiQh+/XaWIizijdnWHTPz7ZoOMGZO5k41E2SKN8
-zt4KhmdMGMjN00LcSN+AAHRqXTV2pnYGODyPhCajFXQJ4GPCq6SgR4m/y8CVc1haqZVgVLSX27TM
-UWvQdDsTSaJ2bsp1NGWWoH6FeqSJHBvDjxcJ1E5f5DwkbljhhjeZY9h6teWusXMjWJi4MYZ1MKk6
-UtWx5vNjbaW03uS2TiWJxk2YgzKhtYaiwjbTJppElK+806epfT2aSTl3U5Jn4Tp4fvjrgbnP+VY5
-ujLJNzxYH1MsSS/vzmdZ/yDVyz9y5KnftOPskn3AfaeyvFO/d5/U9vsYdHVNJphqx42RMdRG13qL
-vpS96mHCS4bIEWJdFWojINI2NcaSN/78SaSmpdJ8mUaRN+FGp0k/LMx620KnbiOvg0dWI2zrCMZR
-v06xo/V1JHl1ubk8Dt9GH0Pl2+95zgrkfA5J2T0QOkOuxxKUtLXpfRCOaHVe7uvxYV1zxYbdxpOT
-odC03jsAvXy83VlxejRgzhqywbaJ3az3sTtWP6eDE5PapJgfxnGRJ1napXaw+hh4+8eQYnZaZ6sL
-PRODXWbJQ0K2X3kxNobJyaIcU4+ufbvzcUiVaAZFshjl7puESDrWaFIGKl47w6Bk44ydeGBipDwq
-ZHKa5IsnTj65E4NkILDaD364mwv53u8H7X1uLfhwF8mAyBhmZXLBJOlGFejD4bkkdchEsKMJJ8PB
-DuL8MHPbEQ7/V7TsNvjMyGkhngYOnfhwOY4WHtSycm7bFXbDdgwgTXSlwmoppYwahCJUiQCiiqIp
-1mAcZDyjDXxCMSNlbaPWbHbEf50eEssMpX19TufF9fo9fTSdvJJ579QmZS3jgDR4uFeAsT2RzcjT
-LjmE0h5NTveKnt265PjPUwkdegxydYHqDhwn08ZUjb8e2GPA4JxsnNvwdm/0cW2cHoDaYIqUtPCm
-DYCUmfmuisJU7OhUxzEXc1kacxlmOdObe1l2K4sHCbyVgs0mMss1/fEYda6/HfLLi3m9dnd6UxM8
-CXde4y7P5muFqxrCmFHPGEynXoTCFi7LXUacdZ1LbJIbSLUkVRvbRN6QrGKUsSVkYkGNWv4Je8wx
-oEcuzv9nTHsiemx6UenUlYiNnJwUE5xpTUajjfOFHRwqGtK4Yu4ZCoR0PusnZOvrYmYn8/cZknw0
-IOCjVrO5O0PROLfqLGWTBwGn/PMfTuH6WE2nHu+bG1dHOPd3N1wYxZIvxWZk6B3yZsMxPuceUqT4
-KqqwwLEOEryrzV+hXZsaGQwqVUUoT/h65pnnu4PMfLHEmwc1za6x8+uttc+cwTPvhG3ev0xXbLPD
-Ae15m4+FJumkqTWM1VTM87bWVXBi3K0zWMR4MlwsTp8eJwnqA4wxyhgsLAD3A6MTSDI1duerHZBw
-zTdrYYQ60+UWGhxA6nNt1SVcbcInWLCPg0kmoaXY+cocJQLOUTWEkdFkAzZlNeRAaDiaDFYOVnsi
-ruIaY5VIVkho5B3M8ogM4bSLj72AA9F6F7lz2xyFBgQi4sKlbN1Xq7XRfJtJ+cDLSadpx+rEkZhY
-pqhVgw/T7ex32W7I22973NDqqOlRplbnMO0g7HCcGph7amfOWy1Yo4OCRK8tXpumm1Hu3eiQKaDR
-ptHIenhcw7/Qj81WjrVpDS0aYYYqYrRWENubsdSNoi82E23wMpnNt/TZMhY3I3iFSRbCMWiBcg0Q
-GxAt/17MgtwgGEMYbbVauhRYyO8FNMSJRGiVbcKwVhYxKMJfXhh6qY0RjwwasnDsmG0qay4iYoU1
-xIzQmmmiaNEzWzzz72u9MXdcXSvbwRMlTJxWZZhMSbSRMsYmMjTfjI6lTGzffWteWGdWpAdCsgsY
-mSXoSFHHAQSiQuwW0EMzTqsSJ60iayJGmXLk0WdZwfkNmd8tnyKy5mHu4SP1skkcoZbdzOnJZZmH
-CJLrs0mXR0ja2mliMCokiyDEMWThnfsI2UcdYHHwqoWT/9jFV6awlpToTeQVNfbJ1VwFy7KQqEn2
-McpwO1n5iCvFz1J9bzPdPo+9YWVHp82liZflo+gM+GerG0ex9mHU7Qj2I8qk6l7ns8mrmyBrIKzB
-6rmcnjgmeNmkYjWPaB8BD3vQXCTKpZKJUoWvN6OQ/l0VbcsqJAZgAkIQAAA+myrOyqzqV11rLWJO
-bm22XRpmY5JnY5eDxeCI9VkYqVCxJVhafLDQwiSB5GLENreXwRn/i7kinChIEB4YiQA=
+I hope this information will be useful, and I can try any patches
+if necessary.
 
---Boundary-00=_rGd5HPwUqSDFaHN--
