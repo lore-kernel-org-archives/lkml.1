@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbYCWDrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbYCWEIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759050AbYCWDrg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Mar 2008 23:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYCWDrS
+	id S1756007AbYCWEIS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 00:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbYCWEIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Mar 2008 23:47:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48140 "EHLO mx1.redhat.com"
+	Sun, 23 Mar 2008 00:08:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39504 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755803AbYCWDrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Mar 2008 23:47:17 -0400
-Message-ID: <47E5D0F5.50101@redhat.com>
-Date: Sat, 22 Mar 2008 23:39:33 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	id S1750707AbYCWEIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 00:08:05 -0400
+Date: Sat, 22 Mar 2008 21:13:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
+       chrisw@sous-sol.org, linux-kernel@vger.kernel.org, stable@kernel.org,
+       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
+       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
+       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
+       cavokz@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
+Message-ID: <20080323041311.GA4663@suse.de>
+References: <20080321224250.144333319@sous-sol.org> <20080321224333.400857992@sous-sol.org> <9a8748490803211710u4c5d1d67x2a5a891347e0adf6@mail.gmail.com> <20080321.171401.49157146.davem@davemloft.net> <84144f020803221557t36502f6bo327c95705be706bf@mail.gmail.com>
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firewire: fw-ohci: catch self_id_count == 0
-References: <tkrat.b99824b37365e037@s5r6.in-berlin.de> <tkrat.00038248cbf40b77@s5r6.in-berlin.de> <tkrat.a46eb70f34367db6@s5r6.in-berlin.de> <tkrat.463115f5f3763a98@s5r6.in-berlin.de> <tkrat.8492f68de2af250b@s5r6.in-berlin.de> <tkrat.8f4d95b45b232823@s5r6.in-berlin.de> <47E4DD50.9050706@s5r6.in-berlin.de>
-In-Reply-To: <47E4DD50.9050706@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020803221557t36502f6bo327c95705be706bf@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Stefan Richter wrote:
->> fw_core_handle_bus_reset() incorrectly relied on the assumption that
->> self_id_count > 0.
-> 
-> Even though
->     firewire: insist on successive self ID complete events
->     firewire: fw-ohci: add self ID error check
->     firewire: fw-ohci: catch self_id_count == 0
-> didn't fix any of Jarod's weird setups, I plan on submitting these 
-> patches nevertheless (after 2.6.25) because they IMO fix real 
-> possibilities for panics in the topology code.
+On Sun, Mar 23, 2008 at 12:57:29AM +0200, Pekka Enberg wrote:
+> Furthermore, I honestly don't see how your patch meets the (rather
+> strict) requirements of stable series either. So it would be nice if
+> one of the stable maintainers stepped up to say that these kind of
+> patches are okay to set a precedent for others as well.
 
-Agreed, they all looked valid and didn't cause any regressions in my own 
-prodding. So go ahead with all three:
+These kind of patches are perfectly fine.  We trust the maintainers of
+drivers and subsystems to tell the -stable maintainers what they want
+added to the tree, and if that includes a version number update to make
+their lives easier, who are we to say no to that.
 
-Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+Becides, it's not the first time patches like this have been accepted.
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+thanks,
+
+greg k-h
