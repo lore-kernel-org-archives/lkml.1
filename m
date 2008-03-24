@@ -1,57 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbYCXUgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYCXUga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbYCXUgR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYCXUgE
+	id S1755032AbYCXUga (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYCXUgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:36:04 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:59007 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754367AbYCXUgD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:36:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rvC1GooOCl6n0RcSkArqNwqpANv7v/w9y8J9Lb8YB5Brb8jGV5D5slAx2CruK1AeGrKV3ZPX88+voMszovx3v6L3NCW+z96uf/tvPr7lq6fm/hSBZxlE9Gpe55fp/LA/9++JvyNFAMIM1ft4Qz3zvN9QvjOsZRBNqC5JinMlQwU=
-Message-ID: <87a5b0800803241336u547e0f39j277a8857ce674403@mail.gmail.com>
-Date: Mon, 24 Mar 2008 20:36:02 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [PATCH 2/6] compcache: block device - internal defs
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <4cefeab80803241050y1ee7c22fi73234f24e65f958a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803242033.30782.nitingupta910@gmail.com>
-	 <87a5b0800803240905g705a8ea3p11c415ad37fc3cbb@mail.gmail.com>
-	 <4cefeab80803241050y1ee7c22fi73234f24e65f958a@mail.gmail.com>
+	Mon, 24 Mar 2008 16:36:21 -0400
+Received: from main.gmane.org ([80.91.229.2]:43203 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753013AbYCXUgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 16:36:20 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Frederik Himpe <fhimpe@telenet.be>
+Subject: Re: [PATCH net-2.6] [TCP]: Must count fack_count also when skipping
+Date: Mon, 24 Mar 2008 20:36:08 +0000 (UTC)
+Message-ID: <pan.2008.03.24.20.36.07@telenet.be>
+References: <858077.97160.qm@web39709.mail.mud.yahoo.com>
+	<20080223000310.4630daa8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0802271108290.13029@kivilampi-30.cs.helsinki.fi>
+	<3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com>
+	<Pine.LNX.4.64.0802272120430.1741@kivilampi-30.cs.helsinki.fi>
+	<Pine.LNX.4.64.0802281018480.32401@kivilampi-30.cs.helsinki.fi>
+	<3d8471ca0803020420ka42319bu1b9888217c869d9d@mail.gmail.com>
+	<Pine.LNX.4.64.0803021432200.17919@kivilampi-30.cs.helsinki.fi>
+	<3d8471ca0803020515m1e4af9d9xd37a8912e58a4504@mail.gmail.com>
+	<Pine.LNX.4.64.0803022145210.18020@kivilampi-30.cs.helsinki.fi>
+	<Pine.LNX.4.64.0803031025210.18640@kivilampi-30.cs.helsinki.fi>
+	<Pine.LNX.4.64.0803031525390.27064@kivilampi-30.cs.helsinki.fi>
+	<Pine.LNX.4.64.0803031541230.28251@kivilampi-30.cs.helsinki.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 78-23-171-221.access.telenet.be
+User-Agent: Pan/0.132 (Waxed in Black)
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 24, 2008 at 5:50 PM, Nitin Gupta <nitingupta910@gmail.com> wrote:
->  >  >  +
->  >  >  +/* Create /proc/compcache? */
->  >  >  +/* If STATS is disabled, this will give minimal compcache info */
->  >  >  +#define CONFIG_COMPCACHE_PROC
->  >  >  +
->  >  >  +#if DEBUG
->  >  >  +#define CC_DEBUG(fmt,arg...) \
->  >  >  +       printk(KERN_DEBUG C fmt,##arg)
->  >  >  +#else
->  >  >  +#define CC_DEBUG(fmt,arg...) NOP
->  >  >  +#endif
->  >
->  >  Have you thought about using pr_debug() for this? It looks like it
->  >  would simplify this file at the cost of a little flexibility.
->  >
->
->  I want to enable/disable this debugging based on DEBUG_COMPCACHE flag.
->  Thats why I added these macros. I will do 'printk(KERN_DEBUG' ->
->  pr_debug
+On Mon, 03 Mar 2008 15:53:12 +0200, Ilpo Järvinen
+wrote:
 
-The definition of pr_debug (kernel.h) is already surrounded by #ifdef
-DEBUG so it may give you the same behaviour as the CC_DEBUG macro.
+> [PATCH net-2.6] [TCP]: Must count fack_count also when skipping
+> 
+> It makes fackets_out to grow too slowly compared with the real write
+> queue.
+> 
+> This shouldn't cause those BUG_TRAP(packets <= tp->packets_out) to
+> trigger but how knows how such inconsistent fackets_out affects here and
+> there around TCP when everything is nowadays assuming accurate
+> fackets_out. So lets see if this silences them all.
+> 
+> Reported by Guillaume Chazarain <guichaz@gmail.com>.
+
+Will this patch be applied to 2.6.24 stable? I think I have been hit by 
+the same problem recently:
+
+WARNING: at net/ipv4/tcp_input.c:2054 tcp_mark_head_lost()
+Pid: 16959, comm: X Tainted: P        2.6.24.3-desktop-3mnb #1
+
+Call Trace:
+ <IRQ>  [<ffffffff8045550c>] tcp_ack+0x180c/0x1d60
+ [<ffffffff80494259>] _read_lock_bh+0x9/0x20
+ [<ffffffff80458075>] tcp_rcv_state_process+0x3b5/0xd00
+ [<ffffffff8045f818>] tcp_v4_do_rcv+0xc8/0x3f0
+ [<ffffffff885601b3>] :nf_conntrack_ipv4:ipv4_confirm+0x33/0x60
+ [<ffffffff8043c316>] nf_iterate+0x66/0xc0
+ [<ffffffff804621b8>] tcp_v4_rcv+0x898/0xaf0
+ [<ffffffff80442ec3>] ip_local_deliver_finish+0xc3/0x250
+ [<ffffffff80442b64>] ip_rcv_finish+0x114/0x3b0
+ [<ffffffff80443365>] ip_rcv+0x205/0x2f0
+ [<ffffffff8041c45c>] netif_receive_skb+0x3ac/0x490
+ [<ffffffff88184509>] :forcedeth:nv_napi_poll+0xf9/0x850
+ [<ffffffff8041eaa8>] net_rx_action+0x128/0x230
+ [<ffffffff802412a5>] __do_softirq+0x75/0xe0
+ [<ffffffff8020d4fc>] call_softirq+0x1c/0x30
+ [<ffffffff8020f6c5>] do_softirq+0x35/0x90
+ [<ffffffff80241228>] irq_exit+0x88/0x90
+ [<ffffffff8020f910>] do_IRQ+0x80/0x100
+ [<ffffffff8020c881>] ret_from_intr+0x0/0xa
+ <EOI> 
+WARNING: at net/ipv4/tcp_input.c:2413 tcp_fastretrans_alert()
+Pid: 4053, comm: rsyslogd Tainted: P        2.6.24.3-desktop-3mnb #1
+
+Call Trace:
+ <IRQ>  [<ffffffff80455a2d>] tcp_ack+0x1d2d/0x1d60
+ [<ffffffff80494259>] _read_lock_bh+0x9/0x20
+ [<ffffffff80458075>] tcp_rcv_state_process+0x3b5/0xd00
+ [<ffffffff8045f818>] tcp_v4_do_rcv+0xc8/0x3f0
+ [<ffffffff885601b3>] :nf_conntrack_ipv4:ipv4_confirm+0x33/0x60
+ [<ffffffff8043c316>] nf_iterate+0x66/0xc0
+ [<ffffffff804621b8>] tcp_v4_rcv+0x898/0xaf0
+ [<ffffffff80442ec3>] ip_local_deliver_finish+0xc3/0x250
+ [<ffffffff80442b64>] ip_rcv_finish+0x114/0x3b0
+ [<ffffffff80443365>] ip_rcv+0x205/0x2f0
+ [<ffffffff8041c45c>] netif_receive_skb+0x3ac/0x490
+ [<ffffffff88184509>] :forcedeth:nv_napi_poll+0xf9/0x850
+ [<ffffffff8041eaa8>] net_rx_action+0x128/0x230
+ [<ffffffff802412a5>] __do_softirq+0x75/0xe0
+ [<ffffffff8020d4fc>] call_softirq+0x1c/0x30
+ [<ffffffff8020f6c5>] do_softirq+0x35/0x90
+ [<ffffffff80241228>] irq_exit+0x88/0x90
+ [<ffffffff8020f910>] do_IRQ+0x80/0x100
+ [<ffffffff8020c881>] ret_from_intr+0x0/0xa
+ <EOI>
+
+-- 
+Frederik Himpe
+
