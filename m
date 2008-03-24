@@ -1,71 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbYCXPLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbYCXPNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762621AbYCXPLI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 11:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760403AbYCXPKz
+	id S1761928AbYCXPNg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 11:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759779AbYCXPN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 11:10:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:15624 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760419AbYCXPKy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 11:10:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=I0u/59ovhThEovbLgaZQK2RHG8/77zgrM5oCUoz9m+E2XvE1GDKhddBtn1YpwH5gSBINytVkx/LlldCbw9bOT5LcQcQr7EMwgD42I0jausm5uq4bIdpjywb/zdjvEpv8ew53jbBXVsw7OrJOcGX+h/ph+rN1BvS6IYm+dB0yUo4=
-From: Nitin Gupta <nitingupta910@gmail.com>
-Reply-To: nitingupta910@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6] compcache: Documentation
-Date: Mon, 24 Mar 2008 20:36:13 +0530
-User-Agent: KMail/1.9.9
-Cc: linux-mm@kvack.org
+	Mon, 24 Mar 2008 11:13:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56802 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757449AbYCXPN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 11:13:27 -0400
+Message-ID: <47E7C4FD.7070406@redhat.com>
+Date: Mon, 24 Mar 2008 12:13:01 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/79] smpboot integration
+References: <86802c440803192000x41a1383fxc2b58ed68e2375b7@mail.gmail.com> <86802c440803192032r2aa15a10pb32ef15fcfc693e7@mail.gmail.com> <47E1EAD6.5080905@redhat.com> <86802c440803192159y28c186f0p98615e90da5a9345@mail.gmail.com> <20080321133327.GN27245@elte.hu> <86802c440803211218t5850ba52w78f8cb9849097ee0@mail.gmail.com> <20080321195506.GB16179@elte.hu> <86802c440803211303m50506ae5ta4c095e40fa1e40d@mail.gmail.com> <86802c440803211441v30840be4y76d63da567c9af40@mail.gmail.com> <86802c440803211514k2b3e4bcu626bd37dac0d0f6c@mail.gmail.com> <20080321221837.GA26036@elte.hu>
+In-Reply-To: <20080321221837.GA26036@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803242036.13668.nitingupta910@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-compcache usage documentation.
+Ingo Molnar wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> 
+>> attached patch fix that.
+> 
+> thanks Yinghai, applied.
+Thanks for seeking and patching this, Yinghai. The granularity proved 
+quite useful once more ;-)
 
-Signed-off-by: Nitin Gupta <nitingupta910 at gmail dot com>
----
-
- Documentation/compcache.txt |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/compcache.txt b/Documentation/compcache.txt
-new file mode 100644
-index 0000000..9ece295
---- /dev/null
-+++ b/Documentation/compcache.txt
-@@ -0,0 +1,24 @@
-+
-+compcache: Compressed RAM based swap device
-+-------------------------------------------
-+
-+Project home: http://code.google.com/p/compcache
-+
-+* Introduction
-+This is a RAM based block device which acts as swap disk.
-+Pages swapped to this device are compressed and stored in
-+memory itself.
-+
-+* Usage
-+ - modprobe compcache compcache_size_kbytes=<size>
-+   (If no size is specified, default size of 25% of RAM is taken).
-+ - swapon /dev/ramzswap0
-+
-+* Notes
-+ - Allocator and compcache statistics are exported via /proc interface:
-+   - /proc/tlsfinfo
-+   - /proc/compcache
-+
-+
-+Nitin Gupta
-+(nitingupta910 at gmail dot com)
