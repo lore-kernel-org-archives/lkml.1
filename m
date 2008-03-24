@@ -1,79 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbYCXPBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbYCXPET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761174AbYCXPBm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 11:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbYCXPBf
+	id S1761449AbYCXPET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 11:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759573AbYCXPEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 11:01:35 -0400
-Received: from khc.piap.pl ([195.187.100.11]:47831 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756296AbYCXPBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 11:01:34 -0400
-To: Joe Perches <joe@perches.com>
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/net/wan/wanxl.c: time_before(timeout, jiffies) -> jiffies, timeout
-References: <47E28637.4010700@tiscali.nl>
-	<1206031566.26345.63.camel@localhost>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 24 Mar 2008 16:01:32 +0100
-In-Reply-To: <1206031566.26345.63.camel@localhost> (Joe Perches's message of "Thu\, 20 Mar 2008 09\:46\:06 -0700")
-Message-ID: <m3fxug2mk3.fsf@maximus.localdomain>
+	Mon, 24 Mar 2008 11:04:12 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:35455 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758612AbYCXPEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 11:04:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=EuVa5iuKcT/HzmOuZh4enlUu50LjB6JGseQINEvAcVBOFog/ZVqdFxiBhl+e66JSB
+	fHVVuruWCUH1pIRZNLAvQ==
+Message-ID: <6599ad830803240803s5160101bi2bf68b36085f777f@mail.gmail.com>
+Date: Mon, 24 Mar 2008 08:03:56 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [RFC][-mm] Memory controller add mm->owner
+Cc: linux-mm@kvack.org, "Hugh Dickins" <hugh@veritas.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       "David Rientjes" <rientjes@google.com>,
+       "Pavel Emelianov" <xemul@openvz.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080324140142.28786.97267.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080324140142.28786.97267.sendpatchset@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches <joe@perches.com> writes:
+On Mon, Mar 24, 2008 at 7:01 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>  --- linux-2.6.25-rc5/include/linux/mm_types.h~memory-controller-add-mm-owner    2008-03-20 13:35:09.000000000 +0530
+>  +++ linux-2.6.25-rc5-balbir/include/linux/mm_types.h    2008-03-20 15:11:05.000000000 +0530
+>  @@ -228,7 +228,10 @@ struct mm_struct {
+>         rwlock_t                ioctx_list_lock;
+>         struct kioctx           *ioctx_list;
+>   #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+>  -       struct mem_cgroup *mem_cgroup;
+>  +       struct task_struct *owner;      /* The thread group leader that */
+>  +                                       /* owns the mm_struct. This     */
+>  +                                       /* might be useful even outside */
+>  +                                       /* of the config option         */
+>   #endif
 
->>  	while ((stat = readl(card->plx + PLX_MAILBOX_0)) != 0) {
->> -		if (time_before(timeout, jiffies)) {
->> +		if (time_before(jiffies, timeout)) {
->>  			printk(KERN_WARNING "wanXL %s: timeout waiting for"
->>  			       " PUTS to complete\n", pci_name(pdev));
->>  			wanxl_pci_remove_one(pdev);
+This should probably be controlled by something like a CONFIG_MM_OWNER
+that's selected by any Kconfig option (mem cgroup, etc) that needs
+mm->owner to be maintained.
+
+>  @@ -248,12 +248,40 @@ void mm_init_cgroup(struct mm_struct *mm
 >
-> Wouldn't it be better to have a schedule() in those
-> while loops too?
+>         mem = mem_cgroup_from_task(p);
+>         css_get(&mem->css);
+>  -       mm->mem_cgroup = mem;
+>  +       mm->owner = p;
+>  +}
+>  +
+>  +void mem_cgroup_fork_init(struct task_struct *p)
+>  +{
+>  +       struct mm_struct *mm = get_task_mm(p);
+>  +       struct mem_cgroup *mem, *oldmem;
+>  +       if (!mm)
+>  +               return;
+>  +
+>  +       /*
+>  +        * Initial owner at mm_init_cgroup() time is the task itself.
+>  +        * The thread group leader had not been setup then
+>  +        */
+>  +       oldmem = mem_cgroup_from_task(mm->owner);
+>  +       /*
+>  +        * Override the mm->owner after we know the thread group later
+>  +        */
+>  +       mm->owner = p->group_leader;
+>  +       mem = mem_cgroup_from_task(mm->owner);
+>  +       css_get(&mem->css);
+>  +       css_put(&oldmem->css);
+>  +       mmput(mm);
+>   }
+>
+>   void mm_free_cgroup(struct mm_struct *mm)
+>   {
+>  -       css_put(&mm->mem_cgroup->css);
+>  +       struct mem_cgroup *mem;
+>  +
+>  +       /*
+>  +        * TODO: Should we assign mm->owner to NULL here?
+>  +        */
+>  +       mem = mem_cgroup_from_task(mm->owner);
+>  +       css_put(&mem->css);
+>   }
 
-There is a schedule() here:
+It seems to me that the code to setup/maintain mm->owner should be
+independent of the control groups, but should be part of the generic
+fork/exit code.
 
-        timeout = jiffies + 20 * HZ;
-        while ((stat = readl(card->plx + PLX_MAILBOX_0)) != 0) {
-                if (time_before(timeout, jiffies)) {
-                        printk(KERN_WARNING "wanXL %s: timeout waiting for"
-                               " PUTS to complete\n", pci_name(pdev));
-                        wanxl_pci_remove_one(pdev);
-                        return -ENODEV;
-                }
+Also, if mm->owner exits but mm is still alive (unlikely, but could
+happen with weird custom threading libraries?) then we need to
+reassign mm->owner to one of the other users of the mm (by looking
+first in the thread group, then among the parents/siblings/children,
+and then among all processes as a last resort?)
 
-                switch(stat & 0xC0) {
-                case 0x00:      /* hmm - PUTS completed with non-zero code? */
-                case 0x80:      /* PUTS still testing the hardware */
-                        break;
+>
+>  -       rcu_read_lock();
+>  -       mem = rcu_dereference(mm->mem_cgroup);
+>  +       mem = mem_cgroup_from_task(mm->owner);
 
-                default:
-                        printk(KERN_WARNING "wanXL %s: PUTS test 0x%X"
-                               " failed\n", pci_name(pdev), stat & 0x30);
-                        wanxl_pci_remove_one(pdev);
-                        return -ENODEV;
-                }
+I think we still need the rcu_read_lock(), since mm->owner can move
+cgroups any time.
 
-                schedule();
-        }
+>
+>  @@ -1069,7 +1096,6 @@ static void mem_cgroup_move_task(struct
+>                 goto out;
+>
+>         css_get(&mem->css);
+>  -       rcu_assign_pointer(mm->mem_cgroup, mem);
+>         css_put(&old_mem->css);
+>
 
-The timeout is 20 seconds, busy loop wouldn't make any sense.
+We shouldn't need reference counting on this pointer, since the
+cgroups framework won't allow a subsystem to be freed while it has any
+tasks in it.
 
-> Maybe a more generic macro / statement expression
-> would be more readable?
-
-I don't think so. BTW the only "long" loop is the POTS one (after hw
-reset or rmmod + insmod), IIRC it takes about 1 second for every MB of
-installed DRAM. Officially you can have 1 or 4 MB, and 16 MB module
-works (IIRC, on my card) as well - thus 20 * HZ timeout.
-
-A couple of reversed time_{after,before}, yes (with reversed
-arguments, i.e., functionally equivalent but probably harder to
-parse). Will look at them.
--- 
-Krzysztof Halasa
+Paul
