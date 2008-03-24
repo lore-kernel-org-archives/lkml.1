@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbYCXRSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbYCXRTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbYCXRSx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 13:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYCXRSl
+	id S1761266AbYCXRTN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 13:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbYCXRSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 13:18:41 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:58991 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754390AbYCXRSk (ORCPT
+	Mon, 24 Mar 2008 13:18:49 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58533 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757931AbYCXRSs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 13:18:40 -0400
-X-Trace: 682488530/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhUHAMp+50dRAVlC/2dsb2JhbACBW6YQ
-Subject: Re: [PATCH] 3/3 maple: update bus driver to support Dreamcast VMU
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
-       dwmw2 <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20080324170707.GH2899@logfs.org>
-References: <1206207805.6324.13.camel@localhost.localdomain>
-	 <1206209786.6324.41.camel@localhost.localdomain>
-	 <20080324033344.GB15872@linux-sh.org> <20080324144647.GC2899@logfs.org>
-	 <1206371178.6283.37.camel@localhost.localdomain>
-	 <20080324152952.GF2899@logfs.org>
-	 <1206373900.6283.39.camel@localhost.localdomain>
-	 <20080324160429.GG2899@logfs.org>  <20080324170707.GH2899@logfs.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 24 Mar 2008 17:18:13 +0000
-Message-Id: <1206379093.7543.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 24 Mar 2008 13:18:48 -0400
+Date: Mon, 24 Mar 2008 18:19:24 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: Dave Hansen <haveblue@us.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tilman Schmidt <tilman@imap.cc>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Markus Gaugusch <dsdt@gaugusch.at>, linux-acpi@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Arjan van de Ven <arjanv@redhat.com>,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [2.6.25-rc5-mm1] BUG: spinlock bad magic early during boot
+Message-ID: <20080324171924.GB3782@elf.ucw.cz>
+References: <47DB013D.3060102@tremplin-utc.net> <1205537395.8167.31.camel@nimitz.home.sr71.net> <47DBC578.7050101@imap.cc> <alpine.LFD.1.00.0803151212180.3020@woody.linux-foundation.org> <47DC26BC.7060502@tremplin-utc.net> <alpine.LFD.1.00.0803151315250.3020@woody.linux-foundation.org> <20080321131737.GC5331@ucw.cz> <1206288004.30471.45.camel@nimitz.home.sr71.net> <20080324160333.GD4069@atrey.karlin.mff.cuni.cz> <47E7DF4A.4090007@tremplin-utc.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E7DF4A.4090007@tremplin-utc.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon 2008-03-24 18:05:14, Eric Piel wrote:
+> Pavel Machek wrote:
+>> Hi!
+>>> Can we use kexec for this?  Let's say you get as far in boot as the
+>>> initrd and realize that you're running on one of these screwed up
+>>> systems.  Can you stick the new DSDT somewhere known (and safe) in
+>>> memory, and kexec yourself back to the beginning of the kernel boot?
+>>>
+>>> When you boot up the second time, you have the new, shiny DSDT there
+>>> which is, of course, used instead of the bogus BIOS one.
+>>>
+>>> It costs you some bootup time, but we're talking about working around
+>>> really busted hardware here.  
+>>
+>> Hmmm. I guess we should turn off acpi mode, kexec, turn on acpi mode
+>> with new dsdt.
+>>
+>> Turning off acpi is not exactly easy, but specs describe how to do
+>> it...
+> Why do you think it's necessary to turn off acpi mode? What will not work 
+> if we keep it on all the time?
+>
+> BTW, let me summarize my understanding of the kexec approach:
+> * the userspace write the new DSDT (cat my-dsdt-image > 
+> /sys/firmware/acpi/tables/DSDT)
+> * the kernel don't use this DSDT directly but keeps it somewhere warm and 
+> fuzzy in the RAM
+> * userspace does a kexec
+> * the new kernel boots and at some (early) point, dsdt_override() is 
+> called. It detects that the special place in the RAM for a new DSDT is 
+> used. It provides this pointer to ACPI as the new place to read the
+> DSDT.
 
-On Mon, 2008-03-24 at 18:07 +0100, Jörn Engel wrote:
-> On Mon, 24 March 2008 17:04:29 +0100, Jörn Engel wrote:
-> > 
-> > Then we should be fine.  I'll try to beat the code into submission.
-> 
-> And here go two more interesting patches.  The first is removing all
-> locking from the mtd driver.  Since the existing locking code is nearly
-> impossibly to verify, I'd rather have something simple and wrong than
-> something complicated and wrong.
-> 
-> The second rearranges the list locking a bit.  Previously it was
-> possible to touch maple_waitq or maple_sentq without holding the lock.
-> With my limited understanding of the driver, the second patch may
-> already be enough to prevent the type of corruption you've been seeing.
-> 
-> Jörn
-> 
+Yes, and now ACPI layer tries to enable already enabled ACPI... which
+is no-no according to spec, but you may be able to  get away with it.
 
-
-These will fail.
-
-Removing the locks just about guarantees memory corruption and
-maple_waitq is not the issue - it is the objects held in maple_waitq
-that are the issue.
-
-I have an idea though, so let me hack at it
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
