@@ -1,28 +1,42 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbYCXKmz (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 24 Mar 2008 06:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYCXKmo
+	id S1760236AbYCXRh2 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 24 Mar 2008 13:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbYCXRhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 06:42:44 -0400
-Received: from fallback.mail.ru ([194.67.57.14]:6094 "EHLO mx4.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756084AbYCXKmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 06:42:44 -0400
-Date: Mon, 24 Mar 2008 12:13:11 +0300
-From: "MAIL.RU" <m0bst3r@mail.ru>
-X-Mailer: The Bat! (v3.85.03) Professional
-Reply-To: "MAIL.RU" <m0bst3r@mail.ru>
-X-Priority: 3 (Normal)
-Message-ID: <1697002094.20080324121311@mail.ru>
-To: linux-kernel@vger.kernel.org
+	Mon, 24 Mar 2008 13:37:19 -0400
+Received: from nms1.telkom.co.ke ([62.24.109.194]:48698 "EHLO
+	mail.tradeandindustry.go.ke" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753439AbYCXRhS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 13:37:18 -0400
+Message-ID: <20080324191446.79l86arp4w4oog0c@mail.tradeandindustry.go.ke>
+Date: Mon, 24 Mar 2008 19:14:46 +0300
+From: Mr Mou Xinsheng <xinsheng455@yahoo.com.cn>
+Reply-to: xinsheng_45@yahoo.com.hk
+To: undisclosed-recipients:;
+Subject: Hello from china
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-Spam: Not detected
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.5)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758566AbYCXKmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760236AbYCXRh2@vger.kernel.org>
 
-subscribe linux-kernel
+Hello,
+
+I want to solicit your attention to recieve money on my behalf.I will send you
+the full details and more information about myself and the funds.please ensure
+you reply me via my personal email: xinsheng_45@yahoo.com.hk
+
+Thank you,
+Mou Xinsheng.
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
 
