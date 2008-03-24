@@ -1,103 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYCXXCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYCXXC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbYCXXCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 19:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYCXXCe
+	id S1755961AbYCXXC5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 19:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbYCXXCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:02:34 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:43849 "EHLO mail.atlantis.sk"
+	Mon, 24 Mar 2008 19:02:43 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:50201 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057AbYCXXCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:02:33 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH] de2104x: remove BUG_ON() when changing media type
-Date: Tue, 25 Mar 2008 00:02:19 +0100
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jgarzik@pobox.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-References: <200801262158.12016.linux@rainbow-software.org> <47C30051.3020909@pobox.com> <20080324024514.GB474@colo.lackof.org>
-In-Reply-To: <20080324024514.GB474@colo.lackof.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1754630AbYCXXCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 19:02:42 -0400
+Date: Tue, 25 Mar 2008 01:56:11 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ebiederm@xmission.com, xemul@openvz.org, pavel@ucw.cz, sds@tycho.nsa.gov,
+       roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+Message-ID: <20080324225611.GA157@tv-sign.ru>
+References: <20080323135110.GA294@tv-sign.ru> <20080324152906.dee7b272.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803250002.21718.linux@rainbow-software.org>
+In-Reply-To: <20080324152906.dee7b272.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 March 2008 03:45:14 Grant Grundler wrote:
-> On Mon, Feb 25, 2008 at 12:52:17PM -0500, Jeff Garzik wrote:
-> > Ondrej Zary wrote:
-> >> When the chip dies (probably because of a bug somewhere in the driver),
-> >> de_stop_rxtx() fails and changing the media type crashes the whole
-> >> machine. Replace BUG_ON() in de_set_media() with a warning.
-> >> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> >> --- linux-2.6.24-orig/drivers/net/tulip/de2104x.c	2008-02-25
-> >> 18:27:34.000000000 +0100
-> >> +++ linux-2.6.24-pentium/drivers/net/tulip/de2104x.c	2008-02-25
-> >> 18:34:56.000000000 +0100
-> >> @@ -910,7 +910,8 @@
-> >>  	unsigned media = de->media_type;
-> >>  	u32 macmode = dr32(MacMode);
-> >>  -	BUG_ON(de_is_running(de));
-> >> +	if (de_is_running(de))
-> >> +		printk(KERN_WARNING "%s: chip is running while changing media!\n",
-> >> de->dev->name);
-> >
-> > Certainly a sane improvement...
+On 03/24, Andrew Morton wrote:
 >
-> Jeff,
-> The above patch was applied and fixes the 'panic' part of the problme.
-> Can you take a look at this patch to fix the "chip is still running"
-> part of this bug?
+> On Sun, 23 Mar 2008 16:51:10 +0300
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > Ptracing of /sbin/init is not allowed. Of course, this is dangerous, but may
+> > be useful. Introduce the kernel boot parameter to allow this, so that we can't
+> > surprise some special/secured systems.
+> 
+> I dunno, is this really needed?
 
-I'll test it but I doubt that it fixes the problem. IIRC, I tried something 
-like that. Even tried resetting the chip multiple times when this problem 
-appears but everything failed.
+Well, this is the question. I think it would be very nice to have the ability
+to debug/strace init. Especially if you try to make your own distribution /
+your own init.
 
+Sometimes I see init at the top of the top's output, with this patch I have a
+chance to see what's going on on my system.
 
->
-> BTW, I inherited a bug report for the same symptom:
->     http://bugzilla.kernel.org/show_bug.cgi?id=3156
->
-> thanks,
-> grant
->
-> Signed-off-by: Grant Grundler
->
-> --- linux-2.6.23/drivers/net/tulip/de2104x.c	2007-10-09 13:31:38.000000000
-> -0700 +++ linux-2.6.23/drivers/net/tulip/de2104x.c-ggg	2007-11-02
-> 23:24:46.000000000 -0700 @@ -842,7 +842,7 @@
->  static void de_stop_rxtx (struct de_private *de)
->  {
->  	u32 macmode;
-> -	unsigned int work = 1000;
-> +	unsigned int i = 1300/100;
->
->  	macmode = dr32(MacMode);
->  	if (macmode & RxTx) {
-> @@ -850,10 +850,14 @@
->  		dr32(MacMode);
->  	}
->
-> -	while (--work > 0) {
-> +	/* wait until in-flight frame completes.
-> +	 * Max time @ 10BT: 1500*8b/10Mbps == 1200us (+ 100us margin)
-> +	 * Typically expect this loop to end in < 50 us on 100BT.
-> +	 */
-> +	while (--i) {
->  		if (!de_is_running(de))
->  			return;
-> -		cpu_relax();
-> +		udelay(100);
->  	}
->
->  	printk(KERN_WARNING "%s: timeout expired stopping DMA\n", de->dev->name);
+> If root wants to screw up his kernel then
+> he is free to do so.
 
+I think you and Pavel are very wrong here.
 
+First, this has nothing to do with kernel, imho. Afaics, now there are no kernel
+problems with ptracing init.
 
--- 
-Ondrej Zary
+And. When I was admin in my previous life, I certainly was not able to patch
+the kernel and then strace/debug init.
+
+> And if we *really* want an extra foot-protector for this, it could be a
+> runtime /proc/sys/kernel/root-can-shoot-inits-foot rather than a boot-time
+> option?
+
+Even better! I agree, will re-send. I choose the boot-time paramater because
+it looks like the "most safe" option.
+
+Oleg.
+
