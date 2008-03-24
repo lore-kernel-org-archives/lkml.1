@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYCXVoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbYCXVqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYCXVoL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 17:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYCXVn6
+	id S1754779AbYCXVqj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 17:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYCXVqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 17:43:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40503
+	Mon, 24 Mar 2008 17:46:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40514
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751869AbYCXVn4 (ORCPT
+	by vger.kernel.org with ESMTP id S1753083AbYCXVqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 17:43:56 -0400
-Date: Mon, 24 Mar 2008 14:43:56 -0700 (PDT)
-Message-Id: <20080324.144356.104645106.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	Mon, 24 Mar 2008 17:46:30 -0400
+Date: Mon, 24 Mar 2008 14:46:29 -0700 (PDT)
+Message-Id: <20080324.144629.137399000.davem@davemloft.net>
+To: tony.luck@intel.com
+Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
 Subject: Re: larger default page sizes...
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE5B88C@orsmsx424.amr.corp.intel.com>
 References: <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
 	<20080324.133722.38645342.davem@davemloft.net>
-	<Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
+	<1FE6DD409037234FAB833C420AA843ECE5B88C@orsmsx424.amr.corp.intel.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,35 +29,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Mon, 24 Mar 2008 14:05:02 -0700 (PDT)
+From: "Luck, Tony" <tony.luck@intel.com>
+Date: Mon, 24 Mar 2008 14:25:11 -0700
 
-> On Mon, 24 Mar 2008, David Miller wrote:
-> 
-> > From: Christoph Lameter <clameter@sgi.com>
-> > Date: Mon, 24 Mar 2008 11:27:06 -0700 (PDT)
-> > 
-> > > The move to 64k page size on IA64 is another way that this issue can
-> > > be addressed though.
-> > 
-> > This is such a huge mistake I wish platforms such as powerpc and IA64
-> > would not make such decisions so lightly.
-> 
-> Its certainly not a light decision if your customer tells you that the box 
-> is almost unusable with 16k page size. For our new 2k and 4k processor 
-> systems this seems to be a requirement. Customers start hacking SLES10 to 
-> run with 64k pages....
+> When memory capacity is measured in hundreds of GB, then
+> a larger page size doesn't look so ridiculous.
 
-We should fix the underlying problems.
+We have hugepages and such for a reason.  And this can be
+made more dynamic and flexible, as needed.
 
-I'm hitting issues on 128 cpu Niagara2 boxes, and it's all fundamental
-stuff like contention on the per-zone page allocator locks.
+Increasing the page size is a "stick your head in the sand"
+type solution by my book.
 
-Which is very fixable, without going to larger pages.
-
-> powerpc also runs HPC codes. They certainly see the same results
-> that we see.
-
-There are ways to get large pages into the process address space for
-compute bound tasks, without suffering the well known negative side
-effects of using larger pages for everything.
+Especially when you can make the hugepage facility stronger
+and thus get what you want without the memory wastage side
+effects.
