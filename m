@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYCXT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYCXT6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbYCXT53 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYCXT5U
+	id S1754538AbYCXT6U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYCXT6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:57:20 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51900 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679AbYCXT5T (ORCPT
+	Mon, 24 Mar 2008 15:58:07 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4368 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbYCXT6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:57:19 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 24 Mar 2008 20:55:28 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-ohci: missing PPC PMac feature calls in failure
- path
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.2821164ab5d906e0@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Mon, 24 Mar 2008 15:58:05 -0400
+Subject: Re: [PATCH] linux/fs.h - Convert debug functions declared inline 
+	=?koi8-r?q?=09=5F=5Fattribute=5F=5F?=((format (printf,x,y) to statement
+	expression macros
+From: Joe Perches <joe@perches.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: gcc@gcc.gnu.org, Jan Hubicka <hubicka@ucw.cz>,
+       Jakub Jelinek <jakub@redhat.com>, David Rientjes <rientjes@google.com>,
+       Matthew Wilcox <matthew@wil.cx>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, zadeck@naturalbridge.com
+In-Reply-To: <200803231622.27190.vda.linux@googlemail.com>
+References: <1204081722.19319.405.camel@localhost>
+	 <20080228102325.GC13246@atrey.karlin.mff.cuni.cz>
+	 <1204247347.9959.31.camel@localhost>
+	 <200803231622.27190.vda.linux@googlemail.com>
+Content-Type: text/plain
+Date: Mon, 24 Mar 2008 12:52:09 -0700
+Message-Id: <1206388329.4845.41.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balance ohci_pmac_on and ohci_pmac_off if pci_driver.probe fails.
+On Sun, 2008-03-23 at 16:22 +0100, Denys Vlasenko wrote:
+> On Friday 29 February 2008 02:09, Joe Perches wrote:
+> > But the function place_entity doesn't use it directly or indirectly.
+> > If the lines above are removed, the generated code for place_entity changes.
+> I see it all the time. Whenever I add/remove/change something
+> to a header, some functions grow a tiny bit, some shrink a bit.
+> gcc 4.2.1. Report is here:
+> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29950
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+This seems more like a machine descriptions or target pass defect
+than an RTL problem.
 
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -2285,8 +2285,6 @@ pci_probe(struct pci_dev *dev, const str
- 	int err;
- 	size_t size;
- 
--	ohci_pmac_on(dev);
--
- 	ohci = kzalloc(sizeof(*ohci), GFP_KERNEL);
- 	if (ohci == NULL) {
- 		fw_error("Could not malloc fw_ohci data.\n");
-@@ -2295,6 +2293,8 @@ pci_probe(struct pci_dev *dev, const str
- 
- 	fw_card_initialize(&ohci->card, &ohci_driver, &dev->dev);
- 
-+	ohci_pmac_on(dev);
-+
- 	err = pci_enable_device(dev);
- 	if (err) {
- 		fw_error("Failed to enable OHCI hardware.\n");
-@@ -2396,6 +2396,7 @@ pci_probe(struct pci_dev *dev, const str
- 	pci_disable_device(dev);
-  fail_free:
- 	kfree(&ohci->card);
-+	ohci_pmac_off(dev);
- 
- 	return err;
- }
-
--- 
-Stefan Richter
--=====-==--- --== ==---
-http://arcgraph.de/sr/
+Should this defect be classified in group "Target" rather than "RTL"?
 
