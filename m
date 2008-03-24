@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbYCXOlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbYCXOmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbYCXOlg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 10:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758766AbYCXOl1
+	id S1760922AbYCXOmt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 10:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbYCXOmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 10:41:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:3603 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758392AbYCXOl1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 10:41:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bIHAwA6n4S3X4FNwDjg4Wjkdu6mC7nh3tKqFkm87ujoTCu4iONMN/u0kOfNbQiX0f9+XTEVe8EbPIS4pqGUnhFTxk4YeQa+YpC9HISNeQJTJjEf0ywKqHb5M5GL/eY4r4EsKwqnIscWSQoFfGBcWQaouqPp29nECkcRAprpkTTY=
-Message-ID: <1ba2fa240803240741n5bf042c2j4aaa4d2f70cf8ef@mail.gmail.com>
-Date: Mon, 24 Mar 2008 16:41:25 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Pierre Ossman" <drzeus@drzeus.cx>
-Subject: Re: SDIO: IO-Ready Bit
-Cc: linux-kernel@vger.kernel.org, benzizbit@gmail.com
-In-Reply-To: <20080324145352.6262788b@mjolnir.drzeus.cx>
+	Mon, 24 Mar 2008 10:42:42 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38244 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751878AbYCXOml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 10:42:41 -0400
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drivers/net/wan/wanxl.c: time_before(timeout, jiffies) -> jiffies, timeout
+References: <47E28637.4010700@tiscali.nl>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 24 Mar 2008 15:42:38 +0100
+In-Reply-To: <47E28637.4010700@tiscali.nl> (Roel Kluin's message of "Thu\, 20 Mar 2008 16\:43\:51 +0100")
+Message-ID: <m3k5js2nfl.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1ba2fa240803180400y1d7a2740t2c21b8b73a755016@mail.gmail.com>
-	 <20080318123325.0843b854@mjolnir.drzeus.cx>
-	 <1ba2fa240803181043v511df0b6tbe43174feb2f7537@mail.gmail.com>
-	 <20080318192018.1815fd57@mjolnir.drzeus.cx>
-	 <1ba2fa240803221510n8d5800ft32e0ffa179542aba@mail.gmail.com>
-	 <20080324145352.6262788b@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 24, 2008 at 3:53 PM, Pierre Ossman <drzeus@drzeus.cx> wrote:
-> On Sun, 23 Mar 2008 00:10:19 +0200
+Hi,
+
+Roel Kluin <12o3l@tiscali.nl> writes:
+
+> --- a/drivers/net/wan/wanxl.c
+> +++ b/drivers/net/wan/wanxl.c
+> @@ -650,7 +650,7 @@ static int __devinit wanxl_pci_init_one(struct pci_dev *pdev,
+>  
+>  	timeout = jiffies + 20 * HZ;
+>  	while ((stat = readl(card->plx + PLX_MAILBOX_0)) != 0) {
+> -		if (time_before(timeout, jiffies)) {
+> +		if (time_before(jiffies, timeout)) {
+>  			printk(KERN_WARNING "wanXL %s: timeout waiting for"
+>  			       " PUTS to complete\n", pci_name(pdev));
+>  			wanxl_pci_remove_one(pdev);
 >
-> "Tomas Winkler" <tomasw@gmail.com> wrote:
->
->  >
->
-> > I couldn't find anything that can prevent the probe function to be
->  > called in case the module is already loaded. I've looked at udev and
->  > HAL and no much I found.
->  > I will dig into kernel sources, maybe finding out how can be bus
->  > enumeration triggered again or something like this.
->  > Any pointers will be appreciated.
->  >
->
->  Here's the patch that added the functionality:
->
->  http://lkml.org/lkml/2007/4/27/466
 
+I can't see a bug here - time_before(timeout, jiffies) means "if
+timeout is before jiffies", IOW if jiffies passed the timeout.
 
-Thanks a lot. I will look at this and how it can be used.
-
-Anyhow I've seen that concept of parallel probe is not so new. It was
-in 2.6.18 and removed in 2.619.
-Probably different approach, maybe more would be adding a parallel
-initial function.
-Probe will just register to the bus and relevant subsystem, it will be fast.
-Optional Initialization function will run after probe in different
-thread, this would be the place for running FW download.
-Device won't be considered initialized till this function haven't
-completed or is not implemented.
-
-
-Any comments are welcome.
-
-Thanks
-Tomas
-
-
-
->  Rgds
->  Pierre
->
+Perhaps time_after(jiffies, timeout) is a bit better equivalent, I
+will use that.
+-- 
+Krzysztof Halasa
