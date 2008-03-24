@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYCXOwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbYCXOyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYCXOwm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 10:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbYCXOwf
+	id S1761258AbYCXOyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 10:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759014AbYCXOyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 10:52:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49181 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758612AbYCXOwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 10:52:34 -0400
-Message-ID: <47E7C00B.5000503@redhat.com>
-Date: Mon, 24 Mar 2008 11:51:55 -0300
-From: Glauber Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 24 Mar 2008 10:54:35 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:49946 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758392AbYCXOye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 10:54:34 -0400
+Message-ID: <47E7C05C.2000001@freescale.com>
+Date: Mon, 24 Mar 2008 09:53:16 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, ak@suse.de
-Subject: Re: [PATCH 45/79] [PATCH] fix apic acking of irqs
-References: <12059475744092-git-send-email-gcosta@redhat.com> <12059476932397-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send! -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat <12059477792893-git-send-email-gcosta@redhat.com> <alpine.SOC.1.00.0803201016540.12075@piorun> <47E27D08.9050809@redhat.com> <alpine.SOC.1.00.0803202125520.21415@piorun>
-In-Reply-To: <alpine.SOC.1.00.0803202125520.21415@piorun>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
+References: <12059526271941-git-send-email-yorksun@freescale.com>	<12059526274026-git-send-email-yorksun@freescale.com>	<20080320152708.23c6c734.akpm@linux-foundation.org>	<47E3DE6E.2050801@freescale.com> <20080321111228.95a7d9ab.akpm@linux-foundation.org>
+In-Reply-To: <20080321111228.95a7d9ab.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Thu, 20 Mar 2008, Glauber Costa wrote:
-> 
->>>  Are you sure this actually triggers for APIC chips affected by the erratum
->>> in question?  And please note that for them the effect of two consecutive
->>> writes will be much more disastrous than setting a bit in the ESR register.
->> I'm not _sure_, but I can't find anything in the errata list that states
->> otherwise. It would be great that anyone has such a system to test it. But
->> with the current conditions, it will break bootup code. In case it is really a
->> problem, we'd need to make a special case for that.
-> 
->  I have dug out the relevant erratum -- it is the 11AP one as referred to 
-> from arch/x86/kernel/smp_32.c and the text even mentions the EOI register 
-> explicitly:
-> 
-> "This problem affects systems that use HOLD/HLDA or BOFF# and enable the 
-> local APIC of the CPU.  If the second APIC write cycle is an EOI (End of 
-> Interrupt) cycle, the CPU will stop servicing subsequent interrupts of 
-> equal or less priority.  This may cause the system to hang.  If the second 
-> APIC write cycle is not an EOI, the failure mode would depend on the 
-> particular APIC register that is not updated correctly."
-> 
->  But on this occasion I took the opportunity to refresh my memory on the 
-> ESR register and there is apparently no bit there, at least up to 
-> Pentium4, that would signify an error resulting from an incorrect access 
-> type -- only accesses to invalid register indices are marked as errors.  
-> 
->  Which bit of the ESR can you see set as a result of using an RMW cycle to 
-> the EOI register and with what kind of CPU/APIC?  And why wouldn't it have 
-> affected older kernels? -- the error interrupt has been kept enabled by 
-> Linux for ages and writes to the EOI register are frequent enough it would 
-> be hard to miss the resulting flood of errors.  Hmm...
-> 
-I see bit 7 - Illegal Register Address being set.
-I believe the reason we never saw it, is that the ESR register is not 
-checked that often when interrupts are enabled. In the new bootup state 
-machine, that is inherited from x86_64, we call do_boot_cpu with irqs 
-clearly enabled, and check esr in the process.
+Andrew Morton wrote:
 
-But I can understand from the spec you posted that this is clearly an 
-error. So I'd have better come up with a new solution from this
+>>> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+>> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
+> 
+> No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
+> and misleading.  GFP_DMA is already atomic; the only effect of adding
+> GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
+> 
+> Don't wory about it ;)
 
+Well, maybe we don't want GFP_ATOMIC then, because I don't think we want
+__GFP_HIGH.  Looking at the code, it appears the __GFP_HIGH has nothing to do
+with HIGHMEM (which on PowerPC is the not 1-to-1 mapping memory from 0xF000000
+to 0xFFFFFFFF).  Further examination of the cools shows the __GFP_HIGH says to
+try access the "emergency pool", and I see this code snippet:
+
+	if (alloc_flags & ALLOC_HIGH)
+		min -= min / 2;
+
+I guess this means that we reduce the amount of memory that can be available in
+order for the allocate to succeed.
+
+Considering that the amount of memory that we allocate is in the order of
+megabytes, and it really isn't that important, I would think that we don't want
+to touch the emergency pool.  Does that sound right?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
