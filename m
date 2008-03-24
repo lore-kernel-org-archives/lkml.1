@@ -1,87 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbYCXSjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763313AbYCXSWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763628AbYCXSjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762988AbYCXSit
+	id S1763313AbYCXSWz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761606AbYCXSVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:38:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:36760 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762940AbYCXSis (ORCPT
+	Mon, 24 Mar 2008 14:21:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55024 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761506AbYCXSVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:38:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=EjmR4JoLDDPNaNCL1wRh6z2sAoJyk46uIuov8FtHH/SxY7i6bKEbkNJiFt2VaJdSZ1EjkTfcjIbI3rZQjoR93N6ncuLJHdLGDNj440Jp5E7XgNF6yXkP/zjJCTRpz7tIcNkHQmylDgkPZ8wFL3sOPPSYY2MmyCyrombFSJDSVkg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Mon, 24 Mar 2008 19:53:51 +0100
-Message-Id: <20080324185351.15320.58464.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080324185324.15320.23248.sendpatchset@localhost.localdomain>
-References: <20080324185324.15320.23248.sendpatchset@localhost.localdomain>
-Subject: [PATCH 5/5] ide: make ide_hwifs[] static
+	Mon, 24 Mar 2008 14:21:19 -0400
+Date: Mon, 24 Mar 2008 13:21:18 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC 6/8] x86_64: Define the macros and tables for the basic UV infrastructure.
+Message-ID: <20080324182118.GA21758@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move ide_hwifs[] from ide.c to ide-probe.c and make it static.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Define the macros and tables for the basic UV infrastructure.
+
+
+(NOTE: a work-in-progress. Pieces missing....)
+
+
+	Signed-off-by: Jack Steiner <steiner@sgi.com>
+
 ---
- drivers/ide/ide-probe.c |    2 ++
- drivers/ide/ide.c       |    2 --
- include/linux/ide.h     |   12 ------------
- 3 files changed, 2 insertions(+), 14 deletions(-)
+ include/asm-x86/uv_hub.h |  217 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 217 insertions(+)
 
-Index: b/drivers/ide/ide-probe.c
+Index: linux/include/asm-x86/uv_hub.h
 ===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -39,6 +39,8 @@
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
-+static ide_hwif_t ide_hwifs[MAX_HWIFS]; /* master data repository */
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/asm-x86/uv_hub.h	2008-03-21 15:48:18.000000000 -0500
+@@ -0,0 +1,217 @@
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * SGI UV architectural definitions
++ *
++ * Copyright (C) 2007 Silicon Graphics, Inc. All rights reserved.
++ */
 +
- /**
-  *	generic_id		-	add a generic drive id
-  *	@drive:	drive to make an ID block for
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -91,8 +91,6 @@ DEFINE_MUTEX(ide_cfg_mtx);
- __cacheline_aligned_in_smp DEFINE_SPINLOCK(ide_lock);
- EXPORT_SYMBOL(ide_lock);
- 
--ide_hwif_t ide_hwifs[MAX_HWIFS];	/* master data repository */
--
- static void ide_port_init_devices_data(ide_hwif_t *);
- 
- /*
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -788,18 +788,6 @@ struct ide_driver_s {
- 
- int generic_ide_ioctl(ide_drive_t *, struct file *, struct block_device *, unsigned, unsigned long);
- 
--/*
-- * ide_hwifs[] is the master data structure used to keep track
-- * of just about everything in ide.c.  Whenever possible, routines
-- * should be using pointers to a drive (ide_drive_t *) or
-- * pointers to a hwif (ide_hwif_t *), rather than indexing this
-- * structure directly (the allocation/layout may change!).
-- *
-- */
--#ifndef _IDE_C
--extern	ide_hwif_t	ide_hwifs[];		/* master data repository */
--#endif
--
- extern int ide_vlb_clk;
- extern int ide_pci_clk;
- 
++#ifndef __ASM_X86_UV_HUB_H__
++#define __ASM_X86_UV_HUB_H__
++
++#include <linux/numa.h>
++#include <linux/percpu.h>
++#include <asm/types.h>
++#include <asm/percpu.h>
++
++
++/*
++ * Addressing Terminology
++ *
++ * 	NASID - network ID of a router, Mbrick or Cbrick. Nasid values of
++ * 		routers always have low bit of 1, C/MBricks have low bit
++ * 		equal to 0. Most addressing macros that target UV hub chips
++ * 		right shift the NASID by 1 to exclude the always-zero bit.
++ *
++ *	SNASID - NASID right shifted by 1 bit.
++ *
++ *
++ *  Memory/UV-HUB Processor Socket Address Format:
++ *  +--------+---------------+---------------------+
++ *  |00..0000|    SNASID     |      NodeOffset     |
++ *  +--------+---------------+---------------------+
++ *           <--- N bits --->|<--------M bits ----->
++ *
++ *	M number of node offset bits (35 .. 40)
++ *	N number of SNASID bits (0 .. 10)
++ *
++ *		Note: M + N cannot currently exceed 44 (x86_64) or 46 (IA64).
++ *		The actual values are configuration dependent and are set at
++ *		boot time
++ *
++ * APICID format
++ * 	NOTE!!!!!! This is the current format of the APICID. However, code
++ * 	should assume that this will change in the future. Use functions
++ * 	in this file for all APICID bit manipulations and conversion.
++ *
++ * 		1111110000000000
++ * 		5432109876543210
++ *		nnnnnnnnnnlc0cch
++ *		sssssssssss
++ *
++ *			n  = snasid bits
++ *			l =  socket number on board
++ *			c  = core
++ *			h  = hyperthread
++ *			s  = bits that are in the socket CSR
++ *
++ *	Note: Processor only supports 12 bits in the APICID register. The ACPI
++ *	      tables hold all 16 bits. Software needs to be aware of this.
++ *
++ * 	      Unless otherwise specified, all references to APICID refer to
++ * 	      the FULL value contained in ACPI tables, not the subset in the
++ * 	      processor APICID register.
++ */
++
++
++/*
++ * Maximum number of bricks in all partitions and in all coherency domains.
++ * This is the total number of bricks accessible in the numalink fabric. It
++ * includes all C & M bricks. Routers are NOT included.
++ *
++ * This value is also the value of the maximum number of non-router NASIDs
++ * in the numalink fabric.
++ *
++ * NOTE: a brick may be 1 or 2 OS nodes. Don't get these confused.
++ */
++#define UV_MAX_NUMALINK_BLADES	16384
++
++/*
++ * Maximum number of C/Mbricks within a software SSI (hardware may support
++ * more).
++ */
++#define UV_MAX_SSI_BLADES	256
++
++/*
++ * The largest possible NASID of a C or M brick (+ 2)
++ */
++#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_NODES * 2)
++
++/*
++ * The following defines attributes of the HUB chip. These attributes are
++ * frequently referenced and are kept in the per-cpu data areas of each cpu.
++ * They are kept together in a struct to minimize cache misses.
++ */
++struct uv_hub_info_s {
++	unsigned long	global_mmr_base;
++	unsigned short	local_nasid;
++	unsigned short	gnode_upper;
++	unsigned short	coherency_domain_number;
++	unsigned short	numa_blade_id;
++	unsigned char	blade_processor_id;
++	unsigned char	m_val;
++	unsigned char	n_val;
++};
++DECLARE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
++#define uv_hub_info 		(&__get_cpu_var(__uv_hub_info))
++#define uv_cpu_hub_info(cpu)	(&per_cpu(__uv_hub_info, cpu))
++
++/* This header file is used in BIOS code that runs in physical mode */
++#ifdef __BIOS__
++#define UV_ADDR(x)		((unsigned long *)(x))
++#else
++#define UV_ADDR(x)		((unsigned long *)__va(x))
++#endif
++
++/*
++ * Local & Global MMR space macros.
++ * 	Note: macros are intended to be used ONLY by inline functions
++ * 	in this file - not by other kernel code.
++ */
++#define UV_SNASID(n)			((n) >> 1)
++#define UV_NASID(n)			((n) << 1)
++
++#define UV_LOCAL_MMR_BASE		0xf4000000UL
++#define UV_GLOBAL_MMR32_BASE		0xf8000000UL
++#define UV_GLOBAL_MMR64_BASE		(uv_hub_info->global_mmr_base)
++
++#define UV_GLOBAL_MMR32_SNASID_MASK	0x3ff
++#define UV_GLOBAL_MMR32_SNASID_SHIFT	15
++#define UV_GLOBAL_MMR64_SNASID_SHIFT	26
++
++#define UV_GLOBAL_MMR32_NASID_BITS(n)					\
++		(((UV_SNASID(n) & UV_GLOBAL_MMR32_SNASID_MASK)) <<	\
++		(UV_GLOBAL_MMR32_SNASID_SHIFT))
++
++#define UV_GLOBAL_MMR64_NASID_BITS(n)					\
++	((unsigned long)UV_SNASID(n) << UV_GLOBAL_MMR64_SNASID_SHIFT)
++
++#define UV_APIC_NASID_SHIFT	7
++
++/*
++ * Extract a NASID from an APICID (full apicid, not processor subset)
++ */
++static inline int uv_apicid_to_nasid(int apicid)
++{
++	return (UV_NASID(apicid >> UV_APIC_NASID_SHIFT));
++}
++
++/*
++ * Access global MMRs using the low memory MMR32 space. This region supports
++ * faster MMR access but not all MMRs are accessible in this space.
++ */
++static inline unsigned long *uv_global_mmr32_address(int nasid,
++				unsigned long offset)
++{
++	return UV_ADDR(UV_GLOBAL_MMR32_BASE |
++		       UV_GLOBAL_MMR32_NASID_BITS(nasid) | offset);
++}
++
++static inline void uv_write_global_mmr32(int nasid, unsigned long offset,
++				 unsigned long val)
++{
++	*uv_global_mmr32_address(nasid, offset) = val;
++}
++
++static inline unsigned long uv_read_global_mmr32(int nasid,
++						 unsigned long offset)
++{
++	return *uv_global_mmr32_address(nasid, offset);
++}
++
++/*
++ * Access Global MMR space using the MMR space located at the top of physical
++ * memory.
++ */
++static inline unsigned long *uv_global_mmr64_address(int nasid,
++				unsigned long offset)
++{
++	return UV_ADDR(UV_GLOBAL_MMR64_BASE |
++		       UV_GLOBAL_MMR64_NASID_BITS(nasid) | offset);
++}
++
++static inline void uv_write_global_mmr64(int nasid, unsigned long offset,
++				unsigned long val)
++{
++	*uv_global_mmr64_address(nasid, offset) = val;
++}
++
++static inline unsigned long uv_read_global_mmr64(int nasid,
++						 unsigned long offset)
++{
++	return *uv_global_mmr64_address(nasid, offset);
++}
++
++/*
++ * Access node local MMRs. Faster than using global space but only local MMRs
++ * are accessible.
++ */
++static inline unsigned long *uv_local_mmr_address(unsigned long offset)
++{
++	return UV_ADDR(UV_LOCAL_MMR_BASE | offset);
++}
++
++static inline unsigned long uv_read_local_mmr(unsigned long offset)
++{
++	return *uv_local_mmr_address(offset);
++}
++
++static inline void uv_write_local_mmr(unsigned long offset, unsigned long val)
++{
++	*uv_local_mmr_address(offset) = val;
++}
++
++#endif /* __ASM_X86_UV_HUB__ */
++
