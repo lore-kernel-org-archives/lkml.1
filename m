@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYCXDzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbYCXEF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbYCXDzu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 23:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYCXDzk
+	id S1752450AbYCXEF2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 00:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYCXEFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 23:55:40 -0400
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:15843 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYCXDzj (ORCPT
+	Mon, 24 Mar 2008 00:05:18 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59965 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750886AbYCXEFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 23:55:39 -0400
-To: "Kai" <epimetreus@fastmail.fm>
+	Mon, 24 Mar 2008 00:05:16 -0400
+X-Sasl-enc: D0F0ELsieuYjKJdkcNXsT58TClScnxu7IEz9SOomNhB1 1206331515
+Date: Mon, 24 Mar 2008 01:05:14 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jan Engelhardt <jengelh@computergmbh.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Serious performance regression in Wine applications and Linux 2.6.24.*
-References: <1206310206.17373.1243881033@webmail.messagingengine.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 24 Mar 2008 04:55:36 +0100
-In-Reply-To: <1206310206.17373.1243881033@webmail.messagingengine.com>
-Message-ID: <87tziw7p3b.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+Subject: your old menuconfig patch series, and select
+Message-ID: <20080324040514.GC3321@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Mar 2008 03:49:00.0191 (UTC) FILETIME=[FE8AC2F0:01C88D61]
+Content-Disposition: inline
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Kai" <epimetreus@fastmail.fm> writes:
+Jan,
 
-> Originally, it was just about everything -- Wine itself, and most any
-> app I tried to run with it.
-> 
-> In my most recent tests, however, it only seems to affect Age of Wonders
-> II and Age of Wonders Shadow Magic, which use very similar engines.
+In your menuconfig patch series to convert menu into menuconfig,
+you used "if <new menuconfig symbol" quite often.
 
-A simple test if the scheduler is likely to blame would be to compare
-context switch rates between the different kernel versions who show
-differing performance. You can do that with running "vmstat 1" in
-parallel and checking the "cs" column.
+That causes serious issues with "select".  E.g. currently "select
+LEDS_CLASS" does not work, because it is inside a "if NEW_LEDS".
 
-Another powerful but quite slow method if you can easily reproduce it
-would be a full git bisect. That would identify exactly which change
-introduced your problem.
+Of course, not much stuff is the target of "select", but classes and
+their ilk often are.
 
--Andi
+What's the best solution for this?  Drop the "if <menuconfig symbol>"
+and add lots of "depends on <menuconfig symbol>"?  Or hunt down every
+symbol selected inside an if and add the required select for the
+menuconfig symbol?
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
