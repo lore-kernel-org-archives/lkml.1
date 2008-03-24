@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbYCXMja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbYCXMjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759457AbYCXMja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 08:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYCXMjV
+	id S1760122AbYCXMjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 08:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbYCXMjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 08:39:21 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:64370 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752090AbYCXMjU (ORCPT
+	Mon, 24 Mar 2008 08:39:23 -0400
+Received: from viefep31-int.chello.at ([62.179.121.49]:55074 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757479AbYCXMjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 08:39:20 -0400
-Message-Id: <20080324122424.671168000@chello.nl>
+	Mon, 24 Mar 2008 08:39:22 -0400
+Message-Id: <20080324123922.087515000@chello.nl>
+References: <20080324122424.671168000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 24 Mar 2008 13:24:24 +0100
+Date: Mon, 24 Mar 2008 13:24:26 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
@@ -20,33 +21,39 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Marcin Slusarz <marcin.slusarz@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 0/2] printk vs rq->lock and xtime lock
+Subject: [PATCH 2/2] time: xtime lock vs printk
+Content-Disposition: inline; filename=time-printk-vs-xtime.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+This printk() can deadlock because it can wake up klogd(), and
+task enqueueing will try to read the time in order to set a hrtimer.
 
-As to the regression reported by Marcin; what happens is that we invoke
-printk() while holding the xtime lock for writing. printk() will call
-wake_up_klogd() which tries to enqueue klogd on some rq.
+Use the new printk_nowakeup() which will avoid waking klogd.
 
-The known deadlock here is calling printk() while holding rq->lock, which
-would then try to recusively lock the rq again when trying to wake klogd.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/time/timekeeping.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-The new deadlock is due to task enqueues setting an hrtimer, which requires
-reading the time, which will result in a live-lock when the printk() call-
-site is holding the xtime lock for writing.
+Index: linux-2.6-2/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6-2.orig/kernel/time/timekeeping.c
++++ linux-2.6-2/kernel/time/timekeeping.c
+@@ -191,7 +191,11 @@ static void change_clocksource(void)
+ 
+ 	tick_clock_notify();
+ 
+-	printk(KERN_INFO "Time: %s clocksource has been installed.\n",
++	/*
++	 * We're holding xtime lock and waking up klogd would deadlock
++	 * us on enqueue. Print without waking.
++	 */
++	printk_nowakeup(KERN_INFO "Time: %s clocksource has been installed.\n",
+ 	       clock->name);
+ }
+ #else
 
-Thomas would like to preserve the printk() information if possible, hence my
-proposal of printk_nowakeup(). It will do everything printk() normally does,
-except ommit to wake up of klogd. The call is explicitly not EXPORTed so that
-its use is confined to core kernel code.
-
-Marcin, could you please test these two patches to confirm they do indeed
-solve your issue as well?
-
-Peter
-
-
+--
 
