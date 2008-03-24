@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYCXWYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYCXW3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbYCXWYi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 18:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYCXWYb
+	id S1754637AbYCXW3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 18:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYCXW3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 18:24:31 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48517 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbYCXWYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 18:24:30 -0400
-Date: Tue, 25 Mar 2008 00:23:28 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: David Miller <davem@davemloft.net>, jesper.juhl@gmail.com,
-       chrisw@sous-sol.org, linux-kernel@vger.kernel.org, stable@kernel.org,
-       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
-       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
-       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
-       cavokz@gmail.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de
-Subject: Re: [patch 07/76] NIU: Bump driver version and release date.
-Message-ID: <20080324222328.GB1789@cs181133002.pp.htv.fi>
-References: <20080321224250.144333319@sous-sol.org> <20080321224333.400857992@sous-sol.org> <9a8748490803211710u4c5d1d67x2a5a891347e0adf6@mail.gmail.com> <20080321.171401.49157146.davem@davemloft.net> <84144f020803221557t36502f6bo327c95705be706bf@mail.gmail.com>
+	Mon, 24 Mar 2008 18:29:46 -0400
+Received: from b.mail.confirmations.getresponse.COM ([209.2.34.150]:40301 "EHLO
+	b.mail.confirmations.getresponse.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752663AbYCXW3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 18:29:45 -0400
+X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Mar 2008 18:29:45 EDT
+Domainkey-Signature: a=rsa-sha1; c=nofws;
+        d=getresponse.com; s=k1024a; q=dns;
+        h=from:sender:to:subject;
+        b=S8OY6ivHXvZ+diALj5WbyNY64BZFyjkWutRLLdmkcrEjVx4oQ3D0Ur9iG4c/f71HRnIcqaiceoqX7lCImy882XuE0OLAz7gu+/IKmou1kopWS7vkT0+aKKijiGDXco++ToL/Pu5KLF0o6iYcOdlI31So3237Rxfr/wmSrv/gDbg=;
+From: "Matthew Hopkins" <matthew_hopkins@bellsouth.net>
+To: "List 1" <linux-kernel@vger.kernel.org>
+Subject: Please verify your subscription.
+X-Serial: s56aN1yHrd6EyzN3mDilo/GjQzzkZNsdMRpXcEBS4WMtbtPkBJy0jDcYpqzJGhV3uhb27D1fu0XM7FauvqdycGi/K6fsTfy46z+0QgTDXIvbd/eBNsu4xFBk3g3xMa5bj5rAODS5Ii9CVyB+Deazj/J3Sg1ezilNyFmpwxzSJBQW2AzWqAheuTRDdrIUiRAYzsnnOhD7ek8iGA4Um2qbo09c3A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Date: Mon, 24 Mar 2008 18:20:30 -0400
+Reply-To: matthew_hopkins@bellsouth.net
+X-Complaints-To: abuse@getresponse.com
+X-Mailer: GetResponse 4.0
+X-Remove-Address: linux-kernel@vger.kernel.org
+X-Responder-Id: 682378
+Message-Id: <1206397230.512266@getresponse.com>
 Content-Disposition: inline
-In-Reply-To: <84144f020803221557t36502f6bo327c95705be706bf@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 23, 2008 at 12:57:29AM +0200, Pekka Enberg wrote:
-> Hi David,
-> 
-> On Sat, Mar 22, 2008 at 2:14 AM, David Miller <davem@davemloft.net> wrote:
-> >  It makes a difference for driver maintainers when users
-> >  report bugs and we ask them for the version printed
-> >  by the driver so that we know which fixes have been
-> >  applied.
-> >
-> >  You know, if people are going to be jerky about this,
-> >  I'll just include the version bump in the actual bug
-> >  fixes which I sometimes do anyways.
-> >
-> >  Thanks for bringing this up, it's a useful use of
-> >  everyone's time :-/
-> 
-> Uhm, Jesper was asking a relevant question and definitely not being
-> "jerky". As you probably know, many of us are dropping explicit driver
-> versions from the code for the exact reason why you're trying to patch
-> the stable tree now. They get out of sync real easy and the kernel
-> version already provides the same information so why bother.
->...
+Thank you for your interest in VemmaBuilder. You will soon recieve updates on how to make money the fun and easy way! 
 
-There are two completely different cases one mustn't confuse:
+Your request for additional information
+has been received. Please confirm it by
+clicking the following link:
 
-> 90% of all version numbers, cvs tags,... in the kernel haven't been 
-updated for ages and should be removed.
+http://getresponse.net/k/1uw7/C6LYCZ4sv
 
-But there are some drivers and ALSA that have an active maintainer, an 
-actively maintained version number, and tend to often be backported into 
-distribution kernels.
+Your request will be processed
+immediately upon your confirmation.
 
->                         Pekka
+You will be able to unsubscribe
+or change your details at any time.
 
-cu
-Adrian
+If you have received this email in
+error and do not intend to receive
+information from us, no further
+action is required on your part.
 
--- 
+You won't receive further
+information and you won't be
+subscribed to any list until you
+confirm your request above.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thank you!
 
+Matthew Hopkins
+VemmaBuilder Success Coach	
+
+Matthew Hopkins
+VemmaBuilder Success Coach
+
+470 Three Springs Rd. Apt.12
+Bowling Green, KY 42104 United States
+
+--
+Email address: "List 1" <linux-kernel@vger.kernel.org>
+Type of request: import
+Timestamp: 2008-03-24 18:20:30
+IP address: 74.236.251.35
