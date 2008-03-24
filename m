@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbYCXNMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbYCXNVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759443AbYCXNMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 09:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYCXNMl
+	id S1759850AbYCXNVb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 09:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbYCXNVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 09:12:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46708 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757363AbYCXNMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 09:12:40 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: linux1394-devel@lists.sourceforge.net
-Subject: Re: [PATCH] firewire: wait until PHY configuration packet was transmitted
-Date: Mon, 24 Mar 2008 09:04:17 -0400
-User-Agent: KMail/1.9.9
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
-References: <tkrat.47c2348a94015e02@s5r6.in-berlin.de> <47E4DDFB.4050600@s5r6.in-berlin.de> <47E5D0B6.6090307@redhat.com>
-In-Reply-To: <47E5D0B6.6090307@redhat.com>
+	Mon, 24 Mar 2008 09:21:22 -0400
+Received: from lazybastard.de ([212.112.238.170]:40313 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757709AbYCXNVV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 09:21:21 -0400
+Date: Mon, 24 Mar 2008 14:21:02 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>
+Subject: Re: [PATCH] 2/3 mtd: add support for flash on the SEGA Dreamcast Visual Memory Unit
+Message-ID: <20080324132101.GA2899@logfs.org>
+References: <1206209035.6324.29.camel@localhost.localdomain> <20080322183200.GD19347@logfs.org> <1206211147.6324.48.camel@localhost.localdomain> <20080322185600.GE19347@logfs.org> <1206207805.6324.13.camel@localhost.localdomain> <1206209035.6324.29.camel@localhost.localdomain> <20080322183200.GD19347@logfs.org> <1206211147.6324.48.camel@localhost.localdomain> <20080324020832.GA13935@linux-sh.org> <1206360384.6283.11.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200803240904.18077.jwilson@redhat.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1206360384.6283.11.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 March 2008 11:38:30 pm Jarod Wilson wrote:
-> Stefan Richter wrote:
-> > Jarod Wilson wrote:
-> >> Will double-check Monday that this solves never-ending (until panic) bus
-> >
-> > s/that/whether/? :-)
->
-> Either one works here. I went with "that", because I'm reasonably
-> certain that it does solve the problem and I'll just be confirming it,
-> vs. suspecting it might and finding out whether it does or not... Or
-> something like that. :)
-[...]
-> >> resets with a jmicron controller in the office
+On Mon, 24 March 2008 12:06:24 +0000, Adrian McMenamin wrote:
+> 
+> I have no desire to have a flame war over this. But I didn't understand
+> the sentence, was told twice that I should act on it and asked twice
+> simply what it meant. Eg the second time...
+> 
+> "I'm sorry, but the comment above <snap> isn't good english. What do you
+> mean?"
 
-And it does in fact solve the constant bus reset problem on the jmicron 
-controller.
+Just for reference, I had no bloody idea what the "<snap>" in your
+sentence meant.  Or what the comment as a whole was referring to.  In
+other words, we could't communicate.
+
+Probably more important is the thing you didn't ask about.  The cast is
+- to use a techinical term - crap.  And when someone ignores such
+things, but instead makes a comment about my English language skills, my
+natural response is to suspect a troll.  Trolls tend to replace "I don't
+understand <foo>" with "you are an idiot" in some disguise like a
+comment about hairstyle or language skills.
+
+You ignored other things as well.  In general, the things you ignored
+are a lot more important than the things you didn't ignore.  Which again
+is a good recipe for fruitless discussions, if not flamewars.  As is a
+metadiscussion about previous discussions - like this one.
+
+> Not unreasonable I think. After the second time I was told  all
+> communication would cease. And, yes, that did annoy me, especially when
+> the next thing I get is someone telling me I didn't listen to them.
+
+Then maybe we can end the digressions and get back to the code and
+improving it?  I would welcome that.  Would you mind if I sent you
+patches against your code?  Might be a way to avoid metadiscussions as
+much as possible.
+
+Jörn
 
 -- 
-Jarod Wilson
-jwilson@redhat.com
+Doubt is not a pleasant condition, but certainty is an absurd one.
+-- Voltaire
