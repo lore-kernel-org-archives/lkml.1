@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbYCXSJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbYCXSKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbYCXSJc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbYCXSJV
+	id S1758155AbYCXSKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbYCXSJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:09:21 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:47030 "EHLO mgw1.diku.dk"
+	Mon, 24 Mar 2008 14:09:55 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:41789 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754814AbYCXSJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:09:20 -0400
-Date: Mon, 24 Mar 2008 19:09:15 +0100 (CET)
+	id S1757430AbYCXSJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 14:09:54 -0400
+Date: Mon, 24 Mar 2008 19:09:41 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: mark.fasheh@oracle.com, kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/5] fs/ocfs2/aops.c: test for IS_ERR rather than 0
-Message-ID: <Pine.LNX.4.64.0803241908490.32740@ask.diku.dk>
+To: rolandd@cisco.com, sean.hefty@intel.com, hal.rosenstock@gmail.com,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/5] drivers/infiniband: test for IS_ERR rather than 0
+Message-ID: <Pine.LNX.4.64.0803241909170.32740@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +24,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The function ocfs2_start_trans always returns either a valid pointer or a
+The function rdma_create_id always returns either a valid pointer or a
 value made with ERR_PTR, so its result should be tested with IS_ERR, not
 with a test for 0.
 
@@ -38,7 +39,7 @@ statement S,S1;
 position p;
 @@
 
-E = ocfs2_start_trans(...)
+E = rdma_create_id(...)
 ... when != E = E1
 if@p (E) S else S1
 
@@ -64,32 +65,18 @@ position a.p;
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- fs/ocfs2/aops.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/infiniband/core/cma.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
---- a/fs/ocfs2/aops.c	2008-03-24 17:50:26.000000000 +0100
-+++ b/fs/ocfs2/aops.c	2008-03-24 17:52:02.000000000 +0100
-@@ -467,11 +467,11 @@ handle_t *ocfs2_start_walk_page_trans(st
- 							 unsigned to)
- {
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
--	handle_t *handle = NULL;
-+	handle_t *handle;
- 	int ret = 0;
- 
- 	handle = ocfs2_start_trans(osb, OCFS2_INODE_UPDATE_CREDITS);
--	if (!handle) {
-+	if (IS_ERR(handle)) {
+diff -u -p a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
+--- a/drivers/infiniband/core/cma.c	2008-03-12 14:13:13.000000000 +0100
++++ b/drivers/infiniband/core/cma.c	2008-03-24 16:10:01.000000000 +0100
+@@ -1289,7 +1289,7 @@ static int iw_conn_req_handler(struct iw
+ 	new_cm_id = rdma_create_id(listen_id->id.event_handler,
+ 				   listen_id->id.context,
+ 				   RDMA_PS_TCP);
+-	if (!new_cm_id) {
++	if (IS_ERR(new_cm_id)) {
  		ret = -ENOMEM;
- 		mlog_errno(ret);
  		goto out;
-@@ -487,7 +487,7 @@ handle_t *ocfs2_start_walk_page_trans(st
- 	}
- out:
- 	if (ret) {
--		if (handle)
-+		if (!IS_ERR(handle))
- 			ocfs2_commit_trans(osb, handle);
- 		handle = ERR_PTR(ret);
  	}
