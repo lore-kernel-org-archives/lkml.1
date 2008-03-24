@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYCXK0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbYCXKoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbYCXK0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 06:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbYCXKZ4
+	id S1758766AbYCXKoa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 06:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbYCXKoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 06:25:56 -0400
-Received: from www.tglx.de ([62.245.132.106]:36903 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756059AbYCXKZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 06:25:55 -0400
-Date: Mon, 24 Mar 2008 11:24:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <crazy@frugalware.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47E6E85E.9030008@frugalware.org>
-Message-ID: <alpine.LFD.1.00.0803241038420.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47DF3E8B.6040502@googlemail.com> <47E3D322.1090902@googlemail.com> <alpine.LFD.1.00.0803211720340.3781@apollo.tec.linutronix.de> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org>
- <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org> <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de>
- <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org> <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org> <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de>
- <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de> <47E58B06.8020905@frugalware.org> <47E63851.7000702@frugalware.org> <47E6E85E.9030008@frugalware.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 24 Mar 2008 06:44:22 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:44397 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756296AbYCXKoW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 06:44:22 -0400
+X-SBRS: 3.6
+X-MesageID: 47212261
+X-Ironport-Server: ftlpip02.citrite.net
+X-Remote-IP: 216.142.71.134
+X-Policy: $Relay
+X-IronPort-AV: E=Sophos;i="4.25,546,1199682000"; 
+   d="scan'208";a="47212261"
+Date: Mon, 24 Mar 2008 10:43:30 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+Message-ID: <20080324104330.GF4434@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20080308022321.GC5853@implementation> <20080323.215641.192753003.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080323.215641.192753003.davem@davemloft.net>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Mar 2008, Gabriel C wrote:
-> >>> Can you please give it a test ride ?
-> >> Done , git head + Andi's patch + this version of your patch does work here.
-> >>
-> >> Also time-warp-test is just fine and everything else seems to work.
+David Miller, le Sun 23 Mar 2008 21:56:41 -0700, a écrit :
+> From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> Date: Sat, 8 Mar 2008 02:23:21 +0000
+> 
+> > Accept and getpeername are supposed to return the amount of bytes
+> > written in the returned address.  However, on unnamed sockets, only
+> > sizeof(short) is returned, while a 0 is put in the sun_path member.
+> > This patch adds 1 for that additional byte.
 > > 
-> > Also I've tested with my other motherboard and is fine too :)
-> > 
-> > Feel free to add my Tested-by when you push this patch.
+> > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 > 
-> Heh :/
-> 
-> ...
-> 
-> [ 5902.632878] Clocksource tsc unstable (delta = 4686687272 ns)
-> [ 5920.650516] Time: acpi_pm clocksource has been installed.
-> 
-> ...
-> 
-> Seems like something still triggers that :/ 
+> This change isn't correct.  It's the fact that the
+> length returned is sizeof(short) that tells the caller
+> that the unix socket is unnamed.
 
-Hmm. Can you please apply the patch below. It add some more info and
-triggers the sysrq-q timer list printout when the watchdog
-triggers. That might us give some insight into this.
+Mmm, where that is documented?
 
-Thanks,
-	tglx
+I can't find any details about that in SUS, and man 7 unix says
 
----
- kernel/time/clocksource.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+`If sun_path starts with a null byte ('' '), then it refers to the
+abstract namespace main- tained by the Unix protocol module.'
 
-Index: linux-2.6/kernel/time/clocksource.c
-===================================================================
---- linux-2.6.orig/kernel/time/clocksource.c
-+++ linux-2.6/kernel/time/clocksource.c
-@@ -87,8 +87,10 @@ static void clocksource_ratewd(struct cl
- 	if (delta > -WATCHDOG_THRESHOLD && delta < WATCHDOG_THRESHOLD)
- 		return;
- 
--	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
--	       cs->name, delta);
-+	printk(KERN_WARNING
-+	       "Clocksource %s unstable (delta = %Ld ns) E:%lu J:%lu\n",
-+	       cs->name, delta, watchdog_timer.expires, jiffies);
-+	sysrq_timer_list_show();
- 	cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
- 	clocksource_change_rating(cs, 0);
- 	list_del(&cs->wd_list);
+It doesn't talk about the size being only sizeof(short) (which I guess
+you meant sizeof(sa_family_t) actually).
+
+> We zero out the sun_path[0] member just to be polite and tidy.
+> 
+> You would break applications if you changed this, so
+> marking this patch as "trivial" is extremely premature.
+
+See documentation above.  If applications don't follow documentation,
+then they deserve breaking :)
+
+Note also that on some (BSD-ish) systems, sockaddr_un contains a sun_len
+field, containing the length of the data, and thus on them accept and
+getpeername return more that sizeof(sa_family_t) as length (it actually
+returns 16).  So such applications are really broken.
+
+Samuel
