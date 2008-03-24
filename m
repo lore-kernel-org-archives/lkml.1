@@ -1,113 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYCXXpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYCXXsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYCXXpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 19:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYCXXpn
+	id S1755861AbYCXXsF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 19:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYCXXrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:45:43 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:2523 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbYCXXpn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:45:43 -0400
-Message-ID: <47E83D14.8070800@imap.cc>
-Date: Tue, 25 Mar 2008 00:45:24 +0100
-From: Tilman Schmidt <tilman@imap.cc>
+	Mon, 24 Mar 2008 19:47:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:53653 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752562AbYCXXry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 19:47:54 -0400
+Message-ID: <47E83C99.3040800@goop.org>
+Date: Mon, 24 Mar 2008 16:43:21 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25-rc6] possible regression: X server dying
-References: <47E82D68.5070305@imap.cc> <21d7e9970803241622v10b887a6p869535102b486279@mail.gmail.com>
-In-Reply-To: <21d7e9970803241622v10b887a6p869535102b486279@mail.gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH FIXED] x86: only enable interrupts when kernel state has been
+ set up
 X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig07A399F85409092A97390B41"
-X-Spam-Score: -0.652 () AWL,BAYES_50,RDNS_DYNAMIC
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig07A399F85409092A97390B41
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The sysenter path tries to enable interrupts immediately.  Unfortunately
+this doesn't work in a paravirt environment, because not enough kernel
+state has been set up at that point (namely, pointing %fs to the kernel
+percpu data segment).  To fix this, defer ENABLE_INTERRUPTS until after
+the kernel state has been set up.
 
-On Tue, 25 Mar 2008 09:22:32 +1000, Dave Airlie wrote:
-> On Tue, Mar 25, 2008 at 8:38 AM, Tilman Schmidt <tilman@imap.cc> wrote:=
+Unfortunately this means that we're running with interrupts disabled
+for a while without calling the IRQ tracing code, but that can't be
+called without setting up %fs either.
 
->> In the five days since I booted a 2.6.25-rc6 kernel on my development
->>  machine, it has happened three times already that I came back to the
->>  machine to find that the X server had exited, killing all application=
-s
->>  that still had a window open. [...]
->=20
-> anything in the X.org logfiles?
+[ Fix since last posting: make sure saved eflags has interrupts enabled. ]
 
-Ah, of course. Sorry I forgot. Xorg.0.log.old ends with this:
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/entry_32.S |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-| Backtrace:
-| 0: /usr/bin/X(xf86SigHandler+0x81) [0x80e6d81]
-| 1: [0xb7fc9400]
-| 2:
-/usr/lib/xorg/modules//extensions/libGLcore.so(_swrast_Triangle+0x2d)
-[0xb51ea5dd]
-| 3: /usr/lib/xorg/modules//extensions/libGLcore.so [0xb51f1075]
-| 4: /usr/lib/xorg/modules//extensions/libGLcore.so [0xb5206f2e]
-| 5: /usr/lib/xorg/modules//extensions/libGLcore.so [0xb52080b8]
-| 6:
-/usr/lib/xorg/modules//extensions/libGLcore.so(_tnl_run_pipeline+0x153)
-[0xb520cb83]
-| 7:
-/usr/lib/xorg/modules//extensions/libGLcore.so(_tnl_draw_prims+0x3f0)
-[0xb51f8340]
-| 8:
-/usr/lib/xorg/modules//extensions/libGLcore.so(vbo_exec_vtx_flush+0x1fb)
-[0xb52471eb]
-| 9:
-/usr/lib/xorg/modules//extensions/libGLcore.so(vbo_exec_FlushVertices+0x7=
-8)
-[0xb52488e8]
-| 10: /usr/lib/xorg/modules//extensions/libGLcore.so(_mesa_Flush+0x83)
-[0xb5112663]
-| 11: /usr/lib/xorg/modules//extensions/libglx.so [0xb7c6a107]
-| 12: /usr/lib/xorg/modules//extensions/libglx.so [0xb7c4aa6d]
-| 13: /usr/bin/X [0x815809e]
-| 14: /usr/bin/X(Dispatch+0x1af) [0x808f68f]
-| 15: /usr/bin/X(main+0x47e) [0x807717e]
-| 16: /lib/libc.so.6(__libc_start_main+0xe0) [0xb7d5dfe0]
-| 17: /usr/bin/X(FontFileCompleteXLFD+0x1e5) [0x8076501]
-|
-| Fatal server error:
-| Caught signal 11.  Server aborting
+===================================================================
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -290,10 +290,10 @@ ENTRY(ia32_sysenter_target)
+ 	movl TSS_sysenter_sp0(%esp),%esp
+ ENTRY(sysenter_past_esp)
+ 	/*
+-	 * No need to follow this irqs on/off section: the syscall
+-	 * disabled irqs and here we enable it straight after entry:
++	 * Interrupts are disabled here, but we can't trace it until
++	 * enough kernel state to call TRACE_IRQS_OFF can be called - but
++	 * we immediately enable interrupts at that point anyway.
+ 	 */
+-	ENABLE_INTERRUPTS(CLBR_NONE)
+ 	pushl $(__USER_DS)
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	/*CFI_REL_OFFSET ss, 0*/
+@@ -301,6 +301,7 @@ ENTRY(sysenter_past_esp)
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	CFI_REL_OFFSET esp, 0
+ 	pushfl
++	orl $X86_EFLAGS_IF, (%esp)
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	pushl $(__USER_CS)
+ 	CFI_ADJUST_CFA_OFFSET 4
+@@ -314,6 +315,11 @@ ENTRY(sysenter_past_esp)
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	CFI_REL_OFFSET eip, 0
+ 
++	pushl %eax
++	CFI_ADJUST_CFA_OFFSET 4
++	SAVE_ALL
++	ENABLE_INTERRUPTS(CLBR_NONE)
++
+ /*
+  * Load the potential sixth argument from user stack.
+  * Careful about security.
+@@ -321,14 +327,12 @@ ENTRY(sysenter_past_esp)
+ 	cmpl $__PAGE_OFFSET-3,%ebp
+ 	jae syscall_fault
+ 1:	movl (%ebp),%ebp
++	movl %ebp,PT_EBP(%esp)
+ .section __ex_table,"a"
+ 	.align 4
+ 	.long 1b,syscall_fault
+ .previous
+ 
+-	pushl %eax
+-	CFI_ADJUST_CFA_OFFSET 4
+-	SAVE_ALL
+ 	GET_THREAD_INFO(%ebp)
+ 
+ 	/* Note, _TIF_SECCOMP is bit number 8, and so it needs testw and not testb */
+@@ -542,9 +546,6 @@ END(syscall_exit_work)
+ 
+ 	RING0_INT_FRAME			# can't unwind into user space anyway
+ syscall_fault:
+-	pushl %eax			# save orig_eax
+-	CFI_ADJUST_CFA_OFFSET 4
+-	SAVE_ALL
+ 	GET_THREAD_INFO(%ebp)
+ 	movl $-EFAULT,PT_EAX(%esp)
+ 	jmp resume_userspace
 
-I have put the entire file at
-http://gollum.phnxsoft.com/~ts/linux/Xorg.0.log.old
-in case you want to have a look.
-
-> does it happen with DRI off?
-
-I guess it does, as my Xorg.0.log{,.old} says:
-
-| (WW) MGA(0): Direct rendering disabled
-
-HTH
-Tilman
-
-
---------------enig07A399F85409092A97390B41
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFH6D0fQ3+did9BuFsRAjpBAJ44HBJsNsDTzK15RoPb6GaVZH+OuACfeP6B
-K1Ghl0E+ufVLrdi9qS4HZ8s=
-=eIfi
------END PGP SIGNATURE-----
-
---------------enig07A399F85409092A97390B41--
