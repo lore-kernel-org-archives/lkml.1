@@ -1,261 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763313AbYCXSWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762265AbYCXS5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763313AbYCXSWz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761606AbYCXSVU
+	id S1762265AbYCXS5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbYCXS5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:21:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55024 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761506AbYCXSVT (ORCPT
+	Mon, 24 Mar 2008 14:57:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37229 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759027AbYCXS5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:21:19 -0400
-Date: Mon, 24 Mar 2008 13:21:18 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC 6/8] x86_64: Define the macros and tables for the basic UV infrastructure.
-Message-ID: <20080324182118.GA21758@sgi.com>
+	Mon, 24 Mar 2008 14:57:16 -0400
+Subject: Re: [PATCH 3/6] compcache: TLSF Allocator interface
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <4cefeab80803241034m6f62c01fq669129db9959f47f@mail.gmail.com>
+References: <200803242034.24264.nitingupta910@gmail.com>
+	 <1206377777.6437.123.camel@lappy>
+	 <4cefeab80803241034m6f62c01fq669129db9959f47f@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 24 Mar 2008 19:56:53 +0100
+Message-Id: <1206385013.6437.140.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-03-24 at 23:04 +0530, Nitin Gupta wrote:
+> On Mon, Mar 24, 2008 at 10:26 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > On Mon, 2008-03-24 at 20:34 +0530, Nitin Gupta wrote:
+> >  > Two Level Segregate Fit (TLSF) Allocator is used to allocate memory for
+> >  > variable size compressed pages. Its fast and gives low fragmentation.
+> >  > Following links give details on this allocator:
+> >  >  - http://rtportal.upv.es/rtmalloc/files/tlsf_paper_spe_2007.pdf
+> >  >  - http://code.google.com/p/compcache/wiki/TLSFAllocator
+> >  >
+> >  > This kernel port of TLSF (v2.3.2) introduces several changes but underlying
+> >  > algorithm remains the same.
+> >  >
+> >  > Changelog TLSF v2.3.2 vs this kernel port
+> >  >  - Pool now dynamically expands/shrinks.
+> >  >    It is collection of contiguous memory regions.
+> >  >  - Changes to pool create interface as a result of above change.
+> >  >  - Collect and export stats (/proc/tlsfinfo)
+> >  >  - Cleanups: kernel coding style, added comments, macros -> static inline, etc.
+> >
+> >  Can you explain why you need this allocator, why don't the current
+> >  kernel allocators work for you?
+> >
+> >
+> 
+> kmalloc() allocates one of pre-defined sizes (as defined in
+> kmalloc_sizes.h). This will surely cause severe fragmentation with
+> these variable sized compressed pages.
+> 
+> Whereas, TLSF maintains very fine grained size lists. In all the
+> workloads I tested, it showed <5% fragmentation. Also, its very simple
+> as just ~700 LOC.
 
-Define the macros and tables for the basic UV infrastructure.
+Yeah, it also suffers from a horrible coding style, can use excessive
+amounts of vmalloc space, isn't hooked into the reclaim process as an
+allocator should be and has a severe lack of per-cpu data making it a
+pretty big bottleneck on anything with more than a few cores.
 
+Now, it might be needed, might work better, and the scalability issue
+might not be a problem when used for swap, but still, you don't treat
+any of these points in your changelog.
 
-(NOTE: a work-in-progress. Pieces missing....)
+FWIW, please split up the patches in a sane way. This series looks like
+it wants to be 2 or 3 patches. The first introducing all of TLSF (this
+split per file is horrible). The second doing all of the block device,
+and a possible last doing documentation and such.
 
+Also, how bad was kmalloc() compared to this TLSF, we need numbers :-)
 
-	Signed-off-by: Jack Steiner <steiner@sgi.com>
-
----
- include/asm-x86/uv_hub.h |  217 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 217 insertions(+)
-
-Index: linux/include/asm-x86/uv_hub.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/include/asm-x86/uv_hub.h	2008-03-21 15:48:18.000000000 -0500
-@@ -0,0 +1,217 @@
-+/*
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * SGI UV architectural definitions
-+ *
-+ * Copyright (C) 2007 Silicon Graphics, Inc. All rights reserved.
-+ */
-+
-+#ifndef __ASM_X86_UV_HUB_H__
-+#define __ASM_X86_UV_HUB_H__
-+
-+#include <linux/numa.h>
-+#include <linux/percpu.h>
-+#include <asm/types.h>
-+#include <asm/percpu.h>
-+
-+
-+/*
-+ * Addressing Terminology
-+ *
-+ * 	NASID - network ID of a router, Mbrick or Cbrick. Nasid values of
-+ * 		routers always have low bit of 1, C/MBricks have low bit
-+ * 		equal to 0. Most addressing macros that target UV hub chips
-+ * 		right shift the NASID by 1 to exclude the always-zero bit.
-+ *
-+ *	SNASID - NASID right shifted by 1 bit.
-+ *
-+ *
-+ *  Memory/UV-HUB Processor Socket Address Format:
-+ *  +--------+---------------+---------------------+
-+ *  |00..0000|    SNASID     |      NodeOffset     |
-+ *  +--------+---------------+---------------------+
-+ *           <--- N bits --->|<--------M bits ----->
-+ *
-+ *	M number of node offset bits (35 .. 40)
-+ *	N number of SNASID bits (0 .. 10)
-+ *
-+ *		Note: M + N cannot currently exceed 44 (x86_64) or 46 (IA64).
-+ *		The actual values are configuration dependent and are set at
-+ *		boot time
-+ *
-+ * APICID format
-+ * 	NOTE!!!!!! This is the current format of the APICID. However, code
-+ * 	should assume that this will change in the future. Use functions
-+ * 	in this file for all APICID bit manipulations and conversion.
-+ *
-+ * 		1111110000000000
-+ * 		5432109876543210
-+ *		nnnnnnnnnnlc0cch
-+ *		sssssssssss
-+ *
-+ *			n  = snasid bits
-+ *			l =  socket number on board
-+ *			c  = core
-+ *			h  = hyperthread
-+ *			s  = bits that are in the socket CSR
-+ *
-+ *	Note: Processor only supports 12 bits in the APICID register. The ACPI
-+ *	      tables hold all 16 bits. Software needs to be aware of this.
-+ *
-+ * 	      Unless otherwise specified, all references to APICID refer to
-+ * 	      the FULL value contained in ACPI tables, not the subset in the
-+ * 	      processor APICID register.
-+ */
-+
-+
-+/*
-+ * Maximum number of bricks in all partitions and in all coherency domains.
-+ * This is the total number of bricks accessible in the numalink fabric. It
-+ * includes all C & M bricks. Routers are NOT included.
-+ *
-+ * This value is also the value of the maximum number of non-router NASIDs
-+ * in the numalink fabric.
-+ *
-+ * NOTE: a brick may be 1 or 2 OS nodes. Don't get these confused.
-+ */
-+#define UV_MAX_NUMALINK_BLADES	16384
-+
-+/*
-+ * Maximum number of C/Mbricks within a software SSI (hardware may support
-+ * more).
-+ */
-+#define UV_MAX_SSI_BLADES	256
-+
-+/*
-+ * The largest possible NASID of a C or M brick (+ 2)
-+ */
-+#define UV_MAX_NASID_VALUE	(UV_MAX_NUMALINK_NODES * 2)
-+
-+/*
-+ * The following defines attributes of the HUB chip. These attributes are
-+ * frequently referenced and are kept in the per-cpu data areas of each cpu.
-+ * They are kept together in a struct to minimize cache misses.
-+ */
-+struct uv_hub_info_s {
-+	unsigned long	global_mmr_base;
-+	unsigned short	local_nasid;
-+	unsigned short	gnode_upper;
-+	unsigned short	coherency_domain_number;
-+	unsigned short	numa_blade_id;
-+	unsigned char	blade_processor_id;
-+	unsigned char	m_val;
-+	unsigned char	n_val;
-+};
-+DECLARE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
-+#define uv_hub_info 		(&__get_cpu_var(__uv_hub_info))
-+#define uv_cpu_hub_info(cpu)	(&per_cpu(__uv_hub_info, cpu))
-+
-+/* This header file is used in BIOS code that runs in physical mode */
-+#ifdef __BIOS__
-+#define UV_ADDR(x)		((unsigned long *)(x))
-+#else
-+#define UV_ADDR(x)		((unsigned long *)__va(x))
-+#endif
-+
-+/*
-+ * Local & Global MMR space macros.
-+ * 	Note: macros are intended to be used ONLY by inline functions
-+ * 	in this file - not by other kernel code.
-+ */
-+#define UV_SNASID(n)			((n) >> 1)
-+#define UV_NASID(n)			((n) << 1)
-+
-+#define UV_LOCAL_MMR_BASE		0xf4000000UL
-+#define UV_GLOBAL_MMR32_BASE		0xf8000000UL
-+#define UV_GLOBAL_MMR64_BASE		(uv_hub_info->global_mmr_base)
-+
-+#define UV_GLOBAL_MMR32_SNASID_MASK	0x3ff
-+#define UV_GLOBAL_MMR32_SNASID_SHIFT	15
-+#define UV_GLOBAL_MMR64_SNASID_SHIFT	26
-+
-+#define UV_GLOBAL_MMR32_NASID_BITS(n)					\
-+		(((UV_SNASID(n) & UV_GLOBAL_MMR32_SNASID_MASK)) <<	\
-+		(UV_GLOBAL_MMR32_SNASID_SHIFT))
-+
-+#define UV_GLOBAL_MMR64_NASID_BITS(n)					\
-+	((unsigned long)UV_SNASID(n) << UV_GLOBAL_MMR64_SNASID_SHIFT)
-+
-+#define UV_APIC_NASID_SHIFT	7
-+
-+/*
-+ * Extract a NASID from an APICID (full apicid, not processor subset)
-+ */
-+static inline int uv_apicid_to_nasid(int apicid)
-+{
-+	return (UV_NASID(apicid >> UV_APIC_NASID_SHIFT));
-+}
-+
-+/*
-+ * Access global MMRs using the low memory MMR32 space. This region supports
-+ * faster MMR access but not all MMRs are accessible in this space.
-+ */
-+static inline unsigned long *uv_global_mmr32_address(int nasid,
-+				unsigned long offset)
-+{
-+	return UV_ADDR(UV_GLOBAL_MMR32_BASE |
-+		       UV_GLOBAL_MMR32_NASID_BITS(nasid) | offset);
-+}
-+
-+static inline void uv_write_global_mmr32(int nasid, unsigned long offset,
-+				 unsigned long val)
-+{
-+	*uv_global_mmr32_address(nasid, offset) = val;
-+}
-+
-+static inline unsigned long uv_read_global_mmr32(int nasid,
-+						 unsigned long offset)
-+{
-+	return *uv_global_mmr32_address(nasid, offset);
-+}
-+
-+/*
-+ * Access Global MMR space using the MMR space located at the top of physical
-+ * memory.
-+ */
-+static inline unsigned long *uv_global_mmr64_address(int nasid,
-+				unsigned long offset)
-+{
-+	return UV_ADDR(UV_GLOBAL_MMR64_BASE |
-+		       UV_GLOBAL_MMR64_NASID_BITS(nasid) | offset);
-+}
-+
-+static inline void uv_write_global_mmr64(int nasid, unsigned long offset,
-+				unsigned long val)
-+{
-+	*uv_global_mmr64_address(nasid, offset) = val;
-+}
-+
-+static inline unsigned long uv_read_global_mmr64(int nasid,
-+						 unsigned long offset)
-+{
-+	return *uv_global_mmr64_address(nasid, offset);
-+}
-+
-+/*
-+ * Access node local MMRs. Faster than using global space but only local MMRs
-+ * are accessible.
-+ */
-+static inline unsigned long *uv_local_mmr_address(unsigned long offset)
-+{
-+	return UV_ADDR(UV_LOCAL_MMR_BASE | offset);
-+}
-+
-+static inline unsigned long uv_read_local_mmr(unsigned long offset)
-+{
-+	return *uv_local_mmr_address(offset);
-+}
-+
-+static inline void uv_write_local_mmr(unsigned long offset, unsigned long val)
-+{
-+	*uv_local_mmr_address(offset) = val;
-+}
-+
-+#endif /* __ASM_X86_UV_HUB__ */
-+
