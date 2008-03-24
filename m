@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbYCXXYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYCXX2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbYCXXYc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 19:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYCXXYW
+	id S1755861AbYCXX2O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 19:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYCXX17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:24:22 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:54644 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753435AbYCXXYW (ORCPT
+	Mon, 24 Mar 2008 19:27:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54092 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752760AbYCXX17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:24:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WB8KFUmLVCr/cB0uNHuFRrUqsscKpQ3wMxxXGuXN3mxtWf7LZNQqT2xVhPXxfTnYVP9R/vCtmhV2HfT1Vv2ME/TG5v5R67CV2nZVlKjzv9uVg9UEBoSWCS57lA1HVXJPGHvkXD6imOe0dk4QPdEkzmjUrzwdRQvI0QJCxgpsG48=
-Message-ID: <b0943d9e0803241624ne83602emc1fb4727402555d3@mail.gmail.com>
-Date: Mon, 24 Mar 2008 23:24:20 +0000
-From: "Catalin Marinas" <catalin.marinas@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [ANNOUNCE] Stacked GIT 0.14.2
-Cc: git <git@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Josef Sipek" <jsipek@fsl.cs.sunysb.edu>
-In-Reply-To: <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Mar 2008 19:27:59 -0400
+Date: Mon, 24 Mar 2008 16:26:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: pavel@ucw.cz, ebiederm@xmission.com, xemul@openvz.org, sds@tycho.nsa.gov,
+       roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+Message-Id: <20080324162659.89deedad.akpm@linux-foundation.org>
+In-Reply-To: <20080324231859.GA193@tv-sign.ru>
+References: <20080323135110.GA294@tv-sign.ru>
+	<20080324160102.GB4069@atrey.karlin.mff.cuni.cz>
+	<20080324164059.GA4767@tv-sign.ru>
+	<20080324223925.GD2426@elf.ucw.cz>
+	<20080324230458.GA173@tv-sign.ru>
+	<20080324230930.GE2426@elf.ucw.cz>
+	<20080324231859.GA193@tv-sign.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b0943d9e0803241259s5280cdc1o255a4412b3fa7bfc@mail.gmail.com>
-	 <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/03/2008, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> On Monday 2008-03-24 20:59, Catalin Marinas wrote:
->
->  > Stacked GIT 0.14.2 release is available from http://www.procode.org/stgit/.
->  >
->  > StGIT is a Python application providing similar functionality to Quilt
->  > (i.e. pushing/popping patches to/from a stack) on top of GIT.
->
->
-> I always wondered what the difference between stgit and guilt is.
->  Does anyone have a comparison up?
+On Tue, 25 Mar 2008 02:18:59 +0300
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-There was a thread last year:
+> Please look at another discussion, http://marc.info/?t=120568298600007
 
-http://kerneltrap.org/mailarchive/git/2007/6/14/249310
+-EAMTOOLAZY.  Whatever is at the above link should be in the changelog so we
+can understand the reasons for the patch!
 
-I don't follow the guilt development to be able to comment. They are
-pretty similar regarding patch management but it's probably best to
-try both and see which tool you like. StGIT might have a few more
-features as it was around for longer (e-mail templates, patch
-synchronisation between branches etc.) but guilt seems actively
-developed as well.
-
-I might be wrong here but I'm not sure whether guilt uses three-way
-merging when pushing a patch or just a two-way diff apply. The
-three-way merging has several advantages in dealing with conflicts.
-
--- 
-Catalin
+Please.
