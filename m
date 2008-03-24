@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbYCXSVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbYCXSWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762735AbYCXSVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYCXSVM
+	id S1762865AbYCXSWB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760659AbYCXSVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:21:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55013 "EHLO
+	Mon, 24 Mar 2008 14:21:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55018 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758851AbYCXSVL (ORCPT
+	with ESMTP id S1760061AbYCXSVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:21:11 -0400
-Date: Mon, 24 Mar 2008 13:21:10 -0500
+	Mon, 24 Mar 2008 14:21:14 -0400
+Date: Mon, 24 Mar 2008 13:21:12 -0500
 From: Jack Steiner <steiner@sgi.com>
 To: mingo@elte.hu, tglx@linutronix.de
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC 2/8] x86_64: Add functions to determine if platform is a UV platform
-Message-ID: <20080324182110.GA27984@sgi.com>
+Subject: [RFC 3/8] x86_64: Increase size of APICID
+Message-ID: <20080324182112.GA28026@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,85 +25,181 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add functions that can be used to determine if an x86_64
-system is a SGI "UV" system. UV systems come in 3 types and
-are identified by the OEM ID in the MADT.
+Increase the number of bits in an apicid from 8 to 32.
 
-        Signed-off-by: Jack Steiner <steiner@sgi.com>
+By default, MP_processor_info() gets the APICID from the
+mpc_config_processor structure. However, this structure limits
+the size of APICID to 8 bits. This patch allows the caller of
+MP_processor_info() to optionally pass a larger APICID that will
+be used instead of the one in the mpc_config_processor struct.
+
+
+
+	Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- arch/x86/kernel/acpi/boot.c  |    4 +---
- arch/x86/kernel/genapic_64.c |   25 +++++++++++++++++++++++++
- include/asm-x86/genapic_64.h |    5 +++++
- 3 files changed, 31 insertions(+), 3 deletions(-)
+ arch/x86/kernel/mpparse_64.c |   29 ++++++++++++++++-------------
+ arch/x86/mm/srat_64.c        |    6 +++++-
+ include/asm-x86/apicdef.h    |    4 ++--
+ include/asm-x86/mpspec.h     |    2 +-
+ 4 files changed, 24 insertions(+), 17 deletions(-)
 
-Index: linux/arch/x86/kernel/acpi/boot.c
+Index: linux/arch/x86/kernel/mpparse_64.c
 ===================================================================
---- linux.orig/arch/x86/kernel/acpi/boot.c	2008-03-21 09:07:24.000000000 -0500
-+++ linux/arch/x86/kernel/acpi/boot.c	2008-03-21 09:16:06.000000000 -0500
-@@ -52,9 +52,7 @@ EXPORT_SYMBOL(acpi_disabled);
- #ifdef	CONFIG_X86_64
+--- linux.orig/arch/x86/kernel/mpparse_64.c	2008-03-21 15:36:45.000000000 -0500
++++ linux/arch/x86/kernel/mpparse_64.c	2008-03-21 15:38:52.000000000 -0500
+@@ -92,7 +92,8 @@ static int __init mpf_checksum(unsigned 
+ 	return sum & 0xFF;
+ }
  
+-static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
++static void __cpuinit MP_processor_info(struct mpc_config_processor *m,
++					int apicid)
+ {
+ 	int cpu;
+ 	cpumask_t tmp_map;
+@@ -102,12 +103,14 @@ static void __cpuinit MP_processor_info(
+ 		disabled_cpus++;
+ 		return;
+ 	}
++	if (apicid < 0)
++		apicid = m->mpc_apicid;
+ 	if (m->mpc_cpuflag & CPU_BOOTPROCESSOR) {
+ 		bootup_cpu = " (Bootup-CPU)";
+-		boot_cpu_id = m->mpc_apicid;
++		boot_cpu_id = apicid;
+ 	}
+ 
+-	printk(KERN_INFO "Processor #%d%s\n", m->mpc_apicid, bootup_cpu);
++	printk(KERN_INFO "Processor #%d%s\n", apicid, bootup_cpu);
+ 
+ 	if (num_processors >= NR_CPUS) {
+ 		printk(KERN_WARNING "WARNING: NR_CPUS limit of %i reached."
+@@ -119,7 +122,7 @@ static void __cpuinit MP_processor_info(
+ 	cpus_complement(tmp_map, cpu_present_map);
+ 	cpu = first_cpu(tmp_map);
+ 
+-	physid_set(m->mpc_apicid, phys_cpu_present_map);
++	physid_set(apicid, phys_cpu_present_map);
+  	if (m->mpc_cpuflag & CPU_BOOTPROCESSOR) {
+  		/*
+ 		 * x86_bios_cpu_apicid is required to have processors listed
+@@ -133,11 +136,11 @@ static void __cpuinit MP_processor_info(
+ 		u16 *cpu_to_apicid = x86_cpu_to_apicid_early_ptr;
+ 		u16 *bios_cpu_apicid = x86_bios_cpu_apicid_early_ptr;
+ 
+-		cpu_to_apicid[cpu] = m->mpc_apicid;
+-		bios_cpu_apicid[cpu] = m->mpc_apicid;
++		cpu_to_apicid[cpu] = apicid;
++		bios_cpu_apicid[cpu] = apicid;
+ 	} else {
+-		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
+-		per_cpu(x86_bios_cpu_apicid, cpu) = m->mpc_apicid;
++		per_cpu(x86_cpu_to_apicid, cpu) = apicid;
++		per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
+ 	}
+ 
+ 	cpu_set(cpu, cpu_possible_map);
+@@ -269,7 +272,7 @@ static int __init smp_read_mpc(struct mp
+ 				struct mpc_config_processor *m=
+ 					(struct mpc_config_processor *)mpt;
+ 				if (!acpi_lapic)
+-					MP_processor_info(m);
++					MP_processor_info(m, -1);
+ 				mpt += sizeof(*m);
+ 				count += sizeof(*m);
+ 				break;
+@@ -419,7 +422,7 @@ static inline void __init construct_defa
+ 	processor.mpc_reserved[1] = 0;
+ 	for (i = 0; i < 2; i++) {
+ 		processor.mpc_apicid = i;
+-		MP_processor_info(&processor);
++		MP_processor_info(&processor, -1);
+ 	}
+ 
+ 	bus.mpc_type = MP_BUS;
+@@ -617,7 +620,7 @@ void __init mp_register_lapic_address(u6
+ 		boot_cpu_id = get_apic_id();
+ }
+ 
+-void __cpuinit mp_register_lapic (u8 id, u8 enabled)
++void __cpuinit mp_register_lapic(int id, u8 enabled)
+ {
+ 	struct mpc_config_processor processor;
+ 	int			boot_cpu = 0;
+@@ -626,7 +629,7 @@ void __cpuinit mp_register_lapic (u8 id,
+ 		boot_cpu = 1;
+ 
+ 	processor.mpc_type = MP_PROCESSOR;
+-	processor.mpc_apicid = id;
++	processor.mpc_apicid = 0;
+ 	processor.mpc_apicver = 0;
+ 	processor.mpc_cpuflag = (enabled ? CPU_ENABLED : 0);
+ 	processor.mpc_cpuflag |= (boot_cpu ? CPU_BOOTPROCESSOR : 0);
+@@ -635,7 +638,7 @@ void __cpuinit mp_register_lapic (u8 id,
+ 	processor.mpc_reserved[0] = 0;
+ 	processor.mpc_reserved[1] = 0;
+ 
+-	MP_processor_info(&processor);
++	MP_processor_info(&processor, id);
+ }
+ 
+ #define MP_ISA_BUS		0
+Index: linux/include/asm-x86/mpspec.h
+===================================================================
+--- linux.orig/include/asm-x86/mpspec.h	2008-03-21 15:36:38.000000000 -0500
++++ linux/include/asm-x86/mpspec.h	2008-03-21 15:37:22.000000000 -0500
+@@ -42,7 +42,7 @@ extern void find_smp_config(void);
+ extern void get_smp_config(void);
+ 
+ #ifdef CONFIG_ACPI
+-extern void mp_register_lapic(u8 id, u8 enabled);
++extern void mp_register_lapic(int id, u8 enabled);
+ extern void mp_register_lapic_address(u64 address);
+ extern void mp_register_ioapic(u8 id, u32 address, u32 gsi_base);
+ extern void mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+Index: linux/arch/x86/mm/srat_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/srat_64.c	2008-03-21 15:36:38.000000000 -0500
++++ linux/arch/x86/mm/srat_64.c	2008-03-21 15:37:22.000000000 -0500
+@@ -20,6 +20,7 @@
  #include <asm/proto.h>
--
--static inline int acpi_madt_oem_check(char *oem_id, char *oem_table_id) { return 0; }
--
+ #include <asm/numa.h>
+ #include <asm/e820.h>
 +#include <asm/genapic.h>
  
- #else				/* X86 */
+ int acpi_numa __initdata;
  
-Index: linux/arch/x86/kernel/genapic_64.c
+@@ -148,7 +149,10 @@ acpi_numa_processor_affinity_init(struct
+ 		return;
+ 	}
+ 
+-	apic_id = pa->apic_id;
++	if (is_uv_system())
++		apic_id = (pa->apic_id << 8) | pa->local_sapic_eid;
++	else
++		apic_id = pa->apic_id;
+ 	apicid_to_node[apic_id] = node;
+ 	acpi_numa = 1;
+ 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+Index: linux/include/asm-x86/apicdef.h
 ===================================================================
---- linux.orig/arch/x86/kernel/genapic_64.c	2008-03-21 09:13:41.000000000 -0500
-+++ linux/arch/x86/kernel/genapic_64.c	2008-03-21 09:35:10.000000000 -0500
-@@ -33,6 +33,8 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid)
+--- linux.orig/include/asm-x86/apicdef.h	2008-03-21 15:36:45.000000000 -0500
++++ linux/include/asm-x86/apicdef.h	2008-03-21 15:37:22.000000000 -0500
+@@ -134,7 +134,7 @@
+ # define MAX_IO_APICS 64
+ #else
+ # define MAX_IO_APICS 128
+-# define MAX_LOCAL_APIC 256
++# define MAX_LOCAL_APIC 32768
+ #endif
  
- struct genapic __read_mostly *genapic = &apic_flat;
- 
-+static enum uv_system_type uv_system_type;
-+
  /*
-  * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
-  */
-@@ -69,3 +71,26 @@ unsigned int get_apic_id(void)
- {
- 	return (apic_read(APIC_ID) >> 24) & 0xFFu;
- }
-+
-+int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+{
-+	if (!strcmp(oem_id, "SGI")) {
-+		if (!strcmp(oem_table_id, "UVL"))
-+			uv_system_type = UV_LEGACY_APIC;
-+		else if (!strcmp(oem_table_id, "UVX"))
-+			uv_system_type = UV_X2APIC;
-+		else if (!strcmp(oem_table_id, "UVH"))
-+			uv_system_type = UV_NON_UNIQUE_APIC;
-+	}
-+	return 0;
-+}
-+
-+enum uv_system_type get_uv_system_type(void)
-+{
-+	return uv_system_type;
-+}
-+
-+int is_uv_system(void)
-+{
-+	return uv_system_type != UV_NONE;
-+}
-Index: linux/include/asm-x86/genapic_64.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_64.h	2008-03-21 09:07:24.000000000 -0500
-+++ linux/include/asm-x86/genapic_64.h	2008-03-21 09:34:45.000000000 -0500
-@@ -33,5 +33,10 @@ extern struct genapic *genapic;
+@@ -407,6 +407,6 @@ struct local_apic {
  
- extern struct genapic apic_flat;
- extern struct genapic apic_physflat;
-+extern int acpi_madt_oem_check(char *, char *);
-+
-+enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
-+extern enum uv_system_type get_uv_system_type(void);
-+extern int is_uv_system(void);
+ #undef u32
+ 
+-#define BAD_APICID 0xFFu
++#define BAD_APICID 0xFFFFu
  
  #endif
