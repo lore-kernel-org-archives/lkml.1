@@ -1,168 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbYCXOAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYCXOE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760231AbYCXOAI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 10:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbYCXN74
+	id S1760006AbYCXOE5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 10:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbYCXOEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 09:59:56 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:40313 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755591AbYCXN7z (ORCPT
+	Mon, 24 Mar 2008 10:04:49 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:40783 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbYCXOEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 09:59:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhUHADZR50dMQWoK/2dsb2JhbACBW6VA
-Date: Mon, 24 Mar 2008 09:59:53 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
-       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
-       oleg@tv-sign.ru
-Subject: Re: [PATCH,RFC] Add call_rcu_sched()
-Message-ID: <20080324135952.GA14908@Krystal>
-References: <20080321143615.GA936@linux.vnet.ibm.com> <20080321224026.GA10169@linux.vnet.ibm.com> <20080324050652.GA4906@Krystal> <20080324054630.GE4555@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080324054630.GE4555@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:50:03 up 24 days, 10:01,  4 users,  load average: 0.50, 0.79,
-	0.75
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 24 Mar 2008 10:04:48 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 24 Mar 2008 19:31:42 +0530
+Message-Id: <20080324140142.28786.97267.sendpatchset@localhost.localdomain>
+Subject: [RFC][-mm] Memory controller add mm->owner
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Mon, Mar 24, 2008 at 01:06:53AM -0400, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-[...]
-> > > o	Interaction of this patch with CPU hotplug should be viewed
-> > > 	with great suspicion.
-> > 
-> > Fix call_rcu_sched wait
-> 
-> There are definitely some problems here...  Though I am seeing them
-> in the sched_setaffinity() call rather than in the wait processing.
-> 
-
-Sorry for the misleading line : "Fix call_rcu_sched wait" was the title
-of the patch addressing the rcu_sched_grace:924 blocked ... problem below.
-
-> > > o If there are no synchronize_sched() calls for more than two
-> > >   minutes, one can see messages of the form "INFO: task
-> > >   rcu_sched_grace:924 blocked for more than 120 seconds."
-> > >   Any thoughts on how to avoid this message?  Should I be using
-> > >   something other than __wait_event() and wake_up(), which sleep
-> > >   uninterruptibly, thus triggering this message?
-> > > 
-> > 
-[...]
-> > Could you use __wait_event_interruptible and wake_up_interruptible
-> > instead ? softlockup.c only seems to complain when uninterruptible tasks
-> > are not scheduled for 2 minutes. I guess that when we receive a signal
-> > we could simply go through another loop.
-> 
-> I will give these a try.
-> 
-> > +		ret = 0;
-> > +		__wait_event_interruptible(rcu_ctrlblk.sched_wq,
-> > +			     rcu_ctrlblk.sched_sleep != rcu_sched_sleeping,
-> > +			     ret);
-> 
-> Don't we have to do something here to clear signal state if we are
-> ever to block again?  Maybe something like the following?
-> 
-> 		flush_signals(current):
-> 
-> Or am I missing something?
-> 
-
-Good point, I would add
-if (ret < 0)
-  flush_signals(current);
-
-[...]
-> > 
-> > That's always good :)
-> 
-> Fixing the bug or losing track?  ;-)
-> 
-
-Fixing it of course :)
-
-New version of the fix-call-rcu-sched-wait.patch file below.
-
-Mathieu
 
 
-Fix call_rcu_sched wait
+This patch removes the mem_cgroup member from mm_struct and instead adds
+an owner. This approach was suggested by Paul Menage. The advantage of
+this approach is that, once the mm->owner is known, using the subsystem
+id, the cgroup can be determined. It also allows several control groups
+that are virtually grouped by mm_struct, to exist independent of the memory
+controller i.e., without adding mem_cgroup's for each controller,
+to mm_struct.
 
-> o If there are no synchronize_sched() calls for more than two
->   minutes, one can see messages of the form "INFO: task
->   rcu_sched_grace:924 blocked for more than 120 seconds."
->   Any thoughts on how to avoid this message?  Should I be using
->   something other than __wait_event() and wake_up(), which sleep
->   uninterruptibly, thus triggering this message?
-> 
+The code initially assigns mm->owner to the task and then after the
+thread group leader is identified. The mm->owner is changed to the thread
+group leader of the task later at the end of copy_process.
 
-Could you use __wait_event_interruptible and wake_up_interruptible
-instead ? softlockup.c only seems to complain when uninterruptible tasks
-are not scheduled for 2 minutes. I guess that when we receive a signal
-we could simply go through another loop.
-
-- Changelog
-Reset signal state upon wakeup.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
- kernel/rcupreempt.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-lttng/kernel/rcupreempt.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/rcupreempt.c	2008-03-24 00:26:27.000000000 -0400
-+++ linux-2.6-lttng/kernel/rcupreempt.c	2008-03-24 09:57:28.000000000 -0400
-@@ -1074,7 +1074,7 @@ void call_rcu_sched(struct rcu_head *hea
- 		rcu_ctrlblk.sched_sleep = rcu_sched_not_sleeping;
- 		spin_unlock_irqrestore(&rcu_ctrlblk.schedlock, flags);
- 		if (wake_gp)
--			wake_up(&rcu_ctrlblk.sched_wq);
-+			wake_up_interruptible(&rcu_ctrlblk.sched_wq);
- 	}
+ include/linux/memcontrol.h |   14 +++++++++++++-
+ include/linux/mm_types.h   |    5 ++++-
+ kernel/fork.c              |    4 ++++
+ mm/memcontrol.c            |   42 ++++++++++++++++++++++++++++++++++--------
+ 4 files changed, 55 insertions(+), 10 deletions(-)
+
+diff -puN include/linux/mm_types.h~memory-controller-add-mm-owner include/linux/mm_types.h
+--- linux-2.6.25-rc5/include/linux/mm_types.h~memory-controller-add-mm-owner	2008-03-20 13:35:09.000000000 +0530
++++ linux-2.6.25-rc5-balbir/include/linux/mm_types.h	2008-03-20 15:11:05.000000000 +0530
+@@ -228,7 +228,10 @@ struct mm_struct {
+ 	rwlock_t		ioctx_list_lock;
+ 	struct kioctx		*ioctx_list;
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+-	struct mem_cgroup *mem_cgroup;
++	struct task_struct *owner;	/* The thread group leader that */
++					/* owns the mm_struct. This     */
++					/* might be useful even outside */
++					/* of the config option         */
+ #endif
+ 
+ #ifdef CONFIG_PROC_FS
+diff -puN kernel/fork.c~memory-controller-add-mm-owner kernel/fork.c
+--- linux-2.6.25-rc5/kernel/fork.c~memory-controller-add-mm-owner	2008-03-20 13:35:09.000000000 +0530
++++ linux-2.6.25-rc5-balbir/kernel/fork.c	2008-03-24 18:49:29.000000000 +0530
+@@ -1357,6 +1357,10 @@ static struct task_struct *copy_process(
+ 	write_unlock_irq(&tasklist_lock);
+ 	proc_fork_connector(p);
+ 	cgroup_post_fork(p);
++
++	if (!(clone_flags & CLONE_VM))
++		mem_cgroup_fork_init(p);
++
+ 	return p;
+ 
+ bad_fork_free_pid:
+diff -puN include/linux/memcontrol.h~memory-controller-add-mm-owner include/linux/memcontrol.h
+--- linux-2.6.25-rc5/include/linux/memcontrol.h~memory-controller-add-mm-owner	2008-03-20 13:35:09.000000000 +0530
++++ linux-2.6.25-rc5-balbir/include/linux/memcontrol.h	2008-03-24 18:49:52.000000000 +0530
+@@ -29,6 +29,7 @@ struct mm_struct;
+ 
+ extern void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p);
+ extern void mm_free_cgroup(struct mm_struct *mm);
++extern void mem_cgroup_fork_init(struct task_struct *p);
+ 
+ #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
+ 
+@@ -49,7 +50,7 @@ extern void mem_cgroup_out_of_memory(str
+ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+ 
+ #define mm_match_cgroup(mm, cgroup)	\
+-	((cgroup) == rcu_dereference((mm)->mem_cgroup))
++	((cgroup) == mem_cgroup_from_task((mm)->owner))
+ 
+ extern int mem_cgroup_prepare_migration(struct page *page);
+ extern void mem_cgroup_end_migration(struct page *page);
+@@ -72,6 +73,8 @@ extern long mem_cgroup_calc_reclaim_acti
+ extern long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
+ 				struct zone *zone, int priority);
+ 
++extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
++
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ static inline void mm_init_cgroup(struct mm_struct *mm,
+ 					struct task_struct *p)
+@@ -82,6 +85,10 @@ static inline void mm_free_cgroup(struct
+ {
  }
- EXPORT_SYMBOL_GPL(call_rcu_sched);
-@@ -1097,6 +1097,7 @@ rcu_sched_grace_period(void *arg)
- 	int couldsleep;		/* might sleep after current pass. */
- 	int couldsleepnext = 0; /* might sleep after next pass. */
- 	int cpu;
-+	int ret;
- 	long err;
- 	unsigned long flags;
- 	int needsoftirq;
-@@ -1242,8 +1243,12 @@ retry:
  
- 		rcu_ctrlblk.sched_sleep = rcu_sched_sleeping;
- 		spin_unlock_irqrestore(&rcu_ctrlblk.schedlock, flags);
--		__wait_event(rcu_ctrlblk.sched_wq,
--			     rcu_ctrlblk.sched_sleep != rcu_sched_sleeping);
-+		ret = 0;
-+		__wait_event_interruptible(rcu_ctrlblk.sched_wq,
-+			     rcu_ctrlblk.sched_sleep != rcu_sched_sleeping,
-+			     ret);
-+		if (ret < 0)
-+			flush_signals(current);
- 		couldsleepnext = 0;
++static inline void mem_cgroup_fork_init(struct task_struct *p)
++{
++}
++
+ static inline void page_reset_bad_cgroup(struct page *page)
+ {
+ }
+@@ -172,6 +179,11 @@ static inline long mem_cgroup_calc_recla
+ {
+ 	return 0;
+ }
++
++static void mm_free_fork_cgroup(struct task_struct *p)
++{
++}
++
+ #endif /* CONFIG_CGROUP_MEM_CONT */
  
- 	} while (!kthread_should_stop());
+ #endif /* _LINUX_MEMCONTROL_H */
+diff -puN mm/memcontrol.c~memory-controller-add-mm-owner mm/memcontrol.c
+--- linux-2.6.25-rc5/mm/memcontrol.c~memory-controller-add-mm-owner	2008-03-20 13:35:09.000000000 +0530
++++ linux-2.6.25-rc5-balbir/mm/memcontrol.c	2008-03-24 19:04:32.000000000 +0530
+@@ -236,7 +236,7 @@ static struct mem_cgroup *mem_cgroup_fro
+ 				css);
+ }
+ 
+-static struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
++struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
+ {
+ 	return container_of(task_subsys_state(p, mem_cgroup_subsys_id),
+ 				struct mem_cgroup, css);
+@@ -248,12 +248,40 @@ void mm_init_cgroup(struct mm_struct *mm
+ 
+ 	mem = mem_cgroup_from_task(p);
+ 	css_get(&mem->css);
+-	mm->mem_cgroup = mem;
++	mm->owner = p;
++}
++
++void mem_cgroup_fork_init(struct task_struct *p)
++{
++	struct mm_struct *mm = get_task_mm(p);
++	struct mem_cgroup *mem, *oldmem;
++	if (!mm)
++		return;
++
++	/*
++	 * Initial owner at mm_init_cgroup() time is the task itself.
++	 * The thread group leader had not been setup then
++	 */
++	oldmem = mem_cgroup_from_task(mm->owner);
++	/*
++	 * Override the mm->owner after we know the thread group later
++	 */
++	mm->owner = p->group_leader;
++	mem = mem_cgroup_from_task(mm->owner);
++	css_get(&mem->css);
++	css_put(&oldmem->css);
++	mmput(mm);
+ }
+ 
+ void mm_free_cgroup(struct mm_struct *mm)
+ {
+-	css_put(&mm->mem_cgroup->css);
++	struct mem_cgroup *mem;
++
++	/*
++	 * TODO: Should we assign mm->owner to NULL here?
++	 */
++	mem = mem_cgroup_from_task(mm->owner);
++	css_put(&mem->css);
+ }
+ 
+ static inline int page_cgroup_locked(struct page *page)
+@@ -476,6 +504,7 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	int zid = zone_idx(z);
+ 	struct mem_cgroup_per_zone *mz;
+ 
++	BUG_ON(!mem_cont);
+ 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+ 	if (active)
+ 		src = &mz->active_list;
+@@ -573,13 +602,11 @@ retry:
+ 	if (!mm)
+ 		mm = &init_mm;
+ 
+-	rcu_read_lock();
+-	mem = rcu_dereference(mm->mem_cgroup);
++	mem = mem_cgroup_from_task(mm->owner);
+ 	/*
+ 	 * For every charge from the cgroup, increment reference count
+ 	 */
+ 	css_get(&mem->css);
+-	rcu_read_unlock();
+ 
+ 	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+ 		if (!(gfp_mask & __GFP_WAIT))
+@@ -988,7 +1015,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 
+ 	if (unlikely((cont->parent) == NULL)) {
+ 		mem = &init_mem_cgroup;
+-		init_mm.mem_cgroup = mem;
++		init_mm.owner = &init_task;
+ 	} else
+ 		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+ 
+@@ -1069,7 +1096,6 @@ static void mem_cgroup_move_task(struct 
+ 		goto out;
+ 
+ 	css_get(&mem->css);
+-	rcu_assign_pointer(mm->mem_cgroup, mem);
+ 	css_put(&old_mem->css);
+ 
+ out:
+_
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
