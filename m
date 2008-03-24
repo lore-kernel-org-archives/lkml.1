@@ -1,258 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbYCXTyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbYCXTya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752625AbYCXTyM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYCXTxb
+	id S1754778AbYCXTya (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYCXTyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:53:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51110 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753600AbYCXTxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:53:30 -0400
-From: Glauber Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
-       tglx@linutronix.de, yhlu.kernel@gmail.com
-Subject: [PATCH 2/2] move apic declarations to mach_apic.h
-Date: Mon, 24 Mar 2008 16:52:56 -0300
-Message-Id: <1206388376-17295-1-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.3.2.2532.gdeda
+	Mon, 24 Mar 2008 15:54:18 -0400
+Received: from lazybastard.de ([212.112.238.170]:60278 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbYCXTyQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 15:54:16 -0400
+Date: Mon, 24 Mar 2008 20:54:00 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
+       dwmw2 <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>,
+       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] 3/3 maple: update bus driver to support Dreamcast VMU
+Message-ID: <20080324195359.GJ2899@logfs.org>
+References: <1206209786.6324.41.camel@localhost.localdomain> <20080324033344.GB15872@linux-sh.org> <20080324144647.GC2899@logfs.org> <1206371178.6283.37.camel@localhost.localdomain> <20080324152952.GF2899@logfs.org> <1206373900.6283.39.camel@localhost.localdomain> <20080324160429.GG2899@logfs.org> <20080324170707.GH2899@logfs.org> <20080324173856.GI2899@logfs.org> <1206381351.7543.15.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1206381351.7543.15.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-take them out of the x86_64-specific asm/mach_apic.h
+On Mon, 24 March 2008 17:55:51 +0000, Adrian McMenamin wrote:
+> 
+> The problem is that the hardware does not support another callback. In
+> any case while you are right that the function might be called as second
+> time, in the original code it will sleep while waiting for the lock,
+> which is allocated per device.
+> 
+> On the second patch - aiui completions do an uninterruptible wait, that
+> means they are surely not a good choice for this - especially as the
+> device could be unplugged at any time. (Admittedly my documentation
+> migght be of date here)
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/apic_64.c                |    2 -
- arch/x86/kernel/io_apic_64.c             |    2 -
- arch/x86/kernel/setup_64.c               |    2 -
- include/asm-x86/mach-default/mach_apic.h |   80 ++++++++++++++++--------------
- include/asm-x86/mach_apic.h              |   26 ----------
- 5 files changed, 46 insertions(+), 66 deletions(-)
+Neither of those two problem should be visible for the mtd driver.  The
+usual way how bus driver are implemented is something like this:
 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 206278f..7dd6250 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -34,7 +34,6 @@ #include <asm/mtrr.h>
- #include <asm/mpspec.h>
- #include <asm/hpet.h>
- #include <asm/pgalloc.h>
--#include <asm/mach_apic.h>
- #include <asm/nmi.h>
- #include <asm/idle.h>
- #include <asm/proto.h>
-@@ -42,6 +41,7 @@ #include <asm/timex.h>
- #include <asm/apic.h>
- 
- #include <mach_ipi.h>
-+#include <mach_apic.h>
- 
- int disable_apic_timer __cpuinitdata;
- static int apic_calibrate_pmtmr __initdata;
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index 7d5cdf3..6dd3362 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -43,7 +43,6 @@ #include <asm/io.h>
- #include <asm/smp.h>
- #include <asm/desc.h>
- #include <asm/proto.h>
--#include <asm/mach_apic.h>
- #include <asm/acpi.h>
- #include <asm/dma.h>
- #include <asm/nmi.h>
-@@ -51,6 +50,7 @@ #include <asm/msidef.h>
- #include <asm/hypertransport.h>
- 
- #include <mach_ipi.h>
-+#include <mach_apic.h>
- 
- struct irq_cfg {
- 	cpumask_t domain;
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 3f1dc97..08f9591 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -60,7 +60,6 @@ #include <asm/mpspec.h>
- #include <asm/mmu_context.h>
- #include <asm/proto.h>
- #include <asm/setup.h>
--#include <asm/mach_apic.h>
- #include <asm/numa.h>
- #include <asm/sections.h>
- #include <asm/dmi.h>
-@@ -69,6 +68,7 @@ #include <asm/mce.h>
- #include <asm/ds.h>
- #include <asm/topology.h>
- 
-+#include <mach_apic.h>
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
- #else
-diff --git a/include/asm-x86/mach-default/mach_apic.h b/include/asm-x86/mach-default/mach_apic.h
-index 13900e8..3f49a3a 100644
---- a/include/asm-x86/mach-default/mach_apic.h
-+++ b/include/asm-x86/mach-default/mach_apic.h
-@@ -14,24 +14,25 @@ #else
- 	return cpumask_of_cpu(0);
- #endif
- } 
--#define TARGET_CPUS (target_cpus())
- 
- #define NO_BALANCE_IRQ (0)
- #define esr_disable (0)
- 
-+#ifdef CONFIG_X86_64
-+#include <asm/genapic.h>
-+#define INT_DELIVERY_MODE (genapic->int_delivery_mode)
-+#define INT_DEST_MODE (genapic->int_dest_mode)
-+#define TARGET_CPUS	  (genapic->target_cpus())
-+#define apic_id_registered (genapic->apic_id_registered)
-+#define init_apic_ldr (genapic->init_apic_ldr)
-+#define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
-+#define phys_pkg_id	(genapic->phys_pkg_id)
-+#define vector_allocation_domain    (genapic->vector_allocation_domain)
-+extern void setup_apic_routing(void);
-+#else
- #define INT_DELIVERY_MODE dest_LowestPrio
- #define INT_DEST_MODE 1     /* logical delivery broadcast to all procs */
--
--static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
--{
--	return physid_isset(apicid, bitmap);
--}
--
--static inline unsigned long check_apicid_present(int bit)
--{
--	return physid_isset(bit, phys_cpu_present_map);
--}
--
-+#define TARGET_CPUS (target_cpus())
- /*
-  * Set up the logical destination ID.
-  *
-@@ -49,32 +50,52 @@ static inline void init_apic_ldr(void)
- 	apic_write_around(APIC_LDR, val);
- }
- 
--static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
-+static inline int apic_id_registered(void)
- {
--	return phys_map;
-+	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
-+}
-+
-+static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
-+{
-+	return cpus_addr(cpumask)[0];
-+}
-+
-+static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
-+{
-+	return cpuid_apic >> index_msb;
- }
- 
--#ifdef CONFIG_X86_64
--extern void setup_apic_routing(void);
--#else
- static inline void setup_apic_routing(void)
- {
- 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
- 					"Flat", nr_ioapics);
- }
--#endif
- 
--static inline int multi_timer_check(int apic, int irq)
-+static inline int apicid_to_node(int logical_apicid)
- {
- 	return 0;
- }
-+#endif
- 
--#ifdef CONFIG_X86_32
--static inline int apicid_to_node(int logical_apicid)
-+static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
-+{
-+	return physid_isset(apicid, bitmap);
-+}
-+
-+static inline unsigned long check_apicid_present(int bit)
-+{
-+	return physid_isset(bit, phys_cpu_present_map);
-+}
-+
-+static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
-+{
-+	return phys_map;
-+}
-+
-+static inline int multi_timer_check(int apic, int irq)
- {
- 	return 0;
- }
--#endif
- 
- /* Mapping from cpu number to logical apicid */
- static inline int cpu_to_logical_apicid(int cpu)
-@@ -109,23 +130,8 @@ static inline int check_phys_apicid_pres
- 	return physid_isset(boot_cpu_physical_apicid, phys_cpu_present_map);
- }
- 
--static inline int apic_id_registered(void)
--{
--	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
--}
--
--static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
--{
--	return cpus_addr(cpumask)[0];
--}
--
- static inline void enable_apic_mode(void)
- {
- }
- 
--static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
--{
--	return cpuid_apic >> index_msb;
--}
--
- #endif /* __ASM_MACH_APIC_H */
-diff --git a/include/asm-x86/mach_apic.h b/include/asm-x86/mach_apic.h
-deleted file mode 100644
-index 1bc68c0..0000000
---- a/include/asm-x86/mach_apic.h
-+++ /dev/null
-@@ -1,26 +0,0 @@
--#ifndef __ASM_MACH_APIC_H
--#define __ASM_MACH_APIC_H
--
--/*
-- * Copyright 2004 James Cleverdon, IBM.
-- * Subject to the GNU Public License, v.2
-- *
-- * Generic APIC sub-arch defines.
-- *
-- * Hacked for x86-64 by James Cleverdon from i386 architecture code by
-- * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
-- * James Cleverdon.
-- */
--
--#include <asm/genapic.h>
--
--#define INT_DELIVERY_MODE (genapic->int_delivery_mode)
--#define INT_DEST_MODE (genapic->int_dest_mode)
--#define TARGET_CPUS	  (genapic->target_cpus())
--#define vector_allocation_domain	(genapic->vector_allocation_domain)
--#define apic_id_registered (genapic->apic_id_registered)
--#define init_apic_ldr (genapic->init_apic_ldr)
--#define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
--#define phys_pkg_id	(genapic->phys_pkg_id)
--
--#endif /* __ASM_MACH_APIC_H */
+struct foo_request {
+	void *data;
+	loff_t ofs;
+	size_t len;
+	void (*complete)(struct foo_request);
+	void *private;
+};
+
+int do_request(struct foo_request *rq)
+{
+	/* deal with hardware somehow */
+	rq->complete(rq);
+}
+
+With such infrastructure your mtd driver could look roughly like this:
+
+static void read_complete(struct foo_request *rq)
+{
+	complete(rq->private);
+}
+
+static int foo_read(struct mtd_info *mtd, loff_t ofs, size_t len, size_t *retlen, u_char *buf)
+{
+	struct foo_dev = mtd->private;
+	struct foo_request *rq;
+	DECLARE_COMPLETION_ONSTACK(complete);
+	int err;
+
+	rq = kmalloc(sizeof(*rq), GFP_KERNEL);
+	if (!rq)
+		return -ENOMEM;
+	/* fill in appropriate values for rq->data, rq->ofs and rq->len */
+	rq->private = &complete;
+	rq->complete = read_complete;
+	err = do_request(rq);
+	if (err)
+		goto out;
+	wait_for_completion(&complete);
+	/* copy read data into buf, set retlen */
+out:
+	kfree(rq);
+	return err;
+}
+
+Throw in a loop if you need several hardware accesses to fulfil large
+reads.  But that's it.  You don't need any locking in the mtd driver at
+all.  Ownership is clearly defined.  Between kmalloc() and do_request()
+rq belongs to foo_read().  Between do_request() and the call to
+read_complete() it belongs to the bus driver.  After completion it
+belongs to foo_read() again.  No race window, no complicated locking.
+
+If your hardware can only handle a finite number of requests at a time,
+you can queue requests in do_request().  The caller should not know or
+care about it - apart from declaring the completion variable and waiting
+on it.
+
+The goal of my patches was to move your code towards such a design.
+Alas, my time is limited and my girlfriend already unhappy as it is -
+you will have to continue without me.  If in doubt, take a look at the
+usb code and try to mimic that.  drivers/mtd/nand/alauda.c uses usb to
+talk to the hardware and roughly follows what I described above.
+
+Jörn
+
 -- 
-1.4.2
-
+Chance favors only the prepared mind.
+-- Louis Pasteur
