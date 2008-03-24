@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYCXUW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYCXUYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbYCXUW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYCXUWt
+	id S1754100AbYCXUYE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCXUXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:22:49 -0400
-Received: from khc.piap.pl ([195.187.100.11]:45264 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbYCXUWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:22:48 -0400
-To: Joe Perches <joe@perches.com>
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/net/wan/wanxl.c: time_before(timeout, jiffies) -> jiffies, timeout
-References: <47E28637.4010700@tiscali.nl>
-	<1206031566.26345.63.camel@localhost>
-	<m3fxug2mk3.fsf@maximus.localdomain>
-	<1206373941.4845.21.camel@localhost>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 24 Mar 2008 21:22:46 +0100
-In-Reply-To: <1206373941.4845.21.camel@localhost> (Joe Perches's message of "Mon\, 24 Mar 2008 08\:52\:21 -0700")
-Message-ID: <m33aqf3m95.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Mar 2008 16:23:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52924
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751952AbYCXUXy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 16:23:54 -0400
+Date: Mon, 24 Mar 2008 13:23:53 -0700 (PDT)
+Message-Id: <20080324.132353.65713081.davem@davemloft.net>
+To: samuel.thibault@ens-lyon.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080324104330.GF4434@implementation.uk.xensource.com>
+References: <20080308022321.GC5853@implementation>
+	<20080323.215641.192753003.davem@davemloft.net>
+	<20080324104330.GF4434@implementation.uk.xensource.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches <joe@perches.com> writes:
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Mon, 24 Mar 2008 10:43:30 +0000
 
-> What's the value of not having schedule() in the
-> wanxl_open and wanxl_close routines?
+> See documentation above.  If applications don't follow documentation,
+> then they deserve breaking :)
 
-There is no need, it's fast.
--- 
-Krzysztof Halasa
+Not when we've been reporting the existing value for more
+than 10 years.
