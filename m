@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYCXVHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbYCXVLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbYCXVHI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 17:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYCXVGz
+	id S1754365AbYCXVLQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 17:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYCXVLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 17:06:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60781 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750723AbYCXVGy (ORCPT
+	Mon, 24 Mar 2008 17:11:03 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:40852 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbYCXVLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 17:06:54 -0400
-Date: Mon, 24 Mar 2008 14:05:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Miller <davem@davemloft.net>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-In-Reply-To: <20080324.133722.38645342.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
- <20080321.145712.198736315.davem@davemloft.net>
- <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
- <20080324.133722.38645342.davem@davemloft.net>
+	Mon, 24 Mar 2008 17:11:02 -0400
+Message-ID: <47E818E4.2050602@ct.jp.nec.com>
+Date: Mon, 24 Mar 2008 14:11:00 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
+References: <47E2A63B.4020003@ct.jp.nec.com> <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com> <47E2C4CC.5050401@ct.jp.nec.com> <Pine.LNX.4.58.0803211635160.3220@gandalf.stny.rr.com> <47E41EDB.7030908@ct.jp.nec.com> <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com> <Pine.LNX.4.58.0803241639220.9884@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0803241639220.9884@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Mar 2008, David Miller wrote:
-
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Mon, 24 Mar 2008 11:27:06 -0700 (PDT)
+Steven Rostedt wrote:
+> On Mon, 24 Mar 2008, Steven Rostedt wrote:
 > 
-> > The move to 64k page size on IA64 is another way that this issue can
-> > be addressed though.
+>> On Fri, 21 Mar 2008, Hiroshi Shimamoto wrote:
+>>>> Is this a bug in mainline? The !PREEMPT_RT case should be as close to
+>>>> mainline as possible, with no actual changes in object code. If this is
+>>>> not the case, then we need to fix that.
+>>> No, this issue is in -rt only.
+>>>
+>> Hi Hiroshi,
+>>
+>> Thanks again for reporting this. I took a deeper look into this today and
+>> came to the conclusion that we need to get rid of both
+>> slab_irq_disable_nort and slab_irq_disable_rt, and simply use
+>> slab_irq_disable ;-)
+>>
+>> This is what you patch indirectly does. I'll write up another patch to fix
+>> this.
+>>
 > 
-> This is such a huge mistake I wish platforms such as powerpc and IA64
-> would not make such decisions so lightly.
+> Actually, I'm going to take your patch.
+> 
+> Seems that the reason Ingo did the two separate, is that the functions
+> called also call the slab_irq_save, which will retake the locks in
+> PREEMPT_RT. If we don't release the lock, then we can deadlock.
+> 
 
-Its certainly not a light decision if your customer tells you that the box 
-is almost unusable with 16k page size. For our new 2k and 4k processor 
-systems this seems to be a requirement. Customers start hacking SLES10 to 
-run with 64k pages....
+OK, actually, I had a interest in your rework :-)
 
-> The memory wastage is just rediculious.
-
-Well yes if you would use such a box for kernel compiles and small files 
-then its a bad move. However, if you have to process terabytes of data 
-then this is significantly reducing the VM and I/O overhead.
-
-> I already see several distributions moving to 64K pages for powerpc,
-> so I want to nip this in the bud before this monkey-see-monkey-do
-> thing gets any more out of hand.
-
-powerpc also runs HPC codes. They certainly see the same results that we 
-see.
-
+thanks,
+Hiroshi Shimamoto
