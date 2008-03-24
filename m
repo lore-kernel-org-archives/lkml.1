@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYCXHGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYCXHY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbYCXHGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 03:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYCXHGO
+	id S1755868AbYCXHY7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 03:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYCXHYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 03:06:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53942 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbYCXHGN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 03:06:13 -0400
-Date: Mon, 24 Mar 2008 08:09:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Kai <epimetreus@fastmail.fm>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: Serious performance regression in Wine applications and Linux 2.6.24.*
-Message-ID: <20080324070915.GA15022@one.firstfloor.org>
-References: <1206310206.17373.1243881033@webmail.messagingengine.com> <87tziw7p3b.fsf@basil.nowhere.org> <1206341640.31427.1243929483@webmail.messagingengine.com>
-Mime-Version: 1.0
+	Mon, 24 Mar 2008 03:24:50 -0400
+Received: from ozlabs.org ([203.10.76.45]:39762 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752681AbYCXHYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 03:24:45 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206341640.31427.1243929483@webmail.messagingengine.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18407.22329.130304.645554@cargo.ozlabs.ibm.com>
+Date: Mon, 24 Mar 2008 18:24:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] mpc5200: fix incorrect compatible string for the
+ mdio node
+In-Reply-To: <1206156315-4734-1-git-send-email-grant.likely@secretlab.ca>
+References: <1206156315-4734-1-git-send-email-grant.likely@secretlab.ca>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can you explain more clearly what you mean with vmstat?
+Grant Likely writes:
 
-Open shell window. Enter "vmstat 1". Run Wine application. Watch "cs" 
-column over time.
-
-An possible improvement would be also to use a larger number than 1 to get
-values over long time.
-
-Compare that value to the old kernel.
-
+> The MDIO node in the lite5200b.dts file needs to also claim compatibility
+> with the older mpc5200 chip.
 > 
-> Also, I'd like to find a way to feasibly do the git bisect (I assume you
-> basically mean testing against every change in sequence since .23), but
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> Paul, this one should also go in for .26
 
-Yes, although it is just every 1+log2 changes
+OK, I'll put it in the powerpc-next branch.  Or did you mean it should
+go in .25?
 
-> I'd like some advice on how to do this, and how to do it reasonably
-> expeditiously.
-
-Type git bisect into google, there are lots of tutorials.
-
--Andi
-
-
-> 
+Paul.
