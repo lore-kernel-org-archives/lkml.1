@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbYCXLfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbYCXLu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759832AbYCXLfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 07:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbYCXLfV
+	id S1759297AbYCXLu0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 07:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbYCXLuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 07:35:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:17391 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758248AbYCXLfU (ORCPT
+	Mon, 24 Mar 2008 07:50:14 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:65272 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757693AbYCXLuN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 07:35:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=f9KcmsouL75uTy/rUIAGItSGOKv2FmleKxbiCfpXoJXt68jD7Hn2cLpiaK9LLI3L520SvqmSkI4lz9S5MSWOmSxAPBrFjGh5Oy9woxCikC1qialAWI4gXhy7Sg0f6fV8dmgLoyX6+URDBJ5CjLJM7vI2zlLzRFFWlQVeRZJtTQE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: 7eggert@gmx.de
-Subject: Re: [PATCH 1/8] ide: always auto-tune PIO in legacy VLB host drivers
-Date: Mon, 24 Mar 2008 12:50:02 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <aajV7-54-9@gated-at.bofh.it> <E1JdcPD-0000lP-2t@be1.7eggert.dyndns.org>
-In-Reply-To: <E1JdcPD-0000lP-2t@be1.7eggert.dyndns.org>
+	Mon, 24 Mar 2008 07:50:13 -0400
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+References: <20080308022321.GC5853@implementation>
+	<20080323.215641.192753003.davem@davemloft.net>
+	<20080324104330.GF4434@implementation.uk.xensource.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 24 Mar 2008 12:50:10 +0100
+In-Reply-To: <20080324104330.GF4434@implementation.uk.xensource.com>
+Message-ID: <87abko734d.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803241250.02775.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 24 Mar 2008 11:43:33.0145 (UTC) FILETIME=[49BEC090:01C88DA4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 March 2008, Bodo Eggert wrote:
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> |Subject: [PATCH 1/8] ide: always auto-tune PIO in legacy VLB host drivers
-> 
-> AFAIR this isn't safe for bus speeds above 33 MHz, is it?
+Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
 
-It should be safe as VLB host drivers assume that bus speed is 50 MHz
-(so the longest timings are used) if bus speed is not given by user
-(using "idebus=" or "ide_core.vlb_clock=")?
+> David Miller, le Sun 23 Mar 2008 21:56:41 -0700, a écrit :
+> > From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> > Date: Sat, 8 Mar 2008 02:23:21 +0000
+> > 
+> > > Accept and getpeername are supposed to return the amount of bytes
+> > > written in the returned address.  However, on unnamed sockets, only
+> > > sizeof(short) is returned, while a 0 is put in the sun_path member.
+> > > This patch adds 1 for that additional byte.
+> > > 
+> > > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> > 
+> > This change isn't correct.  It's the fact that the
+> > length returned is sizeof(short) that tells the caller
+> > that the unix socket is unnamed.
+> 
+> Mmm, where that is documented?
+> 
+> I can't find any details about that in SUS, and man 7 unix says
+> 
+> `If sun_path starts with a null byte ('' '), then it refers to the
+> abstract namespace main- tained by the Unix protocol module.'
 
-Thanks,
-Bart
+[I wrote unix(7) originally]. The abstract name space is a Linux
+extension and there is no written standard and whatever the kernel
+implements is the de-facto standard. If unix(7) differs in anything
+from what the code does please send patches to the manpages
+maintainer.
+
+-Andi
