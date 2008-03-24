@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbYCXOmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYCXOnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbYCXOmt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 10:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbYCXOmm
+	id S1761127AbYCXOnx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 10:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759333AbYCXOnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 10:42:42 -0400
-Received: from khc.piap.pl ([195.187.100.11]:38244 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751878AbYCXOml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 10:42:41 -0400
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/net/wan/wanxl.c: time_before(timeout, jiffies) -> jiffies, timeout
-References: <47E28637.4010700@tiscali.nl>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 24 Mar 2008 15:42:38 +0100
-In-Reply-To: <47E28637.4010700@tiscali.nl> (Roel Kluin's message of "Thu\, 20 Mar 2008 16\:43\:51 +0100")
-Message-ID: <m3k5js2nfl.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Mar 2008 10:43:45 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:48178 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757418AbYCXOno (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 10:43:44 -0400
+X-Trace: 682417905/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUHAFpa50dRAVlC/2dsb2JhbACBW6VX
+Subject: Re: [PATCH] 2/3 mtd: add support for flash on the SEGA Dreamcast
+	Visual Memory Unit
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Andrew Morton <akpm@osdl.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>
+In-Reply-To: <20080324141043.GB2899@logfs.org>
+References: <1206211147.6324.48.camel@localhost.localdomain>
+	 <20080322185600.GE19347@logfs.org>
+	 <1206207805.6324.13.camel@localhost.localdomain>
+	 <1206209035.6324.29.camel@localhost.localdomain>
+	 <20080322183200.GD19347@logfs.org>
+	 <1206211147.6324.48.camel@localhost.localdomain>
+	 <20080324020832.GA13935@linux-sh.org>
+	 <1206360384.6283.11.camel@localhost.localdomain>
+	 <20080324132101.GA2899@logfs.org>
+	 <1206367120.6283.15.camel@localhost.localdomain>
+	 <20080324141043.GB2899@logfs.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 24 Mar 2008 14:43:16 +0000
+Message-Id: <1206369796.6283.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Roel Kluin <12o3l@tiscali.nl> writes:
+On Mon, 2008-03-24 at 15:10 +0100, Jörn Engel wrote:
+> On Mon, 24 March 2008 13:58:40 +0000, Adrian McMenamin wrote:
+> > 
+> > Tempting as it is to continue the war, discretion will be the better
+> > part of valour here and I will give you the last word.
+> > 
+> > Of course I don't mind you sending patches. Indeed it would be very
+> > helpful and generous of you to do so.
+> 
+> Good.  The first four shouldn't change any behaviour.  Number five flips
+> positive error returns into negative ones.  I believe the old behaviour
+> is a bug.  Worth a second look to make sure.
+> 
+> All five patches are attached.  Hope that doesn't cause any problems.
+> 
 
-> --- a/drivers/net/wan/wanxl.c
-> +++ b/drivers/net/wan/wanxl.c
-> @@ -650,7 +650,7 @@ static int __devinit wanxl_pci_init_one(struct pci_dev *pdev,
->  
->  	timeout = jiffies + 20 * HZ;
->  	while ((stat = readl(card->plx + PLX_MAILBOX_0)) != 0) {
-> -		if (time_before(timeout, jiffies)) {
-> +		if (time_before(jiffies, timeout)) {
->  			printk(KERN_WARNING "wanXL %s: timeout waiting for"
->  			       " PUTS to complete\n", pci_name(pdev));
->  			wanxl_pci_remove_one(pdev);
->
 
-I can't see a bug here - time_before(timeout, jiffies) means "if
-timeout is before jiffies", IOW if jiffies passed the timeout.
+Well, I haven't got round to applying them and testing them yet, though
+they look ok, obviously, except for one thing: I'm pretty much where you
+are on the goto versus return thing, but got pretty clear instructions
+on a previous patch from Andrew Morton that using gotos to ensure
+functions limit the number of return points is the way to go.
 
-Perhaps time_after(jiffies, timeout) is a bit better equivalent, I
-will use that.
--- 
-Krzysztof Halasa
+I've added him back in now we aren't exchanging flames, so maybe he can
+pronouce ex cathedra.
+
