@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbYCXUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYCXU5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064AbYCXUyW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYCXUyO
+	id S1754241AbYCXU5y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYCXU5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:54:14 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:33526 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbYCXUyN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:54:13 -0400
-Message-ID: <47E814F2.6000208@ct.jp.nec.com>
-Date: Mon, 24 Mar 2008 13:54:10 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Mon, 24 Mar 2008 16:57:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41810 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752703AbYCXU5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 16:57:46 -0400
+Message-ID: <47E815C2.1050900@garzik.org>
+Date: Mon, 24 Mar 2008 16:57:38 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
-References: <47E2A63B.4020003@ct.jp.nec.com> <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com> <47E2C4CC.5050401@ct.jp.nec.com> <Pine.LNX.4.58.0803211635160.3220@gandalf.stny.rr.com> <47E41EDB.7030908@ct.jp.nec.com> <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: James Simmons <jsimmons@infradead.org>
+CC: Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add random irq flag to natsemi network driver
+References: <Pine.LNX.4.64.0803241428040.22437@pentafluge.infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0803241428040.22437@pentafluge.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Fri, 21 Mar 2008, Hiroshi Shimamoto wrote:
->>> Is this a bug in mainline? The !PREEMPT_RT case should be as close to
->>> mainline as possible, with no actual changes in object code. If this is
->>> not the case, then we need to fix that.
->> No, this issue is in -rt only.
->>
+James Simmons wrote:
+> Please apply this patch. On the embbeded board I work on this is the only
+> entropy source we have. 
 > 
-> Hi Hiroshi,
-> 
-> Thanks again for reporting this. I took a deeper look into this today and
-> came to the conclusion that we need to get rid of both
-> slab_irq_disable_nort and slab_irq_disable_rt, and simply use
-> slab_irq_disable ;-)
+> diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
+> index 385f69c..c6553dd 100644
+> --- a/drivers/net/natsemi.c
+> +++ b/drivers/net/natsemi.c
+> @@ -1529,7 +1529,8 @@ static int netdev_open(struct net_device *dev)
+>  	/* Reset the chip, just in case. */
+>  	natsemi_reset(dev);
+>  
+> -	i = request_irq(dev->irq, &intr_handler, IRQF_SHARED, dev->name, dev);
+> +	i = request_irq(dev->irq, &intr_handler, IRQF_SHARED | IRQF_SAMPLE_RANDOM,
+> +				dev->name, dev);
 
-thanks for taking time.
+With timed interrupt mitigation and remotely controlled interrupt 
+sources, this can be distinctly non-random.
 
-> 
-> This is what you patch indirectly does. I'll write up another patch to fix
-> this.
+This type of patch is traditionally not applied...
 
-Sounds smarter.
+	Jeff
 
-> 
-> Thanks,
-> 
-> -- Steve
-> 
-> P.S. I'm hoping to get -rt4 out today.
 
-I'll test it on my box when released.
 
-thanks,
-Hiroshi Shimamoto
