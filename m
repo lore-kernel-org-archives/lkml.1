@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYCXUc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYCXUff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYCXUc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYCXUcq
+	id S1754100AbYCXUff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYCXUf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:32:46 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50580 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752427AbYCXUcp (ORCPT
+	Mon, 24 Mar 2008 16:35:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:40639 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbYCXUf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:32:45 -0400
-Message-ID: <47E81037.5030808@keyaccess.nl>
-Date: Mon, 24 Mar 2008 21:33:59 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 24 Mar 2008 16:35:26 -0400
+Date: Mon, 24 Mar 2008 16:35:23 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
+In-Reply-To: <47E41EDB.7030908@ct.jp.nec.com>
+Message-ID: <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
+References: <47E2A63B.4020003@ct.jp.nec.com> <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com>
+ <47E2C4CC.5050401@ct.jp.nec.com> <Pine.LNX.4.58.0803211635160.3220@gandalf.stny.rr.com>
+ <47E41EDB.7030908@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@gmail.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, git <git@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Subject: Re: [ANNOUNCE] Stacked GIT 0.14.2
-References: <b0943d9e0803241259s5280cdc1o255a4412b3fa7bfc@mail.gmail.com> <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24-03-08 21:15, Jan Engelhardt wrote:
 
-> On Monday 2008-03-24 20:59, Catalin Marinas wrote:
-> 
->> Stacked GIT 0.14.2 release is available from 
->> http://www.procode.org/stgit/.
->>
->> StGIT is a Python application providing similar functionality to Quilt
->> (i.e. pushing/popping patches to/from a stack) on top of GIT.
-> 
-> I always wondered what the difference between stgit and guilt is.
-> Does anyone have a comparison up?
+On Fri, 21 Mar 2008, Hiroshi Shimamoto wrote:
+>
+> >
+> > Is this a bug in mainline? The !PREEMPT_RT case should be as close to
+> > mainline as possible, with no actual changes in object code. If this is
+> > not the case, then we need to fix that.
+>
+> No, this issue is in -rt only.
+>
 
-And I remember some mumblings about git growing quilt-like functionality 
-itself. Anything on that?
+Hi Hiroshi,
 
-Rene.
+Thanks again for reporting this. I took a deeper look into this today and
+came to the conclusion that we need to get rid of both
+slab_irq_disable_nort and slab_irq_disable_rt, and simply use
+slab_irq_disable ;-)
+
+This is what you patch indirectly does. I'll write up another patch to fix
+this.
+
+Thanks,
+
+-- Steve
+
+P.S. I'm hoping to get -rt4 out today.
