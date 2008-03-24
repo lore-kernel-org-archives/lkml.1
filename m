@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYCXGNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbYCXGvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbYCXGNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 02:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYCXGNX
+	id S1755087AbYCXGvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 02:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYCXGvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 02:13:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64783 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbYCXGNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 02:13:10 -0400
-Message-ID: <47E74608.7080007@cn.fujitsu.com>
-Date: Mon, 24 Mar 2008 14:11:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: vladislav.yasevich@hp.com, sri@us.ibm.com,
-       lksctp-developers@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] SCTP: fix compile warning building without CONFIG_IPV6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 24 Mar 2008 02:51:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48055
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753318AbYCXGvL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 02:51:11 -0400
+Date: Sun, 23 Mar 2008 23:51:10 -0700 (PDT)
+Message-Id: <20080323.235110.197600762.davem@davemloft.net>
+To: lizf@cn.fujitsu.com
+Cc: vladislav.yasevich@hp.com, sri@us.ibm.com,
+       lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SCTP: fix compile warning building without CONFIG_IPV6
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47E74608.7080007@cn.fujitsu.com>
+References: <47E74608.7080007@cn.fujitsu.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m2O6pfnq007911
 
-include/net/sctp/sctp.h: In function â€˜sctp_v6_pf_initâ€™:
-include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
+From: Li Zefan <lizf@cn.fujitsu.com>
+Date: Mon, 24 Mar 2008 14:11:20 +0800
 
-This warning repeats several times.
+> include/net/sctp/sctp.h: In function â€˜sctp_v6_pf_initâ€™:
+> include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
+> 
+> This warning repeats several times.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/net/sctp/sctp.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
-index 57ed3e3..ea80673 100644
---- a/include/net/sctp/sctp.h
-+++ b/include/net/sctp/sctp.h
-@@ -389,7 +389,7 @@ void sctp_v6_del_protocol(void);
- 
- #else /* #ifdef defined(CONFIG_IPV6) */
- 
--static inline void sctp_v6_pf_init(void) { return 0; }
-+static inline void sctp_v6_pf_init(void) { return; }
- static inline void sctp_v6_pf_exit(void) { return; }
- static inline int sctp_v6_protosw_init(void) { return 0; }
- static inline void sctp_v6_protosw_exit(void) { return; }
--- 
-1.5.4.rc3
+Fixed in net-2.6 for several days already.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
