@@ -1,107 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760458AbYCXAVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYCXBLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760458AbYCXAVs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 20:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760014AbYCXAVj
+	id S1758295AbYCXBLz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 21:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYCXBLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 20:21:39 -0400
-Received: from mail.es335.com ([67.65.19.105]:18614 "EHLO mail.es335.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757608AbYCXAVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 20:21:38 -0400
-X-Greylist: delayed 1727 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Mar 2008 20:21:38 EDT
-User-Agent: Microsoft-Entourage/11.4.0.080122
-Date: Sun, 23 Mar 2008 18:52:49 -0500
-Subject: Re: [PATCH for 2.6.25] SVCRDMA: Use only 1 RDMA read scatter
- entry for iWARP adapters
-From: Tom Tucker <tom@opengridcomputing.com>
-To: Roland Dreier <rdreier@cisco.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>
-CC: NeilBrown <neilb@suse.de>, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       <linux-nfs@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Message-ID: <C40C5781.3E539%tom@opengridcomputing.com>
-Thread-Topic: [PATCH for 2.6.25] SVCRDMA: Use only 1 RDMA read scatter
- entry for iWARP adapters
-Thread-Index: AciNQP/aPjymE/k0EdybCwAX8gjrzA==
-In-Reply-To: <adaiqzdt9lb.fsf@cisco.com>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Sun, 23 Mar 2008 21:11:48 -0400
+Received: from mxsf09.insightbb.com ([74.128.0.79]:48273 "EHLO
+	mxsf09.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754008AbYCXBLr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 21:11:47 -0400
+X-Greylist: delayed 578 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Mar 2008 21:11:47 EDT
+X-IronPort-AV: E=Sophos;i="4.25,544,1199682000"; 
+   d="scan'208";a="316979750"
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEALKZ5kdi3KTd/2dsb2JhbACmBQ
+X-IronPort-AV: E=Sophos;i="4.25,544,1199682000"; 
+   d="scan'208";a="123709122"
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH] Input: add flags bitfield
+Date: Sun, 23 Mar 2008 21:02:07 -0400
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+References: <1205698451-1640-1-git-send-email-hmh@hmh.eng.br> <1206136586.14058.1243686863@webmail.messagingengine.com> <20080322070955.GA10719@khazad-dum.debian.net>
+In-Reply-To: <20080322070955.GA10719@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803232102.07268.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 22 March 2008, Henrique de Moraes Holschuh wrote:
+> On Fri, 21 Mar 2008, Henrique de Moraes Holschuh wrote:
+> > On Fri, 21 Mar 2008 16:07:01 -0400, "Dmitry Torokhov"
+> > <dmitry.torokhov@gmail.com> said:
+> > > On Sun, Mar 16, 2008 at 05:14:11PM -0300, Henrique de Moraes Holschuh wrote:
+> > > > Add a flags bitfield to the input_dev structure, which can be used for
+> > > > internal coordination among kernel input devices and input handlers without
+> > > > the need to use ever-expanding blacklists on the input handlers.
+> > > > 
+> > > > Add initial flag bits which allows an input driver to request that joystick
+> > > > emulation (joydev) or mouse emulation (mousedev) not be attached to an
+> > > > input device.
+> > > > 
+> > > > This will be used by accelerometer drivers exporting a raw interface which
+> > > > is not to be used as a joystick device (not to confuse this with the usual
+> > > > fuzzed joystick interface these drivers export for enhanced Neverball
+> > > > productivity), for example.
+> > > 
+> > > I'd rather not apply this patch because it pushes kowledge of existing
+> > > input interfaces into device drivers. What we could do instead is add
+> > > a 'type' field to the input device structure and then input interfaces
+> > > (evdev/mousedev, etc) could have an option of matching either by device
+> > > type or by device capabilities or both. Your raw devices could have type
+> > > of accelerometer and joydev would bind to devices with type "joystick"
+> > > or "unknown" + certain capabilities. Will this work?
+> > 
+> > It would solve my problem, yes.
+> > 
+> > But I'd prefer if joydev and mousedev did not bind to
+> > unknown+capabilities, just in case.  Looks like bad form to me, and
+> > might bite us back later on.  We can properly fix all drivers in-tree
+> > to have suitable types for joydev and/or mousedev binds, rfkill binds,
+> > and so on after all.
 
-Ack. It's actually an _ancient_ remnant when it had to compile against iWARP
-vs. non-iWARP enabled OFA trees.
+Ohne word - HID.
 
+> 
+> Drat, removing unknown+capabilities means I'd have to hunt down every
+> frigging input device in the tree to annotate its type... otherwise, it
+> would cause regressions re. the handlers.  It is a work that needs to be
+> done anyway, only adding type metadata to new devices and leaving the
+> rest to report "unknown" is just icky.
+> 
+> Come to think of it, what about uinput?  It would need to be able to set
+> the device type as well, otherwise mousedev and joydev, for example,
+> would not attach to uinput-created input devices.
+> 
 
-On 3/23/08 4:27 PM, "Roland Dreier" <rdreier@cisco.com> wrote:
+That's why I thinkg unmarked should really be default and only few selected
+devices should set their type.
 
-> The iWARP protocol limits RDMA read requests to a single scatter
-> entry.  NFS/RDMA has code in rdma_read_max_sge() that is supposed to
-> limit the sge_count for RDMA read requests to 1, but the code to do
-> that is inside an #ifdef RDMA_TRANSPORT_IWARP block.  In the mainline
-> kernel at least, RDMA_TRANSPORT_IWARP is an enum and not a
-> preprocessor #define, so the #ifdef'ed code is never compiled.
-> 
-> In my test of a kernel build with -j8 on an NFS/RDMA mount, this
-> problem eventually leads to trouble starting with:
-> 
->     svcrdma: Error posting send = -22
->     svcrdma : RDMA_READ error = -22
-> 
-> and things go downhill from there.
-> 
-> The trivial fix is to delete the #ifdef guard.  The check seems to be
-> a remnant of when the NFS/RDMA code was not merged and needed to
-> compile against multiple kernel versions, although I don't think it
-> ever worked as intended.  In any case now that the code is upstream
-> there's no need to test whether the RDMA_TRANSPORT_IWARP constant is
-> defined or not.
-> 
-> Without this patch, my kernel build on an NFS/RDMA mount using NetEffect
-> adapters quickly and 100% reproducibly failed with an error like:
-> 
->     ld: final link failed: Software caused connection abort
-> 
-> With the patch applied I was able to complete a kernel build on the
-> same setup.
-> 
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> ---
-> I guess this should probably go into 2.6.25 if possible, since things
-> get seriously screwed up in my testing once this bug is hit.
-> 
-> Not sure why this doesn't trigger on Chelsio or Ammasso adapters (or
-> does it?), but it's easily reproducible here on Neteffect adapters
-> (and that driver is now upstream for 2.6.25).
-> 
-> diff --git a/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
-> b/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
-> index ab54a73..9712716 100644
-> --- a/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
-> +++ b/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
-> @@ -237,14 +237,12 @@ static void rdma_set_ctxt_sge(struct svc_rdma_op_ctxt
-> *ctxt,
->  
->  static int rdma_read_max_sge(struct svcxprt_rdma *xprt, int sge_count)
->  {
-> -#ifdef RDMA_TRANSPORT_IWARP
-> if ((RDMA_TRANSPORT_IWARP ==
->     rdma_node_get_transport(xprt->sc_cm_id->
->     device->node_type))
->    && sge_count > 1)
-> return 1;
-> else
-> -#endif
-> return min_t(int, sge_count, xprt->sc_max_sge);
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+-- 
+Dmitry
