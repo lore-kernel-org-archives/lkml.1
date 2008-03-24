@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYCXUYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYCXU2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbYCXUYE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCXUXy
+	id S1753695AbYCXU2W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYCXU2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:23:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52924
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751952AbYCXUXy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:23:54 -0400
-Date: Mon, 24 Mar 2008 13:23:53 -0700 (PDT)
-Message-Id: <20080324.132353.65713081.davem@davemloft.net>
-To: samuel.thibault@ens-lyon.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080324104330.GF4434@implementation.uk.xensource.com>
-References: <20080308022321.GC5853@implementation>
-	<20080323.215641.192753003.davem@davemloft.net>
-	<20080324104330.GF4434@implementation.uk.xensource.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 24 Mar 2008 16:28:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53634 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752066AbYCXU2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 16:28:14 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH] firewire: unnecessary BM delay after generation rollover
+Date: Mon, 24 Mar 2008 16:11:35 -0400
+User-Agent: KMail/1.9.9
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <tkrat.7cb6088b953ca5bd@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.7cb6088b953ca5bd@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803241611.35825.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Date: Mon, 24 Mar 2008 10:43:30 +0000
+On Monday 24 March 2008 03:56:40 pm Stefan Richter wrote:
+> Noticed by Jarod Wilson:  The bus manager work was unnecessarily delayed
+> each time the bus generation counter rolled over.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-> See documentation above.  If applications don't follow documentation,
-> then they deserve breaking :)
+Much nicer than the crappy patch I had in mind (just adding another && 
+0xff). :)
 
-Not when we've been reporting the existing value for more
-than 10 years.
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
