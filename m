@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYCXXLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYCXXTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207AbYCXXLz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 19:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbYCXXLp
+	id S1754773AbYCXXTa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 19:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYCXXTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:11:45 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:53032 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753199AbYCXXLo (ORCPT
+	Mon, 24 Mar 2008 19:19:20 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:33193 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753355AbYCXXTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:11:44 -0400
-X-Trace: 685371150/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqQFAGjS50dRAVlC/2dsb2JhbACBW6ZX
-Subject: Re: [PATCH] 2/3 mtd: add support for flash on the SEGA Dreamcast
-	Visual Memory Unit
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>
-In-Reply-To: <20080324141043.GB2899@logfs.org>
-References: <1206211147.6324.48.camel@localhost.localdomain>
-	 <20080322185600.GE19347@logfs.org>
-	 <1206207805.6324.13.camel@localhost.localdomain>
-	 <1206209035.6324.29.camel@localhost.localdomain>
-	 <20080322183200.GD19347@logfs.org>
-	 <1206211147.6324.48.camel@localhost.localdomain>
-	 <20080324020832.GA13935@linux-sh.org>
-	 <1206360384.6283.11.camel@localhost.localdomain>
-	 <20080324132101.GA2899@logfs.org>
-	 <1206367120.6283.15.camel@localhost.localdomain>
-	 <20080324141043.GB2899@logfs.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 24 Mar 2008 23:11:21 +0000
-Message-Id: <1206400281.10173.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 24 Mar 2008 19:19:20 -0400
+Date: Mon, 24 Mar 2008 23:19:13 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+X-X-Sender: macro@piorun
+To: Glauber Costa <gcosta@redhat.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, ak@suse.de
+Subject: Re: [PATCH 45/79] [PATCH] fix apic acking of irqs
+In-Reply-To: <47E7C00B.5000503@redhat.com>
+Message-ID: <alpine.SOC.1.00.0803241608310.12757@piorun>
+References: <12059475744092-git-send-email-gcosta@redhat.com> <12059476971309-git-send-email-gcosta@redhat.com> <1205947702588-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com>
+ <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com>
+ <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send! -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat
+ <12059477792893-git-send-email-gcosta@redhat.com> <alpine.SOC.1.00.0803201016540.12075@piorun> <47E27D08.9050809@redhat.com> <alpine.SOC.1.00.0803202125520.21415@piorun> <47E7C00B.5000503@redhat.com>
+User-Agent: Alpine 1.00 (SOC 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 24 Mar 2008, Glauber Costa wrote:
 
-On Mon, 2008-03-24 at 15:10 +0100, Jörn Engel wrote:
-> On Mon, 24 March 2008 13:58:40 +0000, Adrian McMenamin wrote:
-> > 
-> > Tempting as it is to continue the war, discretion will be the better
-> > part of valour here and I will give you the last word.
-> > 
-> > Of course I don't mind you sending patches. Indeed it would be very
-> > helpful and generous of you to do so.
-> 
-> Good.  The first four shouldn't change any behaviour.  Number five flips
-> positive error returns into negative ones.  I believe the old behaviour
-> is a bug.  Worth a second look to make sure.
-> 
-> All five patches are attached.  Hope that doesn't cause any problems.
+> I see bit 7 - Illegal Register Address being set.
 
-Just to keep you informed...
+ Hmm, it looks like the only one to be reasonably set under these 
+conditions, but I have never seen it reported for a read cycle to the EOI 
+register anyway, so I suppose it has to be a relatively recent addition.
 
-I have patched and tested four of these without any problem.
+> I believe the reason we never saw it, is that the ESR register is not checked
+> that often when interrupts are enabled. In the new bootup state machine, that
 
-I haven't patched with the return/goto one as I think that needs more
-work.
+ Well, as I wrote, the error interrupt handler is always enabled, 
+reporting the state recorded in the ESR register as soon as an error 
+condition triggers and if an RMW cycle was a problem before, we would have 
+seen a flood of reports from people -- like we indeed have many times for 
+inter-APIC bus data corruption that triggers the same event (using bits 
+3:0 in the ESR as relevant).
 
-Other patches (the ones that have a chance of working) will be tested in
-due course.
+> is inherited from x86_64, we call do_boot_cpu with irqs clearly enabled, and
+> check esr in the process.
 
+ Please note that ESR may hold some leftover state from whatever happened 
+before Linux has taken control, so it is reasonable and I think actually 
+recommended by Intel (FWIW) to clear the register before enabling the 
+error interrupt.  For how to clear the ESR properly, please see 
+setup_local_APIC() -- subtle differences and errata in various APIC 
+implementations have made it more complicated than necessary, sigh...
+
+> But I can understand from the spec you posted that this is clearly an error.
+> So I'd have better come up with a new solution from this
+
+ Well, with CONFIG_X86_GOOD_APIC set there is no RMW access to the ESR as 
+apic_write_around() expands to apic_write().  And the option is meant to 
+be clear only for the original integrated APIC as included in the Pentium 
+processor ("Pentium-Classic" in the Kconfig nomenclature).  I have no 
+means to test such a system, but I still have a working dual-Pentium-MMX 
+machine, which features local APICs that should be the same modulo errata.  
+I may check and see whether a RMW cycle to the ESR triggers any problems 
+with this computer, but the box is currently at the other end of the 
+continent, so it will take a while.
+
+ I have asked this question already: what kind of CPU are you running on?  
+Do you really need to have CONFIG_X86_GOOD_APIC clear with it?
+
+  Maciej
