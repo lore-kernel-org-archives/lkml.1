@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYCXDK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbYCXDPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbYCXDK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 23:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYCXDKU
+	id S1752903AbYCXDPH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 23:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYCXDO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 23:10:20 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:19941 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750865AbYCXDKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 23:10:19 -0400
-Date: Mon, 24 Mar 2008 12:09:45 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: dwmw2 <dwmw2@infradead.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] 1/3 mtd: add Kbuild support and makefile support for Dreamcast VMU
-Message-ID: <20080324030945.GA15872@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	dwmw2 <dwmw2@infradead.org>, Greg KH <greg@kroah.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	MTD <linux-mtd@lists.infradead.org>,
-	linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-References: <1206207805.6324.13.camel@localhost.localdomain> <1206208592.6324.19.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206208592.6324.19.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 23 Mar 2008 23:14:57 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48289 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbYCXDO4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 23:14:56 -0400
+Date: Sun, 23 Mar 2008 20:08:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2.6.25-rc6-git2] drm: fix printk format warning
+Message-Id: <20080323200841.bffe46db.randy.dunlap@oracle.com>
+In-Reply-To: <20080318141411.201fa1a1.randy.dunlap@oracle.com>
+References: <20080318141411.201fa1a1.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22, 2008 at 05:56:32PM +0000, Adrian McMenamin wrote:
-> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+ping.
+
+
+On Tue, 18 Mar 2008 14:14:11 -0700 Randy Dunlap wrote:
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix gcc printk format warning:
+> drivers/char/drm/ati_pcigart.c:125: warning: format '%08X' expects type 'unsigned int', but argument 3 has type 'dma_addr_t'
+> 
+> but doesn't the %08 leave room for truncation?
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 > ---
-> diff -ruN a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-> --- a/drivers/mtd/maps/Kconfig	2008-03-22 17:26:24.000000000 +0000
-> +++ b/drivers/mtd/maps/Kconfig	2008-03-22 17:20:45.000000000 +0000
-> @@ -590,5 +590,19 @@
+>  drivers/char/drm/ati_pcigart.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.25-rc6-git2.orig/drivers/char/drm/ati_pcigart.c
+> +++ linux-2.6.25-rc6-git2/drivers/char/drm/ati_pcigart.c
+> @@ -122,8 +122,9 @@ int drm_ati_pcigart_init(struct drm_devi
+>  	} else {
+>  		address = gart_info->addr;
+>  		bus_address = gart_info->bus_addr;
+> -		DRM_DEBUG("PCI: Gart Table: VRAM %08X mapped at %08lX\n",
+> -			  bus_address, (unsigned long)address);
+> +		DRM_DEBUG("PCI: Gart Table: VRAM %08llX mapped at %08lX\n",
+> +			  (unsigned long long)bus_address,
+> +			  (unsigned long)address);
+>  	}
 >  
->  	  This selection automatically selects the map_ram driver.
->  
-> +config MTD_VMU_FLASH
-> +	tristate "Dreamcast Visual Memory devices and clones"
-> +	depends on SH_DREAMCAST
-> +	select MAPLE
-> +	help
-> +	  Flash map driver for the SEGA Dreamcast Visual Memory Unit
-> +	  and clones.
-> +
-> +	  Most Dreamcast users will have one of these and so will want
-> +	  to say Y here.
-> +
-> +	  To compile this driver as a module choose M here: the module
-> +	  will be called vmu-flash.
-> +
->  endmenu
->  
-1/3 and 2/3 should be merged, they're completely tied to each other and
-are useless on their own.
+>  	pci_gart = (u32 *) address;
+> --
+
+---
+~Randy
