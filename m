@@ -1,112 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYCXITj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYCXIYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYCXITj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 04:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYCXIT2
+	id S1757368AbYCXIYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 04:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYCXIYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 04:19:28 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43294 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752705AbYCXIT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 04:19:27 -0400
-Subject: Re: [patch 3/6] vfs: mountinfo stable peer group id
-From: Ram Pai <linuxram@us.ibm.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080322162700.GC10722@ZenIV.linux.org.uk>
-References: <20080313212641.989467982@szeredi.hu>
-	 <20080313212735.741834181@szeredi.hu>
-	 <20080319114844.GK10722@ZenIV.linux.org.uk>
-	 <E1Jc1Ln-0003jm-Bt@pomaz-ex.szeredi.hu>
-	 <20080319182005.GP10722@ZenIV.linux.org.uk>
-	 <E1Jc3Ad-0004Xu-58@pomaz-ex.szeredi.hu>
-	 <20080322162700.GC10722@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Mon, 24 Mar 2008 01:19:41 -0700
-Message-Id: <1206346782.2961.16.camel@ram.us.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Mon, 24 Mar 2008 04:24:08 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:35108 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbYCXIYH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 04:24:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Gotu2oAHDJjV7KDVB/ILLPPL4NBu7Hkd30kAkPGsEWOZWqQ8CGJJH7VOaiX8tLELlhtXGDRkIuwidW5tYTBaNwxInwpdXAcA5c2AAwa0ESh96H/jmJ3235yfB787r4RUA9QI8LT1kX/dNAQI117JcK0Auf8WYvHQFSNtxv5wP88=
+Message-ID: <38b2ab8a0803240124j61a78649v45533a551f2f7da9@mail.gmail.com>
+Date: Mon, 24 Mar 2008 09:24:06 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: Question about C language.
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47E60702.30302@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0803210846p2f9b92adr951fe7fa0444de63@mail.gmail.com>
+	 <47E60702.30302@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-03-22 at 16:27 +0000, Al Viro wrote:
-> On Wed, Mar 19, 2008 at 07:37:51PM +0100, Miklos Szeredi wrote:
-> > set_mnt_shared() is called from namespace.c as well, without
-> > vfsmount_lock.  But agreed, that's not the real issue.
-> 
-> How about the following: let's separate set_mnt_shared() and inventing
-> group ids.  All we need is this:
-> invent_group_ids(mnt)	/* call under namespace_sem */
-> 	for all vfsmounts p in subtree rooted at mnt
-> 		if p->mnt_share is non-empty
-> 			continue
-> 		get ID for p
-> 		if allocation fails
-> 			goto cleanup
-> 	return 0
-> cleanup:
-> 	for all vfsmounts q in subtree rooted at mnt
-> 		if q == p
-> 			break
-> 		if q->mnt_share is non-empty
-> 			continue
-> 		release ID of q
-> 	return -ENOMEM
-> 
-> Now here's what we do:
-> 	* in do_change_type(), outside of vfsmount_lock, do invent_group_ids()
-> If it fails - bugger off, if not - proceed as now.
+Hello,
 
-Has it to be done outside vfsmount_lock?  AFAICT, invent_group_ids()
-does not sleep, nor does change_mnt_propagation().
+On Sun, Mar 23, 2008 at 8:30 AM, Chris Snook <csnook@redhat.com> wrote:
+>  > I know it's a bit out of topic but this is something I need to clarify for
+>  > writing a Linux driver... hope you don't mind.
+>  >
+>  > In my driver I have a global variable that controls a loop such as:
+>  >
+>  > int my_condition;
+>  >
+>  > void change_my_condition(int new)
+>  > {
+>  >     my_condition = new;
+>  > }
+>  >
+>  > int foo(void)
+>  > {
+>  >     /* irqs are disabled */
+>  >     my_condition = 1;
+>  >     do {
+>  >         ....
+>  >         local_irq_enable();
+>  >         cpu_sleep();
+>  >         local_irq_disable();
+>  >
+>  >    } while (my_condition);
+>  >
+>  > }
+>  >
+>  > This variable is modified by an interrupt handler define in another file
+>  > by using 'change_my_condition' function.
+>  >
+>  > By reading the ISO C99 specification, I _think_ that I needn't any
+>  > kind of barrier
+>  > or even use the volatile type qualifier for my_condition variable to make a true
+>  > access to 'my_condition' in the controlling expression of the while, but I'm not
+>  > sure.
+>  >
+>  > Coud anybody confirm ?
+>  >
+>  > Thanks,
+>
+>  Even volatile may be insufficient with some architecture/compiler
+>  combinations.  You should use explicit barriers wherever you need them,
+>  or Bad Things will happen.
+>
 
-> 	* in attach_recursive_mnt() if IS_MNT_SHARED(dest_mnt) do
-> invent_group_ids() on the dest_mnt immediately and if it fails do
+Really ?
 
-I think you meant, invent_group_ids() on the source_mnt.  But again
-applying invent_group_ids() on the source_mnt has to be done carefully,
-because, source_mnt may have been shared to begin with.
+Could you give me some details please ?
 
-right?
-RP
+As I said previously, I don't think I need any barriers here because this code
+doesn't have any reordering issues and futhermore only one CPU will be up
+at this time.
 
-> umount_tree(dest_mnt, 0, ) under vfsmount_lock, then release_mounts()
-> and bugger off (FWIW, we might want to lift the last part to caller
-> and do the same to release_mounts() in propagate_mnt()).  If it hadn't
-> failed, we proceed as now.
-> 	* in clone_mnt() do
-> 	int new_group = group ID of old;
-> 	int free_group = 0;
-> 	if (flag & (CL_SLAVE | CL_PRIVATE))
-> 		new_group = 0; /* not a peer of original */
-> 	if ((flag & CL_MAKE_SHARED) && !new_group)
-> 		new_group = allocate new ID
-> 		if failed
-> 			return 0;
-> 		free_group = 1;
-> 	}
-> 	mnt = alloc_vfsmount();
-> 	if (mnt) {
-> 		set group ID of mnt to new_group;
-> 		free_group = 0;
-> 		/* as in mainline */
-> 	}
-> 	if (free_group)
-> 		release group ID found in new_group;
-> 	return mnt;
-> 
-> then (after allocating new vfsmount) set its group ID to new_group if
-> alloc_vfsmount() succeeds.  Otherwise release group ID if needed and
-> bugger off as usual.
-> 
-> No need to mess with any additional exclusion for idr protection or with
-> any kind of retries; allocation failure is allocation failure.
-> 
-> Releasing group ID should be done from do_make_slave(), along with clearing
-> group ID in vfsmount.
-> 
-> Care to do that using mountinfo-base in vfs-2.6.git as base tree?
+Actually the only issue I can see is about compiler aliases. I don't know if
+in that case it could use an alias for 'my_condition'. Looking at the code, it
+would be a bad idea but I can't find anything about this in the C specification.
+The C spec talks about sequence points but I'm really confused when reading
+that part...
 
+Thanks
+-- 
+Francis
