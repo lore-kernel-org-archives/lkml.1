@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbYCXUxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbYCXUyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbYCXUxM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbYCXUw6
+	id S1755064AbYCXUyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYCXUyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:52:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58370 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750723AbYCXUw5 (ORCPT
+	Mon, 24 Mar 2008 16:54:14 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:33526 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbYCXUyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:52:57 -0400
-Date: Mon, 24 Mar 2008 13:50:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
- regressions from 2.6.24)
-In-Reply-To: <47E807EE.2030902@m3y3r.de>
-Message-ID: <alpine.LFD.1.00.0803241348510.2775@woody.linux-foundation.org>
-References: <200803220259.48534.rjw@sisk.pl> <47E5350D.101@s5r6.in-berlin.de> <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org>
- <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 24 Mar 2008 16:54:13 -0400
+Message-ID: <47E814F2.6000208@ct.jp.nec.com>
+Date: Mon, 24 Mar 2008 13:54:10 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
+References: <47E2A63B.4020003@ct.jp.nec.com> <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com> <47E2C4CC.5050401@ct.jp.nec.com> <Pine.LNX.4.58.0803211635160.3220@gandalf.stny.rr.com> <47E41EDB.7030908@ct.jp.nec.com> <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> On Fri, 21 Mar 2008, Hiroshi Shimamoto wrote:
+>>> Is this a bug in mainline? The !PREEMPT_RT case should be as close to
+>>> mainline as possible, with no actual changes in object code. If this is
+>>> not the case, then we need to fix that.
+>> No, this issue is in -rt only.
+>>
+> 
+> Hi Hiroshi,
+> 
+> Thanks again for reporting this. I took a deeper look into this today and
+> came to the conclusion that we need to get rid of both
+> slab_irq_disable_nort and slab_irq_disable_rt, and simply use
+> slab_irq_disable ;-)
 
-[ Ahh, I was reading email in the wrong order, so I saw your other email 
-  first. ]
+thanks for taking time.
 
-On Mon, 24 Mar 2008, Thomas Meyer wrote:
->
-> Yes. With this patch applied the error messages doesn't appear anymore.
+> 
+> This is what you patch indirectly does. I'll write up another patch to fix
+> this.
 
-Does the firewire port work too? 
+Sounds smarter.
 
-			Linus
+> 
+> Thanks,
+> 
+> -- Steve
+> 
+> P.S. I'm hoping to get -rt4 out today.
+
+I'll test it on my box when released.
+
+thanks,
+Hiroshi Shimamoto
