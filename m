@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYCXTz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbYCXTzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYCXTz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYCXTzH
+	id S1755426AbYCXTzs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbYCXTz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:55:07 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53370 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753720AbYCXTzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:55:06 -0400
-Date: Mon, 24 Mar 2008 12:53:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on
- IA64 and x86
-In-Reply-To: <871w63iuap.fsf@basil.nowhere.org>
-Message-ID: <Pine.LNX.4.64.0803241251360.4218@schroedinger.engr.sgi.com>
-References: <20080321061703.921169367@sgi.com> <20080321061726.782068299@sgi.com>
- <871w63iuap.fsf@basil.nowhere.org>
+	Mon, 24 Mar 2008 15:55:29 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51885 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755246AbYCXTz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 15:55:27 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 24 Mar 2008 20:53:34 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 3/3] ieee1394: ohci1394: missing PPC PMac feature calls in
+ failure path
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.525e96701f0759f9@s5r6.in-berlin.de>
+Message-ID: <tkrat.beb16d2e088da506@s5r6.in-berlin.de>
+References: <tkrat.3b27f4ba701fc1ec@s5r6.in-berlin.de>
+ <tkrat.525e96701f0759f9@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008, Andi Kleen wrote:
+The failure path of ohci1394_pci_probe() reuses ohci1394_pci_remove().
+Doing so it missed to call ohci1394_pmac_off() in a few unlikely early
+error cases.
 
-> The traditional reason this was discouraged (people seem to reinvent
-> variants of this patch all the time) was that there used 
-> to be drivers that did __pa() (or equivalent) on stack addresses
-> and that doesn't work with vmalloc pages.
-> 
-> I don't know if such drivers still exist, but such a change
-> is certainly not a no-brainer
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/ohci1394.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I thought that had been cleaned up because some arches already have 
-virtually mapped stacks? This could be debugged by testing with
-CONFIG_VFALLBACK_ALWAYS set. Which results in a stack that is always 
-vmalloc'ed and thus the driver should fail.
+Index: linux/drivers/ieee1394/ohci1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/ohci1394.c
++++ linux/drivers/ieee1394/ohci1394.c
+@@ -3242,7 +3242,7 @@ static void ohci1394_pci_remove(struct p
+ 
+ 	ohci = pci_get_drvdata(dev);
+ 	if (!ohci)
+-		return;
++		goto out;
+ 
+ 	device = get_device(&ohci->host->device);
+ 
+@@ -3305,14 +3305,14 @@ static void ohci1394_pci_remove(struct p
+ 		release_mem_region(pci_resource_start(dev, 0),
+ 				   OHCI1394_REGISTER_SIZE);
+ 
+-		ohci1394_pmac_off(dev);
+-
+ 	case OHCI_INIT_ALLOC_HOST:
+ 		pci_set_drvdata(dev, NULL);
+ 	}
+ 
+ 	if (device)
+ 		put_device(device);
++out:
++	ohci1394_pmac_off(dev);
+ }
+ 
+ #ifdef CONFIG_PM
 
+-- 
+Stefan Richter
+-=====-==--- --== ==---
+http://arcgraph.de/sr/
 
