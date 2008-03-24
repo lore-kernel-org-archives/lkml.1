@@ -1,220 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbYCXSPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbYCXSQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761650AbYCXSPK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbYCXSO6
+	id S1762176AbYCXSQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758072AbYCXSPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:14:58 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:57124 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757442AbYCXSO4 (ORCPT
+	Mon, 24 Mar 2008 14:15:53 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:41560 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758040AbYCXSPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:14:56 -0400
-Message-ID: <47E7EFDF.2070706@keyaccess.nl>
-Date: Mon, 24 Mar 2008 19:15:59 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 24 Mar 2008 14:15:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=piXPZUuyLbMiFwuxKKy6hoR3OslMIY8Uo+YnCQprZtUsNHPanuFhNoybTbCfsSjcoEJkjLWk+Sv3oTReinaJZCjYRwS3H16o4pmjz2s18ic2la7QMjyl5z4AoGhO28eKCuQtH1tYj2UBgLdX4trDWfC7jaJIwHYfRfy6JD1THJE=
+Message-ID: <4cefeab80803241115l34b37b33ie9eec5404ff8a764@mail.gmail.com>
+Date: Mon, 24 Mar 2008 23:45:51 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+Subject: Re: [PATCH 0/6]: compcache: Compressed Caching
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <5699f8f00803240921j5dc66547xf9a755ee531d8476@mail.gmail.com>
 MIME-Version: 1.0
-To: Michael Cree <mcree@orcon.net.nz>
-CC: Bob Tracy <rct@frus.com>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080318032427.298BCDBA2@gherkin.frus.com> <546A47FE-F98E-49E2-A250-41F65C2D482B@orcon.net.nz> <47E6338E.8030001@orcon.net.nz>
-In-Reply-To: <47E6338E.8030001@orcon.net.nz>
-Content-Type: multipart/mixed;
- boundary="------------070906030304050904090003"
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803242030.05997.nitingupta910@gmail.com>
+	 <5699f8f00803240921j5dc66547xf9a755ee531d8476@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070906030304050904090003
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Mar 24, 2008 at 9:51 PM, Wander Winkelhorst
+<w.winkelhorst@gmail.com> wrote:
+>
+> On Mon, Mar 24, 2008 at 4:00 PM, Nitin Gupta <nitingupta910@gmail.com>
+> wrote:
+> > Hi All,
+> >
+>
+> Hi,
+>
+>
+> > (sending to lkml since I didn't get any reply at linux-mm).
+> >
+> > This implements a RAM based block device which acts as swap disk.
+> > Pages swapped to this disk are compressed and stored in memory itself.
+> > This allows more applications to fit in given amount of memory. This is
+> > especially useful for embedded devices, OLPC and small desktops
+> > (aka virtual machines).
+> >
+>
+> I think this is a very interesting patch, but I find the name confusing, it
+> isn't actually a compresed cache, now is it? It's just a compressed ramdisk.
 
-On 23-03-08 11:40, Michael Cree wrote:
+In future, I intend to extend it to include page-cache compression also.
 
-> I have been able to run some tests.  BTW, it is a PWS600au I have.  It 
-> has an ES1887 sound chip.  The most important result is that it is not 
-> only the snd-es18xx driver that fails (often leading to complete system 
-> lockups) but I also installed a CM8738 based sound card and use of the 
-> snd-cmipci driver exhibits exactly the same symptoms as the snd-es18xx 
-> driver.  Both of these drivers work find on the Compaq XP1000.
-> 
-> I am testing with the 2.6.24.3 kernel.  On the PWS600au I have compiled 
-> the kernel for the miata system and selected the EV56 cpu option.  On the
-> XP1000 I have compiled the kernel for a DP264 system and with the EV67
-> cpu option.  In response to an earlier question by Rene I note that 
-> arch/alpha/kernel/es1888.o is added in as a built in object by both 
-> systems.
-> 
-> The es18xx and cmipci drivers work fine on the XP1000.  I base that 
-> observation on using a variety of software, such as mplayer and mocp, 
-> through both sound cards, mainly through oss, but also have tried alsa, 
-> over the last year for es18xx and for the last three or four months for 
-> cmipci.  (I have noted that the M-Audio Revolution 7.1 sound card with 
-> the ice1724 driver fails to work and causes system crashes on the XP1000,
-> but that's a different discussion).
+> Is it possible to use it as a initramfs as well?
+I guess not since R/W have to be page-aligned in this case.
 
-Was there ever a follow-up in that thread? :
+>  How many can I run at the same time?
+>
 
-http://mailman.alsa-project.org/pipermail/alsa-devel/2008-March/006513.html
-
-There's a patch attached that disables mmap on MIATA. You and Bob seem to be 
-experiencing problems of a different nature (or severity at the least) but 
-for both of you it would be good to hear what applying this and then playing 
-using "aplay -D hw foo.wav" (on the miata systems, ofcourse) brings.
-
-> On the PWS600au I have been running aplay on a two minute or so long wav 
-> file (because that is what I have on that system and couldn't be 
-> bothered searching for short files like what Bob was having troubles 
-> with).  I can play the file once (using aplay) without any problem. When 
-> I attempt to the play the file the second time all hell breaks lose, 
-> sometimes with a variety of pops and whistles out the sound card, and 
-> the system crashes or just completely freezes.  Occasionally a kernel 
-> oops makes it into the logs.  This happens for both sound drivers 
-> (es18xx driver into the ES1887 and the cmipci driver into the CM8738 
-> sound card).
-> 
-> I applied the patches of Rene (es18xx-trial-and-error.diff) and the 
-> patch provided by Takashi (with the #ifdef CONFIG_ALPHA detection). 
-> Similar behaviour as before.  First time playing the sound file works 
-> and on attempting to play the sound file for the second time the system 
-> crashes and locks up.  (The es18xx-trial... patch produces no sound and 
-> interrupts do not clock up in /proc/interrupts.  The crash on second 
-> time of playing a sound file still occurs).
-
-Thanks, that was of no use at all then; it was a bit optimistic indeed...
-
-The mmap thing is sort of the last hickup to be expected from me -- having 
-no Alpha machines and with trouble not isolated to a specific driver nor 
-Alpha model, this would at that point ideally want someone with some more 
-specific Alpha insights to step in.
-
-> The same behaviour as above also occurs with running the speaker-test 
-> program.
-> 
-> I therefore think we are looking in the wrong place if we are looking at 
-> the es18xx driver!
-> 
-> An example of the kernel oops that occurs on running aplay for the 
-> second time (actually it was third time in this particular trial - the 
-> second time just lead to a segmentation violation) follows:
-> 
-> Unable to handle kernel paging request at virtual address 0000000000100100
-> aplay(2125): Oops 0
-> pc = [<fffffc000035bd80>]  ra = [<fffffc000035bcac>]  ps = 0007    Not 
-> tainted
-> pc is at get_page_from_freelist+0x1b0/0x4d0
-> ra is at get_page_from_freelist+0xdc/0x4d0
-> v0 = 0000000000000000  t0 = 0000000000000000  t1 = 0000000000100100
-> t2 = 0000000000000000  t3 = fffffc0000b2ab38  t4 = 0000000000100000
-> t5 = 0000000000000001  t6 = 0000000000000002  t7 = fffffc0021ba4000
-> s0 = fffffc00006ea028  s1 = 00000000001000d8  s2 = fffffc00006ea018
-> s3 = 0000000000000002  s4 = fffffc00006e9fe8  s5 = 0000000000000000
-> s6 = 0000000000000001
-> a0 = 0000000000000007  a1 = 0000000000000000  a2 = 00000000000001dd
-> a3 = 0000000000000000  a4 = 0000000000000044  a5 = 0000000000000002
-> t8 = 000000000000001f  t9 = 000002000009cd54  t10= 000000000001fee0
-> t11= 0000000000000010  pv = fffffc000035c5d0  at = 0000000000000000
-> gp = fffffc000071c598  sp = fffffc0021ba7c50
-> Trace:
-> [<fffffc000035c64c>] __alloc_pages+0x7c/0x450
-> [<fffffc0000369ff0>] handle_mm_fault+0x470/0x6e0
-> [<fffffc0000380610>] vfs_read+0xc0/0x190
-> [<fffffc0000369fcc>] handle_mm_fault+0x44c/0x6e0
-> [<fffffc000031f604>] do_page_fault+0x2d4/0x490
-> [<fffffc0000310bdc>] entMM+0x9c/0xc0
-> [<fffffc00003806a0>] vfs_read+0x150/0x190
-> [<fffffc000
-> 
-> (and dmesg failed at this point as the system crashed.)
-> 
-> 
-> The following example was playing through the cmipci sound driver and 
-> copied from the system log (since the system locked up before I ran dmesg):
-> 
-> Mar 23 22:24:38 aleph kernel: Kernel bug at mm/mmap.c:2054
-> Mar 23 22:24:38 aleph kernel: aplay(2604): Kernel Bug 1
-> Mar 23 22:24:38 aleph kernel: pc = [<fffffc000036cba4>]  ra = 
-> [<fffffc000036cb68>]  ps = 0000    Not tainted
-> Mar 23 22:24:38 aleph kernel: pc is at exit_mmap+0x134/0x150
-> Mar 23 22:24:38 aleph kernel: ra is at exit_mmap+0xf8/0x150
-> Mar 23 22:24:38 aleph kernel: v0 = 0000000000000000  t0 = 
-> 0000000000000002  t1 = 0000000000000041
-> Mar 23 22:24:38 aleph kernel: t2 = 0000000000000040  t3 = 
-> fffffc002300c600  t4 = 0000000000000008
-> Mar 23 22:24:38 aleph kernel: t5 = fffffc00001da000  t6 = 
-> 0000000000000000  t7 = fffffc001a34c000
-> Mar 23 22:24:38 aleph kernel: a0 = 0000000000000000  a1 = 
-> fffffc002300c400  a2 = 0000000000000000
-> Mar 23 22:24:38 aleph kernel: a3 = 0000000000000000  a4 = 
-> 0000000000000000  a5 = 0000000000000000
-> Mar 23 22:24:38 aleph kernel: t8 = 0000000000000000  t9 = 
-> 000000684d5720ff  t10= d000000000000000
-> Mar 23 22:24:38 aleph kernel: t11= 0000000000002000  pv = 
-> fffffc000037c0b0  at = 0000000000000002
-> Mar 23 22:24:38 aleph kernel: gp = fffffc000071c598  sp = fffffc001a34fbe8
-> Mar 23 22:24:38 aleph kernel: Trace:
-> Mar 23 22:24:38 aleph kernel: [<fffffc0000325e4c>] mmput+0x5c/0x100
-> Mar 23 22:24:38 aleph kernel: [<fffffc000032a500>] exit_mm+0xc0/0x180
-> Mar 23 22:24:38 aleph kernel: [<fffffc000032b63c>] do_exit+0x16c/0x950
-> Mar 23 22:24:38 aleph kernel: [<fffffc000032be64>] do_group_exit+0x44/0xc0
-> Mar 23 22:24:38 aleph kernel: [<fffffc000033677c>] 
-> get_signal_to_deliver+0x2fc/0x450
-> Mar 23 22:24:38 aleph kernel: [<fffffc0000316874>] 
-> do_notify_resume+0xb4/0x570
-> Mar 23 22:24:38 aleph kernel: [<fffffc00003110cc>] work_pending+0x5c/0x70
-> Mar 23 22:24:38 aleph kernel: [<fffffc0000334c40>] 
-> __sigqueue_alloc+0x40/0xc0
-> Mar 23 22:24:38 aleph kernel: [<fffffc0000390480>] do_ioctl+0x30/0x90
-> Mar 23 22:24:38 aleph kernel: [<fffffc0000335634>] 
-> specific_send_sig_info+0xd4/0x110
-> Mar 23 22:24:38 aleph kernel: [<fffffc000033577c>] force_sig_info+0x8c/0xe0
-> Mar 23 22:24:38 aleph kernel: [<fffffc0000310bdc>] entMM+0x9c/0xc0
-> Mar 23 22:24:38 aleph kernel:
-> Mar 23 22:24:38 aleph kernel: Code: a77df570  6b5b497f  27ba003b 
-> 23bdfa04  c3ffffec  00000081 <00000806> 00609c4a
-> Mar 23 22:24:38 aleph kernel: Fixing recursive fault but reboot is needed!
-> 
-> 
-> Hope the above gives food for thought.
-> 
-> Michael.
-
-Yes, thanks for the testing. There's an mmap in that last oops again at least...
-
-Rene.
+Only 1 for now :)
 
 
---------------070906030304050904090003
-Content-Type: text/plain;
- name="miata_no_mmap.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="miata_no_mmap.diff"
+>
+> >
+> > Project home: http://code.google.com/p/compcache/
+> >
+>
+> This page shows the usage as:
+>
+> Loading: run 'use_compcache.sh <size of swap device (KB)>' to load all
+> required modules and setup swap device. If size is not specified, default
+> size of 25% of RAM is used.
+>
+> Does that mean that if I load compcache without using it, I still lose 25%
+> of my memory? Or is the memory dynamically allocated?
+>
 
-diff --git a/include/sound/asound.h b/include/sound/asound.h
-index 3eaf155..e3b9c2d 100644
---- a/include/sound/asound.h
-+++ b/include/sound/asound.h
-@@ -241,8 +241,14 @@ typedef int __bitwise snd_pcm_subformat_t;
- #define	SNDRV_PCM_SUBFORMAT_STD		((__force snd_pcm_subformat_t) 0)
- #define	SNDRV_PCM_SUBFORMAT_LAST	SNDRV_PCM_SUBFORMAT_STD
- 
-+#ifdef CONFIG_ALPHA_MIATA
-+#define SNDRV_PCM_INFO_MMAP		0		/* the useful comment goes here */
-+#define SNDRV_PCM_INFO_MMAP_VALID	0
-+#else
- #define SNDRV_PCM_INFO_MMAP		0x00000001	/* hardware supports mmap */
- #define SNDRV_PCM_INFO_MMAP_VALID	0x00000002	/* period data are valid during transfer */
-+#endif
-+
- #define SNDRV_PCM_INFO_DOUBLE		0x00000004	/* Double buffering needed for PCM start/stop */
- #define SNDRV_PCM_INFO_BATCH		0x00000010	/* double buffering */
- #define SNDRV_PCM_INFO_INTERLEAVED	0x00000100	/* channels are interleaved */
+Memory is dynamically allocated.
 
---------------070906030304050904090003--
+
+Thanks,
+Nitin
+
+
+> Regards,
+> Wander Winkelhorst
+>
