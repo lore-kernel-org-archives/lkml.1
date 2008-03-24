@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYCXXaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYCXXbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYCXXaq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 19:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYCXXag
+	id S1756428AbYCXXbr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 19:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYCXXbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:30:36 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:53100 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223AbYCXXaf (ORCPT
+	Mon, 24 Mar 2008 19:31:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57959 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752644AbYCXXbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:30:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JejbO3sYlD2wqzua/Hwu/D9TFA1TqsDOlU6i4FgQMSR1kvzs33Y6jxEo9Sd02UZFYOJOz/bfZYaERop6XE3ywBxl1CzeI5OvREWEUYcDwpOpOHxXdLnInrRORAmJSF/4ZNEXVKRO2bL/QdWIOCM9GPMZHm+vUrfzCyPIYJ7ZMNA=
-Message-ID: <df47b87a0803241630u5475fb00l4c76fc709af31a7f@mail.gmail.com>
-Date: Tue, 25 Mar 2008 01:30:33 +0200
-From: "Ioan Ionita" <opslynx@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: 2.6.25-rc5-git5 KVM memory not freed
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47E64B27.3060400@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Mar 2008 19:31:38 -0400
+Date: Mon, 24 Mar 2008 16:31:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, rpjday@crashcourse.ca
+Subject: Re: +
+ netdev-cassini-use-shorter-list_splice_init-macro-for-brevity.patch added
+ to -mm tree
+Message-Id: <20080324163105.154a031a.akpm@linux-foundation.org>
+In-Reply-To: <20080324.162138.50436206.davem@davemloft.net>
+References: <200803242231.m2OMV6Cv028654@imap1.linux-foundation.org>
+	<20080324.155652.218552935.davem@davemloft.net>
+	<20080324161045.045ef5c8.akpm@linux-foundation.org>
+	<20080324.162138.50436206.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <df47b87a0803200941q7cbee10ev5a57f7cb25406896@mail.gmail.com>
-	 <47E63161.90002@qumranet.com> <47E64B27.3060400@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 23, 2008 at 2:20 PM, Avi Kivity <avi@qumranet.com> wrote:
+On Mon, 24 Mar 2008 16:21:38 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
->  Attached patch ought to fix this.
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Mon, 24 Mar 2008 16:10:45 -0700
+> 
+> > On Mon, 24 Mar 2008 15:56:52 -0700 (PDT)
+> > David Miller <davem@davemloft.net> wrote:
+> > 
+> > > From: akpm@linux-foundation.org
+> > > Date: Mon, 24 Mar 2008 15:31:06 -0700
+> > > 
+> > > > Subject: netdev: cassini: use shorter list_splice_init() macro for brevity
+> > > > From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+> > > > 
+> > > > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> > > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > 
+> > > This was applied to net-2.6.26 yesterday,
+> > 
+> > It wasn't in
+> > git+ssh://master.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git two
+> > hours ago.
+> 
+> "net-2.6.26" not "net-2.6", this patch is not a bug fix but
+> rather a feature
+> 
+> net-2.6.26 is what is going into the linux-next tree
 
-I confirmed! Regression is fixed. Thank you! Will it be pushed
-upstream for 2.6.25?
+urgh.  I wish I had some algorithm for detecting when net-2.6.x+1 appears.
 
-Kudos!
+Perhaps you could create it on the day 2.6.x is released and leave it empty
+for a while.  That way I'll notice when net-2.6.x vanishes and I can switch
+to 2.6.x+1 immediately?
+
+
