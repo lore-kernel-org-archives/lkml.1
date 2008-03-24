@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYCXT6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYCXT6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbYCXT6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYCXT6H
+	id S1756405AbYCXT6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbYCXT6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:58:07 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4368 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbYCXT6F (ORCPT
+	Mon, 24 Mar 2008 15:58:21 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51911 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754709AbYCXT6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:58:05 -0400
-Subject: Re: [PATCH] linux/fs.h - Convert debug functions declared inline 
-	=?koi8-r?q?=09=5F=5Fattribute=5F=5F?=((format (printf,x,y) to statement
-	expression macros
-From: Joe Perches <joe@perches.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: gcc@gcc.gnu.org, Jan Hubicka <hubicka@ucw.cz>,
-       Jakub Jelinek <jakub@redhat.com>, David Rientjes <rientjes@google.com>,
-       Matthew Wilcox <matthew@wil.cx>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, zadeck@naturalbridge.com
-In-Reply-To: <200803231622.27190.vda.linux@googlemail.com>
-References: <1204081722.19319.405.camel@localhost>
-	 <20080228102325.GC13246@atrey.karlin.mff.cuni.cz>
-	 <1204247347.9959.31.camel@localhost>
-	 <200803231622.27190.vda.linux@googlemail.com>
-Content-Type: text/plain
-Date: Mon, 24 Mar 2008 12:52:09 -0700
-Message-Id: <1206388329.4845.41.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Mar 2008 15:58:20 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 24 Mar 2008 20:56:40 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: unnecessary BM delay after generation rollover
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.7cb6088b953ca5bd@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-03-23 at 16:22 +0100, Denys Vlasenko wrote:
-> On Friday 29 February 2008 02:09, Joe Perches wrote:
-> > But the function place_entity doesn't use it directly or indirectly.
-> > If the lines above are removed, the generated code for place_entity changes.
-> I see it all the time. Whenever I add/remove/change something
-> to a header, some functions grow a tiny bit, some shrink a bit.
-> gcc 4.2.1. Report is here:
-> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29950
+Noticed by Jarod Wilson:  The bus manager work was unnecessarily delayed
+each time the bus generation counter rolled over.
 
-This seems more like a machine descriptions or target pass defect
-than an RTL problem.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-card.c        |    2 +-
+ drivers/firewire/fw-topology.c    |    2 +-
+ drivers/firewire/fw-transaction.h |    9 +++++++++
+ 3 files changed, 11 insertions(+), 2 deletions(-)
 
-Should this defect be classified in group "Target" rather than "RTL"?
+Index: linux/drivers/firewire/fw-card.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-card.c
++++ linux/drivers/firewire/fw-card.c
+@@ -240,7 +240,7 @@ fw_card_bm_work(struct work_struct *work
+ 	root_id = root_node->node_id;
+ 	grace = time_after(jiffies, card->reset_jiffies + DIV_ROUND_UP(HZ, 10));
+ 
+-	if (card->bm_generation + 1 == generation ||
++	if (is_next_generation(generation, card->bm_generation) ||
+ 	    (card->bm_generation != generation && grace)) {
+ 		/*
+ 		 * This first step is to figure out who is IRM and
+Index: linux/drivers/firewire/fw-topology.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-topology.c
++++ linux/drivers/firewire/fw-topology.c
+@@ -518,7 +518,7 @@ fw_core_handle_bus_reset(struct fw_card 
+ 	 * previously processed one, we cannot reliably compare the
+ 	 * old and new topologies.
+ 	 */
+-	if ((generation & 0xff) != ((card->generation + 1) & 0xff) &&
++	if (!is_next_generation(generation, card->generation) &&
+ 	    card->local_node != NULL) {
+ 		fw_notify("skipped bus generations, destroying all nodes\n");
+ 		fw_destroy_nodes(card);
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -261,6 +261,15 @@ struct fw_card {
+ };
+ 
+ /*
++ * Check whether new_generation is the immediate successor of old_generation.
++ * Take counter roll-over at 255 (as per to OHCI) into account.
++ */
++static inline bool is_next_generation(int new_generation, int old_generation)
++{
++	return (new_generation & 0xff) == ((old_generation + 1) & 0xff);
++}
++
++/*
+  * The iso packet format allows for an immediate header/payload part
+  * stored in 'header' immediately after the packet info plus an
+  * indirect payload part that is pointer to by the 'payload' field.
+
+-- 
+Stefan Richter
+-=====-==--- --== ==---
+http://arcgraph.de/sr/
 
