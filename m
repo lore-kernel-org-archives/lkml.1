@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYCXHDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYCXHGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYCXHDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 03:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYCXHDF
+	id S1757292AbYCXHGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 03:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYCXHGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 03:03:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53103 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753541AbYCXHDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 03:03:04 -0400
-Message-ID: <47E751B2.1090002@cn.fujitsu.com>
-Date: Mon, 24 Mar 2008 15:01:06 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: vladislav.yasevich@hp.com, sri@us.ibm.com,
-       lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SCTP: fix compile warning building without CONFIG_IPV6
-References: <47E74608.7080007@cn.fujitsu.com> <20080323.235110.197600762.davem@davemloft.net>
-In-Reply-To: <20080323.235110.197600762.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 24 Mar 2008 03:06:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53942 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753318AbYCXHGN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 03:06:13 -0400
+Date: Mon, 24 Mar 2008 08:09:15 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Kai <epimetreus@fastmail.fm>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Serious performance regression in Wine applications and Linux 2.6.24.*
+Message-ID: <20080324070915.GA15022@one.firstfloor.org>
+References: <1206310206.17373.1243881033@webmail.messagingengine.com> <87tziw7p3b.fsf@basil.nowhere.org> <1206341640.31427.1243929483@webmail.messagingengine.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206341640.31427.1243929483@webmail.messagingengine.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> Date: Mon, 24 Mar 2008 14:11:20 +0800
-> 
->> include/net/sctp/sctp.h: In function ‘sctp_v6_pf_init’:
->> include/net/sctp/sctp.h:392: warning: 'return' with a value, in function returning void
->>
->> This warning repeats several times.
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Fixed in net-2.6 for several days already.
+> Can you explain more clearly what you mean with vmstat?
 
-I looked into the git-log of net-2.6-26 and didn't find the fix.
-So I posted this patch..
+Open shell window. Enter "vmstat 1". Run Wine application. Watch "cs" 
+column over time.
+
+An possible improvement would be also to use a larger number than 1 to get
+values over long time.
+
+Compare that value to the old kernel.
+
+> 
+> Also, I'd like to find a way to feasibly do the git bisect (I assume you
+> basically mean testing against every change in sequence since .23), but
+
+Yes, although it is just every 1+log2 changes
+
+> I'd like some advice on how to do this, and how to do it reasonably
+> expeditiously.
+
+Type git bisect into google, there are lots of tutorials.
+
+-Andi
+
+
+> 
