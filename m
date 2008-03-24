@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbYCXWoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYCXWvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbYCXWoi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 18:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYCXWoX
+	id S1755350AbYCXWvJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 18:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYCXWuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 18:44:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:3245 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbYCXWoV (ORCPT
+	Mon, 24 Mar 2008 18:50:51 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:4879 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbYCXWuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 18:44:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:subject:from:to:cc:in-reply-to:references:
-	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=gN3jltCGCurm/Hx3xirHe3vY5UImWzZOjwX7Vjf6jjFTsg+/wyDuGSJtnpXQdqSbN
-	t5SKTYyvRUKzeaSLkLAwA==
-Subject: Re: posix-cpu-timers revamp
-From: Frank Mayhar <fmayhar@google.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1206380079.21896.20.camel@bobble.smo.corp.google.com>
-References: <bug-9906-10286@http.bugzilla.kernel.org/>
-	 <20080206165045.89b809cc.akpm@linux-foundation.org>
-	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
-	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
-	 <20080207162203.3e3cf5ab@Varda>
-	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-	 <20080207165455.04ec490b@Varda>
-	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
-	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
-	 <1204314904.4850.23.camel@peace.smo.corp.google.com>
-	 <20080304070016.903E127010A@magilla.localdomain>
-	 <1204660376.9768.1.camel@bobble.smo.corp.google.com>
-	 <20080305040826.D0E6127010A@magilla.localdomain>
-	 <1204830243.20004.31.camel@bobble.smo.corp.google.com>
-	 <20080311075020.A93DB26F991@magilla.localdomain>
-	 <1205269507.23124.57.camel@bobble.smo.corp.google.com>
-	 <20080311213507.5BCDF26F991@magilla.localdomain>
-	 <1205455050.19551.16.camel@bobble.smo.corp.google.com>
-	 <20080321071846.1B22B26F9A7@magilla.localdomain>
-	 <1206122240.14638.31.camel@bobble.smo.corp.google.com>
-	 <20080322215829.D69D026F9A7@magilla.localdomain>
-	 <1206380079.21896.20.camel@bobble.smo.corp.google.com>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Mon, 24 Mar 2008 15:43:37 -0700
-Message-Id: <1206398617.21896.48.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 24 Mar 2008 18:50:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ey2cfk0IbvsJW/cK2uSqwij0xfL4LJ4v+9nYLAgSa/J31/w8FM/70SvEp5/5srqOutLsVKyEv3bxUhf1U6YoWKhV8pi+rKwZbyEVd7Gc+Dqqerad3qeMCwZyGuOFZhDmtGA6lS+ui1KaH3Cjt2W89LFjYr5H8BcS67M9MBttbi8=
+Message-ID: <b0943d9e0803241550k3ef0dbe8nae3b00bac34fa20@mail.gmail.com>
+Date: Mon, 24 Mar 2008 22:50:49 +0000
+From: "Catalin Marinas" <catalin.marinas@gmail.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Subject: Re: [ANNOUNCE] Stacked GIT 0.14.2
+Cc: "Junio C Hamano" <gitster@pobox.com>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, git <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Josef Sipek" <jsipek@fsl.cs.sunysb.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <47E82BDD.9060507@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b0943d9e0803241259s5280cdc1o255a4412b3fa7bfc@mail.gmail.com>
+	 <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
+	 <47E81037.5030808@keyaccess.nl>
+	 <7vlk47ua3v.fsf@gitster.siamese.dyndns.org>
+	 <47E82BDD.9060507@keyaccess.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-24 at 10:34 -0700, Frank Mayhar wrote:
-> On Sat, 2008-03-22 at 14:58 -0700, Roland McGrath wrote:
-> > The analysis above is correct but your conclusion here is wrong.
-> > The current value of an itimer is a user feature, not just a piece
-> > of internal bookkeeping.
-> 
-> After looking at the code again, I now understand what you're talking
-> about.  You overloaded it_*_expires to support both the POSIX interval
-> timers and RLIMIT_CPU.  So the way I have things, setting one can stomp
-> the other.
-> 
-> > Your code causes any timer_settime or timer_delete call on a process
-> > CPU timer or any setrlimit call on RLIMIT_CPU to suddenly change the
-> > itimer setting just as if the user had made some setitimer call that
-> > was never made or intended.  That's wrong.
-> 
-> Right, because the original effect was to only set the it_*_expires on
-> each individual task struct, leaving the one in the signal struct alone.
-> 
-> Might it be cleaner to handle the RLIMIT_CPU stuff separately, rather
-> than rolling it into the itimer handling?
+On 24/03/2008, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> On 24-03-08 21:43, Junio C Hamano wrote:
+>
+>  > Rene Herman <rene.herman@keyaccess.nl> writes:
+>  >
+>  >> On 24-03-08 21:15, Jan Engelhardt wrote:
+>  >>
+>  >>> On Monday 2008-03-24 20:59, Catalin Marinas wrote:
+>  >>>
+>  >>>> Stacked GIT 0.14.2 release is available from
+>  >>>> http://www.procode.org/stgit/.
+>  >>>>
+>  >>>> StGIT is a Python application providing similar functionality to Quilt
+>  >>>> (i.e. pushing/popping patches to/from a stack) on top of GIT.
+>  >>> I always wondered what the difference between stgit and guilt is.
+>  >>> Does anyone have a comparison up?
+>  >> And I remember some mumblings about git growing quilt-like
+>  >> functionality itself. Anything on that?
+>  >
+>  > Not my mumbling
+>
+>
+> Believe it was Linus. Seem to remember him saying something about possibly
+>  adding a native queues-like interface not too long ago but it's proving
+>  impossible to google for.
 
-Okay, my proposed fix for this is to introduce a new field in
-signal_struct, rlim_expires, a cputime_t.  Everywhere that the
-RLIMIT_CPU code formerly set it_prof_expires it will now set
-rlim_expires and in run_posix_cpu_timers() I'll check it against the
-thread group prof_time.
+It was Linus indeed, on the linux-arch mailing list:
 
-I believe that that will solve the problem, if I understand this
-correctly.  If I don't, I trust that you will set me straight. :-)
+http://www.mail-archive.com/linux-arch@vger.kernel.org/msg05012.html
+
 -- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
-
+Catalin
