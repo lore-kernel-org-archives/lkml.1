@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761525AbYCXQru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbYCXQze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761525AbYCXQru (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 12:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYCXQrm
+	id S1760642AbYCXQze (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 12:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYCXQz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 12:47:42 -0400
-Received: from mga02.intel.com ([134.134.136.20]:3256 "EHLO mga02.intel.com"
+	Mon, 24 Mar 2008 12:55:26 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39846 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755023AbYCXQrl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 12:47:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,546,1199692800"; 
-   d="scan'208";a="359700933"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1753321AbYCXQzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 12:55:25 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] kbuild: silence documentation GEN xml messages according to $(quiet)
+Date: Mon, 24 Mar 2008 12:57:56 -0400
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <1206371815-32376-1-git-send-email-vapier@gentoo.org> <20080324090939.73f8b00b.randy.dunlap@oracle.com>
+In-Reply-To: <20080324090939.73f8b00b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Date: Mon, 24 Mar 2008 09:45:06 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECE5B401@orsmsx424.amr.corp.intel.com>
-In-reply-to: <20080322122903.GD15355@kernel.dk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Thread-Index: AciMGGjJ/TyU8I2AQ2K/fpdGEJs02ABs9ZPA
-References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <1FE6DD409037234FAB833C420AA843ECE137D9@orsmsx424.amr.corp.intel.com> <20080321183149.GB15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE1387F@orsmsx424.amr.corp.intel.com> <20080322122903.GD15355@kernel.dk>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Cc: <linux-kernel@vger.kernel.org>, <npiggin@suse.de>, <paulus@samba.org>,
-       <tglx@linutronix.de>, <mingo@redhat.com>
-X-OriginalArrivalTime: 24 Mar 2008 16:45:08.0181 (UTC) FILETIME=[6B3A2050:01C88DCE]
+Content-Type: multipart/signed;
+  boundary="nextPart6512548.23NLaBYjRh";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200803241257.57183.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Funky, how does accessing other CPU's per-cpu variables work on ia64
-> then? Perhaps I made some false assumptions.
+--nextPart6512548.23NLaBYjRh
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The per-cpu memory is mapped at two different spots in the kernel
-virtual memory.  When cpuA wants to access per-cpu memory that belongs
-to cpuB it can use the mappings that allow access to every percpu
-area (which may just be indexing by cpu number into a big block of
-memory that has all the per-cpu spaces ... or some more complex
-arithmetic and pointers for NUMA systems where the per-cpu memory
-ought to be allocated out of memory on the right node for the cpu
-that it refers to).
+On Monday 24 March 2008, Randy Dunlap wrote:
+> On Mon, 24 Mar 2008 11:16:55 -0400 Mike Frysinger wrote:
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > ---
+> >  Documentation/DocBook/Makefile |    5 ++++-
+> >  1 files changed, 4 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/Documentation/DocBook/Makefile
+> > b/Documentation/DocBook/Makefile index 300e170..f6a4ba3 100644
+> > --- a/Documentation/DocBook/Makefile
+> > +++ b/Documentation/DocBook/Makefile
+> > @@ -186,8 +186,11 @@ quiet_cmd_fig2png =3D FIG2PNG $@
+> >
+> >  ###
+> >  # Rule to convert a .c file to inline XML documentation
+> > +       gen_xml =3D :
+> > + quiet_gen_xml =3D echo '  GEN     $@'
+> > +silent_gen_xml =3D :
+> >  %.xml: %.c
+> > -	@echo '  GEN     $@'
+> > +	@$($(quiet)gen_xml)
+> >  	@(                            \
+> >  	   echo "<programlisting>";   \
+> >  	   expand --tabs=3D8 < $< |     \
+> > --
+>
+> The Makefile changes are good, but the patch description makes it
+> appear that Mike was rushed.  How about something like this?
 
-When any cpu wants to access its own per-cpu data, it can do so
-via the per-cpu mapping (which is much more efficient from a code
-generation perspective at the per-cpu virtual area is the top 64K
-of virtual address space, so can be accessed with a small negative
-offset from register r0).
+i just copied & pasted the previous commit messages for similar fixes.  you=
+r=20
+longer version sounds fine to me though.
+=2Dmike
 
-This is why lists can be a problem ... since the same memory can
-be accessed via two different virtual addresses, things can get
-badly knotted when the two different addresses get used in different
-parts of the code.  Then operations like "list_empty()" may give
-the wrong answer because the virtual address used for head->next
-isn't the same as that used for head ... but they both refer to the
-same underlying object.
+--nextPart6512548.23NLaBYjRh
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> Unfortunately I have no access to any IA64 machines, so I either
-> have to yank the ia64 bits (which is unfortunate, since Alan tests
-> on those :-) or rely on a bit of help from you and/or others in
-> getting that bit right.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
-I'll see if I can figure out what is going wrong.
+iQIVAwUAR+fdlUFjO5/oN/WBAQL+7xAAuIUrSauLvOn3kU/PmG6dDJK+/+de/BhN
+iMcvVOxNOFUDbhUM+rTrnx/Le13RdShgVIdNM/sLHmCSOsIK8kDt1buxjd9sPE2D
+zuhtUgqxYuXy6101BfmFHKIuuACVqa3iJ4z8iR3/YkW5oxgYcAMWeAipEQMgNKsS
+hFfqQk1N4UYODVZJve0yLFMu7FNX3QRmO6I3cg0Zs0ZBtl1V0dslSdjiWhIQs4q1
+9WXxx4xbZ+1F7PnsbKNofYghZjwdFkpVL7WpfLxw8l7nC6hoF0rZ6fnI1E06IP0W
+WLZzcJIY+en2O63ogqrgUXzlK36Him35aHkOKmSv9fA5yfd4gsfS27TqbAG4CCGi
+XQYtIT96ZIkuEglZCSW4bujvtkdSw20BAs7aIi2+jbT6qE74LEwd65sEuR2/Adhe
+ydwLV6rG+kRdGqsgcIGzebTnF3DXquP6Oda67BfmGsJkh9Ez/hJ6H4t3hm/Z63Hr
+pVSXGEm++kc2UVKUcSmsrY+6YlPY3svoEOXsFMcO32Fs9jZV0rP8bb2AuSJzbMcd
+5HZZD/7wUTnj/drMHaKJEeTuj7/+APToJSM+UTiKFAiDEQi74Jfqmyc4oVUEiWRu
+ZmP6X4obs1zKFuSAGiT1aIQ801Rc1vTzRs0RCxuSGyjRBAUtTqikFaeBAplmHobC
+phrHbVSyCig=
+=aHMO
+-----END PGP SIGNATURE-----
 
--Tony
+--nextPart6512548.23NLaBYjRh--
