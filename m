@@ -1,172 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbYCXTxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbYCXTxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbYCXTxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYCXTxP
+	id S1753892AbYCXTxh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYCXTxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:53:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51081 "EHLO mx1.redhat.com"
+	Mon, 24 Mar 2008 15:53:18 -0400
+Received: from vena.lwn.net ([206.168.112.25]:38641 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751530AbYCXTxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:53:14 -0400
-From: Glauber Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
-       tglx@linutronix.de, yhlu.kernel@gmail.com
-Subject: [PATCH 1/2] move ipi definitions to mach_ipi.h
-Date: Mon, 24 Mar 2008 16:52:40 -0300
-Message-Id: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.3.2.2532.gdeda
+	id S1752003AbYCXTxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 15:53:17 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: stern@rowland.harvard.edu, khali@linux-fr.org, mb@bu3sch.de,
+       hmh@hmh.eng.br, david-b@pacbell.net, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, geert@linux-m68k.org
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Mon, 24 Mar 2008 12:42:29 PDT."
+             <20080324124229.5d49ded6.akpm@linux-foundation.org> 
+Date: Mon, 24 Mar 2008 13:53:17 -0600
+Message-ID: <25897.1206388397@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-take them out of the x86_64-only asm/mach_apic.h
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/apic_64.c               |    2 ++
- arch/x86/kernel/crash.c                 |    4 ----
- arch/x86/kernel/io_apic_64.c            |    2 ++
- arch/x86/kernel/smp.c                   |    6 +-----
- arch/x86/kernel/tlb_64.c                |    3 ++-
- include/asm-x86/mach-default/mach_ipi.h |   17 +++++++++++++----
- include/asm-x86/mach_apic.h             |    3 ---
- 7 files changed, 20 insertions(+), 17 deletions(-)
+> It'd be better if the comment were to describe _why_ in_atomic() is
+> unreliable.  ie: "does not account for held spinlocks on non-preemptible
+> kernels".
 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 5362cfd..206278f 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -41,6 +41,8 @@ #include <asm/proto.h>
- #include <asm/timex.h>
- #include <asm/apic.h>
- 
-+#include <mach_ipi.h>
-+
- int disable_apic_timer __cpuinitdata;
- static int apic_calibrate_pmtmr __initdata;
- int disable_apic;
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 9a5fa0a..2251d0a 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -26,11 +26,7 @@ #include <asm/hpet.h>
- #include <linux/kdebug.h>
- #include <asm/smp.h>
- 
--#ifdef CONFIG_X86_32
- #include <mach_ipi.h>
--#else
--#include <asm/mach_apic.h>
--#endif
- 
- /* This keeps a track of which one is crashing cpu. */
- static int crashing_cpu;
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index 1627c0d..7d5cdf3 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -50,6 +50,8 @@ #include <asm/nmi.h>
- #include <asm/msidef.h>
- #include <asm/hypertransport.h>
- 
-+#include <mach_ipi.h>
-+
- struct irq_cfg {
- 	cpumask_t domain;
- 	cpumask_t old_domain;
-diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-index 16c52aa..8f75893 100644
---- a/arch/x86/kernel/smp.c
-+++ b/arch/x86/kernel/smp.c
-@@ -26,12 +26,8 @@ #include <asm/mtrr.h>
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
- #include <asm/proto.h>
--#ifdef CONFIG_X86_32
--#include <mach_apic.h>
- #include <mach_ipi.h>
--#else
--#include <asm/mach_apic.h>
--#endif
-+#include <mach_apic.h>
- /*
-  *	Some notes on x86 processor bugs affecting SMP operation:
-  *
-diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
-index 615d848..1558e51 100644
---- a/arch/x86/kernel/tlb_64.c
-+++ b/arch/x86/kernel/tlb_64.c
-@@ -11,11 +11,12 @@ #include <linux/interrupt.h>
- #include <asm/mtrr.h>
- #include <asm/pgalloc.h>
- #include <asm/tlbflush.h>
--#include <asm/mach_apic.h>
- #include <asm/mmu_context.h>
- #include <asm/proto.h>
- #include <asm/apicdef.h>
- #include <asm/idle.h>
-+
-+#include <mach_ipi.h>
- /*
-  *	Smarter SMP flushing macros.
-  *		c/o Linus Torvalds.
-diff --git a/include/asm-x86/mach-default/mach_ipi.h b/include/asm-x86/mach-default/mach_ipi.h
-index 0dba244..f00467b 100644
---- a/include/asm-x86/mach-default/mach_ipi.h
-+++ b/include/asm-x86/mach-default/mach_ipi.h
-@@ -9,10 +9,7 @@ void __send_IPI_shortcut(unsigned int sh
- 
- extern int no_broadcast;
- 
--static inline void send_IPI_mask(cpumask_t mask, int vector)
--{
--	send_IPI_mask_bitmask(mask, vector);
--}
-+void send_IPI_mask(cpumask_t mask, int vector);
- 
- static inline void __local_send_IPI_allbutself(int vector)
- {
-@@ -33,6 +30,17 @@ static inline void __local_send_IPI_all(
- 		__send_IPI_shortcut(APIC_DEST_ALLINC, vector);
- }
- 
-+#ifdef CONFIG_X86_64
-+#include <asm/genapic.h>
-+#define send_IPI_mask (genapic->send_IPI_mask)
-+#define send_IPI_allbutself (genapic->send_IPI_allbutself)
-+#define send_IPI_all (genapic->send_IPI_all)
-+#else
-+static inline void send_IPI_mask(cpumask_t mask, int vector);
-+{
-+	send_IPI_mask_bitmask(mask, vector);
-+}
-+
- static inline void send_IPI_allbutself(int vector)
- {
- 	/*
-@@ -50,5 +58,6 @@ static inline void send_IPI_all(int vect
- {
- 	__local_send_IPI_all(vector);
- }
-+#endif
- 
- #endif /* __ASM_MACH_IPI_H */
-diff --git a/include/asm-x86/mach_apic.h b/include/asm-x86/mach_apic.h
-index 7b7115a..1bc68c0 100644
---- a/include/asm-x86/mach_apic.h
-+++ b/include/asm-x86/mach_apic.h
-@@ -20,9 +20,6 @@ #define TARGET_CPUS	  (genapic->target_c
- #define vector_allocation_domain	(genapic->vector_allocation_domain)
- #define apic_id_registered (genapic->apic_id_registered)
- #define init_apic_ldr (genapic->init_apic_ldr)
--#define send_IPI_mask (genapic->send_IPI_mask)
--#define send_IPI_allbutself (genapic->send_IPI_allbutself)
--#define send_IPI_all (genapic->send_IPI_all)
- #define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
- #define phys_pkg_id	(genapic->phys_pkg_id)
- 
--- 
-1.4.2
+But then...why would anybody have a reason to read the upcoming LWN
+article on the subject?  
 
+OK, how's this?
+
+jon
+
+--
+
+Discourage people from inappropriately using in_atomic()
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+index 4982998..63a7782 100644
+--- a/include/linux/hardirq.h
++++ b/include/linux/hardirq.h
+@@ -72,6 +72,13 @@
+ #define in_softirq()		(softirq_count())
+ #define in_interrupt()		(irq_count())
+ 
++/*
++ * Are we running in atomic context?  WARNING: this macro cannot
++ * always detect atomic context; in particular, it cannot know about
++ * held spinlocks in non-preemptible kernels.  Thus it should not be
++ * used in the general case to determine whether sleeping is possible.
++ * Do not use in_atomic() in driver code.
++ */
+ #define in_atomic()		((preempt_count() & ~PREEMPT_ACTIVE) != 0)
+ 
+ #ifdef CONFIG_PREEMPT
