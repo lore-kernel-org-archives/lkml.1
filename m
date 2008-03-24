@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbYCXStP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762542AbYCXSwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbYCXStP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757570AbYCXStA
+	id S1762542AbYCXSwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbYCXSwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:49:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756560AbYCXStA (ORCPT
+	Mon, 24 Mar 2008 14:52:06 -0400
+Received: from fallback.us4.outblaze.com ([205.158.62.120]:58918 "EHLO
+	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757649AbYCXSwF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:49:00 -0400
-Date: Mon, 24 Mar 2008 11:47:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: yorksun@freescale.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-Message-Id: <20080324114740.337509d3.akpm@linux-foundation.org>
-In-Reply-To: <47E7C05C.2000001@freescale.com>
-References: <12059526271941-git-send-email-yorksun@freescale.com>
-	<12059526274026-git-send-email-yorksun@freescale.com>
-	<20080320152708.23c6c734.akpm@linux-foundation.org>
-	<47E3DE6E.2050801@freescale.com>
-	<20080321111228.95a7d9ab.akpm@linux-foundation.org>
-	<47E7C05C.2000001@freescale.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Mon, 24 Mar 2008 14:52:05 -0400
+X-OB-Received: from unknown (205.158.62.55)
+  by wfilter3.us4.outblaze.com; 24 Mar 2008 19:40:06 -0000
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+From: "John Z." <md2sf@mail.com>
+To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 24 Mar 2008 13:49:03 -0500
+Subject: Re: FW: [PATCH 008 of 9] md: Fix possible raid1/raid10 deadlock on
+ read error during resync.
+X-Originating-Ip: 65.113.45.241
+X-Originating-Server: ws1-3.us4.outblaze.com
+Message-Id: <20080324184903.D9213103C6@ws1-3.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Mar 2008 09:53:16 -0500
-Timur Tabi <timur@freescale.com> wrote:
 
-> Andrew Morton wrote:
 > 
-> >>> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
-> >> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
-> > 
-> > No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
-> > and misleading.  GFP_DMA is already atomic; the only effect of adding
-> > GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
-> > 
-> > Don't wory about it ;)
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of NeilBrown
+> Sent: Sunday, March 02, 2008 5:18 PM
+> To: Andrew Morton
+> Cc: linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org; K.Tanaka
+> Subject: [PATCH 008 of 9] md: Fix possible raid1/raid10 deadlock on read
+> error during resync.
 > 
-> Well, maybe we don't want GFP_ATOMIC then, because I don't think we want
-> __GFP_HIGH.  Looking at the code, it appears the __GFP_HIGH has nothing to do
-> with HIGHMEM (which on PowerPC is the not 1-to-1 mapping memory from 0xF000000
-> to 0xFFFFFFFF).  Further examination of the cools shows the __GFP_HIGH says to
-> try access the "emergency pool", and I see this code snippet:
-> 
-> 	if (alloc_flags & ALLOC_HIGH)
-> 		min -= min / 2;
-> 
-> I guess this means that we reduce the amount of memory that can be available in
-> order for the allocate to succeed.
-> 
-> Considering that the amount of memory that we allocate is in the order of
-> megabytes, and it really isn't that important, I would think that we don't want
-> to touch the emergency pool.  Does that sound right?
 
-yup.  The absence of __GFP_WAIT already causes the page allocator to try a
-bit harder.  Adding __GFP_HIGH would make it try harder still.
+> diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+> --- .prev/drivers/md/raid1.c	2008-03-03 11:03:39.000000000 +1100
+> +++ ./drivers/md/raid1.c	2008-03-03 09:56:52.000000000 +1100
+> @@ -704,13 +704,20 @@ static void freeze_array(conf_t *conf)
+>   	/* stop syncio and normal IO and wait for everything to
+>   	 * go quite.
+>   	 * We increment barrier and nr_waiting, and then
+> -	 * wait until barrier+nr_pending match nr_queued+2
+> +	 * wait until nr_pending match nr_queued+1
+> +	 * This is called in the context of one normal IO request
+> +	 * that has failed. Thus any sync request that might be pending
+> +	 * will be blocked by nr_pending, and we need to wait for
+> +	 * pending IO requests to complete or be queued for re-try.
+> +	 * Thus the number queued (nr_queued) plus this request (1)
+> +	 * must match the number of pending IOs (nr_pending) before
+> +	 * we continue.
+>   	 */
+>   	spin_lock_irq(&conf->resync_lock);
+>   	conf->barrier++;
+>   	conf->nr_waiting++;
+>   	wait_event_lock_irq(conf->wait_barrier,
+> -			    conf->barrier+conf->nr_pending ==
+> conf->nr_queued+2,
+> +			    conf->nr_pending == conf->nr_queued+1,
+>   			    conf->resync_lock,
+>   			    ({ flush_pending_writes(conf);
+>   			       raid1_unplug(conf->mddev->queue); }));
+> --
 
-You do need to be sure that the driver will robustly and correctly recover
-from an allocation failure here.
+When we call freeze_array, it is after reschedule_retry, during which conf->nr_queued is already incremented.
+Should we use conf->nr_pending == conf->nr_pending here?
+
+
+
+
+-- 
+Want an e-mail address like mine?
+Get a free e-mail account today at www.mail.com!
 
