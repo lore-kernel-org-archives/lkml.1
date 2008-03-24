@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbYCXOyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYCXOy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761258AbYCXOyn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 10:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759014AbYCXOyf
+	id S1761561AbYCXOy4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 10:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761328AbYCXOyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 10:54:35 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:49946 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758392AbYCXOye (ORCPT
+	Mon, 24 Mar 2008 10:54:45 -0400
+Received: from lazybastard.de ([212.112.238.170]:32831 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761288AbYCXOyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 10:54:34 -0400
-Message-ID: <47E7C05C.2000001@freescale.com>
-Date: Mon, 24 Mar 2008 09:53:16 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Mon, 24 Mar 2008 10:54:44 -0400
+Date: Mon, 24 Mar 2008 15:54:33 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>
+Subject: Re: [PATCH] 2/3 mtd: add support for flash on the SEGA Dreamcast Visual Memory Unit
+Message-ID: <20080324145433.GD2899@logfs.org>
+References: <1206207805.6324.13.camel@localhost.localdomain> <1206209035.6324.29.camel@localhost.localdomain> <20080322183200.GD19347@logfs.org> <1206211147.6324.48.camel@localhost.localdomain> <20080324020832.GA13935@linux-sh.org> <1206360384.6283.11.camel@localhost.localdomain> <20080324132101.GA2899@logfs.org> <1206367120.6283.15.camel@localhost.localdomain> <20080324141043.GB2899@logfs.org> <1206369796.6283.19.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-References: <12059526271941-git-send-email-yorksun@freescale.com>	<12059526274026-git-send-email-yorksun@freescale.com>	<20080320152708.23c6c734.akpm@linux-foundation.org>	<47E3DE6E.2050801@freescale.com> <20080321111228.95a7d9ab.akpm@linux-foundation.org>
-In-Reply-To: <20080321111228.95a7d9ab.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1206369796.6283.19.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
->>> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
->> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
+On Mon, 24 March 2008 14:43:16 +0000, Adrian McMenamin wrote:
 > 
-> No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
-> and misleading.  GFP_DMA is already atomic; the only effect of adding
-> GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
+> Well, I haven't got round to applying them and testing them yet, though
+> they look ok, obviously, except for one thing: I'm pretty much where you
+> are on the goto versus return thing, but got pretty clear instructions
+> on a previous patch from Andrew Morton that using gotos to ensure
+> functions limit the number of return points is the way to go.
 > 
-> Don't wory about it ;)
+> I've added him back in now we aren't exchanging flames, so maybe he can
+> pronouce ex cathedra.
 
-Well, maybe we don't want GFP_ATOMIC then, because I don't think we want
-__GFP_HIGH.  Looking at the code, it appears the __GFP_HIGH has nothing to do
-with HIGHMEM (which on PowerPC is the not 1-to-1 mapping memory from 0xF000000
-to 0xFFFFFFFF).  Further examination of the cools shows the __GFP_HIGH says to
-try access the "emergency pool", and I see this code snippet:
+It is a matter of personal taste.  Having a single return statement is
+nice when using a debugger.  One can set a single breakpoint instead of
+ten.  I guess that is why Andrew prefers it.
 
-	if (alloc_flags & ALLOC_HIGH)
-		min -= min / 2;
+I personally don't care much either way and usually pick whatever needs
+fewer lines.  Main purpose of the patch was to merge the error path with
+the good path.  In several functions you have
 
-I guess this means that we reduce the amount of memory that can be available in
-order for the allocate to succeed.
+	free_this;
+	free_that;
+	return 0;
 
-Considering that the amount of memory that we allocate is in the order of
-megabytes, and it really isn't that important, I would think that we don't want
-to touch the emergency pool.  Does that sound right?
+error1:
+	free_this;
+error2:
+	free_that;
+error3:
+	return error;
+
+Those paths are nearly identical and should be combined.  As always,
+duplicated code has a tendency to diverge, so in most cases the two
+copies have subtle differences.  So far I just tackled the easy cases.
+
+Jörn
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Joern's library part 8:
+http://citeseer.ist.psu.edu/plank97tutorial.html
