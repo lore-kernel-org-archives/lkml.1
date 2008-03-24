@@ -1,126 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYCXWjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbYCXWoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbYCXWjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 18:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbYCXWjL
+	id S1755018AbYCXWoY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 18:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYCXWoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 18:39:11 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:2446 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753310AbYCXWjJ (ORCPT
+	Mon, 24 Mar 2008 18:44:16 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:60822 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753717AbYCXWoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 18:39:09 -0400
-Message-ID: <47E82D68.5070305@imap.cc>
-Date: Mon, 24 Mar 2008 23:38:32 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 24 Mar 2008 18:44:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tbgI1P1uxXkONjmr+ogn2plMCY5mhIgphdCSAmrD5vBXn3x3/H5XWDBmibmxJ3fDW2EeRQ2B4uvRE34E0a2iCGSX6ZA0cFGH/tCFBWBrJzS+o7p6l01ymPQ0n0OtCq5t9INlsJ/DCZ+X86hXP6uS+85QDxY/nX2QV/ihy8aE51o=
+Message-ID: <86802c440803241544w2a250e05wd35e48356628dbbe@mail.gmail.com>
+Date: Mon, 24 Mar 2008 15:44:13 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Glauber Costa" <gcosta@redhat.com>
+Subject: Re: [PATCH 2/2] move apic declarations to mach_apic.h
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       mingo@elte.hu, tglx@linutronix.de
+In-Reply-To: <1206388361-17265-2-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.25-rc6] possible regression: X server dying
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9248800D3441654A37F1B170"
-X-Spam-Score: -0.658 () AWL,BAYES_50,RDNS_DYNAMIC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
+	 <1206388361-17265-2-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9248800D3441654A37F1B170
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 24, 2008 at 12:52 PM, Glauber Costa <gcosta@redhat.com> wrote:
+> take them out of the x86_64-specific asm/mach_apic.h
+>
+>  Signed-off-by: Glauber Costa <gcosta@redhat.com>
+>  ---
+>   arch/x86/kernel/apic_64.c                |    2 -
+>   arch/x86/kernel/io_apic_64.c             |    2 -
+>   arch/x86/kernel/setup_64.c               |    2 -
+>   include/asm-x86/mach-default/mach_apic.h |   80 ++++++++++++++++--------------
+>   include/asm-x86/mach_apic.h              |   26 ----------
+>   5 files changed, 46 insertions(+), 66 deletions(-)
+>
+>  diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+>  index 206278f..7dd6250 100644
+>  --- a/arch/x86/kernel/apic_64.c
+>  +++ b/arch/x86/kernel/apic_64.c
+>  @@ -34,7 +34,6 @@ #include <asm/mtrr.h>
+>   #include <asm/mpspec.h>
+>   #include <asm/hpet.h>
+>   #include <asm/pgalloc.h>
+>  -#include <asm/mach_apic.h>
+>   #include <asm/nmi.h>
+>   #include <asm/idle.h>
+>   #include <asm/proto.h>
+>  @@ -42,6 +41,7 @@ #include <asm/timex.h>
+>   #include <asm/apic.h>
+>
+>   #include <mach_ipi.h>
+>  +#include <mach_apic.h>
 
-In the five days since I booted a 2.6.25-rc6 kernel on my development
-machine, it has happened three times already that I came back to the
-machine to find that the X server had exited, killing all applications
-that still had a window open. This has never happened with previous
-kernel versions (2.6.22.17, 2.6.24.3, 2.6.25-rc5), so I suspect some
-relation to the latest rc kernel.
+good. include/asm-x86/mach_apic.h is gone.
 
-Syslog entries around the time of the crash (identical each time):
-
-Mar 24 21:59:57 xenon kernel: [424469.161592] PM: Removing info for No
-Bus:vcs7
-Mar 24 21:59:57 xenon kernel: [424469.162591] PM: Removing info for No
-Bus:vcsa7
-Mar 24 21:59:57 xenon kernel: [424469.179556] uhci_hcd 0000:00:1d.1:
-release dev 4 ep81-INT, period 8, phase 4, 93 us
-Mar 24 21:59:57 xenon gconfd (ts-21705): Signal 15 erhalten,
-ordungsgem=E4=DFes Herunterfahren
-Mar 24 21:59:57 xenon gconfd (ts-21705): Beenden
-Mar 24 21:59:57 xenon gdm[21341]: WARNING: gdm_slave_xioerror_handler:
-Schwerwiegender X-Fehler - :0 wird neu gestartet
-Mar 24 21:59:58 xenon kernel: [426716.212842] PM: Adding info for No
-Bus:vcs7
-Mar 24 21:59:58 xenon kernel: [426716.213300] PM: Adding info for No
-Bus:vcsa7
-Mar 24 21:59:58 xenon kernel: [426716.295997] PM: Removing info for No
-Bus:vcs7
-Mar 24 21:59:58 xenon kernel: [426716.296110] PM: Removing info for No
-Bus:vcsa7
-Mar 24 21:59:59 xenon kernel: [426716.434662] PM: Adding info for No
-Bus:vcs7
-Mar 24 21:59:59 xenon kernel: [426716.434742] PM: Adding info for No
-Bus:vcsa7
-Mar 24 22:00:00 xenon kernel: [426717.727427] uhci_hcd 0000:00:1d.1:
-reserve dev 4 ep81-INT, period 8, phase 4, 93 us
-Mar 24 22:00:00 xenon kernel: [424472.319521] uhci_hcd 0000:00:1d.1:
-release dev 4 ep81-INT, period 8, phase 4, 93 us
-Mar 24 22:00:00 xenon kernel: [426717.997926] uhci_hcd 0000:00:1d.1:
-reserve dev 4 ep81-INT, period 8, phase 4, 93 us
-Mar 24 22:00:02 xenon gconfd (root-15531): (Version 2.20.0) wird
-gestartet, Prozesskennung 15531, Benutzer =BBroot=AB
-Mar 24 22:00:02 xenon gconfd (root-15531): Die Adresse
-=BBxml:readonly:/etc/gconf/gconf.xml.mandatory=AB wurde an der Position 0=
- zu
-einer nur lesbaren Konfigurationsquelle aufgel=F6st
-Mar 24 22:00:02 xenon gconfd (root-15531): Die Adresse
-=BBxml:readwrite:/root/.gconf=AB wurde an der Position 1 zu einer
-schreibbaren Konfigurationsquelle aufgel=F6st
-Mar 24 22:00:02 xenon gconfd (root-15531): Die Adresse
-=BBxml:readonly:/etc/gconf/gconf.xml.defaults=AB wurde an der Position 2 =
-zu
-einer nur lesbaren Konfigurationsquelle aufgel=F6st
-Mar 24 22:00:02 xenon gconfd (root-15531): Die Adresse
-=BBxml:readonly:/etc/gconf/gconf.xml.schemas=AB wurde an der Position 3 z=
-u
-einer nur lesbaren Konfigurationsquelle aufgel=F6st
-Mar 24 22:00:05 xenon kernel: [426722.904631] gtk-window-deco[15527]:
-segfault at 4 ip b785c98a sp bfa4d160 error 4 in
-libcairo.so.2.11.5[b7852000+7c000]
-
-(The translation of the German error message from gdm is:
-"Serious X error - restarting :0"
-The German language messages from gconfd are probably not important,
-as they appear identically during a regular X logout/login cycle.)
-
-I'm at a loss where to start investigating this. Bisecting appears
-impractical given the error happens about every other day with no
-obvious triggering condition (except me being afk for a longer time.)
-
-Configuration: Pentium D940, 2 GB RAM, Intel 965 chipset, Matrox
-G550 PCIe graphics adapter, openSUSE 10.3 32 bit install.
-
-Ideas?
-
-Thanks
-Tilman
-
-
-
---------------enig9248800D3441654A37F1B170
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFH6C17Q3+did9BuFsRAo8aAJ0UdIqh2rcs+r0VPyVnH+ssgxTijACfXvld
-ZjQB+HsnjHDzCQVhGzzvEjQ=
-=PubG
------END PGP SIGNATURE-----
-
---------------enig9248800D3441654A37F1B170--
+YH
