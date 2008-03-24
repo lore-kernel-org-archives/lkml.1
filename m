@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762265AbYCXS5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbYCXS6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762265AbYCXS5Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbYCXS5Q
+	id S1762779AbYCXS6U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbYCXS6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:57:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37229 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759027AbYCXS5Q (ORCPT
+	Mon, 24 Mar 2008 14:58:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33957 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753694AbYCXS6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:57:16 -0400
-Subject: Re: [PATCH 3/6] compcache: TLSF Allocator interface
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nitin Gupta <nitingupta910@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <4cefeab80803241034m6f62c01fq669129db9959f47f@mail.gmail.com>
-References: <200803242034.24264.nitingupta910@gmail.com>
-	 <1206377777.6437.123.camel@lappy>
-	 <4cefeab80803241034m6f62c01fq669129db9959f47f@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 24 Mar 2008 19:56:53 +0100
-Message-Id: <1206385013.6437.140.camel@lappy>
+	Mon, 24 Mar 2008 14:58:09 -0400
+Date: Mon, 24 Mar 2008 11:57:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] printk vs rq->lock and xtime lock
+Message-Id: <20080324115738.85c72bb5.akpm@linux-foundation.org>
+In-Reply-To: <1206382547.6437.131.camel@lappy>
+References: <20080324122424.671168000@chello.nl>
+	<alpine.LFD.1.00.0803241021350.17905@woody.linux-foundation.org>
+	<1206382547.6437.131.camel@lappy>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-24 at 23:04 +0530, Nitin Gupta wrote:
-> On Mon, Mar 24, 2008 at 10:26 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Mon, 2008-03-24 at 20:34 +0530, Nitin Gupta wrote:
-> >  > Two Level Segregate Fit (TLSF) Allocator is used to allocate memory for
-> >  > variable size compressed pages. Its fast and gives low fragmentation.
-> >  > Following links give details on this allocator:
-> >  >  - http://rtportal.upv.es/rtmalloc/files/tlsf_paper_spe_2007.pdf
-> >  >  - http://code.google.com/p/compcache/wiki/TLSFAllocator
-> >  >
-> >  > This kernel port of TLSF (v2.3.2) introduces several changes but underlying
-> >  > algorithm remains the same.
-> >  >
-> >  > Changelog TLSF v2.3.2 vs this kernel port
-> >  >  - Pool now dynamically expands/shrinks.
-> >  >    It is collection of contiguous memory regions.
-> >  >  - Changes to pool create interface as a result of above change.
-> >  >  - Collect and export stats (/proc/tlsfinfo)
-> >  >  - Cleanups: kernel coding style, added comments, macros -> static inline, etc.
-> >
-> >  Can you explain why you need this allocator, why don't the current
-> >  kernel allocators work for you?
-> >
-> >
-> 
-> kmalloc() allocates one of pre-defined sizes (as defined in
-> kmalloc_sizes.h). This will surely cause severe fragmentation with
-> these variable sized compressed pages.
-> 
-> Whereas, TLSF maintains very fine grained size lists. In all the
-> workloads I tested, it showed <5% fragmentation. Also, its very simple
-> as just ~700 LOC.
+On Mon, 24 Mar 2008 19:15:47 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Yeah, it also suffers from a horrible coding style, can use excessive
-amounts of vmalloc space, isn't hooked into the reclaim process as an
-allocator should be and has a severe lack of per-cpu data making it a
-pretty big bottleneck on anything with more than a few cores.
+> How about I use the lockdep infrastructure to check if printk() is
+> invoked whole holding either xtime or rq lock, and then avoid calling
+> wake_up_klogd(). That way, we at least get sane debug output when the
+> lock debugging infrastructure is enabled?
 
-Now, it might be needed, might work better, and the scalability issue
-might not be a problem when used for swap, but still, you don't treat
-any of these points in your changelog.
+The core problem seems to be that printk shouldn't be calling wake_up(). 
+Can we fix that?
 
-FWIW, please split up the patches in a sane way. This series looks like
-it wants to be 2 or 3 patches. The first introducing all of TLSF (this
-split per file is horrible). The second doing all of the block device,
-and a possible last doing documentation and such.
+I expect it would be acceptable to do it from the timer interrupt instead. 
+For NOHZ kernels a poll when we enter the idle loop would also be needed. 
 
-Also, how bad was kmalloc() compared to this TLSF, we need numbers :-)
+But does that cover everything?  Is it possible for a CPU to run 100% busy
+while not receiving timer interrupts?  I guess so.  To receive no
+interrupts at all?  Also possible.
 
