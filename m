@@ -1,215 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbYCXTvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbYCXTxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbYCXTvE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYCXTuz
+	id S1753331AbYCXTxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYCXTxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:50:55 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51829 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbYCXTuy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:50:54 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 24 Mar 2008 20:49:01 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 1/3] ieee1394: ohci1394: unroll a macro with return
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.3b27f4ba701fc1ec@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Mon, 24 Mar 2008 15:53:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51081 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751530AbYCXTxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 15:53:14 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       tglx@linutronix.de, yhlu.kernel@gmail.com
+Subject: [PATCH 1/2] move ipi definitions to mach_ipi.h
+Date: Mon, 24 Mar 2008 16:52:40 -0300
+Message-Id: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.2.2532.gdeda
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't want to hide something like return in a preprocessor macro.
-Unroll the macro and use a goto, which also reduces the size of
-ohci1394.ko.
+take them out of the x86_64-only asm/mach_apic.h
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- drivers/ieee1394/ohci1394.c |   92 +++++++++++++++++++++---------------
- 1 file changed, 54 insertions(+), 38 deletions(-)
+ arch/x86/kernel/apic_64.c               |    2 ++
+ arch/x86/kernel/crash.c                 |    4 ----
+ arch/x86/kernel/io_apic_64.c            |    2 ++
+ arch/x86/kernel/smp.c                   |    6 +-----
+ arch/x86/kernel/tlb_64.c                |    3 ++-
+ include/asm-x86/mach-default/mach_ipi.h |   17 +++++++++++++----
+ include/asm-x86/mach_apic.h             |    3 ---
+ 7 files changed, 20 insertions(+), 17 deletions(-)
 
-Index: linux/drivers/ieee1394/ohci1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/ohci1394.c
-+++ linux/drivers/ieee1394/ohci1394.c
-@@ -2984,13 +2984,6 @@ static struct hpsb_host_driver ohci1394_
-  * PCI Driver Interface functions  *
-  ***********************************/
+diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+index 5362cfd..206278f 100644
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -41,6 +41,8 @@ #include <asm/proto.h>
+ #include <asm/timex.h>
+ #include <asm/apic.h>
  
--#define FAIL(err, fmt, args...)			\
--do {						\
--	PRINT_G(KERN_ERR, fmt , ## args);	\
--        ohci1394_pci_remove(dev);               \
--	return err;				\
--} while (0)
--
- #ifdef CONFIG_PPC_PMAC
- static void ohci1394_pmac_on(struct pci_dev *dev)
++#include <mach_ipi.h>
++
+ int disable_apic_timer __cpuinitdata;
+ static int apic_calibrate_pmtmr __initdata;
+ int disable_apic;
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 9a5fa0a..2251d0a 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -26,11 +26,7 @@ #include <asm/hpet.h>
+ #include <linux/kdebug.h>
+ #include <asm/smp.h>
+ 
+-#ifdef CONFIG_X86_32
+ #include <mach_ipi.h>
+-#else
+-#include <asm/mach_apic.h>
+-#endif
+ 
+ /* This keeps a track of which one is crashing cpu. */
+ static int crashing_cpu;
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index 1627c0d..7d5cdf3 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -50,6 +50,8 @@ #include <asm/nmi.h>
+ #include <asm/msidef.h>
+ #include <asm/hypertransport.h>
+ 
++#include <mach_ipi.h>
++
+ struct irq_cfg {
+ 	cpumask_t domain;
+ 	cpumask_t old_domain;
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+index 16c52aa..8f75893 100644
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -26,12 +26,8 @@ #include <asm/mtrr.h>
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+ #include <asm/proto.h>
+-#ifdef CONFIG_X86_32
+-#include <mach_apic.h>
+ #include <mach_ipi.h>
+-#else
+-#include <asm/mach_apic.h>
+-#endif
++#include <mach_apic.h>
+ /*
+  *	Some notes on x86 processor bugs affecting SMP operation:
+  *
+diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
+index 615d848..1558e51 100644
+--- a/arch/x86/kernel/tlb_64.c
++++ b/arch/x86/kernel/tlb_64.c
+@@ -11,11 +11,12 @@ #include <linux/interrupt.h>
+ #include <asm/mtrr.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+-#include <asm/mach_apic.h>
+ #include <asm/mmu_context.h>
+ #include <asm/proto.h>
+ #include <asm/apicdef.h>
+ #include <asm/idle.h>
++
++#include <mach_ipi.h>
+ /*
+  *	Smarter SMP flushing macros.
+  *		c/o Linus Torvalds.
+diff --git a/include/asm-x86/mach-default/mach_ipi.h b/include/asm-x86/mach-default/mach_ipi.h
+index 0dba244..f00467b 100644
+--- a/include/asm-x86/mach-default/mach_ipi.h
++++ b/include/asm-x86/mach-default/mach_ipi.h
+@@ -9,10 +9,7 @@ void __send_IPI_shortcut(unsigned int sh
+ 
+ extern int no_broadcast;
+ 
+-static inline void send_IPI_mask(cpumask_t mask, int vector)
+-{
+-	send_IPI_mask_bitmask(mask, vector);
+-}
++void send_IPI_mask(cpumask_t mask, int vector);
+ 
+ static inline void __local_send_IPI_allbutself(int vector)
  {
-@@ -3026,15 +3019,21 @@ static int __devinit ohci1394_pci_probe(
- 	struct hpsb_host *host;
- 	struct ti_ohci *ohci;	/* shortcut to currently handled device */
- 	resource_size_t ohci_base;
-+	int err = -ENOMEM;
- 
- 	ohci1394_pmac_on(dev);
--        if (pci_enable_device(dev))
--		FAIL(-ENXIO, "Failed to enable OHCI hardware");
-+	if (pci_enable_device(dev)) {
-+		PRINT_G(KERN_ERR, "Failed to enable OHCI hardware");
-+		err = -ENXIO;
-+		goto err;
-+	}
-         pci_set_master(dev);
- 
- 	host = hpsb_alloc_host(&ohci1394_driver, sizeof(struct ti_ohci), &dev->dev);
--	if (!host) FAIL(-ENOMEM, "Failed to allocate host structure");
--
-+	if (!host) {
-+		PRINT_G(KERN_ERR, "Failed to allocate host structure");
-+		goto err;
-+	}
- 	ohci = host->hostdata;
- 	ohci->dev = dev;
- 	ohci->host = host;
-@@ -3083,15 +3082,20 @@ static int __devinit ohci1394_pci_probe(
- 		      (unsigned long long)pci_resource_len(dev, 0));
- 
- 	if (!request_mem_region(ohci_base, OHCI1394_REGISTER_SIZE,
--				OHCI1394_DRIVER_NAME))
--		FAIL(-ENOMEM, "MMIO resource (0x%llx - 0x%llx) unavailable",
-+				OHCI1394_DRIVER_NAME)) {
-+		PRINT_G(KERN_ERR, "MMIO resource (0x%llx - 0x%llx) unavailable",
- 			(unsigned long long)ohci_base,
- 			(unsigned long long)ohci_base + OHCI1394_REGISTER_SIZE);
-+		goto err;
-+	}
- 	ohci->init_state = OHCI_INIT_HAVE_MEM_REGION;
- 
- 	ohci->registers = ioremap(ohci_base, OHCI1394_REGISTER_SIZE);
--	if (ohci->registers == NULL)
--		FAIL(-ENXIO, "Failed to remap registers - card not accessible");
-+	if (ohci->registers == NULL) {
-+		PRINT_G(KERN_ERR, "Failed to remap registers");
-+		err = -ENXIO;
-+		goto err;
-+	}
- 	ohci->init_state = OHCI_INIT_HAVE_IOMAPPING;
- 	DBGMSG("Remapped memory spaces reg 0x%p", ohci->registers);
- 
-@@ -3099,16 +3103,20 @@ static int __devinit ohci1394_pci_probe(
- 	ohci->csr_config_rom_cpu =
- 		pci_alloc_consistent(ohci->dev, OHCI_CONFIG_ROM_LEN,
- 				     &ohci->csr_config_rom_bus);
--	if (ohci->csr_config_rom_cpu == NULL)
--		FAIL(-ENOMEM, "Failed to allocate buffer config rom");
-+	if (ohci->csr_config_rom_cpu == NULL) {
-+		PRINT_G(KERN_ERR, "Failed to allocate buffer config rom");
-+		goto err;
-+	}
- 	ohci->init_state = OHCI_INIT_HAVE_CONFIG_ROM_BUFFER;
- 
- 	/* self-id dma buffer allocation */
- 	ohci->selfid_buf_cpu =
- 		pci_alloc_consistent(ohci->dev, OHCI1394_SI_DMA_BUF_SIZE,
-                       &ohci->selfid_buf_bus);
--	if (ohci->selfid_buf_cpu == NULL)
--		FAIL(-ENOMEM, "Failed to allocate DMA buffer for self-id packets");
-+	if (ohci->selfid_buf_cpu == NULL) {
-+		PRINT_G(KERN_ERR, "Failed to allocate self-ID buffer");
-+		goto err;
-+	}
- 	ohci->init_state = OHCI_INIT_HAVE_SELFID_BUFFER;
- 
- 	if ((unsigned long)ohci->selfid_buf_cpu & 0x1fff)
-@@ -3124,28 +3132,32 @@ static int __devinit ohci1394_pci_probe(
- 	if (alloc_dma_rcv_ctx(ohci, &ohci->ar_req_context,
- 			      DMA_CTX_ASYNC_REQ, 0, AR_REQ_NUM_DESC,
- 			      AR_REQ_BUF_SIZE, AR_REQ_SPLIT_BUF_SIZE,
--			      OHCI1394_AsReqRcvContextBase) < 0)
--		FAIL(-ENOMEM, "Failed to allocate AR Req context");
--
-+			      OHCI1394_AsReqRcvContextBase) < 0) {
-+		PRINT_G(KERN_ERR, "Failed to allocate AR Req context");
-+		goto err;
-+	}
- 	/* AR DMA response context allocation */
- 	if (alloc_dma_rcv_ctx(ohci, &ohci->ar_resp_context,
- 			      DMA_CTX_ASYNC_RESP, 0, AR_RESP_NUM_DESC,
- 			      AR_RESP_BUF_SIZE, AR_RESP_SPLIT_BUF_SIZE,
--			      OHCI1394_AsRspRcvContextBase) < 0)
--		FAIL(-ENOMEM, "Failed to allocate AR Resp context");
--
-+			      OHCI1394_AsRspRcvContextBase) < 0) {
-+		PRINT_G(KERN_ERR, "Failed to allocate AR Resp context");
-+		goto err;
-+	}
- 	/* AT DMA request context */
- 	if (alloc_dma_trm_ctx(ohci, &ohci->at_req_context,
- 			      DMA_CTX_ASYNC_REQ, 0, AT_REQ_NUM_DESC,
--			      OHCI1394_AsReqTrContextBase) < 0)
--		FAIL(-ENOMEM, "Failed to allocate AT Req context");
--
-+			      OHCI1394_AsReqTrContextBase) < 0) {
-+		PRINT_G(KERN_ERR, "Failed to allocate AT Req context");
-+		goto err;
-+	}
- 	/* AT DMA response context */
- 	if (alloc_dma_trm_ctx(ohci, &ohci->at_resp_context,
- 			      DMA_CTX_ASYNC_RESP, 1, AT_RESP_NUM_DESC,
--			      OHCI1394_AsRspTrContextBase) < 0)
--		FAIL(-ENOMEM, "Failed to allocate AT Resp context");
--
-+			      OHCI1394_AsRspTrContextBase) < 0) {
-+		PRINT_G(KERN_ERR, "Failed to allocate AT Resp context");
-+		goto err;
-+	}
- 	/* Start off with a soft reset, to clear everything to a sane
- 	 * state. */
- 	ohci_soft_reset(ohci);
-@@ -3188,9 +3200,10 @@ static int __devinit ohci1394_pci_probe(
- 	 * by that point.
- 	 */
- 	if (request_irq(dev->irq, ohci_irq_handler, IRQF_SHARED,
--			 OHCI1394_DRIVER_NAME, ohci))
--		FAIL(-ENOMEM, "Failed to allocate shared interrupt %d", dev->irq);
--
-+			 OHCI1394_DRIVER_NAME, ohci)) {
-+		PRINT_G(KERN_ERR, "Failed to allocate interrupt %d", dev->irq);
-+		goto err;
-+	}
- 	ohci->init_state = OHCI_INIT_HAVE_IRQ;
- 	ohci_initialize(ohci);
- 
-@@ -3210,13 +3223,16 @@ static int __devinit ohci1394_pci_probe(
- 	host->middle_addr_space = OHCI1394_MIDDLE_ADDRESS_SPACE;
- 
- 	/* Tell the highlevel this host is ready */
--	if (hpsb_add_host(host))
--		FAIL(-ENOMEM, "Failed to register host with highlevel");
--
-+	if (hpsb_add_host(host)) {
-+		PRINT_G(KERN_ERR, "Failed to register host with highlevel");
-+		goto err;
-+	}
- 	ohci->init_state = OHCI_INIT_DONE;
- 
- 	return 0;
--#undef FAIL
-+err:
-+	ohci1394_pci_remove(dev);
-+	return err;
+@@ -33,6 +30,17 @@ static inline void __local_send_IPI_all(
+ 		__send_IPI_shortcut(APIC_DEST_ALLINC, vector);
  }
  
- static void ohci1394_pci_remove(struct pci_dev *dev)
-
++#ifdef CONFIG_X86_64
++#include <asm/genapic.h>
++#define send_IPI_mask (genapic->send_IPI_mask)
++#define send_IPI_allbutself (genapic->send_IPI_allbutself)
++#define send_IPI_all (genapic->send_IPI_all)
++#else
++static inline void send_IPI_mask(cpumask_t mask, int vector);
++{
++	send_IPI_mask_bitmask(mask, vector);
++}
++
+ static inline void send_IPI_allbutself(int vector)
+ {
+ 	/*
+@@ -50,5 +58,6 @@ static inline void send_IPI_all(int vect
+ {
+ 	__local_send_IPI_all(vector);
+ }
++#endif
+ 
+ #endif /* __ASM_MACH_IPI_H */
+diff --git a/include/asm-x86/mach_apic.h b/include/asm-x86/mach_apic.h
+index 7b7115a..1bc68c0 100644
+--- a/include/asm-x86/mach_apic.h
++++ b/include/asm-x86/mach_apic.h
+@@ -20,9 +20,6 @@ #define TARGET_CPUS	  (genapic->target_c
+ #define vector_allocation_domain	(genapic->vector_allocation_domain)
+ #define apic_id_registered (genapic->apic_id_registered)
+ #define init_apic_ldr (genapic->init_apic_ldr)
+-#define send_IPI_mask (genapic->send_IPI_mask)
+-#define send_IPI_allbutself (genapic->send_IPI_allbutself)
+-#define send_IPI_all (genapic->send_IPI_all)
+ #define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
+ #define phys_pkg_id	(genapic->phys_pkg_id)
+ 
 -- 
-Stefan Richter
--=====-==--- --== ==---
-http://arcgraph.de/sr/
+1.4.2
 
