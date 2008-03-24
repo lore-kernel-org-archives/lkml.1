@@ -1,205 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbYCXSWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763185AbYCXSYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762865AbYCXSWB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760659AbYCXSVP
+	id S1763185AbYCXSYd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759503AbYCXSYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:21:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55018 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760061AbYCXSVO (ORCPT
+	Mon, 24 Mar 2008 14:24:23 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:23366 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758999AbYCXSYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:21:14 -0400
-Date: Mon, 24 Mar 2008 13:21:12 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC 3/8] x86_64: Increase size of APICID
-Message-ID: <20080324182112.GA28026@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Mon, 24 Mar 2008 14:24:21 -0400
+Message-ID: <47E7F1D1.6010407@ct.jp.nec.com>
+Date: Mon, 24 Mar 2008 11:24:17 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH -rt] avoid deadlock related with PG_nonewrefs and swap_lock
+References: <47DEB7F0.8040207@ct.jp.nec.com>	 <47DF097B.4090200@ct.jp.nec.com>	 <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com> <1205833218.8514.338.camel@twins>
+In-Reply-To: <1205833218.8514.338.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Peter,
 
-Increase the number of bits in an apicid from 8 to 32.
+I've updated the patch. Could you please review it?
 
-By default, MP_processor_info() gets the APICID from the
-mpc_config_processor structure. However, this structure limits
-the size of APICID to 8 bits. This patch allows the caller of
-MP_processor_info() to optionally pass a larger APICID that will
-be used instead of the one in the mpc_config_processor struct.
-
-
-
-	Signed-off-by: Jack Steiner <steiner@sgi.com>
+I'm also thinking that it can be in the mainline because it makes
+the lock period shorter, correct?
 
 ---
- arch/x86/kernel/mpparse_64.c |   29 ++++++++++++++++-------------
- arch/x86/mm/srat_64.c        |    6 +++++-
- include/asm-x86/apicdef.h    |    4 ++--
- include/asm-x86/mpspec.h     |    2 +-
- 4 files changed, 24 insertions(+), 17 deletions(-)
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Index: linux/arch/x86/kernel/mpparse_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/mpparse_64.c	2008-03-21 15:36:45.000000000 -0500
-+++ linux/arch/x86/kernel/mpparse_64.c	2008-03-21 15:38:52.000000000 -0500
-@@ -92,7 +92,8 @@ static int __init mpf_checksum(unsigned 
- 	return sum & 0xFF;
- }
+There is a deadlock scenario; remove_mapping() vs free_swap_and_cache().
+remove_mapping() turns PG_nonewrefs bit on, then locks swap_lock.
+free_swap_and_cache() locks swap_lock, then wait to turn PG_nonewrefs bit
+off in find_get_page().
+
+swap_lock can be unlocked before calling find_get_page().
+
+In remove_exclusive_swap_page(), there is similar lock sequence;
+swap_lock, then PG_nonewrefs bit. swap_lock can be unlocked before
+turning PG_nonewrefs bit on.
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ mm/swapfile.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 5036b70..6fbc77e 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -366,6 +366,7 @@ int remove_exclusive_swap_page(struct page *page)
+ 	/* Is the only swap cache user the cache itself? */
+ 	retval = 0;
+ 	if (p->swap_map[swp_offset(entry)] == 1) {
++		spin_unlock(&swap_lock);
+ 		/* Recheck the page count with the swapcache lock held.. */
+ 		lock_page_ref_irq(page);
+ 		if ((page_count(page) == 2) && !PageWriteback(page)) {
+@@ -374,8 +375,8 @@ int remove_exclusive_swap_page(struct page *page)
+ 			retval = 1;
+ 		}
+ 		unlock_page_ref_irq(page);
+-	}
+-	spin_unlock(&swap_lock);
++	} else
++		spin_unlock(&swap_lock);
  
--static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
-+static void __cpuinit MP_processor_info(struct mpc_config_processor *m,
-+					int apicid)
- {
- 	int cpu;
- 	cpumask_t tmp_map;
-@@ -102,12 +103,14 @@ static void __cpuinit MP_processor_info(
- 		disabled_cpus++;
- 		return;
+ 	if (retval) {
+ 		swap_free(entry);
+@@ -400,13 +401,14 @@ void free_swap_and_cache(swp_entry_t entry)
+ 	p = swap_info_get(entry);
+ 	if (p) {
+ 		if (swap_entry_free(p, swp_offset(entry)) == 1) {
++			spin_unlock(&swap_lock);
+ 			page = find_get_page(&swapper_space, entry.val);
+ 			if (page && unlikely(TestSetPageLocked(page))) {
+ 				page_cache_release(page);
+ 				page = NULL;
+ 			}
+-		}
+-		spin_unlock(&swap_lock);
++		} else
++			spin_unlock(&swap_lock);
  	}
-+	if (apicid < 0)
-+		apicid = m->mpc_apicid;
- 	if (m->mpc_cpuflag & CPU_BOOTPROCESSOR) {
- 		bootup_cpu = " (Bootup-CPU)";
--		boot_cpu_id = m->mpc_apicid;
-+		boot_cpu_id = apicid;
- 	}
- 
--	printk(KERN_INFO "Processor #%d%s\n", m->mpc_apicid, bootup_cpu);
-+	printk(KERN_INFO "Processor #%d%s\n", apicid, bootup_cpu);
- 
- 	if (num_processors >= NR_CPUS) {
- 		printk(KERN_WARNING "WARNING: NR_CPUS limit of %i reached."
-@@ -119,7 +122,7 @@ static void __cpuinit MP_processor_info(
- 	cpus_complement(tmp_map, cpu_present_map);
- 	cpu = first_cpu(tmp_map);
- 
--	physid_set(m->mpc_apicid, phys_cpu_present_map);
-+	physid_set(apicid, phys_cpu_present_map);
-  	if (m->mpc_cpuflag & CPU_BOOTPROCESSOR) {
-  		/*
- 		 * x86_bios_cpu_apicid is required to have processors listed
-@@ -133,11 +136,11 @@ static void __cpuinit MP_processor_info(
- 		u16 *cpu_to_apicid = x86_cpu_to_apicid_early_ptr;
- 		u16 *bios_cpu_apicid = x86_bios_cpu_apicid_early_ptr;
- 
--		cpu_to_apicid[cpu] = m->mpc_apicid;
--		bios_cpu_apicid[cpu] = m->mpc_apicid;
-+		cpu_to_apicid[cpu] = apicid;
-+		bios_cpu_apicid[cpu] = apicid;
- 	} else {
--		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
--		per_cpu(x86_bios_cpu_apicid, cpu) = m->mpc_apicid;
-+		per_cpu(x86_cpu_to_apicid, cpu) = apicid;
-+		per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
- 	}
- 
- 	cpu_set(cpu, cpu_possible_map);
-@@ -269,7 +272,7 @@ static int __init smp_read_mpc(struct mp
- 				struct mpc_config_processor *m=
- 					(struct mpc_config_processor *)mpt;
- 				if (!acpi_lapic)
--					MP_processor_info(m);
-+					MP_processor_info(m, -1);
- 				mpt += sizeof(*m);
- 				count += sizeof(*m);
- 				break;
-@@ -419,7 +422,7 @@ static inline void __init construct_defa
- 	processor.mpc_reserved[1] = 0;
- 	for (i = 0; i < 2; i++) {
- 		processor.mpc_apicid = i;
--		MP_processor_info(&processor);
-+		MP_processor_info(&processor, -1);
- 	}
- 
- 	bus.mpc_type = MP_BUS;
-@@ -617,7 +620,7 @@ void __init mp_register_lapic_address(u6
- 		boot_cpu_id = get_apic_id();
- }
- 
--void __cpuinit mp_register_lapic (u8 id, u8 enabled)
-+void __cpuinit mp_register_lapic(int id, u8 enabled)
- {
- 	struct mpc_config_processor processor;
- 	int			boot_cpu = 0;
-@@ -626,7 +629,7 @@ void __cpuinit mp_register_lapic (u8 id,
- 		boot_cpu = 1;
- 
- 	processor.mpc_type = MP_PROCESSOR;
--	processor.mpc_apicid = id;
-+	processor.mpc_apicid = 0;
- 	processor.mpc_apicver = 0;
- 	processor.mpc_cpuflag = (enabled ? CPU_ENABLED : 0);
- 	processor.mpc_cpuflag |= (boot_cpu ? CPU_BOOTPROCESSOR : 0);
-@@ -635,7 +638,7 @@ void __cpuinit mp_register_lapic (u8 id,
- 	processor.mpc_reserved[0] = 0;
- 	processor.mpc_reserved[1] = 0;
- 
--	MP_processor_info(&processor);
-+	MP_processor_info(&processor, id);
- }
- 
- #define MP_ISA_BUS		0
-Index: linux/include/asm-x86/mpspec.h
-===================================================================
---- linux.orig/include/asm-x86/mpspec.h	2008-03-21 15:36:38.000000000 -0500
-+++ linux/include/asm-x86/mpspec.h	2008-03-21 15:37:22.000000000 -0500
-@@ -42,7 +42,7 @@ extern void find_smp_config(void);
- extern void get_smp_config(void);
- 
- #ifdef CONFIG_ACPI
--extern void mp_register_lapic(u8 id, u8 enabled);
-+extern void mp_register_lapic(int id, u8 enabled);
- extern void mp_register_lapic_address(u64 address);
- extern void mp_register_ioapic(u8 id, u32 address, u32 gsi_base);
- extern void mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
-Index: linux/arch/x86/mm/srat_64.c
-===================================================================
---- linux.orig/arch/x86/mm/srat_64.c	2008-03-21 15:36:38.000000000 -0500
-+++ linux/arch/x86/mm/srat_64.c	2008-03-21 15:37:22.000000000 -0500
-@@ -20,6 +20,7 @@
- #include <asm/proto.h>
- #include <asm/numa.h>
- #include <asm/e820.h>
-+#include <asm/genapic.h>
- 
- int acpi_numa __initdata;
- 
-@@ -148,7 +149,10 @@ acpi_numa_processor_affinity_init(struct
- 		return;
- 	}
- 
--	apic_id = pa->apic_id;
-+	if (is_uv_system())
-+		apic_id = (pa->apic_id << 8) | pa->local_sapic_eid;
-+	else
-+		apic_id = pa->apic_id;
- 	apicid_to_node[apic_id] = node;
- 	acpi_numa = 1;
- 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
-Index: linux/include/asm-x86/apicdef.h
-===================================================================
---- linux.orig/include/asm-x86/apicdef.h	2008-03-21 15:36:45.000000000 -0500
-+++ linux/include/asm-x86/apicdef.h	2008-03-21 15:37:22.000000000 -0500
-@@ -134,7 +134,7 @@
- # define MAX_IO_APICS 64
- #else
- # define MAX_IO_APICS 128
--# define MAX_LOCAL_APIC 256
-+# define MAX_LOCAL_APIC 32768
- #endif
- 
- /*
-@@ -407,6 +407,6 @@ struct local_apic {
- 
- #undef u32
- 
--#define BAD_APICID 0xFFu
-+#define BAD_APICID 0xFFFFu
- 
- #endif
+ 	if (page) {
+ 		int one_user;
+-- 
+1.5.4.1
+
+
