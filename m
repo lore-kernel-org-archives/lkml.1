@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYCXUhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYCXUid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYCXUhb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYCXUhX
+	id S1754760AbYCXUid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYCXUiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:37:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37431
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752805AbYCXUhX (ORCPT
+	Mon, 24 Mar 2008 16:38:25 -0400
+Received: from yergi.telenet-ops.be ([195.130.132.36]:53786 "EHLO
+	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750723AbYCXUiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:37:23 -0400
-Date: Mon, 24 Mar 2008 13:37:22 -0700 (PDT)
-Message-Id: <20080324.133722.38645342.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: larger default page sizes...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
-	<20080321.145712.198736315.davem@davemloft.net>
-	<Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Mar 2008 16:38:25 -0400
+Date: Mon, 24 Mar 2008 21:37:45 +0100
+From: Wouter Verhelst <w@uter.be>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Paul Clements <paul.clements@steeleye.com>,
+       nbd-general@lists.sourceforge.net,
+       Laurent Vivier <Laurent.Vivier@bull.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Nbd] [PATCH 1/1] NBD: allow nbd to be used locally
+Message-ID: <20080324203744.GA13603@goa.grep.be>
+References: <47D468F0.8000506@steeleye.com> <20080310102917.GA27751@elf.ucw.cz> <47D56F4A.5070208@steeleye.com> <20080311100904.GA807@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080311100904.GA807@elf.ucw.cz>
+X-Speed: Gates' Law: Every 18 months, the speed of software halves.
+Organization: none
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Mon, 24 Mar 2008 11:27:06 -0700 (PDT)
+On Tue, Mar 11, 2008 at 11:09:04AM +0100, Pavel Machek wrote:
+> On Mon 2008-03-10 13:26:34, Paul Clements wrote:
+> > Pavel Machek wrote:
+> >
+> >>> This patch allows a Network Block Device to be mounted locally 
+> >>> (nbd-client to nbd-server over 127.0.0.1).
+> >>>
+> >>> It creates a kthread to avoid the deadlock described in NBD tools 
+> >>> documentation. So, if nbd-client hangs waiting for pages, the kblockd 
+> >>> thread can continue its work and free pages.
+> >>
+> >> What happens if your new kthread blocks on memory allocation?
+> >
+> > Well, we expect that. The reason for the new thread is so that it hangs, 
+> > rather than kblockd hanging (which on a UP system brings all I/O to a 
+> > halt). As long as kblockd can continue making progress, we eventually free 
+> > up memory and then NBD can finish its requests, too.
+> 
+> ....unless all the memory is in dirty buffers for nbd, and nbd server
+> is swapped out or something?
 
-> The move to 64k page size on IA64 is another way that this issue can
-> be addressed though.
+Note that I'm not a kernel hacker, so might be terribly mistaken here...
 
-This is such a huge mistake I wish platforms such as powerpc and IA64
-would not make such decisions so lightly.
+but I feel I should point out that this patch solves the issue that no
+two block devices can flush their dirty buffers at the same time.
+Without this patch, you can't write to a _filesystem_ on an NBD device
+if that's connected to a server on the localhost. You are correct that
+this does not solve the deadlock in swapping to NBD devices, but that's
+not the only existing deadlock issue in NBD to localhost...
 
-The memory wastage is just rediculious.
-
-I already see several distributions moving to 64K pages for powerpc,
-so I want to nip this in the bud before this monkey-see-monkey-do
-thing gets any more out of hand.
+-- 
+<Lo-lan-do> Home is where you have to wash the dishes.
+  -- #debian-devel, Freenode, 2004-09-22
