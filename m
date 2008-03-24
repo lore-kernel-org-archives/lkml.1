@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYCXTxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbYCXTyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYCXTxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYCXTxU
+	id S1752625AbYCXTyM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYCXTxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:53:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51091 "EHLO mx1.redhat.com"
+	Mon, 24 Mar 2008 15:53:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51110 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbYCXTxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:53:19 -0400
+	id S1753600AbYCXTxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 15:53:30 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, yhlu.kernel@gmail.com
 Subject: [PATCH 2/2] move apic declarations to mach_apic.h
-Date: Mon, 24 Mar 2008 16:52:41 -0300
-Message-Id: <1206388361-17265-2-git-send-email-gcosta@redhat.com>
+Date: Mon, 24 Mar 2008 16:52:56 -0300
+Message-Id: <1206388376-17295-1-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.2.2532.gdeda
-In-Reply-To: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
-References: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
