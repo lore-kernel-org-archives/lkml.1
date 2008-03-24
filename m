@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbYCWXdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759692AbYCXAVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759687AbYCWXdm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Mar 2008 19:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbYCWXde
+	id S1759692AbYCXAVT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Mar 2008 20:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbYCXAVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Mar 2008 19:33:34 -0400
-Received: from mail.tmr.com ([64.65.253.246]:47444 "EHLO gaimboi.tmr.com"
+	Sun, 23 Mar 2008 20:21:07 -0400
+Received: from mtl.rackplans.net ([69.90.0.18]:44440 "EHLO mtl.rackplans.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756673AbYCWXde convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Mar 2008 19:33:34 -0400
-Message-ID: <47E6E8B4.5000602@tmr.com>
-Date: Sun, 23 Mar 2008 19:33:08 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1757545AbYCXAVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Mar 2008 20:21:07 -0400
+Date: Sun, 23 Mar 2008 20:21:03 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Justin Mattock <justinmattock@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: fglrx
+In-Reply-To: <20080322225016.GA8068@martell.zuzino.mipt.ru>
+Message-ID: <alpine.DEB.1.00.0803232020390.6040@mtl.rackplans.net>
+References: <dd18b0c30803210925x755f3f07o1e2bb0cd60c9ce7e@mail.gmail.com> <alpine.DEB.1.00.0803221641570.24807@mtl.rackplans.net> <20080322225016.GA8068@martell.zuzino.mipt.ru>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: axboe@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH][RESEND][v3] Modify loop device to be able to manage 
-  partitions of the disk image
-References: <12058427603971-git-send-email-Laurent.Vivier@bull.net>	 <47E17673.4040302@tmr.com> <1205958752.4758.13.camel@frecb07144>
-In-Reply-To: <1205958752.4758.13.camel@frecb07144>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> Le mercredi 19 mars 2008 à 16:24 -0400, Bill Davidsen a écrit :
->> Laurent Vivier wrote:
->>> v3 is an updated version of v2, replacing a "%d" by a "%lu".
->>>
->>> This patch allows to use loop device with partitionned disk image.
->>>
->> How does this compare in overhead to using nbd?
-> 
-> What do you mean ?
-> 
-> NBD doesn't manage partitions... but I also have a patch to do that.
-> NBD implies an NBD server and an NBD client in userspace, so loop is
-> better when disk image is in a raw format.
-> 
-Actually the usual partitioning tools will create partitions on nbd 
-volumes, but without inodes they are not useful. I thought we used to 
-have that working, to work on virtual machine "disk" files which were 
-partitioned, but that was several years ago and I could be 
-misremembering. I did use fdisk on an nbd device before I asked about 
-overhead, but I didn't try to use the partitions.
+On Sun, 23 Mar 2008, Alexey Dobriyan wrote:
 
-In any case, if you have code to make nbd partitions work in a currently 
-useful way, that might be useful for keeping disk images handy for 
-mount. The kvm copy on write might let the fresh install image be shared 
-and VMs customize as needed.
+> On Sat, Mar 22, 2008 at 04:44:04PM -0400, Gerhard Mack wrote:
+> >                                        The fglrx driver has been crap for 
+> > over two years and the open sourced versions are slow leaving me to give 
+> > up and just buy something else.
+> 
+> Slow with what exactly?
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Slow with anything needing 3d accel ??
 
+	Gerhard
+ 
+
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
