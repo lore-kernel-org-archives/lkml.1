@@ -1,32 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbYCXTbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYCXTe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762336AbYCXTbm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759607AbYCXTbe
+	id S1762562AbYCXTe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759607AbYCXTeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:31:34 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53206 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757583AbYCXTbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:31:34 -0400
-Date: Mon, 24 Mar 2008 12:29:47 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [00/14] Virtual Compound Page Support V3
-In-Reply-To: <Pine.LNX.4.64.0803241129100.3002@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0803241228410.3959@schroedinger.engr.sgi.com>
-References: <20080321061703.921169367@sgi.com> <20080322114043.17833ab4@laptopd505.fenrus.org>
- <Pine.LNX.4.64.0803241129100.3002@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Mar 2008 15:34:50 -0400
+Received: from vena.lwn.net ([206.168.112.25]:35627 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757442AbYCXTeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 15:34:50 -0400
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Jean Delvare <khali@linux-fr.org>, Michael Buesch <mb@bu3sch.de>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       David Brownell <david-b@pacbell.net>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       akpm@linux-foundation.org
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Fri, 21 Mar 2008 14:05:59 EDT."
+             <Pine.LNX.4.44L0.0803211343240.24421-100000@netrider.rowland.org> 
+Date: Mon, 24 Mar 2008 13:34:49 -0600
+Message-ID: <23456.1206387289@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On the other hand: The conversion of vmalloc to vcompound_alloc will 
-reduce the amount of virtually mapped space needed. Doing that to 
-alloc_large_system_hash() etc may help there.
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
+> There's also a section about in_atomic() in the Linux Device Drivers 
+> (3rd ed.) book which may have contributed to the confusion.
+
+My fault (again).  Obviously it *looked* like something people could use
+to me...  
+
+How about the following patch as a short-term penance to keep others
+from making the same mistake?
+
+jon
+
+--
+
+Discourage people from using in_atomic()
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+index 4982998..3d196cb 100644
+--- a/include/linux/hardirq.h
++++ b/include/linux/hardirq.h
+@@ -72,6 +72,11 @@
+ #define in_softirq()		(softirq_count())
+ #define in_interrupt()		(irq_count())
+ 
++/*
++ * Are we running in atomic context?  WARNING: this macro cannot
++ * always detect atomic context and should not be used to determine
++ * whether sleeping is possible.  Do not use it in driver code.
++ */
+ #define in_atomic()		((preempt_count() & ~PREEMPT_ACTIVE) != 0)
+ 
+ #ifdef CONFIG_PREEMPT
 
