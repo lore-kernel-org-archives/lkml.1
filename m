@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762309AbYCXSVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbYCXSVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762309AbYCXSVf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbYCXSVK
+	id S1762735AbYCXSVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759300AbYCXSVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:21:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55006 "EHLO
+	Mon, 24 Mar 2008 14:21:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55013 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754117AbYCXSVI (ORCPT
+	with ESMTP id S1758851AbYCXSVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:21:08 -0400
-Date: Mon, 24 Mar 2008 13:21:07 -0500
+	Mon, 24 Mar 2008 14:21:11 -0400
+Date: Mon, 24 Mar 2008 13:21:10 -0500
 From: Jack Steiner <steiner@sgi.com>
 To: mingo@elte.hu, tglx@linutronix.de
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC 1/8] x86_64: Change GET_APIC_ID() from an inline function to an out-of-line function
-Message-ID: <20080324182107.GA27979@sgi.com>
+Subject: [RFC 2/8] x86_64: Add functions to determine if platform is a UV platform
+Message-ID: <20080324182110.GA27984@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,160 +25,85 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Change GET_APIC_ID() on x86_64 from an inline function to an
-out-of-line function. The function is rarely called and the
-additional overhead is negligible.
+Add functions that can be used to determine if an x86_64
+system is a SGI "UV" system. UV systems come in 3 types and
+are identified by the OEM ID in the MADT.
 
-This change is in preparation for additional changes to
-the APICID functions that will come in a later patch.
-
-	Signed-off-by: Jack Steiner <steiner@sgi.com>
+        Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- arch/x86/kernel/apic_64.c         |    2 +-
- arch/x86/kernel/genapic_64.c      |    5 +++++
- arch/x86/kernel/genapic_flat_64.c |    2 +-
- arch/x86/kernel/io_apic_64.c      |    4 ++--
- arch/x86/kernel/mpparse_64.c      |    2 +-
- arch/x86/kernel/smpboot_64.c      |    6 +++---
- include/asm-x86/apic.h            |    1 +
- include/asm-x86/apicdef.h         |    1 -
- include/asm-x86/smp_64.h          |    2 +-
- 9 files changed, 15 insertions(+), 10 deletions(-)
+ arch/x86/kernel/acpi/boot.c  |    4 +---
+ arch/x86/kernel/genapic_64.c |   25 +++++++++++++++++++++++++
+ include/asm-x86/genapic_64.h |    5 +++++
+ 3 files changed, 31 insertions(+), 3 deletions(-)
 
-Index: linux/arch/x86/kernel/apic_64.c
+Index: linux/arch/x86/kernel/acpi/boot.c
 ===================================================================
---- linux.orig/arch/x86/kernel/apic_64.c	2008-03-18 14:54:19.000000000 -0500
-+++ linux/arch/x86/kernel/apic_64.c	2008-03-20 15:30:23.000000000 -0500
-@@ -885,7 +885,7 @@ void __init init_apic_mappings(void)
- 	 * Fetch the APIC ID of the BSP in case we have a
- 	 * default configuration (or the MP table is broken).
- 	 */
--	boot_cpu_id = GET_APIC_ID(apic_read(APIC_ID));
-+	boot_cpu_id = get_apic_id();
- }
+--- linux.orig/arch/x86/kernel/acpi/boot.c	2008-03-21 09:07:24.000000000 -0500
++++ linux/arch/x86/kernel/acpi/boot.c	2008-03-21 09:16:06.000000000 -0500
+@@ -52,9 +52,7 @@ EXPORT_SYMBOL(acpi_disabled);
+ #ifdef	CONFIG_X86_64
  
- /*
+ #include <asm/proto.h>
+-
+-static inline int acpi_madt_oem_check(char *oem_id, char *oem_table_id) { return 0; }
+-
++#include <asm/genapic.h>
+ 
+ #else				/* X86 */
+ 
 Index: linux/arch/x86/kernel/genapic_64.c
 ===================================================================
---- linux.orig/arch/x86/kernel/genapic_64.c	2008-03-18 14:54:19.000000000 -0500
-+++ linux/arch/x86/kernel/genapic_64.c	2008-03-21 09:13:41.000000000 -0500
-@@ -64,3 +64,8 @@ void send_IPI_self(int vector)
+--- linux.orig/arch/x86/kernel/genapic_64.c	2008-03-21 09:13:41.000000000 -0500
++++ linux/arch/x86/kernel/genapic_64.c	2008-03-21 09:35:10.000000000 -0500
+@@ -33,6 +33,8 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid)
+ 
+ struct genapic __read_mostly *genapic = &apic_flat;
+ 
++static enum uv_system_type uv_system_type;
++
+ /*
+  * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
+  */
+@@ -69,3 +71,26 @@ unsigned int get_apic_id(void)
  {
- 	__send_IPI_shortcut(APIC_DEST_SELF, vector, APIC_DEST_PHYSICAL);
+ 	return (apic_read(APIC_ID) >> 24) & 0xFFu;
  }
 +
-+unsigned int get_apic_id(void)
++int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
 +{
-+	return (apic_read(APIC_ID) >> 24) & 0xFFu;
++	if (!strcmp(oem_id, "SGI")) {
++		if (!strcmp(oem_table_id, "UVL"))
++			uv_system_type = UV_LEGACY_APIC;
++		else if (!strcmp(oem_table_id, "UVX"))
++			uv_system_type = UV_X2APIC;
++		else if (!strcmp(oem_table_id, "UVH"))
++			uv_system_type = UV_NON_UNIQUE_APIC;
++	}
++	return 0;
 +}
-Index: linux/arch/x86/kernel/genapic_flat_64.c
++
++enum uv_system_type get_uv_system_type(void)
++{
++	return uv_system_type;
++}
++
++int is_uv_system(void)
++{
++	return uv_system_type != UV_NONE;
++}
+Index: linux/include/asm-x86/genapic_64.h
 ===================================================================
---- linux.orig/arch/x86/kernel/genapic_flat_64.c	2008-03-18 14:54:19.000000000 -0500
-+++ linux/arch/x86/kernel/genapic_flat_64.c	2008-03-20 15:30:23.000000000 -0500
-@@ -97,7 +97,7 @@ static void flat_send_IPI_all(int vector
+--- linux.orig/include/asm-x86/genapic_64.h	2008-03-21 09:07:24.000000000 -0500
++++ linux/include/asm-x86/genapic_64.h	2008-03-21 09:34:45.000000000 -0500
+@@ -33,5 +33,10 @@ extern struct genapic *genapic;
  
- static int flat_apic_id_registered(void)
- {
--	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
-+	return physid_isset(get_apic_id(), phys_cpu_present_map);
- }
- 
- static unsigned int flat_cpu_mask_to_apicid(cpumask_t cpumask)
-Index: linux/arch/x86/kernel/io_apic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/io_apic_64.c	2008-03-18 14:54:19.000000000 -0500
-+++ linux/arch/x86/kernel/io_apic_64.c	2008-03-21 09:07:19.000000000 -0500
-@@ -1067,7 +1067,7 @@ void __apicdebuginit print_local_APIC(vo
- 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
- 		smp_processor_id(), hard_smp_processor_id());
- 	v = apic_read(APIC_ID);
--	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(v));
-+	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, get_apic_id());
- 	v = apic_read(APIC_LVR);
- 	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
- 	ver = GET_APIC_VERSION(v);
-@@ -1261,7 +1261,7 @@ void disable_IO_APIC(void)
- 		entry.dest_mode       = 0; /* Physical */
- 		entry.delivery_mode   = dest_ExtINT; /* ExtInt */
- 		entry.vector          = 0;
--		entry.dest          = GET_APIC_ID(apic_read(APIC_ID));
-+		entry.dest          = get_apic_id();
- 
- 		/*
- 		 * Add it to the IO-APIC irq-routing table:
-Index: linux/arch/x86/kernel/mpparse_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/mpparse_64.c	2008-03-18 14:54:19.000000000 -0500
-+++ linux/arch/x86/kernel/mpparse_64.c	2008-03-21 09:07:23.000000000 -0500
-@@ -614,7 +614,7 @@ void __init mp_register_lapic_address(u6
- 	mp_lapic_addr = (unsigned long) address;
- 	set_fixmap_nocache(FIX_APIC_BASE, mp_lapic_addr);
- 	if (boot_cpu_id == -1U)
--		boot_cpu_id = GET_APIC_ID(apic_read(APIC_ID));
-+		boot_cpu_id = get_apic_id();
- }
- 
- void __cpuinit mp_register_lapic (u8 id, u8 enabled)
-Index: linux/arch/x86/kernel/smpboot_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/smpboot_64.c	2008-03-18 14:54:19.000000000 -0500
-+++ linux/arch/x86/kernel/smpboot_64.c	2008-03-21 09:07:19.000000000 -0500
-@@ -158,7 +158,7 @@ void __cpuinit smp_callin(void)
- 	/*
- 	 * (This works even if the APIC is not enabled.)
- 	 */
--	phys_id = GET_APIC_ID(apic_read(APIC_ID));
-+	phys_id = get_apic_id();
- 	cpuid = smp_processor_id();
- 	if (cpu_isset(cpuid, cpu_callin_map)) {
- 		panic("smp_callin: phys CPU#%d, CPU#%d already present??\n",
-@@ -878,9 +878,9 @@ void __init smp_prepare_cpus(unsigned in
- 		enable_IO_APIC();
- 	end_local_APIC_setup();
- 
--	if (GET_APIC_ID(apic_read(APIC_ID)) != boot_cpu_id) {
-+	if (get_apic_id() != boot_cpu_id) {
- 		panic("Boot APIC ID in local APIC unexpected (%d vs %d)",
--		      GET_APIC_ID(apic_read(APIC_ID)), boot_cpu_id);
-+		      get_apic_id(), boot_cpu_id);
- 		/* Or can we switch back to PIC here? */
- 	}
- 
-Index: linux/include/asm-x86/apic.h
-===================================================================
---- linux.orig/include/asm-x86/apic.h	2008-03-18 14:54:19.000000000 -0500
-+++ linux/include/asm-x86/apic.h	2008-03-21 09:07:59.000000000 -0500
-@@ -129,6 +129,7 @@ extern void enable_NMI_through_LVT0(void
-  */
- #ifdef CONFIG_X86_64
- extern void setup_apic_routing(void);
-+extern unsigned int get_apic_id(void);
- #endif
- 
- extern u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask);
-Index: linux/include/asm-x86/apicdef.h
-===================================================================
---- linux.orig/include/asm-x86/apicdef.h	2008-03-18 14:54:19.000000000 -0500
-+++ linux/include/asm-x86/apicdef.h	2008-03-21 09:07:23.000000000 -0500
-@@ -14,7 +14,6 @@
- 
- #ifdef CONFIG_X86_64
- # define	APIC_ID_MASK		(0xFFu<<24)
--# define	GET_APIC_ID(x)		(((x)>>24)&0xFFu)
- # define	SET_APIC_ID(x)		(((x)<<24))
- #endif
- 
-Index: linux/include/asm-x86/smp_64.h
-===================================================================
---- linux.orig/include/asm-x86/smp_64.h	2008-03-18 14:54:19.000000000 -0500
-+++ linux/include/asm-x86/smp_64.h	2008-03-18 14:54:24.000000000 -0500
-@@ -92,7 +92,7 @@ static __inline int logical_smp_processo
- static inline int hard_smp_processor_id(void)
- {
- 	/* we don't want to mark this access volatile - bad code generation */
--	return GET_APIC_ID(*(u32 *)(APIC_BASE + APIC_ID));
-+	return get_apic_id();
- }
+ extern struct genapic apic_flat;
+ extern struct genapic apic_physflat;
++extern int acpi_madt_oem_check(char *, char *);
++
++enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
++extern enum uv_system_type get_uv_system_type(void);
++extern int is_uv_system(void);
  
  #endif
