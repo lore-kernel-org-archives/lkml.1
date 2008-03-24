@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYCXFSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYCXFS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbYCXFSn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 01:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYCXFSG
+	id S1757275AbYCXFS5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 01:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366AbYCXFSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 01:18:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47635
+	Mon, 24 Mar 2008 01:18:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47638
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753911AbYCXFSE (ORCPT
+	by vger.kernel.org with ESMTP id S1754305AbYCXFSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 01:18:04 -0400
-Date: Sun, 23 Mar 2008 22:18:04 -0700 (PDT)
-Message-Id: <20080323.221804.248467261.davem@davemloft.net>
+	Mon, 24 Mar 2008 01:18:15 -0400
+Date: Sun, 23 Mar 2008 22:18:15 -0700 (PDT)
+Message-Id: <20080323.221815.84933913.davem@davemloft.net>
 To: joe@perches.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] include/linux/igmp.h - remove duplicate include
+Cc: yoshfuji@linux-ipv6.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] include/linux/icmpv6.h - remove duplicate include
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1205106940.656.103.camel@localhost>
-References: <1205106940.656.103.camel@localhost>
+In-Reply-To: <1205106928.656.102.camel@localhost>
+References: <1205106928.656.102.camel@localhost>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,11 +28,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joe Perches <joe@perches.com>
-Date: Sun, 09 Mar 2008 16:55:40 -0700
+Date: Sun, 09 Mar 2008 16:55:28 -0700
 
-> Removed duplicate #include <linux/skbuff.h>	
-> Combined #ifdef __KERNEL__ blocks
+> Remove duplicate #include <linux/skbuff.h>
+> Combine #ifdef __KERNEL__ blocks
+> Neaten function prototypes
 > 
 > Signed-off-by: Joe Perches <joe@perches.com>
 
-Applied.
+Does not apply to net-2.6.26, dropped.
