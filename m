@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbYCXXsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYCXXz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756410AbYCXXsb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 19:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYCXXsV
+	id S1755356AbYCXXz5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 19:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYCXXzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:48:21 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43815
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753312AbYCXXsU (ORCPT
+	Mon, 24 Mar 2008 19:55:44 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:10680 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbYCXXzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:48:20 -0400
-Date: Mon, 24 Mar 2008 16:48:10 -0700 (PDT)
-Message-Id: <20080324.164810.83653077.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, rpjday@crashcourse.ca
-Subject: Re: +
- netdev-cassini-use-shorter-list_splice_init-macro-for-brevity.patch added
- to -mm tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080324163105.154a031a.akpm@linux-foundation.org>
-References: <20080324161045.045ef5c8.akpm@linux-foundation.org>
-	<20080324.162138.50436206.davem@davemloft.net>
-	<20080324163105.154a031a.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 24 Mar 2008 19:55:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mGqzBtrjXht/mpnAfQvSmiBHTFQVGMI7jUCmU/rHGzOveOc0vzEIKcrGrEXFboilKYrNLaiMuMgIyV+OpcRP8v4k/gZO65yzyq61f9gx2SxIy+uytUB41mbPEytbEe/K6T523tK4/nA2enKjCF4wb/F+YLozTyWlttXoePLqiKE=
+Message-ID: <b0943d9e0803241655s7a7fea9cvcd3c162253e49625@mail.gmail.com>
+Date: Mon, 24 Mar 2008 23:55:39 +0000
+From: "Catalin Marinas" <catalin.marinas@gmail.com>
+To: "Junio C Hamano" <gitster@pobox.com>
+Subject: Re: [ANNOUNCE] Stacked GIT 0.14.2
+Cc: "Rene Herman" <rene.herman@keyaccess.nl>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, git <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Josef Sipek" <jsipek@fsl.cs.sunysb.edu>
+In-Reply-To: <7vlk47ua3v.fsf@gitster.siamese.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b0943d9e0803241259s5280cdc1o255a4412b3fa7bfc@mail.gmail.com>
+	 <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
+	 <47E81037.5030808@keyaccess.nl>
+	 <7vlk47ua3v.fsf@gitster.siamese.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 24 Mar 2008 16:31:05 -0700
+On 24/03/2008, Junio C Hamano <gitster@pobox.com> wrote:
+> Rene Herman <rene.herman@keyaccess.nl> writes:
+>  > And I remember some mumblings about git growing quilt-like
+>  > functionality itself. Anything on that?
+>
+>
+> Not my mumbling, but I am quite open to slurp in guilt as a subdirectory
+>  in git.git at some point in the future just like we bundle git-gui and
+>  gitk if asked by the maintainer.
+>
+>  The same applies to StGIT for that matter, although I somehow feel that is
+>  much less likely to happen, because it lived long enough as a standalone
+>  project with enough following to achieve sustainable momentum by itself.
 
-> On Mon, 24 Mar 2008 16:21:38 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
-> 
-> > net-2.6.26 is what is going into the linux-next tree
-> 
-> urgh.  I wish I had some algorithm for detecting when net-2.6.x+1 appears.
-> 
-> Perhaps you could create it on the day 2.6.x is released and leave it empty
-> for a while.  That way I'll notice when net-2.6.x vanishes and I can switch
-> to 2.6.x+1 immediately?
+Indeed, StGIT has grown quite a lot (it now has ~45 commands) and it
+probably feels better as a tool on its own. However, I think it would
+be good for git to get such functionality (and it could even share
+some ideas StGIT and guilt). If this functionality will get fully
+integrated in git, StGIT could use it directly rather than the
+low-level git commands.
 
-Sure, but in this case you were using plain "net-2.6" which is only
-for bug fixes and is synced fairly rapidly to Linus, so I don't
-see how this is relevant here.
+An example of additional functionality that might stay outside of git
+(at least for a while): since basic patch management support is pretty
+much complete in StGIT, a feature we are thinking about adding is
+better support for patch sharing between developers (or
+repositories/branches). This should allow easier cloning and merging
+with branches that have a volatile history at the top.
 
-net-2.6 is always just a sync mechanism, rarely generating merge
-conflicts with other people, and not something people other than say
-Jeff Garzik and John Linville (people who actively push to me) should
-generally follow unless they want to.  It's just the same to follow
-Linus's tree especially as the -rcX process winds down.
-
-If you had been using net-2.6.24 or something like that, yeah I
-could see the issue :-)
+-- 
+Catalin
