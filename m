@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYCXUkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYCXUn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbYCXUkw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 16:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYCXUkp
+	id S1754446AbYCXUn3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 16:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYCXUnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 16:40:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42958 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbYCXUko (ORCPT
+	Mon, 24 Mar 2008 16:43:19 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:58258 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbYCXUnS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 16:40:44 -0400
-Date: Mon, 24 Mar 2008 16:40:43 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt] rt-slab: fix cpu inconsistency case
-In-Reply-To: <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0803241639220.9884@gandalf.stny.rr.com>
-References: <47E2A63B.4020003@ct.jp.nec.com> <Pine.LNX.4.58.0803201519160.21990@gandalf.stny.rr.com>
- <47E2C4CC.5050401@ct.jp.nec.com> <Pine.LNX.4.58.0803211635160.3220@gandalf.stny.rr.com>
- <47E41EDB.7030908@ct.jp.nec.com> <Pine.LNX.4.58.0803241630290.9884@gandalf.stny.rr.com>
+	Mon, 24 Mar 2008 16:43:18 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Catalin Marinas <catalin.marinas@gmail.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, git <git@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Subject: Re: [ANNOUNCE] Stacked GIT 0.14.2
+In-Reply-To: <47E81037.5030808@keyaccess.nl> (Rene Herman's message of "Mon,
+ 24 Mar 2008 21:33:59 +0100")
+References: <b0943d9e0803241259s5280cdc1o255a4412b3fa7bfc@mail.gmail.com>
+ <alpine.LNX.1.10.0803242113070.9368@fbirervta.pbzchgretzou.qr>
+ <47E81037.5030808@keyaccess.nl>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Date: Mon, 24 Mar 2008 13:43:00 -0700
+Message-ID: <7vlk47ua3v.fsf@gitster.siamese.dyndns.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rene Herman <rene.herman@keyaccess.nl> writes:
 
-On Mon, 24 Mar 2008, Steven Rostedt wrote:
-
+> On 24-03-08 21:15, Jan Engelhardt wrote:
 >
-> On Fri, 21 Mar 2008, Hiroshi Shimamoto wrote:
-> >
-> > >
-> > > Is this a bug in mainline? The !PREEMPT_RT case should be as close to
-> > > mainline as possible, with no actual changes in object code. If this is
-> > > not the case, then we need to fix that.
-> >
-> > No, this issue is in -rt only.
-> >
+>> On Monday 2008-03-24 20:59, Catalin Marinas wrote:
+>>
+>>> Stacked GIT 0.14.2 release is available from
+>>> http://www.procode.org/stgit/.
+>>>
+>>> StGIT is a Python application providing similar functionality to Quilt
+>>> (i.e. pushing/popping patches to/from a stack) on top of GIT.
+>>
+>> I always wondered what the difference between stgit and guilt is.
+>> Does anyone have a comparison up?
 >
-> Hi Hiroshi,
->
-> Thanks again for reporting this. I took a deeper look into this today and
-> came to the conclusion that we need to get rid of both
-> slab_irq_disable_nort and slab_irq_disable_rt, and simply use
-> slab_irq_disable ;-)
->
-> This is what you patch indirectly does. I'll write up another patch to fix
-> this.
->
+> And I remember some mumblings about git growing quilt-like
+> functionality itself. Anything on that?
 
-Actually, I'm going to take your patch.
+Not my mumbling, but I am quite open to slurp in guilt as a subdirectory
+in git.git at some point in the future just like we bundle git-gui and
+gitk if asked by the maintainer.
 
-Seems that the reason Ingo did the two separate, is that the functions
-called also call the slab_irq_save, which will retake the locks in
-PREEMPT_RT. If we don't release the lock, then we can deadlock.
-
-Thanks,
-
--- Steve
-
+The same applies to StGIT for that matter, although I somehow feel that is
+much less likely to happen, because it lived long enough as a standalone
+project with enough following to achieve sustainable momentum by itself.
