@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYCXT4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYCXT4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbYCXT4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 15:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbYCXTz5
+	id S1755887AbYCXT4i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 15:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYCXT43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 15:55:57 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:40041 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754022AbYCXTz5 (ORCPT
+	Mon, 24 Mar 2008 15:56:29 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51893 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbYCXT42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 15:55:57 -0400
-Date: Mon, 24 Mar 2008 19:55:53 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [ADMIN] Linux-mips.org moving to new site
-Message-ID: <20080324195553.GA15294@linux-mips.org>
-References: <20080324075822.GB11880@linux-mips.org>
+	Mon, 24 Mar 2008 15:56:28 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 24 Mar 2008 20:54:28 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] amendment to "firewire: reread config ROM when device reset
+ the bus"
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.404f0a7603ed030f@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080324075822.GB11880@linux-mips.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 24, 2008 at 07:58:22AM +0000, Ralf Baechle wrote:
+This applies after and should be rolled into patch "firewire: reread
+config ROM when device reset the bus".
 
-> On Tuesday, 25th March the linux-mips.org server machine will be moved from
-> it's current location just outside of Cambridge, England (old) to a new site
-> in Lisboa, Portugal.  This is expected to result in a downtime of up to a
-> week.  During this time I will try to maintain services at some reduced
-> level - and very much reduced bandwidth.
-> 
-> Git users are reminded that an uptodate copy of the Linux/MIPS git
-> repository is available on kernel.org which also has several thousand times
-> more bandwidth available.  The repository URLs are:
-> 
->   gitweb: http://git.kernel.org/?p=linux/kernel/git/ralf/linux.git;a=summary
->   git:    git://git.kernel.org/pub/scm/linux/kernel/git/ralf/linux.git
->           http://www.kernel.org/pub/scm/linux/kernel/git/ralf/linux.git
->           rsync://rsync.kernel.org/pub/scm/linux/kernel/git/ralf/linux.git
+Fix:
+fw_device_refresh() sometimes forgot to reschedule the bus manager work.
+Among else, this kept the bus in danger of PHYs having different gap
+counts, which resulted in "giving up on config ROM" or other errors.
 
-So now that the third person has already asked - no I'm not planning to move
-to Portugal even though my still-employer is going to close his UK office
-by the end of the month.
+Optimization:
+We can start re-reading the config ROM of the local node without dealy.
 
-  Ralf
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-device.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/drivers/firewire/fw-device.c	2008-03-24 19:10:42.000000000 +0100
++++ b/drivers/firewire/fw-device.c	2008-03-24 19:09:42.000000000 +0100
+@@ -877,8 +877,7 @@ static void fw_device_refresh(struct wor
+ 
+ 		fw_device_update(work);
+ 		device->config_rom_retries = 0;
+-
+-		return;
++		goto out;
+ 
+ 	case REREAD_BIB_CHANGED:
+ 		break;
+@@ -982,7 +981,8 @@ void fw_node_event(struct fw_card *card,
+ 			    FW_DEVICE_RUNNING,
+ 			    FW_DEVICE_INITIALIZING) == FW_DEVICE_RUNNING) {
+ 			PREPARE_DELAYED_WORK(&device->work, fw_device_refresh);
+-			schedule_delayed_work(&device->work, INITIAL_DELAY);
++			schedule_delayed_work(&device->work,
++				node == card->local_node ? 0 : INITIAL_DELAY);
+ 		}
+ 		break;
+ 
+
+-- 
+Stefan Richter
+-=====-==--- --== ==---
+http://arcgraph.de/sr/
+
