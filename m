@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763222AbYCXScE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763415AbYCXSXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763222AbYCXScE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 14:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762526AbYCXSbe
+	id S1763415AbYCXSXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 14:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760833AbYCXSVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 14:31:34 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:36723 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762041AbYCXSbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 14:31:33 -0400
-Date: Mon, 24 Mar 2008 21:36:04 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] pids: sys_getsid: fix unsafe *pid usage, fix possible 0 instead of -ESRCH
-Message-ID: <20080324183604.GA9647@tv-sign.ru>
+	Mon, 24 Mar 2008 14:21:22 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42453 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761649AbYCXSVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 14:21:21 -0400
+Date: Mon, 24 Mar 2008 13:21:19 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC 7/8] x86_64: Define the macros and tables for blade functions
+Message-ID: <20080324182119.GA28318@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. sys_getsid() needs rcu_read_lock() to derive the session _nr, even if
-   the task is current, otherwise we can race with another thread which
-   does sys_setsid().
 
-2. The task can exit between find_task_by_vpid() and task_session_vnr(),
-   in that unlikely case sys_getsid() returns 0 instead of -ESRCH.
+Add UV macros for converting between cpu numbers, blade numbers
+and node numbers. Note that these are used ONLY within x86_64 UV
+modules, and are not for general kernel use.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+	Signed-off-by: Jack Steiner <steiner@sgi.com>
 
---- 25/kernel/sys.c~1_GETSID	2008-03-24 10:49:26.000000000 +0300
-+++ 25/kernel/sys.c	2008-03-24 21:09:19.000000000 +0300
-@@ -1016,23 +1016,30 @@ asmlinkage long sys_getpgrp(void)
- 
- asmlinkage long sys_getsid(pid_t pid)
- {
-+	struct task_struct *p;
-+	struct pid *sid;
-+	int retval;
-+
-+	rcu_read_lock();
- 	if (!pid)
--		return task_session_vnr(current);
-+		sid = task_session(current);
- 	else {
--		int retval;
--		struct task_struct *p;
--
--		rcu_read_lock();
--		p = find_task_by_vpid(pid);
- 		retval = -ESRCH;
--		if (p) {
--			retval = security_task_getsid(p);
--			if (!retval)
--				retval = task_session_vnr(p);
--		}
--		rcu_read_unlock();
--		return retval;
-+		p = find_task_by_vpid(pid);
-+		if (!p)
-+			goto out;
-+		sid = task_session(p);
-+		if (!sid)
-+			goto out;
-+
-+		retval = security_task_getsid(p);
-+		if (retval)
-+			goto out;
- 	}
-+	retval = pid_vnr(sid);
-+out:
-+	rcu_read_unlock();
-+	return retval;
+
+---
+ include/asm-x86/uv_hub.h |   74 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+
+Index: linux/include/asm-x86/uv_hub.h
+===================================================================
+--- linux.orig/include/asm-x86/uv_hub.h	2008-03-21 15:48:18.000000000 -0500
++++ linux/include/asm-x86/uv_hub.h	2008-03-21 15:49:26.000000000 -0500
+@@ -213,5 +213,79 @@ static inline void uv_write_local_mmr(un
+ 	*uv_local_mmr_address(offset) = val;
  }
  
- asmlinkage long sys_setsid(void)
-
++/*
++ * Structures and definitions for converting between cpu, node, and blade
++ * numbers.
++ */
++struct uv_blade_info {
++	unsigned short	nr_posible_cpus;
++	unsigned short	nr_online_cpus;
++	unsigned short	nasid;
++};
++struct uv_blade_info *uv_blade_info;
++extern short *uv_node_to_blade;
++extern short *uv_cpu_to_blade;
++extern short uv_possible_blades;
++
++/* Blade-local cpu number of current cpu. Numbered 0 .. <# cpus on the blade> */
++static inline int uv_blade_processor_id(void)
++{
++	return uv_hub_info->blade_processor_id;
++}
++
++/* Blade number of current cpu. Numnbered 0 .. <#blades -1> */
++static inline int uv_numa_blade_id(void)
++{
++	return uv_hub_info->numa_blade_id;
++}
++
++/* Convert a cpu number to the the UV blade number */
++static inline int uv_cpu_to_blade_id(int cpu)
++{
++	return uv_cpu_to_blade[cpu];
++}
++
++/* Convert linux node number to the UV blade number */
++static inline int uv_node_to_blade_id(int nid)
++{
++	return uv_node_to_blade[nid];
++}
++
++/* Convert a blade id to the NASID of the blade */
++static inline int uv_blade_to_nasid(int bid)
++{
++	return uv_blade_info[bid].nasid;
++}
++
++/* Determine the number of possible cpus on a blade */
++static inline int uv_blade_nr_possible_cpus(int bid)
++{
++	return uv_blade_info[bid].nr_posible_cpus;
++}
++
++/* Determine the number of online cpus on a blade */
++static inline int uv_blade_nr_online_cpus(int bid)
++{
++	return uv_blade_info[bid].nr_online_cpus;
++}
++
++/* Convert a cpu id to the NASID of the blade containing the cpu */
++static inline int uv_cpu_to_nasid(int cpu)
++{
++	return uv_blade_info[uv_cpu_to_blade_id(cpu)].nasid;
++}
++
++/* Convert a node number to the NASID of the blade */
++static inline int uv_node_to_nasid(int nid)
++{
++	return uv_blade_info[uv_node_to_blade_id(nid)].nasid;
++}
++
++/* Maximum possible number of blades */
++static inline int uv_num_possible_blades(void)
++{
++	return uv_possible_blades;
++}
++
+ #endif /* __ASM_X86_UV_HUB__ */
+ 
