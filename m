@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbYCYXUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbYCYXWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759537AbYCYXUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYCYXUp
+	id S1760294AbYCYXWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYCYXWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:20:45 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:25287 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754614AbYCYXUo (ORCPT
+	Tue, 25 Mar 2008 19:22:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51446
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755685AbYCYXWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:20:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=qexdEjwPGZ65Bjca9wfifd6EPLR6ksOPitbK15554lHORYmfIumA3chAyLQMnYRRP/mYuvAMg5DaARJ1V/wj5jxSqc1mSQjmE0Dh7zOMZOulvCNh8b8rCLuBelI7bL1dT0KtUDi1cX+pJpdKKgyY2/Qf9K5MKsMmz1NIQ5pwrPk=  ;
-X-YMail-OSG: 9XJ_pDoVM1m9JDdZXTK77tvh48EwDhEBty.ssclRaD3Ay8vyc.OJJYeM..HB2uyfAonHUO3xTXYv0SyzD1Dwpm3HA70ZxIm8PpKYhDUci_rRcU9WfA--
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 25 Mar 2008 16:20:42 -0700
-From: David Brownell <david-b@pacbell.net>
-To: rpurdie@rpsys.net
-Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
-Cc: gitster@pobox.com, corbet@lwn.net, stern@rowland.harvard.edu,
-       mingo@elte.hu, mb@bu3sch.de, linux-kernel@vger.kernel.org,
-       khali@linux-fr.org, hmh@hmh.eng.br, geert@linux-m68k.org,
-       akpm@linux-foundation.org
-References: <14605.1206452655@vena.lwn.net>
-In-Reply-To: <14605.1206452655@vena.lwn.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 25 Mar 2008 19:22:45 -0400
+Date: Tue, 25 Mar 2008 16:22:44 -0700 (PDT)
+Message-Id: <20080325.162244.61337214.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: larger default page sizes...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
+	<20080324.144356.104645106.davem@davemloft.net>
+	<Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080325232042.4EDA7346532@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I _almost_ hate bringing this lovely flamage back onto $SUBJECT ... but
-what's the resolution for the leds-gpio.c issue?  I've not seen a merge
-notice for the patch I submitted a week ago now:
+From: Christoph Lameter <clameter@sgi.com>
+Date: Tue, 25 Mar 2008 10:48:19 -0700 (PDT)
 
-	http://marc.info/?l=linux-kernel&m=120597839009399&w=2
+> On Mon, 24 Mar 2008, David Miller wrote:
+> 
+> > There are ways to get large pages into the process address space for
+> > compute bound tasks, without suffering the well known negative side
+> > effects of using larger pages for everything.
+> 
+> These hacks have limitations. F.e. they do not deal with I/O and 
+> require application changes.
 
-Just a "leaning..." comment:
+Transparent automatic hugepages are definitely doable, I don't know
+why you think this requires application changes.
 
-	http://marc.info/?l=linux-kernel&m=120606104619198&w=2
-
-Seems to me that by now there ought to be resolution on at least
-one of the issues brought up on this thread.  :)
-
-- Dave
-
+People want these larger pages for HPC apps.
