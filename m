@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbYCYWIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762448AbYCYWIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762259AbYCYWIi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbYCYWG4
+	id S1762448AbYCYWIx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbYCYWG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 25 Mar 2008 18:06:56 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57647 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:57656 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755855AbYCYWGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756172AbYCYWGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 18:06:52 -0400
-Message-Id: <20080325220651.822567000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325220651.964533000@polaris-admin.engr.sgi.com>
 References: <20080325220650.835342000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 15:06:57 -0700
+Date: Tue, 25 Mar 2008 15:06:58 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 07/10] cpu: change cpu_sys_devices from array to per_cpu variable
-Content-Disposition: inline; filename=nr_cpus-in-cpu_c
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       James Morris <jmorris@namei.org>, Patrick McHardy <kaber@trash.net>
+Subject: [PATCH 08/10] net: remove NR_CPUS arrays in net/core/dev.c v2
+Content-Disposition: inline; filename=nr_cpus-in-net_core_dev
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change cpu_sys_devices from array to per_cpu variable in
-drivers/base/cpu.c.
+Remove the fixed size channels[NR_CPUS] array in
+net/core/dev.c and dynamically allocate array based on
+nr_cpu_ids.
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-(MAINTAINER unknown)
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Cc: James Morris <jmorris@namei.org>
+Cc: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- drivers/base/cpu.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+v2: fixed logic error in netdev_dma_register().
+---
+ net/core/dev.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
---- linux.trees.git.orig/drivers/base/cpu.c
-+++ linux.trees.git/drivers/base/cpu.c
-@@ -18,7 +18,7 @@ struct sysdev_class cpu_sysdev_class = {
+--- linux.trees.git.orig/net/core/dev.c
++++ linux.trees.git/net/core/dev.c
+@@ -162,7 +162,7 @@ struct net_dma {
+ 	struct dma_client client;
+ 	spinlock_t lock;
+ 	cpumask_t channel_mask;
+-	struct dma_chan *channels[NR_CPUS];
++	struct dma_chan **channels;
  };
- EXPORT_SYMBOL(cpu_sysdev_class);
  
--static struct sys_device *cpu_sys_devices[NR_CPUS];
-+static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- static ssize_t show_online(struct sys_device *dev, char *buf)
-@@ -68,7 +68,7 @@ void unregister_cpu(struct cpu *cpu)
- 	sysdev_remove_file(&cpu->sysdev, &attr_online);
- 
- 	sysdev_unregister(&cpu->sysdev);
--	cpu_sys_devices[logical_cpu] = NULL;
-+	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
- 	return;
- }
- #else /* ... !CONFIG_HOTPLUG_CPU */
-@@ -122,7 +122,7 @@ int __cpuinit register_cpu(struct cpu *c
- 	if (!error && cpu->hotpluggable)
- 		register_cpu_control(cpu);
- 	if (!error)
--		cpu_sys_devices[num] = &cpu->sysdev;
-+		per_cpu(cpu_sys_devices, num) = &cpu->sysdev;
- 	if (!error)
- 		register_cpu_under_node(num, cpu_to_node(num));
- 
-@@ -135,8 +135,8 @@ int __cpuinit register_cpu(struct cpu *c
- 
- struct sys_device *get_cpu_sysdev(unsigned cpu)
+ static enum dma_state_client
+@@ -2444,7 +2444,7 @@ static struct netif_rx_stats *softnet_ge
  {
--	if (cpu < NR_CPUS)
--		return cpu_sys_devices[cpu];
-+	if (cpu < nr_cpu_ids && cpu_possible(cpu))
-+		return per_cpu(cpu_sys_devices, cpu);
- 	else
- 		return NULL;
- }
+ 	struct netif_rx_stats *rc = NULL;
+ 
+-	while (*pos < NR_CPUS)
++	while (*pos < nr_cpu_ids)
+ 		if (cpu_online(*pos)) {
+ 			rc = &per_cpu(netdev_rx_stat, *pos);
+ 			break;
+@@ -4316,7 +4316,7 @@ netdev_dma_event(struct dma_client *clie
+ 	spin_lock(&net_dma->lock);
+ 	switch (state) {
+ 	case DMA_RESOURCE_AVAILABLE:
+-		for (i = 0; i < NR_CPUS; i++)
++		for (i = 0; i < nr_cpu_ids; i++)
+ 			if (net_dma->channels[i] == chan) {
+ 				found = 1;
+ 				break;
+@@ -4331,7 +4331,7 @@ netdev_dma_event(struct dma_client *clie
+ 		}
+ 		break;
+ 	case DMA_RESOURCE_REMOVED:
+-		for (i = 0; i < NR_CPUS; i++)
++		for (i = 0; i < nr_cpu_ids; i++)
+ 			if (net_dma->channels[i] == chan) {
+ 				found = 1;
+ 				pos = i;
+@@ -4358,6 +4358,13 @@ netdev_dma_event(struct dma_client *clie
+  */
+ static int __init netdev_dma_register(void)
+ {
++	net_dma.channels = kzalloc(nr_cpu_ids * sizeof(struct net_dma),
++								GFP_KERNEL);
++	if (unlikely(!net_dma.channels)) {
++		printk(KERN_NOTICE
++				"netdev_dma: no memory for net_dma.channels\n");
++		return -ENOMEM;
++	}
+ 	spin_lock_init(&net_dma.lock);
+ 	dma_cap_set(DMA_MEMCPY, net_dma.client.cap_mask);
+ 	dma_async_client_register(&net_dma.client);
 
 -- 
