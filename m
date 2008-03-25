@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbYCYSMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYCYSUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758514AbYCYSMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCYSM3
+	id S1758009AbYCYSUV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYCYSUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:12:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48566 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752846AbYCYSM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:12:29 -0400
-Date: Tue, 25 Mar 2008 19:12:27 +0100
+	Tue, 25 Mar 2008 14:20:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47845 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbYCYSUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:20:07 -0400
+Date: Tue, 25 Mar 2008 19:20:06 +0100
 From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] vfs: Fix lock inversion in drop_pagecache_sb()
-Message-ID: <20080325181227.GE5125@duck.suse.cz>
+To: Cesar Suga <sartre@linuxbr.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: BUG: at fs/inotify.c:182 set_dentry_child_flags() - second
+Message-ID: <20080325182006.GC21732@atrey.karlin.mff.cuni.cz>
+References: <47E1A935.9030705@linuxbr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <47E1A935.9030705@linuxbr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix longstanding lock inversion in drop_pagecache_sb by dropping inode_lock
-before calling __invalidate_mapping_pages(). We just have to make sure
-inode won't go away from under us by keeping reference to it and putting
-the reference only after we have safely resumed the scan of the inode
-list. A bit tricky but not too bad...
+  Hello,
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-CC: Fengguang Wu <wfg@mail.ustc.edu.cn>
-CC: David Chinner <dgc@sgi.com>
+> I second Patrick McLean's e-mail from 2007/02/27.
+> 
+> Patrick also said he was using nfsd at that point.
+> 
+> WARNING: at fs/inotify.c:182 set_dentry_child_flags()
+> Pid: 19103, comm: gam_server Tainted: P        2.6.24.3-smp #1
+> [<c01a2087>] set_dentry_child_flags+0x127/0x160
+> [<c01a2110>] remove_watch_no_event+0x50/0x60
+> [<c01a2228>] inotify_remove_watch_locked+0x18/0x50
+> [<c01a258c>] inotify_rm_wd+0x6c/0xb0
+> [<c01a2ba8>] sys_inotify_rm_watch+0x38/0x60
+> [<c0104336>] syscall_call+0x7/0xb
+> =======================
+> 
+> Running Slackware 2.6.24.3-smp stock kernel. However, ntpdate ran 1 
+> minute before this occurred (offset 7.4 seconds). Machine was running 
+> rsync to a remote NFS server (common rsync, not using rsync protocol) 
+> mounted at the local machine.
+  Here, the check itself has been racy (and producing bogus warnings) and
+is already removed in current Linus's tree. Thanks for report.
 
----
- fs/drop_caches.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-index 59375ef..f5aae26 100644
---- a/fs/drop_caches.c
-+++ b/fs/drop_caches.c
-@@ -14,15 +14,21 @@ int sysctl_drop_caches;
- 
- static void drop_pagecache_sb(struct super_block *sb)
- {
--	struct inode *inode;
-+	struct inode *inode, *toput_inode = NULL;
- 
- 	spin_lock(&inode_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
- 		if (inode->i_state & (I_FREEING|I_WILL_FREE))
- 			continue;
-+		__iget(inode);
-+		spin_unlock(&inode_lock);
- 		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-+		iput(toput_inode);
-+		toput_inode = inode;
-+		spin_lock(&inode_lock);
- 	}
- 	spin_unlock(&inode_lock);
-+	iput(toput_inode);
- }
- 
- void drop_pagecache(void)
+									Honza
 -- 
-1.5.2.4
-
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
