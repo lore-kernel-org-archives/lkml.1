@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYCYDxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYCYD7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYCYDxd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 23:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbYCYDxL
+	id S1756772AbYCYD7z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 23:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYCYD7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 23:53:11 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58585 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755615AbYCYDxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 23:53:10 -0400
-Message-ID: <47E87720.8060204@garzik.org>
-Date: Mon, 24 Mar 2008 23:53:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 24 Mar 2008 23:59:48 -0400
+Received: from xenotime.net ([66.160.160.81]:43403 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754775AbYCYD7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 23:59:47 -0400
+Date: Mon, 24 Mar 2008 20:59:42 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: What do you want from linux-next?
+In-Reply-To: <20080325141112.0ce433db.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0803242056300.5309@shark.he.net>
+References: <20080325141112.0ce433db.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>, kurt@roeckx.be,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25-rc6] sata_promise: fix hardreset hotplug events,
- take 2
-References: <200803221421.m2MEL1oY021558@harpo.it.uu.se> <18406.38445.717175.664615@harpo.it.uu.se> <47E70FB4.4010802@gmail.com> <47E86442.8030708@garzik.org> <47E86580.6050206@gmail.com> <47E87261.4020603@gmail.com>
-In-Reply-To: <47E87261.4020603@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> * prefer-hardreset patchset
-> * PCI-device-should-be-powered-up-before-being-accssed patch
-> * cleanup-sht-ops patchset
+On Tue, 25 Mar 2008, Stephen Rothwell wrote:
 
+> Hi Linus, Andrew,
+> 
+> Now that we are (presumably) approaching the next merge window, can I ask
+> what use (if any) will you be making of the linux-next tree?
+> Alternatively, is there any information you want from it?
 
-pulled, thanks
+Hi,
 
+I'd like some clarification about the future (use) of linux-next
+and Andrew's -mm patch series.  They duplicate a lot of the major
+git tree or quilt patch series.  Can we expect both of them to
+continue as is or will -mm be a patch series on top of linux-next
+or what?
+
+-- 
+~Randy
