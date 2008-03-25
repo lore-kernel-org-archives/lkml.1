@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYCYOzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbYCYO7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbYCYOzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 10:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYCYOzZ
+	id S1755904AbYCYO7P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 10:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYCYO7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 10:55:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43971 "EHLO mail.dvmed.net"
+	Tue, 25 Mar 2008 10:59:01 -0400
+Received: from khc.piap.pl ([195.187.100.11]:47464 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754297AbYCYOzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 10:55:24 -0400
-Message-ID: <47E91256.3010000@garzik.org>
-Date: Tue, 25 Mar 2008 10:55:18 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1754598AbYCYO7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 10:59:01 -0400
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       ebiederm@xmission.com, xemul@openvz.org, pavel@ucw.cz,
+       sds@tycho.nsa.gov, roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+References: <20080323135110.GA294@tv-sign.ru>
+	<20080324152906.dee7b272.akpm@linux-foundation.org>
+	<20080324225611.GA157@tv-sign.ru>
+	<20080324160819.cea2d921.akpm@linux-foundation.org>
+	<87r6dzi0mw.fsf@basil.nowhere.org>
+	<m3fxuedh3m.fsf@maximus.localdomain>
+	<20080325142259.GO2170@one.firstfloor.org>
+	<m37ifqdgfu.fsf@maximus.localdomain>
+	<20080325143544.GP2170@one.firstfloor.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 25 Mar 2008 15:58:55 +0100
+In-Reply-To: <20080325143544.GP2170@one.firstfloor.org> (Andi Kleen's message of "Tue\, 25 Mar 2008 15\:35\:44 +0100")
+Message-ID: <m3y786c0k0.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <m3prtzsszg.fsf@maximus.localdomain>	<m3tzj92xq6.fsf@maximus.localdomain> <m33aqedg0a.fsf@maximus.localdomain>
-In-Reply-To: <m33aqedg0a.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Hi,
-> 
-> I wrote:
-> 
->> New synchronous PPP implementation for generic HDLC.
-> 
-> So are we leaving the generic-HDLC+PPP in broken state for 2.6.25,
-> aren't we?
-> 
-> If we do, perhaps a "|| BROKEN" in drivers/net/wan/Kconfig would make
-> sense? Any attempt to use it will cause kernel panic immediately (PPP
-> with generic HDLC only; drivers using syncppp.c directly are not
-> affected). I can make that trivial Kconfig patch of course.
+Andi Kleen <andi@firstfloor.org> writes:
 
-In your original email you said
+> Sure, but if the deadlocks can be avoided on the kernel level (just
+> making sure the children are already reaped) then it would be even
+> better.
 
-	I guess it should go into 2.6.25, not sure about "stable"
-	series. I will appreciate any feedback, review and/or test
-	results.
-
-At the time of the posting 2.6.25-rc6 had already been released, which 
-seems like an inappropriate time for all that new code, which has been 
-given so little exposure to real world testing.
-
-Certainly your original message said PPP panics, but without even 
-minimal testing how do we know that your new code doesn't have equally 
-problematic issues?
-
-So quite honestly a CONFIG_BROKEN patch might indeed be more appropriate 
-since generic HDLC works with Frame Relay at least...
-
-Comments?  IMO the current code is a known risk (PPP panic, FR works) 
-whereas the new code is an unknown risk very late in 2.6.25-rc -- but 
-with a good chance to make HDLC+PPP work again.
-
-	Jeff
-
-
-
+Well, if you mean the kernel would do that unconditionally (thus it
+won't be init's job anymore, ptrace or not) then I can only agree.
+-- 
+Krzysztof Halasa
