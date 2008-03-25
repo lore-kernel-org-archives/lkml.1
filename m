@@ -1,57 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755813AbYCXXVk (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 24 Mar 2008 19:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbYCXXVb
+	id S1755035AbYCYNLV (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 25 Mar 2008 09:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYCYNLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 19:21:31 -0400
-Received: from cicero-fbr1.cybercity.dk ([212.242.40.5]:58668 "EHLO
-	cicero-fbr1.cybercity.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbYCXXVa (ORCPT
+	Tue, 25 Mar 2008 09:11:11 -0400
+Received: from [218.150.79.153] ([218.150.79.153]:35589 "EHLO
+	localhost.localdomain" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753250AbYCYNLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 19:21:30 -0400
-Message-ID: <32776.208.74.112.181.1206400665.squirrel@webmail.tiscali.dk>
-Date: Tue, 25 Mar 2008 00:17:45 +0100 (CET)
-Subject: 
-From: "Mrs. Joanna Benz" <fedexdeliverynigeria97@hotmail.com>
-Reply-To: fedexnigeria.ng97@live.com
-User-Agent: SquirrelMail/1.4.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+	Tue, 25 Mar 2008 09:11:11 -0400
+X-Greylist: delayed 69330 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Mar 2008 09:11:11 EDT
+Date: Tue, 25 Mar 2008 11:40:42 +0900
+From: trance@db.mp3-list.net
+Message-Id: <200803250240.m2P2egPm003963@db.mp3-list.net>
+To: linux-kernel@vger.kernel.org
+Subject: informacio!
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755813AbYCXXVk@vger.kernel.org>
-
-This is a registered money lender who offer loans to people with a low
-interest rate and also with so much considerations. We also offer loans to
-private,public and to co-operate bodies,so, i will kindly advice you apply
-for an easy loan here so that you can solve out your financial problems
-and also pay off your bills
-contact weng_loanlender@hotmail.com
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755035AbYCYNLV@vger.kernel.org>
 
 
-APPLICATION DETAILS
-Full Name:
-Contact Address:
-Phone:
-Amount Needed as Loan:
-Loan Duration:
-Annual Income:
-Occupation:
 
-In acknowledgment to these details, we will send you a well calculated
-Terms and Condition which will include the agreement.
 
-I await your sincere response.
+                    Hello!
 
-Lisa Weng
+           Oldalunk cime: http://tavasz.letoltes.org/
 
-Loan Offer
+Szeretnenk veletek megismertetni Magyarorszag egyik legnagyobb letoltohelyet, ahol minden vagyad
 
+teljesulhet. A tartalom folyamatos frissites alatt all. Az oldalunkon a tartalom nem atveres, mint a tobbi
+
+warez oldalon, de ezt te is leellenorizheted. A kozel 16 TB-nyi adatot 1 SMS araert elerheted, garantalt
+
+sebesseg es adatkorlatozas nelkul.
+
+Amennyiben problemad adodna 100 szazalekos support var a nap 24 orajaban a webbazis kukac gmail.com cimen.
+
+  Oldalunk cime: http://tavasz.letoltes.org/
+
+Ha megzavartuk volnezzel a levellel, akkor khagyja figyelmen kivul!
 
 
 
