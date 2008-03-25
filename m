@@ -1,55 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYCYPCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYCYPGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYCYPCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 11:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYCYPCc
+	id S1755325AbYCYPGz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 11:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbYCYPGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 11:02:32 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:43101 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754770AbYCYPCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 11:02:31 -0400
-Message-ID: <47E91404.7030901@sgi.com>
-Date: Tue, 25 Mar 2008 08:02:28 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 25 Mar 2008 11:06:46 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54403 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753051AbYCYPGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 11:06:45 -0400
+Date: Tue, 25 Mar 2008 11:06:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
+ callbacks (rev. 3)
+In-Reply-To: <200803242218.47898.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803251044590.4838-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       James Morris <jmorris@namei.org>, Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH 08/10] net: remove NR_CPUS arrays in net/core/dev.c
-References: <20080325021954.979158000@polaris-admin.engr.sgi.com> <20080325021956.212787000@polaris-admin.engr.sgi.com> <20080325055752.GA4774@martell.zuzino.mipt.ru>
-In-Reply-To: <20080325055752.GA4774@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Mon, Mar 24, 2008 at 07:20:02PM -0700, Mike Travis wrote:
->> Remove the fixed size channels[NR_CPUS] array in
->> net/core/dev.c and dynamically allocate array based on
->> nr_cpu_ids.
+On Mon, 24 Mar 2008, Rafael J. Wysocki wrote:
+
+> > Can we also have a DPM_PREPARING state, set when ->prepare() is about
+> > to be called?  The PM core wouldn't make use of it but some drivers
+> > would.  (I can't think of any use at all for the analogous
+> > DPM_COMPLETING state, however.)
 > 
->> @@ -4362,6 +4362,13 @@ netdev_dma_event(struct dma_client *clie
->>   */
->>  static int __init netdev_dma_register(void)
->>  {
->> +	net_dma.channels = kzalloc(nr_cpu_ids * sizeof(struct net_dma),
->> +								GFP_KERNEL);
->> +	if (unlikely(net_dma.channels)) {
+> Hmm.  dev->power.status is protected by dpm_list_mtx.  Do you think it would be
+> useful to have an accessor function for reading it under the lock?
+
+I don't think so.  What I have in mind is situations where there 
+accessed has already been synchronized by other means, while the 
+prepare() method is running.  For example:
+
+	Task 0				Task 1
+	------				------
+	->prepare() is called
+	Waits for currently-running
+	  registration in task 1
+	  to finish
+	Does other stuff
+					Receives a request to register
+					  a new child under dev
+					Sees that dev->power.state is
+					  still DPM_ON, so goes ahead
+					  with the child's registration
+	->prepare() returns
+	dev->power.state is set to
+	  DPM_SUSPENDING
+					device_pm_add() checks
+					  dev->power.state and fails
+					  the registration
+
+If dev->power.state had been set to DPM_PREPARING before ->prepare() 
+was called, then task 1 would have avoided trying to register the 
+child.
+
+> > > +			dev->power.status = DPM_RESUMING;
+> > > +			get_device(dev);
+> > > +			mutex_unlock(&dpm_list_mtx);
+> > > +
+> > > +			resume_device(dev, state);
+> > > +
+> > > +			mutex_lock(&dpm_list_mtx);
+> > > +			put_device(dev);
+> > > +		}
+> > > +		if (!list_empty(&dev->power.entry))
+> > > +			list_move_tail(&dev->power.entry, &list);
+> > 
+> > A little problem here: You refer to dev after calling put_device().
 > 
-> 		     !net_dma.channels
+> The device can't be removed at this point, because we hold dpm_list_mtx, which
+> is needed by device_del().
+
+True, it can't be removed at this point.  But it _can_ be removed
+between the calls to resume_device() and mutex_lock().
+
+> > >  	}
+> > > -	if (!error)
+> > > -		all_sleeping = true;
+> > > +	list_splice(&list, &dpm_list);
+> > 
+> > Instead you could eliminate the list_splice_init() above and put here:
+> > 
+> > 	list_splice(&list, dpm_list->prev);
+> > 
+> > This will move the entries from list to the end of dpm_list.
 > 
->> +		printk(KERN_NOTICE
->> +				"netdev_dma: no memory for net_dma.channels\n");
->> +		return -ENOMEM;
->> +	}
+> dpm_list may be empty at this point.  Wouldn't that cause any trouble?
+
+It will still work correctly.  If dpm_list is empty then dpm_list->prev
+is equal to &dpm_list, so it will do the same thing as your current
+code does.
 
 
-Got it, Thanks!  
+I just thought of another problem.  At the point where
+local_irq_disable() is called, in between device_suspend() and
+device_power_down(), it is possible in a preemptible kernel that
+another task is holding dpm_list_mtx and is in the middle of updating
+the list pointers.  This would mess up the traversal in
+device_power_down().
 
--Mike
+I'm not sure about the best way to prevent this.  Is it legal to call
+unlock_mutex() while interrupts or preemption are disabled?
+
+Alan Stern
+
