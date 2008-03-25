@@ -1,362 +1,308 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbYCYWH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbYCYWIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762044AbYCYWH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbYCYWGz
+	id S1759419AbYCYWIY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759102AbYCYWGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 25 Mar 2008 18:06:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47858 "EHLO
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47867 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753987AbYCYWGw (ORCPT
+	with ESMTP id S1754747AbYCYWGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 18:06:52 -0400
-Message-Id: <20080325220651.278802000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325220651.417537000@polaris-admin.engr.sgi.com>
 References: <20080325220650.835342000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 15:06:53 -0700
+Date: Tue, 25 Mar 2008 15:06:54 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>
-Subject: [PATCH 03/10] cpufreq: change cpu freq arrays to per_cpu variables
-Content-Disposition: inline; filename=nr_cpus-in-cpufreq-cpu_alloc
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Subject: [PATCH 04/10] acpi: change processors from array to per_cpu variable
+Content-Disposition: inline; filename=nr_cpus-in-acpi-driver-cpu_alloc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change cpufreq_policy and cpufreq_governor pointer tables
-from arrays to per_cpu variables in the cpufreq subsystem.
-
-Also some minor complaints from checkpatch.pl fixed.
+Change processors from an array sized by NR_CPUS to a per_cpu variable.
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-Cc: Dave Jones <davej@codemonkey.org.uk>
+Cc: Len Brown <len.brown@intel.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- drivers/cpufreq/cpufreq.c       |   45 +++++++++++++++++++++-------------------
- drivers/cpufreq/cpufreq_stats.c |   24 ++++++++++-----------
- drivers/cpufreq/freq_table.c    |   12 +++++-----
- 3 files changed, 42 insertions(+), 39 deletions(-)
+ drivers/acpi/processor_core.c       |   18 ++++++++----------
+ drivers/acpi/processor_idle.c       |    8 ++++----
+ drivers/acpi/processor_perflib.c    |   18 +++++++++---------
+ drivers/acpi/processor_throttling.c |   14 +++++++-------
+ include/acpi/processor.h            |    2 +-
+ 5 files changed, 29 insertions(+), 31 deletions(-)
 
---- linux.trees.git.orig/drivers/cpufreq/cpufreq.c
-+++ linux.trees.git/drivers/cpufreq/cpufreq.c
-@@ -38,10 +38,10 @@
-  * also protects the cpufreq_cpu_data array.
-  */
- static struct cpufreq_driver *cpufreq_driver;
--static struct cpufreq_policy *cpufreq_cpu_data[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- #ifdef CONFIG_HOTPLUG_CPU
- /* This one keeps track of the previously set governor of a removed CPU */
--static struct cpufreq_governor *cpufreq_cpu_governor[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_governor *, cpufreq_cpu_governor);
- #endif
- static DEFINE_SPINLOCK(cpufreq_driver_lock);
- 
-@@ -133,7 +133,7 @@ struct cpufreq_policy *cpufreq_cpu_get(u
- 	struct cpufreq_policy *data;
- 	unsigned long flags;
- 
--	if (cpu >= NR_CPUS)
-+	if (cpu >= nr_cpu_ids)
- 		goto err_out;
- 
- 	/* get the cpufreq driver */
-@@ -147,7 +147,7 @@ struct cpufreq_policy *cpufreq_cpu_get(u
- 
- 
- 	/* get the CPU */
--	data = cpufreq_cpu_data[cpu];
-+	data = per_cpu(cpufreq_cpu_data, cpu);
- 
- 	if (!data)
- 		goto err_out_put_module;
-@@ -325,7 +325,7 @@ void cpufreq_notify_transition(struct cp
- 	dprintk("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
- 
--	policy = cpufreq_cpu_data[freqs->cpu];
-+	policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
- 	switch (state) {
- 
- 	case CPUFREQ_PRECHANGE:
-@@ -809,8 +809,8 @@ static int cpufreq_add_dev (struct sys_d
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
--	if (cpufreq_cpu_governor[cpu]){
--		policy->governor = cpufreq_cpu_governor[cpu];
-+	if (per_cpu(cpufreq_cpu_governor, cpu)) {
-+		policy->governor = per_cpu(cpufreq_cpu_governor, cpu);
- 		dprintk("Restoring governor %s for cpu %d\n",
- 		       policy->governor->name, cpu);
- 	}
-@@ -835,7 +835,7 @@ static int cpufreq_add_dev (struct sys_d
- 
- 			spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 			managed_policy->cpus = policy->cpus;
--			cpufreq_cpu_data[cpu] = managed_policy;
-+			per_cpu(cpufreq_cpu_data, cpu) = managed_policy;
- 			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 			dprintk("CPU already managed, adding link\n");
-@@ -890,7 +890,7 @@ static int cpufreq_add_dev (struct sys_d
- 
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu_mask(j, policy->cpus) {
--		cpufreq_cpu_data[j] = policy;
-+		per_cpu(cpufreq_cpu_data, j) = policy;
- 		per_cpu(policy_cpu, j) = policy->cpu;
- 	}
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-@@ -939,7 +939,7 @@ static int cpufreq_add_dev (struct sys_d
- err_out_unregister:
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu_mask(j, policy->cpus)
--		cpufreq_cpu_data[j] = NULL;
-+		per_cpu(cpufreq_cpu_data, j) = NULL;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	kobject_put(&policy->kobj);
-@@ -981,7 +981,7 @@ static int __cpufreq_remove_dev (struct 
- 	dprintk("unregistering CPU %u\n", cpu);
- 
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--	data = cpufreq_cpu_data[cpu];
-+	data = per_cpu(cpufreq_cpu_data, cpu);
- 
- 	if (!data) {
- 		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-@@ -989,7 +989,7 @@ static int __cpufreq_remove_dev (struct 
- 		unlock_policy_rwsem_write(cpu);
- 		return -EINVAL;
- 	}
--	cpufreq_cpu_data[cpu] = NULL;
-+	per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 
- 
- #ifdef CONFIG_SMP
-@@ -1011,19 +1011,19 @@ static int __cpufreq_remove_dev (struct 
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
--	cpufreq_cpu_governor[cpu] = data->governor;
-+	per_cpu(cpufreq_cpu_governor, cpu) = data->governor;
- #endif
- 
- 	/* if we have other CPUs still registered, we need to unlink them,
- 	 * or else wait_for_completion below will lock up. Clean the
--	 * cpufreq_cpu_data[] while holding the lock, and remove the sysfs
--	 * links afterwards.
-+	 * per_cpu(cpufreq_cpu_data) while holding the lock, and remove
-+	 * the sysfs links afterwards.
- 	 */
- 	if (unlikely(cpus_weight(data->cpus) > 1)) {
- 		for_each_cpu_mask(j, data->cpus) {
- 			if (j == cpu)
- 				continue;
--			cpufreq_cpu_data[j] = NULL;
-+			per_cpu(cpufreq_cpu_data, j) = NULL;
- 		}
- 	}
- 
-@@ -1035,7 +1035,7 @@ static int __cpufreq_remove_dev (struct 
- 				continue;
- 			dprintk("removing link for cpu %u\n", j);
- #ifdef CONFIG_HOTPLUG_CPU
--			cpufreq_cpu_governor[j] = data->governor;
-+			per_cpu(cpufreq_cpu_governor, j) = data->governor;
- #endif
- 			cpu_sys_dev = get_cpu_sysdev(j);
- 			sysfs_remove_link(&cpu_sys_dev->kobj, "cpufreq");
-@@ -1145,7 +1145,7 @@ EXPORT_SYMBOL(cpufreq_quick_get);
- 
- static unsigned int __cpufreq_get(unsigned int cpu)
- {
--	struct cpufreq_policy *policy = cpufreq_cpu_data[cpu];
-+	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
- 	unsigned int ret_freq = 0;
- 
- 	if (!cpufreq_driver->get)
-@@ -1818,16 +1818,19 @@ int cpufreq_register_driver(struct cpufr
- 	cpufreq_driver = driver_data;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	ret = sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
-+	ret = sysdev_driver_register(&cpu_sysdev_class,
-+					&cpufreq_sysdev_driver);
- 
- 	if ((!ret) && !(cpufreq_driver->flags & CPUFREQ_STICKY)) {
- 		int i;
- 		ret = -ENODEV;
- 
- 		/* check for at least one working CPU */
--		for (i=0; i<NR_CPUS; i++)
--			if (cpufreq_cpu_data[i])
-+		for (i = 0; i < nr_cpu_ids; i++)
-+			if (cpu_possible(i) && per_cpu(cpufreq_cpu_data, i)) {
- 				ret = 0;
-+				break;
-+			}
- 
- 		/* if all ->init() calls failed, unregister */
- 		if (ret) {
---- linux.trees.git.orig/drivers/cpufreq/cpufreq_stats.c
-+++ linux.trees.git/drivers/cpufreq/cpufreq_stats.c
-@@ -43,7 +43,7 @@ struct cpufreq_stats {
- #endif
+--- linux.trees.git.orig/drivers/acpi/processor_core.c
++++ linux.trees.git/drivers/acpi/processor_core.c
+@@ -118,7 +118,7 @@ static const struct file_operations acpi
+ 	.release = single_release,
  };
  
--static struct cpufreq_stats *cpufreq_stats_table[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_stats *, cpufreq_stats_table);
+-struct acpi_processor *processors[NR_CPUS];
++DEFINE_PER_CPU(struct acpi_processor *, processors);
+ struct acpi_processor_errata errata __read_mostly;
  
- struct cpufreq_stats_attribute {
- 	struct attribute attr;
-@@ -58,7 +58,7 @@ cpufreq_stats_update (unsigned int cpu)
+ /* --------------------------------------------------------------------------
+@@ -615,7 +615,7 @@ static int acpi_processor_get_info(struc
+ 	return 0;
+ }
  
- 	cur_time = get_jiffies_64();
- 	spin_lock(&cpufreq_stats_lock);
--	stat = cpufreq_stats_table[cpu];
-+	stat = per_cpu(cpufreq_stats_table, cpu);
- 	if (stat->time_in_state)
- 		stat->time_in_state[stat->last_index] =
- 			cputime64_add(stat->time_in_state[stat->last_index],
-@@ -71,11 +71,11 @@ cpufreq_stats_update (unsigned int cpu)
- static ssize_t
- show_total_trans(struct cpufreq_policy *policy, char *buf)
+-static void *processor_device_array[NR_CPUS];
++static DEFINE_PER_CPU(void *, processor_device_array);
+ 
+ static int __cpuinit acpi_processor_start(struct acpi_device *device)
  {
--	struct cpufreq_stats *stat = cpufreq_stats_table[policy->cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
- 	return sprintf(buf, "%d\n",
--			cpufreq_stats_table[stat->cpu]->total_trans);
-+			per_cpu(cpufreq_stats_table, stat->cpu)->total_trans);
- }
- 
- static ssize_t
-@@ -83,7 +83,7 @@ show_time_in_state(struct cpufreq_policy
- {
- 	ssize_t len = 0;
- 	int i;
--	struct cpufreq_stats *stat = cpufreq_stats_table[policy->cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
- 	cpufreq_stats_update(stat->cpu);
-@@ -101,7 +101,7 @@ show_trans_table(struct cpufreq_policy *
- 	ssize_t len = 0;
- 	int i, j;
- 
--	struct cpufreq_stats *stat = cpufreq_stats_table[policy->cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
- 	cpufreq_stats_update(stat->cpu);
-@@ -166,7 +166,7 @@ freq_table_get_index(struct cpufreq_stat
- 
- static void cpufreq_stats_free_table(unsigned int cpu)
- {
--	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 	if (policy && policy->cpu == cpu)
- 		sysfs_remove_group(&policy->kobj, &stats_attr_group);
-@@ -174,7 +174,7 @@ static void cpufreq_stats_free_table(uns
- 		kfree(stat->time_in_state);
- 		kfree(stat);
- 	}
--	cpufreq_stats_table[cpu] = NULL;
-+	per_cpu(cpufreq_stats_table, cpu) = NULL;
- 	if (policy)
- 		cpufreq_cpu_put(policy);
- }
-@@ -188,7 +188,7 @@ cpufreq_stats_create_table (struct cpufr
- 	struct cpufreq_policy *data;
- 	unsigned int alloc_size;
- 	unsigned int cpu = policy->cpu;
--	if (cpufreq_stats_table[cpu])
-+	if (per_cpu(cpufreq_stats_table, cpu))
- 		return -EBUSY;
- 	if ((stat = kzalloc(sizeof(struct cpufreq_stats), GFP_KERNEL)) == NULL)
- 		return -ENOMEM;
-@@ -203,7 +203,7 @@ cpufreq_stats_create_table (struct cpufr
- 		goto error_out;
- 
- 	stat->cpu = cpu;
--	cpufreq_stats_table[cpu] = stat;
-+	per_cpu(cpufreq_stats_table, cpu) = stat;
- 
- 	for (i=0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
- 		unsigned int freq = table[i].frequency;
-@@ -247,7 +247,7 @@ error_out:
- 	cpufreq_cpu_put(data);
- error_get_fail:
- 	kfree(stat);
--	cpufreq_stats_table[cpu] = NULL;
-+	per_cpu(cpufreq_stats_table, cpu) = NULL;
- 	return ret;
- }
- 
-@@ -280,7 +280,7 @@ cpufreq_stat_notifier_trans (struct noti
- 	if (val != CPUFREQ_POSTCHANGE)
- 		return 0;
- 
--	stat = cpufreq_stats_table[freq->cpu];
-+	stat = per_cpu(cpufreq_stats_table, freq->cpu);
- 	if (!stat)
- 		return 0;
- 
---- linux.trees.git.orig/drivers/cpufreq/freq_table.c
-+++ linux.trees.git/drivers/cpufreq/freq_table.c
-@@ -169,7 +169,7 @@ int cpufreq_frequency_table_target(struc
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
- 
--static struct cpufreq_frequency_table *show_table[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_frequency_table *, show_table);
- /**
-  * show_available_freqs - show available frequencies for the specified CPU
-  */
-@@ -180,10 +180,10 @@ static ssize_t show_available_freqs (str
- 	ssize_t count = 0;
- 	struct cpufreq_frequency_table *table;
- 
--	if (!show_table[cpu])
-+	if (!per_cpu(show_table, cpu))
+@@ -639,15 +639,15 @@ static int __cpuinit acpi_processor_star
+ 	 * ACPI id of processors can be reported wrongly by the BIOS.
+ 	 * Don't trust it blindly
+ 	 */
+-	if (processor_device_array[pr->id] != NULL &&
+-	    processor_device_array[pr->id] != device) {
++	if (per_cpu(processor_device_array, pr->id) != NULL &&
++	    per_cpu(processor_device_array, pr->id) != device) {
+ 		printk(KERN_WARNING "BIOS reported wrong ACPI id "
+ 			"for the processor\n");
  		return -ENODEV;
+ 	}
+-	processor_device_array[pr->id] = device;
++	per_cpu(processor_device_array, pr->id) = device;
  
--	table = show_table[cpu];
-+	table = per_cpu(show_table, cpu);
+-	processors[pr->id] = pr;
++	per_cpu(processors, pr->id) = pr;
  
- 	for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
-@@ -212,20 +212,20 @@ void cpufreq_frequency_table_get_attr(st
- 				      unsigned int cpu)
+ 	result = acpi_processor_add_fs(device);
+ 	if (result)
+@@ -751,7 +751,7 @@ static int acpi_cpu_soft_notify(struct n
+ 		unsigned long action, void *hcpu)
  {
- 	dprintk("setting show_table for cpu %u to %p\n", cpu, table);
--	show_table[cpu] = table;
-+	per_cpu(show_table, cpu) = table;
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_attr);
+ 	unsigned int cpu = (unsigned long)hcpu;
+-	struct acpi_processor *pr = processors[cpu];
++	struct acpi_processor *pr = per_cpu(processors, cpu);
  
- void cpufreq_frequency_table_put_attr(unsigned int cpu)
+ 	if (action == CPU_ONLINE && pr) {
+ 		acpi_processor_ppc_has_changed(pr);
+@@ -821,7 +821,7 @@ static int acpi_processor_remove(struct 
+ 		pr->cdev = NULL;
+ 	}
+ 
+-	processors[pr->id] = NULL;
++	per_cpu(processors, pr->id) = NULL;
+ 
+ 	kfree(pr);
+ 
+@@ -1070,8 +1070,6 @@ static int __init acpi_processor_init(vo
  {
- 	dprintk("clearing show_table for cpu %u\n", cpu);
--	show_table[cpu] = NULL;
-+	per_cpu(show_table, cpu) = NULL;
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
+ 	int result = 0;
  
- struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
- {
--	return show_table[cpu];
-+	return per_cpu(show_table, cpu);
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
+-
+-	memset(&processors, 0, sizeof(processors));
+ 	memset(&errata, 0, sizeof(errata));
  
+ #ifdef CONFIG_SMP
+--- linux.trees.git.orig/drivers/acpi/processor_idle.c
++++ linux.trees.git/drivers/acpi/processor_idle.c
+@@ -401,7 +401,7 @@ static void acpi_processor_idle(void)
+ 	 */
+ 	local_irq_disable();
+ 
+-	pr = processors[smp_processor_id()];
++	pr = __get_cpu_var(processors);
+ 	if (!pr) {
+ 		local_irq_enable();
+ 		return;
+@@ -1425,7 +1425,7 @@ static int acpi_idle_enter_c1(struct cpu
+ 	struct acpi_processor *pr;
+ 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
+ 
+-	pr = processors[smp_processor_id()];
++	pr = __get_cpu_var(processors);
+ 
+ 	if (unlikely(!pr))
+ 		return 0;
+@@ -1465,7 +1465,7 @@ static int acpi_idle_enter_simple(struct
+ 	u32 t1, t2;
+ 	int sleep_ticks = 0;
+ 
+-	pr = processors[smp_processor_id()];
++	pr = __get_cpu_var(processors);
+ 
+ 	if (unlikely(!pr))
+ 		return 0;
+@@ -1544,7 +1544,7 @@ static int acpi_idle_enter_bm(struct cpu
+ 	u32 t1, t2;
+ 	int sleep_ticks = 0;
+ 
+-	pr = processors[smp_processor_id()];
++	pr = __get_cpu_var(processors);
+ 
+ 	if (unlikely(!pr))
+ 		return 0;
+--- linux.trees.git.orig/drivers/acpi/processor_perflib.c
++++ linux.trees.git/drivers/acpi/processor_perflib.c
+@@ -89,7 +89,7 @@ static int acpi_processor_ppc_notifier(s
+ 	if (event != CPUFREQ_INCOMPATIBLE)
+ 		goto out;
+ 
+-	pr = processors[policy->cpu];
++	pr = per_cpu(processors, policy->cpu);
+ 	if (!pr || !pr->performance)
+ 		goto out;
+ 
+@@ -577,7 +577,7 @@ int acpi_processor_preregister_performan
+ 
+ 	/* Call _PSD for all CPUs */
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr) {
+ 			/* Look only at processors in ACPI namespace */
+ 			continue;
+@@ -608,7 +608,7 @@ int acpi_processor_preregister_performan
+ 	 * domain info.
+ 	 */
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr)
+ 			continue;
+ 
+@@ -629,7 +629,7 @@ int acpi_processor_preregister_performan
+ 
+ 	cpus_clear(covered_cpus);
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr)
+ 			continue;
+ 
+@@ -656,7 +656,7 @@ int acpi_processor_preregister_performan
+ 			if (i == j)
+ 				continue;
+ 
+-			match_pr = processors[j];
++			match_pr = per_cpu(processors, j);
+ 			if (!match_pr)
+ 				continue;
+ 
+@@ -685,7 +685,7 @@ int acpi_processor_preregister_performan
+ 			if (i == j)
+ 				continue;
+ 
+-			match_pr = processors[j];
++			match_pr = per_cpu(processors, j);
+ 			if (!match_pr)
+ 				continue;
+ 
+@@ -702,7 +702,7 @@ int acpi_processor_preregister_performan
+ 
+ err_ret:
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr || !pr->performance)
+ 			continue;
+ 
+@@ -733,7 +733,7 @@ acpi_processor_register_performance(stru
+ 
+ 	mutex_lock(&performance_mutex);
+ 
+-	pr = processors[cpu];
++	pr = per_cpu(processors, cpu);
+ 	if (!pr) {
+ 		mutex_unlock(&performance_mutex);
+ 		return -ENODEV;
+@@ -771,7 +771,7 @@ acpi_processor_unregister_performance(st
+ 
+ 	mutex_lock(&performance_mutex);
+ 
+-	pr = processors[cpu];
++	pr = per_cpu(processors, cpu);
+ 	if (!pr) {
+ 		mutex_unlock(&performance_mutex);
+ 		return;
+--- linux.trees.git.orig/drivers/acpi/processor_throttling.c
++++ linux.trees.git/drivers/acpi/processor_throttling.c
+@@ -71,7 +71,7 @@ static int acpi_processor_update_tsd_coo
+ 	 * coordination between all CPUs.
+ 	 */
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr)
+ 			continue;
+ 
+@@ -93,7 +93,7 @@ static int acpi_processor_update_tsd_coo
+ 
+ 	cpus_clear(covered_cpus);
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr)
+ 			continue;
+ 
+@@ -119,7 +119,7 @@ static int acpi_processor_update_tsd_coo
+ 			if (i == j)
+ 				continue;
+ 
+-			match_pr = processors[j];
++			match_pr = per_cpu(processors, j);
+ 			if (!match_pr)
+ 				continue;
+ 
+@@ -152,7 +152,7 @@ static int acpi_processor_update_tsd_coo
+ 			if (i == j)
+ 				continue;
+ 
+-			match_pr = processors[j];
++			match_pr = per_cpu(processors, j);
+ 			if (!match_pr)
+ 				continue;
+ 
+@@ -172,7 +172,7 @@ static int acpi_processor_update_tsd_coo
+ 
+ err_ret:
+ 	for_each_possible_cpu(i) {
+-		pr = processors[i];
++		pr = per_cpu(processors, i);
+ 		if (!pr)
+ 			continue;
+ 
+@@ -214,7 +214,7 @@ static int acpi_processor_throttling_not
+ 	struct acpi_processor_throttling *p_throttling;
+ 
+ 	cpu = p_tstate->cpu;
+-	pr = processors[cpu];
++	pr = per_cpu(processors, cpu);
+ 	if (!pr) {
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Invalid pr pointer\n"));
+ 		return 0;
+@@ -1035,7 +1035,7 @@ int acpi_processor_set_throttling(struct
+ 		 * cpus.
+ 		 */
+ 		for_each_cpu_mask(i, online_throttling_cpus) {
+-			match_pr = processors[i];
++			match_pr = per_cpu(processors, i);
+ 			/*
+ 			 * If the pointer is invalid, we will report the
+ 			 * error message and continue.
+--- linux.trees.git.orig/include/acpi/processor.h
++++ linux.trees.git/include/acpi/processor.h
+@@ -255,7 +255,7 @@ extern void acpi_processor_unregister_pe
+ int acpi_processor_notify_smm(struct module *calling_module);
+ 
+ /* for communication between multiple parts of the processor kernel module */
+-extern struct acpi_processor *processors[NR_CPUS];
++DECLARE_PER_CPU(struct acpi_processor *, processors);
+ extern struct acpi_processor_errata errata;
+ 
+ void arch_acpi_processor_init_pdc(struct acpi_processor *pr);
 
 -- 
