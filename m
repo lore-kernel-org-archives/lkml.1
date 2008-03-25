@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYCYBiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYCYBqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbYCYBiS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 21:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbYCYBiF
+	id S1755544AbYCYBqc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 21:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYCYBqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 21:38:05 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36663 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753553AbYCYBiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 21:38:04 -0400
-Date: Mon, 24 Mar 2008 20:37:59 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 1/8] x86_64: Change GET_APIC_ID() from an inline function to an out-of-line function
-Message-ID: <20080325013759.GA16549@sgi.com>
-References: <20080324182107.GA27979@sgi.com> <86802c440803241534p5c28193brf769280fe05d286d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Mar 2008 21:46:23 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:42585 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754094AbYCYBqW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 21:46:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cFXmOwyfk6DEjbUPJhWQLWrBUwWfyiNaQpf7wG9csfGFiKxjNENjmxOxiMbwTzPfDYj9x80Y4d6AdV4egYIlas/WICIJgHHLYC9pn0O7OOYHQ5M40CPJYHii3dC2pYjYuJUmrl5DEUL36newJf3jgVpHG3Hy55L2Uc3V1QmsWp0=
+Message-ID: <5501535d0803241846k69f68738mda1aa6d10f1baa49@mail.gmail.com>
+Date: Tue, 25 Mar 2008 02:46:21 +0100
+From: "Bjoern Olausson" <lkmlist@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: Burning CDs as user produces coasters (Plextor drive)
+Cc: "Gregor Jasny" <gjasny@googlemail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+In-Reply-To: <47E8142D.4040301@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440803241534p5c28193brf769280fe05d286d@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+References: <9d2cd630803241039m79c47754v6562404133a61274@mail.gmail.com>
+	 <47E8142D.4040301@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  Index: linux/include/asm-x86/apicdef.h
-> >  ===================================================================
-> >  --- linux.orig/include/asm-x86/apicdef.h        2008-03-18 14:54:19.000000000 -0500
-> >  +++ linux/include/asm-x86/apicdef.h     2008-03-21 09:07:23.000000000 -0500
-> >  @@ -14,7 +14,6 @@
-> >
-> >   #ifdef CONFIG_X86_64
-> >   # define       APIC_ID_MASK            (0xFFu<<24)
-> >  -# define       GET_APIC_ID(x)          (((x)>>24)&0xFFu)
-> >   # define       SET_APIC_ID(x)          (((x)<<24))
-> >   #endif
-> 
-> it this patch after smpboot.c integration?
-> 
-> that patchsets have GET_APIC_ID in mach_apicdef.h instead of apicdef.h
-> 
+On 3/24/08, Jeff Garzik <jeff@garzik.org> wrote:
+> Gregor Jasny wrote:
+>  > Hi,
+>  >
+>  > since some time burning ISO CD images as user fails.
+>  > Wodim stops during OPC and the kernel prints some messages:
+>  >
+>  > scsi: unknown opcode 0xe9
+>  > scsi: unknown opcode 0xed
+>  > scsi: unknown opcode 0xf5
+>  > scsi: unknown opcode 0xeb
+>  >
+>  > If I burn as root, everything works fine. The used CD writer is a
+>  > "PLEXTOR  DVDR   PX-712A   1.09". I've seen in the wodim/cdrecord
+>  > sources that plextor drives are handled different from other drives.
+>  >
+>  > Do you know what the above listed commands are for?
+>  > Maybe they could be included in blk_verify_command?
+>  > If your'e not sure about the dangerousness maybe as a config option?
+>
+>
+> What drivers and kernel versions work (and which fail)?
+>
+>         Jeff
+>
+>
 
-Sorry - I meant to add to the patches that they are based on linux-2.6.25-rc5-mm1.
-Was the change to smpboot.c made in -rc6??
+The PX-712A still doesn't work right? Maybe it is related to the bug:
+http://bugzilla.kernel.org/show_bug.cgi?id=8918
 
---- jack
+Tejun has the dirve, but nothing new for now.
+http://bugzilla.kernel.org/show_bug.cgi?id=8918
 
+regards
+Bjoern
