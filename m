@@ -1,270 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYCYCd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYCYCdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbYCYCd2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbYCYCb2
+	id S1757194AbYCYCdo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbYCYCb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 22:31:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40222 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754504AbYCYCbW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 22:31:29 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56411 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754618AbYCYCbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 24 Mar 2008 22:31:22 -0400
-Message-Id: <20080325023122.070919000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325023122.427054000@polaris-admin.engr.sgi.com>
 References: <20080325023120.859257000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 24 Mar 2008 19:31:27 -0700
+Date: Mon, 24 Mar 2008 19:31:29 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 07/12] cpumask: reduce stack usage in SD_x_INIT initializers
-Content-Disposition: inline; filename=sched_domain
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 09/12] sched: fix memory leak in build_sched_domains
+Content-Disposition: inline; filename=build_sched_domain_leak_fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove empty cpumask_t (and all non-zero/non-null) variables
-in SD_*_INIT macros.  Use memset(0) to clear.  Also, don't
-inline the initializer functions to save on stack space in
-build_sched_domains().
+I'm not 100% sure if this is needed but I can't find where memory
+allocated for sched_group_nodes is released if the kmalloc for
+alloc_rootdomain fails.  Also, sched_group_nodes_bycpu[] is set,
+but never completely filled in for the kmalloc failure case.
 
 Based on linux-2.6.25-rc5-mm1
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: H. Peter Anvin <hpa@zytor.com>
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-One checkpatch warning that I think can't be removed:
+ kernel/sched.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-ERROR: Macros with complex values should be enclosed in parenthesis
-#165: FILE: kernel/sched.c:6591:
-#define SD_INIT_FUNC(type)	\
-static noinline void sd_init_##type(struct sched_domain *sd)	\
-{								\
-	memset(sd, 0, sizeof(*sd));				\
-	*sd = SD_##type##_INIT;					\
-}
-
----
- include/asm-x86/topology.h |    5 -----
- include/linux/topology.h   |   33 ++-------------------------------
- kernel/sched.c             |   35 ++++++++++++++++++++++++++++++-----
- 3 files changed, 32 insertions(+), 41 deletions(-)
-
---- linux-2.6.25-rc5.orig/include/asm-x86/topology.h
-+++ linux-2.6.25-rc5/include/asm-x86/topology.h
-@@ -155,10 +155,6 @@ extern unsigned long node_remap_size[];
- 
- /* sched_domains SD_NODE_INIT for NUMAQ machines */
- #define SD_NODE_INIT (struct sched_domain) {		\
--	.span			= CPU_MASK_NONE,	\
--	.parent			= NULL,			\
--	.child			= NULL,			\
--	.groups			= NULL,			\
- 	.min_interval		= 8,			\
- 	.max_interval		= 32,			\
- 	.busy_factor		= 32,			\
-@@ -176,7 +172,6 @@ extern unsigned long node_remap_size[];
- 				| SD_WAKE_BALANCE,	\
- 	.last_balance		= jiffies,		\
- 	.balance_interval	= 1,			\
--	.nr_balance_failed	= 0,			\
- }
- 
- #ifdef CONFIG_X86_64_ACPI_NUMA
---- linux-2.6.25-rc5.orig/include/linux/topology.h
-+++ linux-2.6.25-rc5/include/linux/topology.h
-@@ -77,7 +77,9 @@
-  * by defining their own arch-specific initializer in include/asm/topology.h.
-  * A definition there will automagically override these default initializers
-  * and allow arch-specific performance tuning of sched_domains.
-+ * (Only non-zero and non-null fields need be specified.)
-  */
-+
- #ifdef CONFIG_SCHED_SMT
- /* MCD - Do we really need this?  It is always on if CONFIG_SCHED_SMT is,
-  * so can't we drop this in favor of CONFIG_SCHED_SMT?
-@@ -86,20 +88,10 @@
- /* Common values for SMT siblings */
- #ifndef SD_SIBLING_INIT
- #define SD_SIBLING_INIT (struct sched_domain) {		\
--	.span			= CPU_MASK_NONE,	\
--	.parent			= NULL,			\
--	.child			= NULL,			\
--	.groups			= NULL,			\
- 	.min_interval		= 1,			\
- 	.max_interval		= 2,			\
- 	.busy_factor		= 64,			\
- 	.imbalance_pct		= 110,			\
--	.cache_nice_tries	= 0,			\
--	.busy_idx		= 0,			\
--	.idle_idx		= 0,			\
--	.newidle_idx		= 0,			\
--	.wake_idx		= 0,			\
--	.forkexec_idx		= 0,			\
- 	.flags			= SD_LOAD_BALANCE	\
- 				| SD_BALANCE_NEWIDLE	\
- 				| SD_BALANCE_FORK	\
-@@ -109,7 +101,6 @@
- 				| SD_SHARE_CPUPOWER,	\
- 	.last_balance		= jiffies,		\
- 	.balance_interval	= 1,			\
--	.nr_balance_failed	= 0,			\
- }
- #endif
- #endif /* CONFIG_SCHED_SMT */
-@@ -118,18 +109,12 @@
- /* Common values for MC siblings. for now mostly derived from SD_CPU_INIT */
- #ifndef SD_MC_INIT
- #define SD_MC_INIT (struct sched_domain) {		\
--	.span			= CPU_MASK_NONE,	\
--	.parent			= NULL,			\
--	.child			= NULL,			\
--	.groups			= NULL,			\
- 	.min_interval		= 1,			\
- 	.max_interval		= 4,			\
- 	.busy_factor		= 64,			\
- 	.imbalance_pct		= 125,			\
- 	.cache_nice_tries	= 1,			\
- 	.busy_idx		= 2,			\
--	.idle_idx		= 0,			\
--	.newidle_idx		= 0,			\
- 	.wake_idx		= 1,			\
- 	.forkexec_idx		= 1,			\
- 	.flags			= SD_LOAD_BALANCE	\
-@@ -142,7 +127,6 @@
- 				| BALANCE_FOR_MC_POWER,	\
- 	.last_balance		= jiffies,		\
- 	.balance_interval	= 1,			\
--	.nr_balance_failed	= 0,			\
- }
- #endif
- #endif /* CONFIG_SCHED_MC */
-@@ -150,10 +134,6 @@
- /* Common values for CPUs */
- #ifndef SD_CPU_INIT
- #define SD_CPU_INIT (struct sched_domain) {		\
--	.span			= CPU_MASK_NONE,	\
--	.parent			= NULL,			\
--	.child			= NULL,			\
--	.groups			= NULL,			\
- 	.min_interval		= 1,			\
- 	.max_interval		= 4,			\
- 	.busy_factor		= 64,			\
-@@ -172,16 +152,11 @@
- 				| BALANCE_FOR_PKG_POWER,\
- 	.last_balance		= jiffies,		\
- 	.balance_interval	= 1,			\
--	.nr_balance_failed	= 0,			\
- }
- #endif
- 
- /* sched_domains SD_ALLNODES_INIT for NUMA machines */
- #define SD_ALLNODES_INIT (struct sched_domain) {	\
--	.span			= CPU_MASK_NONE,	\
--	.parent			= NULL,			\
--	.child			= NULL,			\
--	.groups			= NULL,			\
- 	.min_interval		= 64,			\
- 	.max_interval		= 64*num_online_cpus(),	\
- 	.busy_factor		= 128,			\
-@@ -189,14 +164,10 @@
- 	.cache_nice_tries	= 1,			\
- 	.busy_idx		= 3,			\
- 	.idle_idx		= 3,			\
--	.newidle_idx		= 0, /* unused */	\
--	.wake_idx		= 0, /* unused */	\
--	.forkexec_idx		= 0, /* unused */	\
- 	.flags			= SD_LOAD_BALANCE	\
- 				| SD_SERIALIZE,	\
- 	.last_balance		= jiffies,		\
- 	.balance_interval	= 64,			\
--	.nr_balance_failed	= 0,			\
- }
- 
- #ifdef CONFIG_NUMA
 --- linux-2.6.25-rc5.orig/kernel/sched.c
 +++ linux-2.6.25-rc5/kernel/sched.c
-@@ -6584,6 +6584,31 @@ static void init_sched_groups_power(int 
- }
+@@ -6646,15 +6646,21 @@ static int build_sched_domains(const cpu
+ 		printk(KERN_WARNING "Can not alloc sched group node list\n");
+ 		return -ENOMEM;
+ 	}
+-	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
+ #endif
  
- /*
-+ * Initializers for schedule domains
-+ * Non-inlined to reduce accumulated stack pressure in build_sched_domains()
-+ */
-+
-+#define	SD_INIT(sd, type)	sd_init_##type(sd)
-+#define SD_INIT_FUNC(type)	\
-+static noinline void sd_init_##type(struct sched_domain *sd)	\
-+{								\
-+	memset(sd, 0, sizeof(*sd));				\
-+	*sd = SD_##type##_INIT;					\
-+}
-+
-+SD_INIT_FUNC(CPU)
+ 	rd = alloc_rootdomain();
+ 	if (!rd) {
+ 		printk(KERN_WARNING "Cannot alloc root domain\n");
 +#ifdef CONFIG_NUMA
-+ SD_INIT_FUNC(ALLNODES)
-+ SD_INIT_FUNC(NODE)
++		kfree(sched_group_nodes);
 +#endif
-+#ifdef CONFIG_SCHED_SMT
-+ SD_INIT_FUNC(SIBLING)
-+#endif
-+#ifdef CONFIG_SCHED_MC
-+ SD_INIT_FUNC(MC)
+ 		return -ENOMEM;
+ 	}
+ 
++#ifdef CONFIG_NUMA
++	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
 +#endif
 +
-+/*
-  * Build sched domains for a given set of cpus and attach the sched domains
-  * to the individual cpus
-  */
-@@ -6626,7 +6651,7 @@ static int build_sched_domains(const cpu
- 		if (cpus_weight(*cpu_map) >
- 				SD_NODES_PER_DOMAIN*cpus_weight(nodemask)) {
- 			sd = &per_cpu(allnodes_domains, i);
--			*sd = SD_ALLNODES_INIT;
-+			SD_INIT(sd, ALLNODES);
- 			sd->span = *cpu_map;
- 			cpu_to_allnodes_group(i, cpu_map, &sd->groups);
- 			p = sd;
-@@ -6635,7 +6660,7 @@ static int build_sched_domains(const cpu
- 			p = NULL;
- 
- 		sd = &per_cpu(node_domains, i);
--		*sd = SD_NODE_INIT;
-+		SD_INIT(sd, NODE);
- 		sd->span = sched_domain_node_span(cpu_to_node(i));
- 		sd->parent = p;
- 		if (p)
-@@ -6645,7 +6670,7 @@ static int build_sched_domains(const cpu
- 
- 		p = sd;
- 		sd = &per_cpu(phys_domains, i);
--		*sd = SD_CPU_INIT;
-+		SD_INIT(sd, CPU);
- 		sd->span = nodemask;
- 		sd->parent = p;
- 		if (p)
-@@ -6655,7 +6680,7 @@ static int build_sched_domains(const cpu
- #ifdef CONFIG_SCHED_MC
- 		p = sd;
- 		sd = &per_cpu(core_domains, i);
--		*sd = SD_MC_INIT;
-+		SD_INIT(sd, MC);
- 		sd->span = cpu_coregroup_map(i);
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
-@@ -6666,7 +6691,7 @@ static int build_sched_domains(const cpu
- #ifdef CONFIG_SCHED_SMT
- 		p = sd;
- 		sd = &per_cpu(cpu_domains, i);
--		*sd = SD_SIBLING_INIT;
-+		SD_INIT(sd, SIBLING);
- 		sd->span = per_cpu(cpu_sibling_map, i);
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
+ 	/*
+ 	 * Set up domains for cpus specified by the cpu_map.
+ 	 */
 
 -- 
