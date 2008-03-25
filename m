@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759085AbYCYXHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbYCYXIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759085AbYCYXHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbYCYXHW
+	id S1760287AbYCYXIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbYCYXIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:07:22 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36050 "EHLO
+	Tue, 25 Mar 2008 19:08:00 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36063 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755923AbYCYXHW (ORCPT
+	with ESMTP id S1754700AbYCYXH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:07:22 -0400
-Message-ID: <47E98572.704@zytor.com>
-Date: Tue, 25 Mar 2008 16:06:26 -0700
+	Tue, 25 Mar 2008 19:07:59 -0400
+Message-ID: <47E9853C.1030506@zytor.com>
+Date: Tue, 25 Mar 2008 16:05:32 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
+To: Greg KH <gregkh@suse.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
-References: <200803242324.35357.yhlu.kernel@gmail.com>	 <47E9003B.5010002@zytor.com>	 <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com>	 <20080325190851.GC30998@linux-os.sc.intel.com>	 <20080325200830.GB15330@elte.hu> <47E962AE.9040307@zytor.com>	 <47E9843A.1060702@zytor.com> <86802c440803251605w7021b60cmbc312eb9ca87d277@mail.gmail.com>
-In-Reply-To: <86802c440803251605w7021b60cmbc312eb9ca87d277@mail.gmail.com>
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+References: <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com> <47E96263.9000808@zytor.com> <20080325212032.GA24495@suse.de> <47E96E15.7020105@zytor.com> <20080325230009.GA25062@suse.de>
+In-Reply-To: <20080325230009.GA25062@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->>
->>  By the way, I want to clarify: I didn't mean it was *intended* as
->>  vendor-lockin, just that it's an undesirable effect of this.
-> 
-> if the PAT works, we may need to trim the memory according to MTRR, right?
-> 
+> How does this have anything to do with boot times?  Do you really have a
+> foolish shell script that iteratorates over every single disk in the
+> sysfs tree for every disk?  What does it do that for?
 
-That doesn't seem like it's specific to PAT?
+Any time you want to get the sysfs information for a filesystem which is 
+already mounted, that's what you're forced to do.
+
+> I thought we were talking about 2TB disks here, with a proposed new
+> ioctl, not foolishness of boot scripts...
+
+I pointed out that having a way to map device numbers to sysfs 
+directories would have the same effect, *and* would be usable for other 
+purposes.  I'd rather see that than a new ioctl, and another, and another...
+
+ioctl()s are also nasty since they're generally root-only (or rather, 
+device-owner only).  Since the information is already in sysfs, there is 
+no benefit to this hiding.  Otherwise one could consider a ioctl() "give 
+me the sysfs name of this device."
 
 	-hpa
