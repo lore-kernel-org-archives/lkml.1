@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbYCYWf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbYCYWie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759693AbYCYWf5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbYCYWfu
+	id S1755526AbYCYWie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYCYWi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:35:50 -0400
-Received: from mail.tmr.com ([64.65.253.246]:49337 "EHLO gaimboi.tmr.com"
+	Tue, 25 Mar 2008 18:38:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52753 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753566AbYCYWft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:35:49 -0400
-Message-ID: <47E97E92.7050306@tmr.com>
-Date: Tue, 25 Mar 2008 18:37:06 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1752949AbYCYWiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:38:25 -0400
 MIME-Version: 1.0
-To: Emmanuel Florac <eflorac@intellique.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RAID-1 performance under 2.4 and 2.6
-References: <20080325194306.4ac71ff2@galadriel.home>
-In-Reply-To: <20080325194306.4ac71ff2@galadriel.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] Discard notification signals when a tracer exits
+In-Reply-To: Petr Tesarik's message of  Tuesday, 25 March 2008 15:31:53 +0100 <1206455513.17227.4.camel@elijah.suse.cz>
+References: <1206455513.17227.4.camel@elijah.suse.cz>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080325223819.2E38026FA0A@magilla.localdomain>
+Date: Tue, 25 Mar 2008 15:38:19 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emmanuel Florac wrote:
-> I post there because I couldn't find any information about this
-> elsewhere : on the same hardware ( Athlon X2 3500+, 512MB RAM, 2x400 GB
-> Hitachi SATA2 hard drives ) the 2.4 Linux software RAID-1 (tested 2.4.32
-> and 2.4.36.2, slightly patched to recognize the hardware :p) is way
-> faster than 2.6 ( tested 2.6.17.13, 2.6.18.8, 2.6.22.16, 2.6.24.3)
-> especially for writes. I actually made the test on several different
-> machines (same hard drives though) and it remained consistent across
-> the board, with /mountpoint a software RAID-1.
-> Actually checking disk activity with iostat or vmstat shows clearly a
-> cache effect much more pronounced on 2.4 (i.e. writing goes on much
-> longer in the background) but it doesn't really account for the
-> difference. I've also tested it thru NFS from another machine (Giga
-> ethernet network):
-> 
-> dd if=/dev/zero of=/mountpoint/testfile bs=1M count=1024
-> 
-> kernel        2.4       2.6        2.4 thru NFS   2.6 thru NFS
-> 
-> write        90 MB/s    65 MB/s      70 MB/s       45 MB/s
-> read         90 MB/s    80 MB/s      75 MB/s       65 MB/s
-> 
-> Duh. That's terrible. Does it mean I should stick to  (heavily
-> patched...) 2.4 for my file servers or... ? :)
-> 
-Unfortunately this shows the same trend as kernel compile, small 
-database operations, etc. If you are using a journaling filesystem on 
-2.6 and not 2.4 be sure you have the filesystem mounted "noatime" or 
-retest with a non-journaled f/s. If you are running LVM in the test all 
-bets are off as there are alignment issues (see linux-raid archives) to 
-consider.
+I think that's wrong.  When the tracer dies unceremoniously, the tracee
+should continue as if it had not been traced.  Your change makes it swallow
+a normal signal waiting to be delivered, and then resume as if noone had
+ever sent a signal.  
 
-But the trend has unfortunately been slower, and responses demanding you 
-use another benchmark, saying that kernel compile is not a benchmark, 
-suggesting use of postgress or oracle instead of MySQL, etc, are seen.
+There is indeed a longstanding problem for tracing-induced signals
+(e.g. SIGTRAP for single-step or exec).  One can be queued but not yet
+delivered while the tracer detaches or dies, and then it gets delivered
+to the unsuspecting process without any debugger to intercept it.
+I plan to address that eventually, but there is no quick fix for it.
 
-I wish it were not so, there seems to be more effort going to explaining 
-results than improving them. That said, tuning the location of the f/s, 
-the stride, chunk size, etc, can improve things, and there are patches 
-available for test (linux-raid again) which will address some of this 
-fairly soon.
+In the non-signal (ptrace_notify) cases, we don't have the queuing issue.
+But it's still not as simple as checking current->ptrace to decide whether
+to follow current->exit_code or clear it.  When PTRACE_DETACH is called
+with a parting signal (nonzero data argument), the tracee will wake up to
+see current->ptrace = 0 and current->exit_code = signo and it is explicitly
+intended to act on signo rather than ignore it.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+The particular case you mentioned could be addressed by something like this:
+
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1654,6 +1654,9 @@ static void ptrace_stop(int exit_code, i
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	current->last_siginfo = NULL;
+ 
++	if (current->exit_code & ~0x7f)
++		current->exit_code = 0;
++
+ 	/*
+ 	 * Queued signals ignored us while we were stopped for tracing.
+ 	 * So check for any that we should take before resuming user mode.
+
+But that only catches the PTRACE_O_TRACESYSGOOD cases, and not bare SIGTRAP.
+To be clean, there is no way to distinguish a left-over SIGTRAP that ought
+to be ignored from an intentional SIGTRAP placed there by the debugger for
+the tracee to deliver.  (Granted passing SIGTRAP through after a syscall is
+rarely or never done.  But that doesn't make a special-case kludge right.)
+
+I do very much appreciate the concerns that motivated your change, and share
+them.  But you can see that this is a small part of a large can of worms.
+It has been this way for a long time.  I am working steadily towards new
+ways to clean up the entire picture.  In the meantime, I don't really favor
+any marginal changes like this that complicate the behavior with more
+special cases that address only a tiny corner of the whole set of problems.
+
+
+Thanks,
+Roland
