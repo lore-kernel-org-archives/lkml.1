@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYCYOQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYCYOT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYCYOQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 10:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYCYOQP
+	id S1754819AbYCYOT4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 10:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYCYOTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 10:16:15 -0400
-Received: from khc.piap.pl ([195.187.100.11]:51859 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753320AbYCYOQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 10:16:15 -0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       ebiederm@xmission.com, xemul@openvz.org, pavel@ucw.cz,
-       sds@tycho.nsa.gov, roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
-References: <20080323135110.GA294@tv-sign.ru>
-	<20080324152906.dee7b272.akpm@linux-foundation.org>
-	<20080324225611.GA157@tv-sign.ru>
-	<20080324160819.cea2d921.akpm@linux-foundation.org>
-	<87r6dzi0mw.fsf@basil.nowhere.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 25 Mar 2008 15:16:13 +0100
-In-Reply-To: <87r6dzi0mw.fsf@basil.nowhere.org> (Andi Kleen's message of "25 Mar 2008 11\:00\:39 +0100")
-Message-ID: <m3fxuedh3m.fsf@maximus.localdomain>
+	Tue, 25 Mar 2008 10:19:47 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44472 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752375AbYCYOTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 10:19:46 -0400
+Date: Tue, 25 Mar 2008 10:19:45 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] =?utf-8?q?=5BRFC=5D=5BPATCH=5D_PM=3A_Introduce_new_top?=
+ =?utf-8?q?_level_suspend=09and_hibernation_callbacks_=28rev=2E_2?=
+ =?utf-8?q?=29?=
+In-Reply-To: <200803251415.09088.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0803251011110.4838-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+On Tue, 25 Mar 2008, Oliver Neukum wrote:
 
-> It would be fine to allow this unconditionally if there was some mechanism
-> to make sure someone else takes over reaping childs while init is
-> ptraced.
+> Am Dienstag, 25. März 2008 14:06:15 schrieb Rafael J. Wysocki:
+> > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
+> 
+> > > A device that cannot wake up is unusable. Shouldn't the pm core disconnect()
+> > > such a device?
 
-Well, I think it isn't even necessary, unless you ptrace init for a
-long time. I would simply go with the simple 1-line patch.
+It's not safe for the PM core to do such things unilaterally.  The 
+decision to unregister a device should be made by the driver or the 
+subsystem.
 
-> I like the general idea -- i used to patch kernels to allow this too,
-> but it is dangerous.
+(The only problem is that it's impossible to unregister a device from 
+within its suspend or resume methods.  Perhaps there should be a way 
+for the driver to tell the PM core that the core should unregister the 
+device as soon as the method returns.  I don't know if such a facility 
+would get used...)
 
-Though root-only. Root doesn't want to be limited and knows better
-anyway. I think ptracing init is useful even when no one takes care
-of the dead (especially if you want to trace waits).
--- 
-Krzysztof Halasa
+> > Well, if ->resume() returns an error, the driver already knows there's a
+> > problem and it can act upon that, at least in principle.
+> 
+> Then why return an error? If a driver returns an error I would assume that
+> to indicate an irrecoverable error.
+
+The PM core prints a warning in the system log whenever an error is 
+returned.  There isn't much more it can do.
+
+> > However, the PM core probably shouldn't try to resume the children of a failing
+> > device.  Also, if ->resume_noirq() fails, it probably is not a good idea to
+> > call ->resume() and ->complete() for the same device and for it's children.
+> 
+> Exactly. But we need to define what happens in these cases. If we simply
+> ignore the errors, the drivers must be able to deal with IO to half suspended
+> devices.
+
+Just so -- it's up to the drivers to deal with this sort of thing.  The 
+PM core can't know the details of what should be done in each case.
+
+For example, if a USB hub can't be resumed then usbcore marks all of
+its descendants with USB_STATE_NOTATTACHED.  When the children's resume
+methods are called, they return without trying to do anything.  Later
+on khubd takes care of unregistering everything.
+
+Alan Stern
+
