@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYCYRhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbYCYRiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbYCYRhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 13:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYCYRhG
+	id S1757087AbYCYRiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 13:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYCYRiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 13:37:06 -0400
-Received: from rtr.ca ([76.10.145.34]:2704 "EHLO mail.rtr.ca"
+	Tue, 25 Mar 2008 13:38:16 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:42815 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756130AbYCYRhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 13:37:04 -0400
-Message-ID: <47E9383F.3050908@rtr.ca>
-Date: Tue, 25 Mar 2008 13:37:03 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Greg KH <gregkh@suse.de>, Jens Axboe <axboe@kernel.dk>,
-       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com>
-In-Reply-To: <47E90458.7030801@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752905AbYCYRiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 13:38:15 -0400
+Date: Tue, 25 Mar 2008 20:42:51 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       xemul@openvz.org, pavel@ucw.cz, sds@tycho.nsa.gov, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+Message-ID: <20080325174251.GA247@tv-sign.ru>
+References: <20080323135110.GA294@tv-sign.ru> <20080324152906.dee7b272.akpm@linux-foundation.org> <20080324225611.GA157@tv-sign.ru> <20080324160819.cea2d921.akpm@linux-foundation.org> <87r6dzi0mw.fsf@basil.nowhere.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87r6dzi0mw.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Mark Lord wrote:
->>
->> Yeah, that would be just as good, really.  Maybe even better.
->>
->> Mark Lord wrote (later on):
->>> Instead, software has to search everything inside /sys/block/
->>> looking for a "dev" file whose contents match,
->>> rather than just trying to access something like this:
->>>
->>>   /sys/block/8:1/start
->>> or
->>>   /sys/block/majors/8/minors/1/start
->>>
->>> Or any one of a number of similar ways to arrange it. 
->> ..
+On 03/25, Andi Kleen wrote:
+>
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> > 
+> > Why not just unconditionally enable root's abiltiy to ptrace init?
 > 
-> It shouldn't be under /sys/block... there are enough many things that 
-> scan /sys/block and assume any directory underneath it has the current 
-> format.
-..
+> It would be fine to allow this unconditionally if there was some mechanism
+> to make sure someone else takes over reaping childs while init is ptraced.
 
-So long as we only add things, and not remove them, then any software
-that scans /sys/block/ shouldn't care, really.
+I think we can't do this. From my /etc/inittab:
 
-But yes, it could go elsewhere, too.
-Perhaps a /sys/dev/ directory, populated with symbolic links
-(or hard links?) back to the /sys/block/ entries, something like this:
+	c1:1235:respawn:/sbin/agetty 38400 tty1 linux
 
-   /sys/dev/block/8:0 -> ../../../block/sda
-   /sys/dev/block/8:1 -> ../../../block/sda/sda1
-   /sys/dev/block/8:2 -> ../../../block/sda/sda2
-   ...
+If /sbin/agetty exits, we shouldn't reap it. /sbin/init should notice
+the death of login, and respawn the new child.
 
-That's just a suggestion, really.
-And what about character devices?
+Thanks to all for replies! I'll re-send this patch as one-liner, without
+any boot params or sysctls, and with long CC list.
 
-Perhaps Greg will chime in.
+I hope someone (not me) will make a final authoritative decision ;)
+
+Oleg.
+
