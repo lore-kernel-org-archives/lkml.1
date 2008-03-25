@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYCYLCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYCYLMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYCYLCl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 07:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYCYLCb
+	id S1754584AbYCYLMM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 07:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbYCYLL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 07:02:31 -0400
-Received: from mail.mev.co.uk ([62.49.15.74]:46237 "EHLO mail.mev.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772AbYCYLCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 07:02:30 -0400
-Message-ID: <47E8DBBE.4030607@mev.co.uk>
-Date: Tue, 25 Mar 2008 11:02:22 +0000
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080317)
+	Tue, 25 Mar 2008 07:11:58 -0400
+Received: from lazybastard.de ([212.112.238.170]:50717 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbYCYLL5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 07:11:57 -0400
+Date: Tue, 25 Mar 2008 12:11:29 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, jirislaby@gmail.com,
+       viro@ZenIV.linux.org.uk, joe@perches.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
+Message-ID: <20080325111129.GB11359@logfs.org>
+References: <20080323085210.GE10722@ZenIV.linux.org.uk> <20080323.032013.79276201.davem@davemloft.net> <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Corrections to Documentation/rbtree.txt
-References: <47E282F5.6090703@mev.co.uk> <200803201339.18618.rob@landley.net>
-In-Reply-To: <200803201339.18618.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Mar 2008 11:02:23.0303 (UTC) FILETIME=[B4048570:01C88E67]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080325104841.GA24211@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/03/08 18:39, Rob Landley wrote:
-> On Thursday 20 March 2008 10:29:57 Ian Abbott wrote:
->> From: Ian Abbott <abbotti@mev.co.uk>
->>
->> The description of the rb_entry() macro in Documentation/rbtree.txt seems
->> incorrect. This patch improves it (hopefully).  Also I changed the example
->> code to call the previous 'my_search()' example instead of an undefined
->> 'mysearch()'.
+On Tue, 25 March 2008 11:48:41 +0100, Ingo Molnar wrote:
 > 
-> I have no objection to the patch (and the my_search thing seems like an 
-> obvious typo), but is there a reason to prefer rb_entry() rather than 
-> container_of()?  If so, the rationale might be a good thing to add to the 
-> documentation...
+> So, in the specific example of the scheduler subsystem, i've only 
+> observed advantages to checkpatch and zero downsides. Could anyone give 
+> me _any_ objective reason why i shouldnt be using checkpatch for the 
+> scheduler? More broadly, could anyone give me an objective reason why we 
+> shouldnt be doing it for arch/x86? And even more broadly, could anyone 
+> give me an objective reason why we shouldnt be doing it for all actively 
+> maintained areas of the kernel?
 
-I don't know the rationale, but all the code I can see uses rb_entry() 
-and not container_of().  The only rationale I can think of is that it 
-abstracts away from the nodes being embedded in the data a little bit. 
-(But not by much - in particular, an implementation of rb trees that 
-stored data in the node explicitly would only need a single parameter in 
-its rb_entry() accessor.  I like the approach taken in 
-include/linux/elevator.h that uses the rb_entry() macro to create a 
-specialized accessor macro (rb_entry_rq()) with a single parameter.
+Disagreement between checkpatch and maintainers preferred style.  I've
+had a patch that fixed a bug and - while in the region - "cleaned up"
+the style for a single line.  This line no longer matches the rest of
+the file and creates the kind of visual distraction you complain about.
+
+In short, for a file with an active maintainer whatever the maintainer
+prefers should be done.  Doing a full checkpatch sweep against a
+maintainers wishes is madness, doing a partial "cleanup" is worse.
+Of course when a maintainer likes checkpatch, as you do, there is no
+disagreement to deal with. :)
+
+Jörn
 
 -- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
+I don't understand it. Nobody does.
+-- Richard P. Feynman
