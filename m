@@ -1,98 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbYCYQ2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbYCYQaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbYCYQ2Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 12:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbYCYQ2B
+	id S1758286AbYCYQaA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYCYQ3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 12:28:01 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40499 "EHLO mail.screens.ru"
+	Tue, 25 Mar 2008 12:29:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35819 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755823AbYCYQ2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 12:28:01 -0400
-Date: Tue, 25 Mar 2008 19:33:16 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Petr Tesarik <ptesarik@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] Discard notification signals when a tracer exits
-Message-ID: <20080325163316.GA176@tv-sign.ru>
-References: <1206455513.17227.4.camel@elijah.suse.cz> <20080325161606.GA93@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325161606.GA93@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	id S1756243AbYCYQ3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 12:29:51 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       tglx@linutronix.de, yhlu.kernel@gmail.com
+Subject: [PATCH 2/2] [PATCH] move apic declarations to mach_apic.h
+Date: Tue, 25 Mar 2008 13:28:57 -0300
+Message-Id: <1206462537-8427-3-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.2.2532.gdeda
+In-Reply-To: <1206462537-8427-2-git-send-email-gcosta@redhat.com>
+References: <20080325150630.GA13828@elte.hu>
+ <1206462537-8427-1-git-send-email-gcosta@redhat.com>
+ <1206462537-8427-2-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/25, Oleg Nesterov wrote:
->
-> This patch needs Roland's opinion. I can't really judge, but I
-> have some (perhaps wrong) doubts.
-> 
-> On 03/25, Petr Tesarik wrote:
-> >
-> > When a tracer exits without detaching from the traced process, the
-> > tracee may be at a tracer notification stop and will thus interpret
-> > the value in task->exit_code (SIGTRAP | 0x80) as the signal to be
-> > delivered.
-> > 
-> > This patch fixes the problem by clearing exit_code when detaching
-> > the traced process from a dying tracer.
-> > 
-> > Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-> > 
-> > ---
-> >  exit.c |    8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > --- a/kernel/exit.c
-> > +++ b/kernel/exit.c
-> > @@ -642,8 +642,10 @@ reparent_thread(struct task_struct *p, s
-> >  			/*
-> >  			 * If it was at a trace stop, turn it into
-> >  			 * a normal stop since it's no longer being
-> > -			 * traced.
-> > +			 * traced.  Cancel the notification signal,
-> > +			 * or the tracee may get a SIGTRAP.
-> >  			 */
-> > +			p->exit_code = 0;
-> >  			ptrace_untrace(p);
-> >  		}
-> >  	}
-> > @@ -713,6 +715,10 @@ static void forget_original_parent(struc
-> >  			p->real_parent = reaper;
-> >  			reparent_thread(p, father, 0);
-> >  		} else {
-> > +			/* cancel the notification signal at a trace stop */
-> > +			if (p->state == TASK_TRACED)
-> > +				p->exit_code = 0;
-> 
-> This reduce the likelihood that the tracee will be SIGTRAP'ed, but doesn't
-> solve the problem, no?
-> 
-> Suppose that the tracee does send_sigtrap(current) in do_syscall_trace()
-> and then ptracer exits. Or ptracer wakes up the TASK_TRACED tracee without
-> clearing its ->exit_code and then you kill(ptracer, SIGKILL).
-> 
-> If we really need this, _perhaps_ it is better to change do_syscall_trace(),
-> so that the tracee checks ->ptrace before sending the signal to itself.
-> 
-> 
-> But actually, I don't understand what is the problem. Ptracer has full control,
-> you should not kill it with SIGKILL, this may leave the child in some bad/
-> inconsistent change.
+take them out of the x86_64-specific asm/mach_apic.h
 
-Additional note. Suppose that the tracee dequeues the "good" signal, notices
-PT_PTRACED and calls ptrace_stop(). We set TASK_TRACED under ->siglock, without
-holding tasklist_lock. At this moment you kill strace, it clears ->exit_code.
-The tracee notices it is not traced any longer and returns to get_signal_to_deliver().
-Since ->exit_code is cleared, the "right" signal is lost.
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/apic_64.c                |    2 +-
+ arch/x86/kernel/cpu/amd.c                |    2 +-
+ arch/x86/kernel/io_apic_64.c             |    2 +-
+ arch/x86/kernel/setup_64.c               |    2 +-
+ include/asm-x86/mach-default/mach_apic.h |   80 ++++++++++++++++--------------
+ include/asm-x86/mach_apic.h              |   26 ----------
+ 6 files changed, 47 insertions(+), 67 deletions(-)
+ delete mode 100644 include/asm-x86/mach_apic.h
 
-So I think this patch adds a race. In some sense (yes I am biased) this is
-even worse than the problem this patch tries to solve, because this race
-is unlikely and is hard to trigger/debug, and it could be easily unnoticed.
-
-Oleg.
+diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+index 206278f..7dd6250 100644
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -34,7 +34,6 @@
+ #include <asm/mpspec.h>
+ #include <asm/hpet.h>
+ #include <asm/pgalloc.h>
+-#include <asm/mach_apic.h>
+ #include <asm/nmi.h>
+ #include <asm/idle.h>
+ #include <asm/proto.h>
+@@ -42,6 +41,7 @@
+ #include <asm/apic.h>
+ 
+ #include <mach_ipi.h>
++#include <mach_apic.h>
+ 
+ int disable_apic_timer __cpuinitdata;
+ static int apic_calibrate_pmtmr __initdata;
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 33d38f8..0173065 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -4,8 +4,8 @@
+ #include <asm/io.h>
+ #include <asm/processor.h>
+ #include <asm/apic.h>
+-#include <asm/mach_apic.h>
+ 
++#include <mach_apic.h>
+ #include "cpu.h"
+ 
+ /*
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index 7d5cdf3..6dd3362 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -43,7 +43,6 @@
+ #include <asm/smp.h>
+ #include <asm/desc.h>
+ #include <asm/proto.h>
+-#include <asm/mach_apic.h>
+ #include <asm/acpi.h>
+ #include <asm/dma.h>
+ #include <asm/nmi.h>
+@@ -51,6 +50,7 @@
+ #include <asm/hypertransport.h>
+ 
+ #include <mach_ipi.h>
++#include <mach_apic.h>
+ 
+ struct irq_cfg {
+ 	cpumask_t domain;
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 3f1dc97..08f9591 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -60,7 +60,6 @@
+ #include <asm/mmu_context.h>
+ #include <asm/proto.h>
+ #include <asm/setup.h>
+-#include <asm/mach_apic.h>
+ #include <asm/numa.h>
+ #include <asm/sections.h>
+ #include <asm/dmi.h>
+@@ -69,6 +68,7 @@
+ #include <asm/ds.h>
+ #include <asm/topology.h>
+ 
++#include <mach_apic.h>
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+ #else
+diff --git a/include/asm-x86/mach-default/mach_apic.h b/include/asm-x86/mach-default/mach_apic.h
+index 13900e8..3f49a3a 100644
+--- a/include/asm-x86/mach-default/mach_apic.h
++++ b/include/asm-x86/mach-default/mach_apic.h
+@@ -14,24 +14,25 @@ static inline cpumask_t target_cpus(void)
+ 	return cpumask_of_cpu(0);
+ #endif
+ } 
+-#define TARGET_CPUS (target_cpus())
+ 
+ #define NO_BALANCE_IRQ (0)
+ #define esr_disable (0)
+ 
++#ifdef CONFIG_X86_64
++#include <asm/genapic.h>
++#define INT_DELIVERY_MODE (genapic->int_delivery_mode)
++#define INT_DEST_MODE (genapic->int_dest_mode)
++#define TARGET_CPUS	  (genapic->target_cpus())
++#define apic_id_registered (genapic->apic_id_registered)
++#define init_apic_ldr (genapic->init_apic_ldr)
++#define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
++#define phys_pkg_id	(genapic->phys_pkg_id)
++#define vector_allocation_domain    (genapic->vector_allocation_domain)
++extern void setup_apic_routing(void);
++#else
+ #define INT_DELIVERY_MODE dest_LowestPrio
+ #define INT_DEST_MODE 1     /* logical delivery broadcast to all procs */
+-
+-static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
+-{
+-	return physid_isset(apicid, bitmap);
+-}
+-
+-static inline unsigned long check_apicid_present(int bit)
+-{
+-	return physid_isset(bit, phys_cpu_present_map);
+-}
+-
++#define TARGET_CPUS (target_cpus())
+ /*
+  * Set up the logical destination ID.
+  *
+@@ -49,32 +50,52 @@ static inline void init_apic_ldr(void)
+ 	apic_write_around(APIC_LDR, val);
+ }
+ 
+-static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
++static inline int apic_id_registered(void)
+ {
+-	return phys_map;
++	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
++}
++
++static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++{
++	return cpus_addr(cpumask)[0];
++}
++
++static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
++{
++	return cpuid_apic >> index_msb;
+ }
+ 
+-#ifdef CONFIG_X86_64
+-extern void setup_apic_routing(void);
+-#else
+ static inline void setup_apic_routing(void)
+ {
+ 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
+ 					"Flat", nr_ioapics);
+ }
+-#endif
+ 
+-static inline int multi_timer_check(int apic, int irq)
++static inline int apicid_to_node(int logical_apicid)
+ {
+ 	return 0;
+ }
++#endif
+ 
+-#ifdef CONFIG_X86_32
+-static inline int apicid_to_node(int logical_apicid)
++static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
++{
++	return physid_isset(apicid, bitmap);
++}
++
++static inline unsigned long check_apicid_present(int bit)
++{
++	return physid_isset(bit, phys_cpu_present_map);
++}
++
++static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
++{
++	return phys_map;
++}
++
++static inline int multi_timer_check(int apic, int irq)
+ {
+ 	return 0;
+ }
+-#endif
+ 
+ /* Mapping from cpu number to logical apicid */
+ static inline int cpu_to_logical_apicid(int cpu)
+@@ -109,23 +130,8 @@ static inline int check_phys_apicid_present(int boot_cpu_physical_apicid)
+ 	return physid_isset(boot_cpu_physical_apicid, phys_cpu_present_map);
+ }
+ 
+-static inline int apic_id_registered(void)
+-{
+-	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
+-}
+-
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
+-{
+-	return cpus_addr(cpumask)[0];
+-}
+-
+ static inline void enable_apic_mode(void)
+ {
+ }
+ 
+-static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
+-{
+-	return cpuid_apic >> index_msb;
+-}
+-
+ #endif /* __ASM_MACH_APIC_H */
+diff --git a/include/asm-x86/mach_apic.h b/include/asm-x86/mach_apic.h
+deleted file mode 100644
+index 1bc68c0..0000000
+--- a/include/asm-x86/mach_apic.h
++++ /dev/null
+@@ -1,26 +0,0 @@
+-#ifndef __ASM_MACH_APIC_H
+-#define __ASM_MACH_APIC_H
+-
+-/*
+- * Copyright 2004 James Cleverdon, IBM.
+- * Subject to the GNU Public License, v.2
+- *
+- * Generic APIC sub-arch defines.
+- *
+- * Hacked for x86-64 by James Cleverdon from i386 architecture code by
+- * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
+- * James Cleverdon.
+- */
+-
+-#include <asm/genapic.h>
+-
+-#define INT_DELIVERY_MODE (genapic->int_delivery_mode)
+-#define INT_DEST_MODE (genapic->int_dest_mode)
+-#define TARGET_CPUS	  (genapic->target_cpus())
+-#define vector_allocation_domain	(genapic->vector_allocation_domain)
+-#define apic_id_registered (genapic->apic_id_registered)
+-#define init_apic_ldr (genapic->init_apic_ldr)
+-#define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
+-#define phys_pkg_id	(genapic->phys_pkg_id)
+-
+-#endif /* __ASM_MACH_APIC_H */
+-- 
+1.5.0.6
 
