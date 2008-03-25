@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbYCYVqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbYCYVst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763136AbYCYVqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762085AbYCYVm5
+	id S1760732AbYCYVst (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbYCYVsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:42:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:37304 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762080AbYCYVm4 (ORCPT
+	Tue, 25 Mar 2008 17:48:41 -0400
+Received: from mailgw2-out.fraunhofer.de ([153.96.1.28]:63944 "EHLO
+	mailgw2-out.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753879AbYCYVsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:42:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z637Qo3Y01uI5IWmQJD0DPYnyLJF0XBxfqbaaOOl+1I0EQc60NTpn5Oe+FwG5d0sZRyrFG3wNqhawvuUzz6duIm1+Zmse2a5Wr4YK0qeoAzTU9SzahdSqEzPulNYubbzsHccJB2CvultiBeK0lXGl9s/7MVwpbEqzY61+fuqC20=
-Message-ID: <6101e8c40803251442j471a086ew774cfa7c4f15b3d0@mail.gmail.com>
-Date: Tue, 25 Mar 2008 22:42:55 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] list_add corruption in slab.c
-Cc: "Daniel Yeisley" <dan.yeisley@unisys.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, "Christoph Lameter" <clameter@sgi.com>, mel@csn.ul.ie
-In-Reply-To: <84144f020803251438j4896d587j917fece9421a1222@mail.gmail.com>
+	Tue, 25 Mar 2008 17:48:40 -0400
+X-Greylist: delayed 495 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Mar 2008 17:48:39 EDT
+Date: Tue, 25 Mar 2008 22:40:01 +0100
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: linux-kernel@vger.kernel.org, gjasny@googlemail.com
+Subject: Re: Burning CDs as user produces coasters (Plextor drive)
+Message-ID: <47e97131.1k52DAHmONbBI5xR%Joerg.Schilling@fokus.fraunhofer.de>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1206464258.13473.11.camel@localhost.localdomain>
-	 <84144f020803251145m6672e0acv16d27aaae1acb4d9@mail.gmail.com>
-	 <1206477858.8810.3.camel@localhost.localdomain>
-	 <47E96B0A.2010906@cs.helsinki.fi>
-	 <6101e8c40803251427t777b0afdlf9e49e36b193c729@mail.gmail.com>
-	 <84144f020803251438j4896d587j917fece9421a1222@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 25 Mar 2008 21:40:01.0395 (UTC) FILETIME=[C79E1430:01C88EC0]
+X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks for the fast answer
 
-On 3/25/08, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Hi Oliver,
->
-> On Tue, Mar 25, 2008 at 11:27 PM, Oliver Pinter <oliver.pntr@gmail.com>
-> wrote:
-> >  this patch for 2.6.22?
->
-> No. It fixes the following commit which is not in nor is it required for
-> 2.6.22:
->
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=556a169dab38b5100df6f4a45b655dddd3db94c1
->
+>since some time burning ISO CD images as user fails.
+>Wodim stops during OPC and the kernel prints some messages:
 
+>scsi: unknown opcode 0xe9
+>scsi: unknown opcode 0xed
+>scsi: unknown opcode 0xf5
+>scsi: unknown opcode 0xeb
+
+>If I burn as root, everything works fine. The used CD writer is a
+>"PLEXTOR  DVDR   PX-712A   1.09". I've seen in the wodim/cdrecord
+>sources that plextor drives are handled different from other drives.
+
+One of the known bugs in "wodium" is that it tries to keep you missinformed
+about the fact that you need root privileges in order to write CDs on Linux.
+
+The official cdrecord does not have this problem, it informs you early about
+missing root privileges.
+
+I recommend you to get a recent original from:
+
+ftp://ftp.berlios.de/pub/cdrecord/alpha/
+
+compile it and install it suid root. Readcd and cdda2wav also need root 
+privileges in order to work.
+
+BTW: at the Linuxtage in Chemnitz, I got a hint from Chris Friedhoff that 
+recent linux kernel seem to include a method that could help to avoid root 
+privileges. He told me that he is going to provide a patch for cdrtools
+and I am waiting on his next reply....
+
+Jörg
 
 -- 
-Thanks,
-Oliver
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
