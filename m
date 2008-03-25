@@ -1,92 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbYCYVZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbYCYV1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbYCYVZQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYCYVY7
+	id S1759371AbYCYV1a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbYCYV1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:24:59 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37775 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbYCYVY6 (ORCPT
+	Tue, 25 Mar 2008 17:27:23 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:39994 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbYCYV1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:24:58 -0400
-Date: Tue, 25 Mar 2008 23:24:55 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: David Miller <davem@davemloft.net>
-cc: fhimpe@telenet.be, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH net-2.6] [TCP]: Must count fack_count also when skipping
-In-Reply-To: <20080324.144107.235200795.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0803250942450.14461@kivilampi-30.cs.helsinki.fi>
-References: <Pine.LNX.4.64.0803031525390.27064@kivilampi-30.cs.helsinki.fi>
- <Pine.LNX.4.64.0803031541230.28251@kivilampi-30.cs.helsinki.fi>
- <pan.2008.03.24.20.36.07@telenet.be> <20080324.144107.235200795.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-488788762-1206431468=:14461"
-Content-ID: <Pine.LNX.4.64.0803252310560.6132@kivilampi-30.cs.helsinki.fi>
+	Tue, 25 Mar 2008 17:27:22 -0400
+From: York Sun <yorksun@freescale.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       a.p.zijlstra@chello.nl
+Subject: V3 Patch - Driver for Freescale 8610 and 5121 DIU
+Date: Tue, 25 Mar 2008 16:27:16 -0500
+Message-Id: <120648043867-git-send-email-yorksun@freescale.com>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696243703-488788762-1206431468=:14461
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0803252302351.6132@kivilampi-30.cs.helsinki.fi>
+The following two patches are the 3rd version of the DIU patch for Freescale 8610 and 5121.
+It fixed the issues according to the feedback from Andrew Morton.
 
-On Mon, 24 Mar 2008, David Miller wrote:
+Andrew, incremental patches are available if requested.
 
-> From: Frederik Himpe <fhimpe@telenet.be>
-> Date: Mon, 24 Mar 2008 20:36:08 +0000 (UTC)
-> 
-> > On Mon, 03 Mar 2008 15:53:12 +0200, Ilpo Järvinen
-> > wrote:
-> > 
-> > > [PATCH net-2.6] [TCP]: Must count fack_count also when skipping
-> > > 
-> > > It makes fackets_out to grow too slowly compared with the real write
-> > > queue.
-> > > 
-> > > This shouldn't cause those BUG_TRAP(packets <= tp->packets_out) to
-> > > trigger but how knows how such inconsistent fackets_out affects here and
-> > > there around TCP when everything is nowadays assuming accurate
-> > > fackets_out. So lets see if this silences them all.
-> > > 
-> > > Reported by Guillaume Chazarain <guichaz@gmail.com>.
-> > 
-> > Will this patch be applied to 2.6.24 stable? I think I have been hit by 
-> > the same problem recently:
-> 
-> I'll push it to the -stable folks for their next release
-> since people are actively hitting it.
+Regards,
 
-Please don't, it's not the right fix, it fixed a bug that was
-introduced post 2.6.24 by this commit:
-
-commit 68f8353b480e5f2e136c38a511abdbb88eaa8ce2
-Author: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-Date:   Thu Nov 15 19:50:37 2007 -0800
-
-    [TCP]: Rewrite SACK block processing & sack_recv_cache use
-
-
-There's something else wrong with the 2.6.24.y. I already knew that and 
-was therefore planning next to run extensive set of tests on 2.6.24ish 
-kernel with some torrent mixed with some netem stimuli but haven't yet had 
-time for that as I had to find and resolve an hw incompatibility issues 
-between ddr2s and mobo before being a week away. I'll post an 2.6.24.y 
-adapted TCP debug patch once I get that done for my tests (in case 
-somebody else is interested in running with it besides me).
-
-Btw, it would have been polite to cc me as well (I suppose you just didn't 
-notice that somebody dropped me in between :-)), not a big prob though as 
-I found it out early anyway because I'm trying to catch up what has been 
-reported against TCP during my week away.
-
-
--- 
- i.
----696243703-488788762-1206431468=:14461--
+York
