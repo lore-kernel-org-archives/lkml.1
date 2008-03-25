@@ -1,359 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYCYCVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYCYCVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYCYCVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbYCYCUA
+	id S1757164AbYCYCVl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYCYCUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 22:20:00 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:48392 "EHLO relay.sgi.com"
+	Mon, 24 Mar 2008 22:20:01 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:50315 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752834AbYCYCT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753110AbYCYCT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 24 Mar 2008 22:19:56 -0400
-Message-Id: <20080325021955.531803000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325021956.492502000@polaris-admin.engr.sgi.com>
 References: <20080325021954.979158000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 24 Mar 2008 19:19:57 -0700
+Date: Mon, 24 Mar 2008 19:20:04 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: [PATCH 03/10] cpufreq: change cpu freq arrays to per_cpu variables
-Content-Disposition: inline; filename=nr_cpus-in-cpufreq-cpu_alloc
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 10/10] sched: Remove fixed NR_CPUS sized arrays in kernel_sched.c
+Content-Disposition: inline; filename=nr_cpus-in-kernel_sched
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change cpufreq_policy and cpufreq_governor pointer tables
-from arrays to per_cpu variables in the cpufreq subsystem.
+Change fixed size arrays to per_cpu variables or dynamically allocated
+arrays in sched_init() and sched_init_smp().
 
-Also some minor complaints from checkpatch.pl fixed.
+ (1)	static struct sched_entity *init_sched_entity_p[NR_CPUS];
+ (1)	static struct cfs_rq *init_cfs_rq_p[NR_CPUS];
+ (1)	static struct sched_rt_entity *init_sched_rt_entity_p[NR_CPUS];
+ (1)	static struct rt_rq *init_rt_rq_p[NR_CPUS];
+	static struct sched_group **sched_group_nodes_bycpu[NR_CPUS];
+	char str[NR_CPUS];
+	int ints[NR_CPUS], i;
+
+(1 - these arrays are allocated via alloc_bootmem_low())
+
+Also in sched_create_group() we allocate new arrays based on nr_cpu_ids.
 
 Based on linux-2.6.25-rc5-mm1
 
-Cc: Dave Jones <davej@codemonkey.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- drivers/cpufreq/cpufreq.c       |   45 +++++++++++++++++++++-------------------
- drivers/cpufreq/cpufreq_stats.c |   24 ++++++++++-----------
- drivers/cpufreq/freq_table.c    |   12 +++++-----
- 3 files changed, 42 insertions(+), 39 deletions(-)
+ kernel/sched.c |   92 +++++++++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 63 insertions(+), 29 deletions(-)
 
---- linux-2.6.25-rc5.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.25-rc5/drivers/cpufreq/cpufreq.c
-@@ -38,10 +38,10 @@
-  * also protects the cpufreq_cpu_data array.
+--- linux-2.6.25-rc5.orig/kernel/sched.c
++++ linux-2.6.25-rc5/kernel/sched.c
+@@ -67,6 +67,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/hrtimer.h>
+ #include <linux/tick.h>
++#include <linux/bootmem.h>
+ 
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+@@ -194,17 +195,11 @@ struct task_group {
+ static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+ /* Default task group's cfs_rq on each cpu */
+ static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
+-
+-static struct sched_entity *init_sched_entity_p[NR_CPUS];
+-static struct cfs_rq *init_cfs_rq_p[NR_CPUS];
+ #endif
+ 
+ #ifdef CONFIG_RT_GROUP_SCHED
+ static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
+-
+-static struct sched_rt_entity *init_sched_rt_entity_p[NR_CPUS];
+-static struct rt_rq *init_rt_rq_p[NR_CPUS];
+ #endif
+ 
+ /* task_group_lock serializes add/remove of task groups and also changes to
+@@ -228,17 +223,7 @@ static int init_task_group_load = INIT_T
+ /* Default task group.
+  *	Every task in system belong to this group at bootup.
   */
- static struct cpufreq_driver *cpufreq_driver;
--static struct cpufreq_policy *cpufreq_cpu_data[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- #ifdef CONFIG_HOTPLUG_CPU
- /* This one keeps track of the previously set governor of a removed CPU */
--static struct cpufreq_governor *cpufreq_cpu_governor[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_governor *, cpufreq_cpu_governor);
- #endif
- static DEFINE_SPINLOCK(cpufreq_driver_lock);
+-struct task_group init_task_group = {
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-	.se	= init_sched_entity_p,
+-	.cfs_rq = init_cfs_rq_p,
+-#endif
+-
+-#ifdef CONFIG_RT_GROUP_SCHED
+-	.rt_se	= init_sched_rt_entity_p,
+-	.rt_rq	= init_rt_rq_p,
+-#endif
+-};
++struct task_group init_task_group;
  
-@@ -135,7 +135,7 @@ struct cpufreq_policy *cpufreq_cpu_get(u
- 	struct cpufreq_policy *data;
- 	unsigned long flags;
+ /* return group to which a task belongs */
+ static inline struct task_group *task_group(struct task_struct *p)
+@@ -3587,7 +3572,7 @@ static inline void trigger_load_balance(
+ 			 */
+ 			int ilb = first_cpu(nohz.cpu_mask);
  
--	if (cpu >= NR_CPUS)
-+	if (cpu >= nr_cpu_ids)
- 		goto err_out;
- 
- 	/* get the cpufreq driver */
-@@ -149,7 +149,7 @@ struct cpufreq_policy *cpufreq_cpu_get(u
- 
- 
- 	/* get the CPU */
--	data = cpufreq_cpu_data[cpu];
-+	data = per_cpu(cpufreq_cpu_data, cpu);
- 
- 	if (!data)
- 		goto err_out_put_module;
-@@ -327,7 +327,7 @@ void cpufreq_notify_transition(struct cp
- 	dprintk("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
- 
--	policy = cpufreq_cpu_data[freqs->cpu];
-+	policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
- 	switch (state) {
- 
- 	case CPUFREQ_PRECHANGE:
-@@ -809,8 +809,8 @@ static int cpufreq_add_dev(struct sys_de
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
--	if (cpufreq_cpu_governor[cpu]){
--		policy->governor = cpufreq_cpu_governor[cpu];
-+	if (per_cpu(cpufreq_cpu_governor, cpu)) {
-+		policy->governor = per_cpu(cpufreq_cpu_governor, cpu);
- 		dprintk("Restoring governor %s for cpu %d\n",
- 		       policy->governor->name, cpu);
- 	}
-@@ -835,7 +835,7 @@ static int cpufreq_add_dev(struct sys_de
- 
- 			spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 			managed_policy->cpus = policy->cpus;
--			cpufreq_cpu_data[cpu] = managed_policy;
-+			per_cpu(cpufreq_cpu_data, cpu) = managed_policy;
- 			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 			dprintk("CPU already managed, adding link\n");
-@@ -880,7 +880,7 @@ static int cpufreq_add_dev(struct sys_de
- 
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu_mask(j, policy->cpus) {
--		cpufreq_cpu_data[j] = policy;
-+		per_cpu(cpufreq_cpu_data, j) = policy;
- 		per_cpu(policy_cpu, j) = policy->cpu;
- 	}
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-@@ -927,7 +927,7 @@ static int cpufreq_add_dev(struct sys_de
- err_out_unregister:
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu_mask(j, policy->cpus)
--		cpufreq_cpu_data[j] = NULL;
-+		per_cpu(cpufreq_cpu_data, j) = NULL;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	kobject_put(&policy->kobj);
-@@ -970,7 +970,7 @@ static int __cpufreq_remove_dev(struct s
- 	dprintk("unregistering CPU %u\n", cpu);
- 
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--	data = cpufreq_cpu_data[cpu];
-+	data = per_cpu(cpufreq_cpu_data, cpu);
- 
- 	if (!data) {
- 		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-@@ -978,7 +978,7 @@ static int __cpufreq_remove_dev(struct s
- 		unlock_policy_rwsem_write(cpu);
- 		return -EINVAL;
- 	}
--	cpufreq_cpu_data[cpu] = NULL;
-+	per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 
- 
- #ifdef CONFIG_SMP
-@@ -1000,19 +1000,19 @@ static int __cpufreq_remove_dev(struct s
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
--	cpufreq_cpu_governor[cpu] = data->governor;
-+	per_cpu(cpufreq_cpu_governor, cpu) = data->governor;
- #endif
- 
- 	/* if we have other CPUs still registered, we need to unlink them,
- 	 * or else wait_for_completion below will lock up. Clean the
--	 * cpufreq_cpu_data[] while holding the lock, and remove the sysfs
--	 * links afterwards.
-+	 * per_cpu(cpufreq_cpu_data) while holding the lock, and remove
-+	 * the sysfs links afterwards.
- 	 */
- 	if (unlikely(cpus_weight(data->cpus) > 1)) {
- 		for_each_cpu_mask(j, data->cpus) {
- 			if (j == cpu)
- 				continue;
--			cpufreq_cpu_data[j] = NULL;
-+			per_cpu(cpufreq_cpu_data, j) = NULL;
+-			if (ilb != NR_CPUS)
++			if (ilb < nr_cpu_ids)
+ 				resched_cpu(ilb);
  		}
  	}
+@@ -5544,11 +5529,11 @@ static void move_task_off_dead_cpu(int d
+ 		dest_cpu = any_online_cpu(mask);
  
-@@ -1024,7 +1024,7 @@ static int __cpufreq_remove_dev(struct s
- 				continue;
- 			dprintk("removing link for cpu %u\n", j);
- #ifdef CONFIG_HOTPLUG_CPU
--			cpufreq_cpu_governor[j] = data->governor;
-+			per_cpu(cpufreq_cpu_governor, j) = data->governor;
- #endif
- 			cpu_sys_dev = get_cpu_sysdev(j);
- 			sysfs_remove_link(&cpu_sys_dev->kobj, "cpufreq");
-@@ -1134,7 +1134,7 @@ EXPORT_SYMBOL(cpufreq_quick_get);
+ 		/* On any allowed CPU? */
+-		if (dest_cpu == NR_CPUS)
++		if (dest_cpu >= nr_cpu_ids)
+ 			dest_cpu = any_online_cpu(p->cpus_allowed);
  
- static unsigned int __cpufreq_get(unsigned int cpu)
+ 		/* No more Mr. Nice Guy. */
+-		if (dest_cpu == NR_CPUS) {
++		if (dest_cpu >= nr_cpu_ids) {
+ 			cpumask_t cpus_allowed = cpuset_cpus_allowed_locked(p);
+ 			/*
+ 			 * Try to stay on the same cpuset, where the
+@@ -6001,9 +5986,16 @@ static int sched_domain_debug_one(struct
  {
--	struct cpufreq_policy *policy = cpufreq_cpu_data[cpu];
-+	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
- 	unsigned int ret_freq = 0;
+ 	struct sched_group *group = sd->groups;
+ 	cpumask_t groupmask;
+-	char str[NR_CPUS];
++	int len = cpumask_scnprintf_len(nr_cpu_ids);
++	char *str = kmalloc(len, GFP_KERNEL);
++	int ret = 0;
++
++	if (!str) {
++		printk(KERN_DEBUG "Cannot load-balance (no memory)\n");
++		return -1;
++	}
  
- 	if (!cpufreq_driver->get)
-@@ -1803,16 +1803,19 @@ int cpufreq_register_driver(struct cpufr
- 	cpufreq_driver = driver_data;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-	cpumask_scnprintf(str, NR_CPUS, sd->span);
++	cpumask_scnprintf(str, len, sd->span);
+ 	cpus_clear(groupmask);
  
--	ret = sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
-+	ret = sysdev_driver_register(&cpu_sysdev_class,
-+					&cpufreq_sysdev_driver);
- 
- 	if ((!ret) && !(cpufreq_driver->flags & CPUFREQ_STICKY)) {
- 		int i;
- 		ret = -ENODEV;
- 
- 		/* check for at least one working CPU */
--		for (i=0; i<NR_CPUS; i++)
--			if (cpufreq_cpu_data[i])
-+		for (i = 0; i < nr_cpu_ids; i++)
-+			if (cpu_possible(i) && per_cpu(cpufreq_cpu_data, i)) {
- 				ret = 0;
-+				break;
-+			}
- 
- 		/* if all ->init() calls failed, unregister */
- 		if (ret) {
---- linux-2.6.25-rc5.orig/drivers/cpufreq/cpufreq_stats.c
-+++ linux-2.6.25-rc5/drivers/cpufreq/cpufreq_stats.c
-@@ -43,7 +43,7 @@ struct cpufreq_stats {
- #endif
- };
- 
--static struct cpufreq_stats *cpufreq_stats_table[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_stats *, cpufreq_stats_table);
- 
- struct cpufreq_stats_attribute {
- 	struct attribute attr;
-@@ -58,7 +58,7 @@ cpufreq_stats_update (unsigned int cpu)
- 
- 	cur_time = get_jiffies_64();
- 	spin_lock(&cpufreq_stats_lock);
--	stat = cpufreq_stats_table[cpu];
-+	stat = per_cpu(cpufreq_stats_table, cpu);
- 	if (stat->time_in_state)
- 		stat->time_in_state[stat->last_index] =
- 			cputime64_add(stat->time_in_state[stat->last_index],
-@@ -71,11 +71,11 @@ cpufreq_stats_update (unsigned int cpu)
- static ssize_t
- show_total_trans(struct cpufreq_policy *policy, char *buf)
- {
--	struct cpufreq_stats *stat = cpufreq_stats_table[policy->cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
- 	return sprintf(buf, "%d\n",
--			cpufreq_stats_table[stat->cpu]->total_trans);
-+			per_cpu(cpufreq_stats_table, stat->cpu)->total_trans);
- }
- 
- static ssize_t
-@@ -83,7 +83,7 @@ show_time_in_state(struct cpufreq_policy
- {
- 	ssize_t len = 0;
- 	int i;
--	struct cpufreq_stats *stat = cpufreq_stats_table[policy->cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
- 	cpufreq_stats_update(stat->cpu);
-@@ -101,7 +101,7 @@ show_trans_table(struct cpufreq_policy *
- 	ssize_t len = 0;
- 	int i, j;
- 
--	struct cpufreq_stats *stat = cpufreq_stats_table[policy->cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
- 	if (!stat)
- 		return 0;
- 	cpufreq_stats_update(stat->cpu);
-@@ -170,7 +170,7 @@ freq_table_get_index(struct cpufreq_stat
- 
- static void cpufreq_stats_free_table(unsigned int cpu)
- {
--	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 	if (policy && policy->cpu == cpu)
- 		sysfs_remove_group(&policy->kobj, &stats_attr_group);
-@@ -178,7 +178,7 @@ static void cpufreq_stats_free_table(uns
- 		kfree(stat->time_in_state);
- 		kfree(stat);
+ 	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
+@@ -6013,6 +6005,7 @@ static int sched_domain_debug_one(struct
+ 		if (sd->parent)
+ 			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
+ 					" has parent");
++		kfree(str);
+ 		return -1;
  	}
--	cpufreq_stats_table[cpu] = NULL;
-+	per_cpu(cpufreq_stats_table, cpu) = NULL;
- 	if (policy)
- 		cpufreq_cpu_put(policy);
- }
-@@ -192,7 +192,7 @@ cpufreq_stats_create_table (struct cpufr
- 	struct cpufreq_policy *data;
- 	unsigned int alloc_size;
- 	unsigned int cpu = policy->cpu;
--	if (cpufreq_stats_table[cpu])
-+	if (per_cpu(cpufreq_stats_table, cpu))
- 		return -EBUSY;
- 	if ((stat = kzalloc(sizeof(struct cpufreq_stats), GFP_KERNEL)) == NULL)
- 		return -ENOMEM;
-@@ -207,7 +207,7 @@ cpufreq_stats_create_table (struct cpufr
- 		goto error_out;
  
- 	stat->cpu = cpu;
--	cpufreq_stats_table[cpu] = stat;
-+	per_cpu(cpufreq_stats_table, cpu) = stat;
+@@ -6056,7 +6049,7 @@ static int sched_domain_debug_one(struct
  
- 	for (i=0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
- 		unsigned int freq = table[i].frequency;
-@@ -251,7 +251,7 @@ error_out:
- 	cpufreq_cpu_put(data);
- error_get_fail:
- 	kfree(stat);
--	cpufreq_stats_table[cpu] = NULL;
-+	per_cpu(cpufreq_stats_table, cpu) = NULL;
- 	return ret;
+ 		cpus_or(groupmask, groupmask, group->cpumask);
+ 
+-		cpumask_scnprintf(str, NR_CPUS, group->cpumask);
++		cpumask_scnprintf(str, len, group->cpumask);
+ 		printk(KERN_CONT " %s", str);
+ 
+ 		group = group->next;
+@@ -6069,6 +6062,8 @@ static int sched_domain_debug_one(struct
+ 	if (sd->parent && !cpus_subset(groupmask, sd->parent->span))
+ 		printk(KERN_ERR "ERROR: parent span is not a superset "
+ 			"of domain->span\n");
++
++	kfree(str);
+ 	return 0;
  }
  
-@@ -284,7 +284,7 @@ cpufreq_stat_notifier_trans (struct noti
- 	if (val != CPUFREQ_POSTCHANGE)
- 		return 0;
- 
--	stat = cpufreq_stats_table[freq->cpu];
-+	stat = per_cpu(cpufreq_stats_table, freq->cpu);
- 	if (!stat)
- 		return 0;
- 
---- linux-2.6.25-rc5.orig/drivers/cpufreq/freq_table.c
-+++ linux-2.6.25-rc5/drivers/cpufreq/freq_table.c
-@@ -169,7 +169,7 @@ int cpufreq_frequency_table_target(struc
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
- 
--static struct cpufreq_frequency_table *show_table[NR_CPUS];
-+static DEFINE_PER_CPU(struct cpufreq_frequency_table *, show_table);
- /**
-  * show_available_freqs - show available frequencies for the specified CPU
+@@ -6250,7 +6245,7 @@ cpu_attach_domain(struct sched_domain *s
+ /*
+  * init_sched_build_groups takes the cpumask we wish to span, and a pointer
+  * to a function which identifies what group(along with sched group) a CPU
+- * belongs to. The return value of group_fn must be a >= 0 and < NR_CPUS
++ * belongs to. The return value of group_fn must be a >= 0 and < nr_cpu_ids
+  * (due to the fact that we keep track of groups covered with a cpumask_t).
+  *
+  * init_sched_build_groups will build a circular linked list of the groups
+@@ -6448,7 +6443,7 @@ cpu_to_phys_group(int cpu, const cpumask
+  * gets dynamically allocated.
   */
-@@ -180,10 +180,10 @@ static ssize_t show_available_freqs (str
- 	ssize_t count = 0;
- 	struct cpufreq_frequency_table *table;
+ static DEFINE_PER_CPU(struct sched_domain, node_domains);
+-static struct sched_group **sched_group_nodes_bycpu[NR_CPUS];
++static struct sched_group ***sched_group_nodes_bycpu;
  
--	if (!show_table[cpu])
-+	if (!per_cpu(show_table, cpu))
- 		return -ENODEV;
- 
--	table = show_table[cpu];
-+	table = per_cpu(show_table, cpu);
- 
- 	for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
-@@ -212,20 +212,20 @@ void cpufreq_frequency_table_get_attr(st
- 				      unsigned int cpu)
+ static DEFINE_PER_CPU(struct sched_domain, allnodes_domains);
+ static DEFINE_PER_CPU(struct sched_group, sched_group_allnodes);
+@@ -7086,6 +7081,11 @@ void __init sched_init_smp(void)
  {
- 	dprintk("setting show_table for cpu %u to %p\n", cpu, table);
--	show_table[cpu] = table;
-+	per_cpu(show_table, cpu) = table;
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_attr);
+ 	cpumask_t non_isolated_cpus;
  
- void cpufreq_frequency_table_put_attr(unsigned int cpu)
++#if defined(CONFIG_NUMA)
++	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
++								GFP_KERNEL);
++	BUG_ON(sched_group_nodes_bycpu == NULL);
++#endif
+ 	get_online_cpus();
+ 	arch_init_sched_domains(&cpu_online_map);
+ 	non_isolated_cpus = cpu_possible_map;
+@@ -7103,6 +7103,11 @@ void __init sched_init_smp(void)
+ #else
+ void __init sched_init_smp(void)
  {
- 	dprintk("clearing show_table for cpu %u\n", cpu);
--	show_table[cpu] = NULL;
-+	per_cpu(show_table, cpu) = NULL;
++#if defined(CONFIG_NUMA)
++	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
++								GFP_KERNEL);
++	BUG_ON(sched_group_nodes_bycpu == NULL);
++#endif
+ 	sched_init_granularity();
  }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
+ #endif /* CONFIG_SMP */
+@@ -7196,6 +7201,35 @@ static void init_tg_rt_entry(struct rq *
+ void __init sched_init(void)
+ {
+ 	int i, j;
++	unsigned long alloc_size = 0, ptr;
++
++#ifdef CONFIG_FAIR_GROUP_SCHED
++	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
++#endif
++#ifdef CONFIG_RT_GROUP_SCHED
++	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
++#endif
++	/*
++	 * As sched_init() is called before page_alloc is setup,
++	 * we use alloc_bootmem().
++	 */
++	if (alloc_size) {
++		ptr = (unsigned long)alloc_bootmem_low(alloc_size);
++
++#ifdef CONFIG_FAIR_GROUP_SCHED
++		init_task_group.se = (struct sched_entity **)ptr;
++		ptr += nr_cpu_ids * sizeof(void **);
++
++		init_task_group.cfs_rq = (struct cfs_rq **)ptr;
++		ptr += nr_cpu_ids * sizeof(void **);
++#endif
++#ifdef CONFIG_RT_GROUP_SCHED
++		init_task_group.rt_se = (struct sched_rt_entity **)ptr;
++		ptr += nr_cpu_ids * sizeof(void **);
++
++		init_task_group.rt_rq = (struct rt_rq **)ptr;
++#endif
++	}
  
- struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
- {
--	return show_table[cpu];
-+	return per_cpu(show_table, cpu);
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
+ #ifdef CONFIG_SMP
+ 	init_defrootdomain();
+@@ -7442,10 +7476,10 @@ static int alloc_fair_sched_group(struct
+ 	struct rq *rq;
+ 	int i;
+ 
+-	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * NR_CPUS, GFP_KERNEL);
++	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * nr_cpu_ids, GFP_KERNEL);
+ 	if (!tg->cfs_rq)
+ 		goto err;
+-	tg->se = kzalloc(sizeof(se) * NR_CPUS, GFP_KERNEL);
++	tg->se = kzalloc(sizeof(se) * nr_cpu_ids, GFP_KERNEL);
+ 	if (!tg->se)
+ 		goto err;
+ 
+@@ -7525,10 +7559,10 @@ static int alloc_rt_sched_group(struct t
+ 	struct rq *rq;
+ 	int i;
+ 
+-	tg->rt_rq = kzalloc(sizeof(rt_rq) * NR_CPUS, GFP_KERNEL);
++	tg->rt_rq = kzalloc(sizeof(rt_rq) * nr_cpu_ids, GFP_KERNEL);
+ 	if (!tg->rt_rq)
+ 		goto err;
+-	tg->rt_se = kzalloc(sizeof(rt_se) * NR_CPUS, GFP_KERNEL);
++	tg->rt_se = kzalloc(sizeof(rt_se) * nr_cpu_ids, GFP_KERNEL);
+ 	if (!tg->rt_se)
+ 		goto err;
  
 
 -- 
