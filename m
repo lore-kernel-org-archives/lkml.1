@@ -1,56 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761231AbYCYXXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYCYX1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761231AbYCYXXX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbYCYXXG
+	id S1759017AbYCYX1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYCYX1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:23:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34549 "EHLO mx2.suse.de"
+	Tue, 25 Mar 2008 19:27:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39091 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756043AbYCYXXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:23:05 -0400
-Date: Tue, 25 Mar 2008 16:22:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Message-ID: <20080325232252.GA25338@suse.de>
-References: <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com> <47E96263.9000808@zytor.com> <20080325212032.GA24495@suse.de> <47E96E15.7020105@zytor.com> <20080325230009.GA25062@suse.de> <47E9853C.1030506@zytor.com>
+	id S1750937AbYCYX1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:27:34 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Michael Meyer <mike65134@yahoo.de>
+Subject: Re: performance differences: "maxcpus=1" vs. "echo 0 > /sys/devices/system/cpu/cpu1/online"
+Date: Tue, 25 Mar 2008 19:27:14 -0400
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+References: <57127.43039.qm@web25812.mail.ukl.yahoo.com>
+In-Reply-To: <57127.43039.qm@web25812.mail.ukl.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47E9853C.1030506@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200803251927.14211.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 04:05:32PM -0700, H. Peter Anvin wrote:
->> How does this have anything to do with boot times?  Do you really have a
->> foolish shell script that iteratorates over every single disk in the
->> sysfs tree for every disk?  What does it do that for?
->
-> Any time you want to get the sysfs information for a filesystem which is 
-> already mounted, that's what you're forced to do.
->
->> I thought we were talking about 2TB disks here, with a proposed new
->> ioctl, not foolishness of boot scripts...
->
-> I pointed out that having a way to map device numbers to sysfs directories 
-> would have the same effect, *and* would be usable for other purposes.  I'd 
-> rather see that than a new ioctl, and another, and another...
+On Tuesday 25 March 2008, Michael Meyer wrote:
+> 
+> --- Andi Kleen <andi@firstfloor.org> schrieb:
+> 
+> > Luciano Rocha <luciano@eurotux.com> writes:
+> > 
+> > > On Tue, Mar 25, 2008 at 02:47:50PM +0100, Michael
+> > Meyer wrote:
+> > > > Hi, 
+> > > > 
+> > > > what is the difference between booting a dual
+> > core
+> > > > machine with "maxcpus=1" or by deactivating the
+> > second
+> > > > core at run time with "echo 0 >
+> > > > /sys/devices/system/cpu/cpu1/online"?
+> > > 
+> > > maxcpus=1 should turn off the SMP alternative and
+> > switch to UP only,
+> > > optimising some locks and instructions.
+> > 
+> > CPU hot unplug will do the same. But it is unlikely
+> > it accounts
+> > for that much performance difference.
+> > 
+> > If he used maxcpus=0 it would make sense. maxcpus=0
+> > disables
+> > the IO-APIC which likely makes a large difference.
+> > But it should
+> > be actually slower.
+> > 
+> > There should be actually no difference in theory
+> > between max_cpus=1
+> > and hot unplug to one CPU. Might be some bug.
+> 
+> I had the following time values:
+> 
+> maxcpus=1:
+> real	0m1.642s
+> user	0m1.528s
+> sys	0m0.068s
+> 
+> maxcpus=2 and 
+> echo 1 > /sys/devices/system/cpu/cpu1/online:
+> real	0m2.579s
+> user	0m4.096s
+> sys	0m0.160s
 
-Again, a simple udev rule will give you that today if you really want
-it...
+this above is the baseline, yes?
+it is same as if you used no boot param
+and did not touch the online file, yes?
 
-And I think 'udevinfo' can be used to retrieve this information as well.
+> maxcpus=2 and
+> echo 0 > /sys/devices/system/cpu/cpu1/online:
+> real	0m3.757s
+> user	0m3.632s
+> sys	0m0.112s
 
-thanks,
+Please post the contents of 
+# grep . /sys/devices/system/cpu/cpu*/cpufreq/*
+and also
+grep . /proc/acpi/processor/*/power
 
-greg k-h
+My guess that the maxcpus=1 case benefits from turbo mode, aka EIDA.
+That benefit, however, is subject to this bug:
+http://bugzilla.kernel.org/show_bug.cgi?id=5471
+because for a single thread to run faster than the marketing MHz,
+the other thread must be in deep-idle, which is prevented
+by the bug above.
+
+If your scaling_available_frequencies includes 2401000
+then you probably have a turbo-mode enabled processor.
+
+one way to verify this would be to disable turbo mode
+by pegging the MHz like so:
+
+# echo 2400000 > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
+# echo 2400000 > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_max_freq
+
+-Len
