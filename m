@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYCYUfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYCYUii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758303AbYCYUfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 16:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbYCYUfe
+	id S1757665AbYCYUii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 16:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYCYUi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 16:35:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34632 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbYCYUfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 16:35:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
-Date: Tue, 25 Mar 2008 21:35:02 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0803251044590.4838-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803251044590.4838-100000@iolanthe.rowland.org>
+	Tue, 25 Mar 2008 16:38:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49061 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbYCYUi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 16:38:26 -0400
+Message-ID: <47E96263.9000808@zytor.com>
+Date: Tue, 25 Mar 2008 13:36:51 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Greg KH <gregkh@suse.de>, Mark Lord <lkml@rtr.ca>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+References: <47E875AD.1000901@rtr.ca>	<47E87942.2020409@rtr.ca>	<47E88A13.70808@zytor.com>	<47E90019.3050006@rtr.ca>	<47E90458.7030801@zytor.com>	<47E9383F.3050908@rtr.ca>	<20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com>
+In-Reply-To: <20080325123454.4eba7644.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803252135.04247.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 of March 2008, Alan Stern wrote:
-> On Mon, 24 Mar 2008, Rafael J. Wysocki wrote:
+Randy Dunlap wrote:
+>>
+>> Come on people, adding symlinks for device major:minor numbers in sysfs
+>> to save a few 10s of lines of userspace code?  Can things get sillier?
+>>
+>> You can add a single udev rule to probably build these in a tree in /dev
+>> if you really need such a thing...
+>>
+>> And what's wrong with your new ioctl recomendation?
 > 
-> > > Can we also have a DPM_PREPARING state, set when ->prepare() is about
-> > > to be called?  The PM core wouldn't make use of it but some drivers
-> > > would.  (I can't think of any use at all for the analogous
-> > > DPM_COMPLETING state, however.)
-> > 
-> > Hmm.  dev->power.status is protected by dpm_list_mtx.  Do you think it would be
-> > useful to have an accessor function for reading it under the lock?
+> Ah, there's some sanity.  :)
 > 
-> I don't think so.  What I have in mind is situations where there 
-> accessed has already been synchronized by other means, while the 
-> prepare() method is running.  For example:
-> 
-> 	Task 0				Task 1
-> 	------				------
-> 	->prepare() is called
-> 	Waits for currently-running
-> 	  registration in task 1
-> 	  to finish
-> 	Does other stuff
-> 					Receives a request to register
-> 					  a new child under dev
-> 					Sees that dev->power.state is
-> 					  still DPM_ON, so goes ahead
-> 					  with the child's registration
-> 	->prepare() returns
-> 	dev->power.state is set to
-> 	  DPM_SUSPENDING
-> 					device_pm_add() checks
-> 					  dev->power.state and fails
-> 					  the registration
-> 
-> If dev->power.state had been set to DPM_PREPARING before ->prepare() 
-> was called, then task 1 would have avoided trying to register the 
-> child.
-> 
-> > > > +			dev->power.status = DPM_RESUMING;
-> > > > +			get_device(dev);
-> > > > +			mutex_unlock(&dpm_list_mtx);
-> > > > +
-> > > > +			resume_device(dev, state);
-> > > > +
-> > > > +			mutex_lock(&dpm_list_mtx);
-> > > > +			put_device(dev);
-> > > > +		}
-> > > > +		if (!list_empty(&dev->power.entry))
-> > > > +			list_move_tail(&dev->power.entry, &list);
-> > > 
-> > > A little problem here: You refer to dev after calling put_device().
-> > 
-> > The device can't be removed at this point, because we hold dpm_list_mtx, which
-> > is needed by device_del().
-> 
-> True, it can't be removed at this point.  But it _can_ be removed
-> between the calls to resume_device() and mutex_lock().
-> 
-> > > >  	}
-> > > > -	if (!error)
-> > > > -		all_sleeping = true;
-> > > > +	list_splice(&list, &dpm_list);
-> > > 
-> > > Instead you could eliminate the list_splice_init() above and put here:
-> > > 
-> > > 	list_splice(&list, dpm_list->prev);
-> > > 
-> > > This will move the entries from list to the end of dpm_list.
-> > 
-> > dpm_list may be empty at this point.  Wouldn't that cause any trouble?
-> 
-> It will still work correctly.  If dpm_list is empty then dpm_list->prev
-> is equal to &dpm_list, so it will do the same thing as your current
-> code does.
-> 
-> 
-> I just thought of another problem.  At the point where
-> local_irq_disable() is called, in between device_suspend() and
-> device_power_down(), it is possible in a preemptible kernel that
-> another task is holding dpm_list_mtx and is in the middle of updating
-> the list pointers.  This would mess up the traversal in
-> device_power_down().
-> 
-> I'm not sure about the best way to prevent this.  Is it legal to call
-> unlock_mutex() while interrupts or preemption are disabled?
 
-Well, I think it is, but I'm not sure how that can help.
+It's not so much an issue of a few tens of lines of user space code, but 
+rather the fact that something that should be O(1) is currently O(n).
 
-To prevent the race from happening, we can lock dpm_list_mtx before switching
-interrupts off in kernel/power/main.c:suspend_enter() and analogously in
-kernel/power/disk.c .
-
-Thanks,
-Rafael
+	-hpa
