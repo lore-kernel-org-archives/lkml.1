@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYCYLpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbYCYLqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYCYLpE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 07:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYCYLow
+	id S1754934AbYCYLqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 07:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbYCYLp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 07:44:52 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:36347 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbYCYLow (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 07:44:52 -0400
-Message-ID: <47E8E4F3.6090604@linux.vnet.ibm.com>
-Date: Tue, 25 Mar 2008 17:11:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][-mm] Memory controller add mm->owner
-References: <20080324140142.28786.97267.sendpatchset@localhost.localdomain> <6599ad830803240803s5160101bi2bf68b36085f777f@mail.gmail.com> <47E7D51E.4050304@linux.vnet.ibm.com> <6599ad830803240934g2a70d904m1ca5548f8644c906@mail.gmail.com> <47E7E5D0.9020904@linux.vnet.ibm.com> <6599ad830803241046l61e2965t52fd28e165d5df7a@mail.gmail.com>
-In-Reply-To: <6599ad830803241046l61e2965t52fd28e165d5df7a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 07:45:58 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55107 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753527AbYCYLp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 07:45:57 -0400
+To: neilb@suse.de, miklos@szeredi.hu
+Cc: viro@ZenIV.linux.org.uk, haveblue@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@infradead.org,
+       linux-security-module@vger.kernel.org, jmorris@namei.org
+Subject: Re: r-o bind in nfsd
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20080321155451.GU10722@ZenIV.linux.org.uk>
+	<E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu>
+	<20080321163520.GV10722@ZenIV.linux.org.uk>
+	<E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu>
+	<18408.26863.617591.836548@notabene.brown>
+In-Reply-To: <18408.26863.617591.836548@notabene.brown>
+Message-Id: <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Tue, 25 Mar 2008 20:45:53 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Mar 24, 2008 at 10:33 AM, Balbir Singh
-> <balbir@linux.vnet.ibm.com> wrote:
->>  > OK, so we don't need to handle this for NPTL apps - but for anything
->>  > still using LinuxThreads or manually constructed clone() calls that
->>  > use CLONE_VM without CLONE_PID, this could still be an issue.
->>
->>  CLONE_PID?? Do you mean CLONE_THREAD?
-> 
-> Yes, sorry - CLONE_THREAD.
-> 
->>  For the case you mentioned, mm->owner is a moving target and we don't want to
->>  spend time finding the successor, that can be expensive when threads start
->>  exiting one-by-one quickly and when the number of threads are high. I wonder if
->>  there is an efficient way to find mm->owner in that case.
->>
-> 
-> But:
-> 
-> - running a high-threadcount LinuxThreads process is by definition
-> inefficient and expensive (hence the move to NPTL)
-> 
-> - any potential performance hit is only paid at exit time
-> 
-> - in the normal case, any of your children or one of your siblings
-> will be a suitable alternate owner
-> 
-> - in the worst case, it's not going to be worse than doing a
-> for_each_thread() loop
-> 
-> so I don't think this would be a major problem
-> 
+Hello.
 
-I've been looking at zap_threads, I suspect we'll end up implementing a similar
-loop, which makes me very uncomfortable. Adding code for the least possible
-scenario. It will not get invoked for CLONE_THREAD, but will get invoked for the
-case when CLONE_VM is set without CLONE_THREAD.
+> Maybe some enhancement to the 'intent' structure with a similar
+> effect could be done instead.
+> 
+> Then you could, presumably, put a security hook somewhere in
+> link_path_walk for those modules (like AppArmor) which want to do
+> checks based on the namespace.
 
-I'll try and experiment a bit more and see what I come up with
+I think link_path_walk() is not a good place to insert new LSM hooks
+for pathname based access control (AppArmor and TOMOYO) purpose because
 
+  (1) The kernel don't know what operation (open/create/truncate etc.) will be
+      done at the moment of link_path_walk().
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+  (2) Not all operations call link_path_walk() before these operations
+      are done. For example, ftruncate() doesn't call link_path_walk().
+
+  (3) The rename() and link() operations handle two pathnames.
+      But, it is not possible to know both pathnames at the moment of
+      link_path_walk().
+
+I think we need to introduce new LSM hooks outside link_path_walk().
+http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024
