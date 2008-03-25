@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760216AbYCYU5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbYCYVCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760216AbYCYU5i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 16:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760098AbYCYU53
+	id S1758348AbYCYVCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYCYVCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 16:57:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47572 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756923AbYCYU52 (ORCPT
+	Tue, 25 Mar 2008 17:02:38 -0400
+Received: from www17.your-server.de ([213.133.104.17]:44607 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751180AbYCYVCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 16:57:28 -0400
-Message-ID: <47E96709.9060904@zytor.com>
-Date: Tue, 25 Mar 2008 13:56:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 25 Mar 2008 17:02:38 -0400
+Message-ID: <47E96850.3010209@m3y3r.de>
+Date: Tue, 25 Mar 2008 22:02:08 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080310)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-CC: "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: gcc-4.3 considers unaligned accesses on X86 as undefined
-References: <47E965BD.7010604@gmail.com>
-In-Reply-To: <47E965BD.7010604@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+ regressions from 2.6.24)
+References: <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu>
+In-Reply-To: <20080325201125.GD15330@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Török Edwin wrote:
-> Hello x86 architecture maintainers,
-> 
-> GCC-4.3 now considers that it is undefined behaviour to access memory
-> through an int*  that is not aligned to sizeof(int).
-> At -O3 it generates vectorized code that  _relies_  on the fact that
-> pointers are always aligned (unless you use packed attributes, etc.),
-> and the resulting code crashes if the pointer is unaligned.  (-O3 -msse
-> on 32-bit, and simply -O3 on 64-bit since -msse is default)
-> See this gcc bugreport: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=35653
-> [I do not really agree with this sudden change, because unaligned
-> accesses have always been possible on x86, but the C99 standard does say
-> it is undefined behaviour ...]
-> 
-> I thought to inform you of this change in gcc's behaviour, because
-> include/asm-x86/unaligned.h is no longer safe in the above context,
-> especially that it is being used in a loop:
-> http://lxr.linux.no/linux/net/bluetooth/bnep/core.c#L153
-> 
-> P.S.: I only compile my kernels with -O2, so I don't know if it actually
-> crashes or not at -O3.
-> 
+Ingo Molnar schrieb:
+> * Thomas Meyer <thomas@m3y3r.de> wrote:
+>
+>   
+>> The kernel boots, but hangs at "populating dev tree with devices 
+>> usings uevents". After removing both firewire drivers (ohci1394 and 
+>> firewire_ohci) the system comes up correctly.
+>>
+>> See attached file.
+>>
+>> Modprobing either ohci1394 or firewire_ohci seems to lock up the 
+>> system.
+>>     
+>
+> that's weird. If you do the modprobe from a VGA console and do a 'dmesg 
+> -n 8', do you get any ioremap printk shortly before the hard lockup
+All i get is:
 
-Generating vectorized code in the kernel is death anyway, so I don't 
-think the change in alignment is an issue.  We CANNOT ALLOW vectorized 
-code in the kernel under any circumstances (well, except when surrounded 
-by the appropriate protection constructs.)
+[ 1175.600768] ACPI: PCI Interrupt 0000:0c:03.0[A] -> GSI 19 (level, 
+low) -> IRQ 19
 
-	-hpa
+no ioremap debug offset.
+
+
