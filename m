@@ -1,90 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbYCYV6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbYCYV7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760137AbYCYV6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYCYV6E
+	id S1760711AbYCYV7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYCYV7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:58:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40827 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbYCYV6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:58:03 -0400
-Message-ID: <47E97566.5020003@redhat.com>
-Date: Tue, 25 Mar 2008 17:57:58 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: "J.C. Pizarro" <jcpiza@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Why /proc/cpuinfo doesn't print L1,L2,L3 caches?
-References: <998d0e4a0803251439u4bf09fb1ye568fc1970b0200f@mail.gmail.com>
-In-Reply-To: <998d0e4a0803251439u4bf09fb1ye568fc1970b0200f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 25 Mar 2008 17:59:13 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48453 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752899AbYCYV7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 17:59:12 -0400
+Date: Tue, 25 Mar 2008 23:59:08 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: mel@csn.ul.ie, olaf@aepfle.de, clameter@sgi.com, dan.yeisley@unisys.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
+Message-ID: <Pine.LNX.4.64.0803252357330.4422@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.C. Pizarro wrote:
-> $ cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : AuthenticAMD
-> cpu family      : 15
-> model           : 47
-> model name      : AMD Athlon(tm) 64 Processor 3200+
-> ...
-> cache size      : 512 KB
-> ...
-> 
-> The cache size is currently misinformed. It's not the real size because
-> it's 64+64+512 KiB = 640 KiB, not 512 KB.
-> 
-> How can i know what hw-caches use the processors?
-> The current kernel doesn't know well what hw-caches uses.
-> 
-> The good proposal is by example (the data below are not real):
-> * In old AMD Athlon64:
-> 
-> cache L1        : 64 KiB I + 64 KiB D, 64 B line, direct way, ...
-> cache L2        : 512 KiB I+D-shared, exclusive, 128 associative way, ...
-> cache L3        : none
-> 
-> * In Intel Core Duo:
-> processor       : 0
-> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-> cache L2        : 2048 KiB Cores-shared, inclusive, 128 associative way, ...
-> cache L3        : none
-> 
-> processor       : 1
-> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-> cache L2        : 2048 KiB cores-shared, inclusive, 128 associative way, ...
-> cache L3        : none
-> 
-> * In Quad:
-> processor       : 0
-> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-> cache L2        : 2048+2048 KiB pair-cores-shared, inclusive, 128
-> associative way, ...
-> cache L3        : none
-> ...
-> processor       : 3
-> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-> cache L2        : 2048+2048 KiB pair-cores-shared, inclusive, 128
-> associative way, ...
-> cache L3        : none
-> 
-> It above is an example, put your symbols to /proc/cpuinfo in a
-> convenient manner.
-> 
->    Good bye ;)
+From: Daniel Yeisley <dan.yeisley@unisys.com>
 
-I think you want this:
+Commit 556a169dab38b5100df6f4a45b655dddd3db94c1 ("slab: fix bootstrap on
+memoryless node") introduced bootstrap-time cache_cache list3s for all nodes
+but forgot that initkmem_list3 needs to be accessed by [somevalue + node]. This
+patch fixes list_add() corruption in mm/slab.c seen on the ES7000.
 
-/sys/devices/system/cpu/cpu0/cache
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Olaf Hering <olaf@aepfle.de>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Andrew/Christoph, this needs to go into 2.6.25 and probably 2.6.24.x as 
+well. Hopefully either Mel or Olaf can test this on their machines to 
+confirm the fix doesn't break their setup.
 
-/proc/cpuinfo is intended to give a general summary of certain properties of the 
-processor that tend to be particularly interesting, and present them all in one 
-place.  It is not intended to expose everything the kernel knows about every 
-processor on the system.
+ mm/slab.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
--- Chris
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -1481,7 +1481,7 @@ void __init kmem_cache_init(void)
+ 	list_add(&cache_cache.next, &cache_chain);
+ 	cache_cache.colour_off = cache_line_size();
+ 	cache_cache.array[smp_processor_id()] = &initarray_cache.cache;
+-	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE];
++	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE + node];
+ 
+ 	/*
+ 	 * struct kmem_cache size depends on nr_node_ids, which
+@@ -1602,7 +1602,7 @@ void __init kmem_cache_init(void)
+ 		int nid;
+ 
+ 		for_each_online_node(nid) {
+-			init_list(&cache_cache, &initkmem_list3[CACHE_CACHE], nid);
++			init_list(&cache_cache, &initkmem_list3[CACHE_CACHE + nid], nid);
+ 
+ 			init_list(malloc_sizes[INDEX_AC].cs_cachep,
+ 				  &initkmem_list3[SIZE_AC + nid], nid);
