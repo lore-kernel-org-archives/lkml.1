@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbYCYXCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbYCYXEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759927AbYCYXCe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYCYXCQ
+	id S1758395AbYCYXEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbYCYXEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:02:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40947 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757954AbYCYXCP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:02:15 -0400
-Message-ID: <47E9843A.1060702@zytor.com>
-Date: Tue, 25 Mar 2008 16:01:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 25 Mar 2008 19:04:37 -0400
+Received: from mail.suse.de ([195.135.220.2]:35303 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754527AbYCYXEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:04:36 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "Dean Nelson" <dcn@sgi.com>, <jes@sgi.com>, <linux-kernel@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>
+Subject: Re: [Patch 0/5] prepare XPC and XPNET to support SGI UV
+References: <20080325192524.343385569@attica.americas.sgi.com>
+	<20080325201423.GB4446@sgi.com>
+	<1FE6DD409037234FAB833C420AA843ECE9E1AB@orsmsx424.amr.corp.intel.com>
+X-Yow: My DIGITAL WATCH has an automatic SNOOZE FEATURE!!
+Date: Wed, 26 Mar 2008 00:04:34 +0100
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9E1AB@orsmsx424.amr.corp.intel.com>
+	(Tony Luck's message of "Tue\, 25 Mar 2008 15\:49\:46 -0700")
+Message-ID: <jeve3aiewt.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
-References: <200803242324.35357.yhlu.kernel@gmail.com> <47E9003B.5010002@zytor.com> <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com> <20080325190851.GC30998@linux-os.sc.intel.com> <20080325200830.GB15330@elte.hu> <47E962AE.9040307@zytor.com>
-In-Reply-To: <47E962AE.9040307@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Ingo Molnar wrote:
->> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
->>
->>>>>  OK, note previous question: what is the motivation for having 
->>>>>  this as a whitelist (as opposed to a blacklist)?
->>>> Venkatesh could tell?
->>> Main reason for white-list at this point is not to be side-tracked by 
->>> real or potential erratas on older CPUs. Focussing on getting the 
->>> support for this feature on current and future CPUs. If older CPUs 
->>> have survived all these days without this feature, they should be 
->>> doing OK.
->>
->> well, the upside would be that since most testing of Linux kernels is 
->> done on _old_ hardware (people tend to risk their old hw first ;-), 
->> we'd get faster convergence of the codebase, even though we have the 
->> risk of erratas (known and unknown ones alike). Code that artificially 
->> limits its utility is almost always slow to stabilize.
->>
-> 
-> Yes, using a whitelist of this type is wrong, IMO, and smells faintly of 
-> vendor-lockin.
-> 
+"Luck, Tony" <tony.luck@intel.com> writes:
 
-By the way, I want to clarify: I didn't mean it was *intended* as 
-vendor-lockin, just that it's an undesirable effect of this.
+> I think git has an option to produce its own brand of diff output
+> that lists the renames without doing a full remove & add which is
+> needed for patch(1) comprehensibility.  A few minutes staring at
+> git documentation hasn't revealed what that option is though :-(
 
-	-hpa
+$ git diff -M
+
+or "git config --global diff.renames true" to make it permanent.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
