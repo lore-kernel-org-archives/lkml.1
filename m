@@ -1,249 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbYCYWJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761781AbYCYWKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761700AbYCYWJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759858AbYCYWG7
+	id S1761781AbYCYWKM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760021AbYCYWG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 25 Mar 2008 18:06:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47887 "EHLO
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47893 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757486AbYCYWGw (ORCPT
+	with ESMTP id S1757676AbYCYWGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:06:52 -0400
-Message-Id: <20080325220651.683748000@polaris-admin.engr.sgi.com>
+	Tue, 25 Mar 2008 18:06:53 -0400
+Message-Id: <20080325220651.146336000@polaris-admin.engr.sgi.com>
 References: <20080325220650.835342000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 15:06:56 -0700
+Date: Tue, 25 Mar 2008 15:06:52 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>
-Subject: [PATCH 06/10] x86: reduce memory and stack usage in intel_cacheinfo
-Content-Disposition: inline; filename=nr_cpus-in-intel_cacheinfo
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "William L. Irwin" <wli@holomorphy.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 02/10] init: move setup of nr_cpu_ids to as early as possible v2
+Content-Disposition: inline; filename=setup-nr_cpu_ids
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Change the following static arrays sized by NR_CPUS to
-  per_cpu data variables:
-
-	_cpuid4_info *cpuid4_info[NR_CPUS];
-	_index_kobject *index_kobject[NR_CPUS];
-	kobject * cache_kobject[NR_CPUS];
-
-* Remove the local NR_CPUS array with a kmalloc'd region in
-  show_shared_cpu_map().
-
-Also some minor complaints from checkpatch.pl fixed.
+Move the setting of nr_cpu_ids from sched_init() to setup_per_cpu_areas(),
+so that it's available as early as possible.
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
+# ia64
+Cc: Tony Luck <tony.luck@intel.com>
+
+# powerpc
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+
+# sparc
+Cc: David S. Miller <davem@davemloft.net>
+Cc: William L. Irwin <wli@holomorphy.com>
+
+# x86
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Andi Kleen <ak@suse.de>
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   70 +++++++++++++++++++---------------
- 1 file changed, 40 insertions(+), 30 deletions(-)
 
---- linux.trees.git.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ linux.trees.git/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -129,7 +129,7 @@ struct _cpuid4_info {
- 	union _cpuid4_leaf_ebx ebx;
- 	union _cpuid4_leaf_ecx ecx;
- 	unsigned long size;
--	cpumask_t shared_cpu_map;
-+	cpumask_t shared_cpu_map;	/* future?: only cpus/node is needed */
- };
+Moved from the zero-based percpu variables patchset and redone to be
+integrated with setup_per_cpu_areas instead of being called before
+that function.  This had to be done because some arch's call
+prefill_possible_map() from setup_per_cpu_areas() which may increase
+the number of possible cpus.
+
+v2: rebased on linux-2.6.git + linux-2.6-x86.git
+---
+
+ arch/ia64/kernel/acpi.c        |    4 ++++
+ arch/ia64/kernel/setup.c       |    7 +++++++
+ arch/powerpc/kernel/setup_64.c |    5 ++++-
+ arch/sparc64/mm/init.c         |   10 +++++++++-
+ arch/x86/kernel/setup.c        |   10 +++++++---
+ init/main.c                    |   15 ++++++++++++---
+ kernel/sched.c                 |    7 -------
+ 7 files changed, 43 insertions(+), 15 deletions(-)
+
+--- linux.trees.git.orig/arch/ia64/kernel/acpi.c
++++ linux.trees.git/arch/ia64/kernel/acpi.c
+@@ -831,6 +831,10 @@ __init void prefill_possible_map(void)
  
- unsigned short			num_cache_leaves;
-@@ -451,8 +451,8 @@ unsigned int __cpuinit init_intel_cachei
+ 	for (i = 0; i < possible; i++)
+ 		cpu_set(i, cpu_possible_map);
++
++#ifdef CONFIG_SMP
++	nr_cpu_ids = possible;
++#endif
  }
  
- /* pointer to _cpuid4_info array (for each cache leaf) */
--static struct _cpuid4_info *cpuid4_info[NR_CPUS];
--#define CPUID4_INFO_IDX(x,y)    (&((cpuid4_info[x])[y]))
-+static DEFINE_PER_CPU(struct _cpuid4_info *, cpuid4_info);
-+#define CPUID4_INFO_IDX(x, y)    (&((per_cpu(cpuid4_info, x))[y]))
+ int acpi_map_lsapic(acpi_handle handle, int *pcpu)
+--- linux.trees.git.orig/arch/ia64/kernel/setup.c
++++ linux.trees.git/arch/ia64/kernel/setup.c
+@@ -765,6 +765,13 @@ setup_per_cpu_areas (void)
+ 	/* start_kernel() requires this... */
+ #ifdef CONFIG_ACPI_HOTPLUG_CPU
+ 	prefill_possible_map();
++#elif defined(CONFIG_SMP)
++	int cpu, highest_cpu = 0;
++
++	for_each_possible_cpu(cpu)
++		highest_cpu = cpu;
++
++	nr_cpu_ids = highest_cpu + 1;
+ #endif
+ }
+ 
+--- linux.trees.git.orig/arch/powerpc/kernel/setup_64.c
++++ linux.trees.git/arch/powerpc/kernel/setup_64.c
+@@ -576,7 +576,7 @@ void cpu_die(void)
+ #ifdef CONFIG_SMP
+ void __init setup_per_cpu_areas(void)
+ {
+-	int i;
++	int i, highest_cpu = 0;
+ 	unsigned long size;
+ 	char *ptr;
+ 
+@@ -594,7 +594,10 @@ void __init setup_per_cpu_areas(void)
+ 
+ 		paca[i].data_offset = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++		if (i > highest_cpu)
++			highest_cpu = i;
+ 	}
++	nr_cpu_ids = highest_cpu + 1;
+ 
+ 	/* Now that per_cpu is setup, initialize cpu_sibling_map */
+ 	smp_setup_cpu_sibling_map();
+--- linux.trees.git.orig/arch/sparc64/mm/init.c
++++ linux.trees.git/arch/sparc64/mm/init.c
+@@ -1292,10 +1292,18 @@ pgd_t swapper_pg_dir[2048];
+ static void sun4u_pgprot_init(void);
+ static void sun4v_pgprot_init(void);
+ 
+-/* Dummy function */
++#ifdef CONFIG_SMP
++/* set nr_cpu_ids */
+ void __init setup_per_cpu_areas(void)
+ {
++	int cpu, highest_cpu = 0;
++
++	for_each_possible_cpu(cpu)
++		highest_cpu = cpu;
++
++	nr_cpu_ids = highest_cpu + 1;
+ }
++#endif
+ 
+ void __init paging_init(void)
+ {
+--- linux.trees.git.orig/arch/x86/kernel/setup.c
++++ linux.trees.git/arch/x86/kernel/setup.c
+@@ -54,7 +54,7 @@ EXPORT_SYMBOL(__per_cpu_offset);
+  */
+ void __init setup_per_cpu_areas(void)
+ {
+-	int i;
++	int i, highest_cpu = 0;
+ 	unsigned long size;
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -80,15 +80,19 @@ void __init setup_per_cpu_areas(void)
+ 		else
+ 			ptr = alloc_bootmem_pages_node(NODE_DATA(node), size);
+ #endif
+-		if (!ptr)
+-			panic("Cannot allocate cpu data for CPU %d\n", i);
++
+ #ifdef CONFIG_X86_64
+ 		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
+ #else
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
+ #endif
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++
++		if (i > highest_cpu)
++			highest_cpu = i;
+ 	}
++	nr_cpu_ids = highest_cpu + 1;
++	printk(KERN_DEBUG "NR_CPUS:%d (nr_cpu_ids:%d)\n", NR_CPUS, nr_cpu_ids);
+ 
+ 	/* Setup percpu data maps */
+ 	setup_per_cpu_maps();
+--- linux.trees.git.orig/init/main.c
++++ linux.trees.git/init/main.c
+@@ -364,16 +364,20 @@ static inline void smp_prepare_cpus(unsi
+ 
+ #else
+ 
++int nr_cpu_ids __read_mostly = NR_CPUS;
++EXPORT_SYMBOL(nr_cpu_ids);
++
+ #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+-
+ EXPORT_SYMBOL(__per_cpu_offset);
+ 
++/* nr_cpu_ids is set as a side effect */
+ static void __init setup_per_cpu_areas(void)
+ {
+-	unsigned long size, i;
+-	char *ptr;
++	unsigned long size;
++	int i, highest_cpu = 0;
+ 	unsigned long nr_possible_cpus = num_possible_cpus();
++	char *ptr;
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
+@@ -383,7 +387,12 @@ static void __init setup_per_cpu_areas(v
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
+ 		ptr += size;
++		if (i > highest_cpu)
++			highest_cpu = i;
+ 	}
++
++	nr_cpu_ids = highest_cpu + 1;
++	printk(KERN_DEBUG "NR_CPUS:%d (nr_cpu_ids:%d)\n", NR_CPUS, nr_cpu_ids);
+ }
+ #endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
+ 
+--- linux.trees.git.orig/kernel/sched.c
++++ linux.trees.git/kernel/sched.c
+@@ -5923,10 +5923,6 @@ void __init migration_init(void)
  
  #ifdef CONFIG_SMP
- static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
-@@ -474,7 +474,7 @@ static void __cpuinit cache_shared_cpu_m
- 			if (cpu_data(i).apicid >> index_msb ==
- 			    c->apicid >> index_msb) {
- 				cpu_set(i, this_leaf->shared_cpu_map);
--				if (i != cpu && cpuid4_info[i])  {
-+				if (i != cpu && per_cpu(cpuid4_info, i))  {
- 					sibling_leaf = CPUID4_INFO_IDX(i, index);
- 					cpu_set(cpu, sibling_leaf->shared_cpu_map);
- 				}
-@@ -505,8 +505,8 @@ static void __cpuinit free_cache_attribu
- 	for (i = 0; i < num_cache_leaves; i++)
- 		cache_remove_shared_cpu_map(cpu, i);
  
--	kfree(cpuid4_info[cpu]);
--	cpuid4_info[cpu] = NULL;
-+	kfree(per_cpu(cpuid4_info, cpu));
-+	per_cpu(cpuid4_info, cpu) = NULL;
- }
+-/* Number of possible processor ids */
+-int nr_cpu_ids __read_mostly = NR_CPUS;
+-EXPORT_SYMBOL(nr_cpu_ids);
+-
+ #ifdef CONFIG_SCHED_DEBUG
  
- static int __cpuinit detect_cache_attributes(unsigned int cpu)
-@@ -519,9 +519,9 @@ static int __cpuinit detect_cache_attrib
- 	if (num_cache_leaves == 0)
- 		return -ENOENT;
+ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level)
+@@ -7152,7 +7148,6 @@ static void init_tg_rt_entry(struct rq *
  
--	cpuid4_info[cpu] = kzalloc(
-+	per_cpu(cpuid4_info, cpu) = kzalloc(
- 	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
--	if (cpuid4_info[cpu] == NULL)
-+	if (per_cpu(cpuid4_info, cpu) == NULL)
- 		return -ENOMEM;
+ void __init sched_init(void)
+ {
+-	int highest_cpu = 0;
+ 	int i, j;
  
- 	oldmask = current->cpus_allowed;
-@@ -546,8 +546,8 @@ static int __cpuinit detect_cache_attrib
- 
- out:
- 	if (retval) {
--		kfree(cpuid4_info[cpu]);
--		cpuid4_info[cpu] = NULL;
-+		kfree(per_cpu(cpuid4_info, cpu));
-+		per_cpu(cpuid4_info, cpu) = NULL;
+ #ifdef CONFIG_SMP
+@@ -7207,7 +7202,6 @@ void __init sched_init(void)
+ #endif
+ 		init_rq_hrtick(rq);
+ 		atomic_set(&rq->nr_iowait, 0);
+-		highest_cpu = i;
  	}
  
- 	return retval;
-@@ -561,7 +561,7 @@ out:
- extern struct sysdev_class cpu_sysdev_class; /* from drivers/base/cpu.c */
+ 	set_load_weight(&init_task);
+@@ -7217,7 +7211,6 @@ void __init sched_init(void)
+ #endif
  
- /* pointer to kobject for cpuX/cache */
--static struct kobject * cache_kobject[NR_CPUS];
-+static DEFINE_PER_CPU(struct kobject *, cache_kobject);
- 
- struct _index_kobject {
- 	struct kobject kobj;
-@@ -570,8 +570,8 @@ struct _index_kobject {
- };
- 
- /* pointer to array of kobjects for cpuX/cache/indexY */
--static struct _index_kobject *index_kobject[NR_CPUS];
--#define INDEX_KOBJECT_PTR(x,y)    (&((index_kobject[x])[y]))
-+static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
-+#define INDEX_KOBJECT_PTR(x, y)    (&((per_cpu(index_kobject, x))[y]))
- 
- #define show_one_plus(file_name, object, val)				\
- static ssize_t show_##file_name						\
-@@ -593,9 +593,16 @@ static ssize_t show_size(struct _cpuid4_
- 
- static ssize_t show_shared_cpu_map(struct _cpuid4_info *this_leaf, char *buf)
- {
--	char mask_str[NR_CPUS];
--	cpumask_scnprintf(mask_str, NR_CPUS, this_leaf->shared_cpu_map);
--	return sprintf(buf, "%s\n", mask_str);
-+	int n = 0;
-+	int len = cpumask_scnprintf_len(nr_cpu_ids);
-+	char *mask_str = kmalloc(len, GFP_KERNEL);
-+
-+	if (mask_str) {
-+		cpumask_scnprintf(mask_str, len, this_leaf->shared_cpu_map);
-+		n = sprintf(buf, "%s\n", mask_str);
-+		kfree(mask_str);
-+	}
-+	return n;
- }
- 
- static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf) {
-@@ -684,10 +691,10 @@ static struct kobj_type ktype_percpu_ent
- 
- static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
- {
--	kfree(cache_kobject[cpu]);
--	kfree(index_kobject[cpu]);
--	cache_kobject[cpu] = NULL;
--	index_kobject[cpu] = NULL;
-+	kfree(per_cpu(cache_kobject, cpu));
-+	kfree(per_cpu(index_kobject, cpu));
-+	per_cpu(cache_kobject, cpu) = NULL;
-+	per_cpu(index_kobject, cpu) = NULL;
- 	free_cache_attributes(cpu);
- }
- 
-@@ -703,13 +710,14 @@ static int __cpuinit cpuid4_cache_sysfs_
- 		return err;
- 
- 	/* Allocate all required memory */
--	cache_kobject[cpu] = kzalloc(sizeof(struct kobject), GFP_KERNEL);
--	if (unlikely(cache_kobject[cpu] == NULL))
-+	per_cpu(cache_kobject, cpu) =
-+		kzalloc(sizeof(struct kobject), GFP_KERNEL);
-+	if (unlikely(per_cpu(cache_kobject, cpu) == NULL))
- 		goto err_out;
- 
--	index_kobject[cpu] = kzalloc(
-+	per_cpu(index_kobject, cpu) = kzalloc(
- 	    sizeof(struct _index_kobject ) * num_cache_leaves, GFP_KERNEL);
--	if (unlikely(index_kobject[cpu] == NULL))
-+	if (unlikely(per_cpu(index_kobject, cpu) == NULL))
- 		goto err_out;
- 
- 	return 0;
-@@ -733,7 +741,8 @@ static int __cpuinit cache_add_dev(struc
- 	if (unlikely(retval < 0))
- 		return retval;
- 
--	retval = kobject_init_and_add(cache_kobject[cpu], &ktype_percpu_entry,
-+	retval = kobject_init_and_add(per_cpu(cache_kobject, cpu),
-+				      &ktype_percpu_entry,
- 				      &sys_dev->kobj, "%s", "cache");
- 	if (retval < 0) {
- 		cpuid4_cache_sysfs_exit(cpu);
-@@ -745,13 +754,14 @@ static int __cpuinit cache_add_dev(struc
- 		this_object->cpu = cpu;
- 		this_object->index = i;
- 		retval = kobject_init_and_add(&(this_object->kobj),
--					      &ktype_cache, cache_kobject[cpu],
-+					      &ktype_cache,
-+					      per_cpu(cache_kobject, cpu),
- 					      "index%1lu", i);
- 		if (unlikely(retval)) {
- 			for (j = 0; j < i; j++) {
- 				kobject_put(&(INDEX_KOBJECT_PTR(cpu,j)->kobj));
- 			}
--			kobject_put(cache_kobject[cpu]);
-+			kobject_put(per_cpu(cache_kobject, cpu));
- 			cpuid4_cache_sysfs_exit(cpu);
- 			break;
- 		}
-@@ -760,7 +770,7 @@ static int __cpuinit cache_add_dev(struc
- 	if (!retval)
- 		cpu_set(cpu, cache_dev_map);
- 
--	kobject_uevent(cache_kobject[cpu], KOBJ_ADD);
-+	kobject_uevent(per_cpu(cache_kobject, cpu), KOBJ_ADD);
- 	return retval;
- }
- 
-@@ -769,7 +779,7 @@ static void __cpuinit cache_remove_dev(s
- 	unsigned int cpu = sys_dev->id;
- 	unsigned long i;
- 
--	if (cpuid4_info[cpu] == NULL)
-+	if (per_cpu(cpuid4_info, cpu) == NULL)
- 		return;
- 	if (!cpu_isset(cpu, cache_dev_map))
- 		return;
-@@ -777,7 +787,7 @@ static void __cpuinit cache_remove_dev(s
- 
- 	for (i = 0; i < num_cache_leaves; i++)
- 		kobject_put(&(INDEX_KOBJECT_PTR(cpu,i)->kobj));
--	kobject_put(cache_kobject[cpu]);
-+	kobject_put(per_cpu(cache_kobject, cpu));
- 	cpuid4_cache_sysfs_exit(cpu);
- }
+ #ifdef CONFIG_SMP
+-	nr_cpu_ids = highest_cpu + 1;
+ 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
+ #endif
  
 
 -- 
