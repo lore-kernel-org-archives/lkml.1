@@ -1,39 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbYCYEPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYCYEQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757159AbYCYEPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 00:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbYCYEPe
+	id S1757280AbYCYEQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 00:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYCYEQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 00:15:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47458
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756746AbYCYEPd (ORCPT
+	Tue, 25 Mar 2008 00:16:32 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:12349 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYCYEQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 00:15:33 -0400
-Date: Mon, 24 Mar 2008 21:15:32 -0700 (PDT)
-Message-Id: <20080324.211532.33163290.davem@davemloft.net>
-To: paulus@samba.org
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-	<20080324.133722.38645342.davem@davemloft.net>
-	<18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 00:16:31 -0400
+Date: Mon, 24 Mar 2008 22:16:30 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: [PATCH 2/4] Export kobject_rename for pci_hotplug_core
+Message-ID: <20080325041630.GC29666@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080325041314.GA29666@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080325041314.GA29666@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Tue, 25 Mar 2008 14:29:55 +1100
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
-> The performance advantage of using hardware 64k pages is pretty
-> compelling, on a wide range of programs, and particularly on HPC apps.
+Export kobject_rename() to fix the following link error. This happens
+when pci_hotplug_core driver is compiled as a kernel module.
 
-Please read the rest of my responses in this thread, you
-can have your HPC cake and eat it too.
+ERROR: "kobject_rename" [drivers/pci/hotplug/pci_hotplug.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+make: *** Waiting for unfinished jobs....
+
+Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Acked-by: Alex Chiang <achiang@hp.com>
+---
+ lib/kobject.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 0d03252..e2a9f65 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -456,6 +456,7 @@ out:
+ 
+ 	return error;
+ }
++EXPORT_SYMBOL_GPL(kobject_rename);
+ 
+ /**
+  * kobject_move - move object to another parent
+-- 
+1.5.3.1.g1e61
+
