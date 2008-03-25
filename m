@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbYCYVzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbYCYV6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbYCYVzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYCYVzX
+	id S1760137AbYCYV6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYCYV6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:55:23 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44629 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbYCYVzW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:55:22 -0400
-Date: Tue, 25 Mar 2008 22:55:55 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <morgan@kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
-Message-ID: <20080325215555.GB12770@elf.ucw.cz>
-References: <20080323135110.GA294@tv-sign.ru> <20080324160102.GB4069@atrey.karlin.mff.cuni.cz> <20080324164059.GA4767@tv-sign.ru> <20080324223925.GD2426@elf.ucw.cz> <20080324230458.GA173@tv-sign.ru> <1206446637.3302.134.camel@moss-spartans.epoch.ncsc.mil> <20080325134001.GB5984@sergelap.austin.rr.com> <1206455835.3302.185.camel@moss-spartans.epoch.ncsc.mil> <20080325180611.GB19176@sergelap.ibm.com>
+	Tue, 25 Mar 2008 17:58:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40827 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbYCYV6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 17:58:03 -0400
+Message-ID: <47E97566.5020003@redhat.com>
+Date: Tue, 25 Mar 2008 17:57:58 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325180611.GB19176@sergelap.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "J.C. Pizarro" <jcpiza@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Why /proc/cpuinfo doesn't print L1,L2,L3 caches?
+References: <998d0e4a0803251439u4bf09fb1ye568fc1970b0200f@mail.gmail.com>
+In-Reply-To: <998d0e4a0803251439u4bf09fb1ye568fc1970b0200f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Might want to double check with e.g. the vservers folks that they
-> > weren't relying in any way on special handling of init.
+J.C. Pizarro wrote:
+> $ cat /proc/cpuinfo
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 15
+> model           : 47
+> model name      : AMD Athlon(tm) 64 Processor 3200+
+> ...
+> cache size      : 512 KB
+> ...
 > 
-> Herbert, Pavel, do you have objections to allowing ptrace of init?
-> (I believe Eric has already Acked the idea iirc?)
+> The cache size is currently misinformed. It's not the real size because
+> it's 64+64+512 KiB = 640 KiB, not 512 KB.
+> 
+> How can i know what hw-caches use the processors?
+> The current kernel doesn't know well what hw-caches uses.
+> 
+> The good proposal is by example (the data below are not real):
+> * In old AMD Athlon64:
+> 
+> cache L1        : 64 KiB I + 64 KiB D, 64 B line, direct way, ...
+> cache L2        : 512 KiB I+D-shared, exclusive, 128 associative way, ...
+> cache L3        : none
+> 
+> * In Intel Core Duo:
+> processor       : 0
+> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
+> cache L2        : 2048 KiB Cores-shared, inclusive, 128 associative way, ...
+> cache L3        : none
+> 
+> processor       : 1
+> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
+> cache L2        : 2048 KiB cores-shared, inclusive, 128 associative way, ...
+> cache L3        : none
+> 
+> * In Quad:
+> processor       : 0
+> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
+> cache L2        : 2048+2048 KiB pair-cores-shared, inclusive, 128
+> associative way, ...
+> cache L3        : none
+> ...
+> processor       : 3
+> cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
+> cache L2        : 2048+2048 KiB pair-cores-shared, inclusive, 128
+> associative way, ...
+> cache L3        : none
+> 
+> It above is an example, put your symbols to /proc/cpuinfo in a
+> convenient manner.
+> 
+>    Good bye ;)
 
-No problem from me...
+I think you want this:
 
-(..but do not introduce command line option or sysctl. It is not worth it).
+/sys/devices/system/cpu/cpu0/cache
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+/proc/cpuinfo is intended to give a general summary of certain properties of the 
+processor that tend to be particularly interesting, and present them all in one 
+place.  It is not intended to expose everything the kernel knows about every 
+processor on the system.
+
+-- Chris
