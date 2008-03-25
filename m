@@ -1,246 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbYCYCWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbYCYCXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757621AbYCYCWy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYCYCUG
+	id S1757603AbYCYCXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbYCYCUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 22:20:06 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50328 "EHLO relay.sgi.com"
+	Mon, 24 Mar 2008 22:20:07 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:48410 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753180AbYCYCT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 22:19:57 -0400
-Message-Id: <20080325021955.394649000@polaris-admin.engr.sgi.com>
+	id S1753537AbYCYCT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 22:19:58 -0400
+Message-Id: <20080325021956.212787000@polaris-admin.engr.sgi.com>
 References: <20080325021954.979158000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 24 Mar 2008 19:19:56 -0700
+Date: Mon, 24 Mar 2008 19:20:02 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>,
        "David S. Miller" <davem@davemloft.net>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 02/10] init: move setup of nr_cpu_ids to as early as possible v4
-Content-Disposition: inline; filename=setup-nr_cpu_ids
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       James Morris <jmorris@namei.org>, Patrick McHardy <kaber@trash.net>
+Subject: [PATCH 08/10] net: remove NR_CPUS arrays in net/core/dev.c
+Content-Disposition: inline; filename=nr_cpus-in-net_core_dev
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the setting of nr_cpu_ids from sched_init() to setup_per_cpu_areas(),
-so that it's available as early as possible.
+Remove the fixed size channels[NR_CPUS] array in
+net/core/dev.c and dynamically allocate array based on
+nr_cpu_ids.
 
 Based on linux-2.6.25-rc5-mm1
 
-# ia64
-Cc: Tony Luck <tony.luck@intel.com>
-
-# powerpc
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-
-# sparc
 Cc: David S. Miller <davem@davemloft.net>
-Cc: William L. Irwin <wli@holomorphy.com>
-
-# x86
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: H. Peter Anvin <hpa@zytor.com>
-
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Cc: James Morris <jmorris@namei.org>
+Cc: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
+ net/core/dev.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-Moved from the zero-based percpu variables patchset and redone to be
-integrated with setup_per_cpu_areas instead of being called before
-that function.  This had to be done because some arch's call
-prefill_possible_map() from setup_per_cpu_areas() which may increase
-the number of possible cpus.
-
----
-
- arch/ia64/kernel/acpi.c        |    4 ++++
- arch/ia64/kernel/setup.c       |    7 +++++++
- arch/powerpc/kernel/setup_64.c |    5 ++++-
- arch/sparc64/mm/init.c         |   10 +++++++++-
- arch/x86/kernel/setup64.c      |    7 ++++++-
- init/main.c                    |   15 ++++++++++++---
- kernel/sched.c                 |    7 -------
- 7 files changed, 42 insertions(+), 13 deletions(-)
-
---- linux-2.6.25-rc5.orig/arch/ia64/kernel/acpi.c
-+++ linux-2.6.25-rc5/arch/ia64/kernel/acpi.c
-@@ -831,6 +831,10 @@ __init void prefill_possible_map(void)
+--- linux-2.6.25-rc5.orig/net/core/dev.c
++++ linux-2.6.25-rc5/net/core/dev.c
+@@ -162,7 +162,7 @@ struct net_dma {
+ 	struct dma_client client;
+ 	spinlock_t lock;
+ 	cpumask_t channel_mask;
+-	struct dma_chan *channels[NR_CPUS];
++	struct dma_chan **channels;
+ };
  
- 	for (i = 0; i < possible; i++)
- 		cpu_set(i, cpu_possible_map);
-+
-+#ifdef CONFIG_SMP
-+	nr_cpu_ids = possible;
-+#endif
- }
- 
- int acpi_map_lsapic(acpi_handle handle, int *pcpu)
---- linux-2.6.25-rc5.orig/arch/ia64/kernel/setup.c
-+++ linux-2.6.25-rc5/arch/ia64/kernel/setup.c
-@@ -766,6 +766,13 @@ setup_per_cpu_areas (void)
- 	/* start_kernel() requires this... */
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
- 	prefill_possible_map();
-+#elif defined(CONFIG_SMP)
-+	int cpu, highest_cpu = 0;
-+
-+	for_each_possible_cpu(cpu)
-+		highest_cpu = cpu;
-+
-+	nr_cpu_ids = highest_cpu + 1;
- #endif
- }
- 
---- linux-2.6.25-rc5.orig/arch/powerpc/kernel/setup_64.c
-+++ linux-2.6.25-rc5/arch/powerpc/kernel/setup_64.c
-@@ -576,7 +576,7 @@ void cpu_die(void)
- #ifdef CONFIG_SMP
- void __init setup_per_cpu_areas(void)
+ static enum dma_state_client
+@@ -2448,7 +2448,7 @@ static struct netif_rx_stats *softnet_ge
  {
--	int i;
-+	int i, highest_cpu = 0;
- 	unsigned long size;
- 	char *ptr;
+ 	struct netif_rx_stats *rc = NULL;
  
-@@ -594,7 +594,10 @@ void __init setup_per_cpu_areas(void)
- 
- 		paca[i].data_offset = ptr - __per_cpu_start;
- 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-+		if (i > highest_cpu)
-+			highest_cpu = i;
- 	}
-+	nr_cpu_ids = highest_cpu + 1;
- 
- 	/* Now that per_cpu is setup, initialize cpu_sibling_map */
- 	smp_setup_cpu_sibling_map();
---- linux-2.6.25-rc5.orig/arch/sparc64/mm/init.c
-+++ linux-2.6.25-rc5/arch/sparc64/mm/init.c
-@@ -1292,10 +1292,18 @@ pgd_t swapper_pg_dir[2048];
- static void sun4u_pgprot_init(void);
- static void sun4v_pgprot_init(void);
- 
--/* Dummy function */
-+#ifdef CONFIG_SMP
-+/* set nr_cpu_ids */
- void __init setup_per_cpu_areas(void)
- {
-+	int cpu, highest_cpu = 0;
-+
-+	for_each_possible_cpu(cpu)
-+		highest_cpu = cpu;
-+
-+	nr_cpu_ids = highest_cpu + 1;
- }
-+#endif
- 
- void __init paging_init(void)
- {
---- linux-2.6.25-rc5.orig/arch/x86/kernel/setup64.c
-+++ linux-2.6.25-rc5/arch/x86/kernel/setup64.c
-@@ -122,7 +122,7 @@ static void __init setup_per_cpu_maps(vo
+-	while (*pos < NR_CPUS)
++	while (*pos < nr_cpu_ids)
+ 		if (cpu_online(*pos)) {
+ 			rc = &per_cpu(netdev_rx_stat, *pos);
+ 			break;
+@@ -4320,7 +4320,7 @@ netdev_dma_event(struct dma_client *clie
+ 	spin_lock(&net_dma->lock);
+ 	switch (state) {
+ 	case DMA_RESOURCE_AVAILABLE:
+-		for (i = 0; i < NR_CPUS; i++)
++		for (i = 0; i < nr_cpu_ids; i++)
+ 			if (net_dma->channels[i] == chan) {
+ 				found = 1;
+ 				break;
+@@ -4335,7 +4335,7 @@ netdev_dma_event(struct dma_client *clie
+ 		}
+ 		break;
+ 	case DMA_RESOURCE_REMOVED:
+-		for (i = 0; i < NR_CPUS; i++)
++		for (i = 0; i < nr_cpu_ids; i++)
+ 			if (net_dma->channels[i] == chan) {
+ 				found = 1;
+ 				pos = i;
+@@ -4362,6 +4362,13 @@ netdev_dma_event(struct dma_client *clie
   */
- void __init setup_per_cpu_areas(void)
- { 
--	int i;
-+	int i, highest_cpu = 0;
- 	unsigned long size;
- 
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -157,7 +157,12 @@ void __init setup_per_cpu_areas(void)
- 
- 		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
- 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-+
-+		if (i > highest_cpu)
-+			highest_cpu = i;
- 	}
-+	nr_cpu_ids = highest_cpu + 1;
-+	printk(KERN_DEBUG "NR_CPUS: %d (nr_cpu_ids: %d)\n", NR_CPUS, nr_cpu_ids);
- 
- 	/* Setup percpu data maps */
- 	setup_per_cpu_maps();
---- linux-2.6.25-rc5.orig/init/main.c
-+++ linux-2.6.25-rc5/init/main.c
-@@ -369,16 +369,20 @@ static inline void smp_prepare_cpus(unsi
- 
- #else
- 
-+int nr_cpu_ids __read_mostly = NR_CPUS;
-+EXPORT_SYMBOL(nr_cpu_ids);
-+
- #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
--
- EXPORT_SYMBOL(__per_cpu_offset);
- 
-+/* nr_cpu_ids is set as a side effect */
- static void __init setup_per_cpu_areas(void)
+ static int __init netdev_dma_register(void)
  {
--	unsigned long size, i;
--	char *ptr;
-+	unsigned long size;
-+	int i, highest_cpu = 0;
- 	unsigned long nr_possible_cpus = num_possible_cpus();
-+	char *ptr;
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
-@@ -388,7 +392,12 @@ static void __init setup_per_cpu_areas(v
- 		__per_cpu_offset[i] = ptr - __per_cpu_start;
- 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
- 		ptr += size;
-+		if (i > highest_cpu)
-+			highest_cpu = i;
- 	}
-+
-+	nr_cpu_ids = highest_cpu + 1;
-+	printk(KERN_DEBUG "NR_CPUS: %d (nr_cpu_ids: %d)\n", NR_CPUS, nr_cpu_ids);
- }
- #endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
- 
---- linux-2.6.25-rc5.orig/kernel/sched.c
-+++ linux-2.6.25-rc5/kernel/sched.c
-@@ -5995,10 +5995,6 @@ void __init migration_init(void)
- 
- #ifdef CONFIG_SMP
- 
--/* Number of possible processor ids */
--int nr_cpu_ids __read_mostly = NR_CPUS;
--EXPORT_SYMBOL(nr_cpu_ids);
--
- #ifdef CONFIG_SCHED_DEBUG
- 
- static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level)
-@@ -7199,7 +7195,6 @@ static void init_tg_rt_entry(struct rq *
- 
- void __init sched_init(void)
- {
--	int highest_cpu = 0;
- 	int i, j;
- 
- #ifdef CONFIG_SMP
-@@ -7255,7 +7250,6 @@ void __init sched_init(void)
- #endif
- 		init_rq_hrtick(rq);
- 		atomic_set(&rq->nr_iowait, 0);
--		highest_cpu = i;
- 	}
- 
- 	set_load_weight(&init_task);
-@@ -7265,7 +7259,6 @@ void __init sched_init(void)
- #endif
- 
- #ifdef CONFIG_SMP
--	nr_cpu_ids = highest_cpu + 1;
- 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
- #endif
- 
++	net_dma.channels = kzalloc(nr_cpu_ids * sizeof(struct net_dma),
++								GFP_KERNEL);
++	if (unlikely(net_dma.channels)) {
++		printk(KERN_NOTICE
++				"netdev_dma: no memory for net_dma.channels\n");
++		return -ENOMEM;
++	}
+ 	spin_lock_init(&net_dma.lock);
+ 	dma_cap_set(DMA_MEMCPY, net_dma.client.cap_mask);
+ 	dma_async_client_register(&net_dma.client);
 
 -- 
