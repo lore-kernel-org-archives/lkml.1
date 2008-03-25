@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbYCYVN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYCYVP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbYCYVN7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYCYVNv
+	id S1760009AbYCYVP1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYCYVPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:13:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:45268 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753188AbYCYVNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:13:50 -0400
+	Tue, 25 Mar 2008 17:15:19 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51624 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbYCYVPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 17:15:18 -0400
+Message-ID: <47E96B0A.2010906@cs.helsinki.fi>
+Date: Tue, 25 Mar 2008 23:13:46 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18408.59112.945786.488350@cargo.ozlabs.ibm.com>
-Date: Tue, 25 Mar 2008 22:50:00 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-In-Reply-To: <20080324.211532.33163290.davem@davemloft.net>
-References: <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-	<20080324.133722.38645342.davem@davemloft.net>
-	<18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-	<20080324.211532.33163290.davem@davemloft.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+To: Daniel Yeisley <dan.yeisley@unisys.com>
+CC: linux-kernel@vger.kernel.org, akpm@osdl.org,
+       Christoph Lameter <clameter@sgi.com>, mel@csn.ul.ie
+Subject: Re: [PATCH] list_add corruption in slab.c
+References: <1206464258.13473.11.camel@localhost.localdomain>	 <84144f020803251145m6672e0acv16d27aaae1acb4d9@mail.gmail.com> <1206477858.8810.3.camel@localhost.localdomain>
+In-Reply-To: <1206477858.8810.3.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
+Hi Daniel,
 
-> From: Paul Mackerras <paulus@samba.org>
-> Date: Tue, 25 Mar 2008 14:29:55 +1100
-> 
-> > The performance advantage of using hardware 64k pages is pretty
-> > compelling, on a wide range of programs, and particularly on HPC apps.
-> 
-> Please read the rest of my responses in this thread, you
-> can have your HPC cake and eat it too.
+Daniel Yeisley wrote:
+> I actually saw that initkmem_list reference, but didn't change it since
+> my original patch fixed my list corruption.  Anyway, I made the changed
+> and tested it.  The system booted fine.
 
-It's not just HPC, as I pointed out, it's pretty much everything,
-including kernel compiles.  And "use hugepages" is a pretty inadequate
-answer given the restrictions of hugepages and the difficulty of using
-them.  How do I get gcc to use hugepages, for instance?  Using 64k
-pages gives us a performance boost for almost everything without the
-user having to do anything.
+Yeah, but the second change is needed; otherwise we forget to fix up 
+some of the bootstrap caches.
 
-If the hugepage stuff was in a state where it enabled large pages to
-be used for mapping an existing program, where possible, without any
-changes to the executable, then I would agree with you.  But it isn't,
-it's a long way from that, and (as I understand it) Linus has in the
-past opposed the suggestion that we should move in that direction.
+ > ﻿Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
 
-Paul.
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+Mel, as this change is related to the memoryless node fix that went in 
+2.6.24, any chance you'd give this patch a spin on your machines so we 
+can get the fix in 2.6.25 and 2.6.24-stable?
+
+			Pekka
