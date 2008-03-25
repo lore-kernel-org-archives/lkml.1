@@ -1,73 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYCYUaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYCYUfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758820AbYCYUaw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 16:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYCYUao
+	id S1758303AbYCYUfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 16:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbYCYUfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 16:30:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54701 "EHLO mx3.mail.elte.hu"
+	Tue, 25 Mar 2008 16:35:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34632 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753013AbYCYUan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 16:30:43 -0400
-Date: Tue, 25 Mar 2008 21:29:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
-	regressions from 2.6.24)
-Message-ID: <20080325202954.GA22007@elte.hu>
-References: <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu>
+	id S1754171AbYCYUfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 16:35:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
+Date: Tue, 25 Mar 2008 21:35:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <Pine.LNX.4.44L0.0803251044590.4838-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803251044590.4838-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080325201125.GD15330@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200803252135.04247.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Modprobing either ohci1394 or firewire_ohci seems to lock up the 
-> > system.
+On Tuesday, 25 of March 2008, Alan Stern wrote:
+> On Mon, 24 Mar 2008, Rafael J. Wysocki wrote:
 > 
-> that's weird. If you do the modprobe from a VGA console and do a 
-> 'dmesg -n 8', do you get any ioremap printk shortly before the hard 
-> lockup?
+> > > Can we also have a DPM_PREPARING state, set when ->prepare() is about
+> > > to be called?  The PM core wouldn't make use of it but some drivers
+> > > would.  (I can't think of any use at all for the analogous
+> > > DPM_COMPLETING state, however.)
+> > 
+> > Hmm.  dev->power.status is protected by dpm_list_mtx.  Do you think it would be
+> > useful to have an accessor function for reading it under the lock?
+> 
+> I don't think so.  What I have in mind is situations where there 
+> accessed has already been synchronized by other means, while the 
+> prepare() method is running.  For example:
+> 
+> 	Task 0				Task 1
+> 	------				------
+> 	->prepare() is called
+> 	Waits for currently-running
+> 	  registration in task 1
+> 	  to finish
+> 	Does other stuff
+> 					Receives a request to register
+> 					  a new child under dev
+> 					Sees that dev->power.state is
+> 					  still DPM_ON, so goes ahead
+> 					  with the child's registration
+> 	->prepare() returns
+> 	dev->power.state is set to
+> 	  DPM_SUSPENDING
+> 					device_pm_add() checks
+> 					  dev->power.state and fails
+> 					  the registration
+> 
+> If dev->power.state had been set to DPM_PREPARING before ->prepare() 
+> was called, then task 1 would have avoided trying to register the 
+> child.
+> 
+> > > > +			dev->power.status = DPM_RESUMING;
+> > > > +			get_device(dev);
+> > > > +			mutex_unlock(&dpm_list_mtx);
+> > > > +
+> > > > +			resume_device(dev, state);
+> > > > +
+> > > > +			mutex_lock(&dpm_list_mtx);
+> > > > +			put_device(dev);
+> > > > +		}
+> > > > +		if (!list_empty(&dev->power.entry))
+> > > > +			list_move_tail(&dev->power.entry, &list);
+> > > 
+> > > A little problem here: You refer to dev after calling put_device().
+> > 
+> > The device can't be removed at this point, because we hold dpm_list_mtx, which
+> > is needed by device_del().
+> 
+> True, it can't be removed at this point.  But it _can_ be removed
+> between the calls to resume_device() and mutex_lock().
+> 
+> > > >  	}
+> > > > -	if (!error)
+> > > > -		all_sleeping = true;
+> > > > +	list_splice(&list, &dpm_list);
+> > > 
+> > > Instead you could eliminate the list_splice_init() above and put here:
+> > > 
+> > > 	list_splice(&list, dpm_list->prev);
+> > > 
+> > > This will move the entries from list to the end of dpm_list.
+> > 
+> > dpm_list may be empty at this point.  Wouldn't that cause any trouble?
+> 
+> It will still work correctly.  If dpm_list is empty then dpm_list->prev
+> is equal to &dpm_list, so it will do the same thing as your current
+> code does.
+> 
+> 
+> I just thought of another problem.  At the point where
+> local_irq_disable() is called, in between device_suspend() and
+> device_power_down(), it is possible in a preemptible kernel that
+> another task is holding dpm_list_mtx and is in the middle of updating
+> the list pointers.  This would mess up the traversal in
+> device_power_down().
+> 
+> I'm not sure about the best way to prevent this.  Is it legal to call
+> unlock_mutex() while interrupts or preemption are disabled?
 
-basically, old ioremap did this:
+Well, I think it is, but I'm not sure how that can help.
 
-[  162.485605] ACPI: PCI Interrupt 0000:0c:03.0[A] -> GSI 19 (level, low) -> IRQ 19
-[  162.485695] ioremap: 00000000(00000800) => f8978000
+To prevent the race from happening, we can lock dpm_list_mtx before switching
+interrupts off in kernel/power/main.c:suspend_enter() and analogously in
+kernel/power/disk.c .
 
-the theory (fact?) was that the zero physical address there (the 
-'00000000') was some 4GB+ address truncated down to 32-bits.
-
-OTOH, before this system worked for you before, i start to suspect that 
-ioremap is a red herring here and that it's the code that gets to that 
-physical address (which is ioremap-ed) is at fault here.
-
-the hard hang might be your southbridge totally dumbfounded by the host 
-OS attempting to do an MMIO access to an above-4GB address?
-
-so the question is - what physical address did that ioremap do in 2.6.24 
-(which presumly had a working ohci1394, right?), and why did it change 
-to something else in -git?
-
-	Ingo
+Thanks,
+Rafael
