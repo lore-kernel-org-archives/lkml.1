@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbYCYQvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYCYQyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758883AbYCYQvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 12:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbYCYQvL
+	id S1757880AbYCYQyo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYCYQyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 12:51:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59711 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Mar 2008 12:54:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:48750 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758687AbYCYQvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 12:51:10 -0400
-Date: Tue, 25 Mar 2008 17:50:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Thomas Meyer <thomas@m3y3r.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
-	regressions from 2.6.24)
-Message-ID: <20080325165007.GA7775@elte.hu>
-References: <200803220259.48534.rjw@sisk.pl> <47E5350D.101@s5r6.in-berlin.de> <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu>
+	id S1751830AbYCYQyf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 12:54:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,553,1199692800"; 
+   d="scan'208";a="539732960"
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325073117.GA8469@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
+Date: Tue, 25 Mar 2008 09:48:10 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843ECE5BEDC@orsmsx424.amr.corp.intel.com>
+In-reply-to: <20080325081219.GO15355@kernel.dk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
+Thread-Index: AciOULY4oQadQIDxQXuJeqMBJai9aAAQrO8g
+References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <1FE6DD409037234FAB833C420AA843ECE137D9@orsmsx424.amr.corp.intel.com> <20080321183149.GB15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE1387F@orsmsx424.amr.corp.intel.com> <20080322122903.GD15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE5B76D@orsmsx424.amr.corp.intel.com> <20080325081219.GO15355@kernel.dk>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Cc: <linux-kernel@vger.kernel.org>, <npiggin@suse.de>, <paulus@samba.org>,
+       <tglx@linutronix.de>, <mingo@redhat.com>
+X-OriginalArrivalTime: 25 Mar 2008 16:48:13.0670 (UTC) FILETIME=[04334060:01C88E98]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> So now I/we just need to figure out why the hack to call
+> init_call_single_data() is needed. You seem to imply it was being called
+> too late, I thought perhaps too early. Where did you stick the
+> init_call_single_data() call in?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+In ia64 the first calls to smp_call_function_single() are made
+while bringing up other cpus ... which happens from:
 
-> 64-bit ioremaps never worked on 32-bit, so we are in totally 
-> unchartered waters now - but due to the unification we have a 
-> realistic chance to make them work. At minimum we need the fix below 
-> in addition to Linus' patch - does it make any difference?
+	kernel_init()
+		smp_init()
 
-could you please try x86.git/latest:
+The init calls are made a few lines later (still in kernel_init):
 
-  http://people.redhat.com/mingo/x86.git/README
+		do_basic_setup()
+			do_initcalls()
 
-which has all the fixes and debug patches integrated (no extra patching 
-should be needed). If it still doesnt work then please send the new 
-dmesg and /sys/kernel/debug/kernel_page_tables dump.
+I moved the call radically earlier (before sched_init() in
+init/main.c:start_kernel()) just to be sure, but that was
+overkill.
 
-head 0fef904c33841be92f or later.
+Perhaps making the call from do_pre_smp_initcalls() is the
+logical place?  Like this (though purists will say that the
+extern declaration should be in some header file):
 
-	Ingo
+Signed-off-by: Tony Luck <tony.luck@intel.com>
+
+diff --git a/init/main.c b/init/main.c
+index 99ce949..0c140ed 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -750,7 +750,9 @@ __setup("nosoftlockup", nosoftlockup_setup);
+ static void __init do_pre_smp_initcalls(void)
+ {
+ 	extern int spawn_ksoftirqd(void);
++	extern int __cpuinit init_call_single_data(void);
+ 
++	init_call_single_data();
+ 	migration_init();
+ 	spawn_ksoftirqd();
+ 	if (!nosoftlockup)
+diff --git a/kernel/smp.c b/kernel/smp.c
+index ab2da5c..df1b651 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -40,7 +40,7 @@ struct call_single_queue {
+ static struct call_function_data call_data_fallback;
+ static unsigned long call_fallback_used;
+ 
+-static int __cpuinit init_call_single_data(void)
++int __cpuinit init_call_single_data(void)
+ {
+ 	int i;
+ 
+@@ -53,7 +53,6 @@ static int __cpuinit init_call_single_data(void)
+ 	}
+ 	return 0;
+ }
+-core_initcall(init_call_single_data);
+ 
+ /*
+  * Insert a previously allocated call_single_data element for execution
