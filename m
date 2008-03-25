@@ -1,165 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbYCYIIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbYCYIMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754333AbYCYIIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 04:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYCYIIF
+	id S1753939AbYCYIMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 04:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYCYIM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 04:08:05 -0400
-Received: from mga11.intel.com ([192.55.52.93]:15634 "EHLO mga11.intel.com"
+	Tue, 25 Mar 2008 04:12:26 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10246 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752403AbYCYIIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 04:08:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,551,1199692800"; 
-   d="scan'208";a="539483358"
-Subject: Re: [PATCH 4/5] drivers/acpi: elide a non-zero test on a result
-	that is never 0
-From: "Zhang, Rui" <rui.zhang@intel.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: "Brown, Len" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0803241909420.32740@ask.diku.dk>
-References: <Pine.LNX.4.64.0803241909420.32740@ask.diku.dk>
-Content-Type: text/plain
-Date: Tue, 25 Mar 2008 15:50:11 +0800
-Message-Id: <1206431411.3047.45.camel@acpi-hp-zz.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1751682AbYCYIMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 04:12:24 -0400
+Date: Tue, 25 Mar 2008 09:12:21 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, paulus@samba.org,
+       tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
+Message-ID: <20080325081219.GO15355@kernel.dk>
+References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <1FE6DD409037234FAB833C420AA843ECE137D9@orsmsx424.amr.corp.intel.com> <20080321183149.GB15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE1387F@orsmsx424.amr.corp.intel.com> <20080322122903.GD15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE5B76D@orsmsx424.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE5B76D@orsmsx424.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 24 2008, Luck, Tony wrote:
+> > Funky, how does accessing other CPU's per-cpu variables work on ia64
+> > then? Perhaps I made some false assumptions.
+> 
+> Having scared you to death with some of the strange weirdness of
+> ia64 ... it turns out that you made a trivial typo in the ia64
+> specific part of the patch ... see below.
+> 
+> With this patch and a hack to call init_call_single_data() early
+> enough the patch boots fine on ia64.
+> 
+> -Tony
+> 
+> commit 8ffe2551f04e55176f7f7935c5a3395cc641d514
+> Author: Tony Luck <tony.luck@intel.com>
+> Date:   Mon Mar 24 13:04:11 2008 -0700
+> 
+>     [IA64] Fix typo'd call to generic_smp_call_function_single_interrupt
+>     
+>     Should really be calling generic_smp_call_function_interrupt() for
+>     the IPI_CALL_FUNC case.
+>     
+>     Signed-off-by: Tony Luck <tony.luck@intel.com>
+> 
+> diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+> index fa26528..55cbc2c 100644
+> --- a/arch/ia64/kernel/smp.c
+> +++ b/arch/ia64/kernel/smp.c
+> @@ -124,7 +124,7 @@ handle_IPI (int irq, void *dev_id)
+>  
+>  			switch (which) {
+>  			      case IPI_CALL_FUNC:
+> -				generic_smp_call_function_single_interrupt();
+> +				generic_smp_call_function_interrupt();
+>  				break;
 
-On Tue, 2008-03-25 at 02:10 +0800, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The function thermal_cooling_device_register always returns either a
-> valid
-> pointer or a value made with ERR_PTR, so a test for non-zero on the
-> result
-> will always succeed.
->
-> The problem was found using the following semantic match.
-> (http://www.emn.fr/x-info/coccinelle/)
-> //<smpl>
-> @a@
-> expression E, E1;
-> statement S,S1;
-> position p;
-> @@
-> 
-> E = thermal_cooling_device_register(...)
-> ... when != E = E1
-> if@p (E) S else S1
-> 
-> @n@
-> position a.p;
-> expression E,E1;
-> statement S,S1;
-> @@
-> 
-> E = NULL
-> ... when != E = E1
-> if@p (E) S else S1
-> 
-> @depends on !n@
-> expression E;
-> statement S,S1;
-> position a.p;
-> @@
-> 
-> * if@p (E)
->   S else S1
-> //</smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-Patch looks correct. Thanks, Julia.
-But it misses the same problem in driver/misc/intel_menlow.c.
-And the return value of thermal_zone_device_register is also misused.
-How about this refreshed patch? :)
+Doh, that was a pretty silly typo. Thanks, I've merged it with the
+patch!
 
+So now I/we just need to figure out why the hack to call
+init_call_single_data() is needed. You seem to imply it was being called
+too late, I thought perhaps too early. Where did you stick the
+init_call_single_data() call in?
 
-Check the return value of thermal zone/cooling device registration correctly.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/acpi/fan.c            |    3 +--
- drivers/acpi/processor_core.c |    3 +--
- drivers/acpi/thermal.c        |    2 +-
- drivers/acpi/video.c          |    3 +--
- drivers/misc/intel_menlow.c   |    4 +---
- 5 files changed, 5 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/drivers/acpi/fan.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/fan.c
-+++ linux-2.6/drivers/acpi/fan.c
-@@ -259,8 +259,7 @@ static int acpi_fan_add(struct acpi_devi
- 	if (IS_ERR(cdev)) {
- 		result = PTR_ERR(cdev);
- 		goto end;
--	}
--	if (cdev) {
-+	} else {
- 		printk(KERN_INFO PREFIX
- 			"%s is registered as cooling_device%d\n",
- 			device->dev.bus_id, cdev->id);
-Index: linux-2.6/drivers/acpi/processor_core.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/processor_core.c
-+++ linux-2.6/drivers/acpi/processor_core.c
-@@ -673,8 +673,7 @@ static int __cpuinit acpi_processor_star
- 	if (IS_ERR(pr->cdev)) {
- 		result = PTR_ERR(pr->cdev);
- 		goto end;
--	}
--	if (pr->cdev) {
-+	} else {
- 		printk(KERN_INFO PREFIX
- 			"%s is registered as cooling_device%d\n",
- 			device->dev.bus_id, pr->cdev->id);
-Index: linux-2.6/drivers/acpi/thermal.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/thermal.c
-+++ linux-2.6/drivers/acpi/thermal.c
-@@ -1125,7 +1125,7 @@ static int acpi_thermal_register_thermal
- 			tz->trips.active[i].flags.valid; i++, trips++);
- 	tz->thermal_zone = thermal_zone_device_register("ACPI thermal zone",
- 					trips, tz, &acpi_thermal_zone_ops);
--	if (!tz->thermal_zone)
-+	if (IS_ERR(tz->thermal_zone))
- 		return -ENODEV;
- 
- 	result = sysfs_create_link(&tz->device->dev.kobj,
-Index: linux-2.6/drivers/acpi/video.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/video.c
-+++ linux-2.6/drivers/acpi/video.c
-@@ -733,8 +733,7 @@ static void acpi_video_device_find_cap(s
- 					device->dev, &video_cooling_ops);
- 		if (IS_ERR(device->cdev))
- 			return;
--
--		if (device->cdev) {
-+		else {
- 			printk(KERN_INFO PREFIX
- 				"%s is registered as cooling_device%d\n",
- 				device->dev->dev.bus_id, device->cdev->id);
-Index: linux-2.6/drivers/misc/intel_menlow.c
-===================================================================
---- linux-2.6.orig/drivers/misc/intel_menlow.c
-+++ linux-2.6/drivers/misc/intel_menlow.c
-@@ -173,9 +173,7 @@ static int intel_menlow_memory_add(struc
- 	if (IS_ERR(cdev)) {
- 		result = PTR_ERR(cdev);
- 		goto end;
--	}
--
--	if (cdev) {
-+	} else {
- 		acpi_driver_data(device) = cdev;
- 		result = sysfs_create_link(&device->dev.kobj,
- 					&cdev->device.kobj, "thermal_cooling");
-
+-- 
+Jens Axboe
 
