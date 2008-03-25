@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbYCYNpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYCYNq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbYCYNpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 09:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbYCYNpE
+	id S1756369AbYCYNq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 09:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbYCYNqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 09:45:04 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37113 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754740AbYCYNpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 09:45:03 -0400
-Date: Tue, 25 Mar 2008 08:45:00 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
+	Tue, 25 Mar 2008 09:46:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45888 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753722AbYCYNqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 09:46:17 -0400
+Date: Tue, 25 Mar 2008 14:45:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: David Miller <davem@davemloft.net>, jirislaby@gmail.com,
+       viro@ZenIV.linux.org.uk, joe@perches.com, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC 5/8] x86_64: Add UV specific header for MMR definitions
-Message-ID: <20080325134459.GA19668@sgi.com>
-References: <20080324182116.GA28285@sgi.com> <87iqzbi0cy.fsf@basil.nowhere.org>
-Mime-Version: 1.0
+Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups
+	- formatting only
+Message-ID: <20080325134556.GA10424@elte.hu>
+References: <20080323085210.GE10722@ZenIV.linux.org.uk> <20080323.032013.79276201.davem@davemloft.net> <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87iqzbi0cy.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080325133810.GA10044@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 11:06:37AM +0100, Andi Kleen wrote:
-> Jack Steiner <steiner@sgi.com> writes:
-> 
-> > 
-> > 	Signed-off-by: Jack Steiner <steiner@sgi.com>
-> 
-> Not sure why you indent that? Normally it is not. 
-> Some tools get confused by it I think.
 
-Fixed.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
+> you picked an borderline case without showing the full effects of your 
+> choice of style - but still even in this example you are wrong i 
+> believe. [...]
 
-> 
-> > ---
-> >  include/asm-x86/uv_mmrs.h |  373 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 373 insertions(+)
-> > 
-> > Index: linux/include/asm-x86/uv_mmrs.h
-> 
-> I personally would consider it cleaner to put these into a asm-x86/uv/ 
-> sub directory
+and let me give an example with the your very own code that you wrote 
+and maintain, drivers/mtd/devices/block2mtd.c:
 
-Will change...
+                                    errors   lines of code   errors/KLOC
+drivers/mtd/devices/block2mtd.c         10             490          20.4
 
+that's pretty OK code, but not perfect, the 10 errors are:
 
---- jack
+ ERROR: do not use C99 // comments
+ ERROR: need spaces around that '=' (ctx:VxV)
+ ERROR: need spaces around that '<' (ctx:VxV)
+ ERROR: do not use C99 // comments
+ ERROR: do not use C99 // comments
+ ERROR: do not use C99 // comments
+ ERROR: do not use C99 // comments
+ ERROR: do not use C99 // comments
+ ERROR: do not use C99 // comments
+ ERROR: do not initialise statics to 0 or NULL
+
+so just because you disagreed with those 2 errors that relate to '=' and 
+'<' (and where accoding to CodingStyle checkpatch.pl is correct), you 
+disregarded the other 8 very valid complaints that checkpatch.pl had. 
+(the final one even negatively affects the size of the kernel)
+
+and this is the experience i made in general: the checkpatch.pl benefits 
+far outweigh the costs, even if you disagree with a particular rule of 
+checkpatch.pl. When you came to Linux you already had to change your 
+coding style quite radically, correct?
+
+	Ingo
