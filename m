@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYCYMjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYCYMkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbYCYMjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 08:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYCYMjG
+	id S1755400AbYCYMkw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 08:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYCYMko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 08:39:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:64842 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbYCYMjE (ORCPT
+	Tue, 25 Mar 2008 08:40:44 -0400
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:20282 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752958AbYCYMko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 08:39:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=W7k7BEgpZy9Kdsg7vWseFtZXUNdQbnrIWVghuHYDaqBLU976X3mKqNdzAFdw+s7mm+j+lfi5UdC2TxbkUbN6aOLa3HTmp2Tw1E8iwNyxTLbRlxMwFW8RmvIGUvQwLdW51M7bb+1V5i+66fvFe+r0XNcEJFv6AHM+GjpnOGL7Q60=
-Subject: Re: What do you want from linux-next?
-From: Josh Boyer <jwboyer@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080324213222.c66baba1.akpm@linux-foundation.org>
-References: <20080325141112.0ce433db.sfr@canb.auug.org.au>
-	 <Pine.LNX.4.64.0803242056300.5309@shark.he.net>
-	 <20080324213222.c66baba1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 25 Mar 2008 07:38:56 -0500
-Message-Id: <1206448736.4160.8.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 (2.22.0-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 08:40:44 -0400
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       ak@suse.de
+Subject: Re: [PATCH 45/79] [PATCH] fix apic acking of irqs
+References: <12059475744092-git-send-email-gcosta@redhat.com>
+	<12059476971309-git-send-email-gcosta@redhat.com>
+	<1205947702588-git-send-email-gcosta@redhat.com>
+	<12059477063046-git-send-email-gcosta@redhat.com>
+	<12059477102394-git-send-email-gcosta@redhat.com>
+	<12059477143205-git-send-email-gcosta@redhat.com>
+	<1205947719906-git-send-email-gcosta@redhat.com>
+	<12059477234148-git-send-email-gcosta@redhat.com>
+	<12059477273855-git-send-email-gcosta@redhat.com>
+	<1205947732309-git-send-email-gcosta@redhat.com>
+	<12059477371787-git-send-email-gcosta@redhat.com>
+	<12059477421707-git-send-email-gcosta@redhat.com>
+	<12059477472416-git-send-email-gcosta@redhat.com>
+	<12059477521176-git-send! -email-gcosta@redhat.com>
+	<12059477561937-git-send-email-gcosta@redhat
+	<12059477792893-git-send-email-gcosta@redhat.com>
+	<alpine.SOC.1.00.0803201016540.12075@piorun>
+	<47E27D08.9050809@redhat.com>
+	<alpine.SOC.1.00.0803202125520.21415@piorun>
+	<47E7C00B.5000503@redhat.com>
+	<alpine.SOC.1.00.0803241608310.12757@piorun>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 25 Mar 2008 13:40:41 +0100
+In-Reply-To: <alpine.SOC.1.00.0803241608310.12757@piorun>
+Message-ID: <87k5jrgenq.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Mar 2008 12:34:04.0368 (UTC) FILETIME=[82E86D00:01C88E74]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-24 at 21:32 -0700, Andrew Morton wrote:
+"Maciej W. Rozycki" <macro@linux-mips.org> writes:
+> 
+>  Please note that ESR may hold some leftover state from whatever happened 
+> before Linux has taken control, so it is reasonable and I think actually 
+> recommended by Intel (FWIW) to clear the register before enabling the 
+> error interrupt.  For how to clear the ESR properly, please see 
+> setup_local_APIC() -- subtle differences and errata in various APIC 
+> implementations have made it more complicated than necessary, sigh...
 
-> There seem to be some trees which aren't yet in linux-next, some of them
-> significant.  The present list I'm pulling from is
+iirc a lot of the ESR weirdness was on NUMAQ only, which is down to one 
+of two last machines running Linux which will hopefully die soon ...
 
-> git-powerpc-merge
-> git-powerpc
-
-PowerPC is included as powerpc-next in the linux-next tree.
-
-josh
+-Andi
 
