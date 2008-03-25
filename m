@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYCYX2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbYCYX3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYCYX2M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYCYX15
+	id S1760212AbYCYX3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbYCYX3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:27:57 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:53043 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753396AbYCYX14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:27:56 -0400
-Date: Wed, 26 Mar 2008 00:13:00 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
-	Core Duo
-Message-ID: <20080325231300.GA10641@thinkpad.home.local>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20080320060550.GA13200@dose.home.local> <20080320032501.f387b3ef.akpm@linux-foundation.org> <20080320105432.GA13404@dose.home.local>
+	Tue, 25 Mar 2008 19:29:38 -0400
+Received: from mx1.suse.de ([195.135.220.2]:40250 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752960AbYCYX3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:29:36 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Al Viro" <viro@ZenIV.linux.org.uk>
+Date: Wed, 26 Mar 2008 10:29:27 +1100 (EST)
+Message-ID: <34746.192.168.1.70.1206487767.squirrel@neil.brown.name>
+In-Reply-To: <20080325224919.GM10722@ZenIV.linux.org.uk>
+References: <20080321155451.GU10722@ZenIV.linux.org.uk>
+    <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu>
+    <20080321163520.GV10722@ZenIV.linux.org.uk>
+    <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu>
+    <18408.26863.617591.836548@notabene.brown>
+    <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp>
+    <57096.192.168.1.70.1206484328.squirrel@neil.brown.name>
+    <20080325224919.GM10722@ZenIV.linux.org.uk>
+Subject: Re: r-o bind in nfsd
+Cc: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>, miklos@szeredi.hu,
+       haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       hch@infradead.org, linux-security-module@vger.kernel.org,
+       jmorris@namei.org
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080320105432.GA13404@dose.home.local>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 11:54:32 +0100, Tino Keitel wrote:
-> On Thu, Mar 20, 2008 at 03:25:01 -0700, Andrew Morton wrote:
-> > On Thu, 20 Mar 2008 07:05:50 +0100 Tino Keitel <tino.keitel@gmx.de> wrote:
-> > 
-> > > Hi folks,
-> > > 
-> > > whereas I had working suspend with 2.6.25-rc5, I had a hang at resume
-> > > with git HEAD from March 19th (something after 2.6.25-rc6). I tried it
-> > > again and got another hang, so it seems to be reproducible.
-> > 
-> > Was 2.6.24 OK?
-> 
-> Yes, mostly ok (some seldom failures).
-> 
-> > 
-> > > Any hints what commit might have broke suspend? I won't have the time
-> > > to start a git bisect or any resume debugging using CONFIG_PM_TRACE_RTC
-> > > until next Tuesday.
-> > > 
-> > > This is a Mac mini Core Duo.
-> > 
-> > I assume Linus doesn't use his any more ;)
-> 
-> That's too bad.
-> 
-> > > Here is the lspci -nn output:
-> > 
-> > Please try Linus's current tree - quite a few things got reverted today
-> > which might have fixed this.
-> 
-> OK, I'll try it.
+On Wed, March 26, 2008 9:49 am, Al Viro wrote:
+> On Wed, Mar 26, 2008 at 09:32:08AM +1100, NeilBrown wrote:
+>
+>> >   (1) The kernel don't know what operation (open/create/truncate etc.)
+>> > will be
+>> >       done at the moment of link_path_walk().
+>>
+>> Though the 'indent' data structure could be used to carry this
+>> information.
+>
+> If it's 'intent',
 
-I tried HEAD from yesterday, but resume still fails. So it looks like I
-need to start a git bisect.
+Yes, sorry.
 
-Regards,
-Tino
+>                   that mess will be gone next cycle.
+
+Cool.  Any chance of a preview?  Is it in -next or -mm ??
+
+>> >   (3) The rename() and link() operations handle two pathnames.
+>> >       But, it is not possible to know both pathnames at the moment of
+>> >       link_path_walk().
+>>
+>> Not an insolvable problem.
+>> One could imagine an implementation where a TYPE_RENAME_FROM security
+>> check produced a cookie that was consumed by a TYPE_RENAME_TO security
+>> check.  The cookie could then be used by the security module to
+>> make any connection between the two names that might be appropriate.
+>
+> alt.tasteless.software is that -> way...
+>
+
+While I have no desire to defend that particular design, saying "tasteless"
+without suggesting an alternate approach does appear somewhat unhelpful.
+
+NeilBrown
+
