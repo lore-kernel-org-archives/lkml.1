@@ -1,239 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYCYSqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYCYSth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbYCYSqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbYCYSqE
+	id S1758927AbYCYSth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYCYSt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:46:04 -0400
-Received: from mail0.scram.de ([78.47.204.202]:60647 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757670AbYCYSqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:46:03 -0400
-X-Spam-Score: -4.068
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <47E94891.6020000@scram.de>
-Date: Tue, 25 Mar 2008 19:46:41 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Tue, 25 Mar 2008 14:49:29 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:50145 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753915AbYCYSt3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:49:29 -0400
+Date: Tue, 25 Mar 2008 11:49:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
+       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
+       oleg@tv-sign.ru
+Subject: Re: [PATCH,RFC] Initialize call_rcu_sched sooner
+Message-ID: <20080325184912.GL4555@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080321143615.GA936@linux.vnet.ibm.com> <20080321224026.GA10169@linux.vnet.ibm.com> <20080324050652.GA4906@Krystal> <20080324054630.GE4555@linux.vnet.ibm.com> <20080325125308.GA19690@Krystal>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Scott Wood <scottwood@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale CPM1/CPM2
-  controllers
-References: <47A1C4E9.4000003@scram.de>	<20080221130520.12b01553@hyperion.delvare>	<47BEAF00.50106@scram.de> <20080223134335.0f5c7d79@hyperion.delvare>
-In-Reply-To: <20080223134335.0f5c7d79@hyperion.delvare>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080325125308.GA19690@Krystal>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
-
->> What is the preferred way to do this?
+On Tue, Mar 25, 2008 at 08:53:08AM -0400, Mathieu Desnoyers wrote:
+> Initialize call_rcu_sched sooner so it can be used in module_init stage.
 > 
-> I still have to think about it. I didn't have much time to work on this
-> during the last 2 weeks, hopefully I will fine some time to experiment
-> again soon. As I underlined before, my patch set affects no less than 5
-> subsystems with different needs and expectations, it's no trivial
-> change.
+> (needed for LTTng)
 
-Sorry for the late response, but I was pretty busy the last couple of weeks.
+This passes smoke tests, so have incorporated it.  Thank you, Mathieu!!!
 
-I'm thinking about something like this (based on http://patchwork.ozlabs.org/linuxppc/patch?id=16282 to 16284):
+						Thanx, Paul
 
-This patch implements various helpers to support OF bindings for
-the i2c API.
-
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/of/Kconfig     |    6 +++
- drivers/of/Makefile    |    1 +
- drivers/of/i2c.c       |  113 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_i2c.h |   24 ++++++++++
- 4 files changed, 144 insertions(+), 0 deletions(-)
- create mode 100644 drivers/of/i2c.c
- create mode 100644 include/linux/of_i2c.h
-
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index c03072b..3cff449 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -1,3 +1,9 @@
- config OF_DEVICE
- 	def_bool y
- 	depends on OF && (SPARC || PPC_OF)
-+
-+config OF_I2C
-+	def_bool y
-+	depends on OF && PPC_OF && I2C
-+	help
-+	  OpenFirmware I2C accessors
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index ab9be5d..655b982 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -1,2 +1,3 @@
- obj-y = base.o
- obj-$(CONFIG_OF_DEVICE) += device.o platform.o
-+obj-$(CONFIG_OF_I2C)	+= i2c.o
-diff --git a/drivers/of/i2c.c b/drivers/of/i2c.c
-new file mode 100644
-index 0000000..d3d1e9e
---- /dev/null
-+++ b/drivers/of/i2c.c
-@@ -0,0 +1,113 @@
-+/*
-+ * OF helpers for the I2C API
-+ *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/i2c.h>
-+#include <asm/prom.h>
-+
-+struct i2c_driver_device {
-+	char    *of_device;
-+	char    *i2c_type;
-+};
-+
-+static struct i2c_driver_device i2c_devices[] = {
-+	{"dallas,ds1374", "rtc-ds1374",},
-+};
-+
-+static int of_find_i2c_driver(struct device_node *node,
-+			      struct i2c_board_info *info)
-+{
-+	int i, cplen;
-+	const char *compatible;
-+	const char *p;
-+
-+	/* 1. search for exception list entry */
-+	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-+		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
-+			continue;
-+		if (strlcpy(info->type, i2c_devices[i].i2c_type,
-+			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+			return -ENOMEM;
-+
-+		return 0;
-+	}
-+
-+	compatible = of_get_property(node, "compatible", &cplen);
-+	if (!compatible)
-+		return -ENODEV;
-+
-+	/* 2. search for linux,<i2c-type> entry */
-+	p = compatible;
-+	while (cplen > 0) {
-+		if (!strncmp(p, "linux,", 6)) {
-+			p += 6;
-+			if (strlcpy(info->type, p,
-+				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+				return -ENOMEM;
-+			return 0;
-+		}
-+
-+		i = strlen(p) + 1;
-+		p += i;
-+		cplen -= i;
-+	}
-+
-+	/* 3. take fist compatible entry and strip manufacturer */
-+	p = strchr(compatible, ',');
-+	if (!p)
-+		return -ENODEV;
-+	p++;
-+	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node)
-+{
-+	void *result;
-+	struct device_node *node = NULL;
-+
-+	while ((node = of_get_next_child(adap_node, node))) {
-+		struct i2c_board_info info = {};
-+		const u32 *addr;
-+		int len;
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_ERR
-+			       "of-i2c: invalid i2c device entry\n");
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq == NO_IRQ)
-+			info.irq = -1;
-+
-+		if (of_find_i2c_driver(node, &info) < 0)
-+			continue;
-+
-+		info.addr = *addr;
-+
-+		request_module(info.type);
-+
-+		result = i2c_new_device(adap, &info);
-+		if (result == NULL) {
-+			printk(KERN_ERR
-+			       "of-i2c: Failed to load driver for %s\n",
-+			       info.type);
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL(of_register_i2c_devices);
-diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
-new file mode 100644
-index 0000000..2e5a967
---- /dev/null
-+++ b/include/linux/of_i2c.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Generic I2C API implementation for PowerPC.
-+ *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __LINUX_OF_I2C_H
-+#define __LINUX_OF_I2C_H
-+
-+#include <linux/i2c.h>
-+
-+#ifdef CONFIG_OF_I2C
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node);
-+
-+#endif /* CONFIG_OF_I2C */
-+
-+#endif /* __LINUX_OF_I2C_H */
--- 
-1.5.4.4
-
-
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> ---
+>  init/main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6-lttng/init/main.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/init/main.c	2008-03-25 08:49:02.000000000 -0400
+> +++ linux-2.6-lttng/init/main.c	2008-03-25 08:49:20.000000000 -0400
+> @@ -738,13 +738,13 @@ static void __init do_initcalls(void)
+>   */
+>  static void __init do_basic_setup(void)
+>  {
+> +	rcu_init_sched();
+>  	/* drivers will send hotplug events */
+>  	init_workqueues();
+>  	usermodehelper_init();
+>  	driver_init();
+>  	init_irq_proc();
+>  	do_initcalls();
+> -	rcu_init_sched();
+>  }
+> 
+>  static int __initdata nosoftlockup;
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
