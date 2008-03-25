@@ -1,82 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYCYGwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYCYHPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbYCYGwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 02:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYCYGwc
+	id S1753985AbYCYHPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 03:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYCYHPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 02:52:32 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37949 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbYCYGwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 02:52:31 -0400
-Date: Tue, 25 Mar 2008 17:52:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for March 25
-Message-Id: <20080325175224.3ee62b09.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__25_Mar_2008_17_52_24_+1100_43fdtmsRgWgo.oyt"
+	Tue, 25 Mar 2008 03:15:44 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:34705 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbYCYHPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 03:15:43 -0400
+Date: Tue, 25 Mar 2008 03:15:40 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: list splicing and list POISONing
+Message-ID: <alpine.LFD.1.00.0803250307110.29947@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__25_Mar_2008_17_52_24_+1100_43fdtmsRgWgo.oyt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+  based on a conversation we've been having on the newbies list, i'm
+curious about the rationale behind list "POISON"ing.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+  from <linux/list.h>, when you splice one list into another, the
+head element from the original list is left hanging in space with its
+original prev and next pointer values unchanged:
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
+===
+static inline void __list_splice(struct list_head *list,
+                                 struct list_head *head)
+{
+        struct list_head *first = list->next;
+        struct list_head *last = list->prev;
+        struct list_head *at = head->next;
 
-There were a few merge conflicts (fairly trivial) and a couple of build
-failures that have been notified.
+        first->prev = head;
+        head->next = first;
 
-I have added POWERPC-really-export-empty_zero_page.patch and reverted
-async-tx commit 9974693221954ef1019f87d32ae26a0757d2ee85 ("dmaengine: ack
-to flags: make use of the unused bits in the 'ack' field") as these are
-still needed to make powerpc allmodconfig build (in particular ext4 and
-drivers/dma/fsldma.c).  These have been reported previously.
+        last->next = at;
+        at->prev = last;
+}
+===
 
-We are up to 48 trees, more are welcome (even if they are currently
-empty).  The influx of new trees has slowed completely.  Thanks to those
-who have contributed, and to those who haven't, please do.
+  notice how neither list->prev nor list->next is set to, say, NULL to
+represent that that list head now represents an empty list.  instead,
+those pointers are left (rather dangerously) pointing into the
+newly-spliced list, which means that, if you erroneously try to
+traverse the list represented by the "list" list head, you'll end up
+immediately over in the new list and loop there forever.  it would
+seem to make more sense to set those pointers to either NULL or
+LIST_POISON{1,2}, would it not?  just for safety's sake?
 
-In particular, I have very few of the architecture trees ....
+  it seems like that's what's done when an element is *deleted* (that
+is, unlinked) from a list:
 
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+===
+static inline void list_del(struct list_head *entry)
+{
+        __list_del(entry->prev, entry->next);
+        entry->next = LIST_POISON1;
+        entry->prev = LIST_POISON2;
+}
+===
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/.
+  so shouldn't the same reasoning apply in the splicing example?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+rday
+--
 
---Signature=_Tue__25_Mar_2008_17_52_24_+1100_43fdtmsRgWgo.oyt
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-iD8DBQFH6KEtTgG2atn1QN8RArsBAJwMGOu9szJkgOO76S+oDdASl6SfkwCghegG
-om6F5WIy7yT+IcHIvjKYJS4=
-=p0lb
------END PGP SIGNATURE-----
-
---Signature=_Tue__25_Mar_2008_17_52_24_+1100_43fdtmsRgWgo.oyt--
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
