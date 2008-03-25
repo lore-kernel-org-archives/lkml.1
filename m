@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbYCYRZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYCYR3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbYCYRZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 13:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755857AbYCYRZI
+	id S1757316AbYCYR3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 13:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbYCYR3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 13:25:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52377 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755398AbYCYRZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 13:25:08 -0400
-Date: Tue, 25 Mar 2008 18:28:17 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, jirislaby@gmail.com,
-       viro@ZenIV.linux.org.uk, joe@perches.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-Message-ID: <20080325172817.GT2170@one.firstfloor.org>
-References: <20080323085210.GE10722@ZenIV.linux.org.uk> <20080323.032013.79276201.davem@davemloft.net> <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <87od93gfbj.fsf@basil.nowhere.org> <1206465548.6437.167.camel@lappy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206465548.6437.167.camel@lappy>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 25 Mar 2008 13:29:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51635 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754412AbYCYR3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 13:29:32 -0400
+Message-ID: <47E93655.10907@redhat.com>
+Date: Tue, 25 Mar 2008 13:28:53 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] srat, x86_64: Add support for nodes spanning other nodes
+References: <20080325171435.GA3313@linux-os.sc.intel.com>
+In-Reply-To: <20080325171435.GA3313@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > That is an objective (not just random assertation) reason against
-> > doing extensive changes of existing files like Joe's patchkit.
+Suresh Siddha wrote:
+> For example, If the physical address layout on a two node system with 8 GB
+> memory is something like:
+> node 0: 0-2GB, 4-6GB
+> node 1: 2-4GB, 6-8GB
 > 
-> Building a single allyesconfig for x86_32 and x86_64 before and after
-> and getting identical binaries is pretty strong.
+> Current kernels fail to boot/detect this NUMA topology.
+> 
+> ACPI SRAT tables can expose such a topology which needs to be supported.
+> 
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 227fdb0..99eb102 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -880,6 +880,15 @@ config X86_64_ACPI_NUMA
+>  	help
+>  	  Enable ACPI SRAT based node topology detection.
+>  
+> +# Some NUMA nodes have memory ranges that span
+> +# other nodes.  Even though a pfn is valid and
+> +# between a node's start and end pfns, it may not
+> +# reside on that node.  See memmap_init_zone()
+> +# for details.
+> +config NODES_SPAN_OTHER_NODES
+> +	def_bool y
+> +	depends on X86_64_ACPI_NUMA
+> +
 
-checkpatch does not necessarily result in the same binaries. First
-there is the build date and then there might be changes like
-KERN_* prefixes added etc.
+Is this hunk a leftover from your testing?  You're not using the config option 
+anywhere, and there isn't really anything in this patch that would justify 
+making this a separate config option in mainline.
 
-And there might be code which is not covered under a single configuration,
-e.g. when both 32bit and 64bit x86 is changed.
-
--Andi
-
+-- Chris
