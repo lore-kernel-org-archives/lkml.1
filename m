@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYCYQT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYCYQUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbYCYQT3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 12:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYCYQTV
+	id S1758561AbYCYQUR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbYCYQUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 12:19:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53120 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756077AbYCYQTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 12:19:20 -0400
-Date: Tue, 25 Mar 2008 17:19:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Mayer <ajm@sgi.com>
-Cc: torvalds@linux-foundation.org,
-       linux-kernel list <linux-kernel@vger.kernel.org>,
-       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines
-Message-ID: <20080325161901.GF27174@elte.hu>
-References: <Pine.SGI.3.96.1080324092858.7873204S-100000@fergus.americas.sgi.com>
-MIME-Version: 1.0
+	Tue, 25 Mar 2008 12:20:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60022 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756101AbYCYQUA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 12:20:00 -0400
+Date: Tue, 25 Mar 2008 11:19:57 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 6/8] x86_64: Define the macros and tables for the basic UV infrastructure.
+Message-ID: <20080325161957.GA1884@sgi.com>
+References: <20080324182118.GA21758@sgi.com> <87ej9zi05c.fsf@basil.nowhere.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.SGI.3.96.1080324092858.7873204S-100000@fergus.americas.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <87ej9zi05c.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Mayer <ajm@sgi.com> wrote:
-
-> Subject: [PATCH] x86_64: resize NR_IRQS for large machines
+On Tue, Mar 25, 2008 at 11:11:11AM +0100, Andi Kleen wrote:
+> Jack Steiner <steiner@sgi.com> writes:
 > 
-> From: Alan Mayer <ajm@sgi.com>
+> > Define the macros and tables for the basic UV infrastructure.
+> > 
+> > 
+> > (NOTE: a work-in-progress. Pieces missing....)
 > 
-> On machines with very large numbers of cpus, tables that are 
-> dimensioned by NR_IRQS get very large, especially the irq_desc table.  
-> They are also very sparsely used.  When the cpu count is > 
-> MAX_IO_APICS, use MAX_IO_APICS to set NR_IRQS, otherwise use NR_CPUS.
+> Does the kernel really need all this information? You just want
+> to address the UV-APIC right? I suspect you could use a much stripped
+> down file.
+
+Most of the macros will never be used by generic kernel code, but we
+have UV-specific drivers that will use the information (GRU, XPC and
+XPMEM drivers). All of these are getting very close to being ready to
+be pushed upstream.
+
 > 
-> Signed-off-by: Alan Mayer <ajm@sgi.com>
-> Reviewed-by: Christoph Lameter <clameter@sgi.com>
+> > +DECLARE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
+> > +#define uv_hub_info 		(&__get_cpu_var(__uv_hub_info))
+> > +#define uv_cpu_hub_info(cpu)	(&per_cpu(__uv_hub_info, cpu))
+> > +
+> > +/* This header file is used in BIOS code that runs in physical mode */
+> 
+> Not sure what physical mode is.
 
-thanks, applied. I suspect this can wait until .26, as there appears to 
-be a number of other patches that you need to get these boxes running on 
-vanilla, right?
+Me either :-)    I fixed the comment
+	"... BIOS code that runs with virtual == physical"
 
-	Ingo
+However, then I read the rest of your comments & will take the approach
+of defining __va() in the BIOS code. That eliminates the need for
+the macro.
+
+> 
+> > +#ifdef __BIOS__
+> > +#define UV_ADDR(x)		((unsigned long *)(x))
+> > +#else
+> > +#define UV_ADDR(x)		((unsigned long *)__va(x))
+> > +#endif
+> 
+> But it it would be cleaner if your BIOS just supplied a suitable __va()
+> and then you remove these macros.
+> 
+> -Andi
+
+--- jack
