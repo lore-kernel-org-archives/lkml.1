@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbYCYBhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYCYBiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbYCYBhh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 21:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYCYBha
+	id S1756150AbYCYBiS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 21:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbYCYBiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 21:37:30 -0400
-Received: from ns.theshore.net ([67.18.92.50]:38261 "EHLO www.theshore.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753606AbYCYBh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 21:37:29 -0400
-Message-ID: <47E85766.7020108@theshore.net>
-Date: Mon, 24 Mar 2008 21:37:42 -0400
-From: "Christopher S. Aker" <caker@theshore.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization@lists.linux-foundation.org, xming <xmingske@gmail.com>
-Subject: Re: [Xen-devel] Re: Xen paravirt frontend block hang
-References: <4772AC8E.7010007@theshore.net> <47C712EF.1060703@goop.org>	<47C9F818.4020200@theshore.net> <47CAC931.1000107@goop.org> <47CACFBE.5010007@theshore.net> <47DFE75B.7080404@goop.org>
-In-Reply-To: <47DFE75B.7080404@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Mar 2008 21:38:05 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:36663 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753553AbYCYBiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 21:38:04 -0400
+Date: Mon, 24 Mar 2008 20:37:59 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 1/8] x86_64: Change GET_APIC_ID() from an inline function to an out-of-line function
+Message-ID: <20080325013759.GA16549@sgi.com>
+References: <20080324182107.GA27979@sgi.com> <86802c440803241534p5c28193brf769280fe05d286d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440803241534p5c28193brf769280fe05d286d@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Christopher S. Aker wrote:
->> Jeremy Fitzhardinge wrote:
->>> Are you running an SMP or UP domain?  I found I could get hangs very 
->>> easily with UP (but I need confirm it isn't a result of some other 
->>> very experimental patches).
->>
->> The hang occurs with both SMP and UP compiled pv_ops kernels.  SMP 
->> kernels are still slightly responsive after the hang occurs, which 
->> makes me think only one proc gets stuck at a time, not the entire kernel. 
+> >  Index: linux/include/asm-x86/apicdef.h
+> >  ===================================================================
+> >  --- linux.orig/include/asm-x86/apicdef.h        2008-03-18 14:54:19.000000000 -0500
+> >  +++ linux/include/asm-x86/apicdef.h     2008-03-21 09:07:23.000000000 -0500
+> >  @@ -14,7 +14,6 @@
+> >
+> >   #ifdef CONFIG_X86_64
+> >   # define       APIC_ID_MASK            (0xFFu<<24)
+> >  -# define       GET_APIC_ID(x)          (((x)>>24)&0xFFu)
+> >   # define       SET_APIC_ID(x)          (((x)<<24))
+> >   #endif
 > 
-> The patch I posted yesterday - "xen: fix RMW when unmasking events" - 
-> should definitively fix the hanging-under-load bugs (I hope). 
+> it this patch after smpboot.c integration?
+> 
+> that patchsets have GET_APIC_ID in mach_apicdef.h instead of apicdef.h
+> 
 
-Confirmed-by: caker@theshore.net
+Sorry - I meant to add to the patches that they are based on linux-2.6.25-rc5-mm1.
+Was the change to smpboot.c made in -rc6??
 
-Nice work!
-
--Chris
+--- jack
 
