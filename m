@@ -1,110 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYCYX1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYCYX2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759017AbYCYX1m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYCYX1e
+	id S1760954AbYCYX2M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYCYX15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:27:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39091 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbYCYX1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:27:34 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Michael Meyer <mike65134@yahoo.de>
-Subject: Re: performance differences: "maxcpus=1" vs. "echo 0 > /sys/devices/system/cpu/cpu1/online"
-Date: Tue, 25 Mar 2008 19:27:14 -0400
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-References: <57127.43039.qm@web25812.mail.ukl.yahoo.com>
-In-Reply-To: <57127.43039.qm@web25812.mail.ukl.yahoo.com>
+	Tue, 25 Mar 2008 19:27:57 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:53043 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753396AbYCYX14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:27:56 -0400
+Date: Wed, 26 Mar 2008 00:13:00 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc6 hangs at resume after suspend to RAM on Mac mini
+	Core Duo
+Message-ID: <20080325231300.GA10641@thinkpad.home.local>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20080320060550.GA13200@dose.home.local> <20080320032501.f387b3ef.akpm@linux-foundation.org> <20080320105432.GA13404@dose.home.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803251927.14211.lenb@kernel.org>
+In-Reply-To: <20080320105432.GA13404@dose.home.local>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 March 2008, Michael Meyer wrote:
-> 
-> --- Andi Kleen <andi@firstfloor.org> schrieb:
-> 
-> > Luciano Rocha <luciano@eurotux.com> writes:
+On Thu, Mar 20, 2008 at 11:54:32 +0100, Tino Keitel wrote:
+> On Thu, Mar 20, 2008 at 03:25:01 -0700, Andrew Morton wrote:
+> > On Thu, 20 Mar 2008 07:05:50 +0100 Tino Keitel <tino.keitel@gmx.de> wrote:
 > > 
-> > > On Tue, Mar 25, 2008 at 02:47:50PM +0100, Michael
-> > Meyer wrote:
-> > > > Hi, 
-> > > > 
-> > > > what is the difference between booting a dual
-> > core
-> > > > machine with "maxcpus=1" or by deactivating the
-> > second
-> > > > core at run time with "echo 0 >
-> > > > /sys/devices/system/cpu/cpu1/online"?
+> > > Hi folks,
 > > > 
-> > > maxcpus=1 should turn off the SMP alternative and
-> > switch to UP only,
-> > > optimising some locks and instructions.
+> > > whereas I had working suspend with 2.6.25-rc5, I had a hang at resume
+> > > with git HEAD from March 19th (something after 2.6.25-rc6). I tried it
+> > > again and got another hang, so it seems to be reproducible.
 > > 
-> > CPU hot unplug will do the same. But it is unlikely
-> > it accounts
-> > for that much performance difference.
+> > Was 2.6.24 OK?
+> 
+> Yes, mostly ok (some seldom failures).
+> 
 > > 
-> > If he used maxcpus=0 it would make sense. maxcpus=0
-> > disables
-> > the IO-APIC which likely makes a large difference.
-> > But it should
-> > be actually slower.
+> > > Any hints what commit might have broke suspend? I won't have the time
+> > > to start a git bisect or any resume debugging using CONFIG_PM_TRACE_RTC
+> > > until next Tuesday.
+> > > 
+> > > This is a Mac mini Core Duo.
 > > 
-> > There should be actually no difference in theory
-> > between max_cpus=1
-> > and hot unplug to one CPU. Might be some bug.
+> > I assume Linus doesn't use his any more ;)
 > 
-> I had the following time values:
+> That's too bad.
 > 
-> maxcpus=1:
-> real	0m1.642s
-> user	0m1.528s
-> sys	0m0.068s
+> > > Here is the lspci -nn output:
+> > 
+> > Please try Linus's current tree - quite a few things got reverted today
+> > which might have fixed this.
 > 
-> maxcpus=2 and 
-> echo 1 > /sys/devices/system/cpu/cpu1/online:
-> real	0m2.579s
-> user	0m4.096s
-> sys	0m0.160s
+> OK, I'll try it.
 
-this above is the baseline, yes?
-it is same as if you used no boot param
-and did not touch the online file, yes?
+I tried HEAD from yesterday, but resume still fails. So it looks like I
+need to start a git bisect.
 
-> maxcpus=2 and
-> echo 0 > /sys/devices/system/cpu/cpu1/online:
-> real	0m3.757s
-> user	0m3.632s
-> sys	0m0.112s
-
-Please post the contents of 
-# grep . /sys/devices/system/cpu/cpu*/cpufreq/*
-and also
-grep . /proc/acpi/processor/*/power
-
-My guess that the maxcpus=1 case benefits from turbo mode, aka EIDA.
-That benefit, however, is subject to this bug:
-http://bugzilla.kernel.org/show_bug.cgi?id=5471
-because for a single thread to run faster than the marketing MHz,
-the other thread must be in deep-idle, which is prevented
-by the bug above.
-
-If your scaling_available_frequencies includes 2401000
-then you probably have a turbo-mode enabled processor.
-
-one way to verify this would be to disable turbo mode
-by pegging the MHz like so:
-
-# echo 2400000 > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
-# echo 2400000 > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_max_freq
-
--Len
+Regards,
+Tino
