@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYCYQmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYCYQmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbYCYQmX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 12:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbYCYQmH
+	id S1758728AbYCYQmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbYCYQmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 12:42:07 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29806 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757733AbYCYQmF convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 12:42:10 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:33596 "EHLO
+	outbound5-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757796AbYCYQmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 12:42:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,553,1199692800"; 
-   d="scan'208";a="360343053"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 25 Mar 2008 12:42:08 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0JYAP1N-01-JWB-01
+Date: Tue, 25 Mar 2008 17:41:54 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: mingo@elte.hu, ak@suse.de, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Increase max physical memory size of x86_64
+Message-ID: <20080325164154.GA5909@alberich.amd.com>
+References: <20080321133157.GA10911@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH][RESEND] wireless: convert !X & Y to !(X & Y) in iwl4965_is_fat_tx_allowed()
-Date: Tue, 25 Mar 2008 09:30:58 -0700
-Message-ID: <D936D925018D154694D8A362EEB08920040370C5@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <47E9226C.7090403@tiscali.nl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][RESEND] wireless: convert !X & Y to !(X & Y) in iwl4965_is_fat_tx_allowed()
-thread-index: AciOksrFvjQWJt3wRFClULTGyHXoZgAApEhA
-References: <47E9226C.7090403@tiscali.nl>
-From: "Chatre, Reinette" <reinette.chatre@intel.com>
-To: "Roel Kluin" <12o3l@tiscali.nl>, "Zhu, Yi" <yi.zhu@intel.com>
-Cc: <linux-wireless@vger.kernel.org>, "lkml" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Mar 2008 16:30:59.0020 (UTC) FILETIME=[9B8030C0:01C88E95]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080321133157.GA10911@sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 25 Mar 2008 16:41:52.0754 (UTC) FILETIME=[21281520:01C88E97]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, March 25, 2008 9:04 AM, Roel Kluin  wrote:
+On Fri, Mar 21, 2008 at 08:31:57AM -0500, Jack Steiner wrote:
+> Increase the maximum physical address size of x86_64 system
+> to 44-bits. This is in preparation for future chips that
+> support larger physical memory sizes.
 
-> from include/linux/ieee80211.h:274:
-> #define IEEE80211_HT_CAP_SUP_WIDTH              0x0002 ---
-> ! has a higher priority than &
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c
-> b/drivers/net/wireless/iwlwifi/iwl-4965.c
-> index d727de8..6576757 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-4965.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
-> @@ -4589,7 +4589,7 @@ static u8
-> iwl4965_is_fat_tx_allowed(struct iwl4965_priv *priv,
-> 
-> 	if (sta_ht_inf) {
-> 		if ((!sta_ht_inf->ht_supported) ||
-> -		   (!sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH))
-> +		   (!(sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH)))
-return 0;
-> 	}
+Shouldn't this be increased to 48?
+AMD family 10h CPUs actually support 48 bits for the
+physical address.
 
-This patch has already been acked and merged into wireless-testing, and
-afaik already pushed further upstream.
 
-Reinette
+Regards,
+
+Andreas
+
+
