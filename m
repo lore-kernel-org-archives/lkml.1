@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbYCYOcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbYCYOco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbYCYOcP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 10:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYCYOb7
+	id S1755768AbYCYOco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 10:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYCYOcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 10:31:59 -0400
-Received: from styx.suse.cz ([82.119.242.94]:40848 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753797AbYCYOb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 10:31:59 -0400
-Subject: [PATCH] Discard notification signals when a tracer exits
-From: Petr Tesarik <ptesarik@suse.cz>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Tue, 25 Mar 2008 15:31:53 +0100
-Message-Id: <1206455513.17227.4.camel@elijah.suse.cz>
+	Tue, 25 Mar 2008 10:32:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52128 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754041AbYCYOce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 10:32:34 -0400
+Date: Tue, 25 Mar 2008 15:35:44 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, ebiederm@xmission.com,
+       xemul@openvz.org, pavel@ucw.cz, sds@tycho.nsa.gov, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+Message-ID: <20080325143544.GP2170@one.firstfloor.org>
+References: <20080323135110.GA294@tv-sign.ru> <20080324152906.dee7b272.akpm@linux-foundation.org> <20080324225611.GA157@tv-sign.ru> <20080324160819.cea2d921.akpm@linux-foundation.org> <87r6dzi0mw.fsf@basil.nowhere.org> <m3fxuedh3m.fsf@maximus.localdomain> <20080325142259.GO2170@one.firstfloor.org> <m37ifqdgfu.fsf@maximus.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m37ifqdgfu.fsf@maximus.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a tracer exits without detaching from the traced process, the
-tracee may be at a tracer notification stop and will thus interpret
-the value in task->exit_code (SIGTRAP | 0x80) as the signal to be
-delivered.
+On Tue, Mar 25, 2008 at 03:30:29PM +0100, Krzysztof Halasa wrote:
+> Andi Kleen <andi@firstfloor.org> writes:
+> 
+> > The problem is that you can deadlock if you are not very careful.
+> 
+> I can damage the system in trillion ways, one more is not a problem
+> :-)
 
-This patch fixes the problem by clearing exit_code when detaching
-the traced process from a dying tracer.
+We don't actually have that many ways for hard deadlocks even
+as root (short of doing really nasty things on /dev/kmem) 
 
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> Hopefully someone will write the details down to enable root to be
+> very careful.
 
----
- exit.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Sure, but if the deadlocks can be avoided on the kernel level (just
+making sure the children are already reaped) then it would be even
+better.
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -642,8 +642,10 @@ reparent_thread(struct task_struct *p, s
- 			/*
- 			 * If it was at a trace stop, turn it into
- 			 * a normal stop since it's no longer being
--			 * traced.
-+			 * traced.  Cancel the notification signal,
-+			 * or the tracee may get a SIGTRAP.
- 			 */
-+			p->exit_code = 0;
- 			ptrace_untrace(p);
- 		}
- 	}
-@@ -713,6 +715,10 @@ static void forget_original_parent(struc
- 			p->real_parent = reaper;
- 			reparent_thread(p, father, 0);
- 		} else {
-+			/* cancel the notification signal at a trace stop */
-+			if (p->state == TASK_TRACED)
-+				p->exit_code = 0;
-+
- 			/* reparent ptraced task to its real parent */
- 			__ptrace_unlink (p);
- 			if (p->exit_state == EXIT_ZOMBIE && p->exit_signal != -1 &&
-
+-Andi
