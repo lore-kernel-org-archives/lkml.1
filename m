@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYCYUii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbYCYUiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757665AbYCYUii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 16:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYCYUi1
+	id S1759581AbYCYUiw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 16:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbYCYUij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 16:38:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49061 "EHLO
+	Tue, 25 Mar 2008 16:38:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49069 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbYCYUi0 (ORCPT
+	with ESMTP id S1757591AbYCYUii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 16:38:26 -0400
-Message-ID: <47E96263.9000808@zytor.com>
-Date: Tue, 25 Mar 2008 13:36:51 -0700
+	Tue, 25 Mar 2008 16:38:38 -0400
+Message-ID: <47E962AE.9040307@zytor.com>
+Date: Tue, 25 Mar 2008 13:38:06 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Greg KH <gregkh@suse.de>, Mark Lord <lkml@rtr.ca>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca>	<47E87942.2020409@rtr.ca>	<47E88A13.70808@zytor.com>	<47E90019.3050006@rtr.ca>	<47E90458.7030801@zytor.com>	<47E9383F.3050908@rtr.ca>	<20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com>
-In-Reply-To: <20080325123454.4eba7644.randy.dunlap@oracle.com>
+       kernel list <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
+Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
+References: <200803242324.35357.yhlu.kernel@gmail.com> <47E9003B.5010002@zytor.com> <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com> <20080325190851.GC30998@linux-os.sc.intel.com> <20080325200830.GB15330@elte.hu>
+In-Reply-To: <20080325200830.GB15330@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
->>
->> Come on people, adding symlinks for device major:minor numbers in sysfs
->> to save a few 10s of lines of userspace code?  Can things get sillier?
->>
->> You can add a single udev rule to probably build these in a tree in /dev
->> if you really need such a thing...
->>
->> And what's wrong with your new ioctl recomendation?
+Ingo Molnar wrote:
+> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
 > 
-> Ah, there's some sanity.  :)
+>>>>  OK, note previous question: what is the motivation for having 
+>>>>  this as a whitelist (as opposed to a blacklist)?
+>>> Venkatesh could tell?
+>> Main reason for white-list at this point is not to be side-tracked by 
+>> real or potential erratas on older CPUs. Focussing on getting the 
+>> support for this feature on current and future CPUs. If older CPUs 
+>> have survived all these days without this feature, they should be 
+>> doing OK.
+> 
+> well, the upside would be that since most testing of Linux kernels is 
+> done on _old_ hardware (people tend to risk their old hw first ;-), we'd 
+> get faster convergence of the codebase, even though we have the risk of 
+> erratas (known and unknown ones alike). Code that artificially limits 
+> its utility is almost always slow to stabilize.
 > 
 
-It's not so much an issue of a few tens of lines of user space code, but 
-rather the fact that something that should be O(1) is currently O(n).
+Yes, using a whitelist of this type is wrong, IMO, and smells faintly of 
+vendor-lockin.
 
 	-hpa
