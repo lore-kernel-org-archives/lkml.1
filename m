@@ -1,63 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYCYTPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbYCYTRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759490AbYCYTPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 15:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758391AbYCYTPS
+	id S1759175AbYCYTRX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 15:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYCYTRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 15:15:18 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11877 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753984AbYCYTPQ convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 15:17:12 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:58110 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbYCYTRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 15:15:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,553,1199692800"; 
-   d="scan'208";a="309526375"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 25 Mar 2008 15:17:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=Ygfo0QbYK/D/C0GiALQK/Isw4Xr96oXayOew7KDB5yoG6hRvNZ+ZzZan9Ydr7Lot96waqgX9/C3726VqRysvQdTW2U8LkxjkFUGP8v0YOU4rUzUP7eZudhIJquwo9584nNsvBkksSBNLPJLAACkjksrqxW9htMxUKa7YoZSdiQg=
+Date: Tue, 25 Mar 2008 22:16:32 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: entry_32.S - use flags from processor-flags.h
+Message-ID: <20080325191632.GB9237@cvg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [11/14] vcompound: Fallbacks for order 1 stack allocations on IA64 and x86
-Date: Tue, 25 Mar 2008 12:09:49 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECE9DDFA@orsmsx424.amr.corp.intel.com>
-In-reply-to: <Pine.LNX.4.64.0803251036410.15870@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [11/14] vcompound: Fallbacks for order 1 stack allocations on IA64 and x86
-Thread-Index: AciOoHRrzFD2jnLHTuySZ/f1vGvFagAChZ4w
-References: <20080321061726.782068299@sgi.com> <20080321.002502.223136918.davem@davemloft.net> <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com> <20080321.145712.198736315.davem@davemloft.net> <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com> <1FE6DD409037234FAB833C420AA843ECE5B84D@orsmsx424.amr.corp.intel.com> <Pine.LNX.4.64.0803251036410.15870@schroedinger.engr.sgi.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Cc: "David Miller" <davem@davemloft.net>, <linux-mm@kvack.org>,
-       <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>
-X-OriginalArrivalTime: 25 Mar 2008 19:09:50.0476 (UTC) FILETIME=[CCB0F4C0:01C88EAB]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I thought the only pinned TLB entry was for the per cpu area? How does it 
-> pin the TLB? The expectation is that a single TLB covers the complete 
-> stack area? Is that a feature of fault handling?
+By including processor-flags.h we are allowed to use predefined
+macroses instead of keeping own ones
 
-Pinning TLB entries on ia64 is done using TR registers with the "itr"
-instruction.  Currently we have the following pinned mappings:
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-itr[0] : maps kernel code.  64MB page at virtual 0xA000000100000000
-dtr[1] : maps kernel data.  64MB page at virtual 0xA000000100000000
+I've tried to bring as minimum changes as possible during this
+patch (even checkpatch was not being started 'cause I know
+it will require reformat much more lines that are touched by
+this patch. Anyway, if someone wants me to do so - no problem
+just say ;)
 
-itr[1] : maps PAL code as required by architecture
+Please review
 
-dtr[1] : maps an area of region 7 that spans kernel stack
-         page size is kernel granule size (default 16M).
-         This mapping needs to be reset on a context switch
-         where we move to a stack in a different granule.
+ entry_32.S |   20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-We used to used dtr[2] to map the 64K per-cpu area at 0xFFFFFFFFFFFF0000
-but Ken Chen found that performance was better to use a dynamically
-inserted DTC entry from the Alt-TLB miss handler which allows this
-entry in the TLB to be available for generic use (on most processor
-models).
-
--Tony
-
+Index: linux-2.6.git/arch/x86/kernel/entry_32.S
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/entry_32.S	2008-03-25 21:32:27.000000000 +0300
++++ linux-2.6.git/arch/x86/kernel/entry_32.S	2008-03-25 21:55:45.000000000 +0300
+@@ -50,6 +50,7 @@
+ #include <asm/desc.h>
+ #include <asm/percpu.h>
+ #include <asm/dwarf2.h>
++#include <asm/processor-flags.h>
+ #include "irq_vectors.h"
+ 
+ /*
+@@ -67,13 +68,6 @@
+ 
+ #define nr_syscalls ((syscall_table_size)/4)
+ 
+-CF_MASK		= 0x00000001
+-TF_MASK		= 0x00000100
+-IF_MASK		= 0x00000200
+-DF_MASK		= 0x00000400 
+-NT_MASK		= 0x00004000
+-VM_MASK		= 0x00020000
+-
+ #ifdef CONFIG_PREEMPT
+ #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
+ #else
+@@ -83,7 +77,7 @@ VM_MASK		= 0x00020000
+ 
+ .macro TRACE_IRQS_IRET
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-	testl $IF_MASK,PT_EFLAGS(%esp)     # interrupts off?
++	testl $X86_EFLAGS_IF,PT_EFLAGS(%esp)     # interrupts off?
+ 	jz 1f
+ 	TRACE_IRQS_ON
+ 1:
+@@ -245,7 +239,7 @@ ret_from_intr:
+ check_userspace:
+ 	movl PT_EFLAGS(%esp), %eax	# mix EFLAGS and CS
+ 	movb PT_CS(%esp), %al
+-	andl $(VM_MASK | SEGMENT_RPL_MASK), %eax
++	andl $(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %eax
+ 	cmpl $USER_RPL, %eax
+ 	jb resume_kernel		# not returning to v8086 or userspace
+ 
+@@ -270,7 +264,7 @@ need_resched:
+ 	movl TI_flags(%ebp), %ecx	# need_resched set ?
+ 	testb $_TIF_NEED_RESCHED, %cl
+ 	jz restore_all
+-	testl $IF_MASK,PT_EFLAGS(%esp)	# interrupts off (exception path) ?
++	testl $X86_EFLAGS_IF,PT_EFLAGS(%esp)	# interrupts off (exception path) ?
+ 	jz restore_all
+ 	call preempt_schedule_irq
+ 	jmp need_resched
+@@ -387,7 +381,7 @@ syscall_exit:
+ 					# setting need_resched or sigpending
+ 					# between sampling and the iret
+ 	TRACE_IRQS_OFF
+-	testl $TF_MASK,PT_EFLAGS(%esp)	# If tracing set singlestep flag on exit
++	testl $X86_EFLAGS_TF,PT_EFLAGS(%esp)	# If tracing set singlestep flag on exit
+ 	jz no_singlestep
+ 	orl $_TIF_SINGLESTEP,TI_flags(%ebp)
+ no_singlestep:
+@@ -402,7 +396,7 @@ restore_all:
+ 	# See comments in process.c:copy_thread() for details.
+ 	movb PT_OLDSS(%esp), %ah
+ 	movb PT_CS(%esp), %al
+-	andl $(VM_MASK | (SEGMENT_TI_MASK << 8) | SEGMENT_RPL_MASK), %eax
++	andl $(X86_EFLAGS_VM | (SEGMENT_TI_MASK << 8) | SEGMENT_RPL_MASK), %eax
+ 	cmpl $((SEGMENT_LDT << 8) | USER_RPL), %eax
+ 	CFI_REMEMBER_STATE
+ 	je ldt_ss			# returning to user-space with LDT SS
+@@ -489,7 +483,7 @@ work_resched:
+ work_notifysig:				# deal with pending signals and
+ 					# notify-resume requests
+ #ifdef CONFIG_VM86
+-	testl $VM_MASK, PT_EFLAGS(%esp)
++	testl $X86_EFLAGS_VM, PT_EFLAGS(%esp)
+ 	movl %esp, %eax
+ 	jne work_notifysig_v86		# returning to kernel-space or
+ 					# vm86-space
