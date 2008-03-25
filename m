@@ -1,103 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbYCYM0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbYCYM1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbYCYM0f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 08:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYCYM01
+	id S1755631AbYCYM1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 08:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYCYM1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 08:26:27 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:51760 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753626AbYCYM01 (ORCPT
+	Tue, 25 Mar 2008 08:27:42 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:46329 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYCYM1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 08:26:27 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, jirislaby@gmail.com,
-       viro@ZenIV.linux.org.uk, joe@perches.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-References: <20080323085210.GE10722@ZenIV.linux.org.uk>
-	<20080323.032013.79276201.davem@davemloft.net>
-	<47E647AC.1060906@gmail.com>
-	<20080323.051929.267232495.davem@davemloft.net>
-	<20080325104841.GA24211@elte.hu>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 25 Mar 2008 13:26:24 +0100
-In-Reply-To: <20080325104841.GA24211@elte.hu>
-Message-ID: <87od93gfbj.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 25 Mar 2008 08:27:41 -0400
+Date: Tue, 25 Mar 2008 08:27:35 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] RWSEM: Rewrite rwsem.c and rwsem-spinlock.c more
+ simply.
+In-Reply-To: <87skyfgg4y.fsf@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.00.0803250813190.19386@localhost.localdomain>
+References: <alpine.LFD.1.00.0803250659530.18358@localhost.localdomain> <87skyfgg4y.fsf@basil.nowhere.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Mar 2008 12:19:46.0736 (UTC) FILETIME=[83B82B00:01C88E72]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
-> 
-> On a more conceptual angle: "coding style", despite being entirely 
-> "non-functional" (it does not affect the generated code), is still very 
-> much an integral part of the code because source code is fundamentally 
-> about "knowledge" - and extra style noise in knowledge can never 
-> possibly increase the quality of that knowledge. There are strong links 
-> between code correctness and typography/aesthetics.
+On Tue, 25 Mar 2008, Andi Kleen wrote:
 
-You assert that all the time, but it is just that: an assertation.
-I assert that code style is only a small part of code correctness.
-Also just an assertation. Who is more right? Probably the truth 
-is somewhere inbetween. At least I think it is nearer my position
-than yours @)
+> "Robert P. J. Day" <rpjday@crashcourse.ca> writes:
+>
+> > Rewrite these source files more simply by deleting the superfluous
+> > "tsk" task_struct pointer and rephrasing in terms of the "current"
+> > task pointer.
+>
+> This is likely a code pessimization because "current" is inline
+> assembler and many gcc versions cannot CSE it.
 
-Also regarding the rules enforced by checkpatch I think there is a wide
-range on how much they impact readability: e.g. if someone uses
-the wrong bracket style consistently that is somewhat disrupting.
-I agree.
+i'm not sure what this means -- which of the transformations in that
+patch is considered unsafe?  here's a typical simplification:
 
-But is trailing white space disrupting to code reading in any 
-way? Very doubtful. 
+-       tsk = current;
+-       set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++       set_current_state(TASK_UNINTERRUPTIBLE);
 
-Most rules are somewhere inbetween. They vary widely in how
-much they impact readability.
 
-Also sometimes the rules conflict. Example: the 80 column rule
-often conflicts with the "always space around operator" rule.
-That is because expressions split over multiple lines are harder
-to read than an expression on a single line (at least here) and at 
-least I would rather trade a few missing spaces around operators
-than to have a multi-line expression.
+  there's all sorts of usage of set_current_state() throughout the
+tree.  how is simplifying the code in these two files in exactly the
+same way any different?  or am i missing something because this
+involves semaphores?
 
-It's always a trade-off and checkpatch.pl is not very good
-(read it doesn't really handle) trade-offs.
+rday
 
-> So, in the specific example of the scheduler subsystem, i've only 
-> observed advantages to checkpatch and zero downsides. Could anyone give 
-> me _any_ objective reason why i shouldnt be using checkpatch for the 
-> scheduler? More broadly, could anyone give me an objective reason why we 
-> shouldnt be doing it for arch/x86? And even more broadly, could anyone 
-> give me an objective reason why we shouldnt be doing it for all actively 
-> maintained areas of the kernel?
+p.s.  given this bit from sched.h:
 
-For new code being added (like your CFS scheduler) it is fine, but for
-old code it has the problem of conflicting with other actually useful
-changes on the same areas which are pending.  And doing merges into
-such changing code bases is always somewhat error prone because the people
-who do it are also only human and can apply subtle typos etc.  
+...
+#define __set_task_state(tsk, state_value)              \
+        do { (tsk)->state = (state_value); } while (0)
+#define set_task_state(tsk, state_value)                \
+        set_mb((tsk)->state, (state_value))
 
-Strictly seen each such merge requires a whole new testing cycle and
-doing such a testing cycle just for someone's checkpatch changes is
-really a waste of time and seriously impacting real progress. 
-The only saving grace is that it will hopefully only happen once
-per file, but the point still holds. There are a lot of different files
-in Linux, so it has the potential to be a serious problem.
+...
 
-That is an objective (not just random assertation) reason against
-doing extensive changes of existing files like Joe's patchkit.
+#define __set_current_state(state_value)                        \
+        do { current->state = (state_value); } while (0)
+#define set_current_state(state_value)          \
+        set_mb(current->state, (state_value))
+...
 
-I think it would be fair at least if people doing this asked first at least:
-- Does anybody have pending changes against file X, perhaps
-also checking mm and linux-next 
-and then wait a bit and if someone says he has pending changes then not do 
-the reformatting until the pending changes get merged.
+it's not clear why set_current_state() and __current_state() are
+defined the way they are when it would seem to be simpler (and less
+error-prone) to just write:
 
-Or better really only do it on new code.
+#define __set_current_state(sv)  __set_task_state(current, sv)
+#define set_current_state(sv)   set_task_state(current, sv)
 
--Andi
+  the law of parsimony and all that.  or, once again, is there
+something subtle i'm not seeing?
+
+--
+
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
