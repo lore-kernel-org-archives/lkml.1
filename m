@@ -1,188 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYCYLCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYCYLCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYCYLCZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 07:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYCYLCR
+	id S1755503AbYCYLCl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 07:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYCYLCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 07:02:17 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:43178 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbYCYLCQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 07:02:16 -0400
-Date: Tue, 25 Mar 2008 07:02:10 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] RWSEM: Rewrite rwsem.c and rwsem-spinlock.c more simply.
-Message-ID: <alpine.LFD.1.00.0803250659530.18358@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 25 Mar 2008 07:02:31 -0400
+Received: from mail.mev.co.uk ([62.49.15.74]:46237 "EHLO mail.mev.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753772AbYCYLCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 07:02:30 -0400
+Message-ID: <47E8DBBE.4030607@mev.co.uk>
+Date: Tue, 25 Mar 2008 11:02:22 +0000
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080317)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Corrections to Documentation/rbtree.txt
+References: <47E282F5.6090703@mev.co.uk> <200803201339.18618.rob@landley.net>
+In-Reply-To: <200803201339.18618.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Mar 2008 11:02:23.0303 (UTC) FILETIME=[B4048570:01C88E67]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20/03/08 18:39, Rob Landley wrote:
+> On Thursday 20 March 2008 10:29:57 Ian Abbott wrote:
+>> From: Ian Abbott <abbotti@mev.co.uk>
+>>
+>> The description of the rb_entry() macro in Documentation/rbtree.txt seems
+>> incorrect. This patch improves it (hopefully).  Also I changed the example
+>> code to call the previous 'my_search()' example instead of an undefined
+>> 'mysearch()'.
+> 
+> I have no objection to the patch (and the my_search thing seems like an 
+> obvious typo), but is there a reason to prefer rb_entry() rather than 
+> container_of()?  If so, the rationale might be a good thing to add to the 
+> documentation...
 
-Rewrite these source files more simply by deleting the superfluous
-"tsk" task_struct pointer and rephrasing in terms of the "current"
-task pointer.
+I don't know the rationale, but all the code I can see uses rb_entry() 
+and not container_of().  The only rationale I can think of is that it 
+abstracts away from the nodes being embedded in the data a little bit. 
+(But not by much - in particular, an implementation of rb trees that 
+stored data in the node explicitly would only need a single parameter in 
+its rb_entry() accessor.  I like the approach taken in 
+include/linux/elevator.h that uses the rb_entry() macro to create a 
+specialized accessor macro (rb_entry_rq()) with a single parameter.
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-
----
-
-  in addition to making the code slightly simpler, this makes it
-easier to read since there's more information in:
-
-  set_current_state(TASK_UNINTERRUPTIBLE);
-
-as opposed to:
-
-  set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-
-if it's not clear what "tsk" refers to.
-
-  compile tested on x86 with "make defconfig", but that doesn't really
-mean much since that configuration doesn't even compile the second of
-those source files.  so i'll leave it to someone who's a locking
-expert to sanity check this.  i'm quite willing to be told i screwed
-something up.
-
-
- lib/rwsem-spinlock.c |   24 ++++++++++--------------
- lib/rwsem.c          |   11 +++++------
- 2 files changed, 15 insertions(+), 20 deletions(-)
-
-diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
-index 9df3ca5..8c3fc63 100644
---- a/lib/rwsem-spinlock.c
-+++ b/lib/rwsem-spinlock.c
-@@ -128,7 +128,6 @@ __rwsem_wake_one_writer(struct rw_semaphore *sem)
- void __sched __down_read(struct rw_semaphore *sem)
- {
- 	struct rwsem_waiter waiter;
--	struct task_struct *tsk;
-
- 	spin_lock_irq(&sem->wait_lock);
-
-@@ -139,13 +138,12 @@ void __sched __down_read(struct rw_semaphore *sem)
- 		goto out;
- 	}
-
--	tsk = current;
--	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+	set_current_state(TASK_UNINTERRUPTIBLE);
-
- 	/* set up my own style of waitqueue */
--	waiter.task = tsk;
-+	waiter.task = current;
- 	waiter.flags = RWSEM_WAITING_FOR_READ;
--	get_task_struct(tsk);
-+	get_task_struct(current);
-
- 	list_add_tail(&waiter.list, &sem->wait_list);
-
-@@ -157,10 +155,10 @@ void __sched __down_read(struct rw_semaphore *sem)
- 		if (!waiter.task)
- 			break;
- 		schedule();
--		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+		set_current_state(TASK_UNINTERRUPTIBLE);
- 	}
-
--	tsk->state = TASK_RUNNING;
-+	set_current_state(TASK_RUNNING);
-  out:
- 	;
- }
-@@ -194,7 +192,6 @@ int __down_read_trylock(struct rw_semaphore *sem)
- void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
- {
- 	struct rwsem_waiter waiter;
--	struct task_struct *tsk;
-
- 	spin_lock_irq(&sem->wait_lock);
-
-@@ -205,13 +202,12 @@ void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
- 		goto out;
- 	}
-
--	tsk = current;
--	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+	set_current_state(TASK_UNINTERRUPTIBLE);
-
- 	/* set up my own style of waitqueue */
--	waiter.task = tsk;
-+	waiter.task = current;
- 	waiter.flags = RWSEM_WAITING_FOR_WRITE;
--	get_task_struct(tsk);
-+	get_task_struct(current);
-
- 	list_add_tail(&waiter.list, &sem->wait_list);
-
-@@ -223,10 +219,10 @@ void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
- 		if (!waiter.task)
- 			break;
- 		schedule();
--		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+		set_current_state(TASK_UNINTERRUPTIBLE);
- 	}
-
--	tsk->state = TASK_RUNNING;
-+	set_current_state(TASK_RUNNING);
-  out:
- 	;
- }
-diff --git a/lib/rwsem.c b/lib/rwsem.c
-index 3e3365e..f1bdb97 100644
---- a/lib/rwsem.c
-+++ b/lib/rwsem.c
-@@ -150,15 +150,14 @@ static struct rw_semaphore __sched *
- rwsem_down_failed_common(struct rw_semaphore *sem,
- 			struct rwsem_waiter *waiter, signed long adjustment)
- {
--	struct task_struct *tsk = current;
- 	signed long count;
-
--	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+	set_current_state(TASK_UNINTERRUPTIBLE);
-
- 	/* set up my own style of waitqueue */
- 	spin_lock_irq(&sem->wait_lock);
--	waiter->task = tsk;
--	get_task_struct(tsk);
-+	waiter->task = current;
-+	get_task_struct(current);
-
- 	list_add_tail(&waiter->list, &sem->wait_list);
-
-@@ -176,10 +175,10 @@ rwsem_down_failed_common(struct rw_semaphore *sem,
- 		if (!waiter->task)
- 			break;
- 		schedule();
--		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+		set_current_state(TASK_UNINTERRUPTIBLE);
- 	}
-
--	tsk->state = TASK_RUNNING;
-+	set_current_state(TASK_RUNNING);
-
- 	return sem;
- }
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-- 
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
