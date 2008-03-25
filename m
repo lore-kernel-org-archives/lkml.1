@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbYCYSJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbYCYSMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066AbYCYSJi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbYCYSJ3
+	id S1758514AbYCYSMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCYSM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:09:29 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:57268 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbYCYSJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:09:28 -0400
-Date: Tue, 25 Mar 2008 12:09:10 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Greg Freemyer <greg.freemyer@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Mark Lord <lkml@rtr.ca>, Jens Axboe <axboe@kernel.dk>,
-       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
-       Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Message-ID: <20080325180910.GF16721@parisc-linux.org>
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <1206458278.3273.5.camel@localhost.localdomain> <87f94c370803251045h46cbdc0auc541302fbad4a3b9@mail.gmail.com> <20080325105228.26396685.randy.dunlap@oracle.com>
+	Tue, 25 Mar 2008 14:12:29 -0400
+Received: from styx.suse.cz ([82.119.242.94]:48566 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752846AbYCYSM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:12:29 -0400
+Date: Tue, 25 Mar 2008 19:12:27 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Chinner <dgc@sgi.com>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] vfs: Fix lock inversion in drop_pagecache_sb()
+Message-ID: <20080325181227.GE5125@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080325105228.26396685.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 10:52:28AM -0700, Randy Dunlap wrote:
-> > I'm not sure what the Linux Kernel support is for GPTs.
-> 
-> It's implemented.  Not sure about how well used/tested it is.
+Fix longstanding lock inversion in drop_pagecache_sb by dropping inode_lock
+before calling __invalidate_mapping_pages(). We just have to make sure
+inode won't go away from under us by keeping reference to it and putting
+the reference only after we have safely resumed the scan of the inode
+list. A bit tricky but not too bad...
 
-ia64 uses it exclusively ... at least on discs that you want to use from
-EFI.
+Signed-off-by: Jan Kara <jack@suse.cz>
+CC: Fengguang Wu <wfg@mail.ustc.edu.cn>
+CC: David Chinner <dgc@sgi.com>
 
+---
+ fs/drop_caches.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index 59375ef..f5aae26 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -14,15 +14,21 @@ int sysctl_drop_caches;
+ 
+ static void drop_pagecache_sb(struct super_block *sb)
+ {
+-	struct inode *inode;
++	struct inode *inode, *toput_inode = NULL;
+ 
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+ 			continue;
++		__iget(inode);
++		spin_unlock(&inode_lock);
+ 		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
++		iput(toput_inode);
++		toput_inode = inode;
++		spin_lock(&inode_lock);
+ 	}
+ 	spin_unlock(&inode_lock);
++	iput(toput_inode);
+ }
+ 
+ void drop_pagecache(void)
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+1.5.2.4
+
