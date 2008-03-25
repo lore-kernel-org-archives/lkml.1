@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbYCYOiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYCYOkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbYCYOiv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 10:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYCYOim
+	id S1754859AbYCYOkD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 10:40:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYCYOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 10:38:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56561 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Mar 2008 10:39:52 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38628 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755301AbYCYOil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 10:38:41 -0400
-Date: Tue, 25 Mar 2008 15:37:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, yhlu.kernel@gmail.com
-Subject: Re: [PATCH 2/2] move apic declarations to mach_apic.h
-Message-ID: <20080325143753.GB11652@elte.hu>
-References: <1206388361-17265-1-git-send-email-gcosta@redhat.com> <1206388361-17265-2-git-send-email-gcosta@redhat.com>
+	id S1753774AbYCYOjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 10:39:51 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m3prtzsszg.fsf@maximus.localdomain>
+	<m3tzj92xq6.fsf@maximus.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 25 Mar 2008 15:39:49 +0100
+In-Reply-To: <m3tzj92xq6.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Fri\, 14 Mar 2008 15\:20\:49 +0100")
+Message-ID: <m33aqedg0a.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206388361-17265-2-git-send-email-gcosta@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2749]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Glauber Costa <gcosta@redhat.com> wrote:
+I wrote:
 
-> take them out of the x86_64-specific asm/mach_apic.h
+> New synchronous PPP implementation for generic HDLC.
 
-thanks, applied.
+So are we leaving the generic-HDLC+PPP in broken state for 2.6.25,
+aren't we?
 
-	Ingo
+If we do, perhaps a "|| BROKEN" in drivers/net/wan/Kconfig would make
+sense? Any attempt to use it will cause kernel panic immediately (PPP
+with generic HDLC only; drivers using syncppp.c directly are not
+affected). I can make that trivial Kconfig patch of course.
+-- 
+Krzysztof Halasa
