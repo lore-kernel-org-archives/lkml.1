@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYCYTFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYCYTIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbYCYTFB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 15:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758277AbYCYTEv
+	id S1758770AbYCYTIX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 15:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbYCYTIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 15:04:51 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:20448 "EHLO kernel.dk"
+	Tue, 25 Mar 2008 15:08:14 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4743 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757374AbYCYTEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 15:04:50 -0400
-Date: Tue, 25 Mar 2008 20:04:43 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] cdrom: use list_head for cdrom_device_info list
-Message-ID: <20080325190443.GM15355@kernel.dk>
-References: <20080322030948.GA3665@APFDCB5C> <20080322031047.GB3665@APFDCB5C> <20080322031204.GC3665@APFDCB5C> <20080322031248.GD3665@APFDCB5C> <20080322125535.GE15355@kernel.dk> <961aa3350803220810y25f13d1bk3769e738c9f80625@mail.gmail.com> <20080322175752.GA24089@infradead.org>
+	id S1754558AbYCYTIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 15:08:13 -0400
+Date: Tue, 25 Mar 2008 14:32:04 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] net/mac80211/: Use time_* macros
+Message-ID: <20080325183204.GA3646@tuxdriver.com>
+References: <1205746593-24820-1-git-send-email-caglar@pardus.org.tr> <1205746593-24820-2-git-send-email-caglar@pardus.org.tr> <1205746593-24820-3-git-send-email-caglar@pardus.org.tr> <1205746593-24820-4-git-send-email-caglar@pardus.org.tr> <1205746593-24820-5-git-send-email-caglar@pardus.org.tr> <1205746593-24820-6-git-send-email-caglar@pardus.org.tr> <1205746593-24820-7-git-send-email-caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080322175752.GA24089@infradead.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1205746593-24820-7-git-send-email-caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 22 2008, Christoph Hellwig wrote:
-> On Sun, Mar 23, 2008 at 12:10:45AM +0900, Akinobu Mita wrote:
-> > 2008/3/22, Jens Axboe <jens.axboe@oracle.com>:
-> > > On Sat, Mar 22 2008, Akinobu Mita wrote:
-> > >  > Use list_head for cdrom_device_info list instead of opencoded
-> > >  > singly list handling.
-> > >
-> > >
-> > > Looks good, but you don't seem to be initializing ->list anywhere. Did
-> > >  you test this?
-> > >
-> > >  I'd suggest just adding an INIT_LIST_HEAD() before the list_add() in
-> > >  register_cdrom()
-> > 
-> > It seems that current list_add() implementation doesn't need
-> > initalized new entry with/without CONFIG_DEBUG_LIST.
+On Mon, Mar 17, 2008 at 11:36:29AM +0200, S.Çağlar Onur wrote:
+> The functions time_before, time_before_eq, time_after, and time_after_eq are more robust for comparing jiffies against other values.
 > 
-> it never did and never should.  only the list head needs to be
-> initialized.
-> 
-> your patch is fine in that respect.
+> So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
 
-It is, my mistake.
+These two patches are already queues for 2.6.26.
 
+John
 -- 
-Jens Axboe
-
+John W. Linville
+linville@tuxdriver.com
