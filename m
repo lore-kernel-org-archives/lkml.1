@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYCYNPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbYCYNPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325AbYCYNPZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 09:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYCYNPM
+	id S1755672AbYCYNPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 09:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbYCYNPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 09:15:12 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:42359 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753750AbYCYNPK convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 09:15:43 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:44949 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbYCYNPm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 09:15:10 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level =?utf-8?q?suspend=09and_hibernation_callbacks?= (rev. 2)
-Date: Tue, 25 Mar 2008 14:15:08 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200803210101.04706.rjw@sisk.pl> <200803251049.27696.oliver@neukum.org> <200803251406.16741.rjw@sisk.pl>
-In-Reply-To: <200803251406.16741.rjw@sisk.pl>
+	Tue, 25 Mar 2008 09:15:42 -0400
+From: Chr <chunkeey@web.de>
+To: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: inotify fixes in stable
+Date: Tue, 25 Mar 2008 14:15:37 +0100
+User-Agent: KMail/1.9.9
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Greg KH <greg@kroah.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       stable@kernel.org
+References: <20080310091155.02b7fe0e@mjolnir.drzeus.cx> <200803242333.30200.chunkeey@web.de> <20080325004233.GN23462@sequoia.sous-sol.org>
+In-Reply-To: <20080325004233.GN23462@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803251415.09088.oliver@neukum.org>
+Message-Id: <200803251415.38235.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1/BegeSwB+fJrMTJlweT00U0Im56pL0q7A0qgP7
+	Ee7yrjGdRzNMXF6Y9Cd0txQAlys4KlJHluw9ZHaeakhp7RS2Xf
+	g6JhHGeig=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 25. März 2008 14:06:15 schrieb Rafael J. Wysocki:
-> On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> > Am Freitag, 21. März 2008 01:21:03 schrieb Johannes Berg:
-> > > > + * All of the above callbacks, except for @complete(), return error codes.
-> > > > + * However, the error codes returned by the resume operations, @resume(),
-> > > > + * @thaw(), and @restore(), are only printed in the system logs, since the PM
-> > > > + * core cannot do anything else about them.
-> > > 
-> > > Why bother and not just make them return void, the error printing can
-> > > most likely be done much much better in the callback since that possibly
-> > > has information on why it failed.
-> > 
-> > A device that cannot wake up is unusable. Shouldn't the pm core disconnect()
-> > such a device?
-> 
-> Well, if ->resume() returns an error, the driver already knows there's a
-> problem and it can act upon that, at least in principle.
+On Tuesday 25 March 2008 01:42:33 Chris Wright wrote:
+> * Chr (chunkeey@web.de) wrote:
+>
+> [...]
+>
+> Please just explicitly send the fixes to stable@kernel.org and Cc Nick.
+Done...! I took both patches from the current git-tree.
+but forgot to add a tested-by flag... well, but I added the patches, right?!
 
-Then why return an error? If a driver returns an error I would assume that
-to indicate an irrecoverable error.
+>
+> I'm actually disinclined to take 0d71bd5993b630a989d15adc2562a9ffe41cd26d
+> which seems to primarily just remove the WARN_ON(), although that is
+> assuming it is indeed no longer triggered with just the race fix,
+> d599e36a9ea85432587f4550acc113cd7549d12a.
+hmm, Nick said that the debug code is racy and "not very good at finding 
+problems" either... But as long as the real fix has a _real_ change to get 
+merged in 2.6.24.5, I'm happy ;-)
 
-> However, the PM core probably shouldn't try to resume the children of a failing
-> device.  Also, if ->resume_noirq() fails, it probably is not a good idea to
-> call ->resume() and ->complete() for the same device and for it's children.
+>
+> thanks,
+> -chris
 
-Exactly. But we need to define what happens in these cases. If we simply
-ignore the errors, the drivers must be able to deal with IO to half suspended
-devices.
-
-	Regards
-		Oliver
-
-
+Regards,
+	Christian
