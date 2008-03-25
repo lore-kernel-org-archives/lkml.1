@@ -1,475 +1,327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbYCYCej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYCYCfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758696AbYCYCej (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbYCYCbc
+	id S1757799AbYCYCfU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbYCYCbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 22:31:32 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56425 "EHLO relay.sgi.com"
+	Mon, 24 Mar 2008 22:31:33 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56445 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753110AbYCYCbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 22:31:23 -0400
-Message-Id: <20080325023121.889696000@polaris-admin.engr.sgi.com>
+	id S1754798AbYCYCbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 22:31:24 -0400
+Message-Id: <20080325023122.923298000@polaris-admin.engr.sgi.com>
 References: <20080325023120.859257000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 24 Mar 2008 19:31:26 -0700
+Date: Mon, 24 Mar 2008 19:31:32 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Richard Henderson <rth@twiddle.net>,
-       David Howells <dhowells@redhat.com>, Tony Luck <tony.luck@intel.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "William L. Irwin" <wli@holomorphy.com>,
        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 06/12] cpumask: create pointer to node_to_cpumask array element
-Content-Disposition: inline; filename=node_to_cpumask_ptr
+Subject: [PATCH 12/12] cpu/node mask: reduce stack usage using MASK_NONE, MASK_ALL
+Content-Disposition: inline; filename=CPU_NODE_MASK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create a simple macro to always return a pointer to the 
-node_to_cpumask(node) value.  This relies on compiler optimization
-to remove the extra indirection:
-
-#define	node_to_cpumask_ptr(v, node) 		\
-		cpumask_t _##v = node_to_cpumask(node), *v = &_##v
-
-For those systems with a large cpumask size, then a true pointer
-to the array element is used:
-
-#define node_to_cpumask_ptr(v, node)		\
-		cpumask_t *v = &(node_to_cpumask_map[node])
-
-A node_to_cpumask_ptr_next() macro is provided to access another
-node_to_cpumask value.
-
-This removes 9824 bytes of stack usage.
+Replace usages of CPU_MASK_NONE, CPU_MASK_ALL, NODE_MASK_NONE,
+NODE_MASK_ALL to reduce stack requirements for large NR_CPUS
+and MAXNODES counts.
 
 Based on linux-2.6.25-rc5-mm1
-
-# alpha
-Cc: Richard Henderson <rth@twiddle.net>
-
-# fujitsu
-Cc: David Howells <dhowells@redhat.com>
-
-# ia64
-Cc: Tony Luck <tony.luck@intel.com>
-
-# powerpc
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-
-# sparc
-Cc: David S. Miller <davem@davemloft.net>
-Cc: William L. Irwin <wli@holomorphy.com>
 
 # x86
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: H. Peter Anvin <hpa@zytor.com>
 
-
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-One checkpatch error that I don't think can be fixed (was already in source):
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    6 +++---
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |    4 ++--
+ arch/x86/kernel/genapic_flat_64.c         |    4 +++-
+ arch/x86/kernel/io_apic_64.c              |    2 +-
+ include/linux/cpumask.h                   |    6 ++++++
+ init/main.c                               |    7 ++++++-
+ kernel/cpu.c                              |    2 +-
+ kernel/cpuset.c                           |   10 +++++-----
+ kernel/irq/chip.c                         |    2 +-
+ kernel/kmod.c                             |    2 +-
+ kernel/kthread.c                          |    4 ++--
+ kernel/rcutorture.c                       |    3 ++-
+ kernel/sched.c                            |    8 ++++----
+ mm/allocpercpu.c                          |    3 ++-
+ 14 files changed, 39 insertions(+), 24 deletions(-)
 
-ERROR: Macros with complex values should be enclosed in parenthesis
-#230: FILE: include/linux/topology.h:49:
-
-#define for_each_node_with_cpus(node)			\
-        for_each_online_node(node)                      \
-		if (nr_cpus_node(node))
-
-total: 1 errors, 0 warnings, 315 lines checked
-
----
- drivers/base/node.c            |    4 ++--
- drivers/pci/pci-driver.c       |    4 ++--
- include/asm-alpha/topology.h   |    3 +--
- include/asm-frv/topology.h     |    4 +---
- include/asm-generic/topology.h |   14 ++++++++++++++
- include/asm-ia64/topology.h    |    5 +++++
- include/asm-powerpc/topology.h |    3 +--
- include/asm-x86/topology.h     |   15 +++++++++++++--
- include/linux/topology.h       |   13 ++++++-------
- kernel/sched.c                 |   29 ++++++++++++++---------------
- mm/page_alloc.c                |    6 +++---
- mm/slab.c                      |    5 ++---
- mm/vmscan.c                    |   18 ++++++++----------
- net/sunrpc/svc.c               |    4 ++--
- 14 files changed, 74 insertions(+), 53 deletions(-)
-
---- linux-2.6.25-rc5.orig/drivers/base/node.c
-+++ linux-2.6.25-rc5/drivers/base/node.c
-@@ -22,13 +22,13 @@ static struct sysdev_class node_class = 
- static ssize_t node_read_cpumap(struct sys_device * dev, char * buf)
+--- linux-2.6.25-rc5.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-2.6.25-rc5/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -478,7 +478,7 @@ static int core_voltage_post_transition(
+ 
+ static int check_supported_cpu(unsigned int cpu)
  {
- 	struct node *node_dev = to_node(dev);
--	cpumask_t mask = node_to_cpumask(node_dev->sysdev.id);
-+	node_to_cpumask_ptr(mask, node_dev->sysdev.id);
- 	int len;
+-	cpumask_t oldmask = CPU_MASK_ALL;
++	cpumask_t oldmask;
+ 	u32 eax, ebx, ecx, edx;
+ 	unsigned int rc = 0;
  
- 	/* 2004/06/03: buf currently PAGE_SIZE, need > 1 char per 4 bits. */
- 	BUILD_BUG_ON(MAX_NUMNODES/4 > PAGE_SIZE/2);
+@@ -1015,7 +1015,7 @@ static int transition_frequency_pstate(s
+ /* Driver entry point to switch to the target frequency */
+ static int powernowk8_target(struct cpufreq_policy *pol, unsigned targfreq, unsigned relation)
+ {
+-	cpumask_t oldmask = CPU_MASK_ALL;
++	cpumask_t oldmask;
+ 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+ 	u32 checkfid;
+ 	u32 checkvid;
+@@ -1104,7 +1104,7 @@ static int powernowk8_verify(struct cpuf
+ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ {
+ 	struct powernow_k8_data *data;
+-	cpumask_t oldmask = CPU_MASK_ALL;
++	cpumask_t oldmask;
+ 	int rc;
  
--	len = cpumask_scnprintf(buf, PAGE_SIZE-1, mask);
-+	len = cpumask_scnprintf(buf, PAGE_SIZE-1, *mask);
- 	len += sprintf(buf + len, "\n");
- 	return len;
+ 	if (!cpu_online(pol->cpu))
+--- linux-2.6.25-rc5.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ linux-2.6.25-rc5/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -255,7 +255,7 @@ static void affinity_set(unsigned int cp
+ 						cpumask_t *newmask)
+ {
+ 	*oldmask = current->cpus_allowed;
+-	*newmask = CPU_MASK_NONE;
++	cpus_clear(*newmask);
+ 	cpu_set(cpu, *newmask);
+ 	set_cpus_allowed(current, newmask);
  }
---- linux-2.6.25-rc5.orig/drivers/pci/pci-driver.c
-+++ linux-2.6.25-rc5/drivers/pci/pci-driver.c
-@@ -184,8 +184,8 @@ static int pci_call_probe(struct pci_dri
- 	int node = pcibus_to_node(dev->bus);
+@@ -468,7 +468,7 @@ static __cpuinit int threshold_create_ba
+ {
+ 	int i, err = 0;
+ 	struct threshold_bank *b = NULL;
+-	cpumask_t oldmask = CPU_MASK_NONE, newmask;
++	cpumask_t oldmask, newmask;
+ 	char name[32];
  
- 	if (node >= 0 && node_online(node)) {
--		cpumask_t nodecpumask = node_to_cpumask(node);
--		set_cpus_allowed(current, &nodecpumask);
-+		node_to_cpumask_ptr(nodecpumask, node);
-+		set_cpus_allowed(current, nodecpumask);
- 	}
- 	/* And set default memory allocation policy */
- 	oldpol = current->mempolicy;
---- linux-2.6.25-rc5.orig/include/asm-alpha/topology.h
-+++ linux-2.6.25-rc5/include/asm-alpha/topology.h
-@@ -41,8 +41,7 @@ static inline cpumask_t node_to_cpumask(
+ 	sprintf(name, "threshold_bank%i", bank);
+--- linux-2.6.25-rc5.orig/arch/x86/kernel/genapic_flat_64.c
++++ linux-2.6.25-rc5/arch/x86/kernel/genapic_flat_64.c
+@@ -138,7 +138,9 @@ static cpumask_t physflat_target_cpus(vo
  
- #define pcibus_to_cpumask(bus)	(cpu_online_map)
- 
--#else /* CONFIG_NUMA */
--# include <asm-generic/topology.h>
- #endif /* !CONFIG_NUMA */
-+# include <asm-generic/topology.h>
- 
- #endif /* _ASM_ALPHA_TOPOLOGY_H */
---- linux-2.6.25-rc5.orig/include/asm-frv/topology.h
-+++ linux-2.6.25-rc5/include/asm-frv/topology.h
-@@ -5,10 +5,8 @@
- 
- #error NUMA not supported yet
- 
--#else /* !CONFIG_NUMA */
-+#endif /* CONFIG_NUMA */
- 
- #include <asm-generic/topology.h>
- 
--#endif /* CONFIG_NUMA */
--
- #endif /* _ASM_TOPOLOGY_H */
---- linux-2.6.25-rc5.orig/include/asm-generic/topology.h
-+++ linux-2.6.25-rc5/include/asm-generic/topology.h
-@@ -27,6 +27,8 @@
- #ifndef _ASM_GENERIC_TOPOLOGY_H
- #define _ASM_GENERIC_TOPOLOGY_H
- 
-+#ifndef	CONFIG_NUMA
+ static cpumask_t physflat_vector_allocation_domain(int cpu)
+ {
+-	cpumask_t domain = CPU_MASK_NONE;
++	cpumask_t domain;
 +
- /* Other architectures wishing to use this simple topology API should fill
-    in the below functions as appropriate in their own <asm/topology.h> file. */
- #ifndef cpu_to_node
-@@ -52,4 +54,16 @@
- 				)
++	cpus_clear(domain);
+ 	cpu_set(cpu, domain);
+ 	return domain;
+ }
+--- linux-2.6.25-rc5.orig/arch/x86/kernel/io_apic_64.c
++++ linux-2.6.25-rc5/arch/x86/kernel/io_apic_64.c
+@@ -770,7 +770,7 @@ static void __clear_irq_vector(int irq)
+ 		per_cpu(vector_irq, cpu)[vector] = -1;
+ 
+ 	cfg->vector = 0;
+-	cfg->domain = CPU_MASK_NONE;
++	cpus_clear(cfg->domain);
+ }
+ 
+ void __setup_vector_irq(int cpu)
+--- linux-2.6.25-rc5.orig/include/linux/cpumask.h
++++ linux-2.6.25-rc5/include/linux/cpumask.h
+@@ -251,6 +251,8 @@ int __next_cpu(int n, const cpumask_t *s
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
+ } }
+ 
++#define CPU_MASK_ALL_PTR	(&CPU_MASK_ALL)
++
+ #else
+ 
+ #define CPU_MASK_ALL							\
+@@ -259,6 +261,10 @@ int __next_cpu(int n, const cpumask_t *s
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
+ } }
+ 
++/* cpu_mask_all is in init/main.c */
++extern cpumask_t cpu_mask_all;
++#define CPU_MASK_ALL_PTR	(&cpu_mask_all)
++
  #endif
  
-+#endif	/* CONFIG_NUMA */
-+
-+/* returns pointer to cpumask for specified node */
-+#ifndef node_to_cpumask_ptr
-+
-+#define	node_to_cpumask_ptr(v, node) 					\
-+		cpumask_t _##v = node_to_cpumask(node), *v = &_##v
-+
-+#define node_to_cpumask_ptr_next(v, node)				\
-+			  _##v = node_to_cpumask(node)
+ #define CPU_MASK_NONE							\
+--- linux-2.6.25-rc5.orig/init/main.c
++++ linux-2.6.25-rc5/init/main.c
+@@ -199,6 +199,11 @@ static const char *panic_later, *panic_p
+ 
+ extern struct obs_kernel_param __setup_start[], __setup_end[];
+ 
++#if NR_CPUS > BITS_PER_LONG
++cpumask_t cpu_mask_all = CPU_MASK_ALL;
++EXPORT_SYMBOL(cpu_mask_all);
 +#endif
 +
- #endif /* _ASM_GENERIC_TOPOLOGY_H */
---- linux-2.6.25-rc5.orig/include/asm-ia64/topology.h
-+++ linux-2.6.25-rc5/include/asm-ia64/topology.h
-@@ -116,6 +116,11 @@ void build_cpu_to_node_map(void);
- #define smt_capable() 				(smp_num_siblings > 1)
- #endif
- 
-+#define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
-+					CPU_MASK_ALL : \
-+					node_to_cpumask(pcibus_to_node(bus)) \
-+				)
-+
- #include <asm-generic/topology.h>
- 
- #endif /* _ASM_IA64_TOPOLOGY_H */
---- linux-2.6.25-rc5.orig/include/asm-powerpc/topology.h
-+++ linux-2.6.25-rc5/include/asm-powerpc/topology.h
-@@ -96,11 +96,10 @@ static inline void sysfs_remove_device_f
+ static int __init obsolete_checksetup(char *line)
  {
- }
+ 	struct obs_kernel_param *p;
+@@ -828,7 +833,7 @@ static int __init kernel_init(void * unu
+ 	/*
+ 	 * init can run on any cpu.
+ 	 */
+-	set_cpus_allowed(current, &CPU_MASK_ALL);
++	set_cpus_allowed(current, CPU_MASK_ALL_PTR);
+ 	/*
+ 	 * Tell the world that we're going to be the grim
+ 	 * reaper of innocent orphaned children.
+--- linux-2.6.25-rc5.orig/kernel/cpu.c
++++ linux-2.6.25-rc5/kernel/cpu.c
+@@ -222,7 +222,7 @@ static int __ref _cpu_down(unsigned int 
  
-+#endif /* CONFIG_NUMA */
+ 	/* Ensure that we are not runnable on dying cpu */
+ 	old_allowed = current->cpus_allowed;
+-	tmp = CPU_MASK_ALL;
++	cpus_setall(tmp);
+ 	cpu_clear(cpu, tmp);
+ 	set_cpus_allowed(current, &tmp);
  
- #include <asm-generic/topology.h>
+--- linux-2.6.25-rc5.orig/kernel/cpuset.c
++++ linux-2.6.25-rc5/kernel/cpuset.c
+@@ -1567,8 +1567,8 @@ static struct cgroup_subsys_state *cpuse
+ 	if (is_spread_slab(parent))
+ 		set_bit(CS_SPREAD_SLAB, &cs->flags);
+ 	set_bit(CS_SCHED_LOAD_BALANCE, &cs->flags);
+-	cs->cpus_allowed = CPU_MASK_NONE;
+-	cs->mems_allowed = NODE_MASK_NONE;
++	cpus_clear(cs->cpus_allowed);
++	nodes_clear(cs->mems_allowed);
+ 	cs->mems_generation = cpuset_mems_generation++;
+ 	fmeter_init(&cs->fmeter);
  
--#endif /* CONFIG_NUMA */
--
- #ifdef CONFIG_SMP
- #include <asm/cputable.h>
- #define smt_capable()		(cpu_has_feature(CPU_FTR_SMT))
---- linux-2.6.25-rc5.orig/include/asm-x86/topology.h
-+++ linux-2.6.25-rc5/include/asm-x86/topology.h
-@@ -89,6 +89,17 @@ static inline int cpu_to_node(int cpu)
- #endif
- 	return per_cpu(x86_cpu_to_node_map, cpu);
- }
-+
-+#ifdef	CONFIG_NUMA
-+
-+/* Returns a pointer to the cpumask of CPUs on Node 'node'. */
-+#define node_to_cpumask_ptr(v, node)		\
-+		cpumask_t *v = &(node_to_cpumask_map[node])
-+
-+#define node_to_cpumask_ptr_next(v, node)	\
-+			   v = &(node_to_cpumask_map[node])
-+#endif
-+
- #endif /* CONFIG_X86_64 */
- 
- /*
-@@ -175,10 +186,10 @@ extern int __node_distance(int, int);
- 
- #else /* CONFIG_NUMA */
- 
--#include <asm-generic/topology.h>
--
- #endif
- 
-+#include <asm-generic/topology.h>
-+
- extern cpumask_t cpu_coregroup_map(int cpu);
- 
- #ifdef ENABLE_TOPO_DEFINES
---- linux-2.6.25-rc5.orig/include/linux/topology.h
-+++ linux-2.6.25-rc5/include/linux/topology.h
-@@ -38,16 +38,15 @@
- #endif
- 
- #ifndef nr_cpus_node
--#define nr_cpus_node(node)							\
--	({									\
--		cpumask_t __tmp__;						\
--		__tmp__ = node_to_cpumask(node);				\
--		cpus_weight(__tmp__);						\
-+#define nr_cpus_node(node)				\
-+	({						\
-+		node_to_cpumask_ptr(__tmp__, node);	\
-+		cpus_weight(*__tmp__);			\
- 	})
- #endif
- 
--#define for_each_node_with_cpus(node)						\
--	for_each_online_node(node)						\
-+#define for_each_node_with_cpus(node)			\
-+	for_each_online_node(node)			\
- 		if (nr_cpus_node(node))
- 
- /* Conform to ACPI 2.0 SLIT distance definitions */
---- linux-2.6.25-rc5.orig/kernel/sched.c
-+++ linux-2.6.25-rc5/kernel/sched.c
-@@ -6304,7 +6304,7 @@ init_sched_build_groups(cpumask_t span, 
-  *
-  * Should use nodemask_t.
-  */
--static int find_next_best_node(int node, unsigned long *used_nodes)
-+static int find_next_best_node(int node, nodemask_t *used_nodes)
+@@ -1637,8 +1637,8 @@ int __init cpuset_init(void)
  {
- 	int i, n, val, min_val, best_node = 0;
+ 	int err = 0;
  
-@@ -6318,7 +6318,7 @@ static int find_next_best_node(int node,
- 			continue;
+-	top_cpuset.cpus_allowed = CPU_MASK_ALL;
+-	top_cpuset.mems_allowed = NODE_MASK_ALL;
++	cpus_setall(top_cpuset.cpus_allowed);
++	nodes_setall(top_cpuset.mems_allowed);
  
- 		/* Skip already used nodes */
--		if (test_bit(n, used_nodes))
-+		if (node_isset(n, *used_nodes))
- 			continue;
+ 	fmeter_init(&top_cpuset.fmeter);
+ 	top_cpuset.mems_generation = cpuset_mems_generation++;
+@@ -1885,7 +1885,7 @@ void cpuset_cpus_allowed_locked(struct t
  
- 		/* Simple min distance search */
-@@ -6330,14 +6330,13 @@ static int find_next_best_node(int node,
- 		}
- 	}
- 
--	set_bit(best_node, used_nodes);
-+	node_set(best_node, *used_nodes);
- 	return best_node;
+ void cpuset_init_current_mems_allowed(void)
+ {
+-	current->mems_allowed = NODE_MASK_ALL;
++	nodes_setall(current->mems_allowed);
  }
  
  /**
-  * sched_domain_node_span - get a cpumask for a node's sched_domain
-  * @node: node whose cpumask we're constructing
-- * @size: number of nodes to include in this span
-  *
-  * Given a node, construct a good cpumask for its sched_domain to span. It
-  * should be one that prevents unnecessary balancing, but also spreads tasks
-@@ -6345,22 +6344,22 @@ static int find_next_best_node(int node,
-  */
- static cpumask_t sched_domain_node_span(int node)
- {
--	DECLARE_BITMAP(used_nodes, MAX_NUMNODES);
--	cpumask_t span, nodemask;
-+	nodemask_t used_nodes;
-+	cpumask_t span;
-+	node_to_cpumask_ptr(nodemask, node);
- 	int i;
- 
- 	cpus_clear(span);
--	bitmap_zero(used_nodes, MAX_NUMNODES);
-+	nodes_clear(used_nodes);
- 
--	nodemask = node_to_cpumask(node);
--	cpus_or(span, span, nodemask);
--	set_bit(node, used_nodes);
-+	cpus_or(span, span, *nodemask);
-+	node_set(node, used_nodes);
- 
- 	for (i = 1; i < SD_NODES_PER_DOMAIN; i++) {
--		int next_node = find_next_best_node(node, used_nodes);
-+		int next_node = find_next_best_node(node, &used_nodes);
- 
--		nodemask = node_to_cpumask(next_node);
--		cpus_or(span, span, nodemask);
-+		node_to_cpumask_ptr_next(nodemask, next_node);
-+		cpus_or(span, span, *nodemask);
+--- linux-2.6.25-rc5.orig/kernel/irq/chip.c
++++ linux-2.6.25-rc5/kernel/irq/chip.c
+@@ -47,7 +47,7 @@ void dynamic_irq_init(unsigned int irq)
+ 	desc->irq_count = 0;
+ 	desc->irqs_unhandled = 0;
+ #ifdef CONFIG_SMP
+-	desc->affinity = CPU_MASK_ALL;
++	cpus_setall(desc->affinity);
+ #endif
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ }
+--- linux-2.6.25-rc5.orig/kernel/kmod.c
++++ linux-2.6.25-rc5/kernel/kmod.c
+@@ -165,7 +165,7 @@ static int ____call_usermodehelper(void 
  	}
  
- 	return span;
-@@ -6757,6 +6756,7 @@ static int build_sched_domains(const cpu
- 		for (j = 0; j < MAX_NUMNODES; j++) {
- 			cpumask_t tmp, notcovered;
- 			int n = (i + j) % MAX_NUMNODES;
-+			node_to_cpumask_ptr(nodemask, n);
- 
- 			cpus_complement(notcovered, covered);
- 			cpus_and(tmp, notcovered, *cpu_map);
-@@ -6764,8 +6764,7 @@ static int build_sched_domains(const cpu
- 			if (cpus_empty(tmp))
- 				break;
- 
--			nodemask = node_to_cpumask(n);
--			cpus_and(tmp, tmp, nodemask);
-+			cpus_and(tmp, tmp, *nodemask);
- 			if (cpus_empty(tmp))
- 				continue;
- 
---- linux-2.6.25-rc5.orig/mm/page_alloc.c
-+++ linux-2.6.25-rc5/mm/page_alloc.c
-@@ -2115,6 +2115,7 @@ static int find_next_best_node(int node,
- 	int n, val;
- 	int min_val = INT_MAX;
- 	int best_node = -1;
-+	node_to_cpumask_ptr(tmp, 0);
- 
- 	/* Use the local node if we haven't already */
- 	if (!node_isset(node, *used_node_mask)) {
-@@ -2123,7 +2124,6 @@ static int find_next_best_node(int node,
- 	}
- 
- 	for_each_node_state(n, N_HIGH_MEMORY) {
--		cpumask_t tmp;
- 
- 		/* Don't want a node to appear more than once */
- 		if (node_isset(n, *used_node_mask))
-@@ -2136,8 +2136,8 @@ static int find_next_best_node(int node,
- 		val += (n < node);
- 
- 		/* Give preference to headless and unused nodes */
--		tmp = node_to_cpumask(n);
--		if (!cpus_empty(tmp))
-+		node_to_cpumask_ptr_next(tmp, n);
-+		if (!cpus_empty(*tmp))
- 			val += PENALTY_FOR_NODE_WITH_CPUS;
- 
- 		/* Slight preference for less loaded node */
---- linux-2.6.25-rc5.orig/mm/slab.c
-+++ linux-2.6.25-rc5/mm/slab.c
-@@ -1156,14 +1156,13 @@ static void __cpuinit cpuup_canceled(lon
- 	struct kmem_cache *cachep;
- 	struct kmem_list3 *l3 = NULL;
- 	int node = cpu_to_node(cpu);
-+	node_to_cpumask_ptr(mask, node);
- 
- 	list_for_each_entry(cachep, &cache_chain, next) {
- 		struct array_cache *nc;
- 		struct array_cache *shared;
- 		struct array_cache **alien;
--		cpumask_t mask;
- 
--		mask = node_to_cpumask(node);
- 		/* cpu is dead; no one can alloc from it. */
- 		nc = cachep->array[cpu];
- 		cachep->array[cpu] = NULL;
-@@ -1179,7 +1178,7 @@ static void __cpuinit cpuup_canceled(lon
- 		if (nc)
- 			free_block(cachep, nc->entry, nc->avail, node);
- 
--		if (!cpus_empty(mask)) {
-+		if (!cpus_empty(*mask)) {
- 			spin_unlock_irq(&l3->list_lock);
- 			goto free_array_cache;
- 		}
---- linux-2.6.25-rc5.orig/mm/vmscan.c
-+++ linux-2.6.25-rc5/mm/vmscan.c
-@@ -1674,11 +1674,10 @@ static int kswapd(void *p)
- 	struct reclaim_state reclaim_state = {
- 		.reclaimed_slab = 0,
- 	};
--	cpumask_t cpumask;
-+	node_to_cpumask_ptr(cpumask, pgdat->node_id);
- 
--	cpumask = node_to_cpumask(pgdat->node_id);
--	if (!cpus_empty(cpumask))
--		set_cpus_allowed(tsk, &cpumask);
-+	if (!cpus_empty(*cpumask))
-+		set_cpus_allowed(tsk, cpumask);
- 	current->reclaim_state = &reclaim_state;
+ 	/* We can run anywhere, unlike our parent keventd(). */
+-	set_cpus_allowed(current, &CPU_MASK_ALL);
++	set_cpus_allowed(current, CPU_MASK_ALL_PTR);
  
  	/*
-@@ -1907,17 +1906,16 @@ out:
- static int __devinit cpu_callback(struct notifier_block *nfb,
- 				  unsigned long action, void *hcpu)
+ 	 * Our parent is keventd, which runs with elevated scheduling priority.
+--- linux-2.6.25-rc5.orig/kernel/kthread.c
++++ linux-2.6.25-rc5/kernel/kthread.c
+@@ -106,7 +106,7 @@ static void create_kthread(struct kthrea
+ 		 */
+ 		sched_setscheduler(create->result, SCHED_NORMAL, &param);
+ 		set_user_nice(create->result, KTHREAD_NICE_LEVEL);
+-		set_cpus_allowed(create->result, &CPU_MASK_ALL);
++		set_cpus_allowed(create->result, CPU_MASK_ALL_PTR);
+ 	}
+ 	complete(&create->done);
+ }
+@@ -231,7 +231,7 @@ int kthreadd(void *unused)
+ 	set_task_comm(tsk, "kthreadd");
+ 	ignore_signals(tsk);
+ 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+-	set_cpus_allowed(tsk, &CPU_MASK_ALL);
++	set_cpus_allowed(tsk, CPU_MASK_ALL_PTR);
+ 
+ 	current->flags |= PF_NOFREEZE;
+ 
+--- linux-2.6.25-rc5.orig/kernel/rcutorture.c
++++ linux-2.6.25-rc5/kernel/rcutorture.c
+@@ -723,9 +723,10 @@ static int rcu_idle_cpu;	/* Force all to
+  */
+ static void rcu_torture_shuffle_tasks(void)
  {
--	pg_data_t *pgdat;
--	cpumask_t mask;
- 	int nid;
+-	cpumask_t tmp_mask = CPU_MASK_ALL;
++	cpumask_t tmp_mask;
+ 	int i;
  
- 	if (action == CPU_ONLINE || action == CPU_ONLINE_FROZEN) {
- 		for_each_node_state(nid, N_HIGH_MEMORY) {
--			pgdat = NODE_DATA(nid);
--			mask = node_to_cpumask(pgdat->node_id);
--			if (any_online_cpu(mask) < nr_cpu_ids)
-+			pg_data_t *pgdat = NODE_DATA(nid);
-+			node_to_cpumask_ptr(mask, pgdat->node_id);
-+
-+			if (any_online_cpu(*mask) < nr_cpu_ids)
- 				/* One of our CPUs online: restore mask */
--				set_cpus_allowed(pgdat->kswapd, &mask);
-+				set_cpus_allowed(pgdat->kswapd, mask);
- 		}
- 	}
- 	return NOTIFY_OK;
---- linux-2.6.25-rc5.orig/net/sunrpc/svc.c
-+++ linux-2.6.25-rc5/net/sunrpc/svc.c
-@@ -323,10 +323,10 @@ svc_pool_map_set_cpumask(unsigned int pi
- 	case SVC_POOL_PERNODE:
- 	{
- 		unsigned int node = m->pool_to[pidx];
--		cpumask_t nodecpumask = node_to_cpumask(node);
-+		node_to_cpumask_ptr(nodecpumask, node);
++	cpus_setall(tmp_mask);
+ 	get_online_cpus();
  
- 		*oldmask = current->cpus_allowed;
--		set_cpus_allowed(current, &nodecpumask);
-+		set_cpus_allowed(current, nodecpumask);
- 		return 1;
- 	}
- 	}
+ 	/* No point in shuffling if there is only one online CPU (ex: UP) */
+--- linux-2.6.25-rc5.orig/kernel/sched.c
++++ linux-2.6.25-rc5/kernel/sched.c
+@@ -5576,7 +5576,7 @@ static void move_task_off_dead_cpu(int d
+  */
+ static void migrate_nr_uninterruptible(struct rq *rq_src)
+ {
+-	struct rq *rq_dest = cpu_rq(any_online_cpu(CPU_MASK_ALL));
++	struct rq *rq_dest = cpu_rq(any_online_cpu(*CPU_MASK_ALL_PTR));
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+@@ -6272,7 +6272,7 @@ init_sched_build_groups(const cpumask_t 
+ 	struct sched_group *first = NULL, *last = NULL;
+ 	int i;
+ 
+-	*covered = CPU_MASK_NONE;
++	cpus_clear(*covered);
+ 
+ 	for_each_cpu_mask(i, *span) {
+ 		struct sched_group *sg;
+@@ -6282,7 +6282,7 @@ init_sched_build_groups(const cpumask_t 
+ 		if (cpu_isset(i, *covered))
+ 			continue;
+ 
+-		sg->cpumask = CPU_MASK_NONE;
++		cpus_clear(sg->cpumask);
+ 		sg->__cpu_power = 0;
+ 
+ 		for_each_cpu_mask(j, *span) {
+@@ -6842,7 +6842,7 @@ static int build_sched_domains(const cpu
+ 		int j;
+ 
+ 		*nodemask = node_to_cpumask(i);
+-		*covered = CPU_MASK_NONE;
++		cpus_clear(*covered);
+ 
+ 		cpus_and(*nodemask, *nodemask, *cpu_map);
+ 		if (cpus_empty(*nodemask)) {
+--- linux-2.6.25-rc5.orig/mm/allocpercpu.c
++++ linux-2.6.25-rc5/mm/allocpercpu.c
+@@ -82,9 +82,10 @@ EXPORT_SYMBOL_GPL(percpu_populate);
+ int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
+ 			   cpumask_t *mask)
+ {
+-	cpumask_t populated = CPU_MASK_NONE;
++	cpumask_t populated;
+ 	int cpu;
+ 
++	cpus_clear(populated);
+ 	for_each_cpu_mask(cpu, *mask)
+ 		if (unlikely(!percpu_populate(__pdata, size, gfp, cpu))) {
+ 			__percpu_depopulate_mask(__pdata, &populated);
 
 -- 
