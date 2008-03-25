@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbYCYSDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYCYSEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbYCYSDr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYCYSDj
+	id S1759541AbYCYSEA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759446AbYCYSDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:03:39 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:40805 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754290AbYCYSDi (ORCPT
+	Tue, 25 Mar 2008 14:03:50 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47132 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759440AbYCYSDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:03:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PJ7i0ax6qieOZjoIDG4LlQXzKP9ID9+S2PpvexDMe02aIad6BBqtbCDGEuSd1lVHhA/IZJzn8oAsfgxCMvdK4NtTF+ymVTuIXIurMyY5q4DM0kZ3lqc7QJy3CdmaHJpH/ZQGun+yfVYVYnahUSPZdFCTa8PfdC4le9qSu7EFx+I=
-Message-ID: <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com>
-Date: Tue, 25 Mar 2008 11:03:37 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47E9003B.5010002@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 14:03:49 -0400
+Date: Tue, 25 Mar 2008 19:07:00 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk
+Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on IA64 and x86
+Message-ID: <20080325180700.GY2170@one.firstfloor.org>
+References: <20080321061703.921169367@sgi.com> <20080321061726.782068299@sgi.com> <871w63iuap.fsf@basil.nowhere.org> <Pine.LNX.4.64.0803241251360.4218@schroedinger.engr.sgi.com> <20080325075106.GF2170@one.firstfloor.org> <Pine.LNX.4.64.0803251054320.16374@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200803242324.35357.yhlu.kernel@gmail.com>
-	 <47E9003B.5010002@zytor.com>
+In-Reply-To: <Pine.LNX.4.64.0803251054320.16374@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 6:38 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
->  > [PATCH] x86: pat cpu feature bit setting for known cpus
->  >
->  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
->  OK, note previous question: what is the motivation for having this as a
->  whitelist (as opposed to a blacklist)?
+On Tue, Mar 25, 2008 at 10:55:06AM -0700, Christoph Lameter wrote:
+> On Tue, 25 Mar 2008, Andi Kleen wrote:
+> 
+> > Maybe sparse could be taught to check for this if it happens
+> > in a single function? (cc'ing Al who might have some thoughts
+> > on this). Of course if it happens spread out over multiple
+> > functions sparse wouldn't help neither. 
+> 
+> We could add debugging code to virt_to_page (or __pa) to catch these uses.
 
-Venkatesh could tell?
+Hard to test all cases. Static checking would be better.
 
-YH
+Or just not do it? I didn't think order 1 failures were that big a problem.
+
+
+-Andi
