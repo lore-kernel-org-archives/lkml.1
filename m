@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYCYTEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbYCYTEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbYCYTEZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 15:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYCYTER
+	id S1759297AbYCYTEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 15:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYCYTEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 15:04:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36399 "EHLO mx1.redhat.com"
+	Tue, 25 Mar 2008 15:04:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36403 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751869AbYCYTEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 15:04:16 -0400
+	id S1757278AbYCYTEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 15:04:20 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] AFS: Add a MAINTAINERS record for AFS
+Subject: [PATCH 2/2] AFS: prevent double cell registration
 To: torvalds@osdl.org, akpm@linux-foundation.org, svens@stackframe.org
 Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Tue, 25 Mar 2008 19:03:39 +0000
-Message-ID: <20080325190339.29835.44441.stgit@warthog.procyon.org.uk>
+Date: Tue, 25 Mar 2008 19:03:44 +0000
+Message-ID: <20080325190344.29835.86006.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080325190339.29835.44441.stgit@warthog.procyon.org.uk>
+References: <20080325190339.29835.44441.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,30 +29,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a MAINTAINERS record for AFS
+kafs doesn't check if the cell already exists - so if you do an
+echo "add newcell.org 1.2.3.4" >/proc/fs/afs/cells it will try to
+create this cell again. kobject will also complain about a double
+registration. To prevent such problems, return -EEXIST in that case.
 
+Signed-off-by: Sven Schnelle <svens@stackframe.org>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ fs/afs/cell.c |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 73883b8..41d226e 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -163,6 +163,12 @@ M:	A2232@gmx.net
- L:	linux-m68k@lists.linux-m68k.org
- S:	Maintained
+diff --git a/fs/afs/cell.c b/fs/afs/cell.c
+index 970d38f..788865d 100644
+--- a/fs/afs/cell.c
++++ b/fs/afs/cell.c
+@@ -127,14 +127,20 @@ struct afs_cell *afs_cell_create(const char *name, char *vllist)
  
-+AFS FILESYSTEM & AF_RXRPC SOCKET DOMAIN
-+P:	David Howells
-+M:	dhowells@redhat.com
-+L:	linux-afs@lists.infradead.org
-+S:	Supported
+ 	_enter("%s,%s", name, vllist);
+ 
++	down_write(&afs_cells_sem);
++	read_lock(&afs_cells_lock);
++	list_for_each_entry(cell, &afs_cells, link) {
++		if (strcasecmp(cell->name, name) == 0)
++			goto duplicate_name;
++	}
++	read_unlock(&afs_cells_lock);
 +
- AIO
- P:	Benjamin LaHaise
- M:	bcrl@kvack.org
+ 	cell = afs_cell_alloc(name, vllist);
+ 	if (IS_ERR(cell)) {
+ 		_leave(" = %ld", PTR_ERR(cell));
+ 		return cell;
+ 	}
+ 
+-	down_write(&afs_cells_sem);
+-
+ 	/* add a proc directory for this cell */
+ 	ret = afs_proc_cell_setup(cell);
+ 	if (ret < 0)
+@@ -167,6 +173,11 @@ error:
+ 	kfree(cell);
+ 	_leave(" = %d", ret);
+ 	return ERR_PTR(ret);
++
++duplicate_name:
++	read_unlock(&afs_cells_lock);
++	up_write(&afs_cells_sem);
++	return ERR_PTR(-EEXIST);
+ }
+ 
+ /*
 
