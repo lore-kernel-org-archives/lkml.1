@@ -1,58 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbYCYKLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYCYKXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbYCYKLV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 06:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYCYKLN
+	id S1753874AbYCYKXr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 06:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYCYKXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 06:11:13 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:43370 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752375AbYCYKLN (ORCPT
+	Tue, 25 Mar 2008 06:23:38 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:53398 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbYCYKXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 06:11:13 -0400
-To: Jack Steiner <steiner@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 6/8] x86_64: Define the macros and tables for the basic UV infrastructure.
-References: <20080324182118.GA21758@sgi.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 25 Mar 2008 11:11:11 +0100
-In-Reply-To: <20080324182118.GA21758@sgi.com>
-Message-ID: <87ej9zi05c.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 25 Mar 2008 06:23:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=G6Qni4SpZ6EKs/pz+ahsVoP3s7+4hSbCdS3kYivW3+r5Cbzscqvmb02ismd3HAL1kjO64HdA/f863OmLMKBlH0mrZRCXA3onAI5ouciDtPWXNf8RNpoX9lSTGrW9eZoY+puXMdwHTZZUBosCbwFC2PU2TQFupqIX8qbbocCOv6M=
+Message-ID: <983191750803250323k2e944fe0y53e4c0d69edde3b@mail.gmail.com>
+Date: Tue, 25 Mar 2008 15:53:36 +0530
+From: "Shard Gupta" <shard.kgp@gmail.com>
+To: kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org
+Subject: Allocating memory in the form of 'BITS'
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Mar 2008 10:04:33.0695 (UTC) FILETIME=[9FF85AF0:01C88E5F]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jack Steiner <steiner@sgi.com> writes:
+Hello List,
 
-> Define the macros and tables for the basic UV infrastructure.
-> 
-> 
-> (NOTE: a work-in-progress. Pieces missing....)
+I am writing a linux kernel module, and I want to allocates the memory
+in a way so I can define each individual bit, like bitfield structure
+in userspace.
+Please tell me the way to do the same.
 
-Does the kernel really need all this information? You just want
-to address the UV-APIC right? I suspect you could use a much stripped
-down file.
+Thanks and regards,
 
-> +DECLARE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
-> +#define uv_hub_info 		(&__get_cpu_var(__uv_hub_info))
-> +#define uv_cpu_hub_info(cpu)	(&per_cpu(__uv_hub_info, cpu))
-> +
-> +/* This header file is used in BIOS code that runs in physical mode */
-
-Not sure what physical mode is.
-
-> +#ifdef __BIOS__
-> +#define UV_ADDR(x)		((unsigned long *)(x))
-> +#else
-> +#define UV_ADDR(x)		((unsigned long *)__va(x))
-> +#endif
-
-But it it would be cleaner if your BIOS just supplied a suitable __va()
-and then you remove these macros.
-
--Andi
+Shard Gupta
