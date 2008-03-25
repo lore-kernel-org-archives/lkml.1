@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbYCYXjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbYCYXlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761598AbYCYXjN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757569AbYCYXi7
+	id S1760817AbYCYXlx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757254AbYCYXlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:38:59 -0400
-Received: from mga03.intel.com ([143.182.124.21]:13140 "EHLO mga03.intel.com"
+	Tue, 25 Mar 2008 19:41:46 -0400
+Received: from mail.tmr.com ([64.65.253.246]:49472 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757559AbYCYXi6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:38:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,555,1199692800"; 
-   d="scan'208";a="223164461"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1755743AbYCYXlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:41:45 -0400
+Message-ID: <47E98DE4.9000906@tmr.com>
+Date: Tue, 25 Mar 2008 19:42:28 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] x86: pat cpu feature bit setting for known cpus
-Date: Tue, 25 Mar 2008 16:38:22 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEC3E1EB@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] x86: pat cpu feature bit setting for known cpus
-Thread-Index: AciOzoK4zN0hwQkJSJ2tBhOBw4l1NgAAca5w
-References: <200803242324.35357.yhlu.kernel@gmail.com> <47E9003B.5010002@zytor.com> <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com> <20080325190851.GC30998@linux-os.sc.intel.com> <20080325200830.GB15330@elte.hu> <47E962AE.9040307@zytor.com> <47E9843A.1060702@zytor.com> <86802c440803251605w7021b60cmbc312eb9ca87d277@mail.gmail.com> <47E98572.704@zytor.com> <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-X-OriginalArrivalTime: 25 Mar 2008 23:36:48.0533 (UTC) FILETIME=[18327C50:01C88ED1]
+To: Chris Snook <csnook@redhat.com>
+CC: Emmanuel Florac <eflorac@intellique.com>, linux-kernel@vger.kernel.org
+Subject: Re: RAID-1 performance under 2.4 and 2.6
+References: <20080325194306.4ac71ff2@galadriel.home> <47E975F8.3000702@redhat.com> <47E98108.9000906@tmr.com> <47E98712.6090203@redhat.com>
+In-Reply-To: <47E98712.6090203@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-
->-----Original Message-----
->From: Yinghai Lu [mailto:yhlu.kernel@gmail.com] 
->Sent: Tuesday, March 25, 2008 4:09 PM
->To: H. Peter Anvin
->Cc: Ingo Molnar; Pallipadi, Venkatesh; Thomas Gleixner; Andrew 
->Morton; kernel list; Siddha, Suresh B
->Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
->
->On Tue, Mar 25, 2008 at 4:06 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->> Yinghai Lu wrote:
->>  >>
->>  >>  By the way, I want to clarify: I didn't mean it was 
->*intended* as
->>  >>  vendor-lockin, just that it's an undesirable effect of this.
->>  >
->>  > if the PAT works, we may need to trim the memory 
->according to MTRR, right?
->>  >
+Chris Snook wrote:
+> Bill Davidsen wrote:
+>> Chris Snook wrote:
+>>> Emmanuel Florac wrote:
+>>>> I post there because I couldn't find any information about this
+>>>> elsewhere : on the same hardware ( Athlon X2 3500+, 512MB RAM, 
+>>>> 2x400 GB
+>>>> Hitachi SATA2 hard drives ) the 2.4 Linux software RAID-1 (tested 
+>>>> 2.4.32
+>>>> and 2.4.36.2, slightly patched to recognize the hardware :p) is way
+>>>> faster than 2.6 ( tested 2.6.17.13, 2.6.18.8, 2.6.22.16, 2.6.24.3)
+>>>> especially for writes. I actually made the test on several different
+>>>> machines (same hard drives though) and it remained consistent across
+>>>> the board, with /mountpoint a software RAID-1.
+>>>> Actually checking disk activity with iostat or vmstat shows clearly a
+>>>> cache effect much more pronounced on 2.4 (i.e. writing goes on much
+>>>> longer in the background) but it doesn't really account for the
+>>>> difference. I've also tested it thru NFS from another machine (Giga
+>>>> ethernet network):
+>>>>
+>>>> dd if=/dev/zero of=/mountpoint/testfile bs=1M count=1024
+>>>>
+>>>> kernel        2.4       2.6        2.4 thru NFS   2.6 thru NFS
+>>>>
+>>>> write        90 MB/s    65 MB/s      70 MB/s       45 MB/s
+>>>> read         90 MB/s    80 MB/s      75 MB/s       65 MB/s
+>>>>
+>>>> Duh. That's terrible. Does it mean I should stick to  (heavily
+>>>> patched...) 2.4 for my file servers or... ? :)
+>>>>
+>>>
+>>> It means you shouldn't use dd as a benchmark.
+>>>
+>> What do you use as a benchmark for writing large sequential files or 
+>> reading them, and why is it better than dd at modeling programs which 
+>> read or write in a similar fashion?
 >>
->>  That doesn't seem like it's specific to PAT?
+>> Media programs often do data access in just this fashion, 
+>> multi-channel video capture, streaming video servers, and similar.
+>>
 >
->could page table to  set WRBACK the range that is not covered 
->by MTRR in e820..
+> dd uses unaligned stack-allocated buffers, and defaults to block sized 
+> I/O.  To call this inefficient is a gross understatement.  Modern 
+> applications which care about streaming I/O performance use large, 
+> aligned buffers which allow the kernel to efficiently optimize things, 
+> or they use direct I/O to do it themselves, or they make use of system 
+> calls like fadvise, madvise, splice, etc. that inform the kernel how 
+> they intend to use the data or pass the work off to the kernel 
+> completely.  dd is designed to be incredibly lightweight, so it works 
+> very well on a box with a 16 MHz CPU.  It was *not* designed to take 
+> advantage of the resources modern systems have available to enable 
+> scalability.
 >
+dd has been capable of doing direct io for years, so I assume it can 
+emulate that behavior if it is appropriate to do so, and the buffer size 
+can be set as needed. I'm less sure that large buffers are allocated on 
+the stack, but often the behavior of the application models is the small 
+buffered writes dd would do by default.
+> I suggest an application-oriented benchmark that resembles the 
+> application you'll actually be using.
 
-Trimming of e820 memory is already done by Jesse's patch here
-commit 99fc8d424bc5d80
-Are you referring to similar thing?
+And this is what I was saying earlier, there is a trend to blame the 
+benchmark when in fact the same benchmark runs well on 2.4. Rather than 
+replacing the application or benchmark, perhaps the *regression* could 
+be fixed in the kernel. With all the mods and queued i/o and everything, 
+the performance is still going down.
 
-Thanks,
-Venki
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
+
 
