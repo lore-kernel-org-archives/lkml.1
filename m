@@ -1,32 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbYCYWJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbYCYWJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbYCYWJf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759770AbYCYWG6
+	id S1761700AbYCYWJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759858AbYCYWG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:06:58 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57668 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757522AbYCYWGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:06:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47887 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757486AbYCYWGw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 18:06:52 -0400
-Message-Id: <20080325220652.088163000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325220651.683748000@polaris-admin.engr.sgi.com>
 References: <20080325220650.835342000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 15:06:59 -0700
+Date: Tue, 25 Mar 2008 15:06:56 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Philippe Elie <phil.el@wanadoo.fr>
-Subject: [PATCH 09/10] x86: oprofile: remove NR_CPUS arrays in arch/x86/oprofile/nmi_int.c
-Content-Disposition: inline; filename=nr_cpus-in-nmi_int_c
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>
+Subject: [PATCH 06/10] x86: reduce memory and stack usage in intel_cacheinfo
+Content-Disposition: inline; filename=nr_cpus-in-intel_cacheinfo
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the following arrays sized by NR_CPUS to be PERCPU variables:
+* Change the following static arrays sized by NR_CPUS to
+  per_cpu data variables:
 
-	static struct op_msrs cpu_msrs[NR_CPUS];
-	static unsigned long saved_lvtpc[NR_CPUS];
+	_cpuid4_info *cpuid4_info[NR_CPUS];
+	_index_kobject *index_kobject[NR_CPUS];
+	kobject * cache_kobject[NR_CPUS];
+
+* Remove the local NR_CPUS array with a kmalloc'd region in
+  show_shared_cpu_map().
 
 Also some minor complaints from checkpatch.pl fixed.
 
@@ -34,176 +42,207 @@ Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-Cc: Philippe Elie <phil.el@wanadoo.fr>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Andi Kleen <ak@suse.de>
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   70 +++++++++++++++++++---------------
+ 1 file changed, 40 insertions(+), 30 deletions(-)
 
-All changes were transparent except for:
-
- static void nmi_shutdown(void)
- {
-+	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
- 	nmi_enabled = 0;
- 	on_each_cpu(nmi_cpu_shutdown, NULL, 0, 1);
- 	unregister_die_notifier(&profile_exceptions_nb);
--	model->shutdown(cpu_msrs);
-+	model->shutdown(msrs);
- 	free_msrs();
- }
-
-The existing code passed a reference to cpu 0's instance of struct op_msrs
-to model->shutdown, whilst the other functions are passed a reference to
-<this cpu's> instance of a struct op_msrs.  This seemed to be a bug to me
-even though as long as cpu 0 and <this cpu> are of the same type it would
-have the same effect...?
----
- arch/x86/oprofile/nmi_int.c |   49 ++++++++++++++++++++++++--------------------
- 1 file changed, 27 insertions(+), 22 deletions(-)
-
---- linux.trees.git.orig/arch/x86/oprofile/nmi_int.c
-+++ linux.trees.git/arch/x86/oprofile/nmi_int.c
-@@ -23,8 +23,8 @@
- #include "op_x86_model.h"
+--- linux.trees.git.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ linux.trees.git/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -129,7 +129,7 @@ struct _cpuid4_info {
+ 	union _cpuid4_leaf_ebx ebx;
+ 	union _cpuid4_leaf_ecx ecx;
+ 	unsigned long size;
+-	cpumask_t shared_cpu_map;
++	cpumask_t shared_cpu_map;	/* future?: only cpus/node is needed */
+ };
  
- static struct op_x86_model_spec const *model;
--static struct op_msrs cpu_msrs[NR_CPUS];
--static unsigned long saved_lvtpc[NR_CPUS];
-+static DEFINE_PER_CPU(struct op_msrs, cpu_msrs);
-+static DEFINE_PER_CPU(unsigned long, saved_lvtpc);
- 
- static int nmi_start(void);
- static void nmi_stop(void);
-@@ -89,7 +89,7 @@ static int profile_exceptions_notify(str
- 
- 	switch (val) {
- 	case DIE_NMI:
--		if (model->check_ctrs(args->regs, &cpu_msrs[cpu]))
-+		if (model->check_ctrs(args->regs, &per_cpu(cpu_msrs, cpu)))
- 			ret = NOTIFY_STOP;
- 		break;
- 	default:
-@@ -126,7 +126,7 @@ static void nmi_cpu_save_registers(struc
- static void nmi_save_registers(void *dummy)
- {
- 	int cpu = smp_processor_id();
--	struct op_msrs *msrs = &cpu_msrs[cpu];
-+	struct op_msrs *msrs = &per_cpu(cpu_msrs, cpu);
- 	nmi_cpu_save_registers(msrs);
+ unsigned short			num_cache_leaves;
+@@ -451,8 +451,8 @@ unsigned int __cpuinit init_intel_cachei
  }
  
-@@ -134,10 +134,10 @@ static void free_msrs(void)
- {
- 	int i;
- 	for_each_possible_cpu(i) {
--		kfree(cpu_msrs[i].counters);
--		cpu_msrs[i].counters = NULL;
--		kfree(cpu_msrs[i].controls);
--		cpu_msrs[i].controls = NULL;
-+		kfree(per_cpu(cpu_msrs, i).counters);
-+		per_cpu(cpu_msrs, i).counters = NULL;
-+		kfree(per_cpu(cpu_msrs, i).controls);
-+		per_cpu(cpu_msrs, i).controls = NULL;
+ /* pointer to _cpuid4_info array (for each cache leaf) */
+-static struct _cpuid4_info *cpuid4_info[NR_CPUS];
+-#define CPUID4_INFO_IDX(x,y)    (&((cpuid4_info[x])[y]))
++static DEFINE_PER_CPU(struct _cpuid4_info *, cpuid4_info);
++#define CPUID4_INFO_IDX(x, y)    (&((per_cpu(cpuid4_info, x))[y]))
+ 
+ #ifdef CONFIG_SMP
+ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+@@ -474,7 +474,7 @@ static void __cpuinit cache_shared_cpu_m
+ 			if (cpu_data(i).apicid >> index_msb ==
+ 			    c->apicid >> index_msb) {
+ 				cpu_set(i, this_leaf->shared_cpu_map);
+-				if (i != cpu && cpuid4_info[i])  {
++				if (i != cpu && per_cpu(cpuid4_info, i))  {
+ 					sibling_leaf = CPUID4_INFO_IDX(i, index);
+ 					cpu_set(cpu, sibling_leaf->shared_cpu_map);
+ 				}
+@@ -505,8 +505,8 @@ static void __cpuinit free_cache_attribu
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		cache_remove_shared_cpu_map(cpu, i);
+ 
+-	kfree(cpuid4_info[cpu]);
+-	cpuid4_info[cpu] = NULL;
++	kfree(per_cpu(cpuid4_info, cpu));
++	per_cpu(cpuid4_info, cpu) = NULL;
+ }
+ 
+ static int __cpuinit detect_cache_attributes(unsigned int cpu)
+@@ -519,9 +519,9 @@ static int __cpuinit detect_cache_attrib
+ 	if (num_cache_leaves == 0)
+ 		return -ENOENT;
+ 
+-	cpuid4_info[cpu] = kzalloc(
++	per_cpu(cpuid4_info, cpu) = kzalloc(
+ 	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
+-	if (cpuid4_info[cpu] == NULL)
++	if (per_cpu(cpuid4_info, cpu) == NULL)
+ 		return -ENOMEM;
+ 
+ 	oldmask = current->cpus_allowed;
+@@ -546,8 +546,8 @@ static int __cpuinit detect_cache_attrib
+ 
+ out:
+ 	if (retval) {
+-		kfree(cpuid4_info[cpu]);
+-		cpuid4_info[cpu] = NULL;
++		kfree(per_cpu(cpuid4_info, cpu));
++		per_cpu(cpuid4_info, cpu) = NULL;
  	}
+ 
+ 	return retval;
+@@ -561,7 +561,7 @@ out:
+ extern struct sysdev_class cpu_sysdev_class; /* from drivers/base/cpu.c */
+ 
+ /* pointer to kobject for cpuX/cache */
+-static struct kobject * cache_kobject[NR_CPUS];
++static DEFINE_PER_CPU(struct kobject *, cache_kobject);
+ 
+ struct _index_kobject {
+ 	struct kobject kobj;
+@@ -570,8 +570,8 @@ struct _index_kobject {
+ };
+ 
+ /* pointer to array of kobjects for cpuX/cache/indexY */
+-static struct _index_kobject *index_kobject[NR_CPUS];
+-#define INDEX_KOBJECT_PTR(x,y)    (&((index_kobject[x])[y]))
++static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
++#define INDEX_KOBJECT_PTR(x, y)    (&((per_cpu(index_kobject, x))[y]))
+ 
+ #define show_one_plus(file_name, object, val)				\
+ static ssize_t show_##file_name						\
+@@ -593,9 +593,16 @@ static ssize_t show_size(struct _cpuid4_
+ 
+ static ssize_t show_shared_cpu_map(struct _cpuid4_info *this_leaf, char *buf)
+ {
+-	char mask_str[NR_CPUS];
+-	cpumask_scnprintf(mask_str, NR_CPUS, this_leaf->shared_cpu_map);
+-	return sprintf(buf, "%s\n", mask_str);
++	int n = 0;
++	int len = cpumask_scnprintf_len(nr_cpu_ids);
++	char *mask_str = kmalloc(len, GFP_KERNEL);
++
++	if (mask_str) {
++		cpumask_scnprintf(mask_str, len, this_leaf->shared_cpu_map);
++		n = sprintf(buf, "%s\n", mask_str);
++		kfree(mask_str);
++	}
++	return n;
  }
  
-@@ -149,13 +149,15 @@ static int allocate_msrs(void)
+ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf) {
+@@ -684,10 +691,10 @@ static struct kobj_type ktype_percpu_ent
  
- 	int i;
- 	for_each_possible_cpu(i) {
--		cpu_msrs[i].counters = kmalloc(counters_size, GFP_KERNEL);
--		if (!cpu_msrs[i].counters) {
-+		per_cpu(cpu_msrs, i).counters = kmalloc(counters_size,
-+								GFP_KERNEL);
-+		if (!per_cpu(cpu_msrs, i).counters) {
- 			success = 0;
+ static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
+ {
+-	kfree(cache_kobject[cpu]);
+-	kfree(index_kobject[cpu]);
+-	cache_kobject[cpu] = NULL;
+-	index_kobject[cpu] = NULL;
++	kfree(per_cpu(cache_kobject, cpu));
++	kfree(per_cpu(index_kobject, cpu));
++	per_cpu(cache_kobject, cpu) = NULL;
++	per_cpu(index_kobject, cpu) = NULL;
+ 	free_cache_attributes(cpu);
+ }
+ 
+@@ -703,13 +710,14 @@ static int __cpuinit cpuid4_cache_sysfs_
+ 		return err;
+ 
+ 	/* Allocate all required memory */
+-	cache_kobject[cpu] = kzalloc(sizeof(struct kobject), GFP_KERNEL);
+-	if (unlikely(cache_kobject[cpu] == NULL))
++	per_cpu(cache_kobject, cpu) =
++		kzalloc(sizeof(struct kobject), GFP_KERNEL);
++	if (unlikely(per_cpu(cache_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+-	index_kobject[cpu] = kzalloc(
++	per_cpu(index_kobject, cpu) = kzalloc(
+ 	    sizeof(struct _index_kobject ) * num_cache_leaves, GFP_KERNEL);
+-	if (unlikely(index_kobject[cpu] == NULL))
++	if (unlikely(per_cpu(index_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+ 	return 0;
+@@ -733,7 +741,8 @@ static int __cpuinit cache_add_dev(struc
+ 	if (unlikely(retval < 0))
+ 		return retval;
+ 
+-	retval = kobject_init_and_add(cache_kobject[cpu], &ktype_percpu_entry,
++	retval = kobject_init_and_add(per_cpu(cache_kobject, cpu),
++				      &ktype_percpu_entry,
+ 				      &sys_dev->kobj, "%s", "cache");
+ 	if (retval < 0) {
+ 		cpuid4_cache_sysfs_exit(cpu);
+@@ -745,13 +754,14 @@ static int __cpuinit cache_add_dev(struc
+ 		this_object->cpu = cpu;
+ 		this_object->index = i;
+ 		retval = kobject_init_and_add(&(this_object->kobj),
+-					      &ktype_cache, cache_kobject[cpu],
++					      &ktype_cache,
++					      per_cpu(cache_kobject, cpu),
+ 					      "index%1lu", i);
+ 		if (unlikely(retval)) {
+ 			for (j = 0; j < i; j++) {
+ 				kobject_put(&(INDEX_KOBJECT_PTR(cpu,j)->kobj));
+ 			}
+-			kobject_put(cache_kobject[cpu]);
++			kobject_put(per_cpu(cache_kobject, cpu));
+ 			cpuid4_cache_sysfs_exit(cpu);
  			break;
  		}
--		cpu_msrs[i].controls = kmalloc(controls_size, GFP_KERNEL);
--		if (!cpu_msrs[i].controls) {
-+		per_cpu(cpu_msrs, i).controls = kmalloc(controls_size,
-+								GFP_KERNEL);
-+		if (!per_cpu(cpu_msrs, i).controls) {
- 			success = 0;
- 			break;
- 		}
-@@ -170,11 +172,11 @@ static int allocate_msrs(void)
- static void nmi_cpu_setup(void *dummy)
- {
- 	int cpu = smp_processor_id();
--	struct op_msrs *msrs = &cpu_msrs[cpu];
-+	struct op_msrs *msrs = &per_cpu(cpu_msrs, cpu);
- 	spin_lock(&oprofilefs_lock);
- 	model->setup_ctrs(msrs);
- 	spin_unlock(&oprofilefs_lock);
--	saved_lvtpc[cpu] = apic_read(APIC_LVTPC);
-+	per_cpu(saved_lvtpc, cpu) = apic_read(APIC_LVTPC);
- 	apic_write(APIC_LVTPC, APIC_DM_NMI);
+@@ -760,7 +770,7 @@ static int __cpuinit cache_add_dev(struc
+ 	if (!retval)
+ 		cpu_set(cpu, cache_dev_map);
+ 
+-	kobject_uevent(cache_kobject[cpu], KOBJ_ADD);
++	kobject_uevent(per_cpu(cache_kobject, cpu), KOBJ_ADD);
+ 	return retval;
  }
  
-@@ -203,13 +205,15 @@ static int nmi_setup(void)
- 	 */
+@@ -769,7 +779,7 @@ static void __cpuinit cache_remove_dev(s
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i;
  
- 	/* Assume saved/restored counters are the same on all CPUs */
--	model->fill_in_addresses(&cpu_msrs[0]);
-+	model->fill_in_addresses(&per_cpu(cpu_msrs, 0));
- 	for_each_possible_cpu(cpu) {
- 		if (cpu != 0) {
--			memcpy(cpu_msrs[cpu].counters, cpu_msrs[0].counters,
-+			memcpy(per_cpu(cpu_msrs, cpu).counters,
-+				per_cpu(cpu_msrs, 0).counters,
- 				sizeof(struct op_msr) * model->num_counters);
+-	if (cpuid4_info[cpu] == NULL)
++	if (per_cpu(cpuid4_info, cpu) == NULL)
+ 		return;
+ 	if (!cpu_isset(cpu, cache_dev_map))
+ 		return;
+@@ -777,7 +787,7 @@ static void __cpuinit cache_remove_dev(s
  
--			memcpy(cpu_msrs[cpu].controls, cpu_msrs[0].controls,
-+			memcpy(per_cpu(cpu_msrs, cpu).controls,
-+				per_cpu(cpu_msrs, 0).controls,
- 				sizeof(struct op_msr) * model->num_controls);
- 		}
- 
-@@ -249,7 +253,7 @@ static void nmi_cpu_shutdown(void *dummy
- {
- 	unsigned int v;
- 	int cpu = smp_processor_id();
--	struct op_msrs *msrs = &cpu_msrs[cpu];
-+	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
- 
- 	/* restoring APIC_LVTPC can trigger an apic error because the delivery
- 	 * mode and vector nr combination can be illegal. That's by design: on
-@@ -258,23 +262,24 @@ static void nmi_cpu_shutdown(void *dummy
- 	 */
- 	v = apic_read(APIC_LVTERR);
- 	apic_write(APIC_LVTERR, v | APIC_LVT_MASKED);
--	apic_write(APIC_LVTPC, saved_lvtpc[cpu]);
-+	apic_write(APIC_LVTPC, per_cpu(saved_lvtpc, cpu));
- 	apic_write(APIC_LVTERR, v);
- 	nmi_restore_registers(msrs);
- }
- 
- static void nmi_shutdown(void)
- {
-+	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
- 	nmi_enabled = 0;
- 	on_each_cpu(nmi_cpu_shutdown, NULL, 0, 1);
- 	unregister_die_notifier(&profile_exceptions_nb);
--	model->shutdown(cpu_msrs);
-+	model->shutdown(msrs);
- 	free_msrs();
- }
- 
- static void nmi_cpu_start(void *dummy)
- {
--	struct op_msrs const *msrs = &cpu_msrs[smp_processor_id()];
-+	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
- 	model->start(msrs);
- }
- 
-@@ -286,7 +291,7 @@ static int nmi_start(void)
- 
- static void nmi_cpu_stop(void *dummy)
- {
--	struct op_msrs const *msrs = &cpu_msrs[smp_processor_id()];
-+	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
- 	model->stop(msrs);
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		kobject_put(&(INDEX_KOBJECT_PTR(cpu,i)->kobj));
+-	kobject_put(cache_kobject[cpu]);
++	kobject_put(per_cpu(cache_kobject, cpu));
+ 	cpuid4_cache_sysfs_exit(cpu);
  }
  
 
