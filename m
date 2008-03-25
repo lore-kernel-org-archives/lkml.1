@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbYCYSDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbYCYSDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758812AbYCYSDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYCYSDI
+	id S1759422AbYCYSDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYCYSDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:03:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47125 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753577AbYCYSDH (ORCPT
+	Tue, 25 Mar 2008 14:03:39 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:40805 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754290AbYCYSDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:03:07 -0400
-Date: Tue, 25 Mar 2008 19:06:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
-Message-ID: <20080325180616.GX2170@one.firstfloor.org>
-References: <20080324182122.GA28327@sgi.com> <87abknhzhd.fsf@basil.nowhere.org> <20080325175657.GA6262@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 25 Mar 2008 14:03:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PJ7i0ax6qieOZjoIDG4LlQXzKP9ID9+S2PpvexDMe02aIad6BBqtbCDGEuSd1lVHhA/IZJzn8oAsfgxCMvdK4NtTF+ymVTuIXIurMyY5q4DM0kZ3lqc7QJy3CdmaHJpH/ZQGun+yfVYVYnahUSPZdFCTa8PfdC4le9qSu7EFx+I=
+Message-ID: <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com>
+Date: Tue, 25 Mar 2008 11:03:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47E9003B.5010002@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080325175657.GA6262@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+References: <200803242324.35357.yhlu.kernel@gmail.com>
+	 <47E9003B.5010002@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This should be probably factored properly (didn't Jeremy have smp_ops 
-> > for this some time ago) so that even the default case is a call.
-> 
-> By factored, do you means something like:
-> 	is_uv_legacy_system()
-> 	is_us_non_unique_apicid_system()
-> 	...
-> 
-> Or maybe:
-> 	is_uv_system_type(x)   # where x is UV_NON_UNIQUE_APIC, etc
+On Tue, Mar 25, 2008 at 6:38 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>  > [PATCH] x86: pat cpu feature bit setting for known cpus
+>  >
+>  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>
+>  OK, note previous question: what is the motivation for having this as a
+>  whitelist (as opposed to a blacklist)?
 
-No instead of having lots of if (xyz_system) do_xyz_special()
-go through smp_ops for the whole thing so that UV would just have a 
-special smp_ops that has special implementions or wrappers. 
+Venkatesh could tell?
 
-Oops I see smp_ops are currently only implemented
-for 32bit. Ok do it only once smp_ops exist on 64bit too. 
-
--Andi
+YH
