@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbYCYIAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYCYIHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752976AbYCYIAq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 04:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYCYIAi
+	id S1753325AbYCYIHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 04:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYCYIH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 04:00:38 -0400
-Received: from n76.bullet.mail.sp1.yahoo.com ([98.136.44.48]:24814 "HELO
-	n76.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750953AbYCYIAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 04:00:37 -0400
-X-Yahoo-Newman-Id: 31511.49111.bm@omp422.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FdbJMe+zlv8vzwtTW/zfPdzbCAuDue7BN8OTnF/E47AHe2UJ617MHlpK6jocHdu0y8iPqSo12Pmi5GUelvHHbNnS6WF/E/sj6iWuIJpwA7a26QBZHHCECESDwqhk8te/1vHmkku92Hn7meh1H6/lajs/MIUS25lGcadTwASbrsg=  ;
-X-YMail-OSG: v2mrRGUVM1mnKiF5as3czl4Sl9UKnUgDS7CWSuxBG3J2oLT2n9J67___s0.zivHpAcMOhUk4kB8..epnY9VuDlYx8L_4Yk8FLawys64VgJR9R1v4gS4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/5] Generic smp_call_function(), improvements, and  smp_call_function_single()
-Date: Tue, 25 Mar 2008 19:00:25 +1100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       paulus@samba.org, tglx@linutronix.de, mingo@redhat.com,
-       tony.luck@intel.com
-References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <20080321095343.GA21409@elte.hu> <20080321131558.GA15355@kernel.dk>
-In-Reply-To: <20080321131558.GA15355@kernel.dk>
+	Tue, 25 Mar 2008 04:07:29 -0400
+Received: from www.tglx.de ([62.245.132.106]:48488 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751507AbYCYIH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 04:07:27 -0400
+Date: Tue, 25 Mar 2008 09:06:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gabriel C <crazy@frugalware.org>
+cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
+In-Reply-To: <47E82C1F.7070304@frugalware.org>
+Message-ID: <alpine.LFD.1.00.0803250902310.3781@apollo.tec.linutronix.de>
+References: <200803170018.52663.rjw@sisk.pl> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org>
+ <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org>
+ <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org> <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de> <47E58B06.8020905@frugalware.org>
+ <47E63851.7000702@frugalware.org> <47E6E85E.9030008@frugalware.org> <alpine.LFD.1.00.0803241038420.3781@apollo.tec.linutronix.de> <47E82C1F.7070304@frugalware.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803251900.26154.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 22 March 2008 00:15, Jens Axboe wrote:
-> On Fri, Mar 21 2008, Ingo Molnar wrote:
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > The patch series is also available in the 'generic-ipi' branch from
-> > >
-> > > git://git.kernel.dk/linux-2.6-block.git
-> > >
-> > > and the 'io-cpu-affinity' branch is directly based on this.
-> >
-> > i'm still wondering about the following fundamental bit: why not use
-> > per CPU kernel threads? That way you get a fast (lockless) IPI "for
-> > free" as SMP wakeups already do this.
->
-> The kernel thread variant wont be any more lockless than the
-> smp_call_function_single() approach, they both have to grab the
-> destination queue lock. If you recall, I pushed forward on the kernel
-> thread variant and even still have it online here:
->
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=io-cpu-affinity-kt
->hread
->
-> which is pretty much identical to io-cpu-affinity, except it uses kernel
-> threads for completion.
->
-> The reason why I dropped the kthread approach is that it was slower.
-> Time from signal to run was about 33% faster with IPI than with
-> wake_up_process(). Doing benchmark runs, and the IPI approach won hands
-> down in cache misses as well.
+On Mon, 24 Mar 2008, Gabriel C wrote:
+> > Hmm. Can you please apply the patch below. It add some more info and
+> > triggers the sysrq-q timer list printout when the watchdog
+> > triggers. That might us give some insight into this.
+> 
+> Sorry for the lag , I was out the whole day.
+> 
+> Here is what I've found in dmesg ( the box was idling at that time , as said I was not around ):
+> 
+> ...
+> 
+> [34528.893366] Clocksource tsc unstable (delta = 4686697613 ns) E:34204592 J:34210723
 
-It's obviously going to be faster. The kthread approach needs an IPI
-*and* a context switch on the destination CPU.
+Ok. The timer got delayed. It got delayed because it is initialized as
+a deferrable timer, which is obviously wrong. Sigh, I signed off on
+that commit myself without thinking about the consequences.
 
-For broadcast situations, it is also going to be faster, because it
-can use platform specific broadcast IPIs 
+Can you please apply the patch below on top of the others?
 
-The only weird atomicity requirements of smp_call_function is due to
-its terribly unscalable design. Once you have the producer provide its
-own data (or accept -ENOMEM failures), then there is no problem. It's
-then even possible to use it from interrupt context with not too much
-more work.
+> ...
+> 
+> And that made irqbalance go mad which got killed by OOM , very strange.
 
+Ouch.
 
-> > smp_call_function() is quirky and has deep limitations on atomicity,
-> > etc., so we are moving away from it and should not base more
-> > functionality on it.
->
-> The patchset does not build on smp_call_function(), it merely cleans
-> that stuff up instead of having essentially the same code in each arch.
-> As more archs are converted, it'll remove lots more code.
+revert: 1077f5a917b7c630231037826b344b2f7f5b903f
 
-Also there is nothing wrong with improving the speed of the existing
-implementation. The current smp_call_function is more or less unusable
-for any real work because it is totally serialised.
+---
+ kernel/time/clocksource.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks for taking this patchset under your wing, Jens.
+Index: linux-2.6/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6.orig/kernel/time/clocksource.c
++++ linux-2.6/kernel/time/clocksource.c
+@@ -176,7 +176,7 @@ static void clocksource_check_watchdog(s
+ 			if (watchdog)
+ 				del_timer(&watchdog_timer);
+ 			watchdog = cs;
+-			init_timer_deferrable(&watchdog_timer);
++			init_timer(&watchdog_timer);
+ 			watchdog_timer.function = clocksource_watchdog;
+ 
+ 			/* Reset watchdog cycles */
+
 
