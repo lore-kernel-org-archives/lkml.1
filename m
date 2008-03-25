@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYCYJLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbYCYJbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbYCYJLj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 05:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYCYJL3
+	id S1753485AbYCYJbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 05:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYCYJbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 05:11:29 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:1548 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbYCYJL2 (ORCPT
+	Tue, 25 Mar 2008 05:31:12 -0400
+Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:46322 "HELO
+	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751873AbYCYJbL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 05:11:28 -0400
-Date: Tue, 25 Mar 2008 09:50:28 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [i2c] Wanted: i2c subsystem co-maintainer
-Message-ID: <20080325095028.07a73b11@hyperion.delvare>
-In-Reply-To: <20080304184512.3f78d296@hyperion.delvare>
-References: <20080304184512.3f78d296@hyperion.delvare>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Mar 2008 05:31:11 -0400
+X-Yahoo-Newman-Id: 28759.90980.bm@omp415.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=MFhhyRVmuklQv0RIi+OaUon2MJxbVv+1xa/Kk8CojpY9Kvv2a+iRwwK0/3Ljj1zIV7x5zdX42IJnnZj4hCsHKue1R0Pr60unbNpKYgIeFGAQaIqJ5ytk3wyRfRq2l3yMNnAAdOBkORTtUXS0FuDU7ob7oZoixkUAZdfOpRz2muM=  ;
+X-YMail-OSG: VHAkJr8VM1m6k5muxawsdgwqUpP8.TsRhjO3xrVtaNKPu14KKxSmEJjD2Ra5bcY84ZDG5AlkDA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Dmitri Monakhov <dmonakhov@openvz.org>, akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix data leak in nobh_write_end.
+Date: Tue, 25 Mar 2008 20:22:48 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20080320122953.GA19928@dmon-lap.sw.ru> <20080320123916.GA19995@dmon-lap.sw.ru>
+In-Reply-To: <20080320123916.GA19995@dmon-lap.sw.ru>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200803252022.48730.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008 18:45:12 +0100, Jean Delvare wrote:
-> I have a hard time maintaining the i2c subsystem alone. New drivers
-> and, more importantly, subsystem evolutions are submitted much faster
-> than I can review and merge them. I am hearing complaints about this.
-> It has been lasting for a while now and it doesn't seem like the
-> situation is going to improve. Thus, I think it would be better if
-> someone was co-maintaining the i2c subsystem with me.
-> 
-> So, if anyone is interested in co-maintaining the i2c subsystem with
-> me, please let me know. The ideal candidate would come from the
-> embedded world, as I have absolutely no experience with this myself and
-> most of the new drivers are for embedded devices, and should have
-> contributed to the kernel in a significant way already.
+On Thursday 20 March 2008 23:39, Dmitri Monakhov wrote:
+> On 15:29 Thu 20 Mar     , root wrote:
+> Opps.. sorry for incorrectly filled "FROM:" filed, email was from me.
 
-Ben Dooks agreed to become my co-maintainer for the i2c subsystem. In
-particular, Ben will help with drivers for embedded systems, of which
-my experience is inexistent. Thanks Ben and welcome on board!
+Thanks for finding this. I guess it was a thinko as to the semantics
+of PageMappedToDisk on my behalf...
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
-Ben, please give by your ack on this patch, then I will push it
-upstream.
+Reviewed-by: Nick Piggin <npiggin@suse.de>
 
- MAINTAINERS |    2 ++
- 1 file changed, 2 insertions(+)
-
---- linux-2.6.25-rc6.orig/MAINTAINERS	2008-03-21 10:58:23.000000000 +0100
-+++ linux-2.6.25-rc6/MAINTAINERS	2008-03-23 15:16:11.000000000 +0100
-@@ -1883,6 +1883,8 @@ S:	Maintained
- I2C SUBSYSTEM
- P:	Jean Delvare
- M:	khali@linux-fr.org
-+P:	Ben Dooks
-+M:	ben-linux@fluff.org
- L:	i2c@lm-sensors.org
- T:	quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
- S:	Maintained
-
--- 
-Jean Delvare
