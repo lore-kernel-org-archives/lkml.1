@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbYCYV2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbYCYV3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760650AbYCYV2o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760451AbYCYV2M
+	id S1760713AbYCYV3Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbYCYV3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:28:12 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36405 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760433AbYCYV2L convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 17:29:13 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35806 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759792AbYCYV3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:28:11 -0400
-Date: Tue, 25 Mar 2008 21:11:02 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?UTF-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>
-Cc: "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: gcc-4.3 considers unaligned accesses on X86 as undefined
-Message-ID: <20080325211102.44aa7ce7@core>
-In-Reply-To: <47E965BD.7010604@gmail.com>
-References: <47E965BD.7010604@gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 25 Mar 2008 17:29:11 -0400
+Message-ID: <47E96E15.7020105@zytor.com>
+Date: Tue, 25 Mar 2008 14:26:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com> <47E96263.9000808@zytor.com> <20080325212032.GA24495@suse.de>
+In-Reply-To: <20080325212032.GA24495@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008 22:51:09 +0200
-Török Edwin <edwintorok@gmail.com> wrote:
-
-> Hello x86 architecture maintainers,
+Greg KH wrote:
+> On Tue, Mar 25, 2008 at 01:36:51PM -0700, H. Peter Anvin wrote:
+>> Randy Dunlap wrote:
+>>>> Come on people, adding symlinks for device major:minor numbers in sysfs
+>>>> to save a few 10s of lines of userspace code?  Can things get sillier?
+>>>>
+>>>> You can add a single udev rule to probably build these in a tree in /dev
+>>>> if you really need such a thing...
+>>>>
+>>>> And what's wrong with your new ioctl recomendation?
+>>> Ah, there's some sanity.  :)
+>> It's not so much an issue of a few tens of lines of user space code, but 
+>> rather the fact that something that should be O(1) is currently O(n).
 > 
-> GCC-4.3 now considers that it is undefined behaviour to access memory
-> through an int*  that is not aligned to sizeof(int).
-> At -O3 it generates vectorized code 
+> "should"?  why?  Is this some new requirement that everyone needs?  I've
+> _never_ seen anyone ask for the ability to find sysfs devices by
+> major:minor number in O(1) time.  Is this somehow a place where such
+> optimization is warranted?
 
-FPU/MMX/SSE are not available or usable for the kernel anyway fortunately
-in this case.
+Well, when dealing with shell scripts a O(n) very easily becomes O(n^2). 
+  For the stuff that I, personally, do, it's not a big deal, but people 
+with large number of disks have serious gripes with our boot times.
 
-Alan
+	-hpa
