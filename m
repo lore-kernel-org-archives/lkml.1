@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYCYD7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYCYECX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbYCYD7z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 23:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYCYD7s
+	id S1755519AbYCYECX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 00:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYCYECN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 23:59:48 -0400
-Received: from xenotime.net ([66.160.160.81]:43403 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754775AbYCYD7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 23:59:47 -0400
-Date: Mon, 24 Mar 2008 20:59:42 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: What do you want from linux-next?
-In-Reply-To: <20080325141112.0ce433db.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0803242056300.5309@shark.he.net>
-References: <20080325141112.0ce433db.sfr@canb.auug.org.au>
+	Tue, 25 Mar 2008 00:02:13 -0400
+Received: from rtr.ca ([76.10.145.34]:3236 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbYCYECM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 00:02:12 -0400
+Message-ID: <47E87942.2020409@rtr.ca>
+Date: Tue, 25 Mar 2008 00:02:10 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: What to do about the 2TB limit on HDIO_GETGEO ?
+References: <47E875AD.1000901@rtr.ca>
+In-Reply-To: <47E875AD.1000901@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, Stephen Rothwell wrote:
+(resending .. forgot to copy the lists originally)
 
-> Hi Linus, Andrew,
-> 
-> Now that we are (presumably) approaching the next merge window, can I ask
-> what use (if any) will you be making of the linux-next tree?
-> Alternatively, is there any information you want from it?
+We have a problem coming down the pipeline.
 
-Hi,
+Practically all utilities that care about it,
+use ioctl(fd, HDIO_GETGEO) to determine the starting
+sector offset of a hard disk partition.
 
-I'd like some clarification about the future (use) of linux-next
-and Andrew's -mm patch series.  They duplicate a lot of the major
-git tree or quilt patch series.  Can we expect both of them to
-continue as is or will -mm be a patch series on top of linux-next
-or what?
+SCSI, libata, IDE, USB, Firewire.. you name it.
 
--- 
-~Randy
+The return value uses "unsigned long",
+which on a 32-bit system limits drive offsets to 2TB.
+
+There will be single drives exceeding this limit within
+the next 12 months or less, and we already have RAID arrays
+that exceed 2TB.
+
+So.. what's the replacement for HDIO_GETGEO on 32-bits ?
+
+One candidate might seem to be the existing /sys/block/dev/partition/start
+which I expect is already 64-bit friendly.
+
+But this requires about 150 lines of somewhat complex C code to access,
+using only the dev_t (from stat(2) on a file) as a starting point,
+or less if one relies upon the udev device name matching the sysfs device name.
+
+Is it time now for HDIO_GETGEO64 to make an appearance?
+Similar to how the existing BLKGETSIZE64 is supplanting BLKGETSIZE ?
+
+??
