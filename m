@@ -1,40 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbYCYPQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYCYPSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbYCYPQA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 11:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYCYPPw
+	id S1756656AbYCYPSV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 11:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYCYPSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 11:15:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:1327 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755196AbYCYPPv (ORCPT
+	Tue, 25 Mar 2008 11:18:08 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47266 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754200AbYCYPSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 11:15:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G08FWIngb/YebEgaoEzMp7QbtVQydMPoaikpkMTHr6aA9eF+KlJOOzLwReTO0kMiDN0jd7rknF7aXq7DM6kgqZB6IYmUgW5GnGLUfBKbFkXeZuIKqyW+mFCzQR0WdbZBbRVlMY8rqbXU2HRymRV9RvhhS7iUIiMhgG+udJNOvMw=
-Message-ID: <e2e108260803250815n68838589h90f6129062c8f665@mail.gmail.com>
-Date: Tue, 25 Mar 2008 16:15:49 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kernel compilation: make halts with error message "*** target pattern contains no `%'"
-In-Reply-To: <e2e108260803250115j4047b242t85c4d719501482bf@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Mar 2008 11:18:06 -0400
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <47E87942.2020409@rtr.ca>
+References: <47E875AD.1000901@rtr.ca>  <47E87942.2020409@rtr.ca>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 08:17:58 -0700
+Message-Id: <1206458278.3273.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e2e108260803250115j4047b242t85c4d719501482bf@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 9:15 AM, Bart Van Assche
-<bart.vanassche@gmail.com> wrote:
->  When I try to compile the latest git tree
+On Tue, 2008-03-25 at 00:02 -0400, Mark Lord wrote:
+> (resending .. forgot to copy the lists originally)
+> 
+> We have a problem coming down the pipeline.
+> 
+> Practically all utilities that care about it,
+> use ioctl(fd, HDIO_GETGEO) to determine the starting
+> sector offset of a hard disk partition.
+> 
+> SCSI, libata, IDE, USB, Firewire.. you name it.
+> 
+> The return value uses "unsigned long",
+> which on a 32-bit system limits drive offsets to 2TB.
+> 
+> There will be single drives exceeding this limit within
+> the next 12 months or less, and we already have RAID arrays
+> that exceed 2TB.
+> 
+> So.. what's the replacement for HDIO_GETGEO on 32-bits ?
+> 
+> One candidate might seem to be the existing /sys/block/dev/partition/start
+> which I expect is already 64-bit friendly.
+> 
+> But this requires about 150 lines of somewhat complex C code to access,
+> using only the dev_t (from stat(2) on a file) as a starting point,
+> or less if one relies upon the udev device name matching the sysfs device name.
+> 
+> Is it time now for HDIO_GETGEO64 to make an appearance?
+> Similar to how the existing BLKGETSIZE64 is supplanting BLKGETSIZE ?
 
-Found the cause: apparently this is what happens when the path
-containing the kernel source tree contains a colon. Renaming the
-kernel source tree directory solved this issue.
+Perhaps I've missed something, but surely geometry doesn't make sense on
+a >2TB drive does it?  The only reason we use it on modern disks (which
+usually make it up specially for us) is that the DOS partition scheme
+requires it.  Once we're over 2TB, isn't it impossible to use DOS
+partitions (well, OK, unless you increase the sector size, but that's
+only delaying the inevitable), so we can just go with a proper disk
+labelling scheme and use BLKGETSIZE64 all the time.
 
-Bart.
+James
+
+
