@@ -1,149 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYCYCez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbYCYCfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYCYCez (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbYCYCbd
+	id S1759185AbYCYCfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757223AbYCYCcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 22:31:33 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56434 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754716AbYCYCbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 22:31:23 -0400
-Message-Id: <20080325023122.763571000@polaris-admin.engr.sgi.com>
-References: <20080325023120.859257000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 24 Mar 2008 19:31:31 -0700
-From: Mike Travis <travis@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 11/12] cpumask: reduce stack pressure in cpu_coregroup_map
-Content-Disposition: inline; filename=cpu_coregroup_map
+	Mon, 24 Mar 2008 22:32:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56431 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757216AbYCYCb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 22:31:59 -0400
+Message-ID: <47E8641B.3030309@garzik.org>
+Date: Mon, 24 Mar 2008 22:31:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: htejun@gmail.com, kurt@roeckx.be, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.25-rc6] sata_promise: fix hardreset hotplug events,
+ take 2
+References: <200803221421.m2MEL1oY021558@harpo.it.uu.se> <18406.38445.717175.664615@harpo.it.uu.se>
+In-Reply-To: <18406.38445.717175.664615@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return pointer to requested cpumask for cpu_coregroup_map()
-functions.
+Mikael Pettersson wrote:
+> A Promise SATA controller will signal hotplug events when a hard
+> reset (COMRESET) is done on a port. These events aren't masked by
+> the driver, and the unexpected interrupts will cause a sequence
+> of failed reset attempts util libata's EH finally gives up.
+> 
+> This has not been a common problem so far, but the pending libata
+> hardreset-by-default changes makes it a critical issue.
+> 
+> The solution is to disable hotplug events before a reset, and to
+> reenable them afterwards. (Promise's driver does this too.)
+> 
+> This patch adds SATA-specific versions of ->freeze() and ->thaw()
+> that also disable and enable hotplug events. PATA ports continue
+> to use the old versions of ->freeze() and ->thaw().
+> 
+> Accesses to the hotplug register must be serialised via host->lock.
+> We rely on ap->lock == &ap->host->lock and that libata takes this
+> lock before ->freeze() and ->thaw(). Document this requirement.
+> The interrupt handler is adjusted so its hotplug register accesses
+> are inside the region protected by host->lock.
+> 
+> Tested on various chips (SATA300TX4, SATA300TX2plus, SATAII150TX4,
+> FastTrack TX4000) with various combinations of SATA and PATA disks,
+> with and without the pending hardreset-by-default changes.
+> 
+> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+> ---
+> Changes since previous version:
+> - rephrase the problem description to avoid calling it a HW quirk,
+>   the behaviour is apparently standard
+> - fix double locking bug found by Tejun, now tested with SMP kernel
+> - document locking rules for the global hotplug register
+> - inline the hotplug enable/disable code in freeze/thaw
+> 
+>  drivers/ata/sata_promise.c |  109 ++++++++++++++++++++++++++++++++++++---------
+>  1 file changed, 88 insertions(+), 21 deletions(-)
 
-Based on linux-2.6.25-rc5-mm1
+applied
 
-# sparc
-Cc: David S. Miller <davem@davemloft.net>
-Cc: William L. Irwin <wli@holomorphy.com>
 
-# x86
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: H. Peter Anvin <hpa@zytor.com>
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/kernel/smpboot_32.c   |    6 +++---
- arch/x86/kernel/smpboot_64.c   |    6 +++---
- include/asm-sparc64/topology.h |    2 +-
- include/asm-x86/topology.h     |    2 +-
- kernel/sched.c                 |    6 +++---
- 5 files changed, 11 insertions(+), 11 deletions(-)
-
---- linux-2.6.25-rc5.orig/arch/x86/kernel/smpboot_32.c
-+++ linux-2.6.25-rc5/arch/x86/kernel/smpboot_32.c
-@@ -290,7 +290,7 @@ static void __cpuinit smp_callin(void)
- static int cpucount;
- 
- /* maps the cpu to the sched domain representing multi-core */
--cpumask_t cpu_coregroup_map(int cpu)
-+const cpumask_t *cpu_coregroup_map(int cpu)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 	/*
-@@ -298,9 +298,9 @@ cpumask_t cpu_coregroup_map(int cpu)
- 	 * And for power savings, we return cpu_core_map
- 	 */
- 	if (sched_mc_power_savings || sched_smt_power_savings)
--		return per_cpu(cpu_core_map, cpu);
-+		return &per_cpu(cpu_core_map, cpu);
- 	else
--		return c->llc_shared_map;
-+		return &c->llc_shared_map;
- }
- 
- /* representing cpus for which sibling maps can be computed */
---- linux-2.6.25-rc5.orig/arch/x86/kernel/smpboot_64.c
-+++ linux-2.6.25-rc5/arch/x86/kernel/smpboot_64.c
-@@ -226,7 +226,7 @@ void __cpuinit smp_callin(void)
- }
- 
- /* maps the cpu to the sched domain representing multi-core */
--cpumask_t cpu_coregroup_map(int cpu)
-+const cpumask_t *cpu_coregroup_map(int cpu)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 	/*
-@@ -234,9 +234,9 @@ cpumask_t cpu_coregroup_map(int cpu)
- 	 * And for power savings, we return cpu_core_map
- 	 */
- 	if (sched_mc_power_savings || sched_smt_power_savings)
--		return per_cpu(cpu_core_map, cpu);
-+		return &per_cpu(cpu_core_map, cpu);
- 	else
--		return c->llc_shared_map;
-+		return &c->llc_shared_map;
- }
- 
- /* representing cpus for which sibling maps can be computed */
---- linux-2.6.25-rc5.orig/include/asm-sparc64/topology.h
-+++ linux-2.6.25-rc5/include/asm-sparc64/topology.h
-@@ -12,6 +12,6 @@
- 
- #include <asm-generic/topology.h>
- 
--#define cpu_coregroup_map(cpu)			(cpu_core_map[cpu])
-+#define cpu_coregroup_map(cpu)			(&cpu_core_map[cpu])
- 
- #endif /* _ASM_SPARC64_TOPOLOGY_H */
---- linux-2.6.25-rc5.orig/include/asm-x86/topology.h
-+++ linux-2.6.25-rc5/include/asm-x86/topology.h
-@@ -185,7 +185,7 @@ extern int __node_distance(int, int);
- 
- #include <asm-generic/topology.h>
- 
--extern cpumask_t cpu_coregroup_map(int cpu);
-+extern const cpumask_t *cpu_coregroup_map(int cpu);
- 
- #ifdef ENABLE_TOPO_DEFINES
- #define topology_physical_package_id(cpu)	(cpu_data(cpu).phys_proc_id)
---- linux-2.6.25-rc5.orig/kernel/sched.c
-+++ linux-2.6.25-rc5/kernel/sched.c
-@@ -6438,7 +6438,7 @@ cpu_to_phys_group(int cpu, const cpumask
- {
- 	int group;
- #ifdef CONFIG_SCHED_MC
--	*mask = cpu_coregroup_map(cpu);
-+	*mask = *cpu_coregroup_map(cpu);
- 	cpus_and(*mask, *mask, *cpu_map);
- 	group = first_cpu(*mask);
- #elif defined(CONFIG_SCHED_SMT)
-@@ -6755,7 +6755,7 @@ static int build_sched_domains(const cpu
- 		p = sd;
- 		sd = &per_cpu(core_domains, i);
- 		SD_INIT(sd, MC);
--		sd->span = cpu_coregroup_map(i);
-+		sd->span = *cpu_coregroup_map(i);
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
- 		p->child = sd;
-@@ -6797,7 +6797,7 @@ static int build_sched_domains(const cpu
- 		SCHED_CPUMASK_VAR(this_core_map, allmasks);
- 		SCHED_CPUMASK_VAR(send_covered, allmasks);
- 
--		*this_core_map = cpu_coregroup_map(i);
-+		*this_core_map = *cpu_coregroup_map(i);
- 		cpus_and(*this_core_map, *this_core_map, *cpu_map);
- 		if (i != first_cpu(*this_core_map))
- 			continue;
-
--- 
