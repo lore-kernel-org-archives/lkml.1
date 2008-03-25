@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYCYSX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbYCYSYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbYCYSX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYCYSXT
+	id S1759292AbYCYSYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYCYSYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:23:19 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:41229 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752242AbYCYSXS (ORCPT
+	Tue, 25 Mar 2008 14:24:06 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:34602
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757349AbYCYSYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:23:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ec32GwsXNTAF+j5SmYJU/P8QU1FoxGXpI3Ma2cDJ/GaF8imtKAkLWwIIDFnRafIZTYsNpGrtVE8W+ejcGZ7aMWfc7AMtoUAN5cgo2TTNDGcfV357trR4R0EXUEjDpagHbV84pBtoy3BhC3btOqXJjJXF5zYv9/+V/u0iI4Agpt4=
-Message-ID: <4d8e3fd30803251123t26d562d4v210192bce657ec6a@mail.gmail.com>
-Date: Tue, 25 Mar 2008 18:53:15 +0030
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "David Miller" <davem@davemloft.net>, jirislaby@gmail.com,
-       viro@zeniv.linux.org.uk, joe@perches.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080325172817.GT2170@one.firstfloor.org>
+	Tue, 25 Mar 2008 14:24:05 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Ian Abbott <abbotti@mev.co.uk>
+Subject: Re: [PATCH] Corrections to Documentation/rbtree.txt
+Date: Tue, 25 Mar 2008 13:24:08 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <47E282F5.6090703@mev.co.uk> <200803201339.18618.rob@landley.net> <47E8DBBE.4030607@mev.co.uk>
+In-Reply-To: <47E8DBBE.4030607@mev.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080323085210.GE10722@ZenIV.linux.org.uk>
-	 <20080323.032013.79276201.davem@davemloft.net>
-	 <47E647AC.1060906@gmail.com>
-	 <20080323.051929.267232495.davem@davemloft.net>
-	 <20080325104841.GA24211@elte.hu> <87od93gfbj.fsf@basil.nowhere.org>
-	 <1206465548.6437.167.camel@lappy>
-	 <20080325172817.GT2170@one.firstfloor.org>
+Message-Id: <200803251324.08769.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/25/08, Andi Kleen <andi@firstfloor.org> wrote:
-> > > That is an objective (not just random assertation) reason against
-> > > doing extensive changes of existing files like Joe's patchkit.
+On Tuesday 25 March 2008 06:02:22 Ian Abbott wrote:
+> On 20/03/08 18:39, Rob Landley wrote:
+> > On Thursday 20 March 2008 10:29:57 Ian Abbott wrote:
+> >> From: Ian Abbott <abbotti@mev.co.uk>
+> >>
+> >> The description of the rb_entry() macro in Documentation/rbtree.txt
+> >> seems incorrect. This patch improves it (hopefully).  Also I changed the
+> >> example code to call the previous 'my_search()' example instead of an
+> >> undefined 'mysearch()'.
 > >
-> > Building a single allyesconfig for x86_32 and x86_64 before and after
-> > and getting identical binaries is pretty strong.
-
-true, but it's usually simplier to just compile the affected file.
-
-> checkpatch does not necessarily result in the same binaries. First
-> there is the build date and then there might be changes like
-> KERN_* prefixes added etc.
+> > I have no objection to the patch (and the my_search thing seems like an
+> > obvious typo), but is there a reason to prefer rb_entry() rather than
+> > container_of()?  If so, the rationale might be a good thing to add to the
+> > documentation...
 >
-> And there might be code which is not covered under a single configuration,
-> e.g. when both 32bit and 64bit x86 is changed.
+> I don't know the rationale, but all the code I can see uses rb_entry()
+> and not container_of().
 
-in the last series of coding style patches i sent to both ingo and
-bart i worked as follow:
-- worked on files with agreement of the maintainer (or after he asked
-me to do the cleanup)
-- separated changes that modified the binary from the pure style changes.
--all the patch were compile tested and when possible a size/md5sum
-verificatio was performed and added to the changelog.
+Except container_of() works, which is a nice thing to know, and it already 
+mentions rb_entry() as another way to do it.  If someone could explain _why_ 
+to use one over the other, that would be a good thing to add.
 
-i learned this "rules" learning from my mistakes and in the end it
-worked well so i think the problem is in how people are using the
-tool, not in the tool itself.
+> The only rationale I can think of is that it 
+> abstracts away from the nodes being embedded in the data a little bit.
 
-ciao,
---
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+If I wanted abstraction for its own sake I'd be using C++ to implement a 
+microkernel.  I would also be certifiably insane.
+
+> (But not by much - in particular, an implementation of rb trees that
+> stored data in the node explicitly would only need a single parameter in
+> its rb_entry() accessor.  I like the approach taken in
+> include/linux/elevator.h that uses the rb_entry() macro to create a
+> specialized accessor macro (rb_entry_rq()) with a single parameter.
+
+And this can't be done with container_of()?
+
+Again, I don't care much either way, I just want to know what the point is of 
+choosing one over the other that makes changing what's there worth bothering 
+with.  You're changing the documentation to hide the fact that rb_entry() is 
+basically another name for container_of(), and this is supposed to be an 
+improvement?
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
