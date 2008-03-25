@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbYCYWB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbYCYWCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760960AbYCYWB5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYCYWBt
+	id S1761247AbYCYWCh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYCYWC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:01:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40962 "EHLO mx1.redhat.com"
+	Tue, 25 Mar 2008 18:02:29 -0400
+Received: from pat.uio.no ([129.240.10.15]:56588 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754255AbYCYWBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:01:48 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754045AbYCYWC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:02:27 -0400
+Subject: Re: [PATCH] vfs: Fix lock inversion in drop_pagecache_sb()
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, dgc@sgi.com, wfg@mail.ustc.edu.cn,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080325125354.5f2da108.akpm@linux-foundation.org>
+References: <20080325181227.GE5125@duck.suse.cz>
+	 <20080325125354.5f2da108.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 18:01:44 -0400
+Message-Id: <1206482504.20428.15.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       ebiederm@xmission.com, xemul@openvz.org, pavel@ucw.cz,
-       sds@tycho.nsa.gov, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
-In-Reply-To: Andi Kleen's message of  , 25 March 2008 11:00:39 +0100 <87r6dzi0mw.fsf@basil.nowhere.org>
-References: <20080323135110.GA294@tv-sign.ru>
-	<20080324152906.dee7b272.akpm@linux-foundation.org>
-	<20080324225611.GA157@tv-sign.ru>
-	<20080324160819.cea2d921.akpm@linux-foundation.org>
-	<87r6dzi0mw.fsf@basil.nowhere.org>
-X-Windows: the problem for your problem.
-Message-Id: <20080325220042.87CFD26FA0A@magilla.localdomain>
-Date: Tue, 25 Mar 2008 15:00:42 -0700 (PDT)
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 06B419DCDAA81CF3461F018BF14CD17CC85DAB4E
+X-UiO-SR-test: FF18A1171845F7EEBCDA9E2D57D203314CA9A5AC
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 27 total 7518466 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It would be fine to allow this unconditionally if there was some mechanism
-> to make sure someone else takes over reaping childs while init is ptraced.
 
-I don't see why this particular issue is any special case.  The zombie leak
-is just one of many ways that the system might become unusable if root does
-the wrong thing to an essential system daemon.  Caveat superusor.  Diddling
-with init on a system you expect ever to do anything again is dangerous and
-requires great care.  The question of allowing an administrator to engage
-in dangerous activities is orthogonal to the details of a particular danger.
+On Tue, 2008-03-25 at 12:53 -0700, Andrew Morton wrote:
+> On Tue, 25 Mar 2008 19:12:27 +0100
+> Jan Kara <jack@suse.cz> wrote:
+> 
+> > Fix longstanding lock inversion in drop_pagecache_sb by dropping inode_lock
+> > before calling __invalidate_mapping_pages(). We just have to make sure
+> > inode won't go away from under us by keeping reference to it and putting
+> > the reference only after we have safely resumed the scan of the inode
+> > list. A bit tricky but not too bad...
+> > 
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > CC: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> > CC: David Chinner <dgc@sgi.com>
+> > 
+> > ---
+> >  fs/drop_caches.c |    8 +++++++-
+> >  1 files changed, 7 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+> > index 59375ef..f5aae26 100644
+> > --- a/fs/drop_caches.c
+> > +++ b/fs/drop_caches.c
+> > @@ -14,15 +14,21 @@ int sysctl_drop_caches;
+> >  
+> >  static void drop_pagecache_sb(struct super_block *sb)
+> >  {
+> > -	struct inode *inode;
+> > +	struct inode *inode, *toput_inode = NULL;
+> >  
+> >  	spin_lock(&inode_lock);
+> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> >  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> >  			continue;
+> 
+> OT: it might be worth having an `if (mapping->nrpages==0) continue' here.
+> 
+> > +		__iget(inode);
+> > +		spin_unlock(&inode_lock);
+> >  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
+> > +		iput(toput_inode);
+> > +		toput_inode = inode;
+> > +		spin_lock(&inode_lock);
+> >  	}
+> >  	spin_unlock(&inode_lock);
+> > +	iput(toput_inode);
+> >  }
+> >  
+> >  void drop_pagecache(void)
+> 
+> hrm.  So we have a random ref on an inode without holding inode_lock.  If
+> we race with invalidate_list() we end up with an inode stuck on s_inodes
+> and "Self-destruct in 5 seconds.  Have a nice day...", don't we?
 
-With today's kernel, init can avoid any reparented zombies collecting if it
-doesn't care about its own children either.  That is, it can ignore SIGCHLD
-or set SA_NOCLDWAIT to make all its children clean themselves up.  That
-doesn't help for a normal init, which does care (for respawn and logging).
-(Also it's never been tried, and I'm almost sure it has a bug.  But that's
-supposed to be the semantics.)
+Calling drop_pagecache_sb() without having a reference to 'sb'? Surely
+not...
 
-That said, the orthogonal question of orphan zombies may well be worth
-addressing too.  Just let's not conflate it with the ptrace question.
-(AFAIK there is no good reason not to make orphans just self-reap, it's
-just hysterical raisins inherited from the dawn of Unix.  I'm sure that
-Oleg and I can work out the cleanups, but in a separate thread please.)
+Trond
 
-
-Thanks,
-Roland
