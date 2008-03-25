@@ -1,28 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYCYUIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYCYUMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbYCYUIz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 16:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbYCYUIs
+	id S1758333AbYCYUMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 16:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYCYUMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 16:08:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44675 "EHLO mx3.mail.elte.hu"
+	Tue, 25 Mar 2008 16:12:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36944 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753791AbYCYUIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 16:08:48 -0400
-Date: Tue, 25 Mar 2008 21:08:31 +0100
+	id S1752274AbYCYUME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 16:12:04 -0400
+Date: Tue, 25 Mar 2008 21:11:25 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
-Message-ID: <20080325200830.GB15330@elte.hu>
-References: <200803242324.35357.yhlu.kernel@gmail.com> <47E9003B.5010002@zytor.com> <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com> <20080325190851.GC30998@linux-os.sc.intel.com>
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+	regressions from 2.6.24)
+Message-ID: <20080325201125.GD15330@elte.hu>
+References: <47E540E7.7030108@m3y3r.de> <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080325190851.GC30998@linux-os.sc.intel.com>
+In-Reply-To: <47E94557.4030001@m3y3r.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,23 +42,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+* Thomas Meyer <thomas@m3y3r.de> wrote:
 
-> > >  OK, note previous question: what is the motivation for having 
-> > >  this as a whitelist (as opposed to a blacklist)?
-> > 
-> > Venkatesh could tell?
-> 
-> Main reason for white-list at this point is not to be side-tracked by 
-> real or potential erratas on older CPUs. Focussing on getting the 
-> support for this feature on current and future CPUs. If older CPUs 
-> have survived all these days without this feature, they should be 
-> doing OK.
+> The kernel boots, but hangs at "populating dev tree with devices 
+> usings uevents". After removing both firewire drivers (ohci1394 and 
+> firewire_ohci) the system comes up correctly.
+>
+> See attached file.
+>
+> Modprobing either ohci1394 or firewire_ohci seems to lock up the 
+> system.
 
-well, the upside would be that since most testing of Linux kernels is 
-done on _old_ hardware (people tend to risk their old hw first ;-), we'd 
-get faster convergence of the codebase, even though we have the risk of 
-erratas (known and unknown ones alike). Code that artificially limits 
-its utility is almost always slow to stabilize.
+that's weird. If you do the modprobe from a VGA console and do a 'dmesg 
+-n 8', do you get any ioremap printk shortly before the hard lockup?
 
 	Ingo
