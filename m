@@ -1,580 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbYCYRO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbYCYROr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbYCYRO2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 13:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbYCYROT
+	id S1758925AbYCYROr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 13:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbYCYROi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 13:14:19 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:8597 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754828AbYCYROR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 13:14:17 -0400
-Date: Tue, 25 Mar 2008 11:14:16 -0600
-From: Alex Chiang <achiang@hp.com>
-To: gregkh@suse.de, Gary Hade <garyhade@us.ibm.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080325171416.GE3489@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, gregkh@suse.de,
-	Gary Hade <garyhade@us.ibm.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
-	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080325170951.GA3489@ldl.fc.hp.com>
-MIME-Version: 1.0
+	Tue, 25 Mar 2008 13:14:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:49579 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755362AbYCYROg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 13:14:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,553,1199692800"; 
+   d="scan'208";a="264914100"
+Date: Tue, 25 Mar 2008 10:14:35 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [patch] srat, x86_64: Add support for nodes spanning other nodes
+Message-ID: <20080325171435.GA3313@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080325170951.GA3489@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Detect all physical PCI slots as described by ACPI, and create
-entries in /sys/bus/pci/slots/.
+For example, If the physical address layout on a two node system with 8 GB
+memory is something like:
+node 0: 0-2GB, 4-6GB
+node 1: 2-4GB, 6-8GB
 
-Not all physical slots are hotpluggable, and the acpiphp module
-does not detect them. Now we know the physical PCI geography of
-our system, without caring about hotplug.
+Current kernels fail to boot/detect this NUMA topology.
 
+ACPI SRAT tables can expose such a topology which needs to be supported.
 
-v10 -> v12:
-	Thanks to Kenji Kaneshige for the following updates:
-	- Fix dmi table for Fujitsu PRIMEQUEST
-	- Fix _STA evaluation
-	- Use list_head for pci slot list
-	- Fix slot removal path
-
-v9 -> v10:
-	Allow an hp driver to override the pci_slot kobject name.
-
-v8 -> v9:
-	Add DMI quirk for Fujitsu machines; eval _STA before _SUN
-
-v6 -> v8:
-	No change
-
-v5 -> v6:
-	Add debugging information.
-
-v4 -> v5:
-	Convert to a tristate module.
-
-	Remove #ifdef CONFIG_ACPI_PCI_SLOT, as struct pci_slot
-	objects are properly refcounted, and multiple calls to
-	pci_create/destroy_slot work just fine.
-
-	Remove prior -EBUSY changes, as they have been folded
-	into the Introduce pci_slot patch.
-
-v3 -> v4:
-	Always attempt to call pci_create_slot from pcihp_core to
-	cover cases of
-		a) user did not say Y to Kconfig option ACPI_PCI_SLOT
-		b) native PCIe hotplug driver registering on a
-		non-ACPI system.
-
-	Return -EBUSY if an hp driver attempts to register a slot
-	that is already registered to another driver. Do not
-	consider that to be an error condition in acpiphp and pciehp.
-
-v2 -> v3:
-	Add Kconfig option to driver, allowing users to [de]config
-	this driver. If configured, take slightly different code
-	paths in pci_hp_register and pci_hp_deregister.
-
-v1 -> v2:
-	Now recursively discovering p2p bridges and slots
-	underneath them. Hopefully, this will prevent us
-	from trying to register the same slot multiple times.
-
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Acked-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
- drivers/acpi/Kconfig                   |    9 +
- drivers/acpi/Makefile                  |    1 +
- drivers/acpi/pci_slot.c                |  370 ++++++++++++++++++++++++++++++++
- drivers/pci/hotplug/pci_hotplug_core.c |   16 ++
- drivers/pci/hotplug/pciehp_core.c      |    2 +-
- drivers/pci/hotplug/sgi_hotplug.c      |    2 +-
- 6 files changed, 398 insertions(+), 2 deletions(-)
- create mode 100644 drivers/acpi/pci_slot.c
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index b4f5e85..4ccb0e7 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -335,6 +335,15 @@ config ACPI_EC
- 	  the battery and thermal drivers.  If you are compiling for a 
- 	  mobile system, say Y.
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 227fdb0..99eb102 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -880,6 +880,15 @@ config X86_64_ACPI_NUMA
+ 	help
+ 	  Enable ACPI SRAT based node topology detection.
  
-+config ACPI_PCI_SLOT
-+	tristate "PCI slot detection driver"
-+	default n
-+	help
-+	  This driver will attempt to discover all PCI slots in your system,
-+	  and creates entries in /sys/bus/pci/slots/. This feature can
-+	  help you correlate PCI bus addresses with the physical geography
-+	  of your slots. If you are unsure, say N.
++# Some NUMA nodes have memory ranges that span
++# other nodes.  Even though a pfn is valid and
++# between a node's start and end pfns, it may not
++# reside on that node.  See memmap_init_zone()
++# for details.
++config NODES_SPAN_OTHER_NODES
++	def_bool y
++	depends on X86_64_ACPI_NUMA
 +
- config ACPI_POWER
- 	bool
- 	default y
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index 40b0fca..579c29c 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -48,6 +48,7 @@ obj-$(CONFIG_ACPI_DOCK)		+= dock.o
- obj-$(CONFIG_ACPI_BAY)		+= bay.o
- obj-$(CONFIG_ACPI_VIDEO)	+= video.o
- obj-y				+= pci_root.o pci_link.o pci_irq.o pci_bind.o
-+obj-$(CONFIG_ACPI_PCI_SLOT)	+= pci_slot.o
- obj-$(CONFIG_ACPI_POWER)	+= power.o
- obj-$(CONFIG_ACPI_PROCESSOR)	+= processor.o
- obj-$(CONFIG_ACPI_CONTAINER)	+= container.o
-diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
-new file mode 100644
-index 0000000..2b48ea7
---- /dev/null
-+++ b/drivers/acpi/pci_slot.c
-@@ -0,0 +1,370 @@
-+/*
-+ *  pci_slot.c - ACPI PCI Slot Driver
-+ *
-+ *  The code here is heavily leveraged from the acpiphp module.
-+ *  Thanks to Matthew Wilcox <matthew@wil.cx> for much guidance.
-+ *  Thanks to Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> for code
-+ *  review and fixes.
-+ *
-+ *  Copyright (C) 2007 Alex Chiang <achiang@hp.com>
-+ *  Copyright (C) 2007 Hewlett-Packard Development Company, L.P.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify it
-+ *  under the terms and conditions of the GNU General Public License,
-+ *  version 2, as published by the Free Software Foundation.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
+ config NUMA_EMU
+ 	bool "NUMA emulation"
+ 	depends on X86_64 && NUMA
+diff --git a/arch/x86/mm/k8topology_64.c b/arch/x86/mm/k8topology_64.c
+index 1f249f1..1f476e4 100644
+--- a/arch/x86/mm/k8topology_64.c
++++ b/arch/x86/mm/k8topology_64.c
+@@ -192,7 +192,7 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 	if (!found)
+ 		return -1;
+ 
+-	memnode_shift = compute_hash_shift(nodes, 8);
++	memnode_shift = compute_hash_shift(nodes, 8, NULL);
+ 	if (memnode_shift < 0) {
+ 		printk(KERN_ERR "No NUMA node hash function found. Contact maintainer\n");
+ 		return -1;
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index ebfc1f8..b04fce7 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -58,7 +58,7 @@ unsigned long __initdata nodemap_size;
+  * -1 if node overlap or lost ram (shift too big)
+  */
+ static int __init populate_memnodemap(const struct bootnode *nodes,
+-				      int numnodes, int shift)
++				      int numnodes, int shift, int *nodeids)
+ {
+ 	unsigned long addr, end;
+ 	int i, res = -1;
+@@ -74,7 +74,12 @@ static int __init populate_memnodemap(const struct bootnode *nodes,
+ 		do {
+ 			if (memnodemap[addr >> shift] != NUMA_NO_NODE)
+ 				return -1;
+-			memnodemap[addr >> shift] = i;
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/pci.h>
-+#include <linux/acpi.h>
-+#include <acpi/acpi_bus.h>
-+#include <acpi/acpi_drivers.h>
++			if (!nodeids)
++				memnodemap[addr >> shift] = i;
++			else
++				memnodemap[addr >> shift] = nodeids[i];
 +
-+static int debug;
-+static int check_sta_before_sun;
+ 			addr += (1UL << shift);
+ 		} while (addr < end);
+ 		res = 1;
+@@ -137,7 +142,8 @@ static int __init extract_lsb_from_nodes(const struct bootnode *nodes,
+ 	return i;
+ }
+ 
+-int __init compute_hash_shift(struct bootnode *nodes, int numnodes)
++int __init compute_hash_shift(struct bootnode *nodes, int numnodes,
++			      int *nodeids)
+ {
+ 	int shift;
+ 
+@@ -147,7 +153,7 @@ int __init compute_hash_shift(struct bootnode *nodes, int numnodes)
+ 	printk(KERN_DEBUG "NUMA: Using %d for the hash shift.\n",
+ 		shift);
+ 
+-	if (populate_memnodemap(nodes, numnodes, shift) != 1) {
++	if (populate_memnodemap(nodes, numnodes, shift, nodeids) != 1) {
+ 		printk(KERN_INFO "Your memory is not aligned you need to "
+ 		       "rebuild your kernel with a bigger NODEMAPSIZE "
+ 		       "shift=%d\n", shift);
+@@ -491,7 +497,7 @@ done:
+ 		}
+ 	}
+ out:
+-	memnode_shift = compute_hash_shift(nodes, num_nodes);
++	memnode_shift = compute_hash_shift(nodes, num_nodes, NULL);
+ 	if (memnode_shift < 0) {
+ 		memnode_shift = 0;
+ 		printk(KERN_ERR "No NUMA hash function found.  NUMA emulation "
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index 04e06c8..768ffac 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -31,6 +31,10 @@ static struct bootnode nodes_add[MAX_NUMNODES];
+ static int found_add_area __initdata;
+ int hotadd_percent __initdata = 0;
+ 
++static int num_node_memblks __initdata;
++static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
++static int memblk_nodeid[NR_NODE_MEMBLKS] __initdata;
 +
-+#define DRIVER_VERSION 	"0.1"
-+#define DRIVER_AUTHOR	"Alex Chiang <achiang@hp.com>"
-+#define DRIVER_DESC	"ACPI PCI Slot Detection Driver"
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
-+MODULE_LICENSE("GPL");
-+MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
-+module_param(debug, bool, 0644);
-+
-+#define _COMPONENT		ACPI_PCI_COMPONENT
-+ACPI_MODULE_NAME("pci_slot");
-+
-+#define MY_NAME "pci_slot"
-+#define err(format, arg...) printk(KERN_ERR "%s: " format , MY_NAME , ## arg)
-+#define info(format, arg...) printk(KERN_INFO "%s: " format , MY_NAME , ## arg)
-+#define dbg(format, arg...)					\
-+	do {							\
-+		if (debug)					\
-+			printk(KERN_DEBUG "%s: " format,	\
-+				MY_NAME , ## arg);		\
-+	} while (0)
-+
-+struct acpi_pci_slot {
-+	acpi_handle root_handle;	/* handle of the root bridge */
-+	struct pci_slot *pci_slot;	/* corresponding pci_slot */
-+	struct list_head list;		/* node in the list of slots */
-+};
-+
-+static int acpi_pci_slot_add(acpi_handle handle);
-+static void acpi_pci_slot_remove(acpi_handle handle);
-+
-+static LIST_HEAD(slot_list);
-+static DEFINE_MUTEX(slot_list_lock);
-+static struct acpi_pci_driver acpi_pci_slot_driver = {
-+	.add = acpi_pci_slot_add,
-+	.remove = acpi_pci_slot_remove,
-+};
-+
-+static int
-+check_slot(acpi_handle handle, int *device, unsigned long *sun)
-+{
-+	int retval = 0;
-+	unsigned long adr, sta;
-+	acpi_status status;
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+
-+	acpi_get_name(handle, ACPI_FULL_PATHNAME, &buffer);
-+	dbg("Checking slot on path: %s\n", (char *)buffer.pointer);
-+
-+	if (check_sta_before_sun) {
-+		/* If SxFy doesn't have _STA, we just assume it's there */
-+		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
-+		if (ACPI_SUCCESS(status) && !(sta & ACPI_STA_DEVICE_PRESENT)) {
-+			retval = -1;
-+			goto out;
-+		}
-+	}
-+
-+	status = acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
-+	if (ACPI_FAILURE(status)) {
-+		dbg("_ADR returned %d on %s\n", status, (char *)buffer.pointer);
-+		retval = -1;
-+		goto out;
-+	}
-+
-+	*device = (adr >> 16) & 0xffff;
-+
-+	/* No _SUN == not a slot == bail */
-+	status = acpi_evaluate_integer(handle, "_SUN", NULL, sun);
-+	if (ACPI_FAILURE(status)) {
-+		dbg("_SUN returned %d on %s\n", status, (char *)buffer.pointer);
-+		retval = -1;
-+		goto out;
-+	}
-+
-+out:
-+	kfree(buffer.pointer);
-+	return retval;
-+}
-+
-+struct callback_args {
-+	acpi_walk_callback	user_function;	/* only for walk_p2p_bridge */
-+	struct pci_bus		*pci_bus;
-+	acpi_handle		root_handle;
-+};
-+
-+/*
-+ * register_slot
-+ *
-+ * Called once for each SxFy object in the namespace. Don't worry about
-+ * calling pci_create_slot multiple times for the same pci_bus:device,
-+ * since each subsequent call simply bumps the refcount on the pci_slot.
-+ *
-+ * The number of calls to pci_destroy_slot from unregister_slot is
-+ * symmetrical.
-+ */
-+static acpi_status
-+register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
-+{
-+	int device;
-+	unsigned long sun;
-+	char name[KOBJ_NAME_LEN];
-+	struct acpi_pci_slot *slot;
-+	struct pci_slot *pci_slot;
-+	struct callback_args *parent_context = context;
-+	struct pci_bus *pci_bus = parent_context->pci_bus;
-+
-+	if (check_slot(handle, &device, &sun))
-+		return AE_OK;
-+
-+	slot = kmalloc(sizeof(*slot), GFP_KERNEL);
-+	if (!slot) {
-+		err("%s: cannot allocate memory\n", __func__);
-+		return AE_OK;
-+	}
-+
-+	snprintf(name, sizeof(name), "%u", (u32)sun);
-+	pci_slot = pci_create_slot(pci_bus, device, name);
-+	if (IS_ERR(pci_slot)) {
-+		err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
-+		kfree(slot);
-+	}
-+
-+	slot->root_handle = parent_context->root_handle;
-+	slot->pci_slot = pci_slot;
-+	INIT_LIST_HEAD(&slot->list);
-+	mutex_lock(&slot_list_lock);
-+	list_add(&slot->list, &slot_list);
-+	mutex_unlock(&slot_list_lock);
-+
-+	dbg("pci_slot: %#lx, pci_bus: %x, device: %d, name: %s\n",
-+		(uint64_t)pci_slot, pci_bus->number, device, name);
-+
-+	return AE_OK;
-+}
-+
-+/*
-+ * walk_p2p_bridge - discover and walk p2p bridges
-+ * @handle: points to an acpi_pci_root
-+ * @context: p2p_bridge_context pointer
-+ *
-+ * Note that when we call ourselves recursively, we pass a different
-+ * value of pci_bus in the child_context.
-+ */
-+static acpi_status
-+walk_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
-+{
-+	int device, function;
-+	unsigned long adr;
-+	acpi_status status;
-+	acpi_handle dummy_handle;
-+	acpi_walk_callback user_function;
-+
-+	struct pci_dev *dev;
-+	struct pci_bus *pci_bus;
-+	struct callback_args child_context;
-+	struct callback_args *parent_context = context;
-+
-+	pci_bus = parent_context->pci_bus;
-+	user_function = parent_context->user_function;
-+
-+	status = acpi_get_handle(handle, "_ADR", &dummy_handle);
-+	if (ACPI_FAILURE(status))
-+		return AE_OK;
-+
-+	status = acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
-+	if (ACPI_FAILURE(status))
-+		return AE_OK;
-+
-+	device = (adr >> 16) & 0xffff;
-+	function = adr & 0xffff;
-+
-+	dev = pci_get_slot(pci_bus, PCI_DEVFN(device, function));
-+	if (!dev || !dev->subordinate)
-+		goto out;
-+
-+	child_context.pci_bus = dev->subordinate;
-+	child_context.user_function = user_function;
-+	child_context.root_handle = parent_context->root_handle;
-+
-+	dbg("p2p bridge walk, pci_bus = %x\n", dev->subordinate->number);
-+	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+				     user_function, &child_context, NULL);
-+	if (ACPI_FAILURE(status))
-+		goto out;
-+
-+	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+				     walk_p2p_bridge, &child_context, NULL);
-+out:
-+	pci_dev_put(dev);
-+	return AE_OK;
-+}
-+
-+#define ACPI_STA_FUNCTIONING            (0x00000008)
-+
-+/*
-+ * walk_root_bridge - generic root bridge walker
-+ * @handle: points to an acpi_pci_root
-+ * @user_function: user callback for slot objects
-+ *
-+ * Call user_function for all objects underneath this root bridge.
-+ * Walk p2p bridges underneath us and call user_function on those too.
-+ */
-+static int
-+walk_root_bridge(acpi_handle handle, acpi_walk_callback user_function)
-+{
-+	int seg, bus;
-+	unsigned long tmp;
-+	acpi_status status;
-+	acpi_handle dummy_handle;
-+	struct pci_bus *pci_bus;
-+	struct callback_args context;
-+
-+	/* If the bridge doesn't have _STA, we assume it is always there */
-+	status = acpi_get_handle(handle, "_STA", &dummy_handle);
-+	if (ACPI_SUCCESS(status)) {
-+		status = acpi_evaluate_integer(handle, "_STA", NULL, &tmp);
-+		if (ACPI_FAILURE(status)) {
-+			info("%s: _STA evaluation failure\n", __func__);
-+			return 0;
-+		}
-+		if ((tmp & ACPI_STA_FUNCTIONING) == 0)
-+			/* don't register this object */
-+			return 0;
-+	}
-+
-+	status = acpi_evaluate_integer(handle, "_SEG", NULL, &tmp);
-+	seg = ACPI_SUCCESS(status) ? tmp : 0;
-+
-+	status = acpi_evaluate_integer(handle, "_BBN", NULL, &tmp);
-+	bus = ACPI_SUCCESS(status) ? tmp : 0;
-+
-+	pci_bus = pci_find_bus(seg, bus);
-+	if (!pci_bus)
-+		return 0;
-+
-+	context.pci_bus = pci_bus;
-+	context.user_function = user_function;
-+	context.root_handle = handle;
-+
-+	dbg("root bridge walk, pci_bus = %x\n", pci_bus->number);
-+	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+				     user_function, &context, NULL);
-+	if (ACPI_FAILURE(status))
-+		return status;
-+
-+	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+				     walk_p2p_bridge, &context, NULL);
-+	if (ACPI_FAILURE(status))
-+		err("%s: walk_p2p_bridge failure - %d\n", __func__, status);
-+
-+	return status;
-+}
-+
-+/*
-+ * acpi_pci_slot_add
-+ * @handle: points to an acpi_pci_root
-+ */
-+static int
-+acpi_pci_slot_add(acpi_handle handle)
-+{
-+	acpi_status status;
-+
-+	status = walk_root_bridge(handle, register_slot);
-+	if (ACPI_FAILURE(status))
-+		err("%s: register_slot failure - %d\n", __func__, status);
-+
-+	return status;
-+}
-+
-+/*
-+ * acpi_pci_slot_remove
-+ * @handle: points to an acpi_pci_root
-+ */
-+static void
-+acpi_pci_slot_remove(acpi_handle handle)
-+{
-+	struct acpi_pci_slot *slot, *tmp;
-+
-+	mutex_lock(&slot_list_lock);
-+	list_for_each_entry_safe(slot, tmp, &slot_list, list) {
-+		if (slot->root_handle == handle) {
-+			list_del(&slot->list);
-+			pci_destroy_slot(slot->pci_slot);
-+			kfree(slot);
-+		}
-+	}
-+	mutex_unlock(&slot_list_lock);
-+}
-+
-+#ifdef CONFIG_DMI
-+static int do_sta_before_sun(const struct dmi_system_id *d)
-+{
-+	info("%s detected: will evaluate _STA before calling _SUN\n", d->ident);
-+	check_sta_before_sun = 1;
-+	return 0;
-+}
-+
-+static struct dmi_system_id acpi_pci_slot_dmi_table[] __initdata = {
-+	/*
-+	 * Fujitsu Primequest machines will return 1023 to indicate an
-+	 * error if the _SUN method is evaluated on SxFy objects that
-+	 * are not present (as indicated by _STA), so for those machines,
-+	 * we want to check _STA before evaluating _SUN.
-+	 */
-+	{
-+	 .callback = do_sta_before_sun,
-+	 .ident = "Fujitsu PRIMEQUEST",
-+	 .matches = {
-+		DMI_MATCH(DMI_BIOS_VENDOR, "FUJITSU LIMITED"),
-+		DMI_MATCH(DMI_BIOS_VERSION, "PRIMEQUEST"),
-+		},
-+	},
-+	{}
-+};
-+#endif /* CONFIG_DMI */
-+
-+static int __init
-+acpi_pci_slot_init(void)
-+{
-+	dmi_check_system(acpi_pci_slot_dmi_table);
-+	acpi_pci_register_driver(&acpi_pci_slot_driver);
-+	return 0;
-+}
-+
-+static void __exit
-+acpi_pci_slot_exit(void)
-+{
-+	acpi_pci_unregister_driver(&acpi_pci_slot_driver);
-+}
-+
-+module_init(acpi_pci_slot_init);
-+module_exit(acpi_pci_slot_exit);
-diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-index 5208786..8181bf6 100644
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -566,6 +566,11 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
- 		return -EINVAL;
+ /* Too small nodes confuse the VM badly. Usually they result
+    from BIOS bugs. */
+ #define NODE_MIN_SIZE (4*1024*1024)
+@@ -40,17 +44,17 @@ static __init int setup_node(int pxm)
+ 	return acpi_map_pxm_to_node(pxm);
+ }
+ 
+-static __init int conflicting_nodes(unsigned long start, unsigned long end)
++static __init int conflicting_memblks(unsigned long start, unsigned long end)
+ {
+ 	int i;
+-	for_each_node_mask(i, nodes_parsed) {
+-		struct bootnode *nd = &nodes[i];
++	for (i = 0; i < num_node_memblks; i++) {
++		struct bootnode *nd = &node_memblk_range[i];
+ 		if (nd->start == nd->end)
+ 			continue;
+ 		if (nd->end > start && nd->start < end)
+-			return i;
++			return memblk_nodeid[i];
+ 		if (nd->end == end && nd->start == start)
+-			return i;
++			return memblk_nodeid[i];
+ 	}
+ 	return -1;
+ }
+@@ -254,7 +258,7 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 		bad_srat();
+ 		return;
+ 	}
+-	i = conflicting_nodes(start, end);
++	i = conflicting_memblks(start, end);
+ 	if (i == node) {
+ 		printk(KERN_WARNING
+ 		"SRAT: Warning: PXM %d (%lx-%lx) overlaps with itself (%Lx-%Lx)\n",
+@@ -279,10 +283,10 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 			nd->end = end;
  	}
  
-+	/*
-+	 * No problems if we call this interface from both ACPI_PCI_SLOT
-+	 * driver and call it here again. If we've already created the
-+	 * pci_slot, the interface will simply bump the refcount.
-+	 */
- 	pci_slot = pci_create_slot(bus, slot_nr, slot->name);
- 	if (IS_ERR(pci_slot))
- 		return PTR_ERR(pci_slot);
-@@ -579,6 +584,17 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
- 	slot->pci_slot = pci_slot;
- 	pci_slot->hotplug = slot;
+-	printk(KERN_INFO "SRAT: Node %u PXM %u %Lx-%Lx\n", node, pxm,
+-	       nd->start, nd->end);
+-	e820_register_active_regions(node, nd->start >> PAGE_SHIFT,
+-						nd->end >> PAGE_SHIFT);
++	printk(KERN_INFO "SRAT: Node %u PXM %u %lx-%lx\n", node, pxm,
++	       start, end);
++	e820_register_active_regions(node, start >> PAGE_SHIFT,
++				     end >> PAGE_SHIFT);
+ 	push_node_boundaries(node, nd->start >> PAGE_SHIFT,
+ 						nd->end >> PAGE_SHIFT);
  
-+	/*
-+	 * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
-+	 */
-+	if (strcmp(kobject_name(&pci_slot->kobj), slot->name)) {
-+		result = kobject_rename(&pci_slot->kobj, slot->name);
-+		if (result) {
-+			pci_destroy_slot(pci_slot);
-+			return result;
-+		}
-+	}
+@@ -294,6 +298,11 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 		if ((nd->start | nd->end) == 0)
+ 			node_clear(node, nodes_parsed);
+ 	}
 +
- 	spin_lock(&pci_hotplug_slot_list_lock);
- 	list_add(&slot->slot_list, &pci_hotplug_slot_list);
- 	spin_unlock(&pci_hotplug_slot_list_lock);
-diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
-index e6d3d4d..7561d17 100644
---- a/drivers/pci/hotplug/pciehp_core.c
-+++ b/drivers/pci/hotplug/pciehp_core.c
-@@ -249,7 +249,7 @@ static int init_slots(struct controller *ctrl)
- 		if (retval == -EBUSY)
- 			goto error_info;
- 		if (retval) {
--			err ("pci_hp_register failed with error %d\n", retval);
-+			err("pci_hp_register failed with error %d\n", retval);
- 			goto error_info;
- 		}
- 		/* create additional sysfs entries */
-diff --git a/drivers/pci/hotplug/sgi_hotplug.c b/drivers/pci/hotplug/sgi_hotplug.c
-index 8908834..5fd6887 100644
---- a/drivers/pci/hotplug/sgi_hotplug.c
-+++ b/drivers/pci/hotplug/sgi_hotplug.c
-@@ -668,7 +668,7 @@ static int sn_hotplug_slot_register(struct pci_bus *pci_bus)
++	node_memblk_range[num_node_memblks].start = start;
++	node_memblk_range[num_node_memblks].end = end;
++	memblk_nodeid[num_node_memblks] = node;
++	num_node_memblks++;
+ }
  
- register_err:
- 	dev_dbg(&pci_bus->self->dev, "bus failed to register with err = %d\n",
--	        rc);
-+		rc);
+ /* Sanity check to catch more bad SRATs (they are amazingly common).
+@@ -364,7 +373,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 		return -1;
+ 	}
  
- alloc_err:
- 	if (rc == -ENOMEM)
--- 
-1.5.3.1.g1e61
-
+-	memnode_shift = compute_hash_shift(nodes, MAX_NUMNODES);
++	memnode_shift = compute_hash_shift(node_memblk_range, num_node_memblks,
++					   memblk_nodeid);
+ 	if (memnode_shift < 0) {
+ 		printk(KERN_ERR
+ 		     "SRAT: No NUMA node hash function found. Contact maintainer\n");
+diff --git a/include/asm-x86/numa_64.h b/include/asm-x86/numa_64.h
+index 15fe07c..0d37e31 100644
+--- a/include/asm-x86/numa_64.h
++++ b/include/asm-x86/numa_64.h
+@@ -8,7 +8,8 @@ struct bootnode {
+ 	u64 start,end; 
+ };
+ 
+-extern int compute_hash_shift(struct bootnode *nodes, int numnodes);
++extern int compute_hash_shift(struct bootnode *nodes, int numblks,
++			      int *nodeids);
+ 
+ #define ZONE_ALIGN (1UL << (MAX_ORDER+PAGE_SHIFT))
+ 
