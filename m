@@ -1,76 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbYCYX3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbYCYXb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760212AbYCYX3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbYCYX3i
+	id S1760745AbYCYXb1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbYCYXbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:29:38 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40250 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbYCYX3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:29:36 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Al Viro" <viro@ZenIV.linux.org.uk>
-Date: Wed, 26 Mar 2008 10:29:27 +1100 (EST)
-Message-ID: <34746.192.168.1.70.1206487767.squirrel@neil.brown.name>
-In-Reply-To: <20080325224919.GM10722@ZenIV.linux.org.uk>
-References: <20080321155451.GU10722@ZenIV.linux.org.uk>
-    <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu>
-    <20080321163520.GV10722@ZenIV.linux.org.uk>
-    <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu>
-    <18408.26863.617591.836548@notabene.brown>
-    <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp>
-    <57096.192.168.1.70.1206484328.squirrel@neil.brown.name>
-    <20080325224919.GM10722@ZenIV.linux.org.uk>
-Subject: Re: r-o bind in nfsd
-Cc: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>, miklos@szeredi.hu,
-       haveblue@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       hch@infradead.org, linux-security-module@vger.kernel.org,
-       jmorris@namei.org
-User-Agent: SquirrelMail/1.4.13
+	Tue, 25 Mar 2008 19:31:20 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54115 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754739AbYCYXbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:31:19 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18bXtAzqEsbgt92DfBUVHgWnlfIzhHp35hqMjNy4W
+	fU1PiK29HIOW80
+Date: Wed, 26 Mar 2008 00:31:19 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Jeff Garzik <jeff@garzik.org>, Tim Ellis <tim@ngndg.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Work around breakage introduced in pata_sil680 by switching
+ it to MMIO
+In-Reply-To: <1203987502.15052.71.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0803260023030.1539@axis700.grange>
+References: <32334D99-DB01-4645-97DC-88D2E7BA2BE5@ngndg.com> 
+ <1202850129.7410.22.camel@pasglop>  <Pine.LNX.4.64.0802151651340.27735@axis700.grange>
+  <20080215155332.2b89c429@core> <1203111956.22915.24.camel@pasglop> 
+ <DD1DA785-AD9C-4EFA-94E2-FA7154EECA9F@ngndg.com>  <47C347C3.40404@garzik.org>
+ <1203987502.15052.71.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, March 26, 2008 9:49 am, Al Viro wrote:
-> On Wed, Mar 26, 2008 at 09:32:08AM +1100, NeilBrown wrote:
->
->> >   (1) The kernel don't know what operation (open/create/truncate etc.)
->> > will be
->> >       done at the moment of link_path_walk().
->>
->> Though the 'indent' data structure could be used to carry this
->> information.
->
-> If it's 'intent',
+pata_sil680 is broken on Linkstation amd Kurobox HG machines since 2.6.24. 
+Work around the breakage until a real fix is found.
 
-Yes, sorry.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
->                   that mess will be gone next cycle.
+---
 
-Cool.  Any chance of a preview?  Is it in -next or -mm ??
+On Tue, 26 Feb 2008, Benjamin Herrenschmidt wrote:
 
->> >   (3) The rename() and link() operations handle two pathnames.
->> >       But, it is not possible to know both pathnames at the moment of
->> >       link_path_walk().
->>
->> Not an insolvable problem.
->> One could imagine an implementation where a TYPE_RENAME_FROM security
->> check produced a cookie that was consumed by a TYPE_RENAME_TO security
->> check.  The cookie could then be used by the security module to
->> make any connection between the two names that might be appropriate.
->
-> alt.tasteless.software is that -> way...
->
+> > Yes.
+> > 
+> > Alan loves to complain about lack of MMIO flush, but in practice this is 
+> > rarely the source of problems such as the one you describe.
+> > 
+> > But if its broken its broken, and we need to revert.  Any luck getting 
+> > benh access to the device?
+> > 
+> 
+> Especially since reverting it will break a whole bunch of cell blades,
+> which wouldn't be nice (those cannot do PIO and have that controller).
+> 
+> In the meantime, we might "workaround" with a hack to only enable MMIO
+> on those cell
+> blades, something like:
+> 
+> #ifdef CONFIG_PPC64
+> 	if (machine_is(cell))
+> 		mmio = 1;
+> #endif
+> 
+> That might get us out of the regression until we find the proper
+> solution ?
 
-While I have no desire to defend that particular design, saying "tasteless"
-without suggesting an alternate approach does appear somewhat unhelpful.
+How about the one below? I'd really like to get it in for 2.6.25 to avoid 
+a second broken stable kernel on these machines.
 
-NeilBrown
+Ben, please verify that your cell machines still work.
 
+Thanks
+Guennadi
+
+diff --git a/drivers/ata/pata_sil680.c b/drivers/ata/pata_sil680.c
+index 503245a..75179ff 100644
+--- a/drivers/ata/pata_sil680.c
++++ b/drivers/ata/pata_sil680.c
+@@ -335,9 +335,12 @@ static int __devinit sil680_init_one(struct pci_dev *pdev,
+ 	};
+ 	const struct ata_port_info *ppi[] = { &info, NULL };
+ 	static int printed_version;
++#ifdef CONFIG_PPC64
+ 	struct ata_host *host;
+ 	void __iomem *mmio_base;
+-	int rc, try_mmio;
++	int rc;
++#endif
++	int try_mmio;
+ 
+ 	if (!printed_version++)
+ 		dev_printk(KERN_DEBUG, &pdev->dev, "version " DRV_VERSION "\n");
+@@ -350,7 +353,8 @@ static int __devinit sil680_init_one(struct pci_dev *pdev,
+ 			return -ENODEV;
+ 	}
+ 
+-	if (!try_mmio)
++#ifdef CONFIG_PPC64
++	if (!try_mmio || !machine_is(cell))
+ 		goto use_ioports;
+ 
+ 	/* Try to acquire MMIO resources and fallback to PIO if
+@@ -396,6 +400,7 @@ static int __devinit sil680_init_one(struct pci_dev *pdev,
+ 				 &sil680_sht);
+ 
+ use_ioports:
++#endif
+ 	return ata_pci_init_one(pdev, ppi);
+ }
+ 
