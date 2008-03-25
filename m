@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbYCYXWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761231AbYCYXXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760294AbYCYXWy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYCYXWq
+	id S1761231AbYCYXXX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbYCYXXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:22:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51446
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755685AbYCYXWp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:22:45 -0400
-Date: Tue, 25 Mar 2008 16:22:44 -0700 (PDT)
-Message-Id: <20080325.162244.61337214.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
-	<20080324.144356.104645106.davem@davemloft.net>
-	<Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 19:23:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34549 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756043AbYCYXXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:23:05 -0400
+Date: Tue, 25 Mar 2008 16:22:52 -0700
+From: Greg KH <gregkh@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
+       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+Message-ID: <20080325232252.GA25338@suse.de>
+References: <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com> <47E96263.9000808@zytor.com> <20080325212032.GA24495@suse.de> <47E96E15.7020105@zytor.com> <20080325230009.GA25062@suse.de> <47E9853C.1030506@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47E9853C.1030506@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Tue, 25 Mar 2008 10:48:19 -0700 (PDT)
+On Tue, Mar 25, 2008 at 04:05:32PM -0700, H. Peter Anvin wrote:
+>> How does this have anything to do with boot times?  Do you really have a
+>> foolish shell script that iteratorates over every single disk in the
+>> sysfs tree for every disk?  What does it do that for?
+>
+> Any time you want to get the sysfs information for a filesystem which is 
+> already mounted, that's what you're forced to do.
+>
+>> I thought we were talking about 2TB disks here, with a proposed new
+>> ioctl, not foolishness of boot scripts...
+>
+> I pointed out that having a way to map device numbers to sysfs directories 
+> would have the same effect, *and* would be usable for other purposes.  I'd 
+> rather see that than a new ioctl, and another, and another...
 
-> On Mon, 24 Mar 2008, David Miller wrote:
-> 
-> > There are ways to get large pages into the process address space for
-> > compute bound tasks, without suffering the well known negative side
-> > effects of using larger pages for everything.
-> 
-> These hacks have limitations. F.e. they do not deal with I/O and 
-> require application changes.
+Again, a simple udev rule will give you that today if you really want
+it...
 
-Transparent automatic hugepages are definitely doable, I don't know
-why you think this requires application changes.
+And I think 'udevinfo' can be used to retrieve this information as well.
 
-People want these larger pages for HPC apps.
+thanks,
+
+greg k-h
