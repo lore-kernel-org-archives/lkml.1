@@ -1,80 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbYCYVp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbYCYVqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762913AbYCYVp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761000AbYCYVjp
+	id S1760456AbYCYVqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760671AbYCYVjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:39:45 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:48981 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760979AbYCYVjm (ORCPT
+	Tue, 25 Mar 2008 17:39:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54170 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761036AbYCYVjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:39:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=M0c87bI02TQ6pBVRU/XnEOW4Jb9w1F4xySlJBObuWhVZhLQy8idJ+Qi4Gb2nCyIGXYldeR/nzqxjIQI+aTJ8/i59kN8N2XsNlWaQDvxWvmBCmMQUr/Wqt9tIeR5N8SiJjVJ6d2AHbKP49Moi4DEb9pPCjAsvFKzAp5a+xc0q5O0=
-Message-ID: <998d0e4a0803251439u4bf09fb1ye568fc1970b0200f@mail.gmail.com>
-Date: Tue, 25 Mar 2008 22:39:39 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Why /proc/cpuinfo doesn't print L1,L2,L3 caches?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Mar 2008 17:39:47 -0400
+Date: Tue, 25 Mar 2008 14:39:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: marcus@better.se
+Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10327] New: keyboard stops responding after
+ "ifdown eth0"
+Message-Id: <20080325143941.300d415f.akpm@linux-foundation.org>
+In-Reply-To: <bug-10327-10286@http.bugzilla.kernel.org/>
+References: <bug-10327-10286@http.bugzilla.kernel.org/>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 47
-model name      : AMD Athlon(tm) 64 Processor 3200+
-...
-cache size      : 512 KB
-...
 
-The cache size is currently misinformed. It's not the real size because
-it's 64+64+512 KiB = 640 KiB, not 512 KB.
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-How can i know what hw-caches use the processors?
-The current kernel doesn't know well what hw-caches uses.
+On Tue, 25 Mar 2008 14:22:51 -0700 (PDT)
+bugme-daemon@bugzilla.kernel.org wrote:
 
-The good proposal is by example (the data below are not real):
-* In old AMD Athlon64:
+> http://bugzilla.kernel.org/show_bug.cgi?id=10327
+> 
+>            Summary: keyboard stops responding after "ifdown eth0"
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.24, 2.6.25-rc6
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Network
+>         AssignedTo: jgarzik@pobox.com
+>         ReportedBy: marcus@better.se
+> 
+> 
+> Latest working kernel version: unknown
+> Earliest failing kernel version: 2.6.24
+> Distribution: Debian testing/unstable
+> Hardware Environment: LG LE50 Express laptop
+> Software Environment: Debian i386, X.org 7.3, KDE 4
+> Problem Description:
+> 
+> The keyboard stops working when I'm manipulating the Ethernet interface while
+> in an X.org session. The session doesn't respond to keyboard input, although
+> the magic SysReq key still works, and the mouse also works. The only way out is
+> a reboot.
+> 
+> The bug is triggered consistently when I bring down the eth0 interface with
+> "ifdown eth0". (I normally use only wireless, so I didn't notice this before.)
+> 
+> Steps to reproduce:
+> 
+> Boot up, log in to KDE, bring up eth0, assign an address and send some traffic,
+> then "ifdown eth0".
+> 
 
-cache L1        : 64 KiB I + 64 KiB D, 64 B line, direct way, ...
-cache L2        : 512 KiB I+D-shared, exclusive, 128 associative way, ...
-cache L3        : none
+(this is using sky2)
 
-* In Intel Core Duo:
-processor       : 0
-cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-cache L2        : 2048 KiB Cores-shared, inclusive, 128 associative way, ...
-cache L3        : none
 
-processor       : 1
-cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-cache L2        : 2048 KiB cores-shared, inclusive, 128 associative way, ...
-cache L3        : none
+> ~$ cat /proc/interrupts
+>            CPU0
+>   0:      32835  local-APIC-edge-fasteoi   timer
+>   1:         10   IO-APIC-edge      i8042
+>   8:          2   IO-APIC-edge      rtc
+>  12:        138   IO-APIC-edge      i8042
+>  14:      28322   IO-APIC-edge      ide0
+>  15:      10618   IO-APIC-edge      ide1
+>  16:        334   IO-APIC-fasteoi   HDA Intel
+>  19:      19243   IO-APIC-fasteoi   ohci_hcd:usb1, ohci_hcd:usb2, ehci_hcd:usb3
+>  20:         20   IO-APIC-fasteoi   firewire_ohci, yenta, tifm_7xx1,
+> sdhc0:slot0, sdhc0:slot1, sdhc0:slot2
+>  21:       1827   IO-APIC-fasteoi   acpi
+>  22:      19159   IO-APIC-fasteoi   0000:08:02.0
+> 223:          2   PCI-MSI-edge      eth0
+> NMI:          0   Non-maskable interrupts
+> LOC:    1415833   Local timer interrupts
+> TRM:          0   Thermal event interrupts
+> SPU:          0   Spurious interrupts
+> ERR:          0
+> MIS:          0
 
-* In Quad:
-processor       : 0
-cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-cache L2        : 2048+2048 KiB pair-cores-shared, inclusive, 128
-associative way, ...
-cache L3        : none
-...
-processor       : 3
-cache L1        : 32 KiB I + 32 KiB D, 64 B line, direct way, ...
-cache L2        : 2048+2048 KiB pair-cores-shared, inclusive, 128
-associative way, ...
-cache L3        : none
+So it's not an ill-advised disable_irq().
 
-It above is an example, put your symbols to /proc/cpuinfo in a
-convenient manner.
+I guess the first question is: did the ifdown just kill the keyboard, or
+did more things die?
 
-   Good bye ;)
+Perhaps you could try
+
+	ifdown eth0 ; sleep 5 ; ifup eth0
+
+and see if the machine recovers?
+
+(I am just maxed out on bug reports at present - could someone please take
+this up and see if we can get it fixed?)
+
