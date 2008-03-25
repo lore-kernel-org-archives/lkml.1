@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbYCYVtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbYCYVzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761517AbYCYVtq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbYCYVth
+	id S1760674AbYCYVzb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYCYVzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:49:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53551 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753692AbYCYVth (ORCPT
+	Tue, 25 Mar 2008 17:55:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44629 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752870AbYCYVzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:49:37 -0400
-Date: Tue, 25 Mar 2008 14:47:35 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-cc: Ingo Molnar <mingo@elte.hu>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
+	Tue, 25 Mar 2008 17:55:22 -0400
+Date: Tue, 25 Mar 2008 22:55:55 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Oleg Nesterov <oleg@tv-sign.ru>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
- regressions from 2.6.24)
-In-Reply-To: <47E969E1.6080608@m3y3r.de>
-Message-ID: <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
-References: <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de>
- <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <morgan@kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+Message-ID: <20080325215555.GB12770@elf.ucw.cz>
+References: <20080323135110.GA294@tv-sign.ru> <20080324160102.GB4069@atrey.karlin.mff.cuni.cz> <20080324164059.GA4767@tv-sign.ru> <20080324223925.GD2426@elf.ucw.cz> <20080324230458.GA173@tv-sign.ru> <1206446637.3302.134.camel@moss-spartans.epoch.ncsc.mil> <20080325134001.GB5984@sergelap.austin.rr.com> <1206455835.3302.185.camel@moss-spartans.epoch.ncsc.mil> <20080325180611.GB19176@sergelap.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080325180611.GB19176@sergelap.ibm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-
-On Tue, 25 Mar 2008, Thomas Meyer wrote:
+> > Might want to double check with e.g. the vservers folks that they
+> > weren't relying in any way on special handling of init.
 > 
-> and compare lspci -vv from 2.6.25 and 2.6.24:
-> 
-> 2.6.25:
->
->    Region 0: [virtual] Memory at 100000000 (32-bit, non-prefetchable) [size=4K]
-> 
-> 2.6.24:
->
->    Region 0: Memory at 8c000000 (32-bit, non-prefetchable) [size=4K]
+> Herbert, Pavel, do you have objections to allowing ptrace of init?
+> (I believe Eric has already Acked the idea iirc?)
 
-Ok, so it didn't use to be at the 4GB mark.
+No problem from me...
 
-This seems to be a PCI and resource alloc issue. It would be really 
-interesting to see where the 4GB allocation started. Ie ignore anything 
-else (warnings, driver loadings etc), and _just_ look at lspci -vv output 
-for where the memory got allocated.
+(..but do not introduce command line option or sysctl. It is not worth it).
 
-Did you already bisect that and I just missed it?
-
-		Linus
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
