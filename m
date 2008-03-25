@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbYCYV3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbYCYVfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760713AbYCYV3Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbYCYV3N
+	id S1759717AbYCYVfK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYCYVe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:29:13 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35806 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759792AbYCYV3L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:29:11 -0400
-Message-ID: <47E96E15.7020105@zytor.com>
-Date: Tue, 25 Mar 2008 14:26:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 25 Mar 2008 17:34:58 -0400
+Received: from namei.org ([69.55.235.186]:57999 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753160AbYCYVe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 17:34:57 -0400
+Date: Wed, 26 Mar 2008 08:34:23 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: What do you want from linux-next?
+In-Reply-To: <20080324213222.c66baba1.akpm@linux-foundation.org>
+Message-ID: <Xine.LNX.4.64.0803260829440.27855@us.intercode.com.au>
+References: <20080325141112.0ce433db.sfr@canb.auug.org.au>
+ <Pine.LNX.4.64.0803242056300.5309@shark.he.net> <20080324213222.c66baba1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com> <47E96263.9000808@zytor.com> <20080325212032.GA24495@suse.de>
-In-Reply-To: <20080325212032.GA24495@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Mar 25, 2008 at 01:36:51PM -0700, H. Peter Anvin wrote:
->> Randy Dunlap wrote:
->>>> Come on people, adding symlinks for device major:minor numbers in sysfs
->>>> to save a few 10s of lines of userspace code?  Can things get sillier?
->>>>
->>>> You can add a single udev rule to probably build these in a tree in /dev
->>>> if you really need such a thing...
->>>>
->>>> And what's wrong with your new ioctl recomendation?
->>> Ah, there's some sanity.  :)
->> It's not so much an issue of a few tens of lines of user space code, but 
->> rather the fact that something that should be O(1) is currently O(n).
-> 
-> "should"?  why?  Is this some new requirement that everyone needs?  I've
-> _never_ seen anyone ask for the ability to find sysfs devices by
-> major:minor number in O(1) time.  Is this somehow a place where such
-> optimization is warranted?
+On Mon, 24 Mar 2008, Andrew Morton wrote:
 
-Well, when dealing with shell scripts a O(n) very easily becomes O(n^2). 
-  For the stuff that I, personally, do, it's not a big deal, but people 
-with large number of disks have serious gripes with our boot times.
+> There seem to be some trees which aren't yet in linux-next, some of them
+> significant.  The present list I'm pulling from is
 
-	-hpa
+> git-selinux
+
+AFAIK, this is also in linux-next.
+
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
