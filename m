@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYCYDcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYCYDcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757789AbYCYDcP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 23:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbYCYDbh
+	id S1756446AbYCYDcb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 23:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbYCYDbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 23:31:37 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:37478 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757320AbYCYDbg (ORCPT
+	Mon, 24 Mar 2008 23:31:47 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:40489 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757470AbYCYDbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 23:31:36 -0400
-Date: Mon, 24 Mar 2008 21:31:35 -0600
+	Mon, 24 Mar 2008 23:31:46 -0400
+Date: Mon, 24 Mar 2008 21:31:45 -0600
 From: Alex Chiang <achiang@hp.com>
 To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
@@ -18,9 +18,9 @@ Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
        Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
        rick.jones2@hp.com, linux-kernel@vger.kernel.org,
        linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 15/16] PCI slot: Trivial cleanups for slot.c (Not for
-	mainline!)
-Message-ID: <20080325033135.GD26434@ldl.fc.hp.com>
+Subject: Re: [PATCH 16/16][BUG] PCI hotplug core: add missing lock for
+	hotplug slot list (Not for mainline!)
+Message-ID: <20080325033145.GE26434@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
 	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
@@ -28,20 +28,20 @@ Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
 	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
 	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E3390A.7030308@jp.fujitsu.com>
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E33937.5050205@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47E3390A.7030308@jp.fujitsu.com>
+In-Reply-To: <47E33937.5050205@jp.fujitsu.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Some trivial cleanups for drivers/pci/slot.c.
+> Add missing lock for manipulating pci_hotplug_slot_list.
 
-Thanks, merged.
+Nice work, thanks. I've merged it.
 
 /ac
 
@@ -49,35 +49,59 @@ Thanks, merged.
 > Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 > 
 > ---
->  drivers/pci/slot.c |    9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
+>  drivers/pci/hotplug/pci_hotplug_core.c |   13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
 > 
-> Index: linux-2.6.25-rc6/drivers/pci/slot.c
+> Index: linux-2.6.25-rc6/drivers/pci/hotplug/pci_hotplug_core.c
 > ===================================================================
-> --- linux-2.6.25-rc6.orig/drivers/pci/slot.c
-> +++ linux-2.6.25-rc6/drivers/pci/slot.c
-> @@ -132,19 +132,16 @@ EXPORT_SYMBOL_GPL(pci_destroy_slot);
+> --- linux-2.6.25-rc6.orig/drivers/pci/hotplug/pci_hotplug_core.c
+> +++ linux-2.6.25-rc6/drivers/pci/hotplug/pci_hotplug_core.c
+> @@ -61,6 +61,7 @@ static int debug;
+>  //////////////////////////////////////////////////////////////////
 >  
->  static int pci_slot_init(void)
->  {
-> -	int result = 0;
->  	struct kset *pci_bus_kset;
+>  static LIST_HEAD(pci_hotplug_slot_list);
+> +static DEFINE_SPINLOCK(pci_hotplug_slot_list_lock);
 >  
->  	pci_bus_kset = bus_get_kset(&pci_bus_type);
-> -
->  	pci_slots_kset = kset_create_and_add("slots", NULL,
->  						&pci_bus_kset->kobj);
->  	if (!pci_slots_kset) {
-> -		result = -ENOMEM;
-> -		printk(KERN_ERR "PCI: Slot initialization failure (%d)\n",
-> -			result);
-> +		printk(KERN_ERR "PCI: Slot initialization failure\n");
-> +		return -ENOMEM;
+>  /* these strings match up with the values in pci_bus_speed */
+>  static char *pci_bus_speed_strings[] = {
+> @@ -529,12 +530,16 @@ static struct hotplug_slot *get_slot_fro
+>  	struct hotplug_slot *slot;
+>  	struct list_head *tmp;
+>  
+> +	spin_lock(&pci_hotplug_slot_list_lock);
+>  	list_for_each (tmp, &pci_hotplug_slot_list) {
+>  		slot = list_entry (tmp, struct hotplug_slot, slot_list);
+>  		if (strcmp(slot->name, name) == 0)
+> -			return slot;
+> +			goto out;
 >  	}
-> -	return result;
-> +	return 0;
+> -	return NULL;
+> +	slot = NULL;
+> +out:
+> +	spin_unlock(&pci_hotplug_slot_list_lock);
+> +	return slot;
 >  }
 >  
->  subsys_initcall(pci_slot_init);
+>  /**
+> @@ -584,7 +589,9 @@ int pci_hp_register(struct hotplug_slot 
+>  		}
+>  	}
+>  
+> +	spin_lock(&pci_hotplug_slot_list_lock);
+>  	list_add(&slot->slot_list, &pci_hotplug_slot_list);
+> +	spin_unlock(&pci_hotplug_slot_list_lock);
+>  
+>  	result = fs_add_slot(pci_slot);
+>  	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
+> @@ -613,7 +620,9 @@ int pci_hp_deregister(struct hotplug_slo
+>  	if (temp != hotplug)
+>  		return -ENODEV;
+>  
+> +	spin_lock(&pci_hotplug_slot_list_lock);
+>  	list_del(&hotplug->slot_list);
+> +	spin_unlock(&pci_hotplug_slot_list_lock);
+>  
+>  	slot = hotplug->pci_slot;
+>  	fs_remove_slot(slot);
 > 
 > 
