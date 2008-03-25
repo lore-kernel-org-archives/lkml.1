@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbYCYIMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYCYIQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbYCYIMk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 04:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYCYIM0
+	id S1754223AbYCYIQE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 04:16:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYCYIPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 04:12:26 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:10246 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751682AbYCYIMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 04:12:24 -0400
-Date: Tue, 25 Mar 2008 09:12:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, paulus@samba.org,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH 0/5] Generic smp_call_function(), improvements, and smp_call_function_single()
-Message-ID: <20080325081219.GO15355@kernel.dk>
-References: <1205927772-31401-1-git-send-email-jens.axboe@oracle.com> <1FE6DD409037234FAB833C420AA843ECE137D9@orsmsx424.amr.corp.intel.com> <20080321183149.GB15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE1387F@orsmsx424.amr.corp.intel.com> <20080322122903.GD15355@kernel.dk> <1FE6DD409037234FAB833C420AA843ECE5B76D@orsmsx424.amr.corp.intel.com>
+	Tue, 25 Mar 2008 04:15:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:32100 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbYCYIPt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 04:15:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=uF2Tub8qUozVcxGAr0kQocrhjfokdDh9Q5IIeFZDiiXmuE2A+ZWrNWIC9joJv8+jO9ZGabVSCvbjJ0v+Mt5DUIKCGWjYQyMW/v9V0MLJPK+7MW+DLbkTs/mkftk/sn1XQypCWVsQAZaR1WHdmcOsnqlebHpVKFNSAVL5sNV0B3k=
+Message-ID: <e2e108260803250115j4047b242t85c4d719501482bf@mail.gmail.com>
+Date: Tue, 25 Mar 2008 09:15:47 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Kernel compilation: make halts with error message "*** target pattern contains no `%'"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE5B76D@orsmsx424.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 24 2008, Luck, Tony wrote:
-> > Funky, how does accessing other CPU's per-cpu variables work on ia64
-> > then? Perhaps I made some false assumptions.
-> 
-> Having scared you to death with some of the strange weirdness of
-> ia64 ... it turns out that you made a trivial typo in the ia64
-> specific part of the patch ... see below.
-> 
-> With this patch and a hack to call init_call_single_data() early
-> enough the patch boots fine on ia64.
-> 
-> -Tony
-> 
-> commit 8ffe2551f04e55176f7f7935c5a3395cc641d514
-> Author: Tony Luck <tony.luck@intel.com>
-> Date:   Mon Mar 24 13:04:11 2008 -0700
-> 
->     [IA64] Fix typo'd call to generic_smp_call_function_single_interrupt
->     
->     Should really be calling generic_smp_call_function_interrupt() for
->     the IPI_CALL_FUNC case.
->     
->     Signed-off-by: Tony Luck <tony.luck@intel.com>
-> 
-> diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
-> index fa26528..55cbc2c 100644
-> --- a/arch/ia64/kernel/smp.c
-> +++ b/arch/ia64/kernel/smp.c
-> @@ -124,7 +124,7 @@ handle_IPI (int irq, void *dev_id)
->  
->  			switch (which) {
->  			      case IPI_CALL_FUNC:
-> -				generic_smp_call_function_single_interrupt();
-> +				generic_smp_call_function_interrupt();
->  				break;
+Hello,
 
-Doh, that was a pretty silly typo. Thanks, I've merged it with the
-patch!
+When I try to compile the latest git tree
+(git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git,
+last change	Tue, 25 Mar 2008 06:24:16 +0000), make halts and prints an
+error message. This happens both with GNU make version 3.79.1 and
+version 3.81. The 2.6.24.3 kernel builds fine on my system with the
+same tools, and that the Documentation/Changes document has not been
+changed since 2.6.24.3. Does anyone know how I can get around this ?
 
-So now I/we just need to figure out why the hack to call
-init_call_single_data() is needed. You seem to imply it was being called
-too late, I thought perhaps too early. Where did you stick the
-init_call_single_data() call in?
+# gmake --version
+GNU Make version 3.79.1, by Richard Stallman and Roland McGrath.
+...
+# gmake
+Makefile:112: *** target pattern contains no `%'.  Stop.
+# make --version
+GNU Make 3.81
+...
+# make
+Makefile:112: *** target pattern contains no `%'.  Stop.
 
--- 
-Jens Axboe
-
+Bart.
