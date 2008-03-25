@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYCYHsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbYCYHth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbYCYHsO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 03:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYCYHr7
+	id S1753459AbYCYHth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 03:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYCYHt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 03:47:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34555 "EHLO
+	Tue, 25 Mar 2008 03:49:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34565 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbYCYHr6 (ORCPT
+	with ESMTP id S1751084AbYCYHt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 03:47:58 -0400
-Date: Tue, 25 Mar 2008 08:51:06 +0100
+	Tue, 25 Mar 2008 03:49:29 -0400
+Date: Tue, 25 Mar 2008 08:52:36 +0100
 From: Andi Kleen <andi@firstfloor.org>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk
-Subject: Re: [11/14] vcompound: Fallbacks for order 1 stack allocations on IA64 and x86
-Message-ID: <20080325075106.GF2170@one.firstfloor.org>
-References: <20080321061703.921169367@sgi.com> <20080321061726.782068299@sgi.com> <871w63iuap.fsf@basil.nowhere.org> <Pine.LNX.4.64.0803241251360.4218@schroedinger.engr.sgi.com>
+       linux-kernel@vger.kernel.org
+Subject: Re: [13/14] vcompound: Use vcompound for swap_map
+Message-ID: <20080325075236.GG2170@one.firstfloor.org>
+References: <20080321061703.921169367@sgi.com> <20080321061727.269764652@sgi.com> <8763vfixb8.fsf@basil.nowhere.org> <Pine.LNX.4.64.0803241253250.4218@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803241251360.4218@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0803241253250.4218@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 24, 2008 at 12:53:19PM -0700, Christoph Lameter wrote:
+On Mon, Mar 24, 2008 at 12:54:54PM -0700, Christoph Lameter wrote:
 > On Fri, 21 Mar 2008, Andi Kleen wrote:
 > 
-> > The traditional reason this was discouraged (people seem to reinvent
-> > variants of this patch all the time) was that there used 
-> > to be drivers that did __pa() (or equivalent) on stack addresses
-> > and that doesn't work with vmalloc pages.
-> > 
-> > I don't know if such drivers still exist, but such a change
-> > is certainly not a no-brainer
+> > But I used a simple trick to avoid the waste problem: it allocated a
+> > continuous range rounded up to the next page-size order and then freed
+> > the excess pages back into the page allocator. That was called
+> > alloc_exact(). If you replace vmalloc with alloc_pages you should
+> > use something like that too I think.
 > 
-> I thought that had been cleaned up because some arches already have 
+> One way of dealing with it would be to define an additional allocation 
+> variant that allows the limiting of the loss? I noted that both the swap
+> and the wait tables vary significantly between allocations. So we could 
+> specify an upper boundary of a loss that is acceptable. If too much memory
+> would be lost then use vmalloc unconditionally.
 
-Someone posted a patch recently that showed that the cdrom layer
-does it. Might be more. It is hard to audit a few million lines
-of driver code.
+I liked your idea of fixing compound pages to not rely on order
+better. Ok it is likely more work to implement @)
 
-> virtually mapped stacks? This could be debugged by testing with
-> CONFIG_VFALLBACK_ALWAYS set. Which results in a stack that is always 
-> vmalloc'ed and thus the driver should fail.
-
-It might be a subtle failure.
-
-Maybe sparse could be taught to check for this if it happens
-in a single function? (cc'ing Al who might have some thoughts
-on this). Of course if it happens spread out over multiple
-functions sparse wouldn't help neither. 
+Also if anything preserving memory should be default, but maybe
+skippable a with __GFP_GO_FAST flag.
 
 -Andi
