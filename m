@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761072AbYCYWEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbYCYWEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761072AbYCYWEK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYCYWD4
+	id S1761520AbYCYWEa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758678AbYCYWD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:03:56 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:42560 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757504AbYCYWDz (ORCPT
+	Tue, 25 Mar 2008 18:03:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46795 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757760AbYCYWD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:03:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kVzFphMk44cL9u1lEY0K7bE5wGw41p2miWTSLu8DnTwRyUxrCaOpBfNCvbTuDeOOjX5hJckmhhaUJ1MdDD611iEPEP8U9E04qbcGQsMg5+0FEUGJLfyw94QV0Fu2fjFMfxU1aT21tsvRS3SckEqAKEG+VGSNzXq9asP/gCMEOpY=
-Message-ID: <998d0e4a0803251503v7bf20ad4ndb0e21b1eead7f9d@mail.gmail.com>
-Date: Tue, 25 Mar 2008 23:03:54 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: What means Hugepage? 8KiB,16KiB,..,2MiB or 4MiB?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Mar 2008 18:03:56 -0400
+Date: Tue, 25 Mar 2008 21:47:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: <linux-arch@vger.kernel.org>, <linux-mm@kvack.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: What if a TLB flush needed to sleep?
+Message-ID: <20080325214725.3d707445@core>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com>
+References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What means Hugepage?
+> 	down(&ptcg_sem);
+> 	... execute ptc.g
+> 	up(&ptcg_sem);
 
-Does it mean 8KiB? 16KiB? 32KiB? 64KiB? 2MiB? 4MiB?
+That will dig you a nice large hole for real time to fall into. If you
+want to do rt nicely you want to avoid semaphores and the corresponding
+lack of ability to fix priority inversions.
 
-The real page sizes of x86 and x86-64 are 4 KiB for this linux kernel.
+> 2) Is it feasible to rearrange the MM code so that we don't
+> hold any locks while doing a TLB flush?  Or should I implement
+> some sort of spin_only_semaphore?
 
-But the page sizes can be soft 8 KiB or 16 KiB or 32 KiB or 64 KiB
-if it is implemented in the memory manager of the kernel.
+Better to keep ia64 perversions in the IA64 code whenever possible and
+lower risk for everyone else.
 
-But too they exist real page sizes of 2 MiB and 4 MiB that they have
-some reserved entries of TLB in the specs of Intel/AMD processors
-for these gigant pages.
+Alan
+
