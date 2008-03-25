@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYCYS15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbYCYS2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbYCYS15 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYCYS1s
+	id S1759355AbYCYS2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYCYS1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:27:48 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:53634 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753185AbYCYS1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:27:47 -0400
-Subject: Re: larger default page sizes...
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Miller <davem@davemloft.net>, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
-	 <20080321.145712.198736315.davem@davemloft.net>
-	 <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-	 <20080324.133722.38645342.davem@davemloft.net>
-	 <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
+	Tue, 25 Mar 2008 14:27:53 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1640 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757521AbYCYS1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:27:53 -0400
+Subject: Re: [PATCH 019/148] include/asm-x86/cpufeature.h: checkpatch
+	cleanups - formatting only
+From: Joe Perches <joe@perches.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080325153053.GB20898@elte.hu>
+References: <1206259443-13210-1-git-send-email-joe@perches.com>
+	 <1206259443-13210-20-git-send-email-joe@perches.com>
+	 <20080325153053.GB20898@elte.hu>
 Content-Type: text/plain
-Date: Tue, 25 Mar 2008 11:27:45 -0700
-Message-Id: <1206469665.27393.19.camel@nimitz.home.sr71.net>
+Date: Tue, 25 Mar 2008 11:27:13 -0700
+Message-Id: <1206469633.4845.94.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-25 at 14:29 +1100, Paul Mackerras wrote:
-> 4kB pages:      444.051s user + 34.406s system time
-> 64kB pages:     419.963s user + 16.869s system time
-> 
-> That's nearly 10% faster with 64kB pages -- on a kernel compile.
+On Tue, 2008-03-25 at 16:30 +0100, Ingo Molnar wrote:
+> > +#define X86_FEATURE_REP_GOOD     _CF(3, 16) /* rep microcode works well
+> > +					     * on this CPU */
+> that is crap too ...
 
-Can you do the same thing with the 4k MMU pages and 64k PAGE_SIZE?
-Wouldn't that easily break out whether the advantage is from the TLB or
-from less kernel overhead?
-
--- Dave
+the _CF or the newly line-broken comment?
 
