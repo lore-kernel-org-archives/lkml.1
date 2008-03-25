@@ -1,62 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYCYLBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYCYLCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbYCYLBA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 07:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYCYLAx
+	id S1755240AbYCYLCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 07:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYCYLCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 07:00:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51957 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753273AbYCYLAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 07:00:53 -0400
-Date: Tue, 25 Mar 2008 12:00:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: early memtest to find bad ram
-Message-ID: <20080325110040.GC3729@elte.hu>
-References: <200803202358.33722.yhlu.kernel@gmail.com> <20080321120313.GD25225@elte.hu> <86802c440803211704u4fb07074w934f32d2f95bf6a7@mail.gmail.com> <20080322120400.GE13264@elte.hu> <86802c440803220959r4515e2a0n6de2d8d201545a3@mail.gmail.com>
+	Tue, 25 Mar 2008 07:02:17 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:43178 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbYCYLCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 07:02:16 -0400
+Date: Tue, 25 Mar 2008 07:02:10 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] RWSEM: Rewrite rwsem.c and rwsem-spinlock.c more simply.
+Message-ID: <alpine.LFD.1.00.0803250659530.18358@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440803220959r4515e2a0n6de2d8d201545a3@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0005]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Rewrite these source files more simply by deleting the superfluous
+"tsk" task_struct pointer and rephrasing in terms of the "current"
+task pointer.
 
-> On Sat, Mar 22, 2008 at 5:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >  * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >  > >  one structural observation: please make this unified functionality,
-> >  > >  so that 32-bit kernels can make use of it too.
-> >  >
-> >  > that will need to use PAE to switch 2G windows ....
-> >
-> >  well, please try some non-PAE, checks-direct-mappings approach - if 
-> >  someone wants to extend it to the highmem bits i'm sure it will be 
-> >  done.
-> 
-> OK, First need to move some early_res code from e820_64.c to e820_32.c
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-yeah, please do that.
+---
 
-> or we can start to merge them. anyone is working on that?
+  in addition to making the code slightly simpler, this makes it
+easier to read since there's more information in:
 
-not that i know of - feel free.
+  set_current_state(TASK_UNINTERRUPTIBLE);
 
-	Ingo
+as opposed to:
+
+  set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+
+if it's not clear what "tsk" refers to.
+
+  compile tested on x86 with "make defconfig", but that doesn't really
+mean much since that configuration doesn't even compile the second of
+those source files.  so i'll leave it to someone who's a locking
+expert to sanity check this.  i'm quite willing to be told i screwed
+something up.
+
+
+ lib/rwsem-spinlock.c |   24 ++++++++++--------------
+ lib/rwsem.c          |   11 +++++------
+ 2 files changed, 15 insertions(+), 20 deletions(-)
+
+diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
+index 9df3ca5..8c3fc63 100644
+--- a/lib/rwsem-spinlock.c
++++ b/lib/rwsem-spinlock.c
+@@ -128,7 +128,6 @@ __rwsem_wake_one_writer(struct rw_semaphore *sem)
+ void __sched __down_read(struct rw_semaphore *sem)
+ {
+ 	struct rwsem_waiter waiter;
+-	struct task_struct *tsk;
+
+ 	spin_lock_irq(&sem->wait_lock);
+
+@@ -139,13 +138,12 @@ void __sched __down_read(struct rw_semaphore *sem)
+ 		goto out;
+ 	}
+
+-	tsk = current;
+-	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++	set_current_state(TASK_UNINTERRUPTIBLE);
+
+ 	/* set up my own style of waitqueue */
+-	waiter.task = tsk;
++	waiter.task = current;
+ 	waiter.flags = RWSEM_WAITING_FOR_READ;
+-	get_task_struct(tsk);
++	get_task_struct(current);
+
+ 	list_add_tail(&waiter.list, &sem->wait_list);
+
+@@ -157,10 +155,10 @@ void __sched __down_read(struct rw_semaphore *sem)
+ 		if (!waiter.task)
+ 			break;
+ 		schedule();
+-		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++		set_current_state(TASK_UNINTERRUPTIBLE);
+ 	}
+
+-	tsk->state = TASK_RUNNING;
++	set_current_state(TASK_RUNNING);
+  out:
+ 	;
+ }
+@@ -194,7 +192,6 @@ int __down_read_trylock(struct rw_semaphore *sem)
+ void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
+ {
+ 	struct rwsem_waiter waiter;
+-	struct task_struct *tsk;
+
+ 	spin_lock_irq(&sem->wait_lock);
+
+@@ -205,13 +202,12 @@ void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
+ 		goto out;
+ 	}
+
+-	tsk = current;
+-	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++	set_current_state(TASK_UNINTERRUPTIBLE);
+
+ 	/* set up my own style of waitqueue */
+-	waiter.task = tsk;
++	waiter.task = current;
+ 	waiter.flags = RWSEM_WAITING_FOR_WRITE;
+-	get_task_struct(tsk);
++	get_task_struct(current);
+
+ 	list_add_tail(&waiter.list, &sem->wait_list);
+
+@@ -223,10 +219,10 @@ void __sched __down_write_nested(struct rw_semaphore *sem, int subclass)
+ 		if (!waiter.task)
+ 			break;
+ 		schedule();
+-		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++		set_current_state(TASK_UNINTERRUPTIBLE);
+ 	}
+
+-	tsk->state = TASK_RUNNING;
++	set_current_state(TASK_RUNNING);
+  out:
+ 	;
+ }
+diff --git a/lib/rwsem.c b/lib/rwsem.c
+index 3e3365e..f1bdb97 100644
+--- a/lib/rwsem.c
++++ b/lib/rwsem.c
+@@ -150,15 +150,14 @@ static struct rw_semaphore __sched *
+ rwsem_down_failed_common(struct rw_semaphore *sem,
+ 			struct rwsem_waiter *waiter, signed long adjustment)
+ {
+-	struct task_struct *tsk = current;
+ 	signed long count;
+
+-	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++	set_current_state(TASK_UNINTERRUPTIBLE);
+
+ 	/* set up my own style of waitqueue */
+ 	spin_lock_irq(&sem->wait_lock);
+-	waiter->task = tsk;
+-	get_task_struct(tsk);
++	waiter->task = current;
++	get_task_struct(current);
+
+ 	list_add_tail(&waiter->list, &sem->wait_list);
+
+@@ -176,10 +175,10 @@ rwsem_down_failed_common(struct rw_semaphore *sem,
+ 		if (!waiter->task)
+ 			break;
+ 		schedule();
+-		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++		set_current_state(TASK_UNINTERRUPTIBLE);
+ 	}
+
+-	tsk->state = TASK_RUNNING;
++	set_current_state(TASK_RUNNING);
+
+ 	return sem;
+ }
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
