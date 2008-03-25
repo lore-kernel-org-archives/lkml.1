@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYCYGAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYCYGGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbYCYGAr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 02:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYCYGAi
+	id S1757206AbYCYGGm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 02:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYCYGGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 02:00:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:58157 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754842AbYCYGAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 02:00:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=rxvF/QUO0XeSCw8BPx1tUNlOhQilRil/4LtLxg0UOxzO3JKpX0dQrCxeCvXxlPgOlDzb+UrvSLA7LcMPBSSUEc2sRVTkkEPPmjvBortwoziP4FyYeAvpT805Vk03oOcVPzV7Zcar5/O22+/MQkGhlzcXMLw+JdAg+eg8YfQ6t8o=
-Date: Tue, 25 Mar 2008 08:57:52 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       James Morris <jmorris@namei.org>, Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH 08/10] net: remove NR_CPUS arrays in net/core/dev.c
-Message-ID: <20080325055752.GA4774@martell.zuzino.mipt.ru>
-References: <20080325021954.979158000@polaris-admin.engr.sgi.com> <20080325021956.212787000@polaris-admin.engr.sgi.com>
+	Tue, 25 Mar 2008 02:06:32 -0400
+Received: from ns2.suse.de ([195.135.220.15]:44974 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754842AbYCYGGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 02:06:31 -0400
+Date: Mon, 24 Mar 2008 23:04:43 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB fixes for 2.6.25-rc6 git
+Message-ID: <20080325060443.GA20741@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080325021956.212787000@polaris-admin.engr.sgi.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 24, 2008 at 07:20:02PM -0700, Mike Travis wrote:
-> Remove the fixed size channels[NR_CPUS] array in
-> net/core/dev.c and dynamically allocate array based on
-> nr_cpu_ids.
+Here are some USB fixes against your 2.6.25-rc6 git tree.
 
-> @@ -4362,6 +4362,13 @@ netdev_dma_event(struct dma_client *clie
->   */
->  static int __init netdev_dma_register(void)
->  {
-> +	net_dma.channels = kzalloc(nr_cpu_ids * sizeof(struct net_dma),
-> +								GFP_KERNEL);
-> +	if (unlikely(net_dma.channels)) {
+It includes:
+	- more device id updates
+	- minor bugfixes
 
-		     !net_dma.channels
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-> +		printk(KERN_NOTICE
-> +				"netdev_dma: no memory for net_dma.channels\n");
-> +		return -ENOMEM;
-> +	}
+All of these patches have been in the -mm tree for a while, as well as
+-next.
+
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------
+
+ drivers/net/usb/rtl8150.c          |    2 +-
+ drivers/usb/core/message.c         |    5 ++++-
+ drivers/usb/core/quirks.c          |    3 +++
+ drivers/usb/gadget/inode.c         |    4 ++--
+ drivers/usb/host/ehci-pci.c        |   14 ++++++++++++++
+ drivers/usb/serial/pl2303.c        |    1 +
+ drivers/usb/serial/pl2303.h        |    1 +
+ drivers/usb/serial/sierra.c        |   18 ++++++++++++++----
+ drivers/usb/storage/isd200.c       |    1 +
+ drivers/usb/storage/transport.c    |    3 ++-
+ drivers/usb/storage/unusual_devs.h |   11 +++++++++++
+ include/linux/usb/quirks.h         |    3 +++
+ include/linux/usb_usual.h          |    4 +++-
+ 13 files changed, 60 insertions(+), 10 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      USB: new quirk flag to avoid Set-Interface
+
+Boaz Harrosh (1):
+      USB: isd200: fix memory leak in isd200_get_inquiry_data
+
+Constantin Baranov (1):
+      USB: add support for Motorola ROKR Z6 cellphone in mass storage mode
+
+Kevin Lloyd (1):
+      USB: sierra: add another device id
+
+Max Arnold (1):
+      USB: pl2303: another product ID
+
+Oliver Neukum (1):
+      USB: sierra: dma fixes
+
+Rene Herman (1):
+      USB: ehci: stop vt6212 bus hogging
+
+Robert P. J. Day (1):
+      USB: Fix cut-and-paste error in rtl8150.c
+
+Roy Hashimoto (1):
+      USB: fix gadgetfs class request delegation
 
