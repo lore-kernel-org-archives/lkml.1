@@ -1,120 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYCYPGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbYCYPHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325AbYCYPGz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 11:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbYCYPGq
+	id S1756568AbYCYPHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 11:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbYCYPHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 11:06:46 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54403 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753051AbYCYPGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 11:06:45 -0400
-Date: Tue, 25 Mar 2008 11:06:44 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
- callbacks (rev. 3)
-In-Reply-To: <200803242218.47898.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803251044590.4838-100000@iolanthe.rowland.org>
+	Tue, 25 Mar 2008 11:07:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55943 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754549AbYCYPHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 11:07:24 -0400
+Date: Tue, 25 Mar 2008 16:06:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, yhlu.kernel@gmail.com
+Subject: Re: [PATCH 1/2] move ipi definitions to mach_ipi.h
+Message-ID: <20080325150630.GA13828@elte.hu>
+References: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1206388361-17265-1-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0580]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Mar 2008, Rafael J. Wysocki wrote:
 
-> > Can we also have a DPM_PREPARING state, set when ->prepare() is about
-> > to be called?  The PM core wouldn't make use of it but some drivers
-> > would.  (I can't think of any use at all for the analogous
-> > DPM_COMPLETING state, however.)
-> 
-> Hmm.  dev->power.status is protected by dpm_list_mtx.  Do you think it would be
-> useful to have an accessor function for reading it under the lock?
+* Glauber Costa <gcosta@redhat.com> wrote:
 
-I don't think so.  What I have in mind is situations where there 
-accessed has already been synchronized by other means, while the 
-prepare() method is running.  For example:
+> +++ b/include/asm-x86/mach-default/mach_ipi.h
 
-	Task 0				Task 1
-	------				------
-	->prepare() is called
-	Waits for currently-running
-	  registration in task 1
-	  to finish
-	Does other stuff
-					Receives a request to register
-					  a new child under dev
-					Sees that dev->power.state is
-					  still DPM_ON, so goes ahead
-					  with the child's registration
-	->prepare() returns
-	dev->power.state is set to
-	  DPM_SUSPENDING
-					device_pm_add() checks
-					  dev->power.state and fails
-					  the registration
+> -static inline void send_IPI_mask(cpumask_t mask, int vector)
+> -{
+> -	send_IPI_mask_bitmask(mask, vector);
+> -}
+> +void send_IPI_mask(cpumask_t mask, int vector);
 
-If dev->power.state had been set to DPM_PREPARING before ->prepare() 
-was called, then task 1 would have avoided trying to register the 
-child.
+> +#else
+> +static inline void send_IPI_mask(cpumask_t mask, int vector);
+> +{
+> +	send_IPI_mask_bitmask(mask, vector);
+> +}
 
-> > > +			dev->power.status = DPM_RESUMING;
-> > > +			get_device(dev);
-> > > +			mutex_unlock(&dpm_list_mtx);
-> > > +
-> > > +			resume_device(dev, state);
-> > > +
-> > > +			mutex_lock(&dpm_list_mtx);
-> > > +			put_device(dev);
-> > > +		}
-> > > +		if (!list_empty(&dev->power.entry))
-> > > +			list_move_tail(&dev->power.entry, &list);
-> > 
-> > A little problem here: You refer to dev after calling put_device().
-> 
-> The device can't be removed at this point, because we hold dpm_list_mtx, which
-> is needed by device_del().
+this trivially doesnt build on 32-bit, for multiple reasons...
 
-True, it can't be removed at this point.  But it _can_ be removed
-between the calls to resume_device() and mutex_lock().
-
-> > >  	}
-> > > -	if (!error)
-> > > -		all_sleeping = true;
-> > > +	list_splice(&list, &dpm_list);
-> > 
-> > Instead you could eliminate the list_splice_init() above and put here:
-> > 
-> > 	list_splice(&list, dpm_list->prev);
-> > 
-> > This will move the entries from list to the end of dpm_list.
-> 
-> dpm_list may be empty at this point.  Wouldn't that cause any trouble?
-
-It will still work correctly.  If dpm_list is empty then dpm_list->prev
-is equal to &dpm_list, so it will do the same thing as your current
-code does.
-
-
-I just thought of another problem.  At the point where
-local_irq_disable() is called, in between device_suspend() and
-device_power_down(), it is possible in a preemptible kernel that
-another task is holding dpm_list_mtx and is in the middle of updating
-the list pointers.  This would mess up the traversal in
-device_power_down().
-
-I'm not sure about the best way to prevent this.  Is it legal to call
-unlock_mutex() while interrupts or preemption are disabled?
-
-Alan Stern
-
+	Ingo
