@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbYCYVXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbYCYVZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758182AbYCYVXF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYCYVWw
+	id S1758758AbYCYVZQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYCYVY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:22:52 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40928 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbYCYVWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:22:51 -0400
-Date: Tue, 25 Mar 2008 14:20:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Message-ID: <20080325212032.GA24495@suse.de>
-References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <47E88A13.70808@zytor.com> <47E90019.3050006@rtr.ca> <47E90458.7030801@zytor.com> <47E9383F.3050908@rtr.ca> <20080325192515.GA24234@suse.de> <20080325123454.4eba7644.randy.dunlap@oracle.com> <47E96263.9000808@zytor.com>
+	Tue, 25 Mar 2008 17:24:59 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37775 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYCYVY6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 17:24:58 -0400
+Date: Tue, 25 Mar 2008 23:24:55 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: David Miller <davem@davemloft.net>
+cc: fhimpe@telenet.be, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH net-2.6] [TCP]: Must count fack_count also when skipping
+In-Reply-To: <20080324.144107.235200795.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0803250942450.14461@kivilampi-30.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0803031525390.27064@kivilampi-30.cs.helsinki.fi>
+ <Pine.LNX.4.64.0803031541230.28251@kivilampi-30.cs.helsinki.fi>
+ <pan.2008.03.24.20.36.07@telenet.be> <20080324.144107.235200795.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47E96263.9000808@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: MULTIPART/MIXED; boundary="-696243703-488788762-1206431468=:14461"
+Content-ID: <Pine.LNX.4.64.0803252310560.6132@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 01:36:51PM -0700, H. Peter Anvin wrote:
-> Randy Dunlap wrote:
->>>
->>> Come on people, adding symlinks for device major:minor numbers in sysfs
->>> to save a few 10s of lines of userspace code?  Can things get sillier?
->>>
->>> You can add a single udev rule to probably build these in a tree in /dev
->>> if you really need such a thing...
->>>
->>> And what's wrong with your new ioctl recomendation?
->> Ah, there's some sanity.  :)
->
-> It's not so much an issue of a few tens of lines of user space code, but 
-> rather the fact that something that should be O(1) is currently O(n).
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-"should"?  why?  Is this some new requirement that everyone needs?  I've
-_never_ seen anyone ask for the ability to find sysfs devices by
-major:minor number in O(1) time.  Is this somehow a place where such
-optimization is warranted?
+---696243703-488788762-1206431468=:14461
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0803252302351.6132@kivilampi-30.cs.helsinki.fi>
 
-thanks,
+On Mon, 24 Mar 2008, David Miller wrote:
 
-greg k-h
+> From: Frederik Himpe <fhimpe@telenet.be>
+> Date: Mon, 24 Mar 2008 20:36:08 +0000 (UTC)
+> 
+> > On Mon, 03 Mar 2008 15:53:12 +0200, Ilpo Järvinen
+> > wrote:
+> > 
+> > > [PATCH net-2.6] [TCP]: Must count fack_count also when skipping
+> > > 
+> > > It makes fackets_out to grow too slowly compared with the real write
+> > > queue.
+> > > 
+> > > This shouldn't cause those BUG_TRAP(packets <= tp->packets_out) to
+> > > trigger but how knows how such inconsistent fackets_out affects here and
+> > > there around TCP when everything is nowadays assuming accurate
+> > > fackets_out. So lets see if this silences them all.
+> > > 
+> > > Reported by Guillaume Chazarain <guichaz@gmail.com>.
+> > 
+> > Will this patch be applied to 2.6.24 stable? I think I have been hit by 
+> > the same problem recently:
+> 
+> I'll push it to the -stable folks for their next release
+> since people are actively hitting it.
+
+Please don't, it's not the right fix, it fixed a bug that was
+introduced post 2.6.24 by this commit:
+
+commit 68f8353b480e5f2e136c38a511abdbb88eaa8ce2
+Author: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Date:   Thu Nov 15 19:50:37 2007 -0800
+
+    [TCP]: Rewrite SACK block processing & sack_recv_cache use
+
+
+There's something else wrong with the 2.6.24.y. I already knew that and 
+was therefore planning next to run extensive set of tests on 2.6.24ish 
+kernel with some torrent mixed with some netem stimuli but haven't yet had 
+time for that as I had to find and resolve an hw incompatibility issues 
+between ddr2s and mobo before being a week away. I'll post an 2.6.24.y 
+adapted TCP debug patch once I get that done for my tests (in case 
+somebody else is interested in running with it besides me).
+
+Btw, it would have been polite to cc me as well (I suppose you just didn't 
+notice that somebody dropped me in between :-)), not a big prob though as 
+I found it out early anyway because I'm trying to catch up what has been 
+reported against TCP during my week away.
+
+
+-- 
+ i.
+---696243703-488788762-1206431468=:14461--
