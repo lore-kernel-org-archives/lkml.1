@@ -1,55 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbYCYSp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYCYSqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbYCYSp5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYCYSpj
+	id S1759656AbYCYSqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbYCYSqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:45:39 -0400
-Received: from postfix2-g20.free.fr ([212.27.60.43]:56951 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757484AbYCYSpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:45:38 -0400
-Date: Tue, 25 Mar 2008 19:43:06 +0100
-From: Emmanuel Florac <eflorac@intellique.com>
-To: linux-kernel@vger.kernel.org
-Subject: RAID-1 performance under 2.4 and 2.6
-Message-ID: <20080325194306.4ac71ff2@galadriel.home>
-Organization: Intellique
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Mar 2008 14:46:04 -0400
+Received: from mail0.scram.de ([78.47.204.202]:60647 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757670AbYCYSqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:46:03 -0400
+X-Spam-Score: -4.068
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.3 AWL AWL: From: address is in the auto white-list
+Message-ID: <47E94891.6020000@scram.de>
+Date: Tue, 25 Mar 2008 19:46:41 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: Scott Wood <scottwood@freescale.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Vitaly Bordug <vitb@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale CPM1/CPM2
+  controllers
+References: <47A1C4E9.4000003@scram.de>	<20080221130520.12b01553@hyperion.delvare>	<47BEAF00.50106@scram.de> <20080223134335.0f5c7d79@hyperion.delvare>
+In-Reply-To: <20080223134335.0f5c7d79@hyperion.delvare>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jean,
 
-I post there because I couldn't find any information about this
-elsewhere : on the same hardware ( Athlon X2 3500+, 512MB RAM, 2x400 GB
-Hitachi SATA2 hard drives ) the 2.4 Linux software RAID-1 (tested 2.4.32
-and 2.4.36.2, slightly patched to recognize the hardware :p) is way
-faster than 2.6 ( tested 2.6.17.13, 2.6.18.8, 2.6.22.16, 2.6.24.3)
-especially for writes. I actually made the test on several different
-machines (same hard drives though) and it remained consistent across
-the board, with /mountpoint a software RAID-1.
-Actually checking disk activity with iostat or vmstat shows clearly a
-cache effect much more pronounced on 2.4 (i.e. writing goes on much
-longer in the background) but it doesn't really account for the
-difference. I've also tested it thru NFS from another machine (Giga
-ethernet network):
+>> What is the preferred way to do this?
+> 
+> I still have to think about it. I didn't have much time to work on this
+> during the last 2 weeks, hopefully I will fine some time to experiment
+> again soon. As I underlined before, my patch set affects no less than 5
+> subsystems with different needs and expectations, it's no trivial
+> change.
 
-dd if=/dev/zero of=/mountpoint/testfile bs=1M count=1024
+Sorry for the late response, but I was pretty busy the last couple of weeks.
 
-kernel        2.4       2.6        2.4 thru NFS   2.6 thru NFS
+I'm thinking about something like this (based on http://patchwork.ozlabs.org/linuxppc/patch?id=16282 to 16284):
 
-write        90 MB/s    65 MB/s      70 MB/s       45 MB/s
-read         90 MB/s    80 MB/s      75 MB/s       65 MB/s
+This patch implements various helpers to support OF bindings for
+the i2c API.
 
-Duh. That's terrible. Does it mean I should stick to  (heavily
-patched...) 2.4 for my file servers or... ? :)
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ drivers/of/Kconfig     |    6 +++
+ drivers/of/Makefile    |    1 +
+ drivers/of/i2c.c       |  113 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_i2c.h |   24 ++++++++++
+ 4 files changed, 144 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/of/i2c.c
+ create mode 100644 include/linux/of_i2c.h
 
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index c03072b..3cff449 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -1,3 +1,9 @@
+ config OF_DEVICE
+ 	def_bool y
+ 	depends on OF && (SPARC || PPC_OF)
++
++config OF_I2C
++	def_bool y
++	depends on OF && PPC_OF && I2C
++	help
++	  OpenFirmware I2C accessors
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index ab9be5d..655b982 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -1,2 +1,3 @@
+ obj-y = base.o
+ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
++obj-$(CONFIG_OF_I2C)	+= i2c.o
+diff --git a/drivers/of/i2c.c b/drivers/of/i2c.c
+new file mode 100644
+index 0000000..d3d1e9e
+--- /dev/null
++++ b/drivers/of/i2c.c
+@@ -0,0 +1,113 @@
++/*
++ * OF helpers for the I2C API
++ *
++ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
++ *
++ * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/i2c.h>
++#include <asm/prom.h>
++
++struct i2c_driver_device {
++	char    *of_device;
++	char    *i2c_type;
++};
++
++static struct i2c_driver_device i2c_devices[] = {
++	{"dallas,ds1374", "rtc-ds1374",},
++};
++
++static int of_find_i2c_driver(struct device_node *node,
++			      struct i2c_board_info *info)
++{
++	int i, cplen;
++	const char *compatible;
++	const char *p;
++
++	/* 1. search for exception list entry */
++	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
++		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
++			continue;
++		if (strlcpy(info->type, i2c_devices[i].i2c_type,
++			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++			return -ENOMEM;
++
++		return 0;
++	}
++
++	compatible = of_get_property(node, "compatible", &cplen);
++	if (!compatible)
++		return -ENODEV;
++
++	/* 2. search for linux,<i2c-type> entry */
++	p = compatible;
++	while (cplen > 0) {
++		if (!strncmp(p, "linux,", 6)) {
++			p += 6;
++			if (strlcpy(info->type, p,
++				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++				return -ENOMEM;
++			return 0;
++		}
++
++		i = strlen(p) + 1;
++		p += i;
++		cplen -= i;
++	}
++
++	/* 3. take fist compatible entry and strip manufacturer */
++	p = strchr(compatible, ',');
++	if (!p)
++		return -ENODEV;
++	p++;
++	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++		return -ENOMEM;
++	return 0;
++}
++
++void of_register_i2c_devices(struct i2c_adapter *adap,
++			     struct device_node *adap_node)
++{
++	void *result;
++	struct device_node *node = NULL;
++
++	while ((node = of_get_next_child(adap_node, node))) {
++		struct i2c_board_info info = {};
++		const u32 *addr;
++		int len;
++
++		addr = of_get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
++			printk(KERN_ERR
++			       "of-i2c: invalid i2c device entry\n");
++			continue;
++		}
++
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq == NO_IRQ)
++			info.irq = -1;
++
++		if (of_find_i2c_driver(node, &info) < 0)
++			continue;
++
++		info.addr = *addr;
++
++		request_module(info.type);
++
++		result = i2c_new_device(adap, &info);
++		if (result == NULL) {
++			printk(KERN_ERR
++			       "of-i2c: Failed to load driver for %s\n",
++			       info.type);
++			irq_dispose_mapping(info.irq);
++			continue;
++		}
++	}
++}
++EXPORT_SYMBOL(of_register_i2c_devices);
+diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+new file mode 100644
+index 0000000..2e5a967
+--- /dev/null
++++ b/include/linux/of_i2c.h
+@@ -0,0 +1,24 @@
++/*
++ * Generic I2C API implementation for PowerPC.
++ *
++ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __LINUX_OF_I2C_H
++#define __LINUX_OF_I2C_H
++
++#include <linux/i2c.h>
++
++#ifdef CONFIG_OF_I2C
++
++void of_register_i2c_devices(struct i2c_adapter *adap,
++			     struct device_node *adap_node);
++
++#endif /* CONFIG_OF_I2C */
++
++#endif /* __LINUX_OF_I2C_H */
 -- 
---------------------------------------------------
-Emmanuel Florac               www.intellique.com   
---------------------------------------------------
+1.5.4.4
+
+
