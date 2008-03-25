@@ -1,121 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYCYQBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbYCYQC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbYCYQBT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 12:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYCYQBF
+	id S1757957AbYCYQC3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbYCYQCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 12:01:05 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47420 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755427AbYCYQBD (ORCPT
+	Tue, 25 Mar 2008 12:02:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:2772 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753025AbYCYQCV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 12:01:03 -0400
-Message-ID: <47E9219A.2030601@bull.net>
-Date: Tue, 25 Mar 2008 17:00:26 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Tue, 25 Mar 2008 12:02:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,552,1199692800"; 
+   d="scan'208";a="222975068"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Scalability requirements for sysv ipc
-References: <47E382DB.70503@colorfullife.com> <47E3ADE3.4030304@bull.net> <47E3B924.3000304@colorfullife.com>
-In-Reply-To: <47E3B924.3000304@colorfullife.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: RE: [patch 51/76] ioat: fix ack handling, driver must ensure that ack is zero
+Date: Tue, 25 Mar 2008 15:55:23 -0000
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C101536C72@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <f12847240803250824n5a955bbbtb758820f1d32bad4@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 51/76] ioat: fix ack handling, driver must ensure that ack is zero
+Thread-Index: AciOjdHs6TsXT220T3+uc3Oq3jZw8wAALUyw
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: <linux-kernel@vger.kernel.org>, <stable@kernel.org>, <jejb@kernel.org>
+Cc: <jmforbes@linuxtx.org>, <zwane@arm.linux.org.uk>, <tytso@mit.edu>,
+       <rdunlap@xenotime.net>, <davej@redhat.com>, <chuckw@quantumlinux.com>,
+       <reviews@ml.cw.f00f.org>, <mkrufky@linuxtv.org>, <cebbert@redhat.com>,
+       <cavokz@gmail.com>, <torvalds@linux-foundation.org>,
+       <akpm@linux-foundation.org>, <alan@lxorguk.ukuu.org.uk>,
+       "Williams, Dan J" <dan.j.williams@intel.com>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>, <gregkh@suse.de>
+X-OriginalArrivalTime: 25 Mar 2008 15:55:24.0617 (UTC) FILETIME=[A34C2390:01C88E90]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> Nadia Derbey wrote:
-> 
->> Manfred Spraul wrote:
->>
->>>
->>> A microbenchmark on a single-cpu system doesn't help much (except 
->>> that 2.6.25 is around factor 2 slower for sysv msg ping-pong between 
->>> two tasks compared to the numbers I remember from older kernels....)
->>>
->>
->> If I remember well, at that time I had used ctxbench and I wrote some 
->> other small scripts.
->> And the results I had were around 2 or 3% slowdown, but I have to 
->> confirm that by checking in my archives.
->>
-> Do you have access to multi-core systems? The "best case" for the rcu 
-> code would be
-> - 8 or 16 cores
-> - one instance of ctxbench running on each core, bound to that core.
-> 
-> I'd expect a significant slowdown. The big question is if it matters.
-> 
-> -- 
->    Manfred
+> ---------- Original message ----------
+> From: Chris Wright <chrisw@sous-sol.org>
+> Date: Mar 21, 2008 11:43 PM
+> Subject: [patch 51/76] ioat: fix ack handling, driver must ensure that
+> ack is zero
+> To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+> Cc: Justin Forbes <jmforbes@linuxtx.org>, Zwane Mwaikambo
+> <zwane@arm.linux.org.uk>, Theodore Ts'o <tytso@mit.edu>, Randy Dunlap
+> <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>, Chuck Wolber
+> <chuckw@quantumlinux.com>, Chris Wedgwood <reviews@ml.cw.f00f.org>,
+> Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert
+> <cebbert@redhat.com>, Domenico Andreoli <cavokz@gmail.com>,
+> torvalds@linux-foundation.org, akpm@linux-foundation.org,
+> alan@lxorguk.ukuu.org.uk, Dan Williams <dan.j.williams@intel.com>,
+> Shannon Nelson <shannon.nelson@intel.com>, Greg Kroah-Hartman
+> <gregkh@suse.de>
 > 
 > 
+> -stable review patch.  If anyone has any objections, please let us
+know.
+> ---------------------
+> 
+> From: Dan Williams <dan.j.williams@intel.com>
+> 
+> Initialize 'ack' to zero in case the descriptor has been recycled.
+> 
+> Prevents "kernel BUG at crypto/async_tx/async_xor.c:185!"
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+> [chrisw@sous-sol.org: backport to 2.6.24.3]
+> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+> 
+>  drivers/dma/ioat_dma.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- a/drivers/dma/ioat_dma.c
+> +++ b/drivers/dma/ioat_dma.c
+> @@ -726,6 +726,7 @@ static struct dma_async_tx_descriptor *i
+> 
+>        if (new) {
+>                new->len = len;
+> +               new->async_tx.ack = 0;
+>                return &new->async_tx;
+>        } else
+>                return NULL;
+> @@ -749,6 +750,7 @@ static struct dma_async_tx_descriptor *i
+> 
+>        if (new) {
+>                new->len = len;
+> +               new->async_tx.ack = 0;
+>                return &new->async_tx;
+>        } else
+>                return NULL;
+> 
+> --
 
-Hi,
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+z siedziba w Gdansku
+ul. Slowackiego 173
+80-298 Gdansk
 
-Here is what I could find on my side:
+Sad Rejonowy Gdansk Polnoc w Gdansku, 
+VII Wydzial Gospodarczy Krajowego Rejestru Sadowego, 
+numer KRS 101882
 
-=============================================================
+NIP 957-07-52-316
+Kapital zakladowy 200.000 zl
 
-lkernel@akt$ cat tst3/res_new/output
-[root@akt tests]# echo 32768 > /proc/sys/kernel/msgmni
-[root@akt tests]# ./msgbench_std_dev_plot -n
-32768000 msgget iterations in 21.469724 seconds = 1526294/sec
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-32768000 msgsnd iterations in 18.891328 seconds = 1734583/sec
-
-32768000 msgctl(ipc_stat) iterations in 15.359802 seconds = 2133472/sec
-
-32768000 msgctl(msg_stat) iterations in 15.296114 seconds = 2142260/sec
-
-32768000 msgctl(ipc_rmid) iterations in 32.981277 seconds = 993542/sec
-
-             AVERAGE        STD_DEV      MIN     MAX
-GET:        21469.724000   566.024657   19880   23607
-SEND:       18891.328000   515.542311   18433   21962
-IPC_STAT:   15359.802000   274.918673   15147   17166
-MSG_STAT:   15296.114000   155.775508   15138   16790
-RM:         32981.277000   675.621060   32141   35433
-
-
-lkernel@akt$ cat tst3/res_ref/output
-[root@akt tests]# echo 32768 > /proc/sys/kernel/msgmni
-[root@akt tests]# ./msgbench_std_dev_plot -r
-32768000 msgget iterations in 665.842852 seconds = 49213/sec
-
-32768000 msgsnd iterations in 18.363853 seconds = 1784458/sec
-
-32768000 msgctl(ipc_stat) iterations in 14.609669 seconds = 2243001/sec
-
-32768000 msgctl(msg_stat) iterations in 14.774829 seconds = 2217950/sec
-
-32768000 msgctl(ipc_rmid) iterations in 31.134984 seconds = 1052483/sec
-
-             AVERAGE        STD_DEV      MIN     MAX
-GET:        665842.852000   946.697555   654049   672208
-SEND:       18363.853000   107.514954   18295   19563
-IPC_STAT:   14609.669000   43.100272   14529   14881
-MSG_STAT:   14774.829000   97.174924   14516   15436
-RM:         31134.984000   444.612055   30521   33523
-
-
-==================================================================
-
-Unfortunately, I haven't kept the exact kernel release numbers, but the 
-testing method was:
-res_ref = unpatched kernel
-res_new = same kernel release with my patches applied.
-
-What I'll try to do is to re-run your tests (pmsg and psem) with this 
-method (from my what I saw, the patches applied on a 2.6.23-rc4-mm1), 
-but I can't do it before Thursday.
-
-Regards,
-Nadia
