@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbYCYRbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYCYRfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbYCYRbb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 13:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbYCYRbU
+	id S1757468AbYCYRfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 13:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbYCYRfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 13:31:20 -0400
-Received: from rtr.ca ([76.10.145.34]:1485 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755670AbYCYRbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 13:31:19 -0400
-Message-ID: <47E936E5.7090506@rtr.ca>
-Date: Tue, 25 Mar 2008 13:31:17 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 25 Mar 2008 13:35:12 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:54690 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756047AbYCYRfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 13:35:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=N2D6aMOt7huCQ4S6ve4BvGCC+/D0flMDfqQJbeoJcMOm+oV2yd0QkSs3uzKMwjD3sx5ctZ+EIhf92ZBM3ebTA+ET8w0nI2UNRn7elwC5F7WLK5BvMYJt150wOCVqw+wBXJm5I/ApeZsthUQDpISMTGSMfxOf9ZgNq+JQwF9pqg8=
+Date: Tue, 25 Mar 2008 20:34:28 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] x86 - relocate_kernel cleanup
+Message-ID: <20080325173428.GA9237@cvg>
+References: <20080322210005.117475478@gmail.com> <47E576B9.6090205@zytor.com> <47E577B9.1010403@zytor.com> <20080323111017.GA7612@cvg> <20080325155657.GD27174@elte.hu>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Tejun Heo <htejun@gmail.com>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-References: <47E875AD.1000901@rtr.ca>  <47E87942.2020409@rtr.ca> <1206458278.3273.5.camel@localhost.localdomain>
-In-Reply-To: <1206458278.3273.5.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080325155657.GD27174@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2008-03-25 at 00:02 -0400, Mark Lord wrote:
->..
->> Practically all utilities that care about it,
->> use ioctl(fd, HDIO_GETGEO) to determine the starting
->> sector offset of a hard disk partition.
-..
-> Perhaps I've missed something, but surely geometry doesn't make sense on
-> a >2TB drive does it?  The only reason we use it on modern disks (which
-> usually make it up specially for us) is that the DOS partition scheme
-> requires it.  Once we're over 2TB, isn't it impossible to use DOS
-> partitions (well, OK, unless you increase the sector size, but that's
-> only delaying the inevitable), so we can just go with a proper disk
-> labelling scheme and use BLKGETSIZE64 all the time.
-..
+[Ingo Molnar - Tue, Mar 25, 2008 at 04:57:00PM +0100]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > You know, Peter, I'm a bit scared that these flags are in number of 
+| > files and could break others queued patches...
+| 
+| as long as your work against x86.git/latest you shouldnt be worried 
+| about any clashes.
+| 
+| 	Ingo
+| 
+oh, thanks Ingo, I continue workin on this realm ;)
 
-I haven't thought much about problems with the virtual geometry,
-because, as you say, we really don't care about it for the most part.
-We use LBA values from the partition tables rather than CHS.
-I suppose those also likely to be 32-bit limited.
-
-The "partition offset", or "starting sector" is the important
-bit of information for most things.  And that's currently available
-from HDIO_GETGEO, and from /sys/block/XXX/XXXn/start, if sysfs is mounted.
-
-We just need an easy way to get it, given a dev_t from stat(2).
-Currently there isn't an easy way, and HDIO_GETGEO returns
-only 32-bits on a 32-bit system.
-
-Cheers
-
+		- Cyrill -
