@@ -1,183 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbYCYTMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbYCYTPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbYCYTMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 15:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbYCYTM3
+	id S1758895AbYCYTPK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 15:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbYCYTO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 15:12:29 -0400
-Received: from www.tglx.de ([62.245.132.106]:59780 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754950AbYCYTM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 15:12:28 -0400
-Date: Tue, 25 Mar 2008 20:09:15 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, paulus@samba.org,
-       ralf@linux-mips.org, davem@davemloft.net, lethal@linux-sh.org,
-       jdike@addtoit.com
-Subject: Re: tick-common.c hack for s390 needed
-In-Reply-To: <20080323223455.GA746@flint.arm.linux.org.uk>
-Message-ID: <alpine.LFD.1.00.0803252002100.3781@apollo.tec.linutronix.de>
-References: <20080318093119.GA8669@osiris.boeblingen.de.ibm.com> <20080319054545.GA18834@infradead.org> <20080321101504.GI20420@elte.hu> <20080321132559.GA4128@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0803211545160.3781@apollo.tec.linutronix.de>
- <20080322203223.GA31521@osiris.boeblingen.de.ibm.com> <20080323223455.GA746@flint.arm.linux.org.uk>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Mar 2008 15:14:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34216 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757065AbYCYTO6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 15:14:58 -0400
+Date: Tue, 25 Mar 2008 12:14:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RWSEM: Rewrite rwsem.c and rwsem-spinlock.c more
+ simply.
+Message-Id: <20080325121438.883f7ceb.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803250834220.19530@localhost.localdomain>
+References: <alpine.LFD.1.00.0803250659530.18358@localhost.localdomain>
+	<87skyfgg4y.fsf@basil.nowhere.org>
+	<alpine.LFD.1.00.0803250813190.19386@localhost.localdomain>
+	<20080325123633.GL2170@one.firstfloor.org>
+	<alpine.LFD.1.00.0803250834220.19530@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Mar 2008, Russell King wrote:
+On Tue, 25 Mar 2008 08:42:48 -0400 (EDT)
+"Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
 
-> On Sat, Mar 22, 2008 at 09:32:23PM +0100, Heiko Carstens wrote:
-> > Generic code is not supposed to include irq.h. Replace this include
-> > by linux/hardirq.h instead and add/replace an include of linux/irq.h
-> > in asm header files where necessary.
-> > This change should only matter for architectures that make use of
-> > GENERIC_CLOCKEVENTS.
-> > Architectures in question are mips, x86, arm, sh, powerpc, uml and sparc64.
-> > 
-> > I did some cross compile tests for mips, x86_64, arm, powerpc and sparc64.
-> > This patch fixes also build breakages caused by the include replacement in
-> > tick-common.h.
+> On Tue, 25 Mar 2008, Andi Kleen wrote:
 > 
-> I generally dislike adding optional linux/* includes in asm/* includes -
-> I'm nervous about this causing include loops.
+> > > i'm not sure what this means -- which of the transformations in
+> > > that patch is considered unsafe?  here's a typical simplification:
+> >
+> > It is not unsafe, just generates slight worse code.
+> >
+> > current is inline assembler and the compiler doesn't know that it
+> > could cache it in a register because it is not marked pure for
+> > various reasons. That is why current is often cached explicitely in
+> > a local variable to tell the compiler that.
 > 
-> However, there's a separate point to be discussed here.
-> 
-> That is, what interfaces are expected of every architecture in the kernel.
-> If generic code wants to be able to set the affinity of interrupts, then
-> that needs to become part of the interfaces listed in linux/interrupt.h
-> rather than linux/irq.h.
-> 
-> So what I suggest is this approach instead (against Linus' tree of a
-> couple of days ago) - we move irq_set_affinity() and irq_can_set_affinity()
-> to linux/interrupt.h, change the linux/irq.h includes to linux/interrupt.h
-> and include asm/irq_regs.h where needed (asm/irq_regs.h is supposed to be
-> rarely used include since not much touches the stacked parent context
-> registers.)
+>   ah, i think i see, thanks.  learn something every day.
 
-That patch makes a lot of sense and resolves all the issues. 
+A crude measyure is /usr/bin/size.  Your patch increased rwsem-spinlock.o
+from 1595 bytes of text up to 1629.
 
-I push it through hrt.git and add the GENERIC_HARDIRQS dependency
-which was requested by Heiko.
+A text size increase isn't necessarily always a bad thing, but it does need
+to be monitored, understood, explained, etc.
 
-Thanks,
-
-	tglx
-
-> Build tested on ARM PXA family kernels and ARM's Realview platform
-> kernels which both use genirq.
->
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index f8ab4ce..355e3b0 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -102,6 +102,25 @@ extern void disable_irq_nosync(unsigned int irq);
->  extern void disable_irq(unsigned int irq);
->  extern void enable_irq(unsigned int irq);
->  
-> +#ifdef CONFIG_SMP
-> +
-> +extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
-> +extern int irq_can_set_affinity(unsigned int irq);
-> +
-> +#else /* CONFIG_SMP */
-> +
-> +static inline int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int irq_can_set_affinity(unsigned int irq)
-> +{
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_SMP */
-> +
->  #ifdef CONFIG_GENERIC_HARDIRQS
->  /*
->   * Special lockdep variants of irq disabling/enabling.
-> diff --git a/include/linux/irq.h b/include/linux/irq.h
-> index 176e5e7..1883a85 100644
-> --- a/include/linux/irq.h
-> +++ b/include/linux/irq.h
-> @@ -228,21 +228,11 @@ static inline void set_pending_irq(unsigned int irq, cpumask_t mask)
->  
->  #endif /* CONFIG_GENERIC_PENDING_IRQ */
->  
-> -extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
-> -extern int irq_can_set_affinity(unsigned int irq);
-> -
->  #else /* CONFIG_SMP */
->  
->  #define move_native_irq(x)
->  #define move_masked_irq(x)
->  
-> -static inline int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
-> -{
-> -	return -EINVAL;
-> -}
-> -
-> -static inline int irq_can_set_affinity(unsigned int irq) { return 0; }
-> -
->  #endif /* CONFIG_SMP */
->  
->  #ifdef CONFIG_IRQBALANCE
-> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-> index e1bd50c..fdfa0c7 100644
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -14,7 +14,7 @@
->  #include <linux/cpu.h>
->  #include <linux/err.h>
->  #include <linux/hrtimer.h>
-> -#include <linux/irq.h>
-> +#include <linux/interrupt.h>
->  #include <linux/percpu.h>
->  #include <linux/profile.h>
->  #include <linux/sched.h>
-> diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
-> index 1bea399..4f38865 100644
-> --- a/kernel/time/tick-common.c
-> +++ b/kernel/time/tick-common.c
-> @@ -14,12 +14,14 @@
->  #include <linux/cpu.h>
->  #include <linux/err.h>
->  #include <linux/hrtimer.h>
-> -#include <linux/irq.h>
-> +#include <linux/interrupt.h>
->  #include <linux/percpu.h>
->  #include <linux/profile.h>
->  #include <linux/sched.h>
->  #include <linux/tick.h>
->  
-> +#include <asm/irq_regs.h>
-> +
->  #include "tick-internal.h"
->  
->  /*
-> diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
-> index 0258d31..450c049 100644
-> --- a/kernel/time/tick-oneshot.c
-> +++ b/kernel/time/tick-oneshot.c
-> @@ -14,7 +14,7 @@
->  #include <linux/cpu.h>
->  #include <linux/err.h>
->  #include <linux/hrtimer.h>
-> -#include <linux/irq.h>
-> +#include <linux/interrupt.h>
->  #include <linux/percpu.h>
->  #include <linux/profile.h>
->  #include <linux/sched.h>
-> 
-> 
-> -- 
-> Russell King
->  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
->  maintainer of:
-> 
