@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbYCYPvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYCYPut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbYCYPvM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 11:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbYCYPu5
+	id S1758200AbYCYPut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 11:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbYCYPub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 11:50:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43552 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Mar 2008 11:50:31 -0400
+Received: from khc.piap.pl ([195.187.100.11]:51420 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757546AbYCYPu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 11:50:56 -0400
-Date: Tue, 25 Mar 2008 16:50:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, shai@scalex86.org
-Subject: Re: [patch 4/4] x86: apic_is_clustered_box to indicate unsynched
-	TSC's on multiboard vSMP systems
-Message-ID: <20080325155032.GC27174@elte.hu>
-References: <20080320073740.GA9414@localdomain> <20080320074508.GE9414@localdomain> <86802c440803200053m1b0928a9q6567d8c619fa7a2f@mail.gmail.com> <20080320190240.GB6085@localdomain> <20080321091542.GE20420@elte.hu> <20080321185225.GA23139@localdomain> <20080321185821.GE6571@elte.hu> <20080322185948.GD23139@localdomain> <20080322200251.GB5508@elte.hu> <20080324214836.GA6045@localdomain>
+	id S1757707AbYCYPu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 11:50:29 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m3prtzsszg.fsf@maximus.localdomain>
+	<m3tzj92xq6.fsf@maximus.localdomain>
+	<m33aqedg0a.fsf@maximus.localdomain> <47E91256.3010000@garzik.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 25 Mar 2008 16:50:27 +0100
+In-Reply-To: <47E91256.3010000@garzik.org> (Jeff Garzik's message of "Tue\, 25 Mar 2008 10\:55\:18 -0400")
+Message-ID: <m3skyeby64.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080324214836.GA6045@localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0312]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik <jeff@garzik.org> writes:
 
-* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+> 	I guess it should go into 2.6.25, not sure about "stable"
+> 	series. I will appreciate any feedback, review and/or test
+> 	results.
 
-> Sure.  Here's the modified patch.
-> 
-> vSMP detection: Access pci config space early in boot to detect if the 
-> system is a vSMPowered box, and cache the result in a flag, so that 
-> is_vsmp_box() retrieves the value of the flag always.
+Right. Perhaps I should care a bit more about the stable series...
 
-thanks, applied.
+> At the time of the posting 2.6.25-rc6 had already been released, which
+> seems like an inappropriate time for all that new code, which has been
+> given so little exposure to real world testing.
 
-	Ingo
+Sure.
+
+> Certainly your original message said PPP panics, but without even
+> minimal testing how do we know that your new code doesn't have equally
+> problematic issues?
+
+Well, there was something like "minimal testing", and it doesn't panic
+100% like the old code does. But the probability that it won't work
+correctly is quite high.
+
+IOW: the new version is certainly better than the old one, though it's
+not the normal quality (in terms of testing) I'd like to see.
+
+> So quite honestly a CONFIG_BROKEN patch might indeed be more
+> appropriate since generic HDLC works with Frame Relay at least...
+
+Actually Frame Relay and other protocols are not affected, the PPP
+patch doesn't change them a bit, it's a different module. The new code
+only affect PPP protocol.
+
+I'm fine with the Kconfig patch, actually I'm not sure what is better
+at this time - a known broken module marked as such or a new module
+with some small chances that it will crash the machine and with much
+bigger chances that it won't work with a certain PPP implementation on
+the other end.
+
+Something like that?
+Untested :-)
+
+Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+
+--- a/drivers/net/wan/Kconfig
++++ b/drivers/net/wan/Kconfig
+@@ -150,9 +150,13 @@ config HDLC_FR
+ 
+ config HDLC_PPP
+ 	tristate "Synchronous Point-to-Point Protocol (PPP) support"
+-	depends on HDLC
++	depends on HDLC && BROKEN
+ 	help
+ 	  Generic HDLC driver supporting PPP over WAN connections.
++	  This module is currently broken and will cause a kernel panic
++	  when a device configured in PPP mode is activated.
++
++	  It will be replaced by new PPP implementation in Linux 2.6.26.
+ 
+ 	  If unsure, say N.
+ 
