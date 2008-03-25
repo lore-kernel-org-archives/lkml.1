@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbYCYVfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbYCYViU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760291AbYCYVfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 17:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYCYVfo
+	id S1760147AbYCYViU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 17:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYCYViL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 17:35:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:33563 "EHLO ozlabs.org"
+	Tue, 25 Mar 2008 17:38:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34018 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753626AbYCYVfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 17:35:43 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18409.28204.539283.566893@cargo.ozlabs.ibm.com>
-Date: Wed, 26 Mar 2008 08:27:08 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Miller <davem@davemloft.net>, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-In-Reply-To: <87wsnrgg9q.fsf@basil.nowhere.org>
-References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
-	<20080321.145712.198736315.davem@davemloft.net>
-	<Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-	<20080324.133722.38645342.davem@davemloft.net>
-	<18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-	<87wsnrgg9q.fsf@basil.nowhere.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	id S1752284AbYCYViK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 17:38:10 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       tglx@linutronix.de, kvm-devel@lists.sourceforge.net, avi@qumranet.com,
+       amit.shah@qumranet.com
+Subject: [PATCH 0/20] dma_ops for i386
+Date: Tue, 25 Mar 2008 18:36:19 -0300
+Message-Id: <1206480999-21767-1-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.2.2532.gdeda
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen writes:
+Hello,
 
-> Paul Mackerras <paulus@samba.org> writes:
-> > 
-> > 4kB pages:	444.051s user + 34.406s system time
-> > 64kB pages:	419.963s user + 16.869s system time
-> > 
-> > That's nearly 10% faster with 64kB pages -- on a kernel compile.
-> 
-> Do you have some idea where the improvement mainly comes from?
-> Is it TLB misses or reduced in kernel overhead? Ok I assume both
-> play together but which part of the equation is more important?
+Here there is a series of 20 patches that lays the foundations for
+using dma_ops in i386 in the very same way x86_64, as well as many other
+architectures already do.
 
-I think that to a first approximation, the improvement in user time
-(24 seconds) is due to the increased TLB reach and reduced TLB misses,
-and the improvement in system time (18 seconds) is due to the reduced
-number of page faults and reductions in other kernel overheads.
+The functions themselves for i386 are placed in a pci-base_32.c, but just
+a few among them are actually implemented. Most were no-ops anyway.
 
-As Dave Hansen points out, I can separate the two effects by having
-the kernel use 64k pages at the VM level but 4k pages in the hardware
-page table, which is easy since we have support for 64k base page size
-on machines that don't have hardware 64k page support.  I'll do that
-today.
+Also, as I said, this is by no means a complete coverage of dma_ops.
+there are still some call sites to be patches in pci-dma_32.c (although I don't
+really plan to change them, but to integrate them in a single pci-dma.c).
+I intend to have it done progressively.
 
-Paul.
+The granularity is per-operation, meaning each patch moves one specific function
+to the common header. This is compiled-tested in both i386 and x86_64 in 
+~5 randconfigs each, and boot-tested in my hardware with my default configs
+
+The motivation for that is the ongoing work for pci-passthrough in KVM.
+So ingo, avi, what do you think it's the best way to handle these patches through?
+
+Thanks
+
+
