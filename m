@@ -1,72 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYCYDaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbYCYDbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbYCYDaj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 23:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYCYDab
+	id S1757096AbYCYDbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 23:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYCYDbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 23:30:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:50364 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754793AbYCYDaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 23:30:30 -0400
+	Mon, 24 Mar 2008 23:31:14 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:24305 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752917AbYCYDbN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 23:31:13 -0400
+Date: Mon, 24 Mar 2008 21:31:11 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 12/16] PCI slot: Use .default_attrs for address file
+	(Not for mainline!)
+Message-ID: <20080325033111.GA26434@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Greg KH <gregkh@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Matthew Wilcox <matthew@wil.cx>, warthog19@eaglescrag.net,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080318210539.GA30421@ldl.fc.hp.com> <47E33472.1000602@jp.fujitsu.com> <47E3375B.4020606@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
-Date: Tue, 25 Mar 2008 14:29:55 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: larger default page sizes...
-In-Reply-To: <20080324.133722.38645342.davem@davemloft.net>
-References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
-	<20080321.145712.198736315.davem@davemloft.net>
-	<Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
-	<20080324.133722.38645342.davem@davemloft.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <47E3375B.4020606@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Use .default_attrs for 'address' file. This can simplify the code.
 
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Mon, 24 Mar 2008 11:27:06 -0700 (PDT)
+Thanks, merged.
+
+/ac
+
 > 
-> > The move to 64k page size on IA64 is another way that this issue can
-> > be addressed though.
+> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 > 
-> This is such a huge mistake I wish platforms such as powerpc and IA64
-> would not make such decisions so lightly.
-
-The performance advantage of using hardware 64k pages is pretty
-compelling, on a wide range of programs, and particularly on HPC apps.
-
-> The memory wastage is just rediculious.
-
-Depends on the distribution of file sizes you have.
-
-> I already see several distributions moving to 64K pages for powerpc,
-> so I want to nip this in the bud before this monkey-see-monkey-do
-> thing gets any more out of hand.
-
-I just tried a kernel compile on a 4.2GHz POWER6 partition with 4
-threads (2 cores) and 2GB of RAM, with two kernels.  One was
-configured with 4kB pages and the other with 64kB kernels but they
-were otherwise identically configured.  Here are the times for the
-same kernel compile (total time across all threads, for a fairly
-full-featured config):
-
-4kB pages:	444.051s user + 34.406s system time
-64kB pages:	419.963s user + 16.869s system time
-
-That's nearly 10% faster with 64kB pages -- on a kernel compile.
-
-Yes, the fragmentation in the page cache can be a pain in some
-circumstances, but on the whole I think the performance advantage is
-worth that pain, particularly for the sort of applications that people
-will tend to be running on RHEL on Power boxes.
-
-Regards,
-Paul.
+> ---
+>  drivers/pci/slot.c |   36 +++++++++---------------------------
+>  1 file changed, 9 insertions(+), 27 deletions(-)
+> 
+> Index: linux-2.6.25-rc6/drivers/pci/slot.c
+> ===================================================================
+> --- linux-2.6.25-rc6.orig/drivers/pci/slot.c
+> +++ linux-2.6.25-rc6/drivers/pci/slot.c
+> @@ -39,25 +39,6 @@ static ssize_t address_read_file(struct 
+>  					slot->bus->number, slot->number);
+>  }
+>  
+> -static struct pci_slot_attribute pci_slot_attr_address = {
+> -	.attr = { .name = "address", .mode = S_IFREG | S_IRUGO },
+> -	.show = address_read_file,
+> -};
+> -
+> -static void remove_sysfs_files(struct pci_slot *slot)
+> -{
+> -	sysfs_remove_file(&slot->kobj, &pci_slot_attr_address.attr);
+> -}
+> -
+> -static int create_sysfs_files(struct pci_slot *slot)
+> -{
+> -	int result;
+> -
+> -	result = sysfs_create_file(&slot->kobj, &pci_slot_attr_address.attr);
+> -
+> -	return result;
+> -}
+> -
+>  static void pci_slot_release(struct kobject *kobj)
+>  {
+>  	struct pci_slot *slot = to_pci_slot(kobj);
+> @@ -67,13 +48,21 @@ static void pci_slot_release(struct kobj
+>  
+>  	list_del(&slot->list);
+>  
+> -	remove_sysfs_files(slot);
+>  	kfree(slot);
+>  }
+>  
+> +static struct pci_slot_attribute pci_slot_attr_address =
+> +	__ATTR(address, (S_IFREG | S_IRUGO), address_read_file, NULL);
+> +
+> +static struct attribute *pci_slot_default_attrs[] = {
+> +	&pci_slot_attr_address.attr,
+> +	NULL,
+> +};
+> +
+>  static struct kobj_type pci_slot_ktype = {
+>  	.sysfs_ops = &pci_slot_sysfs_ops,
+>  	.release = &pci_slot_release,
+> +	.default_attrs = pci_slot_default_attrs,
+>  };
+>  
+>  struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+> @@ -114,10 +103,6 @@ struct pci_slot *pci_create_slot(struct 
+>  		goto err;
+>  	}
+>  
+> -	err = create_sysfs_files(slot);
+> -	if (err)
+> -		goto unregister;
+> -
+>  	INIT_LIST_HEAD(&slot->list);
+>  	list_add(&slot->list, &parent->slots);
+>  
+> @@ -127,9 +112,6 @@ struct pci_slot *pci_create_slot(struct 
+>   out:
+>  	up_write(&pci_bus_sem);
+>  	return slot;
+> -
+> - unregister:
+> -	kobject_put(&slot->kobj);
+>   err:
+>  	kfree(slot);
+>  	slot = ERR_PTR(err);
+> 
+> 
