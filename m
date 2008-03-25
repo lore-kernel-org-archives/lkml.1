@@ -1,39 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYCYKXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYCYKZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbYCYKXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 06:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYCYKXi
+	id S1754118AbYCYKZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 06:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYCYKZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 06:23:38 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:53398 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYCYKXh (ORCPT
+	Tue, 25 Mar 2008 06:25:38 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:44261 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752375AbYCYKZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 06:23:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=G6Qni4SpZ6EKs/pz+ahsVoP3s7+4hSbCdS3kYivW3+r5Cbzscqvmb02ismd3HAL1kjO64HdA/f863OmLMKBlH0mrZRCXA3onAI5ouciDtPWXNf8RNpoX9lSTGrW9eZoY+puXMdwHTZZUBosCbwFC2PU2TQFupqIX8qbbocCOv6M=
-Message-ID: <983191750803250323k2e944fe0y53e4c0d69edde3b@mail.gmail.com>
-Date: Tue, 25 Mar 2008 15:53:36 +0530
-From: "Shard Gupta" <shard.kgp@gmail.com>
-To: kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org
-Subject: Allocating memory in the form of 'BITS'
+	Tue, 25 Mar 2008 06:25:36 -0400
+To: Jack Steiner <steiner@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
+References: <20080324182122.GA28327@sgi.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 25 Mar 2008 11:25:34 +0100
+In-Reply-To: <20080324182122.GA28327@sgi.com>
+Message-ID: <87abknhzhd.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Mar 2008 10:18:56.0638 (UTC) FILETIME=[A25301E0:01C88E61]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello List,
+Jack Steiner <steiner@sgi.com> writes:
 
-I am writing a linux kernel module, and I want to allocates the memory
-in a way so I can define each individual bit, like bitfield structure
-in userspace.
-Please tell me the way to do the same.
+>  unsigned int get_apic_id(void)
+>  {
+> -	return (apic_read(APIC_ID) >> 24) & 0xFFu;
+> +	unsigned int id;
+> +
+> +	preempt_disable();
+> +	id = apic_read(APIC_ID);
+> +	if (uv_system_type >= UV_X2APIC)
+> +		id  |= __get_cpu_var(x2apic_extra_bits);
+> +	else
+> +		id = (id >> 24) & 0xFFu;;
+> +	preempt_enable();
+> +	return id;
 
-Thanks and regards,
+Really caller should have done preempt_disable(), otherwise
+the value can be wrong as soon as you return.
 
-Shard Gupta
+Better probably to just WARN_ON if preemption is on
+
+(just be careful it does not trigger in oopses and machine checks)
+
+> +
+> +DEFINE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
+> +EXPORT_PER_CPU_SYMBOL(__uv_hub_info);
+
+GPL export too?
+
+> +
+> +struct uv_blade_info *uv_blade_info;
+> +EXPORT_SYMBOL_GPL(uv_blade_info);
+> +
+> +short *uv_node_to_blade;
+> +EXPORT_SYMBOL_GPL(uv_node_to_blade);
+> +
+> +short *uv_cpu_to_blade;
+> +EXPORT_SYMBOL_GPL(uv_cpu_to_blade);
+> +
+> +short uv_possible_blades;
+> +EXPORT_SYMBOL_GPL(uv_possible_blades);
+> +
+> +/* Start with all IRQs pointing to boot CPU.  IRQ balancing will shift them. */
+> +/* Probably incorrect for UV  ZZZ */
+
+Actually it should be correct. Except for UV you likely really need a
+NUMA aware irqbalanced. I used to have some old very hackish patches
+to implement that in irqbalanced, but never pushed it because the
+systems I was working on didn't really need it.
+
+
+> +
+> +static void uv_send_IPI_one(int cpu, int vector)
+> +{
+> +	unsigned long val, apicid;
+> +	int nasid;
+> +
+> +	apicid = per_cpu(x86_cpu_to_apicid, cpu); /* ZZZ - cache node-local ? */
+
+Instead of doing that it might be better to implement __read_mostly per CPU variables
+(should not be very hard) 
+
+> +static void uv_send_IPI_mask(cpumask_t mask, int vector)
+> +{
+> +	unsigned long flags;
+> +	unsigned int cpu;
+> +
+> +	local_irq_save(flags);
+> +	for (cpu = 0; cpu < NR_CPUS; ++cpu)
+> +		if (cpu_isset(cpu, mask))
+> +			uv_send_IPI_one(cpu, vector);
+> +	local_irq_restore(flags);
+
+This could disable interrupts for a long time could't it?  Really needed?
+
+
+> +	bytes = sizeof(struct uv_blade_info) * uv_num_possible_blades();
+> +	uv_blade_info = alloc_bootmem_pages(bytes);
+> +	memset(uv_blade_info, 255, bytes);
+
+255?  Strange poison value.
+
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/Makefile	2008-03-21 15:36:35.000000000 -0500
+> +++ linux/arch/x86/kernel/Makefile	2008-03-21 15:49:38.000000000 -0500
+> @@ -90,7 +90,7 @@ scx200-y			+= scx200_32.o
+>  ###
+>  # 64 bit specific files
+>  ifeq ($(CONFIG_X86_64),y)
+> -        obj-y				+= genapic_64.o genapic_flat_64.o
+> +        obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o
+
+Definitely should be a CONFIG
+
+> @@ -418,6 +419,9 @@ static int __cpuinit wakeup_secondary_vi
+>  	unsigned long send_status, accept_status = 0;
+>  	int maxlvt, num_starts, j;
+>  
+> +	if (get_uv_system_type() == UV_NON_UNIQUE_APIC)
+> +		return uv_wakeup_secondary(phys_apicid, start_rip);
+> +
+
+This should be probably factored properly (didn't Jeremy have smp_ops 
+for this some time ago) so that even the default case is a call.
+
+>  	Dprintk("Asserting INIT.\n");
+>  
+>  	/*
+> @@ -679,7 +683,8 @@ do_rest:
+>  				/* trampoline code not run */
+>  				printk("Not responding.\n");
+>  #ifdef APIC_DEBUG
+> -			inquire_remote_apic(apicid);
+> +			if (get_uv_system_type() != UV_NON_UNIQUE_APIC)
+> +				inquire_remote_apic(apicid);
+
+Dito.
+
+
+-Andi
