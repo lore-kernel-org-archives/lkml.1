@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbYCYSYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYCYS15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759292AbYCYSYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYCYSYG
+	id S1758290AbYCYS15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYCYS1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:24:06 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:34602
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757349AbYCYSYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:24:05 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Ian Abbott <abbotti@mev.co.uk>
-Subject: Re: [PATCH] Corrections to Documentation/rbtree.txt
-Date: Tue, 25 Mar 2008 13:24:08 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <47E282F5.6090703@mev.co.uk> <200803201339.18618.rob@landley.net> <47E8DBBE.4030607@mev.co.uk>
-In-Reply-To: <47E8DBBE.4030607@mev.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 25 Mar 2008 14:27:48 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:53634 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753185AbYCYS1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:27:47 -0400
+Subject: Re: larger default page sizes...
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: David Miller <davem@davemloft.net>, clameter@sgi.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0803211037140.18671@schroedinger.engr.sgi.com>
+	 <20080321.145712.198736315.davem@davemloft.net>
+	 <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
+	 <20080324.133722.38645342.davem@davemloft.net>
+	 <18408.29107.709577.374424@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 11:27:45 -0700
+Message-Id: <1206469665.27393.19.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803251324.08769.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 March 2008 06:02:22 Ian Abbott wrote:
-> On 20/03/08 18:39, Rob Landley wrote:
-> > On Thursday 20 March 2008 10:29:57 Ian Abbott wrote:
-> >> From: Ian Abbott <abbotti@mev.co.uk>
-> >>
-> >> The description of the rb_entry() macro in Documentation/rbtree.txt
-> >> seems incorrect. This patch improves it (hopefully).  Also I changed the
-> >> example code to call the previous 'my_search()' example instead of an
-> >> undefined 'mysearch()'.
-> >
-> > I have no objection to the patch (and the my_search thing seems like an
-> > obvious typo), but is there a reason to prefer rb_entry() rather than
-> > container_of()?  If so, the rationale might be a good thing to add to the
-> > documentation...
->
-> I don't know the rationale, but all the code I can see uses rb_entry()
-> and not container_of().
+On Tue, 2008-03-25 at 14:29 +1100, Paul Mackerras wrote:
+> 4kB pages:      444.051s user + 34.406s system time
+> 64kB pages:     419.963s user + 16.869s system time
+> 
+> That's nearly 10% faster with 64kB pages -- on a kernel compile.
 
-Except container_of() works, which is a nice thing to know, and it already 
-mentions rb_entry() as another way to do it.  If someone could explain _why_ 
-to use one over the other, that would be a good thing to add.
+Can you do the same thing with the 4k MMU pages and 64k PAGE_SIZE?
+Wouldn't that easily break out whether the advantage is from the TLB or
+from less kernel overhead?
 
-> The only rationale I can think of is that it 
-> abstracts away from the nodes being embedded in the data a little bit.
+-- Dave
 
-If I wanted abstraction for its own sake I'd be using C++ to implement a 
-microkernel.  I would also be certifiably insane.
-
-> (But not by much - in particular, an implementation of rb trees that
-> stored data in the node explicitly would only need a single parameter in
-> its rb_entry() accessor.  I like the approach taken in
-> include/linux/elevator.h that uses the rb_entry() macro to create a
-> specialized accessor macro (rb_entry_rq()) with a single parameter.
-
-And this can't be done with container_of()?
-
-Again, I don't care much either way, I just want to know what the point is of 
-choosing one over the other that makes changing what's there worth bothering 
-with.  You're changing the documentation to hide the fact that rb_entry() is 
-basically another name for container_of(), and this is supposed to be an 
-improvement?
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
