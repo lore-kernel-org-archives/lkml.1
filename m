@@ -1,98 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbYCYWNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759931AbYCYWTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbYCYWNm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYCYWNa
+	id S1759931AbYCYWTb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYCYWTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:13:30 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35121 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbYCYWN3 (ORCPT
+	Tue, 25 Mar 2008 18:19:23 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:35692 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755109AbYCYWTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:13:29 -0400
-Date: Tue, 25 Mar 2008 18:13:21 -0400
-From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-To: NeilBrown <neilb@suse.de>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, xfs@oss.sgi.com,
-       Adam Schrotenboer <adam@m2000.com>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Trond Myklebust <trond.myklebust@netapp.com>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Thomas Daniel <tdaniel@m2000.com>, Frederic Revenu <frevenu@m2000.com>,
-       Jeff Doan <jdoan@m2000.com>
-Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
-Message-ID: <20080325221321.GC20257@josefsipek.net>
-References: <9a8748490803121513w285cd45rb6b26a3d842cac1b@mail.gmail.com> <20080312221511.GC31632@fieldses.org> <9a8748490803121516u36395872i70cc88b0439adc74@mail.gmail.com> <18394.1501.991087.80264@notabene.brown> <47DAEFD0.9020407@m2000.com> <47E92F8E.7030504@m2000.com> <20080325190943.GF2237@fieldses.org> <32953.192.168.1.70.1206477121.squirrel@neil.brown.name> <20080325212425.GA20257@josefsipek.net> <34178.192.168.1.70.1206481102.squirrel@neil.brown.name>
+	Tue, 25 Mar 2008 18:19:21 -0400
+Message-ID: <47E97A65.5010700@freescale.com>
+Date: Tue, 25 Mar 2008 17:19:17 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <34178.192.168.1.70.1206481102.squirrel@neil.brown.name>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: York Sun <yorksun@freescale.com>
+CC: linux-fbdev-devel@lists.sourceforge.net, Timur Tabi <timur@freescale.com>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2 v3] Driver for Freescale 8610 and 5121 DIU
+References: <120648043867-git-send-email-yorksun@freescale.com> <12064804383051-git-send-email-yorksun@freescale.com>
+In-Reply-To: <12064804383051-git-send-email-yorksun@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 08:38:22AM +1100, NeilBrown wrote:
-...
-> However you still need to do something about the generation number.  It
-> must be set to something.
- 
-Right.
+York Sun wrote:
+> +    Example (MPC8610HPCD)
+> +	diu@2c000 {
 
-> When you allocate an inode that doesn't currently exist on the device,
-> you obviously cannot increment the old value and use that.
+display@2c000
 
-Makes sense.
+> +		device_type = "lcd";
 
-> However you can do a lot better than always using 0.
+No device_type.
 
-I looked at the code (xfs_ialloc.c:xfs_ialloc_ag_alloc)
+> +		compatible = "fsl-diu";
 
- 290                 /*
- 291                  * Set initial values for the inodes in this buffer.
- 292                  */
- 293                 xfs_biozero(fbuf, 0, ninodes << args.mp->m_sb.sb_inodelog);
- 294                 for (i = 0; i < ninodes; i++) {
- 295                         free = XFS_MAKE_IPTR(args.mp, fbuf, i);
- 296                         free->di_core.di_magic = cpu_to_be16(XFS_DINODE_MAGIC);
- 297                         free->di_core.di_version = version;
- 298                         free->di_next_unlinked = cpu_to_be32(NULLAGINO);
- 299                         xfs_ialloc_log_di(tp, fbuf, i,
- 300                                 XFS_DI_CORE_BITS | XFS_DI_NEXT_UNLINKED);
- 301                 }
+"fsl,diu".
 
-xfs_biozero(...) turns into a memset(buf, 0, len), and since the loop that
-follows doesn't change the generation number, it'll stay 0.
+> +    s) Freescale on board FPGA
+> +
+> +    This is the memory-mapped registers for on board FPGA.
+> +
+> +    Required properities:
+> +    - compatible : should be "fsl,fpga-pixis".
+> +    - reg : should contain the address and the lenght of the FPPGA register
+> +      set.
+> +
+> +    Example (MPC8610HPCD)
+> +	fpga {
 
-> The simplest would be to generate a 'random' number (get_random_bytes).
-> Slightly better would be to generate a random number at boot time
-> and use that, incrementing it each time it is used to set the
-> generation number for an inode.
+board-control@e8000000 {
 
-I'm not familiar enough with NFS, do you want something that's monotonically
-increasing or do you just test for inequality?  If it is inequality, why not
-just use something like the jiffies - that should be unique enough.
+> +config FB_FSL_DIU
+> +	tristate "Freescale MPC8610/MPC5121 DIU framebuffer support"
 
-> Even better would be store store that 'next generation number' in the
-> superblock so there would be even less risk of the 'random' generation
-> producing repeats.
-> This is what ext3 does.  It doesn't dynamically allocate inodes,
-> but it doesn't want to pay the cost of reading an old inode from
-> storage just to see what the generation number is.  So it has
-> a number in the superblock which is incremented on each inode allocation
-> and is used as the generation number.
- 
-Something tells me that the SGI folks might not be all too happy with the
-in-sb number...XFS tries to be as parallel as possible, and this would cause
-the counter variable to bounce around their NUMA systems.  Perhaps a per-ag
-variable would be better, but I remember reading that parallelizing updates
-to some inode count variable (I forget which) in the superblock
-\cite{dchinner-ols2006} led to a rather big improvement.  It's almost
-morning down under, so I guess we'll get their comments on this soon.
+Are these the only chips that will ever implement this?
 
-Josef 'Jeff' Sipek.
+> +	depends on FB && (MPC8610 || MPC5121)
 
--- 
-Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are, by
-definition, not smart enough to debug it.
-		- Brian W. Kernighan 
+depends on FB && FSL_SOC
+
+> +		cmfbi = machine_data->fsl_diu_info[index+1]->par;
+> +		if ((mfbi->x_aoi_d + var->xres) >
+> +				machine_data->fsl_diu_info[0]->var.xres)
+> +			mfbi->x_aoi_d = machine_data->fsl_diu_info[0]->var.xres
+> +					- var->xres;
+> +		if (mfbi->x_aoi_d < 0)
+> +			mfbi->x_aoi_d = 0;
+> +		if ((var->xres + mfbi->x_aoi_d) >
+> +				machine_data->fsl_diu_info[0]->var.xres)
+> +			var->xres = machine_data->fsl_diu_info[0]->var.xres
+> +					- mfbi->x_aoi_d;
+> +
+> +		if (cmfbi->count > 0) {		/* AOI1 is open */
+> +			if ((mfbi->y_aoi_d + var->yres) > cmfbi->y_aoi_d)
+> +				mfbi->y_aoi_d = cmfbi->y_aoi_d - var->yres;
+> +			if (mfbi->y_aoi_d < 0)
+> +				mfbi->y_aoi_d = 0;
+> +			if ((var->yres + mfbi->y_aoi_d) > cmfbi->y_aoi_d)
+> +				var->yres = cmfbi->y_aoi_d - mfbi->y_aoi_d;
+> +		} else {				/* AOI1 is close */
+> +			if ((mfbi->y_aoi_d + var->yres) >
+> +					machine_data->fsl_diu_info[0]->var.yres)
+> +				mfbi->y_aoi_d =
+> +					machine_data->fsl_diu_info[0]->var.yres
+> +					- var->yres;
+> +			if (mfbi->y_aoi_d < 0)
+> +				mfbi->y_aoi_d = 0;
+> +			if ((var->yres + mfbi->y_aoi_d) >
+> +					machine_data->fsl_diu_info[0]->var.yres)
+> +				var->yres =
+> +					machine_data->fsl_diu_info[0]->var.yres
+> +					- mfbi->y_aoi_d;
+> +		}
+> +		break;
+> +	case 2:			/* AOI 1 */
+> +	case 4:
+> +		pmfbi = machine_data->fsl_diu_info[index-1]->par;
+> +		if ((mfbi->x_aoi_d + var->xres) >
+> +				machine_data->fsl_diu_info[0]->var.xres)
+> +			mfbi->x_aoi_d = machine_data->fsl_diu_info[0]->var.xres
+> +					- var->xres;
+> +		if (mfbi->x_aoi_d < 0)
+> +			mfbi->x_aoi_d = 0;
+> +		if ((var->xres + mfbi->x_aoi_d) >
+> +				machine_data->fsl_diu_info[0]->var.xres)
+> +			var->xres = machine_data->fsl_diu_info[0]->var.xres
+> +					- mfbi->x_aoi_d;
+> +
+> +		if (pmfbi->count > 0) {		/* AOI0 is open */
+> +			if ((mfbi->y_aoi_d + var->yres) >
+> +					machine_data->fsl_diu_info[0]->var.yres)
+> +				mfbi->y_aoi_d =
+> +					machine_data->fsl_diu_info[0]->var.yres
+> +					- var->yres;
+> +			if (mfbi->y_aoi_d < (pmfbi->y_aoi_d +
+> +				machine_data->fsl_diu_info[index-1]->var.yres))
+> +				mfbi->y_aoi_d = pmfbi->y_aoi_d +
+> +				  machine_data->fsl_diu_info[index-1]->var.yres;
+> +			if ((var->yres + mfbi->y_aoi_d) >
+> +					machine_data->fsl_diu_info[0]->var.yres)
+> +				var->yres =
+> +					machine_data->fsl_diu_info[0]->var.yres
+> +					- mfbi->y_aoi_d;
+> +		} else {				/* AOI0 is close */
+> +			if ((mfbi->y_aoi_d + var->yres) >
+> +				machine_data->fsl_diu_info[0]->var.yres)
+> +				mfbi->y_aoi_d =
+> +					machine_data->fsl_diu_info[0]->var.yres
+> +					- var->yres;
+> +			if (mfbi->y_aoi_d < 0)
+> +				mfbi->y_aoi_d = 0;
+> +			if ((var->yres + mfbi->y_aoi_d) >
+> +				machine_data->fsl_diu_info[0]->var.yres)
+> +				var->yres =
+> +					machine_data->fsl_diu_info[0]->var.yres
+> +					- mfbi->y_aoi_d;
+
+Could you split some of this up into separate functions at lower 
+indentation levels to make it more readable?
+
+> +#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
+> +			red = CNVT_TOHW(red, info->var.red.length);
+> +			green = CNVT_TOHW(green, info->var.green.length);
+> +			blue = CNVT_TOHW(blue, info->var.blue.length);
+> +			transp = CNVT_TOHW(transp, info->var.transp.length);
+> +#undef CNVT_TOHW
+
+Define a function for this.
+
+> +	switch (cmd) {
+> +	case MFB_SET_PIXFMT:
+> +		if (!arg)
+> +			return -EINVAL;
+> +		if (copy_from_user((void *)&pix_fmt, (void *)arg,
+> +				sizeof(pix_fmt)))
+
+(void __user *)arg
+No cast on &pix_fmt.
+
+> +#if defined(CONFIG_NOT_COHERENT_CACHE)
+> +		else if (status & INT_VSYNC) {
+> +			int i;
+> +			unsigned int *ptr;
+> +			ptr  = coherence_data;
+> +			for (i = 0; i < 1024*8; i++)
+> +				*ptr++ = 0;
+
+As I said in an internal review, this is not enough, and it's 
+inefficient.  Read rather than write, and do so only once per cache 
+line, but the size you access has to be at least 13/8 of the cache size 
+for an 8-way plru cache.
+
+-Scott
