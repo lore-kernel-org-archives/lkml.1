@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYCYKjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYCYKkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYCYKjA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 06:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYCYKiw
+	id S1754586AbYCYKkd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 06:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYCYKkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 06:38:52 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:51711 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752375AbYCYKiv (ORCPT
+	Tue, 25 Mar 2008 06:40:25 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:17125 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbYCYKkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 06:38:51 -0400
-Date: Tue, 25 Mar 2008 11:38:23 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, davej@redhat.com,
-       sam@ravnborg.org, greg@kroah.com, randy.dunlap@oracle.com
-Message-ID: <20080325103823.GD8959@enneenne.com>
-References: <12048053463198-git-send-email-giometti@linux.it> <12048053473401-git-send-email-giometti@linux.it> <12048053471754-git-send-email-giometti@linux.it> <12048053471177-git-send-email-giometti@linux.it> <12048053473741-git-send-email-giometti@linux.it> <12048053472063-git-send-email-giometti@linux.it> <20080320130400.0b17e1fc.akpm@linux-foundation.org> <20080321111736.GC8959@enneenne.com> <20080321104125.e1ff69c5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080321104125.e1ff69c5.akpm@linux-foundation.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Tue, 25 Mar 2008 06:40:24 -0400
+Date: Tue, 25 Mar 2008 11:39:42 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: corbet@lwn.net (Jonathan Corbet),
+       Andrew Morton <akpm@linux-foundation.org>, stern@rowland.harvard.edu,
+       mb@bu3sch.de, hmh@hmh.eng.br, david-b@pacbell.net, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, geert@linux-m68k.org
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+Message-ID: <20080325113942.06fe388b@hyperion.delvare>
+In-Reply-To: <7vbq53mbh1.fsf@gitster.siamese.dyndns.org>
+References: <20080324124229.5d49ded6.akpm@linux-foundation.org>
+	<25897.1206388397@vena.lwn.net>
+	<7vbq53mbh1.fsf@gitster.siamese.dyndns.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 21, 2008 at 10:41:25AM -0700, Andrew Morton wrote:
-> On Fri, 21 Mar 2008 12:17:36 +0100 Rodolfo Giometti <giometti@enneenne.com> wrote:
+On Tue, 25 Mar 2008 01:52:58 -0700, Junio C Hamano wrote:
+> corbet@lwn.net (Jonathan Corbet) writes:
 > 
-> > > > +#else
-> > > > +
-> > > > +#define uart_register_pps_port(state, port)	do { } while (0)
-> > > > +#define uart_unregister_pps_port(state, port)	do { } while (0)
-> > > 
-> > > Please never implement in cpp that which can be implemented in C.  These
-> > > should have been static inlines.  That's nicer, matches the
-> > > CONFIG_PPS_CLIENT_UART=y code and provides type checking.
-> > 
-> > Are you saying that I should do:
-> > 
-> > static inline int
-> > uart_register_pps_port(struct uart_state *state, struct uart_port *port)
-> > {
-> > 	/* Nop */
-> > }
-> > 
-> > static inline void
-> > uart_unregister_pps_port(struct uart_state *state, struct uart_port *port)
-> > {
-> > 	/* Nop */
-> > }
-> > 
-> > ?
+> > diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+> > index 4982998..63a7782 100644
+> > --- a/include/linux/hardirq.h
+> > +++ b/include/linux/hardirq.h
+> > @@ -72,6 +72,13 @@
+> >  #define in_softirq()		(softirq_count())
+> >  #define in_interrupt()		(irq_count())
+> >  
+> > +/*
+> > + * Are we running in atomic context?  WARNING: this macro cannot
+> > + * always detect atomic context; in particular, it cannot know about
+> > + * held spinlocks in non-preemptible kernels.  Thus it should not be
+> > + * used in the general case to determine whether sleeping is possible.
+> > + * Do not use in_atomic() in driver code.
+> > + */
+> >  #define in_atomic()		((preempt_count() & ~PREEMPT_ACTIVE) != 0)
+> >  
+> >  #ifdef CONFIG_PREEMPT
 > 
-> Yes please.
+> Is it just me who feels this comment that says "in_atomic() is not a way
+> to tell if we are in atomic reliably and cannot be used for such and such"
+> very reader-unfriendly?  Ok, maybe the macro is not reliable and is not
+> meant to be used for the purpose its name seems to suggest (at least to a
+> non-kernel person).  An inevitable question is, then what is it good for?
+> What's the right situation to use this macro?
+> 
+> I guess an additional comment "even if this says no, you could still be in
+> atomic, but if this says yes, then you definitely are in atomic and cannot
+> sleep" may help unconfuse a clueless reader like myself.
 
-Fixed. I'll send a new patch ASAP.
+Andrew explained that in_atomic() could deadlock if called in a
+condition where it is unreliable (although I did not understand the
+details). Documenting that a "yes" from in_atomic() can always be
+trusted, would invite driver authors to still use it, when my
+understanding is that they still shouldn't.
 
-Rodolfo
+If drivers shouldn't use in_atomic() at all then I think that the
+long-term solution is to move its definition out of <linux/hardirq.h>.
+But of course this means fixing all the drivers that still use it first.
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Jean Delvare
