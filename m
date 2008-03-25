@@ -1,80 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYCYIHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbYCYIIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbYCYIHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 04:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYCYIH3
+	id S1754333AbYCYIIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 04:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYCYIIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 04:07:29 -0400
-Received: from www.tglx.de ([62.245.132.106]:48488 "EHLO www.tglx.de"
+	Tue, 25 Mar 2008 04:08:05 -0400
+Received: from mga11.intel.com ([192.55.52.93]:15634 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751507AbYCYIH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 04:07:27 -0400
-Date: Tue, 25 Mar 2008 09:06:43 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <crazy@frugalware.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47E82C1F.7070304@frugalware.org>
-Message-ID: <alpine.LFD.1.00.0803250902310.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <47E3E66F.9040006@frugalware.org> <47E3FA4F.9060509@frugalware.org> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org>
- <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org> <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org>
- <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org> <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de> <47E58B06.8020905@frugalware.org>
- <47E63851.7000702@frugalware.org> <47E6E85E.9030008@frugalware.org> <alpine.LFD.1.00.0803241038420.3781@apollo.tec.linutronix.de> <47E82C1F.7070304@frugalware.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752403AbYCYIIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 04:08:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,551,1199692800"; 
+   d="scan'208";a="539483358"
+Subject: Re: [PATCH 4/5] drivers/acpi: elide a non-zero test on a result
+	that is never 0
+From: "Zhang, Rui" <rui.zhang@intel.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: "Brown, Len" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0803241909420.32740@ask.diku.dk>
+References: <Pine.LNX.4.64.0803241909420.32740@ask.diku.dk>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 15:50:11 +0800
+Message-Id: <1206431411.3047.45.camel@acpi-hp-zz.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Mar 2008, Gabriel C wrote:
-> > Hmm. Can you please apply the patch below. It add some more info and
-> > triggers the sysrq-q timer list printout when the watchdog
-> > triggers. That might us give some insight into this.
+
+On Tue, 2008-03-25 at 02:10 +0800, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> Sorry for the lag , I was out the whole day.
+> The function thermal_cooling_device_register always returns either a
+> valid
+> pointer or a value made with ERR_PTR, so a test for non-zero on the
+> result
+> will always succeed.
+>
+> The problem was found using the following semantic match.
+> (http://www.emn.fr/x-info/coccinelle/)
+> //<smpl>
+> @a@
+> expression E, E1;
+> statement S,S1;
+> position p;
+> @@
 > 
-> Here is what I've found in dmesg ( the box was idling at that time , as said I was not around ):
+> E = thermal_cooling_device_register(...)
+> ... when != E = E1
+> if@p (E) S else S1
 > 
-> ...
+> @n@
+> position a.p;
+> expression E,E1;
+> statement S,S1;
+> @@
 > 
-> [34528.893366] Clocksource tsc unstable (delta = 4686697613 ns) E:34204592 J:34210723
-
-Ok. The timer got delayed. It got delayed because it is initialized as
-a deferrable timer, which is obviously wrong. Sigh, I signed off on
-that commit myself without thinking about the consequences.
-
-Can you please apply the patch below on top of the others?
-
-> ...
+> E = NULL
+> ... when != E = E1
+> if@p (E) S else S1
 > 
-> And that made irqbalance go mad which got killed by OOM , very strange.
+> @depends on !n@
+> expression E;
+> statement S,S1;
+> position a.p;
+> @@
+> 
+> * if@p (E)
+>   S else S1
+> //</smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+Patch looks correct. Thanks, Julia.
+But it misses the same problem in driver/misc/intel_menlow.c.
+And the return value of thermal_zone_device_register is also misused.
+How about this refreshed patch? :)
 
-Ouch.
 
-revert: 1077f5a917b7c630231037826b344b2f7f5b903f
+Check the return value of thermal zone/cooling device registration correctly.
 
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- kernel/time/clocksource.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/fan.c            |    3 +--
+ drivers/acpi/processor_core.c |    3 +--
+ drivers/acpi/thermal.c        |    2 +-
+ drivers/acpi/video.c          |    3 +--
+ drivers/misc/intel_menlow.c   |    4 +---
+ 5 files changed, 5 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/kernel/time/clocksource.c
+Index: linux-2.6/drivers/acpi/fan.c
 ===================================================================
---- linux-2.6.orig/kernel/time/clocksource.c
-+++ linux-2.6/kernel/time/clocksource.c
-@@ -176,7 +176,7 @@ static void clocksource_check_watchdog(s
- 			if (watchdog)
- 				del_timer(&watchdog_timer);
- 			watchdog = cs;
--			init_timer_deferrable(&watchdog_timer);
-+			init_timer(&watchdog_timer);
- 			watchdog_timer.function = clocksource_watchdog;
+--- linux-2.6.orig/drivers/acpi/fan.c
++++ linux-2.6/drivers/acpi/fan.c
+@@ -259,8 +259,7 @@ static int acpi_fan_add(struct acpi_devi
+ 	if (IS_ERR(cdev)) {
+ 		result = PTR_ERR(cdev);
+ 		goto end;
+-	}
+-	if (cdev) {
++	} else {
+ 		printk(KERN_INFO PREFIX
+ 			"%s is registered as cooling_device%d\n",
+ 			device->dev.bus_id, cdev->id);
+Index: linux-2.6/drivers/acpi/processor_core.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/processor_core.c
++++ linux-2.6/drivers/acpi/processor_core.c
+@@ -673,8 +673,7 @@ static int __cpuinit acpi_processor_star
+ 	if (IS_ERR(pr->cdev)) {
+ 		result = PTR_ERR(pr->cdev);
+ 		goto end;
+-	}
+-	if (pr->cdev) {
++	} else {
+ 		printk(KERN_INFO PREFIX
+ 			"%s is registered as cooling_device%d\n",
+ 			device->dev.bus_id, pr->cdev->id);
+Index: linux-2.6/drivers/acpi/thermal.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/thermal.c
++++ linux-2.6/drivers/acpi/thermal.c
+@@ -1125,7 +1125,7 @@ static int acpi_thermal_register_thermal
+ 			tz->trips.active[i].flags.valid; i++, trips++);
+ 	tz->thermal_zone = thermal_zone_device_register("ACPI thermal zone",
+ 					trips, tz, &acpi_thermal_zone_ops);
+-	if (!tz->thermal_zone)
++	if (IS_ERR(tz->thermal_zone))
+ 		return -ENODEV;
  
- 			/* Reset watchdog cycles */
+ 	result = sysfs_create_link(&tz->device->dev.kobj,
+Index: linux-2.6/drivers/acpi/video.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/video.c
++++ linux-2.6/drivers/acpi/video.c
+@@ -733,8 +733,7 @@ static void acpi_video_device_find_cap(s
+ 					device->dev, &video_cooling_ops);
+ 		if (IS_ERR(device->cdev))
+ 			return;
+-
+-		if (device->cdev) {
++		else {
+ 			printk(KERN_INFO PREFIX
+ 				"%s is registered as cooling_device%d\n",
+ 				device->dev->dev.bus_id, device->cdev->id);
+Index: linux-2.6/drivers/misc/intel_menlow.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/intel_menlow.c
++++ linux-2.6/drivers/misc/intel_menlow.c
+@@ -173,9 +173,7 @@ static int intel_menlow_memory_add(struc
+ 	if (IS_ERR(cdev)) {
+ 		result = PTR_ERR(cdev);
+ 		goto end;
+-	}
+-
+-	if (cdev) {
++	} else {
+ 		acpi_driver_data(device) = cdev;
+ 		result = sysfs_create_link(&device->dev.kobj,
+ 					&cdev->device.kobj, "thermal_cooling");
 
 
