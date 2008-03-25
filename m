@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYCYWCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761072AbYCYWEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761479AbYCYWCv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761277AbYCYWCj
+	id S1761072AbYCYWEK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYCYWD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:02:39 -0400
-Received: from www17.your-server.de ([213.133.104.17]:36657 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761237AbYCYWCh (ORCPT
+	Tue, 25 Mar 2008 18:03:56 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:42560 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757504AbYCYWDz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:02:37 -0400
-Message-ID: <47E97667.1080603@m3y3r.de>
-Date: Tue, 25 Mar 2008 23:02:15 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080310)
+	Tue, 25 Mar 2008 18:03:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=kVzFphMk44cL9u1lEY0K7bE5wGw41p2miWTSLu8DnTwRyUxrCaOpBfNCvbTuDeOOjX5hJckmhhaUJ1MdDD611iEPEP8U9E04qbcGQsMg5+0FEUGJLfyw94QV0Fu2fjFMfxU1aT21tsvRS3SckEqAKEG+VGSNzXq9asP/gCMEOpY=
+Message-ID: <998d0e4a0803251503v7bf20ad4ndb0e21b1eead7f9d@mail.gmail.com>
+Date: Tue, 25 Mar 2008 23:03:54 +0100
+From: "J.C. Pizarro" <jcpiza@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: What means Hugepage? 8KiB,16KiB,..,2MiB or 4MiB?
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
- regressions from 2.6.24)
-References: <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds schrieb:
-> On Tue, 25 Mar 2008, Thomas Meyer wrote:
->   
->> and compare lspci -vv from 2.6.25 and 2.6.24:
->>
->> 2.6.25:
->>
->>    Region 0: [virtual] Memory at 100000000 (32-bit, non-prefetchable) [size=4K]
->>
->> 2.6.24:
->>
->>    Region 0: Memory at 8c000000 (32-bit, non-prefetchable) [size=4K]
->>     
->
-> Ok, so it didn't use to be at the 4GB mark.
->
-> This seems to be a PCI and resource alloc issue. It would be really 
-> interesting to see where the 4GB allocation started. Ie ignore anything 
-> else (warnings, driver loadings etc), and _just_ look at lspci -vv output 
-> for where the memory got allocated.
->
-> Did you already bisect that and I just missed it?
->   
-I didn't bisect this.But  I recompiled with CONFIG_RESOURCES_64BIT 
-*unset* and everything is fine now, i.e. no error occurs anymore.
+What means Hugepage?
 
-lspci -vv output:
-0c:03.0 FireWire (IEEE 1394): Agere Systems FW323 (rev 61) (prog-if 10 
-[OHCI])
-        Subsystem: Agere Systems FW323
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
-ParErr- Stepping- SERR- FastB2B+ DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 248 (3000ns min, 6000ns max), Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 19
-        Region 0: Memory at 94406000 (32-bit, non-prefetchable) [size=4K]
-        Capabilities: [44] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-        Kernel driver in use: ohci1394
-        Kernel modules: firewire-ohci, ohci1394
+Does it mean 8KiB? 16KiB? 32KiB? 64KiB? 2MiB? 4MiB?
 
-This is on ingo's git tree (branch: x86-latest) (commit 
-0fef904c33841be92f5ebdbdb9339dd11a133c92 - x86: ioremap of 64-bit 
-resource on 32-bit kernel fix)
+The real page sizes of x86 and x86-64 are 4 KiB for this linux kernel.
 
-mfg
-thomas
+But the page sizes can be soft 8 KiB or 16 KiB or 32 KiB or 64 KiB
+if it is implemented in the memory manager of the kernel.
+
+But too they exist real page sizes of 2 MiB and 4 MiB that they have
+some reserved entries of TLB in the specs of Intel/AMD processors
+for these gigant pages.
