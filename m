@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYCYMkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYCYMlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbYCYMkw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 08:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYCYMko
+	id S1755890AbYCYMlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 08:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYCYMlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 08:40:44 -0400
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:20282 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752958AbYCYMko (ORCPT
+	Tue, 25 Mar 2008 08:41:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60608 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753165AbYCYMlO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 08:40:44 -0400
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       ak@suse.de
-Subject: Re: [PATCH 45/79] [PATCH] fix apic acking of irqs
-References: <12059475744092-git-send-email-gcosta@redhat.com>
-	<12059476971309-git-send-email-gcosta@redhat.com>
-	<1205947702588-git-send-email-gcosta@redhat.com>
-	<12059477063046-git-send-email-gcosta@redhat.com>
-	<12059477102394-git-send-email-gcosta@redhat.com>
-	<12059477143205-git-send-email-gcosta@redhat.com>
-	<1205947719906-git-send-email-gcosta@redhat.com>
-	<12059477234148-git-send-email-gcosta@redhat.com>
-	<12059477273855-git-send-email-gcosta@redhat.com>
-	<1205947732309-git-send-email-gcosta@redhat.com>
-	<12059477371787-git-send-email-gcosta@redhat.com>
-	<12059477421707-git-send-email-gcosta@redhat.com>
-	<12059477472416-git-send-email-gcosta@redhat.com>
-	<12059477521176-git-send! -email-gcosta@redhat.com>
-	<12059477561937-git-send-email-gcosta@redhat
-	<12059477792893-git-send-email-gcosta@redhat.com>
-	<alpine.SOC.1.00.0803201016540.12075@piorun>
-	<47E27D08.9050809@redhat.com>
-	<alpine.SOC.1.00.0803202125520.21415@piorun>
-	<47E7C00B.5000503@redhat.com>
-	<alpine.SOC.1.00.0803241608310.12757@piorun>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 25 Mar 2008 13:40:41 +0100
-In-Reply-To: <alpine.SOC.1.00.0803241608310.12757@piorun>
-Message-ID: <87k5jrgenq.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 25 Mar 2008 08:41:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
+Date: Tue, 25 Mar 2008 13:40:53 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <Pine.LNX.4.44L0.0803241519090.24400-100000@iolanthe.rowland.org> <200803242318.21052.rjw@sisk.pl> <200803251255.31482.oliver@neukum.org>
+In-Reply-To: <200803251255.31482.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Mar 2008 12:34:04.0368 (UTC) FILETIME=[82E86D00:01C88E74]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803251340.55210.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Maciej W. Rozycki" <macro@linux-mips.org> writes:
+On Tuesday, 25 of March 2008, Oliver Neukum wrote:
+> Am Montag 24 März 2008 schrieb Rafael J. Wysocki:
+> > -/*
+> > +/**
+> > + * struct pm_ops - device PM callbacks
+> > + *
+> >   * Several driver power state transitions are externally visible, affecting
+> >   * the state of pending I/O queues and (for drivers that touch hardware)
+> >   * interrupts, wakeups, DMA, and other hardware state.  There may also be
+> > @@ -122,6 +124,254 @@ typedef struct pm_message {
+> >   * to the rest of the driver stack (such as a driver that's ON gating off
+> >   * clocks which are not in active use).
+> >   *
+> > + * The externally visible transitions are handled with the help of the following
+> > + * callbacks included in this structure:
+> > + *
+> > + * @prepare: Prepare the device for the upcoming transition, but do NOT change
+> > + *     its hardware state.  Prevent new children of the device from being
+> > + *     registered and prevent new calls to the probe method from being made
 > 
->  Please note that ESR may hold some leftover state from whatever happened 
-> before Linux has taken control, so it is reasonable and I think actually 
-> recommended by Intel (FWIW) to clear the register before enabling the 
-> error interrupt.  For how to clear the ESR properly, please see 
-> setup_local_APIC() -- subtle differences and errata in various APIC 
-> implementations have made it more complicated than necessary, sigh...
+> How is a driver supposed to prevent calls to probe()? You can block in probe()
+> or you can fail it, but how do you prevent it from being called? User space
+> can trigger probe via sysfs.
 
-iirc a lot of the ESR weirdness was on NUMAQ only, which is down to one 
-of two last machines running Linux which will hopefully die soon ...
+I overlooked that.
 
--Andi
+> To be useful to driver writers, this has to be clarified.
 
+The comment is supposed to mean that probe() should be prevented from running
+(i.e. even if it's executed, it should either fail or block).  I'll write it this way.
+
+> > + *     after @prepare() returns.  If @prepare() detects a situation it cannot
+> > + *     handle (e.g. registration of a child already in progress), it may return
+> > + *     -EAGAIN, so that the PM core can execute it once again (e.g. after the
+> > + *     new child has been registered) to recover from the race condition. This
+> > + *     method is executed for all kinds of suspend transitions and is followed
+> > + *     by one of the suspend callbacks: @suspend(), @freeze(), or @poweroff().
+> 
+> This could be understood so that disconnect() cannot be called.
+
+At what time exactly?
+ 
+> > + *     The PM core executes @prepare() for all devices before starting to
+> > + *     execute suspend callbacks for any of them, so drivers may assume all of
+> > + *     the other devices to be present and functional while @prepare() is being
+> > + *     executed.  However, they may NOT assume anything about the availability
+> > + *     of the user space at that time.
+> 
+> Probably it should be mentioned that this is the time to allocate memory
+> if you have to.
+
+Well, not exactly.  Afterwards you cannot use GFP_KERNEL allocations, but
+GFP_NOIO should still work, although for hibernation it's quite possible that
+they'll fail if substantial amounts of memory are requested.
+
+> And it is too late to request firmware. 
+
+Yes.
+
+Thanks,
+Rafael
