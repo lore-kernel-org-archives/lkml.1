@@ -1,308 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbYCYWIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbYCYWIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759419AbYCYWIY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759102AbYCYWGz
+	id S1762259AbYCYWIi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbYCYWG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:06:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47867 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754747AbYCYWGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:06:56 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:57647 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755855AbYCYWGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 18:06:52 -0400
-Message-Id: <20080325220651.417537000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325220651.822567000@polaris-admin.engr.sgi.com>
 References: <20080325220650.835342000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 15:06:54 -0700
+Date: Tue, 25 Mar 2008 15:06:57 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
-Subject: [PATCH 04/10] acpi: change processors from array to per_cpu variable
-Content-Disposition: inline; filename=nr_cpus-in-acpi-driver-cpu_alloc
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 07/10] cpu: change cpu_sys_devices from array to per_cpu variable
+Content-Disposition: inline; filename=nr_cpus-in-cpu_c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change processors from an array sized by NR_CPUS to a per_cpu variable.
+Change cpu_sys_devices from array to per_cpu variable in
+drivers/base/cpu.c.
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-Cc: Len Brown <len.brown@intel.com>
+(MAINTAINER unknown)
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- drivers/acpi/processor_core.c       |   18 ++++++++----------
- drivers/acpi/processor_idle.c       |    8 ++++----
- drivers/acpi/processor_perflib.c    |   18 +++++++++---------
- drivers/acpi/processor_throttling.c |   14 +++++++-------
- include/acpi/processor.h            |    2 +-
- 5 files changed, 29 insertions(+), 31 deletions(-)
+ drivers/base/cpu.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- linux.trees.git.orig/drivers/acpi/processor_core.c
-+++ linux.trees.git/drivers/acpi/processor_core.c
-@@ -118,7 +118,7 @@ static const struct file_operations acpi
- 	.release = single_release,
+--- linux.trees.git.orig/drivers/base/cpu.c
++++ linux.trees.git/drivers/base/cpu.c
+@@ -18,7 +18,7 @@ struct sysdev_class cpu_sysdev_class = {
  };
+ EXPORT_SYMBOL(cpu_sysdev_class);
  
--struct acpi_processor *processors[NR_CPUS];
-+DEFINE_PER_CPU(struct acpi_processor *, processors);
- struct acpi_processor_errata errata __read_mostly;
+-static struct sys_device *cpu_sys_devices[NR_CPUS];
++static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
  
- /* --------------------------------------------------------------------------
-@@ -615,7 +615,7 @@ static int acpi_processor_get_info(struc
- 	return 0;
+ #ifdef CONFIG_HOTPLUG_CPU
+ static ssize_t show_online(struct sys_device *dev, char *buf)
+@@ -68,7 +68,7 @@ void unregister_cpu(struct cpu *cpu)
+ 	sysdev_remove_file(&cpu->sysdev, &attr_online);
+ 
+ 	sysdev_unregister(&cpu->sysdev);
+-	cpu_sys_devices[logical_cpu] = NULL;
++	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
+ 	return;
  }
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+@@ -122,7 +122,7 @@ int __cpuinit register_cpu(struct cpu *c
+ 	if (!error && cpu->hotpluggable)
+ 		register_cpu_control(cpu);
+ 	if (!error)
+-		cpu_sys_devices[num] = &cpu->sysdev;
++		per_cpu(cpu_sys_devices, num) = &cpu->sysdev;
+ 	if (!error)
+ 		register_cpu_under_node(num, cpu_to_node(num));
  
--static void *processor_device_array[NR_CPUS];
-+static DEFINE_PER_CPU(void *, processor_device_array);
+@@ -135,8 +135,8 @@ int __cpuinit register_cpu(struct cpu *c
  
- static int __cpuinit acpi_processor_start(struct acpi_device *device)
+ struct sys_device *get_cpu_sysdev(unsigned cpu)
  {
-@@ -639,15 +639,15 @@ static int __cpuinit acpi_processor_star
- 	 * ACPI id of processors can be reported wrongly by the BIOS.
- 	 * Don't trust it blindly
- 	 */
--	if (processor_device_array[pr->id] != NULL &&
--	    processor_device_array[pr->id] != device) {
-+	if (per_cpu(processor_device_array, pr->id) != NULL &&
-+	    per_cpu(processor_device_array, pr->id) != device) {
- 		printk(KERN_WARNING "BIOS reported wrong ACPI id "
- 			"for the processor\n");
- 		return -ENODEV;
- 	}
--	processor_device_array[pr->id] = device;
-+	per_cpu(processor_device_array, pr->id) = device;
- 
--	processors[pr->id] = pr;
-+	per_cpu(processors, pr->id) = pr;
- 
- 	result = acpi_processor_add_fs(device);
- 	if (result)
-@@ -751,7 +751,7 @@ static int acpi_cpu_soft_notify(struct n
- 		unsigned long action, void *hcpu)
- {
- 	unsigned int cpu = (unsigned long)hcpu;
--	struct acpi_processor *pr = processors[cpu];
-+	struct acpi_processor *pr = per_cpu(processors, cpu);
- 
- 	if (action == CPU_ONLINE && pr) {
- 		acpi_processor_ppc_has_changed(pr);
-@@ -821,7 +821,7 @@ static int acpi_processor_remove(struct 
- 		pr->cdev = NULL;
- 	}
- 
--	processors[pr->id] = NULL;
-+	per_cpu(processors, pr->id) = NULL;
- 
- 	kfree(pr);
- 
-@@ -1070,8 +1070,6 @@ static int __init acpi_processor_init(vo
- {
- 	int result = 0;
- 
--
--	memset(&processors, 0, sizeof(processors));
- 	memset(&errata, 0, sizeof(errata));
- 
- #ifdef CONFIG_SMP
---- linux.trees.git.orig/drivers/acpi/processor_idle.c
-+++ linux.trees.git/drivers/acpi/processor_idle.c
-@@ -401,7 +401,7 @@ static void acpi_processor_idle(void)
- 	 */
- 	local_irq_disable();
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 	if (!pr) {
- 		local_irq_enable();
- 		return;
-@@ -1425,7 +1425,7 @@ static int acpi_idle_enter_c1(struct cpu
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 
- 	if (unlikely(!pr))
- 		return 0;
-@@ -1465,7 +1465,7 @@ static int acpi_idle_enter_simple(struct
- 	u32 t1, t2;
- 	int sleep_ticks = 0;
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 
- 	if (unlikely(!pr))
- 		return 0;
-@@ -1544,7 +1544,7 @@ static int acpi_idle_enter_bm(struct cpu
- 	u32 t1, t2;
- 	int sleep_ticks = 0;
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 
- 	if (unlikely(!pr))
- 		return 0;
---- linux.trees.git.orig/drivers/acpi/processor_perflib.c
-+++ linux.trees.git/drivers/acpi/processor_perflib.c
-@@ -89,7 +89,7 @@ static int acpi_processor_ppc_notifier(s
- 	if (event != CPUFREQ_INCOMPATIBLE)
- 		goto out;
- 
--	pr = processors[policy->cpu];
-+	pr = per_cpu(processors, policy->cpu);
- 	if (!pr || !pr->performance)
- 		goto out;
- 
-@@ -577,7 +577,7 @@ int acpi_processor_preregister_performan
- 
- 	/* Call _PSD for all CPUs */
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr) {
- 			/* Look only at processors in ACPI namespace */
- 			continue;
-@@ -608,7 +608,7 @@ int acpi_processor_preregister_performan
- 	 * domain info.
- 	 */
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -629,7 +629,7 @@ int acpi_processor_preregister_performan
- 
- 	cpus_clear(covered_cpus);
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -656,7 +656,7 @@ int acpi_processor_preregister_performan
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -685,7 +685,7 @@ int acpi_processor_preregister_performan
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -702,7 +702,7 @@ int acpi_processor_preregister_performan
- 
- err_ret:
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr || !pr->performance)
- 			continue;
- 
-@@ -733,7 +733,7 @@ acpi_processor_register_performance(stru
- 
- 	mutex_lock(&performance_mutex);
- 
--	pr = processors[cpu];
-+	pr = per_cpu(processors, cpu);
- 	if (!pr) {
- 		mutex_unlock(&performance_mutex);
- 		return -ENODEV;
-@@ -771,7 +771,7 @@ acpi_processor_unregister_performance(st
- 
- 	mutex_lock(&performance_mutex);
- 
--	pr = processors[cpu];
-+	pr = per_cpu(processors, cpu);
- 	if (!pr) {
- 		mutex_unlock(&performance_mutex);
- 		return;
---- linux.trees.git.orig/drivers/acpi/processor_throttling.c
-+++ linux.trees.git/drivers/acpi/processor_throttling.c
-@@ -71,7 +71,7 @@ static int acpi_processor_update_tsd_coo
- 	 * coordination between all CPUs.
- 	 */
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -93,7 +93,7 @@ static int acpi_processor_update_tsd_coo
- 
- 	cpus_clear(covered_cpus);
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -119,7 +119,7 @@ static int acpi_processor_update_tsd_coo
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -152,7 +152,7 @@ static int acpi_processor_update_tsd_coo
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -172,7 +172,7 @@ static int acpi_processor_update_tsd_coo
- 
- err_ret:
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -214,7 +214,7 @@ static int acpi_processor_throttling_not
- 	struct acpi_processor_throttling *p_throttling;
- 
- 	cpu = p_tstate->cpu;
--	pr = processors[cpu];
-+	pr = per_cpu(processors, cpu);
- 	if (!pr) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Invalid pr pointer\n"));
- 		return 0;
-@@ -1035,7 +1035,7 @@ int acpi_processor_set_throttling(struct
- 		 * cpus.
- 		 */
- 		for_each_cpu_mask(i, online_throttling_cpus) {
--			match_pr = processors[i];
-+			match_pr = per_cpu(processors, i);
- 			/*
- 			 * If the pointer is invalid, we will report the
- 			 * error message and continue.
---- linux.trees.git.orig/include/acpi/processor.h
-+++ linux.trees.git/include/acpi/processor.h
-@@ -255,7 +255,7 @@ extern void acpi_processor_unregister_pe
- int acpi_processor_notify_smm(struct module *calling_module);
- 
- /* for communication between multiple parts of the processor kernel module */
--extern struct acpi_processor *processors[NR_CPUS];
-+DECLARE_PER_CPU(struct acpi_processor *, processors);
- extern struct acpi_processor_errata errata;
- 
- void arch_acpi_processor_init_pdc(struct acpi_processor *pr);
+-	if (cpu < NR_CPUS)
+-		return cpu_sys_devices[cpu];
++	if (cpu < nr_cpu_ids && cpu_possible(cpu))
++		return per_cpu(cpu_sys_devices, cpu);
+ 	else
+ 		return NULL;
+ }
 
 -- 
