@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYCYRtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbYCYRua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbYCYRtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 13:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbYCYRtk
+	id S1758501AbYCYRua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 13:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbYCYRuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 13:49:40 -0400
-Received: from usea-naimss1.unisys.com ([192.61.61.103]:2161 "EHLO
-	usea-naimss1.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757991AbYCYRtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 13:49:39 -0400
-X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Mar 2008 13:49:39 EDT
-Subject: [PATCH] list_add corruption in slab.c
-From: Daniel Yeisley <dan.yeisley@unisys.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Mar 2008 12:57:38 -0400
-Message-Id: <1206464258.13473.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 (2.22.0-2.fc9) 
-X-OriginalArrivalTime: 25 Mar 2008 17:16:08.0164 (UTC) FILETIME=[EA46C240:01C88E9B]
+	Tue, 25 Mar 2008 13:50:13 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:34010 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755195AbYCYRuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 13:50:11 -0400
+Date: Tue, 25 Mar 2008 10:48:19 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Miller <davem@davemloft.net>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: larger default page sizes...
+In-Reply-To: <20080324.144356.104645106.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0803241121090.3002@schroedinger.engr.sgi.com>
+ <20080324.133722.38645342.davem@davemloft.net>
+ <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>
+ <20080324.144356.104645106.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been seeing list_add corruption in slab.c on the ES7000 since the
-2.6.24.1 kernel.  There are several places where the initkmem_list3
-array is access by [somevalue + node].  This also needs to be done in
-kmem_cache_init().  
+On Mon, 24 Mar 2008, David Miller wrote:
 
-Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
+> We should fix the underlying problems.
+> 
+> I'm hitting issues on 128 cpu Niagara2 boxes, and it's all fundamental
+> stuff like contention on the per-zone page allocator locks.
+> 
+> Which is very fixable, without going to larger pages.
 
----
-diff -Naur linux-2.6.25-rc5/mm/slab.c linux-2.6.25-rc5-new/mm/slab.c
---- linux-2.6.25-rc5/mm/slab.c	2008-03-10 01:22:27.000000000 -0400
-+++ linux-2.6.25-rc5-new/mm/slab.c	2008-03-20 13:59:24.000000000 -0400
-@@ -1481,7 +1481,7 @@
- 	list_add(&cache_cache.next, &cache_chain);
- 	cache_cache.colour_off = cache_line_size();
- 	cache_cache.array[smp_processor_id()] = &initarray_cache.cache;
--	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE];
-+	cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE + node];
+No its not fixable. You are doing linear optimizations to a slowdown that 
+grows exponentially. Going just one order up for page size reduces the
+necessary locks and handling of the kernel by 50%.
  
- 	/*
- 	 * struct kmem_cache size depends on nr_node_ids, which
+> > powerpc also runs HPC codes. They certainly see the same results
+> > that we see.
+> 
+> There are ways to get large pages into the process address space for
+> compute bound tasks, without suffering the well known negative side
+> effects of using larger pages for everything.
 
+These hacks have limitations. F.e. they do not deal with I/O and 
+require application changes.
+ 
