@@ -1,278 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbYCYQaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbYCYQa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758286AbYCYQaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 12:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYCYQ3w
+	id S1758639AbYCYQa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbYCYQ3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 12:29:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35819 "EHLO mx1.redhat.com"
+	Tue, 25 Mar 2008 12:29:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35820 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756243AbYCYQ3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756306AbYCYQ3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 12:29:51 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, yhlu.kernel@gmail.com
-Subject: [PATCH 2/2] [PATCH] move apic declarations to mach_apic.h
-Date: Tue, 25 Mar 2008 13:28:57 -0300
-Message-Id: <1206462537-8427-3-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 0/2] get rid of mach_apic.h
+Date: Tue, 25 Mar 2008 13:28:55 -0300
+Message-Id: <1206462537-8427-1-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.2.2532.gdeda
-In-Reply-To: <1206462537-8427-2-git-send-email-gcosta@redhat.com>
+In-Reply-To: <20080325150630.GA13828@elte.hu>
 References: <20080325150630.GA13828@elte.hu>
- <1206462537-8427-1-git-send-email-gcosta@redhat.com>
- <1206462537-8427-2-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-take them out of the x86_64-specific asm/mach_apic.h
+yeah, the last patch sent was totally brown paper bag. I sent a previous
+version from the wrong machine, sorry.
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/apic_64.c                |    2 +-
- arch/x86/kernel/cpu/amd.c                |    2 +-
- arch/x86/kernel/io_apic_64.c             |    2 +-
- arch/x86/kernel/setup_64.c               |    2 +-
- include/asm-x86/mach-default/mach_apic.h |   80 ++++++++++++++++--------------
- include/asm-x86/mach_apic.h              |   26 ----------
- 6 files changed, 47 insertions(+), 67 deletions(-)
- delete mode 100644 include/asm-x86/mach_apic.h
+ingo, the new testing also unveiled a new catch, so I'm resending _both_ patches.
+please ignore both of them from the last run, and apply these instead
 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 206278f..7dd6250 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -34,7 +34,6 @@
- #include <asm/mpspec.h>
- #include <asm/hpet.h>
- #include <asm/pgalloc.h>
--#include <asm/mach_apic.h>
- #include <asm/nmi.h>
- #include <asm/idle.h>
- #include <asm/proto.h>
-@@ -42,6 +41,7 @@
- #include <asm/apic.h>
- 
- #include <mach_ipi.h>
-+#include <mach_apic.h>
- 
- int disable_apic_timer __cpuinitdata;
- static int apic_calibrate_pmtmr __initdata;
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 33d38f8..0173065 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -4,8 +4,8 @@
- #include <asm/io.h>
- #include <asm/processor.h>
- #include <asm/apic.h>
--#include <asm/mach_apic.h>
- 
-+#include <mach_apic.h>
- #include "cpu.h"
- 
- /*
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index 7d5cdf3..6dd3362 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -43,7 +43,6 @@
- #include <asm/smp.h>
- #include <asm/desc.h>
- #include <asm/proto.h>
--#include <asm/mach_apic.h>
- #include <asm/acpi.h>
- #include <asm/dma.h>
- #include <asm/nmi.h>
-@@ -51,6 +50,7 @@
- #include <asm/hypertransport.h>
- 
- #include <mach_ipi.h>
-+#include <mach_apic.h>
- 
- struct irq_cfg {
- 	cpumask_t domain;
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 3f1dc97..08f9591 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -60,7 +60,6 @@
- #include <asm/mmu_context.h>
- #include <asm/proto.h>
- #include <asm/setup.h>
--#include <asm/mach_apic.h>
- #include <asm/numa.h>
- #include <asm/sections.h>
- #include <asm/dmi.h>
-@@ -69,6 +68,7 @@
- #include <asm/ds.h>
- #include <asm/topology.h>
- 
-+#include <mach_apic.h>
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
- #else
-diff --git a/include/asm-x86/mach-default/mach_apic.h b/include/asm-x86/mach-default/mach_apic.h
-index 13900e8..3f49a3a 100644
---- a/include/asm-x86/mach-default/mach_apic.h
-+++ b/include/asm-x86/mach-default/mach_apic.h
-@@ -14,24 +14,25 @@ static inline cpumask_t target_cpus(void)
- 	return cpumask_of_cpu(0);
- #endif
- } 
--#define TARGET_CPUS (target_cpus())
- 
- #define NO_BALANCE_IRQ (0)
- #define esr_disable (0)
- 
-+#ifdef CONFIG_X86_64
-+#include <asm/genapic.h>
-+#define INT_DELIVERY_MODE (genapic->int_delivery_mode)
-+#define INT_DEST_MODE (genapic->int_dest_mode)
-+#define TARGET_CPUS	  (genapic->target_cpus())
-+#define apic_id_registered (genapic->apic_id_registered)
-+#define init_apic_ldr (genapic->init_apic_ldr)
-+#define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
-+#define phys_pkg_id	(genapic->phys_pkg_id)
-+#define vector_allocation_domain    (genapic->vector_allocation_domain)
-+extern void setup_apic_routing(void);
-+#else
- #define INT_DELIVERY_MODE dest_LowestPrio
- #define INT_DEST_MODE 1     /* logical delivery broadcast to all procs */
--
--static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
--{
--	return physid_isset(apicid, bitmap);
--}
--
--static inline unsigned long check_apicid_present(int bit)
--{
--	return physid_isset(bit, phys_cpu_present_map);
--}
--
-+#define TARGET_CPUS (target_cpus())
- /*
-  * Set up the logical destination ID.
-  *
-@@ -49,32 +50,52 @@ static inline void init_apic_ldr(void)
- 	apic_write_around(APIC_LDR, val);
- }
- 
--static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
-+static inline int apic_id_registered(void)
- {
--	return phys_map;
-+	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
-+}
-+
-+static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
-+{
-+	return cpus_addr(cpumask)[0];
-+}
-+
-+static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
-+{
-+	return cpuid_apic >> index_msb;
- }
- 
--#ifdef CONFIG_X86_64
--extern void setup_apic_routing(void);
--#else
- static inline void setup_apic_routing(void)
- {
- 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
- 					"Flat", nr_ioapics);
- }
--#endif
- 
--static inline int multi_timer_check(int apic, int irq)
-+static inline int apicid_to_node(int logical_apicid)
- {
- 	return 0;
- }
-+#endif
- 
--#ifdef CONFIG_X86_32
--static inline int apicid_to_node(int logical_apicid)
-+static inline unsigned long check_apicid_used(physid_mask_t bitmap, int apicid)
-+{
-+	return physid_isset(apicid, bitmap);
-+}
-+
-+static inline unsigned long check_apicid_present(int bit)
-+{
-+	return physid_isset(bit, phys_cpu_present_map);
-+}
-+
-+static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
-+{
-+	return phys_map;
-+}
-+
-+static inline int multi_timer_check(int apic, int irq)
- {
- 	return 0;
- }
--#endif
- 
- /* Mapping from cpu number to logical apicid */
- static inline int cpu_to_logical_apicid(int cpu)
-@@ -109,23 +130,8 @@ static inline int check_phys_apicid_present(int boot_cpu_physical_apicid)
- 	return physid_isset(boot_cpu_physical_apicid, phys_cpu_present_map);
- }
- 
--static inline int apic_id_registered(void)
--{
--	return physid_isset(GET_APIC_ID(apic_read(APIC_ID)), phys_cpu_present_map);
--}
--
--static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
--{
--	return cpus_addr(cpumask)[0];
--}
--
- static inline void enable_apic_mode(void)
- {
- }
- 
--static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
--{
--	return cpuid_apic >> index_msb;
--}
--
- #endif /* __ASM_MACH_APIC_H */
-diff --git a/include/asm-x86/mach_apic.h b/include/asm-x86/mach_apic.h
-deleted file mode 100644
-index 1bc68c0..0000000
---- a/include/asm-x86/mach_apic.h
-+++ /dev/null
-@@ -1,26 +0,0 @@
--#ifndef __ASM_MACH_APIC_H
--#define __ASM_MACH_APIC_H
--
--/*
-- * Copyright 2004 James Cleverdon, IBM.
-- * Subject to the GNU Public License, v.2
-- *
-- * Generic APIC sub-arch defines.
-- *
-- * Hacked for x86-64 by James Cleverdon from i386 architecture code by
-- * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
-- * James Cleverdon.
-- */
--
--#include <asm/genapic.h>
--
--#define INT_DELIVERY_MODE (genapic->int_delivery_mode)
--#define INT_DEST_MODE (genapic->int_dest_mode)
--#define TARGET_CPUS	  (genapic->target_cpus())
--#define vector_allocation_domain	(genapic->vector_allocation_domain)
--#define apic_id_registered (genapic->apic_id_registered)
--#define init_apic_ldr (genapic->init_apic_ldr)
--#define cpu_mask_to_apicid (genapic->cpu_mask_to_apicid)
--#define phys_pkg_id	(genapic->phys_pkg_id)
--
--#endif /* __ASM_MACH_APIC_H */
--- 
-1.5.0.6
 
