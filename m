@@ -1,98 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYCYMlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYCYMnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbYCYMlZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 08:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYCYMlP
+	id S1755039AbYCYMnB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 08:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYCYMmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 08:41:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60608 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165AbYCYMlO convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 08:42:53 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:46972 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbYCYMmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 08:41:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation callbacks (rev. 3)
-Date: Tue, 25 Mar 2008 13:40:53 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <Pine.LNX.4.44L0.0803241519090.24400-100000@iolanthe.rowland.org> <200803242318.21052.rjw@sisk.pl> <200803251255.31482.oliver@neukum.org>
-In-Reply-To: <200803251255.31482.oliver@neukum.org>
+	Tue, 25 Mar 2008 08:42:52 -0400
+Date: Tue, 25 Mar 2008 08:42:48 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] RWSEM: Rewrite rwsem.c and rwsem-spinlock.c more
+ simply.
+In-Reply-To: <20080325123633.GL2170@one.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0803250834220.19530@localhost.localdomain>
+References: <alpine.LFD.1.00.0803250659530.18358@localhost.localdomain> <87skyfgg4y.fsf@basil.nowhere.org> <alpine.LFD.1.00.0803250813190.19386@localhost.localdomain> <20080325123633.GL2170@one.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803251340.55210.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> Am Montag 24 März 2008 schrieb Rafael J. Wysocki:
-> > -/*
-> > +/**
-> > + * struct pm_ops - device PM callbacks
-> > + *
-> >   * Several driver power state transitions are externally visible, affecting
-> >   * the state of pending I/O queues and (for drivers that touch hardware)
-> >   * interrupts, wakeups, DMA, and other hardware state.  There may also be
-> > @@ -122,6 +124,254 @@ typedef struct pm_message {
-> >   * to the rest of the driver stack (such as a driver that's ON gating off
-> >   * clocks which are not in active use).
-> >   *
-> > + * The externally visible transitions are handled with the help of the following
-> > + * callbacks included in this structure:
-> > + *
-> > + * @prepare: Prepare the device for the upcoming transition, but do NOT change
-> > + *     its hardware state.  Prevent new children of the device from being
-> > + *     registered and prevent new calls to the probe method from being made
-> 
-> How is a driver supposed to prevent calls to probe()? You can block in probe()
-> or you can fail it, but how do you prevent it from being called? User space
-> can trigger probe via sysfs.
+On Tue, 25 Mar 2008, Andi Kleen wrote:
 
-I overlooked that.
+> > i'm not sure what this means -- which of the transformations in
+> > that patch is considered unsafe?  here's a typical simplification:
+>
+> It is not unsafe, just generates slight worse code.
+>
+> current is inline assembler and the compiler doesn't know that it
+> could cache it in a register because it is not marked pure for
+> various reasons. That is why current is often cached explicitely in
+> a local variable to tell the compiler that.
 
-> To be useful to driver writers, this has to be clarified.
+  ah, i think i see, thanks.  learn something every day.
 
-The comment is supposed to mean that probe() should be prevented from running
-(i.e. even if it's executed, it should either fail or block).  I'll write it this way.
+> Before you run off and do that everywhere: it is also not a large
+> win, just a small one unless current is used very often.
 
-> > + *     after @prepare() returns.  If @prepare() detects a situation it cannot
-> > + *     handle (e.g. registration of a child already in progress), it may return
-> > + *     -EAGAIN, so that the PM core can execute it once again (e.g. after the
-> > + *     new child has been registered) to recover from the race condition. This
-> > + *     method is executed for all kinds of suspend transitions and is followed
-> > + *     by one of the suspend callbacks: @suspend(), @freeze(), or @poweroff().
-> 
-> This could be understood so that disconnect() cannot be called.
+  there's actually not that many explicit calls to either
+set_task_state or __set_task_state in the entire tree, and a lot of
+those don't count as they really are setting the state for a different
+task or for some other reason.  in fact, here's the entire list for
+the whole tree:
 
-At what time exactly?
- 
-> > + *     The PM core executes @prepare() for all devices before starting to
-> > + *     execute suspend callbacks for any of them, so drivers may assume all of
-> > + *     the other devices to be present and functional while @prepare() is being
-> > + *     executed.  However, they may NOT assume anything about the availability
-> > + *     of the user space at that time.
-> 
-> Probably it should be mentioned that this is the time to allocate memory
-> if you have to.
+$ grep -r set_task_state *
+arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/powerpc/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
+arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/powerpc/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
+arch/alpha/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/alpha/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/parisc/kernel/semaphore.c:		set_task_state(current, TASK_UNINTERRUPTIBLE);
+arch/parisc/kernel/semaphore.c:		set_task_state(current, TASK_INTERRUPTIBLE);
+arch/mn10300/kernel/semaphore.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/mn10300/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/mn10300/kernel/semaphore.c:	set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/mn10300/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/s390/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
+arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/s390/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
+arch/s390/mm/fault.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/s390/mm/fault.c:			set_task_state(tsk, TASK_RUNNING);
+arch/frv/kernel/semaphore.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/frv/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/frv/kernel/semaphore.c:	set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/frv/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/mips/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
+arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/mips/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
+arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
+Documentation/scheduler/sched-coding.txt:set_task_state(tsk, state_value)
+drivers/mmc/core/sdio_irq.c:		set_task_state(current, TASK_INTERRUPTIBLE);
+drivers/mmc/core/sdio_irq.c:		set_task_state(current, TASK_RUNNING);
+drivers/mfd/ucb1x00-ts.c:			set_task_state(tsk, TASK_INTERRUPTIBLE);
+drivers/mfd/ucb1x00-ts.c:			set_task_state(tsk, TASK_INTERRUPTIBLE);
+fs/aio.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+fs/aio.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+fs/aio.c:	__set_task_state(tsk, TASK_RUNNING);
+fs/aio.c:			set_task_state(tsk, TASK_INTERRUPTIBLE);
+fs/aio.c:		set_task_state(tsk, TASK_RUNNING);
+include/linux/sched.h:/* Convenience macros for the sake of set_task_state */
+include/linux/sched.h:#define __set_task_state(tsk, state_value)		\
+include/linux/sched.h:#define set_task_state(tsk, state_value)		\
+kernel/ptrace.c:			__set_task_state(child, TASK_STOPPED);
+kernel/fork.c:			__set_task_state(p, TASK_STOPPED);
+kernel/mutex.c:		__set_task_state(task, state);
+lib/rwsem-spinlock.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+lib/rwsem-spinlock.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+lib/rwsem-spinlock.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+lib/rwsem-spinlock.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+lib/rwsem.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+lib/rwsem.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
 
-Well, not exactly.  Afterwards you cannot use GFP_KERNEL allocations, but
-GFP_NOIO should still work, although for hibernation it's quite possible that
-they'll fail if substantial amounts of memory are requested.
+  once you ignore the semaphore stuff (and a bit of the rest, like the
+stuff in sched.h), there's not really that much left that could be
+rewritten with set_current_state() anyway.
 
-> And it is too late to request firmware. 
+rday
+--
 
-Yes.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-Thanks,
-Rafael
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
