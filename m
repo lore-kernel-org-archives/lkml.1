@@ -1,78 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbYCYWie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbYCYWm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbYCYWie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYCYWi0
+	id S1756538AbYCYWm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbYCYWmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:38:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52753 "EHLO mx1.redhat.com"
+	Tue, 25 Mar 2008 18:42:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52918 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbYCYWiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:38:25 -0400
+	id S1752786AbYCYWmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:42:19 -0400
+Message-ID: <47E97F25.9050507@redhat.com>
+Date: Tue, 25 Mar 2008 19:39:33 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, andi-suse@firstfloor.org
+Subject: Re: [PATCH 45/79] [PATCH] fix apic acking of irqs
+References: <12059475744092-git-send-email-gcosta@redhat.com> <12059477063046-git-send-email-gcosta@redhat.com> <12059477102394-git-send-email-gcosta@redhat.com> <12059477143205-git-send-email-gcosta@redhat.com> <1205947719906-git-send-email-gcosta@redhat.com> <12059477234148-git-send-email-gcosta@redhat.com> <12059477273855-git-send-email-gcosta@redhat.com> <1205947732309-git-send-email-gcosta@redhat.com> <12059477371787-git-send-email-gcosta@redhat.com> <12059477421707-git-send-email-gcosta@redhat.com> <12059477472416-git-send-email-gcosta@redhat.com> <12059477521176-git-send! -email-gcosta@redhat.com> <12059477561937-git-send-email-gcosta@redhat <12059477792893-git-send-email-gcosta@redhat.com> <alpine.SOC.1.00.0803201016540.12075@piorun> <47E27D08.9050809@redhat.com> <alpine.SOC.1.00.0803202125520.21415@piorun> <47E7C00B.5000503@redhat.com> <alpine.SOC.1.00.0803241608310.12757@piorun> <47E90149.5040506@redhat.com> <alpine.SOC.1.00.0803251524230.27947@piorun>
+In-Reply-To: <alpine.SOC.1.00.0803251524230.27947@piorun>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Petr Tesarik <ptesarik@suse.cz>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] Discard notification signals when a tracer exits
-In-Reply-To: Petr Tesarik's message of  Tuesday, 25 March 2008 15:31:53 +0100 <1206455513.17227.4.camel@elijah.suse.cz>
-References: <1206455513.17227.4.camel@elijah.suse.cz>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080325223819.2E38026FA0A@magilla.localdomain>
-Date: Tue, 25 Mar 2008 15:38:19 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think that's wrong.  When the tracer dies unceremoniously, the tracee
-should continue as if it had not been traced.  Your change makes it swallow
-a normal signal waiting to be delivered, and then resume as if noone had
-ever sent a signal.  
+Maciej W. Rozycki wrote:
+> On Tue, 25 Mar 2008, Glauber Costa wrote:
+> 
+>> the only ESR mention I see in setup_local_APIC() is this:
+>>
+>>          /* Pound the ESR really hard over the head with a big hammer - mbligh
+>> */
+>>         if (esr_disable) {
+>>                 apic_write(APIC_ESR, 0);
+>>                 apic_write(APIC_ESR, 0);
+>>                 apic_write(APIC_ESR, 0);
+>>                 apic_write(APIC_ESR, 0);
+>>         }
+>> which seems more like a disablement.
+> 
+>  There is more later on...
+> 
+>> the bootup code does clean it, tough, by writing and reading the ESR.
+> 
+> ... basically for the original Pentium and Pentium/MMX APIC you only had 
+> to read the ESR to get at the bits.  The read would clear them as well as 
+> a side-effect.  Although at that stage already it was mentioned in the 
+> spec that for future compatibility a write of zero beforehand (ignored as 
+> the register was r/o) should be performed.  Which indeed became a 
+> requirement from PentiumPro onwards as with these processors it was the 
+> write that copied the internal error latches into the visible ESR 
+> register.  Except that some Pentium APICs had an erratum, where ESR was 
+> indeed r/w and the leading write of zero would actually clear the register 
+> losing the recorded state, so it had to be avoided despite the 
+> recommendation.  Hence the code you can see within:
+> 
+> if (integrated && !esr_disable) {
+> }
+> 
+> I suppose other APIC implementers were not that keen on keeping bug 
+> compatibility, so chances are other APIC core work just fine as specified 
+> by the architecture (for whatever the meaning of "fine" is).
+> 
+>  Note the usual APIC error interrupt handler is smp_error_interrupt().
+> 
+>>>  I have asked this question already: what kind of CPU are you running on?
+>>> Do you really need to have CONFIG_X86_GOOD_APIC clear with it?
+>>>
+>> My testings that triggered that were with qemu, with randconfigs. Probably it
+>> has a good apic, but it is good that it triggered anyway. Otherwise I'd never
+>> see it.
+> 
+>  Ah, I see -- it may be worth checking what actual hardware does and 
+> fixing QEMU if necessary for it to match reality then. ;-)
+> 
+>  OTOH, if actual modern hardware triggered such an error, then for the 
+> sake of a generic "runs everywhere" kernel either ack_APIC_irq() or even 
+> apic_write_around() could be modified to perform a run-time check if 
+> configured with !CONFIG_X86_GOOD_APIC and avoid the read if unnecessary; 
+> it's an erratum workaround after all and SMP Pentium systems suffering 
+> from this bug (UP Pentium systems did not nor had a way to enable the 
+> local APIC normally) are probably an insignificant minority if any at all 
+> left these days.  Therefore it should be a negligible sacrifice of 
+> performance.
+I just tested in some real i386 that I have around here, and the reading
+of EOI does not seem to be illegal. (Well, at least in those I've tested).
 
-There is indeed a longstanding problem for tracing-induced signals
-(e.g. SIGTRAP for single-step or exec).  One can be queued but not yet
-delivered while the tracer detaches or dies, and then it gets delivered
-to the unsuspecting process without any debugger to intercept it.
-I plan to address that eventually, but there is no quick fix for it.
+OTOH, ignoring the read in qemu makes the tree boot just okay. So I 
+agree with you now, we might well fix qemu, and revert this patch.
 
-In the non-signal (ptrace_notify) cases, we don't have the queuing issue.
-But it's still not as simple as checking current->ptrace to decide whether
-to follow current->exit_code or clear it.  When PTRACE_DETACH is called
-with a parting signal (nonzero data argument), the tracee will wake up to
-see current->ptrace = 0 and current->exit_code = signo and it is explicitly
-intended to act on signo rather than ignore it.
-
-The particular case you mentioned could be addressed by something like this:
-
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1654,6 +1654,9 @@ static void ptrace_stop(int exit_code, i
- 	spin_lock_irq(&current->sighand->siglock);
- 	current->last_siginfo = NULL;
- 
-+	if (current->exit_code & ~0x7f)
-+		current->exit_code = 0;
-+
- 	/*
- 	 * Queued signals ignored us while we were stopped for tracing.
- 	 * So check for any that we should take before resuming user mode.
-
-But that only catches the PTRACE_O_TRACESYSGOOD cases, and not bare SIGTRAP.
-To be clean, there is no way to distinguish a left-over SIGTRAP that ought
-to be ignored from an intentional SIGTRAP placed there by the debugger for
-the tracee to deliver.  (Granted passing SIGTRAP through after a syscall is
-rarely or never done.  But that doesn't make a special-case kludge right.)
-
-I do very much appreciate the concerns that motivated your change, and share
-them.  But you can see that this is a small part of a large can of worms.
-It has been this way for a long time.  I am working steadily towards new
-ways to clean up the entire picture.  In the meantime, I don't really favor
-any marginal changes like this that complicate the behavior with more
-special cases that address only a tiny corner of the whole set of problems.
+Ingo, any word on that?
 
 
-Thanks,
-Roland
+
+>   Maciej
+
