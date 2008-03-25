@@ -1,46 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYCYP7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYCYQAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbYCYP7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 11:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYCYP7Y
+	id S1757750AbYCYQAW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 12:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbYCYQAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 11:59:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52285 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Mar 2008 12:00:03 -0400
+Received: from mx06.stofanet.dk ([212.10.10.26]:37997 "EHLO mx06.stofanet.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755567AbYCYP7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 11:59:24 -0400
-Date: Tue, 25 Mar 2008 16:59:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: gorcunov@gmail.com
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] x86 - relocate_kernel cleanup
-Message-ID: <20080325155906.GE27174@elte.hu>
-References: <20080322210005.117475478@gmail.com>
+	id S1757057AbYCYQAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 12:00:00 -0400
+Message-ID: <47E9217F.5080907@yahoo.co.uk>
+Date: Tue, 25 Mar 2008 16:59:59 +0100
+From: "Martin B. Andersen" <datscharf@yahoo.co.uk>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080322210005.117475478@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0236]
+To: linux-kernel@vger.kernel.org
+Subject: Re: MMC/SD: data CRC errors and unknown SCR version on 2.6.14
+References: <47E792D4.7000704@yahoo.co.uk>
+In-Reply-To: <47E792D4.7000704@yahoo.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Found the solution. It was a problem on my ARM platform at91rm9200 which 
+didn't have internal pullup's enabled on the CMD and DAT0..DAT3.
+I found it by comparing the patch for AT91 kernel 2.6.19 on 
+http://maxim.org.za/at91_26.html with the driver I had backported.
 
-* gorcunov@gmail.com <gorcunov@gmail.com> wrote:
+regards
+Martin
 
-> The main purpose of this patches is to eliminate numeric constant and 
-> use predefined macroses. Please review. I've tested 64bit version on 
-> object level - it remains the same. Any comments are welcome.
-
-thanks Cyrill, i've applied all four patches of yours.
-
-	Ingo
