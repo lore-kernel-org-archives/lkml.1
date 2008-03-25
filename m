@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbYCYWAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbYCYWB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760926AbYCYWAe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYCYWA0
+	id S1760960AbYCYWB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYCYWBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:00:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40915 "EHLO mx1.redhat.com"
+	Tue, 25 Mar 2008 18:01:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40962 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbYCYWAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:00:25 -0400
-Message-ID: <47E975F8.3000702@redhat.com>
-Date: Tue, 25 Mar 2008 18:00:24 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1754255AbYCYWBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:01:48 -0400
 MIME-Version: 1.0
-To: Emmanuel Florac <eflorac@intellique.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RAID-1 performance under 2.4 and 2.6
-References: <20080325194306.4ac71ff2@galadriel.home>
-In-Reply-To: <20080325194306.4ac71ff2@galadriel.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       ebiederm@xmission.com, xemul@openvz.org, pavel@ucw.cz,
+       sds@tycho.nsa.gov, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: it is fun to strace /sbin/init
+In-Reply-To: Andi Kleen's message of  , 25 March 2008 11:00:39 +0100 <87r6dzi0mw.fsf@basil.nowhere.org>
+References: <20080323135110.GA294@tv-sign.ru>
+	<20080324152906.dee7b272.akpm@linux-foundation.org>
+	<20080324225611.GA157@tv-sign.ru>
+	<20080324160819.cea2d921.akpm@linux-foundation.org>
+	<87r6dzi0mw.fsf@basil.nowhere.org>
+X-Windows: the problem for your problem.
+Message-Id: <20080325220042.87CFD26FA0A@magilla.localdomain>
+Date: Tue, 25 Mar 2008 15:00:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emmanuel Florac wrote:
-> I post there because I couldn't find any information about this
-> elsewhere : on the same hardware ( Athlon X2 3500+, 512MB RAM, 2x400 GB
-> Hitachi SATA2 hard drives ) the 2.4 Linux software RAID-1 (tested 2.4.32
-> and 2.4.36.2, slightly patched to recognize the hardware :p) is way
-> faster than 2.6 ( tested 2.6.17.13, 2.6.18.8, 2.6.22.16, 2.6.24.3)
-> especially for writes. I actually made the test on several different
-> machines (same hard drives though) and it remained consistent across
-> the board, with /mountpoint a software RAID-1.
-> Actually checking disk activity with iostat or vmstat shows clearly a
-> cache effect much more pronounced on 2.4 (i.e. writing goes on much
-> longer in the background) but it doesn't really account for the
-> difference. I've also tested it thru NFS from another machine (Giga
-> ethernet network):
-> 
-> dd if=/dev/zero of=/mountpoint/testfile bs=1M count=1024
-> 
-> kernel        2.4       2.6        2.4 thru NFS   2.6 thru NFS
-> 
-> write        90 MB/s    65 MB/s      70 MB/s       45 MB/s
-> read         90 MB/s    80 MB/s      75 MB/s       65 MB/s
-> 
-> Duh. That's terrible. Does it mean I should stick to  (heavily
-> patched...) 2.4 for my file servers or... ? :)
-> 
+> It would be fine to allow this unconditionally if there was some mechanism
+> to make sure someone else takes over reaping childs while init is ptraced.
 
-It means you shouldn't use dd as a benchmark.
+I don't see why this particular issue is any special case.  The zombie leak
+is just one of many ways that the system might become unusable if root does
+the wrong thing to an essential system daemon.  Caveat superusor.  Diddling
+with init on a system you expect ever to do anything again is dangerous and
+requires great care.  The question of allowing an administrator to engage
+in dangerous activities is orthogonal to the details of a particular danger.
 
--- Chris
+With today's kernel, init can avoid any reparented zombies collecting if it
+doesn't care about its own children either.  That is, it can ignore SIGCHLD
+or set SA_NOCLDWAIT to make all its children clean themselves up.  That
+doesn't help for a normal init, which does care (for respawn and logging).
+(Also it's never been tried, and I'm almost sure it has a bug.  But that's
+supposed to be the semantics.)
+
+That said, the orthogonal question of orphan zombies may well be worth
+addressing too.  Just let's not conflate it with the ptrace question.
+(AFAIK there is no good reason not to make orphans just self-reap, it's
+just hysterical raisins inherited from the dawn of Unix.  I'm sure that
+Oleg and I can work out the cleanups, but in a separate thread please.)
+
+
+Thanks,
+Roland
