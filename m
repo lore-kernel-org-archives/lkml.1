@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbYCYTf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759847AbYCYThT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759166AbYCYTf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 15:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbYCYTft
+	id S1759847AbYCYThT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 15:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbYCYThI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 15:35:49 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:43715 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754060AbYCYTfs (ORCPT
+	Tue, 25 Mar 2008 15:37:08 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53113 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755361AbYCYThG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 15:35:48 -0400
-Date: Tue, 25 Mar 2008 12:34:54 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Mark Lord <lkml@rtr.ca>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jens Axboe <axboe@kernel.dk>, Jeff Garzik <jgarzik@pobox.com>,
-       Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
-Message-Id: <20080325123454.4eba7644.randy.dunlap@oracle.com>
-In-Reply-To: <20080325192515.GA24234@suse.de>
-References: <47E875AD.1000901@rtr.ca>
-	<47E87942.2020409@rtr.ca>
-	<47E88A13.70808@zytor.com>
-	<47E90019.3050006@rtr.ca>
-	<47E90458.7030801@zytor.com>
-	<47E9383F.3050908@rtr.ca>
-	<20080325192515.GA24234@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 25 Mar 2008 15:37:06 -0400
+Date: Tue, 25 Mar 2008 19:30:05 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, paulus@samba.org,
+       ralf@linux-mips.org, davem@davemloft.net, lethal@linux-sh.org,
+       jdike@addtoit.com
+Subject: Re: tick-common.c hack for s390 needed
+Message-ID: <20080325193004.GA11412@flint.arm.linux.org.uk>
+References: <20080318093119.GA8669@osiris.boeblingen.de.ibm.com> <20080319054545.GA18834@infradead.org> <20080321101504.GI20420@elte.hu> <20080321132559.GA4128@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0803211545160.3781@apollo.tec.linutronix.de> <20080322203223.GA31521@osiris.boeblingen.de.ibm.com> <20080323223455.GA746@flint.arm.linux.org.uk> <alpine.LFD.1.00.0803252002100.3781@apollo.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0803252002100.3781@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008 12:25:15 -0700 Greg KH wrote:
+On Tue, Mar 25, 2008 at 08:09:15PM +0100, Thomas Gleixner wrote:
+> On Sun, 23 Mar 2008, Russell King wrote:
+> 
+> > On Sat, Mar 22, 2008 at 09:32:23PM +0100, Heiko Carstens wrote:
+> > > Generic code is not supposed to include irq.h. Replace this include
+> > > by linux/hardirq.h instead and add/replace an include of linux/irq.h
+> > > in asm header files where necessary.
+> > > This change should only matter for architectures that make use of
+> > > GENERIC_CLOCKEVENTS.
+> > > Architectures in question are mips, x86, arm, sh, powerpc, uml and sparc64.
+> > > 
+> > > I did some cross compile tests for mips, x86_64, arm, powerpc and sparc64.
+> > > This patch fixes also build breakages caused by the include replacement in
+> > > tick-common.h.
+> > 
+> > I generally dislike adding optional linux/* includes in asm/* includes -
+> > I'm nervous about this causing include loops.
+> > 
+> > However, there's a separate point to be discussed here.
+> > 
+> > That is, what interfaces are expected of every architecture in the kernel.
+> > If generic code wants to be able to set the affinity of interrupts, then
+> > that needs to become part of the interfaces listed in linux/interrupt.h
+> > rather than linux/irq.h.
+> > 
+> > So what I suggest is this approach instead (against Linus' tree of a
+> > couple of days ago) - we move irq_set_affinity() and irq_can_set_affinity()
+> > to linux/interrupt.h, change the linux/irq.h includes to linux/interrupt.h
+> > and include asm/irq_regs.h where needed (asm/irq_regs.h is supposed to be
+> > rarely used include since not much touches the stacked parent context
+> > registers.)
+> 
+> That patch makes a lot of sense and resolves all the issues. 
+> 
+> I push it through hrt.git and add the GENERIC_HARDIRQS dependency
+> which was requested by Heiko.
 
-> On Tue, Mar 25, 2008 at 01:37:03PM -0400, Mark Lord wrote:
-> > H. Peter Anvin wrote:
-> >> Mark Lord wrote:
-> >>>
-> >>> Yeah, that would be just as good, really.  Maybe even better.
-> >>>
-> >>> Mark Lord wrote (later on):
-> >>>> Instead, software has to search everything inside /sys/block/
-> >>>> looking for a "dev" file whose contents match,
-> >>>> rather than just trying to access something like this:
-> >>>>
-> >>>>   /sys/block/8:1/start
-> >>>> or
-> >>>>   /sys/block/majors/8/minors/1/start
-> >>>>
-> >>>> Or any one of a number of similar ways to arrange it. 
-> >>> ..
-> >> It shouldn't be under /sys/block... there are enough many things that scan 
-> >> /sys/block and assume any directory underneath it has the current format.
-> > ..
-> >
-> > So long as we only add things, and not remove them, then any software
-> > that scans /sys/block/ shouldn't care, really.
-> >
-> > But yes, it could go elsewhere, too.
-> > Perhaps a /sys/dev/ directory, populated with symbolic links
-> > (or hard links?) back to the /sys/block/ entries, something like this:
-> >
-> >   /sys/dev/block/8:0 -> ../../../block/sda
-> >   /sys/dev/block/8:1 -> ../../../block/sda/sda1
-> >   /sys/dev/block/8:2 -> ../../../block/sda/sda2
-> >   ...
-> >
-> > That's just a suggestion, really.
-> > And what about character devices?
-> >
-> > Perhaps Greg will chime in.
-> 
-> I've been waiting to see if sanity will take hold of anyone here.
-> 
-> Come on people, adding symlinks for device major:minor numbers in sysfs
-> to save a few 10s of lines of userspace code?  Can things get sillier?
-> 
-> You can add a single udev rule to probably build these in a tree in /dev
-> if you really need such a thing...
-> 
-> And what's wrong with your new ioctl recomendation?
+Okay.  Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Ah, there's some sanity.  :)
-
----
-~Randy
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
