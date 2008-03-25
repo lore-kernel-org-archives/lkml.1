@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbYCYObX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbYCYOcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbYCYObX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 10:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYCYObP
+	id S1756519AbYCYOcP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 10:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYCYOb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 10:31:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46495 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754049AbYCYObP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 10:31:15 -0400
-Date: Tue, 25 Mar 2008 15:30:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 8/8] x86_64: Support for new UV apic
-Message-ID: <20080325143059.GB11323@elte.hu>
-References: <20080324182122.GA28327@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080324182122.GA28327@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 25 Mar 2008 10:31:59 -0400
+Received: from styx.suse.cz ([82.119.242.94]:40848 "EHLO elijah.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753797AbYCYOb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 10:31:59 -0400
+Subject: [PATCH] Discard notification signals when a tracer exits
+From: Petr Tesarik <ptesarik@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: SuSE CR
+Date: Tue, 25 Mar 2008 15:31:53 +0100
+Message-Id: <1206455513.17227.4.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When a tracer exits without detaching from the traced process, the
+tracee may be at a tracer notification stop and will thus interpret
+the value in task->exit_code (SIGTRAP | 0x80) as the signal to be
+delivered.
 
-* Jack Steiner <steiner@sgi.com> wrote:
+This patch fixes the problem by clearing exit_code when detaching
+the traced process from a dying tracer.
 
-> Index: linux/arch/x86/kernel/genapic_64.c
+Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 
-> @@ -69,7 +73,16 @@ void send_IPI_self(int vector)
->  
->  unsigned int get_apic_id(void)
->  {
-> -	return (apic_read(APIC_ID) >> 24) & 0xFFu;
-> +	unsigned int id;
-> +
-> +	preempt_disable();
-> +	id = apic_read(APIC_ID);
-> +	if (uv_system_type >= UV_X2APIC)
-> +		id  |= __get_cpu_var(x2apic_extra_bits);
-> +	else
-> +		id = (id >> 24) & 0xFFu;;
-> +	preempt_enable();
-> +	return id;
+---
+ exit.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-dont we want to put get_apic_id() into struct genapic instead? We 
-already have ID management there.
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -642,8 +642,10 @@ reparent_thread(struct task_struct *p, s
+ 			/*
+ 			 * If it was at a trace stop, turn it into
+ 			 * a normal stop since it's no longer being
+-			 * traced.
++			 * traced.  Cancel the notification signal,
++			 * or the tracee may get a SIGTRAP.
+ 			 */
++			p->exit_code = 0;
+ 			ptrace_untrace(p);
+ 		}
+ 	}
+@@ -713,6 +715,10 @@ static void forget_original_parent(struc
+ 			p->real_parent = reaper;
+ 			reparent_thread(p, father, 0);
+ 		} else {
++			/* cancel the notification signal at a trace stop */
++			if (p->state == TASK_TRACED)
++				p->exit_code = 0;
++
+ 			/* reparent ptraced task to its real parent */
+ 			__ptrace_unlink (p);
+ 			if (p->exit_state == EXIT_ZOMBIE && p->exit_signal != -1 &&
 
-also, we want to unify 32-bit and 64-bit genapic code and just have 
-genapic all across x86.
-
-	Ingo
