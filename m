@@ -1,71 +1,610 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYCYSth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbYCYSxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbYCYSth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYCYSt3
+	id S1758967AbYCYSxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbYCYSxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:49:29 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50145 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753915AbYCYSt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:49:29 -0400
-Date: Tue, 25 Mar 2008 11:49:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
-       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
-       oleg@tv-sign.ru
-Subject: Re: [PATCH,RFC] Initialize call_rcu_sched sooner
-Message-ID: <20080325184912.GL4555@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080321143615.GA936@linux.vnet.ibm.com> <20080321224026.GA10169@linux.vnet.ibm.com> <20080324050652.GA4906@Krystal> <20080324054630.GE4555@linux.vnet.ibm.com> <20080325125308.GA19690@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080325125308.GA19690@Krystal>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 25 Mar 2008 14:53:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55082 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754938AbYCYSxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:53:17 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+To: torvalds@osdl.org, akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org,
+       dhowells@redhat.com
+Subject: Add missing consts to xattr function arguments
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 25 Mar 2008 18:52:43 +0000
+Message-ID: <17033.1206471163@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 08:53:08AM -0400, Mathieu Desnoyers wrote:
-> Initialize call_rcu_sched sooner so it can be used in module_init stage.
-> 
-> (needed for LTTng)
 
-This passes smoke tests, so have incorporated it.  Thank you, Mathieu!!!
+Add missing consts to xattr function arguments.
 
-						Thanx, Paul
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> ---
->  init/main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6-lttng/init/main.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/init/main.c	2008-03-25 08:49:02.000000000 -0400
-> +++ linux-2.6-lttng/init/main.c	2008-03-25 08:49:20.000000000 -0400
-> @@ -738,13 +738,13 @@ static void __init do_initcalls(void)
->   */
->  static void __init do_basic_setup(void)
->  {
-> +	rcu_init_sched();
->  	/* drivers will send hotplug events */
->  	init_workqueues();
->  	usermodehelper_init();
->  	driver_init();
->  	init_irq_proc();
->  	do_initcalls();
-> -	rcu_init_sched();
->  }
-> 
->  static int __initdata nosoftlockup;
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ fs/xattr.c                          |   41 ++++++++++++++++---------------
+ include/linux/security.h            |   46 ++++++++++++++++++++---------------
+ include/linux/syscalls.h            |   30 ++++++++++++-----------
+ include/linux/xattr.h               |    6 ++---
+ security/commoncap.c                |    6 ++---
+ security/dummy.c                    |   13 +++++-----
+ security/security.c                 |   12 +++++----
+ security/selinux/hooks.c            |   14 ++++++-----
+ security/selinux/include/security.h |    2 +-
+ security/selinux/ss/services.c      |    5 ++--
+ security/smack/smack_lsm.c          |   12 +++++----
+ 11 files changed, 100 insertions(+), 87 deletions(-)
+
+
+diff --git a/fs/xattr.c b/fs/xattr.c
+index 3acab16..391c752 100644
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -68,7 +68,7 @@ xattr_permission(struct inode *inode, const char *name, int mask)
+ }
+ 
+ int
+-vfs_setxattr(struct dentry *dentry, char *name, void *value,
++vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+ 		size_t size, int flags)
+ {
+ 	struct inode *inode = dentry->d_inode;
+@@ -132,7 +132,7 @@ out_noalloc:
+ EXPORT_SYMBOL_GPL(xattr_getsecurity);
+ 
+ ssize_t
+-vfs_getxattr(struct dentry *dentry, char *name, void *value, size_t size)
++vfs_getxattr(struct dentry *dentry, const char *name, void *value, size_t size)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -188,7 +188,7 @@ vfs_listxattr(struct dentry *d, char *list, size_t size)
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
+ 
+ int
+-vfs_removexattr(struct dentry *dentry, char *name)
++vfs_removexattr(struct dentry *dentry, const char *name)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -219,7 +219,7 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
+  * Extended attribute SET operations
+  */
+ static long
+-setxattr(struct dentry *d, char __user *name, void __user *value,
++setxattr(struct dentry *d, const char __user *name, const void __user *value,
+ 	 size_t size, int flags)
+ {
+ 	int error;
+@@ -253,8 +253,8 @@ setxattr(struct dentry *d, char __user *name, void __user *value,
+ }
+ 
+ asmlinkage long
+-sys_setxattr(char __user *path, char __user *name, void __user *value,
+-	     size_t size, int flags)
++sys_setxattr(const char __user *path, const char __user *name,
++	     const void __user *value, size_t size, int flags)
+ {
+ 	struct nameidata nd;
+ 	int error;
+@@ -268,8 +268,8 @@ sys_setxattr(char __user *path, char __user *name, void __user *value,
+ }
+ 
+ asmlinkage long
+-sys_lsetxattr(char __user *path, char __user *name, void __user *value,
+-	      size_t size, int flags)
++sys_lsetxattr(const char __user *path, const char __user *name,
++	      const void __user *value, size_t size, int flags)
+ {
+ 	struct nameidata nd;
+ 	int error;
+@@ -283,7 +283,7 @@ sys_lsetxattr(char __user *path, char __user *name, void __user *value,
+ }
+ 
+ asmlinkage long
+-sys_fsetxattr(int fd, char __user *name, void __user *value,
++sys_fsetxattr(int fd, const char __user *name, const void __user *value,
+ 	      size_t size, int flags)
+ {
+ 	struct file *f;
+@@ -304,7 +304,8 @@ sys_fsetxattr(int fd, char __user *name, void __user *value,
+  * Extended attribute GET operations
+  */
+ static ssize_t
+-getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
++getxattr(struct dentry *d, const char __user *name, void __user *value,
++	 size_t size)
+ {
+ 	ssize_t error;
+ 	void *kvalue = NULL;
+@@ -338,8 +339,8 @@ getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
+ }
+ 
+ asmlinkage ssize_t
+-sys_getxattr(char __user *path, char __user *name, void __user *value,
+-	     size_t size)
++sys_getxattr(const char __user *path, const char __user *name,
++	     void __user *value, size_t size)
+ {
+ 	struct nameidata nd;
+ 	ssize_t error;
+@@ -353,7 +354,7 @@ sys_getxattr(char __user *path, char __user *name, void __user *value,
+ }
+ 
+ asmlinkage ssize_t
+-sys_lgetxattr(char __user *path, char __user *name, void __user *value,
++sys_lgetxattr(const char __user *path, const char __user *name, void __user *value,
+ 	      size_t size)
+ {
+ 	struct nameidata nd;
+@@ -368,7 +369,7 @@ sys_lgetxattr(char __user *path, char __user *name, void __user *value,
+ }
+ 
+ asmlinkage ssize_t
+-sys_fgetxattr(int fd, char __user *name, void __user *value, size_t size)
++sys_fgetxattr(int fd, const char __user *name, void __user *value, size_t size)
+ {
+ 	struct file *f;
+ 	ssize_t error = -EBADF;
+@@ -413,7 +414,7 @@ listxattr(struct dentry *d, char __user *list, size_t size)
+ }
+ 
+ asmlinkage ssize_t
+-sys_listxattr(char __user *path, char __user *list, size_t size)
++sys_listxattr(const char __user *path, char __user *list, size_t size)
+ {
+ 	struct nameidata nd;
+ 	ssize_t error;
+@@ -427,7 +428,7 @@ sys_listxattr(char __user *path, char __user *list, size_t size)
+ }
+ 
+ asmlinkage ssize_t
+-sys_llistxattr(char __user *path, char __user *list, size_t size)
++sys_llistxattr(const char __user *path, char __user *list, size_t size)
+ {
+ 	struct nameidata nd;
+ 	ssize_t error;
+@@ -459,7 +460,7 @@ sys_flistxattr(int fd, char __user *list, size_t size)
+  * Extended attribute REMOVE operations
+  */
+ static long
+-removexattr(struct dentry *d, char __user *name)
++removexattr(struct dentry *d, const char __user *name)
+ {
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -474,7 +475,7 @@ removexattr(struct dentry *d, char __user *name)
+ }
+ 
+ asmlinkage long
+-sys_removexattr(char __user *path, char __user *name)
++sys_removexattr(const char __user *path, const char __user *name)
+ {
+ 	struct nameidata nd;
+ 	int error;
+@@ -488,7 +489,7 @@ sys_removexattr(char __user *path, char __user *name)
+ }
+ 
+ asmlinkage long
+-sys_lremovexattr(char __user *path, char __user *name)
++sys_lremovexattr(const char __user *path, const char __user *name)
+ {
+ 	struct nameidata nd;
+ 	int error;
+@@ -502,7 +503,7 @@ sys_lremovexattr(char __user *path, char __user *name)
+ }
+ 
+ asmlinkage long
+-sys_fremovexattr(int fd, char __user *name)
++sys_fremovexattr(int fd, const char __user *name)
+ {
+ 	struct file *f;
+ 	struct dentry *dentry;
+diff --git a/include/linux/security.h b/include/linux/security.h
+index c673dfd..fa2fd5a 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -51,8 +51,9 @@ extern void cap_capset_set (struct task_struct *target, kernel_cap_t *effective,
+ extern int cap_bprm_set_security (struct linux_binprm *bprm);
+ extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
+ extern int cap_bprm_secureexec(struct linux_binprm *bprm);
+-extern int cap_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags);
+-extern int cap_inode_removexattr(struct dentry *dentry, char *name);
++extern int cap_inode_setxattr(struct dentry *dentry, const char *name,
++			      const void *value, size_t size, int flags);
++extern int cap_inode_removexattr(struct dentry *dentry, const char *name);
+ extern int cap_inode_need_killpriv(struct dentry *dentry);
+ extern int cap_inode_killpriv(struct dentry *dentry);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+@@ -1305,13 +1306,13 @@ struct security_operations {
+ 	int (*inode_setattr)	(struct dentry *dentry, struct iattr *attr);
+ 	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
+         void (*inode_delete) (struct inode *inode);
+-	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
+-			       size_t size, int flags);
+-	void (*inode_post_setxattr) (struct dentry *dentry, char *name, void *value,
+-				     size_t size, int flags);
+-	int (*inode_getxattr) (struct dentry *dentry, char *name);
++	int (*inode_setxattr) (struct dentry *dentry, const char *name,
++			       const void *value, size_t size, int flags);
++	void (*inode_post_setxattr) (struct dentry *dentry, const char *name,
++				     const void *value, size_t size, int flags);
++	int (*inode_getxattr) (struct dentry *dentry, const char *name);
+ 	int (*inode_listxattr) (struct dentry *dentry);
+-	int (*inode_removexattr) (struct dentry *dentry, char *name);
++	int (*inode_removexattr) (struct dentry *dentry, const char *name);
+ 	int (*inode_need_killpriv) (struct dentry *dentry);
+ 	int (*inode_killpriv) (struct dentry *dentry);
+ 	int (*inode_getsecurity)(const struct inode *inode, const char *name, void **buffer, bool alloc);
+@@ -1566,13 +1567,13 @@ int security_inode_permission(struct inode *inode, int mask, struct nameidata *n
+ int security_inode_setattr(struct dentry *dentry, struct iattr *attr);
+ int security_inode_getattr(struct vfsmount *mnt, struct dentry *dentry);
+ void security_inode_delete(struct inode *inode);
+-int security_inode_setxattr(struct dentry *dentry, char *name,
+-			     void *value, size_t size, int flags);
+-void security_inode_post_setxattr(struct dentry *dentry, char *name,
+-				   void *value, size_t size, int flags);
+-int security_inode_getxattr(struct dentry *dentry, char *name);
++int security_inode_setxattr(struct dentry *dentry, const char *name,
++			    const void *value, size_t size, int flags);
++void security_inode_post_setxattr(struct dentry *dentry, const char *name,
++				  const void *value, size_t size, int flags);
++int security_inode_getxattr(struct dentry *dentry, const char *name);
+ int security_inode_listxattr(struct dentry *dentry);
+-int security_inode_removexattr(struct dentry *dentry, char *name);
++int security_inode_removexattr(struct dentry *dentry, const char *name);
+ int security_inode_need_killpriv(struct dentry *dentry);
+ int security_inode_killpriv(struct dentry *dentry);
+ int security_inode_getsecurity(const struct inode *inode, const char *name, void **buffer, bool alloc);
+@@ -1972,17 +1973,21 @@ static inline int security_inode_getattr (struct vfsmount *mnt,
+ static inline void security_inode_delete (struct inode *inode)
+ { }
+ 
+-static inline int security_inode_setxattr (struct dentry *dentry, char *name,
+-					   void *value, size_t size, int flags)
++static inline int security_inode_setxattr (struct dentry *dentry,
++					   const char *name, const void *value,
++					   size_t size, int flags)
+ {
+ 	return cap_inode_setxattr(dentry, name, value, size, flags);
+ }
+ 
+-static inline void security_inode_post_setxattr (struct dentry *dentry, char *name,
+-						 void *value, size_t size, int flags)
++static inline void security_inode_post_setxattr (struct dentry *dentry,
++						 const char *name,
++						 const void *value, size_t size,
++						 int flags)
+ { }
+ 
+-static inline int security_inode_getxattr (struct dentry *dentry, char *name)
++static inline int security_inode_getxattr (struct dentry *dentry,
++					   const char *name)
+ {
+ 	return 0;
+ }
+@@ -1992,7 +1997,8 @@ static inline int security_inode_listxattr (struct dentry *dentry)
+ 	return 0;
+ }
+ 
+-static inline int security_inode_removexattr (struct dentry *dentry, char *name)
++static inline int security_inode_removexattr (struct dentry *dentry,
++					      const char *name)
+ {
+ 	return cap_inode_removexattr(dentry, name);
+ }
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 4c2577b..f65e9fe 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -241,26 +241,28 @@ asmlinkage long sys_truncate64(const char __user *path, loff_t length);
+ asmlinkage long sys_ftruncate64(unsigned int fd, loff_t length);
+ #endif
+ 
+-asmlinkage long sys_setxattr(char __user *path, char __user *name,
+-				void __user *value, size_t size, int flags);
+-asmlinkage long sys_lsetxattr(char __user *path, char __user *name,
+-				void __user *value, size_t size, int flags);
+-asmlinkage long sys_fsetxattr(int fd, char __user *name, void __user *value,
+-				size_t size, int flags);
+-asmlinkage ssize_t sys_getxattr(char __user *path, char __user *name,
++asmlinkage long sys_setxattr(const char __user *path, const char __user *name,
++			     const void __user *value, size_t size, int flags);
++asmlinkage long sys_lsetxattr(const char __user *path, const char __user *name,
++			      const void __user *value, size_t size, int flags);
++asmlinkage long sys_fsetxattr(int fd, const char __user *name,
++			      const void __user *value, size_t size, int flags);
++asmlinkage ssize_t sys_getxattr(const char __user *path, const char __user *name,
+ 				void __user *value, size_t size);
+-asmlinkage ssize_t sys_lgetxattr(char __user *path, char __user *name,
++asmlinkage ssize_t sys_lgetxattr(const char __user *path, const char __user *name,
+ 				void __user *value, size_t size);
+-asmlinkage ssize_t sys_fgetxattr(int fd, char __user *name,
++asmlinkage ssize_t sys_fgetxattr(int fd, const char __user *name,
+ 				void __user *value, size_t size);
+-asmlinkage ssize_t sys_listxattr(char __user *path, char __user *list,
++asmlinkage ssize_t sys_listxattr(const char __user *path, char __user *list,
+ 				size_t size);
+-asmlinkage ssize_t sys_llistxattr(char __user *path, char __user *list,
++asmlinkage ssize_t sys_llistxattr(const char __user *path, char __user *list,
+ 				size_t size);
+ asmlinkage ssize_t sys_flistxattr(int fd, char __user *list, size_t size);
+-asmlinkage long sys_removexattr(char __user *path, char __user *name);
+-asmlinkage long sys_lremovexattr(char __user *path, char __user *name);
+-asmlinkage long sys_fremovexattr(int fd, char __user *name);
++asmlinkage long sys_removexattr(const char __user *path,
++				const char __user *name);
++asmlinkage long sys_lremovexattr(const char __user *path,
++				 const char __user *name);
++asmlinkage long sys_fremovexattr(int fd, const char __user *name);
+ 
+ asmlinkage unsigned long sys_brk(unsigned long brk);
+ asmlinkage long sys_mprotect(unsigned long start, size_t len,
+diff --git a/include/linux/xattr.h b/include/linux/xattr.h
+index df6b95d..d131e35 100644
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
+@@ -47,10 +47,10 @@ struct xattr_handler {
+ };
+ 
+ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
+-ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
++ssize_t vfs_getxattr(struct dentry *, const char *, void *, size_t);
+ ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+-int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
+-int vfs_removexattr(struct dentry *, char *);
++int vfs_setxattr(struct dentry *, const char *, const void *, size_t, int);
++int vfs_removexattr(struct dentry *, const char *);
+ 
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 06d5c94..6fbca0a 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -386,8 +386,8 @@ int cap_bprm_secureexec (struct linux_binprm *bprm)
+ 		current->egid != current->gid);
+ }
+ 
+-int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+-		       size_t size, int flags)
++int cap_inode_setxattr(struct dentry *dentry, const char *name,
++		       const void *value, size_t size, int flags)
+ {
+ 	if (!strcmp(name, XATTR_NAME_CAPS)) {
+ 		if (!capable(CAP_SETFCAP))
+@@ -400,7 +400,7 @@ int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+ 	return 0;
+ }
+ 
+-int cap_inode_removexattr(struct dentry *dentry, char *name)
++int cap_inode_removexattr(struct dentry *dentry, const char *name)
+ {
+ 	if (!strcmp(name, XATTR_NAME_CAPS)) {
+ 		if (!capable(CAP_SETFCAP))
+diff --git a/security/dummy.c b/security/dummy.c
+index 78d8f92..c32cbcf 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -365,8 +365,8 @@ static void dummy_inode_delete (struct inode *ino)
+ 	return;
+ }
+ 
+-static int dummy_inode_setxattr (struct dentry *dentry, char *name, void *value,
+-				size_t size, int flags)
++static int dummy_inode_setxattr (struct dentry *dentry, const char *name,
++				 const void *value, size_t size, int flags)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+@@ -375,12 +375,13 @@ static int dummy_inode_setxattr (struct dentry *dentry, char *name, void *value,
+ 	return 0;
+ }
+ 
+-static void dummy_inode_post_setxattr (struct dentry *dentry, char *name, void *value,
+-				       size_t size, int flags)
++static void dummy_inode_post_setxattr (struct dentry *dentry, const char *name,
++				       const void *value, size_t size,
++				       int flags)
+ {
+ }
+ 
+-static int dummy_inode_getxattr (struct dentry *dentry, char *name)
++static int dummy_inode_getxattr (struct dentry *dentry, const char *name)
+ {
+ 	return 0;
+ }
+@@ -390,7 +391,7 @@ static int dummy_inode_listxattr (struct dentry *dentry)
+ 	return 0;
+ }
+ 
+-static int dummy_inode_removexattr (struct dentry *dentry, char *name)
++static int dummy_inode_removexattr (struct dentry *dentry, const char *name)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+diff --git a/security/security.c b/security/security.c
+index b1387a6..e7ecdc4 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -455,23 +455,23 @@ void security_inode_delete(struct inode *inode)
+ 	security_ops->inode_delete(inode);
+ }
+ 
+-int security_inode_setxattr(struct dentry *dentry, char *name,
+-			     void *value, size_t size, int flags)
++int security_inode_setxattr(struct dentry *dentry, const char *name,
++			    const void *value, size_t size, int flags)
+ {
+ 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
+ 		return 0;
+ 	return security_ops->inode_setxattr(dentry, name, value, size, flags);
+ }
+ 
+-void security_inode_post_setxattr(struct dentry *dentry, char *name,
+-				   void *value, size_t size, int flags)
++void security_inode_post_setxattr(struct dentry *dentry, const char *name,
++				  const void *value, size_t size, int flags)
+ {
+ 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
+ 		return;
+ 	security_ops->inode_post_setxattr(dentry, name, value, size, flags);
+ }
+ 
+-int security_inode_getxattr(struct dentry *dentry, char *name)
++int security_inode_getxattr(struct dentry *dentry, const char *name)
+ {
+ 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
+ 		return 0;
+@@ -485,7 +485,7 @@ int security_inode_listxattr(struct dentry *dentry)
+ 	return security_ops->inode_listxattr(dentry);
+ }
+ 
+-int security_inode_removexattr(struct dentry *dentry, char *name)
++int security_inode_removexattr(struct dentry *dentry, const char *name)
+ {
+ 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
+ 		return 0;
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 41a049f..db28dfc 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2555,7 +2555,7 @@ static int selinux_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
+ 	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_setotherxattr(struct dentry *dentry, char *name)
++static int selinux_inode_setotherxattr(struct dentry *dentry, const char *name)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof XATTR_SECURITY_PREFIX - 1)) {
+@@ -2574,7 +2574,8 @@ static int selinux_inode_setotherxattr(struct dentry *dentry, char *name)
+ 	return dentry_has_perm(current, NULL, dentry, FILE__SETATTR);
+ }
+ 
+-static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags)
++static int selinux_inode_setxattr(struct dentry *dentry, const char *name,
++				  const void *value, size_t size, int flags)
+ {
+ 	struct task_security_struct *tsec = current->security;
+ 	struct inode *inode = dentry->d_inode;
+@@ -2623,8 +2624,9 @@ static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value
+ 			    &ad);
+ }
+ 
+-static void selinux_inode_post_setxattr(struct dentry *dentry, char *name,
+-                                        void *value, size_t size, int flags)
++static void selinux_inode_post_setxattr(struct dentry *dentry, const char *name,
++                                        const void *value, size_t size,
++					int flags)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	struct inode_security_struct *isec = inode->i_security;
+@@ -2647,7 +2649,7 @@ static void selinux_inode_post_setxattr(struct dentry *dentry, char *name,
+ 	return;
+ }
+ 
+-static int selinux_inode_getxattr (struct dentry *dentry, char *name)
++static int selinux_inode_getxattr (struct dentry *dentry, const char *name)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+@@ -2657,7 +2659,7 @@ static int selinux_inode_listxattr (struct dentry *dentry)
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_removexattr (struct dentry *dentry, char *name)
++static int selinux_inode_removexattr (struct dentry *dentry, const char *name)
+ {
+ 	if (strcmp(name, XATTR_NAME_SELINUX))
+ 		return selinux_inode_setotherxattr(dentry, name);
+diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
+index f7d2f03..526e959 100644
+--- a/security/selinux/include/security.h
++++ b/security/selinux/include/security.h
+@@ -83,7 +83,7 @@ int security_change_sid(u32 ssid, u32 tsid,
+ int security_sid_to_context(u32 sid, char **scontext,
+ 	u32 *scontext_len);
+ 
+-int security_context_to_sid(char *scontext, u32 scontext_len,
++int security_context_to_sid(const char *scontext, u32 scontext_len,
+ 	u32 *out_sid);
+ 
+ int security_context_to_sid_default(char *scontext, u32 scontext_len, u32 *out_sid, u32 def_sid);
+diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+index f374186..519b2c1 100644
+--- a/security/selinux/ss/services.c
++++ b/security/selinux/ss/services.c
+@@ -680,7 +680,8 @@ out:
+ 
+ }
+ 
+-static int security_context_to_sid_core(char *scontext, u32 scontext_len, u32 *sid, u32 def_sid)
++static int security_context_to_sid_core(const char *scontext, u32 scontext_len,
++					u32 *sid, u32 def_sid)
+ {
+ 	char *scontext2;
+ 	struct context context;
+@@ -806,7 +807,7 @@ out:
+  * Returns -%EINVAL if the context is invalid, -%ENOMEM if insufficient
+  * memory is available, or 0 on success.
+  */
+-int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
++int security_context_to_sid(const char *scontext, u32 scontext_len, u32 *sid)
+ {
+ 	return security_context_to_sid_core(scontext, scontext_len,
+ 	                                    sid, SECSID_NULL);
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 732ba27..9282f51 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -574,8 +574,8 @@ static int smack_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
+  *
+  * Returns 0 if access is permitted, an error code otherwise
+  */
+-static int smack_inode_setxattr(struct dentry *dentry, char *name,
+-				void *value, size_t size, int flags)
++static int smack_inode_setxattr(struct dentry *dentry, const char *name,
++				const void *value, size_t size, int flags)
+ {
+ 	int rc = 0;
+ 
+@@ -604,8 +604,8 @@ static int smack_inode_setxattr(struct dentry *dentry, char *name,
+  * Set the pointer in the inode blob to the entry found
+  * in the master label list.
+  */
+-static void smack_inode_post_setxattr(struct dentry *dentry, char *name,
+-				      void *value, size_t size, int flags)
++static void smack_inode_post_setxattr(struct dentry *dentry, const char *name,
++				      const void *value, size_t size, int flags)
+ {
+ 	struct inode_smack *isp;
+ 	char *nsp;
+@@ -641,7 +641,7 @@ static void smack_inode_post_setxattr(struct dentry *dentry, char *name,
+  *
+  * Returns 0 if access is permitted, an error code otherwise
+  */
+-static int smack_inode_getxattr(struct dentry *dentry, char *name)
++static int smack_inode_getxattr(struct dentry *dentry, const char *name)
+ {
+ 	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_READ);
+ }
+@@ -655,7 +655,7 @@ static int smack_inode_getxattr(struct dentry *dentry, char *name)
+  *
+  * Returns 0 if access is permitted, an error code otherwise
+  */
+-static int smack_inode_removexattr(struct dentry *dentry, char *name)
++static int smack_inode_removexattr(struct dentry *dentry, const char *name)
+ {
+ 	int rc = 0;
+ 
