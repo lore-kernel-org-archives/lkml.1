@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbYCYWCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYCYWCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761247AbYCYWCh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 18:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYCYWC3
+	id S1761479AbYCYWCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 18:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761277AbYCYWCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 18:02:29 -0400
-Received: from pat.uio.no ([129.240.10.15]:56588 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754045AbYCYWC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 18:02:27 -0400
-Subject: Re: [PATCH] vfs: Fix lock inversion in drop_pagecache_sb()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, dgc@sgi.com, wfg@mail.ustc.edu.cn,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080325125354.5f2da108.akpm@linux-foundation.org>
-References: <20080325181227.GE5125@duck.suse.cz>
-	 <20080325125354.5f2da108.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 25 Mar 2008 18:01:44 -0400
-Message-Id: <1206482504.20428.15.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 25 Mar 2008 18:02:39 -0400
+Received: from www17.your-server.de ([213.133.104.17]:36657 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761237AbYCYWCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 18:02:37 -0400
+Message-ID: <47E97667.1080603@m3y3r.de>
+Date: Tue, 25 Mar 2008 23:02:15 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080310)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+ regressions from 2.6.24)
+References: <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de> <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org> <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org> <47E807EE.2030902@m3y3r.de> <47E8217C.9080400@s5r6.in-berlin.de> <20080325073117.GA8469@elte.hu> <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: 06B419DCDAA81CF3461F018BF14CD17CC85DAB4E
-X-UiO-SR-test: FF18A1171845F7EEBCDA9E2D57D203314CA9A5AC
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 27 total 7518466 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds schrieb:
+> On Tue, 25 Mar 2008, Thomas Meyer wrote:
+>   
+>> and compare lspci -vv from 2.6.25 and 2.6.24:
+>>
+>> 2.6.25:
+>>
+>>    Region 0: [virtual] Memory at 100000000 (32-bit, non-prefetchable) [size=4K]
+>>
+>> 2.6.24:
+>>
+>>    Region 0: Memory at 8c000000 (32-bit, non-prefetchable) [size=4K]
+>>     
+>
+> Ok, so it didn't use to be at the 4GB mark.
+>
+> This seems to be a PCI and resource alloc issue. It would be really 
+> interesting to see where the 4GB allocation started. Ie ignore anything 
+> else (warnings, driver loadings etc), and _just_ look at lspci -vv output 
+> for where the memory got allocated.
+>
+> Did you already bisect that and I just missed it?
+>   
+I didn't bisect this.But  I recompiled with CONFIG_RESOURCES_64BIT 
+*unset* and everything is fine now, i.e. no error occurs anymore.
 
-On Tue, 2008-03-25 at 12:53 -0700, Andrew Morton wrote:
-> On Tue, 25 Mar 2008 19:12:27 +0100
-> Jan Kara <jack@suse.cz> wrote:
-> 
-> > Fix longstanding lock inversion in drop_pagecache_sb by dropping inode_lock
-> > before calling __invalidate_mapping_pages(). We just have to make sure
-> > inode won't go away from under us by keeping reference to it and putting
-> > the reference only after we have safely resumed the scan of the inode
-> > list. A bit tricky but not too bad...
-> > 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > CC: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> > CC: David Chinner <dgc@sgi.com>
-> > 
-> > ---
-> >  fs/drop_caches.c |    8 +++++++-
-> >  1 files changed, 7 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> > index 59375ef..f5aae26 100644
-> > --- a/fs/drop_caches.c
-> > +++ b/fs/drop_caches.c
-> > @@ -14,15 +14,21 @@ int sysctl_drop_caches;
-> >  
-> >  static void drop_pagecache_sb(struct super_block *sb)
-> >  {
-> > -	struct inode *inode;
-> > +	struct inode *inode, *toput_inode = NULL;
-> >  
-> >  	spin_lock(&inode_lock);
-> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> >  		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-> >  			continue;
-> 
-> OT: it might be worth having an `if (mapping->nrpages==0) continue' here.
-> 
-> > +		__iget(inode);
-> > +		spin_unlock(&inode_lock);
-> >  		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-> > +		iput(toput_inode);
-> > +		toput_inode = inode;
-> > +		spin_lock(&inode_lock);
-> >  	}
-> >  	spin_unlock(&inode_lock);
-> > +	iput(toput_inode);
-> >  }
-> >  
-> >  void drop_pagecache(void)
-> 
-> hrm.  So we have a random ref on an inode without holding inode_lock.  If
-> we race with invalidate_list() we end up with an inode stuck on s_inodes
-> and "Self-destruct in 5 seconds.  Have a nice day...", don't we?
+lspci -vv output:
+0c:03.0 FireWire (IEEE 1394): Agere Systems FW323 (rev 61) (prog-if 10 
+[OHCI])
+        Subsystem: Agere Systems FW323
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
+ParErr- Stepping- SERR- FastB2B+ DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 248 (3000ns min, 6000ns max), Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 19
+        Region 0: Memory at 94406000 (32-bit, non-prefetchable) [size=4K]
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
+PME(D0+,D1+,D2+,D3hot+,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME+
+        Kernel driver in use: ohci1394
+        Kernel modules: firewire-ohci, ohci1394
 
-Calling drop_pagecache_sb() without having a reference to 'sb'? Surely
-not...
+This is on ingo's git tree (branch: x86-latest) (commit 
+0fef904c33841be92f5ebdbdb9339dd11a133c92 - x86: ioremap of 64-bit 
+resource on 32-bit kernel fix)
 
-Trond
-
+mfg
+thomas
