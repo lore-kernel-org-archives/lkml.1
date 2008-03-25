@@ -1,52 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbYCYN0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYCYNeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbYCYN0Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 09:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYCYN0B
+	id S1754975AbYCYNeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 09:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYCYNeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 09:26:01 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:51623 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754073AbYCYN0A (ORCPT
+	Tue, 25 Mar 2008 09:34:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53137 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753845AbYCYNeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 09:26:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qmFlgxAy9ktWSpp+DRMMxus/LDCibOOttHe877FS0FxutEbSb1oW6Z5mwjwy9AdwyJm6TrQNLqzmGFx/pPveURxhjJlWVq37KGCp8q9+VqZObEKY4MOV3470U8rYvgZ2v9AMz7d0EkEYzO6heehtDtKy+v7YsCjxY4EJLIf9o/M=
-Message-ID: <e2e108260803250625k581909dcw3c3c0742a7b9fceb@mail.gmail.com>
-Date: Tue, 25 Mar 2008 14:25:59 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Sanders, Rob M." <sanders-rob@zai.com>
-Subject: Re: Performance changes between 2.6.13 and 2.6.23
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <D108F32273D3044F8C7B24328CB7713701A4D1@york.rivers.zai.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Mar 2008 09:34:05 -0400
+Date: Tue, 25 Mar 2008 08:33:59 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Len Brown <lenb@kernel.org>
+Cc: asit.k.mallick@intel.com, linux-acpi@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 4/8] x86_64: Parsing for ACPI "SAPIC" table
+Message-ID: <20080325133358.GA17508@sgi.com>
+References: <20080324182114.GA28060@sgi.com> <200803250003.32661.lenb@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <D108F32273D3044F8C7B24328CB7713701A4D1@york.rivers.zai.com>
+In-Reply-To: <200803250003.32661.lenb@kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 1:34 PM, Sanders, Rob M. <sanders-rob@zai.com> wrote:
->  Of more particular concern, the main application that I build has seen a 4-5X
-> slowdown in performance.
+On Tue, Mar 25, 2008 at 12:03:32AM -0400, Len Brown wrote:
+> IIR the x2apic scheme entails using the legacy entries for the
+> first 256 entries, and extended entries for the processors above that, no?
+> 
+> Here we seem to be assuming all lapic or all sapic entries.
+> 
+> -Len
+> 
 
-Is this a singlethreaded or a multithreaded application ? Is this
-application CPU-bound or IO-bound ? Does it rely a lot on memory
-allocation ?
+Correct. That is the way it is currently coded & that is the way that
+our BIOS creates the tables. Depending on the size of the system, all
+entries will be either lapic OR all entries will be sapic.
 
-I'm not sure this will tell you the cause, but what might help is to
-compile and run lmbench2 and interbench, and to compare the results
-for the two kernel versions. Make sure that only the kernel version
-differs between the two test runs, and that all other components (a.o.
-libc and libpthread) stay the same. Booting the old YDL with the new
-kernel should work, while booting the new YDL with an old kernel
-probably will cause trouble.
+Currently, the BIOS _tries_ to build legacy-compatible tables. It switches
+into x2apic mode only if APICIDs are too big for legacy mode.
 
-See also http://www.bitmover.com/lmbench/ and
-http://members.optusnet.com.au/ckolivas/interbench/.
+I found a statement in the x2apic spec that appears to support that behavior:
 
-Bart.
+	sec 2.11.1 Extended xAPIC Init: BIOS Flow
+	  ... There should never be a mixture of legacy and new entries.
+
+
+However, it is certainly possible that this statement is in conflict with a statement
+somewhere else.....
+
+
+
+> 
+> On Monday 24 March 2008, Jack Steiner wrote:
+> > 
+> > Add kernel support for new ACPI "sapic" tables that contain 16-bit APICIDs.
+> > This patch simply adds parsing of an optional SAPIC table if present.
+> > Otherwise, the traditional local APIC table is used.
+> > 
+> > Note: the SAPIC table is not a new ACPI table - it exists on other architectures
+> > but is not currently recognized by x86_64.
+> > 
+> > 
+> > 	Signed-off-by: Jack Steiner <steiner@sgi.com>
+> > 
+> > 
+> > ---
+> >  arch/x86/kernel/acpi/boot.c |   26 ++++++++++++++++++++++++--
+> >  1 file changed, 24 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux/arch/x86/kernel/acpi/boot.c
+> > ===================================================================
+> > --- linux.orig/arch/x86/kernel/acpi/boot.c	2008-03-21 15:37:05.000000000 -0500
+> > +++ linux/arch/x86/kernel/acpi/boot.c	2008-03-21 15:40:46.000000000 -0500
+> > @@ -261,6 +261,24 @@ acpi_parse_lapic(struct acpi_subtable_he
+> >  }
+> >  
+> >  static int __init
+> > +acpi_parse_sapic(struct acpi_subtable_header *header, const unsigned long end)
+> > +{
+> > +	struct acpi_madt_local_sapic *processor = NULL;
+> > +
+> > +	processor = (struct acpi_madt_local_sapic *)header;
+> > +
+> > +	if (BAD_MADT_ENTRY(processor, end))
+> > +		return -EINVAL;
+> > +
+> > +	acpi_table_print_madt_entry(header);
+> > +
+> > +	mp_register_lapic((processor->id << 8) | processor->eid,/* APIC ID */
+> > +		processor->lapic_flags & ACPI_MADT_ENABLED);	/* Enabled? */
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int __init
+> >  acpi_parse_lapic_addr_ovr(struct acpi_subtable_header * header,
+> >  			  const unsigned long end)
+> >  {
+> > @@ -753,8 +771,12 @@ static int __init acpi_parse_madt_lapic_
+> >  
+> >  	mp_register_lapic_address(acpi_lapic_addr);
+> >  
+> > -	count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC, acpi_parse_lapic,
+> > -				      MAX_APICS);
+> > +	count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_SAPIC,
+> > +				      acpi_parse_sapic, MAX_APICS);
+> > +
+> > +	if (!count)
+> > +		count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC,
+> > +					      acpi_parse_lapic, MAX_APICS);
+> >  	if (!count) {
+> >  		printk(KERN_ERR PREFIX "No LAPIC entries present\n");
+> >  		/* TBD: Cleanup to allow fallback to MPS */
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
+
+-- 
+Thanks
+
+Jack Steiner (steiner@sgi.com)          651-683-5302
+Principal Engineer                      SGI - Silicon Graphics, Inc.
+
+
