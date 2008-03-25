@@ -1,131 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYCYMnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYCYMox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755039AbYCYMnB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 08:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYCYMmx
+	id S1755296AbYCYMox (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 08:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbYCYMop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 08:42:53 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:46972 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbYCYMmw (ORCPT
+	Tue, 25 Mar 2008 08:44:45 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1648 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753267AbYCYMoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 08:42:52 -0400
-Date: Tue, 25 Mar 2008 08:42:48 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] RWSEM: Rewrite rwsem.c and rwsem-spinlock.c more
- simply.
-In-Reply-To: <20080325123633.GL2170@one.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0803250834220.19530@localhost.localdomain>
-References: <alpine.LFD.1.00.0803250659530.18358@localhost.localdomain> <87skyfgg4y.fsf@basil.nowhere.org> <alpine.LFD.1.00.0803250813190.19386@localhost.localdomain> <20080325123633.GL2170@one.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 25 Mar 2008 08:44:44 -0400
+Date: Tue, 25 Mar 2008 12:43:22 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/2 v2] Add DIU platform code for MPC8610HPCD
+Message-ID: <20080325124322.GH12798@shadowen.org>
+References: <12059526271941-git-send-email-yorksun@freescale.com> <12059526274026-git-send-email-yorksun@freescale.com> <12059526271964-git-send-email-yorksun@freescale.com> <20080320153304.cdc1817d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080320153304.cdc1817d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, Andi Kleen wrote:
+On Thu, Mar 20, 2008 at 03:33:04PM -0700, Andrew Morton wrote:
+> On Wed, 19 Mar 2008 13:50:27 -0500
+> York Sun <yorksun@freescale.com> wrote:
+> 
+> > Add platform code to support Freescale DIU. The platform code includes
+> > framebuffer memory allocation, pixel format, monitor port, etc.
+> >
+> > ...
+> >
+> > +unsigned int mpc8610hpcd_get_pixel_format
+> > +	(unsigned int bits_per_pixel, int monitor_port)
 
-> > i'm not sure what this means -- which of the transformations in
-> > that patch is considered unsafe?  here's a typical simplification:
->
-> It is not unsafe, just generates slight worse code.
->
-> current is inline assembler and the compiler doesn't know that it
-> could cache it in a register because it is not marked pure for
-> various reasons. That is why current is often cached explicitely in
-> a local variable to tell the compiler that.
+This seems like it might be detectable, does this seem like something we
+should try an report?
 
-  ah, i think i see, thanks.  learn something every day.
+WARNING: arguments for function declarations should follow identifier
+#7: FILE: Z110.c:7:
++int __init preallocate_diu_videomemory
 
-> Before you run off and do that everywhere: it is also not a large
-> win, just a small one unless current is used very often.
+> Again, please do
+> 
+> unsigned int mpc8610hpcd_get_pixel_format(unsigned int bits_per_pixel,
+> 					int monitor_port)
+> 
+> (and anywhere else where this was done)
+> 
+> > +int __init preallocate_diu_videomemory(void);
+> 
+> Nope, please don't put extern declarations in .c files.  Find a suitable
+> header for it - one which is included by the defining file and by all users
+> of the symbol.
+> 
+> Andy, checkpatch missed this.
 
-  there's actually not that many explicit calls to either
-set_task_state or __set_task_state in the entire tree, and a lot of
-those don't count as they really are setting the state for a different
-task or for some other reason.  in fact, here's the entire list for
-the whole tree:
+Yeah, we did only look for explicitly extern'd declarations.  But this
+form seems detectable, will be in v0.17.
 
-$ grep -r set_task_state *
-arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/powerpc/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
-arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/powerpc/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/powerpc/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
-arch/alpha/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/alpha/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/parisc/kernel/semaphore.c:		set_task_state(current, TASK_UNINTERRUPTIBLE);
-arch/parisc/kernel/semaphore.c:		set_task_state(current, TASK_INTERRUPTIBLE);
-arch/mn10300/kernel/semaphore.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/mn10300/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/mn10300/kernel/semaphore.c:	set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/mn10300/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/s390/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
-arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/s390/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/s390/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
-arch/s390/mm/fault.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/s390/mm/fault.c:			set_task_state(tsk, TASK_RUNNING);
-arch/frv/kernel/semaphore.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/frv/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/frv/kernel/semaphore.c:	set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/frv/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/mips/kernel/semaphore.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
-arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/mips/kernel/semaphore.c:		set_task_state(tsk, TASK_INTERRUPTIBLE);
-arch/mips/kernel/semaphore.c:	__set_task_state(tsk, TASK_RUNNING);
-Documentation/scheduler/sched-coding.txt:set_task_state(tsk, state_value)
-drivers/mmc/core/sdio_irq.c:		set_task_state(current, TASK_INTERRUPTIBLE);
-drivers/mmc/core/sdio_irq.c:		set_task_state(current, TASK_RUNNING);
-drivers/mfd/ucb1x00-ts.c:			set_task_state(tsk, TASK_INTERRUPTIBLE);
-drivers/mfd/ucb1x00-ts.c:			set_task_state(tsk, TASK_INTERRUPTIBLE);
-fs/aio.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-fs/aio.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-fs/aio.c:	__set_task_state(tsk, TASK_RUNNING);
-fs/aio.c:			set_task_state(tsk, TASK_INTERRUPTIBLE);
-fs/aio.c:		set_task_state(tsk, TASK_RUNNING);
-include/linux/sched.h:/* Convenience macros for the sake of set_task_state */
-include/linux/sched.h:#define __set_task_state(tsk, state_value)		\
-include/linux/sched.h:#define set_task_state(tsk, state_value)		\
-kernel/ptrace.c:			__set_task_state(child, TASK_STOPPED);
-kernel/fork.c:			__set_task_state(p, TASK_STOPPED);
-kernel/mutex.c:		__set_task_state(task, state);
-lib/rwsem-spinlock.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-lib/rwsem-spinlock.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-lib/rwsem-spinlock.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-lib/rwsem-spinlock.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-lib/rwsem.c:	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-lib/rwsem.c:		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+WARNING: externs should be avoided in .c files
+#2: FILE: Z110.c:2:
++int __init preallocate_diu_videomemory(void);
 
-  once you ignore the semaphore stuff (and a bit of the rest, like the
-stuff in sched.h), there's not really that much left that could be
-rewritten with set_current_state() anyway.
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-apw
