@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbYCYXyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbYCYX4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbYCYXyc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbYCYXyY
+	id S1761470AbYCYX4O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbYCYXz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:54:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47625 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755869AbYCYXyX (ORCPT
+	Tue, 25 Mar 2008 19:55:58 -0400
+Received: from mga11.intel.com ([192.55.52.93]:24204 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755869AbYCYXz5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:54:23 -0400
-Date: Tue, 25 Mar 2008 23:36:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Garzik <jeff@garzik.org>, Tim Ellis <tim@ngndg.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Work around breakage introduced in pata_sil680 by
- switching it to MMIO
-Message-ID: <20080325233629.1fcc2eaa@core>
-In-Reply-To: <Pine.LNX.4.64.0803260023030.1539@axis700.grange>
-References: <32334D99-DB01-4645-97DC-88D2E7BA2BE5@ngndg.com>
-	<1202850129.7410.22.camel@pasglop>
-	<Pine.LNX.4.64.0802151651340.27735@axis700.grange>
-	<20080215155332.2b89c429@core>
-	<1203111956.22915.24.camel@pasglop>
-	<DD1DA785-AD9C-4EFA-94E2-FA7154EECA9F@ngndg.com>
-	<47C347C3.40404@garzik.org>
-	<1203987502.15052.71.camel@pasglop>
-	<Pine.LNX.4.64.0803260023030.1539@axis700.grange>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
+	Tue, 25 Mar 2008 19:55:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,555,1199692800"; 
+   d="scan'208";a="539956273"
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: larger default page sizes...
+Date: Tue, 25 Mar 2008 16:49:23 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com>
+In-reply-to: <20080325.163240.102401706.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: larger default page sizes...
+Thread-Index: AciO0YIlyjg9GQexRcW7W5ufmVfZRAAAB2EQ
+References: <18408.29107.709577.374424@cargo.ozlabs.ibm.com><20080324.211532.33163290.davem@davemloft.net><18408.59112.945786.488350@cargo.ozlabs.ibm.com> <20080325.163240.102401706.davem@davemloft.net>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "David Miller" <davem@davemloft.net>, <paulus@samba.org>
+Cc: <clameter@sgi.com>, <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>, <torvalds@linux-foundation.org>
+X-OriginalArrivalTime: 25 Mar 2008 23:49:24.0607 (UTC) FILETIME=[DADA38F0:01C88ED2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008 00:31:19 +0100 (CET)
-Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> > How do I get gcc to use hugepages, for instance?
+>
+> Implementing transparent automatic usage of hugepages has been
+> discussed many times, it's definitely doable and other OSs have
+> implemented this for years.
+>
+> This is what I was implying.
 
-> pata_sil680 is broken on Linkstation amd Kurobox HG machines since 2.6.24. 
-> Work around the breakage until a real fix is found.
-> 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+"large" pages, or "super" pages perhaps ... but Linux "huge" pages
+seem pretty hard to adapt for generic use by applications.  They
+are generally a somewhere between a bit too big (2MB on X86) to
+way too big (64MB, 256MB, 1GB or 4GB on ia64) for general use.
 
-Just disable the mmio patch on all systems - we know it doesn't work, we
-know what work needs to be done, it should remain off for everyone until
-that work is done. It should never have been merged in the first place
-and I think my statement to that effect has been proven nicely.
+Right now they also suffer from making the sysadmin pick at
+boot time how much memory to allocate as huge pages (while it
+is possible to break huge pages into normal pages, going in
+the reverse direction requires a memory defragmenter that
+doesn't exist).
 
-Alan
+Making an application use huge pages as heap may be simple
+(just link with a different library to provide with a different
+version of malloc()) ... code, stack, mmap'd files are all
+a lot harder to do transparently.
+
+-Tony
