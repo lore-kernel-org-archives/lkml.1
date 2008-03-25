@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYCYSH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbYCYSJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbYCYSH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 14:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbYCYSHI
+	id S1759066AbYCYSJi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 14:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbYCYSJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 14:07:08 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4786 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757775AbYCYSHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 14:07:05 -0400
-Date: Tue, 25 Mar 2008 13:42:27 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Chatre, Reinette" <reinette.chatre@intel.com>
-Cc: Roel Kluin <12o3l@tiscali.nl>, "Zhu, Yi" <yi.zhu@intel.com>,
-       linux-wireless@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RESEND] wireless: convert !X & Y to !(X & Y) in
-	iwl4965_is_fat_tx_allowed()
-Message-ID: <20080325174227.GB3026@tuxdriver.com>
-References: <47E9226C.7090403@tiscali.nl> <D936D925018D154694D8A362EEB08920040370C5@orsmsx416.amr.corp.intel.com>
+	Tue, 25 Mar 2008 14:09:29 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57268 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbYCYSJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 14:09:28 -0400
+Date: Tue, 25 Mar 2008 12:09:10 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg Freemyer <greg.freemyer@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Mark Lord <lkml@rtr.ca>, Jens Axboe <axboe@kernel.dk>,
+       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
+       Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: What to do about the 2TB limit on HDIO_GETGEO ?
+Message-ID: <20080325180910.GF16721@parisc-linux.org>
+References: <47E875AD.1000901@rtr.ca> <47E87942.2020409@rtr.ca> <1206458278.3273.5.camel@localhost.localdomain> <87f94c370803251045h46cbdc0auc541302fbad4a3b9@mail.gmail.com> <20080325105228.26396685.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <D936D925018D154694D8A362EEB08920040370C5@orsmsx416.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080325105228.26396685.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 09:30:58AM -0700, Chatre, Reinette wrote:
-> On Tuesday, March 25, 2008 9:04 AM, Roel Kluin  wrote:
+On Tue, Mar 25, 2008 at 10:52:28AM -0700, Randy Dunlap wrote:
+> > I'm not sure what the Linux Kernel support is for GPTs.
 > 
-> > from include/linux/ieee80211.h:274:
-> > #define IEEE80211_HT_CAP_SUP_WIDTH              0x0002 ---
-> > ! has a higher priority than &
-> > 
-> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> > ---
-> > diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c
-> > b/drivers/net/wireless/iwlwifi/iwl-4965.c
-> > index d727de8..6576757 100644
-> > --- a/drivers/net/wireless/iwlwifi/iwl-4965.c
-> > +++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
-> > @@ -4589,7 +4589,7 @@ static u8
-> > iwl4965_is_fat_tx_allowed(struct iwl4965_priv *priv,
-> > 
-> > 	if (sta_ht_inf) {
-> > 		if ((!sta_ht_inf->ht_supported) ||
-> > -		   (!sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH))
-> > +		   (!(sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH)))
-> return 0;
-> > 	}
-> 
-> This patch has already been acked and merged into wireless-testing, and
-> afaik already pushed further upstream.
+> It's implemented.  Not sure about how well used/tested it is.
 
-Yes, but FWIW the problem exists in the 2.6.25 stream as well.
-I've been holding-back a patch to fix it there, trying to decide if it
-is worth creating the merge conflict to fix it there.  I'm inclined
-to think it is better to let things lay as they are and send that
-patch for the -stable series once 2.6.25 ships.
+ia64 uses it exclusively ... at least on discs that you want to use from
+EFI.
 
-Any thoughts on that?
-
-John
 -- 
-John W. Linville
-linville@tuxdriver.com
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
