@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYCYOYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYCYOYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbYCYOYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 10:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYCYOYG
+	id S1756113AbYCYOYs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 10:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYCYOYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 10:24:06 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44484 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753463AbYCYOYF (ORCPT
+	Tue, 25 Mar 2008 10:24:38 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:44490 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbYCYOYi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 10:24:05 -0400
-Date: Tue, 25 Mar 2008 10:24:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
+	Tue, 25 Mar 2008 10:24:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level =?iso-8859-1?q?suspend=09and_hibernation_callbacks?= (rev. 2)
+Date: Tue, 25 Mar 2008 15:24:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
        Alexey Starikovskiy <astarikovskiy@suse.de>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
- callbacks (rev. 3)
-In-Reply-To: <200803251437.17268.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0803251020530.4838-100000@iolanthe.rowland.org>
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803251011110.4838-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803251011110.4838-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200803251524.34147.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Mar 2008, Oliver Neukum wrote:
-
-> Am Dienstag, 25. März 2008 13:40:53 schrieb Rafael J. Wysocki:
-> > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
-> > > Am Montag 24 März 2008 schrieb Rafael J. Wysocki:
+Am Dienstag, 25. März 2008 15:19:45 schrieb Alan Stern:
+> On Tue, 25 Mar 2008, Oliver Neukum wrote:
 > 
-> > > > + *     after @prepare() returns.  If @prepare() detects a situation it cannot
-> > > > + *     handle (e.g. registration of a child already in progress), it may return
-> > > > + *     -EAGAIN, so that the PM core can execute it once again (e.g. after the
-> > > > + *     new child has been registered) to recover from the race condition. This
-> > > > + *     method is executed for all kinds of suspend transitions and is followed
-> > > > + *     by one of the suspend callbacks: @suspend(), @freeze(), or @poweroff().
-> > > 
-> > > This could be understood so that disconnect() cannot be called.
+> > Am Dienstag, 25. MÃ¤rz 2008 14:06:15 schrieb Rafael J. Wysocki:
+> > > On Tuesday, 25 of March 2008, Oliver Neukum wrote:
 > > 
-> > At what time exactly?
+> > > > A device that cannot wake up is unusable. Shouldn't the pm core disconnect()
+> > > > such a device?
 > 
-> I see no locking that would would prevent disconnect() in the window between
-> prepare() and suspend()/...
+> It's not safe for the PM core to do such things unilaterally.  The 
+> decision to unregister a device should be made by the driver or the 
+> subsystem.
 
-There is no such locking.  It's perfectly legal for a device to be 
-unregistered between prepare() and suspend().  I suppose it wouldn't 
-hurt to add a general comment explaining that a device can be 
-unregistered at any time except when one of its methods is running.
+Why? You can trigger it from user space via sysfs and in many cases
+suspending to disk will disconnect all devices on a bus, so I'd say a
+failure to resume is just a limited subcase of a device vanishing during
+sleep.
 
-Alan Stern
+	Regards
+		Oliver
 
