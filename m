@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762052AbYCYXLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbYCYXNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762052AbYCYXLy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758189AbYCYXLn
+	id S1758653AbYCYXNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 19:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbYCYXN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:11:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33182
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756775AbYCYXLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:11:42 -0400
-Date: Tue, 25 Mar 2008 16:11:42 -0700 (PDT)
-Message-Id: <20080325.161142.65862968.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: joern@logfs.org, jirislaby@gmail.com, viro@ZenIV.linux.org.uk,
-       joe@perches.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups
- - formatting only
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080325134556.GA10424@elte.hu>
-References: <20080325131258.GC11359@logfs.org>
-	<20080325133810.GA10044@elte.hu>
-	<20080325134556.GA10424@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 25 Mar 2008 19:13:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42889 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756286AbYCYXN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 19:13:26 -0400
+Message-ID: <47E98712.6090203@redhat.com>
+Date: Tue, 25 Mar 2008 19:13:22 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Emmanuel Florac <eflorac@intellique.com>, linux-kernel@vger.kernel.org
+Subject: Re: RAID-1 performance under 2.4 and 2.6
+References: <20080325194306.4ac71ff2@galadriel.home> <47E975F8.3000702@redhat.com> <47E98108.9000906@tmr.com>
+In-Reply-To: <47E98108.9000906@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 25 Mar 2008 14:45:56 +0100
-
-> and let me give an example with the your very own code that you wrote 
-> and maintain, drivers/mtd/devices/block2mtd.c:
+Bill Davidsen wrote:
+> Chris Snook wrote:
+>> Emmanuel Florac wrote:
+>>> I post there because I couldn't find any information about this
+>>> elsewhere : on the same hardware ( Athlon X2 3500+, 512MB RAM, 2x400 GB
+>>> Hitachi SATA2 hard drives ) the 2.4 Linux software RAID-1 (tested 2.4.32
+>>> and 2.4.36.2, slightly patched to recognize the hardware :p) is way
+>>> faster than 2.6 ( tested 2.6.17.13, 2.6.18.8, 2.6.22.16, 2.6.24.3)
+>>> especially for writes. I actually made the test on several different
+>>> machines (same hard drives though) and it remained consistent across
+>>> the board, with /mountpoint a software RAID-1.
+>>> Actually checking disk activity with iostat or vmstat shows clearly a
+>>> cache effect much more pronounced on 2.4 (i.e. writing goes on much
+>>> longer in the background) but it doesn't really account for the
+>>> difference. I've also tested it thru NFS from another machine (Giga
+>>> ethernet network):
+>>>
+>>> dd if=/dev/zero of=/mountpoint/testfile bs=1M count=1024
+>>>
+>>> kernel        2.4       2.6        2.4 thru NFS   2.6 thru NFS
+>>>
+>>> write        90 MB/s    65 MB/s      70 MB/s       45 MB/s
+>>> read         90 MB/s    80 MB/s      75 MB/s       65 MB/s
+>>>
+>>> Duh. That's terrible. Does it mean I should stick to  (heavily
+>>> patched...) 2.4 for my file servers or... ? :)
+>>>
+>>
+>> It means you shouldn't use dd as a benchmark.
+>>
+> What do you use as a benchmark for writing large sequential files or 
+> reading them, and why is it better than dd at modeling programs which 
+> read or write in a similar fashion?
 > 
->                                     errors   lines of code   errors/KLOC
-> drivers/mtd/devices/block2mtd.c         10             490          20.4
+> Media programs often do data access in just this fashion, multi-channel 
+> video capture, streaming video servers, and similar.
+> 
 
-Ingo, this is devolving into a "code I maintain is great, code you
-maintain sucks, checkpatch says so" kind of discussion, please stop.
+dd uses unaligned stack-allocated buffers, and defaults to block sized I/O.  To 
+call this inefficient is a gross understatement.  Modern applications which care 
+about streaming I/O performance use large, aligned buffers which allow the 
+kernel to efficiently optimize things, or they use direct I/O to do it 
+themselves, or they make use of system calls like fadvise, madvise, splice, etc. 
+that inform the kernel how they intend to use the data or pass the work off to 
+the kernel completely.  dd is designed to be incredibly lightweight, so it works 
+very well on a box with a 16 MHz CPU.  It was *not* designed to take advantage 
+of the resources modern systems have available to enable scalability.
 
-You're not making any friends by making your arguments this way.
+I suggest an application-oriented benchmark that resembles the application 
+you'll actually be using.
+
+-- Chris
