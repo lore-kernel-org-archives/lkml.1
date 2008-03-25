@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbYCYDdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYCYDmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbYCYDdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 23:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbYCYDdA
+	id S1756806AbYCYDmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 23:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYCYDmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 23:33:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:9029 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755490AbYCYDc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 23:32:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ma0/0aBQGCmu4gdl3H3vQS7Y277MFQ+LJTr+jT+w9pi1J3SKBb6VrrVYLndR2SBrTS2WsbOKiV+2jfq9mbEGiEZZiYdkBxYzx4UXIYQt/+a6f53DMYLPW/4kIDgaWVaKMysQkMt5InEifON7R8NKPBaf4Vibx/LizNGRMi12RtI=
-Message-ID: <47E87261.4020603@gmail.com>
-Date: Tue, 25 Mar 2008 12:32:49 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 24 Mar 2008 23:42:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59308 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbYCYDmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 23:42:05 -0400
+From: Neil Brown <neilb@suse.de>
+To: "John Z." <md2sf@mail.com>
+Date: Tue, 25 Mar 2008 14:41:54 +1100
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Mikael Pettersson <mikpe@it.uu.se>, kurt@roeckx.be,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25-rc6] sata_promise: fix hardreset hotplug events,
- take 2
-References: <200803221421.m2MEL1oY021558@harpo.it.uu.se> <18406.38445.717175.664615@harpo.it.uu.se> <47E70FB4.4010802@gmail.com> <47E86442.8030708@garzik.org> <47E86580.6050206@gmail.com>
-In-Reply-To: <47E86580.6050206@gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18408.29826.857813.735627@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: FW: [PATCH 008 of 9] md: Fix possible raid1/raid10 deadlock on
+ read error during resync.
+In-Reply-To: message from John Z. on Monday March 24
+References: <20080324184903.D9213103C6@ws1-3.us4.outblaze.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jeff Garzik wrote:
->> Tejun Heo wrote:
->>> Acked-by: Tejun Heo <htejun@gmail.com>
->>>
->>> Jeff, do you want to merge this first?  If so, I'll update the
->>> prefer-hardreset and cleanup-sht-ops patchsets; otherwise, I'll massage
->>> this patch a bit so that it fits on top of those two patchsets.
->>
->> I just merged it into #upstream-fixes (answering your question)...  what
->> is your preferred method of sync'ing at this point?
+On Monday March 24, md2sf@mail.com wrote:
 > 
-> Heh... me refreshing the patchset again.  Doing it right now.
+> > 
+> > -----Original Message-----
+> > From: linux-kernel-owner@vger.kernel.org
+> > [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of NeilBrown
+> > Sent: Sunday, March 02, 2008 5:18 PM
+> > To: Andrew Morton
+> > Cc: linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org; K.Tanaka
+> > Subject: [PATCH 008 of 9] md: Fix possible raid1/raid10 deadlock on read
+> > error during resync.
+> > 
+> 
+> > diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+> > --- .prev/drivers/md/raid1.c	2008-03-03 11:03:39.000000000 +1100
+> > +++ ./drivers/md/raid1.c	2008-03-03 09:56:52.000000000 +1100
+> > @@ -704,13 +704,20 @@ static void freeze_array(conf_t *conf)
+> >   	/* stop syncio and normal IO and wait for everything to
+> >   	 * go quite.
+> >   	 * We increment barrier and nr_waiting, and then
+> > -	 * wait until barrier+nr_pending match nr_queued+2
+> > +	 * wait until nr_pending match nr_queued+1
+> > +	 * This is called in the context of one normal IO request
+> > +	 * that has failed. Thus any sync request that might be pending
+> > +	 * will be blocked by nr_pending, and we need to wait for
+> > +	 * pending IO requests to complete or be queued for re-try.
+> > +	 * Thus the number queued (nr_queued) plus this request (1)
+> > +	 * must match the number of pending IOs (nr_pending) before
+> > +	 * we continue.
+> >   	 */
+> >   	spin_lock_irq(&conf->resync_lock);
+> >   	conf->barrier++;
+> >   	conf->nr_waiting++;
+> >   	wait_event_lock_irq(conf->wait_barrier,
+> > -			    conf->barrier+conf->nr_pending ==
+> > conf->nr_queued+2,
+> > +			    conf->nr_pending == conf->nr_queued+1,
+> >   			    conf->resync_lock,
+> >   			    ({ flush_pending_writes(conf);
+> >   			       raid1_unplug(conf->mddev->queue); }));
+> > --
+> 
+> When we call freeze_array, it is after reschedule_retry, during which conf->nr_queued is already incremented.
+> Should we use conf->nr_pending == conf->nr_pending here?
+> 
 
-Okay, updated.  Please pull from
+Can I assume you mean
+          conf->nr_pending == conf->nr_queued
+??
 
-  http://git.kernel.org/?p=linux/kernel/git/tj/libata-dev.git;a=shortlog;h=cleanup-sht-ops
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/libata-dev.git cleanup-sht-ops
+Yes, it is after reschedule_retry which increments ->nr_queued, but
+also after
+       conf->nr_queued--;
+in raid1d when the request is removed from the queue.
 
-It's now on top of the current #upstream-fixes (4cde32fc) and contains
-the followings.
+Does that make sense?
 
-* prefer-hardreset patchset
-* PCI-device-should-be-powered-up-before-being-accssed patch
-* cleanup-sht-ops patchset
-
-Thanks.
-
--- 
-tejun
+NeilBrown
