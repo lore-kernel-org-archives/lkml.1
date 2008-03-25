@@ -1,86 +1,426 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbYCYCpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbYCYCvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbYCYCpA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYCYCov
+	id S1756085AbYCYCvM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYCYCu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 22:44:51 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:49659 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068AbYCYCou (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 22:44:50 -0400
-Message-ID: <47E8676B.7010700@keyaccess.nl>
-Date: Tue, 25 Mar 2008 03:46:03 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 24 Mar 2008 22:50:58 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:37172 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbYCYCu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Mar 2008 22:50:57 -0400
+Date: Mon, 24 Mar 2008 22:50:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       richard.zhao@amd.com, henry.su@amd.com
+Subject: [git patches] libata fixes
+Message-ID: <20080325025055.GA25025@havoc.gtf.org>
 MIME-Version: 1.0
-To: Michael Cree <mcree@orcon.net.nz>
-CC: Bob Tracy <rct@frus.com>, Takashi Iwai <tiwai@suse.de>,
-       ALSA devel <alsa-devel@alsa-project.org>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [alsa-devel] [regression] 2.6.25-rc4 snd-es18xx broken on Alpha
-References: <20080318032427.298BCDBA2@gherkin.frus.com> <546A47FE-F98E-49E2-A250-41F65C2D482B@orcon.net.nz> <47E6338E.8030001@orcon.net.nz> <47E7EFDF.2070706@keyaccess.nl> <47E83F94.8010409@orcon.net.nz> <47E8475E.4080705@keyaccess.nl>
-In-Reply-To: <47E8475E.4080705@keyaccess.nl>
-Content-Type: multipart/mixed;
- boundary="------------040704010104050006030304"
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040704010104050006030304
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 25-03-08 01:29, Rene Herman wrote:
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-> On 25-03-08 00:56, Michael Cree wrote:
+to receive the following updates:
 
-> 
->> At this stage I've run out of time to test the M-Audio Rev in the 
->> XP1000 and see if the MMAP disable patch help there.
-> 
-> Given that it fixes es18xx and cmipci on the PWS600au and that those 
-> worked without trouble on the XP1000, you'd _expect_ not, but the OOPs 
-> you posted before seemed to indicate that it stands a fair chance afer all.
+ drivers/ata/ahci.c         |    6 ++-
+ drivers/ata/libata-core.c  |   48 ++++++++++++--------
+ drivers/ata/libata-scsi.c  |   14 ++++-
+ drivers/ata/pata_it821x.c  |    2 +-
+ drivers/ata/sata_promise.c |  109 +++++++++++++++++++++++++++++++++++--------
+ include/linux/libata.h     |    8 +++-
+ 6 files changed, 141 insertions(+), 46 deletions(-)
 
-Oh, by the way, note that it only disabled mmap for CONFIG_ALPHA_MIATA due 
-to your report of es18xx working fine on the XP1000, so you'll have to 
-change that to CONFIG_ALPHA_DP264 for the XP1000 to actually test it there:
+Jeff Garzik (1):
+      [libata] ahci: SB600 workaround is suspect... play it safe for now
 
-(or just delete SNDRV_PCM_INFO_MMAP from the info structures in the driver 
-as Takashi earlier instructed)
+Mikael Pettersson (1):
+      sata_promise: fix hardreset hotplug events, take 2
 
-Rene.
+Tejun Heo (4):
+      libata: implement ata_qc_raw_nbytes()
+      pata_it821x: use raw nbytes in check_atapi_dma
+      libata: assume no device is attached if both IDENTIFYs are aborted
+      libata: improve HPA error handling
 
---------------040704010104050006030304
-Content-Type: text/plain;
- name="dp264_no_mmap.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dp264_no_mmap.diff"
-
-diff --git a/include/sound/asound.h b/include/sound/asound.h
-index 3eaf155..e3b9c2d 100644
---- a/include/sound/asound.h
-+++ b/include/sound/asound.h
-@@ -241,8 +241,14 @@ typedef int __bitwise snd_pcm_subformat_t;
- #define	SNDRV_PCM_SUBFORMAT_STD		((__force snd_pcm_subformat_t) 0)
- #define	SNDRV_PCM_SUBFORMAT_LAST	SNDRV_PCM_SUBFORMAT_STD
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 17ee6ed..b1eb4e2 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -433,6 +433,7 @@ static const struct ata_port_info ahci_port_info[] = {
+ 	/* board_ahci_sb600 */
+ 	{
+ 		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL |
++				 AHCI_HFLAG_32BIT_ONLY |
+ 				 AHCI_HFLAG_SECT255 | AHCI_HFLAG_NO_PMP),
+ 		.flags		= AHCI_FLAG_COMMON,
+ 		.link_flags	= AHCI_LFLAG_COMMON,
+@@ -1217,8 +1218,11 @@ static void ahci_dev_config(struct ata_device *dev)
+ {
+ 	struct ahci_host_priv *hpriv = dev->link->ap->host->private_data;
  
-+#ifdef CONFIG_ALPHA_DP264
-+#define SNDRV_PCM_INFO_MMAP		0		/* the useful comment goes here */
-+#define SNDRV_PCM_INFO_MMAP_VALID	0
-+#else
- #define SNDRV_PCM_INFO_MMAP		0x00000001	/* hardware supports mmap */
- #define SNDRV_PCM_INFO_MMAP_VALID	0x00000002	/* period data are valid during transfer */
-+#endif
+-	if (hpriv->flags & AHCI_HFLAG_SECT255)
++	if (hpriv->flags & AHCI_HFLAG_SECT255) {
+ 		dev->max_sectors = 255;
++		ata_dev_printk(dev, KERN_INFO,
++			       "SB600 AHCI: limiting to 255 sectors per cmd\n");
++	}
+ }
+ 
+ static unsigned int ahci_dev_classify(struct ata_port *ap)
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4bbe31f..c4248b3 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1416,12 +1416,12 @@ static int ata_hpa_resize(struct ata_device *dev)
+ 	/* read native max address */
+ 	rc = ata_read_native_max_address(dev, &native_sectors);
+ 	if (rc) {
+-		/* If HPA isn't going to be unlocked, skip HPA
+-		 * resizing from the next try.
++		/* If device aborted the command or HPA isn't going to
++		 * be unlocked, skip HPA resizing.
+ 		 */
+-		if (!ata_ignore_hpa) {
++		if (rc == -EACCES || !ata_ignore_hpa) {
+ 			ata_dev_printk(dev, KERN_WARNING, "HPA support seems "
+-				       "broken, will skip HPA handling\n");
++				       "broken, skipping HPA handling\n");
+ 			dev->horkage |= ATA_HORKAGE_BROKEN_HPA;
+ 
+ 			/* we can continue if device aborted the command */
+@@ -2092,24 +2092,34 @@ int ata_dev_read_id(struct ata_device *dev, unsigned int *p_class,
+ 				     id, sizeof(id[0]) * ATA_ID_WORDS, 0);
+ 	if (err_mask) {
+ 		if (err_mask & AC_ERR_NODEV_HINT) {
+-			DPRINTK("ata%u.%d: NODEV after polling detection\n",
+-				ap->print_id, dev->devno);
++			ata_dev_printk(dev, KERN_DEBUG,
++				       "NODEV after polling detection\n");
+ 			return -ENOENT;
+ 		}
+ 
+-		/* Device or controller might have reported the wrong
+-		 * device class.  Give a shot at the other IDENTIFY if
+-		 * the current one is aborted by the device.
+-		 */
+-		if (may_fallback &&
+-		    (err_mask == AC_ERR_DEV) && (tf.feature & ATA_ABORTED)) {
+-			may_fallback = 0;
++		if ((err_mask == AC_ERR_DEV) && (tf.feature & ATA_ABORTED)) {
++			/* Device or controller might have reported
++			 * the wrong device class.  Give a shot at the
++			 * other IDENTIFY if the current one is
++			 * aborted by the device.
++			 */
++			if (may_fallback) {
++				may_fallback = 0;
+ 
+-			if (class == ATA_DEV_ATA)
+-				class = ATA_DEV_ATAPI;
+-			else
+-				class = ATA_DEV_ATA;
+-			goto retry;
++				if (class == ATA_DEV_ATA)
++					class = ATA_DEV_ATAPI;
++				else
++					class = ATA_DEV_ATA;
++				goto retry;
++			}
 +
- #define SNDRV_PCM_INFO_DOUBLE		0x00000004	/* Double buffering needed for PCM start/stop */
- #define SNDRV_PCM_INFO_BATCH		0x00000010	/* double buffering */
- #define SNDRV_PCM_INFO_INTERLEAVED	0x00000100	/* channels are interleaved */
-
---------------040704010104050006030304--
++			/* Control reaches here iff the device aborted
++			 * both flavors of IDENTIFYs which happens
++			 * sometimes with phantom devices.
++			 */
++			ata_dev_printk(dev, KERN_DEBUG,
++				       "both IDENTIFYs aborted, assuming NODEV\n");
++			return -ENOENT;
+ 		}
+ 
+ 		rc = -EIO;
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 8f0e8f2..1579539 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -527,6 +527,14 @@ static struct ata_queued_cmd *ata_scsi_qc_new(struct ata_device *dev,
+ 	return qc;
+ }
+ 
++static void ata_qc_set_pc_nbytes(struct ata_queued_cmd *qc)
++{
++	struct scsi_cmnd *scmd = qc->scsicmd;
++
++	qc->extrabytes = scmd->request->extra_len;
++	qc->nbytes = scsi_bufflen(scmd) + qc->extrabytes;
++}
++
+ /**
+  *	ata_dump_status - user friendly display of error info
+  *	@id: id of the port in question
+@@ -2539,7 +2547,7 @@ static unsigned int atapi_xlat(struct ata_queued_cmd *qc)
+ 	}
+ 
+ 	qc->tf.command = ATA_CMD_PACKET;
+-	qc->nbytes = scsi_bufflen(scmd) + scmd->request->extra_len;
++	ata_qc_set_pc_nbytes(qc);
+ 
+ 	/* check whether ATAPI DMA is safe */
+ 	if (!using_pio && ata_check_atapi_dma(qc))
+@@ -2550,7 +2558,7 @@ static unsigned int atapi_xlat(struct ata_queued_cmd *qc)
+ 	 * want to set it properly, and for DMA where it is
+ 	 * effectively meaningless.
+ 	 */
+-	nbytes = min(scmd->request->data_len, (unsigned int)63 * 1024);
++	nbytes = min(ata_qc_raw_nbytes(qc), (unsigned int)63 * 1024);
+ 
+ 	/* Most ATAPI devices which honor transfer chunk size don't
+ 	 * behave according to the spec when odd chunk size which
+@@ -2876,7 +2884,7 @@ static unsigned int ata_scsi_pass_thru(struct ata_queued_cmd *qc)
+ 	 * TODO: find out if we need to do more here to
+ 	 *       cover scatter/gather case.
+ 	 */
+-	qc->nbytes = scsi_bufflen(scmd) + scmd->request->extra_len;
++	ata_qc_set_pc_nbytes(qc);
+ 
+ 	/* request result TF and be quiet about device error */
+ 	qc->flags |= ATA_QCFLAG_RESULT_TF | ATA_QCFLAG_QUIET;
+diff --git a/drivers/ata/pata_it821x.c b/drivers/ata/pata_it821x.c
+index 109ddd4..257951d 100644
+--- a/drivers/ata/pata_it821x.c
++++ b/drivers/ata/pata_it821x.c
+@@ -564,7 +564,7 @@ static int it821x_check_atapi_dma(struct ata_queued_cmd *qc)
+ 	struct it821x_dev *itdev = ap->private_data;
+ 
+ 	/* Only use dma for transfers to/from the media. */
+-	if (qc->nbytes < 2048)
++	if (ata_qc_raw_nbytes(qc) < 2048)
+ 		return -EOPNOTSUPP;
+ 
+ 	/* No ATAPI DMA in smart mode */
+diff --git a/drivers/ata/sata_promise.c b/drivers/ata/sata_promise.c
+index f251a5f..11c1afe 100644
+--- a/drivers/ata/sata_promise.c
++++ b/drivers/ata/sata_promise.c
+@@ -46,7 +46,7 @@
+ #include "sata_promise.h"
+ 
+ #define DRV_NAME	"sata_promise"
+-#define DRV_VERSION	"2.11"
++#define DRV_VERSION	"2.12"
+ 
+ enum {
+ 	PDC_MAX_PORTS		= 4,
+@@ -145,7 +145,9 @@ static int pdc_old_sata_check_atapi_dma(struct ata_queued_cmd *qc);
+ static void pdc_irq_clear(struct ata_port *ap);
+ static unsigned int pdc_qc_issue_prot(struct ata_queued_cmd *qc);
+ static void pdc_freeze(struct ata_port *ap);
++static void pdc_sata_freeze(struct ata_port *ap);
+ static void pdc_thaw(struct ata_port *ap);
++static void pdc_sata_thaw(struct ata_port *ap);
+ static void pdc_pata_error_handler(struct ata_port *ap);
+ static void pdc_sata_error_handler(struct ata_port *ap);
+ static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
+@@ -180,8 +182,8 @@ static const struct ata_port_operations pdc_sata_ops = {
+ 
+ 	.qc_prep		= pdc_qc_prep,
+ 	.qc_issue		= pdc_qc_issue_prot,
+-	.freeze			= pdc_freeze,
+-	.thaw			= pdc_thaw,
++	.freeze			= pdc_sata_freeze,
++	.thaw			= pdc_sata_thaw,
+ 	.error_handler		= pdc_sata_error_handler,
+ 	.post_internal_cmd	= pdc_post_internal_cmd,
+ 	.cable_detect		= pdc_sata_cable_detect,
+@@ -205,8 +207,8 @@ static const struct ata_port_operations pdc_old_sata_ops = {
+ 
+ 	.qc_prep		= pdc_qc_prep,
+ 	.qc_issue		= pdc_qc_issue_prot,
+-	.freeze			= pdc_freeze,
+-	.thaw			= pdc_thaw,
++	.freeze			= pdc_sata_freeze,
++	.thaw			= pdc_sata_thaw,
+ 	.error_handler		= pdc_sata_error_handler,
+ 	.post_internal_cmd	= pdc_post_internal_cmd,
+ 	.cable_detect		= pdc_sata_cable_detect,
+@@ -631,6 +633,41 @@ static void pdc_qc_prep(struct ata_queued_cmd *qc)
+ 	}
+ }
+ 
++static int pdc_is_sataii_tx4(unsigned long flags)
++{
++	const unsigned long mask = PDC_FLAG_GEN_II | PDC_FLAG_4_PORTS;
++	return (flags & mask) == mask;
++}
++
++static unsigned int pdc_port_no_to_ata_no(unsigned int port_no,
++					  int is_sataii_tx4)
++{
++	static const unsigned char sataii_tx4_port_remap[4] = { 3, 1, 0, 2};
++	return is_sataii_tx4 ? sataii_tx4_port_remap[port_no] : port_no;
++}
++
++static unsigned int pdc_sata_nr_ports(const struct ata_port *ap)
++{
++	return (ap->flags & PDC_FLAG_4_PORTS) ? 4 : 2;
++}
++
++static unsigned int pdc_sata_ata_port_to_ata_no(const struct ata_port *ap)
++{
++	const struct ata_host *host = ap->host;
++	unsigned int nr_ports = pdc_sata_nr_ports(ap);
++	unsigned int i;
++
++	for(i = 0; i < nr_ports && host->ports[i] != ap; ++i)
++		;
++	BUG_ON(i >= nr_ports);
++	return pdc_port_no_to_ata_no(i, pdc_is_sataii_tx4(ap->flags));
++}
++
++static unsigned int pdc_sata_hotplug_offset(const struct ata_port *ap)
++{
++	return (ap->flags & PDC_FLAG_GEN_II) ? PDC2_SATA_PLUG_CSR : PDC_SATA_PLUG_CSR;
++}
++
+ static void pdc_freeze(struct ata_port *ap)
+ {
+ 	void __iomem *mmio = ap->ioaddr.cmd_addr;
+@@ -643,6 +680,29 @@ static void pdc_freeze(struct ata_port *ap)
+ 	readl(mmio + PDC_CTLSTAT); /* flush */
+ }
+ 
++static void pdc_sata_freeze(struct ata_port *ap)
++{
++	struct ata_host *host = ap->host;
++	void __iomem *host_mmio = host->iomap[PDC_MMIO_BAR];
++	unsigned int hotplug_offset = pdc_sata_hotplug_offset(ap);
++	unsigned int ata_no = pdc_sata_ata_port_to_ata_no(ap);
++	u32 hotplug_status;
++
++	/* Disable hotplug events on this port.
++	 *
++	 * Locking:
++	 * 1) hotplug register accesses must be serialised via host->lock
++	 * 2) ap->lock == &ap->host->lock
++	 * 3) ->freeze() and ->thaw() are called with ap->lock held
++	 */
++	hotplug_status = readl(host_mmio + hotplug_offset);
++	hotplug_status |= 0x11 << (ata_no + 16);
++	writel(hotplug_status, host_mmio + hotplug_offset);
++	readl(host_mmio + hotplug_offset); /* flush */
++
++	pdc_freeze(ap);
++}
++
+ static void pdc_thaw(struct ata_port *ap)
+ {
+ 	void __iomem *mmio = ap->ioaddr.cmd_addr;
+@@ -658,6 +718,26 @@ static void pdc_thaw(struct ata_port *ap)
+ 	readl(mmio + PDC_CTLSTAT); /* flush */
+ }
+ 
++static void pdc_sata_thaw(struct ata_port *ap)
++{
++	struct ata_host *host = ap->host;
++	void __iomem *host_mmio = host->iomap[PDC_MMIO_BAR];
++	unsigned int hotplug_offset = pdc_sata_hotplug_offset(ap);
++	unsigned int ata_no = pdc_sata_ata_port_to_ata_no(ap);
++	u32 hotplug_status;
++
++	pdc_thaw(ap);
++
++	/* Enable hotplug events on this port.
++	 * Locking: see pdc_sata_freeze().
++	 */
++	hotplug_status = readl(host_mmio + hotplug_offset);
++	hotplug_status |= 0x11 << ata_no;
++	hotplug_status &= ~(0x11 << (ata_no + 16));
++	writel(hotplug_status, host_mmio + hotplug_offset);
++	readl(host_mmio + hotplug_offset); /* flush */
++}
++
+ static void pdc_common_error_handler(struct ata_port *ap, ata_reset_fn_t hardreset)
+ {
+ 	if (!(ap->pflags & ATA_PFLAG_FROZEN))
+@@ -765,19 +845,6 @@ static void pdc_irq_clear(struct ata_port *ap)
+ 	readl(mmio + PDC_INT_SEQMASK);
+ }
+ 
+-static int pdc_is_sataii_tx4(unsigned long flags)
+-{
+-	const unsigned long mask = PDC_FLAG_GEN_II | PDC_FLAG_4_PORTS;
+-	return (flags & mask) == mask;
+-}
+-
+-static unsigned int pdc_port_no_to_ata_no(unsigned int port_no,
+-					  int is_sataii_tx4)
+-{
+-	static const unsigned char sataii_tx4_port_remap[4] = { 3, 1, 0, 2};
+-	return is_sataii_tx4 ? sataii_tx4_port_remap[port_no] : port_no;
+-}
+-
+ static irqreturn_t pdc_interrupt(int irq, void *dev_instance)
+ {
+ 	struct ata_host *host = dev_instance;
+@@ -799,6 +866,8 @@ static irqreturn_t pdc_interrupt(int irq, void *dev_instance)
+ 
+ 	mmio_base = host->iomap[PDC_MMIO_BAR];
+ 
++	spin_lock(&host->lock);
++
+ 	/* read and clear hotplug flags for all ports */
+ 	if (host->ports[0]->flags & PDC_FLAG_GEN_II)
+ 		hotplug_offset = PDC2_SATA_PLUG_CSR;
+@@ -814,11 +883,9 @@ static irqreturn_t pdc_interrupt(int irq, void *dev_instance)
+ 
+ 	if (mask == 0xffffffff && hotplug_status == 0) {
+ 		VPRINTK("QUICK EXIT 2\n");
+-		return IRQ_NONE;
++		goto done_irq;
+ 	}
+ 
+-	spin_lock(&host->lock);
+-
+ 	mask &= 0xffff;		/* only 16 tags possible */
+ 	if (mask == 0 && hotplug_status == 0) {
+ 		VPRINTK("QUICK EXIT 3\n");
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index a05f600..269cdba 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -463,6 +463,7 @@ struct ata_queued_cmd {
+ 	unsigned int		sect_size;
+ 
+ 	unsigned int		nbytes;
++	unsigned int		extrabytes;
+ 	unsigned int		curbytes;
+ 
+ 	struct scatterlist	*cursg;
+@@ -1336,6 +1337,11 @@ static inline struct ata_queued_cmd *ata_qc_from_tag(struct ata_port *ap,
+ 	return NULL;
+ }
+ 
++static inline unsigned int ata_qc_raw_nbytes(struct ata_queued_cmd *qc)
++{
++	return qc->nbytes - min(qc->extrabytes, qc->nbytes);
++}
++
+ static inline void ata_tf_init(struct ata_device *dev, struct ata_taskfile *tf)
+ {
+ 	memset(tf, 0, sizeof(*tf));
+@@ -1354,7 +1360,7 @@ static inline void ata_qc_reinit(struct ata_queued_cmd *qc)
+ 	qc->flags = 0;
+ 	qc->cursg = NULL;
+ 	qc->cursg_ofs = 0;
+-	qc->nbytes = qc->curbytes = 0;
++	qc->nbytes = qc->extrabytes = qc->curbytes = 0;
+ 	qc->n_elem = 0;
+ 	qc->err_mask = 0;
+ 	qc->sect_size = ATA_SECT_SIZE;
