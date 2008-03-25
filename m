@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYCYAOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYCYA1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbYCYAOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 20:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYCYAOh
+	id S1755580AbYCYA1X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 20:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYCYA1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Mar 2008 20:14:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53277
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751952AbYCYAOg (ORCPT
+	Mon, 24 Mar 2008 20:27:15 -0400
+Received: from testure.choralone.org ([194.9.77.134]:57716 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752799AbYCYA1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Mar 2008 20:14:36 -0400
-Date: Mon, 24 Mar 2008 17:14:36 -0700 (PDT)
-Message-Id: <20080324.171436.229641263.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, rpjday@crashcourse.ca
-Subject: Re: +
- netdev-cassini-use-shorter-list_splice_init-macro-for-brevity.patch added
- to -mm tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080324170048.50fc8972.akpm@linux-foundation.org>
-References: <20080324163105.154a031a.akpm@linux-foundation.org>
-	<20080324.164810.83653077.davem@davemloft.net>
-	<20080324170048.50fc8972.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Mar 2008 20:27:14 -0400
+Date: Mon, 24 Mar 2008 20:27:05 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Silence two kerneldoc warnings in kernel/audit.c
+Message-ID: <20080325002705.GA25116@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 24 Mar 2008 17:00:48 -0700
+Silence two kerneldoc warnings.
 
-> I dropped net-2.6.24 when its git-fetch started failing.  But I have no
-> automatable way of knowing when to start picking up net-2.6.25.
+Warning(kernel/audit.c:1276): No description found for parameter 'string'
+Warning(kernel/audit.c:1276): No description found for parameter 'len'
 
-I'll try to remember to create the next net tree at a suitable
-time or move over to a more predictable naming convention,
-perhaps something like net-next-2.6 :-)
+[also fix a typo for bonus points]
+
+Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
+
+--- linux-2.6.24.noarch/kernel/audit.c~	2008-03-24 20:22:32.000000000 -0400
++++ linux-2.6.24.noarch/kernel/audit.c	2008-03-24 20:23:34.000000000 -0400
+@@ -1269,8 +1269,8 @@ static void audit_log_n_string(struct au
+ 
+ /**
+  * audit_string_contains_control - does a string need to be logged in hex
+- * @string - string to be checked
+- * @len - max length of the string to check
++ * @string: string to be checked
++ * @len: max length of the string to check
+  */
+ int audit_string_contains_control(const char *string, size_t len)
+ {
+@@ -1285,7 +1285,7 @@ int audit_string_contains_control(const 
+ /**
+  * audit_log_n_untrustedstring - log a string that may contain random characters
+  * @ab: audit_buffer
+- * @len: lenth of string (not including trailing null)
++ * @len: length of string (not including trailing null)
+  * @string: string to be logged
+  *
+  * This code will escape a string that is passed to it if the string
+
