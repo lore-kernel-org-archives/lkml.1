@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbYCYMuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYCYMxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754470AbYCYMuB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 08:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYCYMtx
+	id S1754614AbYCYMxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 08:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYCYMxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 08:49:53 -0400
-Received: from picture.zai.com ([12.47.112.36]:11933 "EHLO york.rivers.zai.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750707AbYCYMtw convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 08:53:11 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:57262 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYCYMxK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 08:49:52 -0400
-X-Greylist: delayed 911 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Mar 2008 08:49:52 EDT
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-Subject: Performance changes between 2.6.13 and 2.6.23
-Date: Tue, 25 Mar 2008 08:34:40 -0400
-Message-ID: <D108F32273D3044F8C7B24328CB7713701A4D1@york.rivers.zai.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Performance changes between 2.6.13 and 2.6.23
-Thread-Index: AciOdJhvdGEIdTBdT6GsLo2CoQ8XiA==
-From: "Sanders, Rob M." <sanders-rob@zai.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Sanders, Rob M." <sanders-rob@zai.com>
+	Tue, 25 Mar 2008 08:53:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhAFAE+S6EdMQWoK/2dsb2JhbACBWqgX
+Date: Tue, 25 Mar 2008 08:53:08 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       hch@infradead.org, mmlnx@us.ibm.com, dipankar@in.ibm.com,
+       dsmith@redhat.com, rostedt@goodmis.org, adrian.bunk@movial.fi,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
+       oleg@tv-sign.ru
+Subject: Re: [PATCH,RFC] Initialize call_rcu_sched sooner
+Message-ID: <20080325125308.GA19690@Krystal>
+References: <20080321143615.GA936@linux.vnet.ibm.com> <20080321224026.GA10169@linux.vnet.ibm.com> <20080324050652.GA4906@Krystal> <20080324054630.GE4555@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080324054630.GE4555@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:51:03 up 25 days,  9:02,  6 users,  load average: 0.40, 0.40,
+	0.27
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-  I've been lurking on the digest for some time (don't want to receive full lkml traffic at work) and saw the
-posts about Wine performance regressions in 2.6.24.  Some of what I saw there, particularly Andi Kleen's 
-responses, mirror something that I see on my box at home.  I had emailed Andi directly since I only read the
-digest, and I'm posting this here at his suggestion.  Please CC: rms@zai.com with any replies, as I'm only 
-getting the lkml digest.
-  I'm running on a dual 2GHZ G5 Powermac w/2GB ram.  I recently upgraded from YDL4.0.91 (2.6.13 kernel) to
-YDL6 (2.6.23 kernel) and noticed that the overall performance of the box seems more sluggish after the upgrade.
-Of more particular concern, the main application that I build has seen a 4-5X slowdown in performance.  Under
-YDL4.0.91 I could process roughly 1e8 data points in ~2 seconds, and under YDL6.0 I now process 1e8 data points
-in ~8 seconds.  Total CPU loading (from top) is about 5%, under both systems.  The application spawns multiple
-processes and uses semaphores and shared memory to move data between the processes.  When I use 'vmstat 3' the
-single biggest difference I see between YDL4.0.91 and YDL6 is that the YDL4.0.91 system is the YDL4.0.91 system is 
-context switching about 7000 per interval, whereas the YDl6 system is context switching about 1200 times per interval.
-  I've been talking somewhat with Owen Stampflee (works for the distro maker, TSS) and have rebuilt the kernel on 
-the 2.6 box removing some of the things that I don't need on my box (cell support, etc).  There did seem (subjectively)
-to be a slight improvement after that.  When I get some more time to play at home I'm going to take the 2.6.13 .config
-I use and build a 2.6.23 kernal using 'make oldconfig' and try to figure if it is a config issues.
-  I realize that going from 2.6.13 to 2.6.23 is a *huge* change, and that the problems may not be tied to the kernel
-but to other things, but are there any other suggestions folks have for finding the cause of the performance slowdown?
+Initialize call_rcu_sched sooner so it can be used in module_init stage.
 
-Thank you...
+(needed for LTTng)
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ init/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Rob
+Index: linux-2.6-lttng/init/main.c
+===================================================================
+--- linux-2.6-lttng.orig/init/main.c	2008-03-25 08:49:02.000000000 -0400
++++ linux-2.6-lttng/init/main.c	2008-03-25 08:49:20.000000000 -0400
+@@ -738,13 +738,13 @@ static void __init do_initcalls(void)
+  */
+ static void __init do_basic_setup(void)
+ {
++	rcu_init_sched();
+ 	/* drivers will send hotplug events */
+ 	init_workqueues();
+ 	usermodehelper_init();
+ 	driver_init();
+ 	init_irq_proc();
+ 	do_initcalls();
+-	rcu_init_sched();
+ }
+ 
+ static int __initdata nosoftlockup;
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
