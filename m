@@ -1,305 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbYCYCUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbYCYCVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbYCYCUs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Mar 2008 22:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbYCYCT7
+	id S1754411AbYCYCVF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Mar 2008 22:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYCYCT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 24 Mar 2008 22:19:59 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50298 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:50308 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752562AbYCYCT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752917AbYCYCT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 24 Mar 2008 22:19:56 -0400
-Message-Id: <20080325021955.668613000@polaris-admin.engr.sgi.com>
+Message-Id: <20080325021955.802967000@polaris-admin.engr.sgi.com>
 References: <20080325021954.979158000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 24 Mar 2008 19:19:58 -0700
+Date: Mon, 24 Mar 2008 19:19:59 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Len Brown <len.brown@intel.com>
-Subject: [PATCH 04/10] acpi: change processors from array to per_cpu variable
-Content-Disposition: inline; filename=nr_cpus-in-acpi-driver-cpu_alloc
+       Paul Jackson <pj@sgi.com>
+Subject: [PATCH 05/10] cpumask: Add cpumask_scnprintf_len function
+Content-Disposition: inline; filename=add-cpumask_scnprintf_len
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change processors from an array sized by NR_CPUS to a per_cpu variable.
+Add a new function cpumask_scnprintf_len() to return the number of
+characters needed to display "len" cpumask bits.  The current method
+of allocating NR_CPUS bytes is incorrect as what's really needed is
+9 characters per 32-bit word of cpumask bits (8 hex digits plus the
+seperator [','] or the terminating NULL.)  This function provides the
+caller the means to allocate the correct string length.
 
 Based on linux-2.6.25-rc5-mm1
 
-Cc: Len Brown <len.brown@intel.com>
+Cc: Paul Jackson <pj@sgi.com>
+
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- drivers/acpi/processor_core.c       |   18 ++++++++----------
- drivers/acpi/processor_idle.c       |    8 ++++----
- drivers/acpi/processor_perflib.c    |   18 +++++++++---------
- drivers/acpi/processor_throttling.c |   14 +++++++-------
- include/acpi/processor.h            |    2 +-
- 5 files changed, 29 insertions(+), 31 deletions(-)
+ include/linux/bitmap.h  |    1 +
+ include/linux/cpumask.h |    7 +++++++
+ lib/bitmap.c            |   16 ++++++++++++++++
+ 3 files changed, 24 insertions(+)
 
---- linux-2.6.25-rc5.orig/drivers/acpi/processor_core.c
-+++ linux-2.6.25-rc5/drivers/acpi/processor_core.c
-@@ -118,7 +118,7 @@ static const struct file_operations acpi
- 	.release = single_release,
- };
+--- linux-2.6.25-rc5.orig/include/linux/bitmap.h
++++ linux-2.6.25-rc5/include/linux/bitmap.h
+@@ -110,6 +110,7 @@ extern int __bitmap_weight(const unsigne
  
--struct acpi_processor *processors[NR_CPUS];
-+DEFINE_PER_CPU(struct acpi_processor *, processors);
- struct acpi_processor_errata errata __read_mostly;
- 
- /* --------------------------------------------------------------------------
-@@ -615,7 +615,7 @@ static int acpi_processor_get_info(struc
- 	return 0;
+ extern int bitmap_scnprintf(char *buf, unsigned int len,
+ 			const unsigned long *src, int nbits);
++extern int bitmap_scnprintf_len(unsigned int len);
+ extern int __bitmap_parse(const char *buf, unsigned int buflen, int is_user,
+ 			unsigned long *dst, int nbits);
+ extern int bitmap_parse_user(const char __user *ubuf, unsigned int ulen,
+--- linux-2.6.25-rc5.orig/include/linux/cpumask.h
++++ linux-2.6.25-rc5/include/linux/cpumask.h
+@@ -277,6 +277,13 @@ static inline int __cpumask_scnprintf(ch
+ 	return bitmap_scnprintf(buf, len, srcp->bits, nbits);
  }
  
--static void *processor_device_array[NR_CPUS];
-+static DEFINE_PER_CPU(void *, processor_device_array);
++#define cpumask_scnprintf_len(len) \
++			__cpumask_scnprintf_len((len))
++static inline int __cpumask_scnprintf_len(int len)
++{
++	return bitmap_scnprintf_len(len);
++}
++
+ #define cpumask_parse_user(ubuf, ulen, dst) \
+ 			__cpumask_parse_user((ubuf), (ulen), &(dst), NR_CPUS)
+ static inline int __cpumask_parse_user(const char __user *buf, int len,
+--- linux-2.6.25-rc5.orig/lib/bitmap.c
++++ linux-2.6.25-rc5/lib/bitmap.c
+@@ -316,6 +316,22 @@ int bitmap_scnprintf(char *buf, unsigned
+ EXPORT_SYMBOL(bitmap_scnprintf);
  
- static int __cpuinit acpi_processor_start(struct acpi_device *device)
- {
-@@ -639,15 +639,15 @@ static int __cpuinit acpi_processor_star
- 	 * ACPI id of processors can be reported wrongly by the BIOS.
- 	 * Don't trust it blindly
- 	 */
--	if (processor_device_array[pr->id] != NULL &&
--	    processor_device_array[pr->id] != device) {
-+	if (per_cpu(processor_device_array, pr->id) != NULL &&
-+	    per_cpu(processor_device_array, pr->id) != device) {
- 		printk(KERN_WARNING "BIOS reported wrong ACPI id "
- 			"for the processor\n");
- 		return -ENODEV;
- 	}
--	processor_device_array[pr->id] = device;
-+	per_cpu(processor_device_array, pr->id) = device;
- 
--	processors[pr->id] = pr;
-+	per_cpu(processors, pr->id) = pr;
- 
- 	result = acpi_processor_add_fs(device);
- 	if (result)
-@@ -751,7 +751,7 @@ static int acpi_cpu_soft_notify(struct n
- 		unsigned long action, void *hcpu)
- {
- 	unsigned int cpu = (unsigned long)hcpu;
--	struct acpi_processor *pr = processors[cpu];
-+	struct acpi_processor *pr = per_cpu(processors, cpu);
- 
- 	if (action == CPU_ONLINE && pr) {
- 		acpi_processor_ppc_has_changed(pr);
-@@ -821,7 +821,7 @@ static int acpi_processor_remove(struct 
- 		pr->cdev = NULL;
- 	}
- 
--	processors[pr->id] = NULL;
-+	per_cpu(processors, pr->id) = NULL;
- 
- 	kfree(pr);
- 
-@@ -1070,8 +1070,6 @@ static int __init acpi_processor_init(vo
- {
- 	int result = 0;
- 
--
--	memset(&processors, 0, sizeof(processors));
- 	memset(&errata, 0, sizeof(errata));
- 
- #ifdef CONFIG_SMP
---- linux-2.6.25-rc5.orig/drivers/acpi/processor_idle.c
-+++ linux-2.6.25-rc5/drivers/acpi/processor_idle.c
-@@ -417,7 +417,7 @@ static void acpi_processor_idle(void)
- 	 */
- 	local_irq_disable();
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 	if (!pr) {
- 		local_irq_enable();
- 		return;
-@@ -1438,7 +1438,7 @@ static int acpi_idle_enter_c1(struct cpu
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 
- 	if (unlikely(!pr))
- 		return 0;
-@@ -1478,7 +1478,7 @@ static int acpi_idle_enter_simple(struct
- 	u32 t1, t2;
- 	int sleep_ticks = 0;
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 
- 	if (unlikely(!pr))
- 		return 0;
-@@ -1557,7 +1557,7 @@ static int acpi_idle_enter_bm(struct cpu
- 	u32 t1, t2;
- 	int sleep_ticks = 0;
- 
--	pr = processors[smp_processor_id()];
-+	pr = __get_cpu_var(processors);
- 
- 	if (unlikely(!pr))
- 		return 0;
---- linux-2.6.25-rc5.orig/drivers/acpi/processor_perflib.c
-+++ linux-2.6.25-rc5/drivers/acpi/processor_perflib.c
-@@ -89,7 +89,7 @@ static int acpi_processor_ppc_notifier(s
- 	if (event != CPUFREQ_INCOMPATIBLE)
- 		goto out;
- 
--	pr = processors[policy->cpu];
-+	pr = per_cpu(processors, policy->cpu);
- 	if (!pr || !pr->performance)
- 		goto out;
- 
-@@ -577,7 +577,7 @@ int acpi_processor_preregister_performan
- 
- 	/* Call _PSD for all CPUs */
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr) {
- 			/* Look only at processors in ACPI namespace */
- 			continue;
-@@ -608,7 +608,7 @@ int acpi_processor_preregister_performan
- 	 * domain info.
- 	 */
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -629,7 +629,7 @@ int acpi_processor_preregister_performan
- 
- 	cpus_clear(covered_cpus);
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -656,7 +656,7 @@ int acpi_processor_preregister_performan
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -685,7 +685,7 @@ int acpi_processor_preregister_performan
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -702,7 +702,7 @@ int acpi_processor_preregister_performan
- 
- err_ret:
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr || !pr->performance)
- 			continue;
- 
-@@ -733,7 +733,7 @@ acpi_processor_register_performance(stru
- 
- 	mutex_lock(&performance_mutex);
- 
--	pr = processors[cpu];
-+	pr = per_cpu(processors, cpu);
- 	if (!pr) {
- 		mutex_unlock(&performance_mutex);
- 		return -ENODEV;
-@@ -771,7 +771,7 @@ acpi_processor_unregister_performance(st
- 
- 	mutex_lock(&performance_mutex);
- 
--	pr = processors[cpu];
-+	pr = per_cpu(processors, cpu);
- 	if (!pr) {
- 		mutex_unlock(&performance_mutex);
- 		return;
---- linux-2.6.25-rc5.orig/drivers/acpi/processor_throttling.c
-+++ linux-2.6.25-rc5/drivers/acpi/processor_throttling.c
-@@ -71,7 +71,7 @@ static int acpi_processor_update_tsd_coo
- 	 * coordination between all CPUs.
- 	 */
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -93,7 +93,7 @@ static int acpi_processor_update_tsd_coo
- 
- 	cpus_clear(covered_cpus);
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -119,7 +119,7 @@ static int acpi_processor_update_tsd_coo
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -152,7 +152,7 @@ static int acpi_processor_update_tsd_coo
- 			if (i == j)
- 				continue;
- 
--			match_pr = processors[j];
-+			match_pr = per_cpu(processors, j);
- 			if (!match_pr)
- 				continue;
- 
-@@ -172,7 +172,7 @@ static int acpi_processor_update_tsd_coo
- 
- err_ret:
- 	for_each_possible_cpu(i) {
--		pr = processors[i];
-+		pr = per_cpu(processors, i);
- 		if (!pr)
- 			continue;
- 
-@@ -214,7 +214,7 @@ static int acpi_processor_throttling_not
- 	struct acpi_processor_throttling *p_throttling;
- 
- 	cpu = p_tstate->cpu;
--	pr = processors[cpu];
-+	pr = per_cpu(processors, cpu);
- 	if (!pr) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Invalid pr pointer\n"));
- 		return 0;
-@@ -1035,7 +1035,7 @@ int acpi_processor_set_throttling(struct
- 		 * cpus.
- 		 */
- 		for_each_cpu_mask(i, online_throttling_cpus) {
--			match_pr = processors[i];
-+			match_pr = per_cpu(processors, i);
- 			/*
- 			 * If the pointer is invalid, we will report the
- 			 * error message and continue.
---- linux-2.6.25-rc5.orig/include/acpi/processor.h
-+++ linux-2.6.25-rc5/include/acpi/processor.h
-@@ -255,7 +255,7 @@ extern void acpi_processor_unregister_pe
- int acpi_processor_notify_smm(struct module *calling_module);
- 
- /* for communication between multiple parts of the processor kernel module */
--extern struct acpi_processor *processors[NR_CPUS];
-+DECLARE_PER_CPU(struct acpi_processor *, processors);
- extern struct acpi_processor_errata errata;
- 
- void arch_acpi_processor_init_pdc(struct acpi_processor *pr);
+ /**
++ * bitmap_scnprintf_len - return buffer length needed to convert
++ * bitmap to an ASCII hex string.
++ * @len: number of bits to be converted
++ */
++int bitmap_scnprintf_len(unsigned int len)
++{
++	/* we need 9 chars per word for 32 bit words (8 hexdigits + sep/null) */
++	int bitslen = ALIGN(len, CHUNKSZ);
++	int wordlen = CHUNKSZ / 4;
++	int buflen = (bitslen / wordlen) * (wordlen + 1) * sizeof(char);
++
++	return buflen;
++}
++EXPORT_SYMBOL(bitmap_scnprintf_len);
++
++/**
+  * __bitmap_parse - convert an ASCII hex string into a bitmap.
+  * @buf: pointer to buffer containing string.
+  * @buflen: buffer size in bytes.  If string is smaller than this
 
 -- 
