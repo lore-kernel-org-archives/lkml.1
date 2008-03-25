@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYCYISE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYCYIWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYCYISE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 04:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYCYIRz
+	id S1754069AbYCYIWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 04:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYCYIWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 04:17:55 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59718 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbYCYIRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 04:17:54 -0400
-Date: Tue, 25 Mar 2008 08:17:52 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] vfs patches
-Message-ID: <20080325081752.GJ10722@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Tue, 25 Mar 2008 04:22:37 -0400
+Received: from www.tglx.de ([62.245.132.106]:50188 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751507AbYCYIWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 04:22:36 -0400
+Date: Tue, 25 Mar 2008 09:19:11 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 2/5] infrastructure to debug (dynamic) objects
+In-Reply-To: <20080324130454.ced60108.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0803250915330.3781@apollo.tec.linutronix.de>
+References: <20080321200300.310393657@linutronix.de> <20080321200321.650649403@linutronix.de> <20080324130454.ced60108.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-misc VFS fixes for 2.6.25.  Please pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
+On Mon, 24 Mar 2008, Andrew Morton wrote:
+> On Fri, 21 Mar 2008 20:26:18 -0000
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > The debugobjects core code keeps track of operations on static and
+> > dynamic objects by inserting them into a hashed list and sanity
+> > checking them on object operations and provides additional checks
+> > whenever kernel memory is freed.
+> 
+> Prime candidates for conversion to this interface are locks: spinlocks,
+> rwlocks, mutexes, etc.
+> 
+> a) it'd be interesting to get that done, as a proof-of-usefulness thing.
 
-Shortlog:
-Al Viro (5):
-      restore export of do_kern_mount()
-      sanitize hppfs
-      double dput() on failure exit in tiny-shmem
-      double iput() on failure exit in hugetlb
-      get stack footprint of pathname resolution back to relative sanity
+/me looks for volunteers :)
+ 
+> b) but this code internally uses spinlocks.  Will it explode?
 
-Christoph Hellwig (1):
-      check for null vfsmount in dentry_open()
+It should not, but we can use untracked spinlocks for the internals.
 
-Dave Hansen (2):
-      hppfs pass vfsmount to dentry_open()
-      fix up new filp allocators
+> also list_heads and hlists.  But
+> 
+> a) that might be a bit redundant against the custome debugging which lists
+>    already have and
 
-Jeff Mahoney (1):
-      reiserfs: eliminate private use of struct file in xattr
+Yup.
+ 
+> b) this code uses lists and hlists internally?
 
-Diffstat:
- fs/anon_inodes.c      |   18 +-
- fs/file_table.c       |    6 +
- fs/hppfs/hppfs_kern.c |  435 +++++++++++++++++++++++--------------------------
- fs/hugetlbfs/inode.c  |    2 +-
- fs/namei.c            |   63 ++++----
- fs/open.c             |   12 ++
- fs/pipe.c             |   19 +-
- fs/reiserfs/xattr.c   |  110 ++++---------
- fs/super.c            |    1 +
- mm/tiny-shmem.c       |    2 +
- 10 files changed, 302 insertions(+), 366 deletions(-)
+Yes, it uses hlists.
 
+Thanks,
+
+	tglx
+ 
