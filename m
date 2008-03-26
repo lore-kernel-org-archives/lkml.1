@@ -1,368 +1,335 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761883AbYCZBlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbYCZBm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761883AbYCZBlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 21:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbYCZBib
+	id S932078AbYCZBm3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 21:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757865AbYCZBig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 21:38:31 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:40482 "EHLO relay.sgi.com"
+	Tue, 25 Mar 2008 21:38:36 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:40481 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753012AbYCZBiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753052AbYCZBiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Mar 2008 21:38:15 -0400
-Message-Id: <20080326013813.184939000@polaris-admin.engr.sgi.com>
+Message-Id: <20080326013813.481009000@polaris-admin.engr.sgi.com>
 References: <20080326013811.569646000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 18:38:21 -0700
+Date: Tue, 25 Mar 2008 18:38:23 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 10/12] cpumask: reduce stack usage in build_sched_domains
-Content-Disposition: inline; filename=build_sched_domains
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 12/12] cpu/node mask: reduce stack usage using MASK_NONE, MASK_ALL
+Content-Disposition: inline; filename=CPU_NODE_MASK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reduce the amount of stack used in build_sched_domains by allocating
-all the masks at once, and setting up individual pointers.  If
-NR_CPUS <= 128, then stack space is used instead.
+Replace usages of CPU_MASK_NONE, CPU_MASK_ALL, NODE_MASK_NONE,
+NODE_MASK_ALL to reduce stack requirements for large NR_CPUS
+and MAXNODES counts.  In some cases, the cpumask variable was
+initialized but then overwritten with another value.  This is
+the case for changes like this:
+
+-       cpumask_t oldmask = CPU_MASK_ALL;
++       cpumask_t oldmask;
+
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
+# x86
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-One checkpatch warning that I'm not sure how to remove:
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    6 +++---
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |    4 ++--
+ arch/x86/kernel/genapic_flat_64.c         |    4 +++-
+ arch/x86/kernel/io_apic_64.c              |    2 +-
+ include/linux/cpumask.h                   |    6 ++++++
+ init/main.c                               |    7 ++++++-
+ kernel/cpu.c                              |    2 +-
+ kernel/cpuset.c                           |   10 +++++-----
+ kernel/irq/chip.c                         |    2 +-
+ kernel/kmod.c                             |    2 +-
+ kernel/kthread.c                          |    4 ++--
+ kernel/rcutorture.c                       |    3 ++-
+ kernel/sched.c                            |    8 ++++----
+ mm/allocpercpu.c                          |    3 ++-
+ 14 files changed, 39 insertions(+), 24 deletions(-)
 
-ERROR: Macros with complex values should be enclosed in parenthesis
-#61: FILE: kernel/sched.c:6656:
-+#define        SCHED_CPU_VAR(v, a)     cpumask_t *v = (cpumask_t *) \
-			((unsigned long)(a) + offsetof(struct allmasks, v))
----
- kernel/sched.c |  165 ++++++++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 112 insertions(+), 53 deletions(-)
-
+--- linux.trees.git.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux.trees.git/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -478,7 +478,7 @@ static int core_voltage_post_transition(
+ 
+ static int check_supported_cpu(unsigned int cpu)
+ {
+-	cpumask_t oldmask = CPU_MASK_ALL;
++	cpumask_t oldmask;
+ 	u32 eax, ebx, ecx, edx;
+ 	unsigned int rc = 0;
+ 
+@@ -1015,7 +1015,7 @@ static int transition_frequency_pstate(s
+ /* Driver entry point to switch to the target frequency */
+ static int powernowk8_target(struct cpufreq_policy *pol, unsigned targfreq, unsigned relation)
+ {
+-	cpumask_t oldmask = CPU_MASK_ALL;
++	cpumask_t oldmask;
+ 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+ 	u32 checkfid;
+ 	u32 checkvid;
+@@ -1104,7 +1104,7 @@ static int powernowk8_verify(struct cpuf
+ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ {
+ 	struct powernow_k8_data *data;
+-	cpumask_t oldmask = CPU_MASK_ALL;
++	cpumask_t oldmask;
+ 	int rc;
+ 
+ 	if (!cpu_online(pol->cpu))
+--- linux.trees.git.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ linux.trees.git/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -255,7 +255,7 @@ static void affinity_set(unsigned int cp
+ 						cpumask_t *newmask)
+ {
+ 	*oldmask = current->cpus_allowed;
+-	*newmask = CPU_MASK_NONE;
++	cpus_clear(*newmask);
+ 	cpu_set(cpu, *newmask);
+ 	set_cpus_allowed(current, newmask);
+ }
+@@ -468,7 +468,7 @@ static __cpuinit int threshold_create_ba
+ {
+ 	int i, err = 0;
+ 	struct threshold_bank *b = NULL;
+-	cpumask_t oldmask = CPU_MASK_NONE, newmask;
++	cpumask_t oldmask, newmask;
+ 	char name[32];
+ 
+ 	sprintf(name, "threshold_bank%i", bank);
+--- linux.trees.git.orig/arch/x86/kernel/genapic_flat_64.c
++++ linux.trees.git/arch/x86/kernel/genapic_flat_64.c
+@@ -138,7 +138,9 @@ static cpumask_t physflat_target_cpus(vo
+ 
+ static cpumask_t physflat_vector_allocation_domain(int cpu)
+ {
+-	cpumask_t domain = CPU_MASK_NONE;
++	cpumask_t domain;
++
++	cpus_clear(domain);
+ 	cpu_set(cpu, domain);
+ 	return domain;
+ }
+--- linux.trees.git.orig/arch/x86/kernel/io_apic_64.c
++++ linux.trees.git/arch/x86/kernel/io_apic_64.c
+@@ -770,7 +770,7 @@ static void __clear_irq_vector(int irq)
+ 		per_cpu(vector_irq, cpu)[vector] = -1;
+ 
+ 	cfg->vector = 0;
+-	cfg->domain = CPU_MASK_NONE;
++	cpus_clear(cfg->domain);
+ }
+ 
+ void __setup_vector_irq(int cpu)
+--- linux.trees.git.orig/include/linux/cpumask.h
++++ linux.trees.git/include/linux/cpumask.h
+@@ -244,6 +244,8 @@ int __next_cpu(int n, const cpumask_t *s
+ }))
+ static inline void setup_cpumask_of_cpu(int num) {}
+ 
++#define CPU_MASK_ALL_PTR	(&CPU_MASK_ALL)
++
+ #else
+ 
+ #define CPU_MASK_ALL							\
+@@ -252,6 +254,10 @@ static inline void setup_cpumask_of_cpu(
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
+ } }
+ 
++/* cpu_mask_all is in init/main.c */
++extern cpumask_t cpu_mask_all;
++#define CPU_MASK_ALL_PTR	(&cpu_mask_all)
++
+ /* cpumask_of_cpu_map is in init/main.c */
+ #define cpumask_of_cpu(cpu)    (cpumask_of_cpu_map[cpu])
+ extern cpumask_t *cpumask_of_cpu_map;
+--- linux.trees.git.orig/init/main.c
++++ linux.trees.git/init/main.c
+@@ -194,6 +194,11 @@ static const char *panic_later, *panic_p
+ 
+ extern struct obs_kernel_param __setup_start[], __setup_end[];
+ 
++#if NR_CPUS > BITS_PER_LONG
++cpumask_t cpu_mask_all = CPU_MASK_ALL;
++EXPORT_SYMBOL(cpu_mask_all);
++#endif
++
+ static int __init obsolete_checksetup(char *line)
+ {
+ 	struct obs_kernel_param *p;
+@@ -845,7 +850,7 @@ static int __init kernel_init(void * unu
+ 	/*
+ 	 * init can run on any cpu.
+ 	 */
+-	set_cpus_allowed(current, &CPU_MASK_ALL);
++	set_cpus_allowed(current, CPU_MASK_ALL_PTR);
+ 	/*
+ 	 * Tell the world that we're going to be the grim
+ 	 * reaper of innocent orphaned children.
+--- linux.trees.git.orig/kernel/cpu.c
++++ linux.trees.git/kernel/cpu.c
+@@ -232,7 +232,7 @@ static int _cpu_down(unsigned int cpu, i
+ 
+ 	/* Ensure that we are not runnable on dying cpu */
+ 	old_allowed = current->cpus_allowed;
+-	tmp = CPU_MASK_ALL;
++	cpus_setall(tmp);
+ 	cpu_clear(cpu, tmp);
+ 	set_cpus_allowed(current, &tmp);
+ 
+--- linux.trees.git.orig/kernel/cpuset.c
++++ linux.trees.git/kernel/cpuset.c
+@@ -1556,8 +1556,8 @@ static struct cgroup_subsys_state *cpuse
+ 	if (is_spread_slab(parent))
+ 		set_bit(CS_SPREAD_SLAB, &cs->flags);
+ 	set_bit(CS_SCHED_LOAD_BALANCE, &cs->flags);
+-	cs->cpus_allowed = CPU_MASK_NONE;
+-	cs->mems_allowed = NODE_MASK_NONE;
++	cpus_clear(cs->cpus_allowed);
++	nodes_clear(cs->mems_allowed);
+ 	cs->mems_generation = cpuset_mems_generation++;
+ 	fmeter_init(&cs->fmeter);
+ 
+@@ -1626,8 +1626,8 @@ int __init cpuset_init(void)
+ {
+ 	int err = 0;
+ 
+-	top_cpuset.cpus_allowed = CPU_MASK_ALL;
+-	top_cpuset.mems_allowed = NODE_MASK_ALL;
++	cpus_setall(top_cpuset.cpus_allowed);
++	nodes_setall(top_cpuset.mems_allowed);
+ 
+ 	fmeter_init(&top_cpuset.fmeter);
+ 	top_cpuset.mems_generation = cpuset_mems_generation++;
+@@ -1873,7 +1873,7 @@ void cpuset_cpus_allowed_locked(struct t
+ 
+ void cpuset_init_current_mems_allowed(void)
+ {
+-	current->mems_allowed = NODE_MASK_ALL;
++	nodes_setall(current->mems_allowed);
+ }
+ 
+ /**
+--- linux.trees.git.orig/kernel/irq/chip.c
++++ linux.trees.git/kernel/irq/chip.c
+@@ -47,7 +47,7 @@ void dynamic_irq_init(unsigned int irq)
+ 	desc->irq_count = 0;
+ 	desc->irqs_unhandled = 0;
+ #ifdef CONFIG_SMP
+-	desc->affinity = CPU_MASK_ALL;
++	cpus_setall(desc->affinity);
+ #endif
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ }
+--- linux.trees.git.orig/kernel/kmod.c
++++ linux.trees.git/kernel/kmod.c
+@@ -165,7 +165,7 @@ static int ____call_usermodehelper(void 
+ 	}
+ 
+ 	/* We can run anywhere, unlike our parent keventd(). */
+-	set_cpus_allowed(current, &CPU_MASK_ALL);
++	set_cpus_allowed(current, CPU_MASK_ALL_PTR);
+ 
+ 	/*
+ 	 * Our parent is keventd, which runs with elevated scheduling priority.
+--- linux.trees.git.orig/kernel/kthread.c
++++ linux.trees.git/kernel/kthread.c
+@@ -107,7 +107,7 @@ static void create_kthread(struct kthrea
+ 		 */
+ 		sched_setscheduler(create->result, SCHED_NORMAL, &param);
+ 		set_user_nice(create->result, KTHREAD_NICE_LEVEL);
+-		set_cpus_allowed(create->result, &CPU_MASK_ALL);
++		set_cpus_allowed(create->result, CPU_MASK_ALL_PTR);
+ 	}
+ 	complete(&create->done);
+ }
+@@ -232,7 +232,7 @@ int kthreadd(void *unused)
+ 	set_task_comm(tsk, "kthreadd");
+ 	ignore_signals(tsk);
+ 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+-	set_cpus_allowed(tsk, &CPU_MASK_ALL);
++	set_cpus_allowed(tsk, CPU_MASK_ALL_PTR);
+ 
+ 	current->flags |= PF_NOFREEZE;
+ 
+--- linux.trees.git.orig/kernel/rcutorture.c
++++ linux.trees.git/kernel/rcutorture.c
+@@ -723,9 +723,10 @@ static int rcu_idle_cpu;	/* Force all to
+  */
+ static void rcu_torture_shuffle_tasks(void)
+ {
+-	cpumask_t tmp_mask = CPU_MASK_ALL;
++	cpumask_t tmp_mask;
+ 	int i;
+ 
++	cpus_setall(tmp_mask);
+ 	get_online_cpus();
+ 
+ 	/* No point in shuffling if there is only one online CPU (ex: UP) */
 --- linux.trees.git.orig/kernel/sched.c
 +++ linux.trees.git/kernel/sched.c
-@@ -6573,6 +6573,40 @@ SD_INIT_FUNC(CPU)
- #endif
- 
- /*
-+ * To minimize stack usage kmalloc room for cpumasks and share the
-+ * space as the usage in build_sched_domains() dictates.  Used only
-+ * if the amount of space is significant.
-+ */
-+struct allmasks {
-+	cpumask_t tmpmask;			/* make this one first */
-+	union {
-+		cpumask_t nodemask;
-+		cpumask_t this_sibling_map;
-+		cpumask_t this_core_map;
-+	};
-+	cpumask_t send_covered;
-+
-+#ifdef CONFIG_NUMA
-+	cpumask_t domainspan;
-+	cpumask_t covered;
-+	cpumask_t notcovered;
-+#endif
-+};
-+
-+#if	NR_CPUS > 128
-+#define	SCHED_CPUMASK_ALLOC		1
-+#define	SCHED_CPUMASK_FREE(v)		kfree(v)
-+#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
-+#else
-+#define	SCHED_CPUMASK_ALLOC		0
-+#define	SCHED_CPUMASK_FREE(v)
-+#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
-+#endif
-+
-+#define	SCHED_CPUMASK_VAR(v, a) 	cpumask_t *v = (cpumask_t *) \
-+			((unsigned long)(a) + offsetof(struct allmasks, v))
-+
-+/*
-  * Build sched domains for a given set of cpus and attach the sched domains
-  * to the individual cpus
+@@ -5502,7 +5502,7 @@ static void move_task_off_dead_cpu(int d
   */
-@@ -6580,7 +6614,8 @@ static int build_sched_domains(const cpu
+ static void migrate_nr_uninterruptible(struct rq *rq_src)
  {
+-	struct rq *rq_dest = cpu_rq(any_online_cpu(CPU_MASK_ALL));
++	struct rq *rq_dest = cpu_rq(any_online_cpu(*CPU_MASK_ALL_PTR));
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+@@ -6220,7 +6220,7 @@ init_sched_build_groups(const cpumask_t 
+ 	struct sched_group *first = NULL, *last = NULL;
  	int i;
- 	struct root_domain *rd;
--	cpumask_t tmpmask;
-+	SCHED_CPUMASK_DECLARE(allmasks);
-+	cpumask_t *tmpmask;
- #ifdef CONFIG_NUMA
- 	struct sched_group **sched_group_nodes = NULL;
- 	int sd_allnodes = 0;
-@@ -6605,6 +6640,21 @@ static int build_sched_domains(const cpu
- 		return -ENOMEM;
- 	}
  
-+#if SCHED_CPUMASK_ALLOC
-+	/* get space for all scratch cpumask variables */
-+	allmasks = kmalloc(sizeof(*allmasks), GFP_KERNEL);
-+	if (!allmasks) {
-+		printk(KERN_WARNING "Cannot alloc cpumask array\n");
-+		kfree(rd);
-+#ifdef CONFIG_NUMA
-+		kfree(sched_group_nodes);
-+#endif
-+		return -ENOMEM;
-+	}
-+#endif
-+	tmpmask = (cpumask_t *)allmasks;
-+
-+
- #ifdef CONFIG_NUMA
- 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
- #endif
-@@ -6614,18 +6664,18 @@ static int build_sched_domains(const cpu
- 	 */
- 	for_each_cpu_mask(i, *cpu_map) {
- 		struct sched_domain *sd = NULL, *p;
--		cpumask_t nodemask = node_to_cpumask(cpu_to_node(i));
-+		SCHED_CPUMASK_VAR(nodemask, allmasks);
+-	*covered = CPU_MASK_NONE;
++	cpus_clear(*covered);
  
--		cpus_and(nodemask, nodemask, *cpu_map);
-+		*nodemask = node_to_cpumask(cpu_to_node(i));
-+		cpus_and(*nodemask, *nodemask, *cpu_map);
- 
- #ifdef CONFIG_NUMA
- 		if (cpus_weight(*cpu_map) >
--				SD_NODES_PER_DOMAIN*cpus_weight(nodemask)) {
-+				SD_NODES_PER_DOMAIN*cpus_weight(*nodemask)) {
- 			sd = &per_cpu(allnodes_domains, i);
- 			SD_INIT(sd, ALLNODES);
- 			sd->span = *cpu_map;
--			cpu_to_allnodes_group(i, cpu_map, &sd->groups,
--								      &tmpmask);
-+			cpu_to_allnodes_group(i, cpu_map, &sd->groups, tmpmask);
- 			p = sd;
- 			sd_allnodes = 1;
- 		} else
-@@ -6643,11 +6693,11 @@ static int build_sched_domains(const cpu
- 		p = sd;
- 		sd = &per_cpu(phys_domains, i);
- 		SD_INIT(sd, CPU);
--		sd->span = nodemask;
-+		sd->span = *nodemask;
- 		sd->parent = p;
- 		if (p)
- 			p->child = sd;
--		cpu_to_phys_group(i, cpu_map, &sd->groups, &tmpmask);
-+		cpu_to_phys_group(i, cpu_map, &sd->groups, tmpmask);
- 
- #ifdef CONFIG_SCHED_MC
- 		p = sd;
-@@ -6657,7 +6707,7 @@ static int build_sched_domains(const cpu
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
- 		p->child = sd;
--		cpu_to_core_group(i, cpu_map, &sd->groups, &tmpmask);
-+		cpu_to_core_group(i, cpu_map, &sd->groups, tmpmask);
- #endif
- 
- #ifdef CONFIG_SCHED_SMT
-@@ -6668,81 +6718,88 @@ static int build_sched_domains(const cpu
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
- 		p->child = sd;
--		cpu_to_cpu_group(i, cpu_map, &sd->groups, &tmpmask);
-+		cpu_to_cpu_group(i, cpu_map, &sd->groups, tmpmask);
- #endif
- 	}
- 
- #ifdef CONFIG_SCHED_SMT
- 	/* Set up CPU (sibling) groups */
- 	for_each_cpu_mask(i, *cpu_map) {
--		cpumask_t this_sibling_map = per_cpu(cpu_sibling_map, i);
--		cpumask_t send_covered;
-+		SCHED_CPUMASK_VAR(this_sibling_map, allmasks);
-+		SCHED_CPUMASK_VAR(send_covered, allmasks);
- 
--		cpus_and(this_sibling_map, this_sibling_map, *cpu_map);
--		if (i != first_cpu(this_sibling_map))
-+		*this_sibling_map = per_cpu(cpu_sibling_map, i);
-+		cpus_and(*this_sibling_map, *this_sibling_map, *cpu_map);
-+		if (i != first_cpu(*this_sibling_map))
+ 	for_each_cpu_mask(i, *span) {
+ 		struct sched_group *sg;
+@@ -6230,7 +6230,7 @@ init_sched_build_groups(const cpumask_t 
+ 		if (cpu_isset(i, *covered))
  			continue;
  
--		init_sched_build_groups(&this_sibling_map, cpu_map,
--					&cpu_to_cpu_group,
--					&send_covered, &tmpmask);
-+		init_sched_build_groups(this_sibling_map, cpu_map,
-+					cpu_to_cpu_group,
-+					send_covered, tmpmask);
- 	}
- #endif
+-		sg->cpumask = CPU_MASK_NONE;
++		cpus_clear(sg->cpumask);
+ 		sg->__cpu_power = 0;
  
- #ifdef CONFIG_SCHED_MC
- 	/* Set up multi-core groups */
- 	for_each_cpu_mask(i, *cpu_map) {
--		cpumask_t this_core_map = cpu_coregroup_map(i);
--		cpumask_t send_covered;
-+		SCHED_CPUMASK_VAR(this_core_map, allmasks);
-+		SCHED_CPUMASK_VAR(send_covered, allmasks);
- 
--		cpus_and(this_core_map, this_core_map, *cpu_map);
--		if (i != first_cpu(this_core_map))
-+		*this_core_map = cpu_coregroup_map(i);
-+		cpus_and(*this_core_map, *this_core_map, *cpu_map);
-+		if (i != first_cpu(*this_core_map))
- 			continue;
--		init_sched_build_groups(&this_core_map, cpu_map,
-+
-+		init_sched_build_groups(this_core_map, cpu_map,
- 					&cpu_to_core_group,
--					&send_covered, &tmpmask);
-+					send_covered, tmpmask);
- 	}
- #endif
- 
- 	/* Set up physical groups */
- 	for (i = 0; i < MAX_NUMNODES; i++) {
--		cpumask_t nodemask = node_to_cpumask(i);
--		cpumask_t send_covered;
-+		SCHED_CPUMASK_VAR(nodemask, allmasks);
-+		SCHED_CPUMASK_VAR(send_covered, allmasks);
- 
--		cpus_and(nodemask, nodemask, *cpu_map);
--		if (cpus_empty(nodemask))
-+		*nodemask = node_to_cpumask(i);
-+		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		if (cpus_empty(*nodemask))
- 			continue;
- 
--		init_sched_build_groups(&nodemask, cpu_map,
-+		init_sched_build_groups(nodemask, cpu_map,
- 					&cpu_to_phys_group,
--					&send_covered, &tmpmask);
-+					send_covered, tmpmask);
- 	}
- 
- #ifdef CONFIG_NUMA
- 	/* Set up node groups */
- 	if (sd_allnodes) {
--		cpumask_t send_covered;
-+		SCHED_CPUMASK_VAR(send_covered, allmasks);
- 
- 		init_sched_build_groups(cpu_map, cpu_map,
- 					&cpu_to_allnodes_group,
--					&send_covered, &tmpmask);
-+					send_covered, tmpmask);
- 	}
- 
- 	for (i = 0; i < MAX_NUMNODES; i++) {
- 		/* Set up node groups */
- 		struct sched_group *sg, *prev;
--		cpumask_t nodemask = node_to_cpumask(i);
--		cpumask_t domainspan;
--		cpumask_t covered = CPU_MASK_NONE;
-+		SCHED_CPUMASK_VAR(nodemask, allmasks);
-+		SCHED_CPUMASK_VAR(domainspan, allmasks);
-+		SCHED_CPUMASK_VAR(covered, allmasks);
+ 		for_each_cpu_mask(j, *span) {
+@@ -6790,7 +6790,7 @@ static int build_sched_domains(const cpu
  		int j;
  
--		cpus_and(nodemask, nodemask, *cpu_map);
--		if (cpus_empty(nodemask)) {
-+		*nodemask = node_to_cpumask(i);
-+		*covered = CPU_MASK_NONE;
-+
-+		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		if (cpus_empty(*nodemask)) {
- 			sched_group_nodes[i] = NULL;
- 			continue;
- 		}
+ 		*nodemask = node_to_cpumask(i);
+-		*covered = CPU_MASK_NONE;
++		cpus_clear(*covered);
  
--		domainspan = sched_domain_node_span(i);
--		cpus_and(domainspan, domainspan, *cpu_map);
-+		*domainspan = sched_domain_node_span(i);
-+		cpus_and(*domainspan, *domainspan, *cpu_map);
+ 		cpus_and(*nodemask, *nodemask, *cpu_map);
+ 		if (cpus_empty(*nodemask)) {
+--- linux.trees.git.orig/mm/allocpercpu.c
++++ linux.trees.git/mm/allocpercpu.c
+@@ -82,9 +82,10 @@ EXPORT_SYMBOL_GPL(percpu_populate);
+ int __percpu_populate_mask(void *__pdata, size_t size, gfp_t gfp,
+ 			   cpumask_t *mask)
+ {
+-	cpumask_t populated = CPU_MASK_NONE;
++	cpumask_t populated;
+ 	int cpu;
  
- 		sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
- 		if (!sg) {
-@@ -6751,31 +6808,31 @@ static int build_sched_domains(const cpu
- 			goto error;
- 		}
- 		sched_group_nodes[i] = sg;
--		for_each_cpu_mask(j, nodemask) {
-+		for_each_cpu_mask(j, *nodemask) {
- 			struct sched_domain *sd;
- 
- 			sd = &per_cpu(node_domains, j);
- 			sd->groups = sg;
- 		}
- 		sg->__cpu_power = 0;
--		sg->cpumask = nodemask;
-+		sg->cpumask = *nodemask;
- 		sg->next = sg;
--		cpus_or(covered, covered, nodemask);
-+		cpus_or(*covered, *covered, *nodemask);
- 		prev = sg;
- 
- 		for (j = 0; j < MAX_NUMNODES; j++) {
--			cpumask_t tmp, notcovered;
-+			SCHED_CPUMASK_VAR(notcovered, allmasks);
- 			int n = (i + j) % MAX_NUMNODES;
--			node_to_cpumask_ptr(nodemask, n);
- 
--			cpus_complement(notcovered, covered);
--			cpus_and(tmp, notcovered, *cpu_map);
--			cpus_and(tmp, tmp, domainspan);
--			if (cpus_empty(tmp))
-+			cpus_complement(*notcovered, *covered);
-+			cpus_and(*tmpmask, *notcovered, *cpu_map);
-+			cpus_and(*tmpmask, *tmpmask, *domainspan);
-+			if (cpus_empty(*tmpmask))
- 				break;
- 
--			cpus_and(tmp, tmp, *nodemask);
--			if (cpus_empty(tmp))
-+			*nodemask = node_to_cpumask(n);
-+			cpus_and(*tmpmask, *tmpmask, *nodemask);
-+			if (cpus_empty(*tmpmask))
- 				continue;
- 
- 			sg = kmalloc_node(sizeof(struct sched_group),
-@@ -6786,9 +6843,9 @@ static int build_sched_domains(const cpu
- 				goto error;
- 			}
- 			sg->__cpu_power = 0;
--			sg->cpumask = tmp;
-+			sg->cpumask = *tmpmask;
- 			sg->next = prev->next;
--			cpus_or(covered, covered, tmp);
-+			cpus_or(*covered, *covered, *tmpmask);
- 			prev->next = sg;
- 			prev = sg;
- 		}
-@@ -6825,7 +6882,7 @@ static int build_sched_domains(const cpu
- 		struct sched_group *sg;
- 
- 		cpu_to_allnodes_group(first_cpu(*cpu_map), cpu_map, &sg,
--								&tmpmask);
-+								tmpmask);
- 		init_numa_sched_groups_power(sg);
- 	}
- #endif
-@@ -6843,11 +6900,13 @@ static int build_sched_domains(const cpu
- 		cpu_attach_domain(sd, rd, i);
- 	}
- 
-+	SCHED_CPUMASK_FREE((void *)allmasks);
- 	return 0;
- 
- #ifdef CONFIG_NUMA
- error:
--	free_sched_groups(cpu_map, &tmpmask);
-+	free_sched_groups(cpu_map, tmpmask);
-+	SCHED_CPUMASK_FREE((void *)allmasks);
- 	return -ENOMEM;
- #endif
- }
++	cpus_clear(populated);
+ 	for_each_cpu_mask(cpu, *mask)
+ 		if (unlikely(!percpu_populate(__pdata, size, gfp, cpu))) {
+ 			__percpu_depopulate_mask(__pdata, &populated);
 
 -- 
