@@ -1,103 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYCZWkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYCZWoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbYCZWkL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 18:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYCZWj6
+	id S1755503AbYCZWoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 18:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYCZWoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 18:39:58 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47544 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbYCZWj5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 18:39:57 -0400
-Date: Wed, 26 Mar 2008 22:39:50 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/7] vfs: mountinfo: add mount peer group ID
-Message-ID: <20080326223949.GU10722@ZenIV.linux.org.uk>
-References: <20080326211131.705321084@szeredi.hu> <20080326212140.382840664@szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 26 Mar 2008 18:44:01 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49292 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752824AbYCZWoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 18:44:00 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [patch 00/37] PNP resource_table cleanups
+Date: Wed, 26 Mar 2008 18:42:10 -0400
+User-Agent: KMail/1.9.9
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080326171058.099442579@ldl.fc.hp.com>
+In-Reply-To: <20080326171058.099442579@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080326212140.382840664@szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200803261842.11023.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 10:11:35PM +0100, Miklos Szeredi wrote:
-> +static int mnt_alloc_group_id(struct vfsmount *mnt)
-> +{
-> +	int res;
-> +
-> +	WARN_ON(mnt->mnt_group_id != 0);
-> + retry:
-> +	res = ida_get_new_above(&mnt_group_ida, 1, &mnt->mnt_group_id);
-> +	if (res == -EAGAIN) {
-> +		if (ida_pre_get(&mnt_group_ida, GFP_KERNEL))
-> +			goto retry;
-> +		res = -ENOMEM;
-> +	}
-> +	return res;
-> +}
-> +
+i386:
 
-Same comment on goto retry
+#1 errs.ACPI.ACPI_DEBUG.ACPI_PROCFS.HIBERNATION.X86_LOCAL_APIC.X86_IO_APIC
+Cleaning...Building...
+ERROR: "pnp_get_resource" [sound/oss/sb.ko] undefined!
+ERROR: "pnp_get_resource" [sound/oss/ad1848.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/wavefront/snd-wavefront.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-sscape.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-opl3sa2.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-es18xx.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-dt019x.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-cmi8330.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-azt2320.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/snd-als100.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/sb/snd-sbawe.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/sb/snd-sb16.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/sb/snd-es968.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/opti9xx/snd-opti93x.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/opti9xx/snd-opti92x-cs4231.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/opti9xx/snd-opti92x-ad1848.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/gus/snd-interwave.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/gus/snd-interwave-stb.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/cs423x/snd-cs4236.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/cs423x/snd-cs4232.ko] undefined!
+ERROR: "pnp_get_resource" [sound/isa/ad1816a/snd-ad1816a.ko] undefined!
+ERROR: "pnp_get_resource" [sound/drivers/mpu401/snd-mpu401.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/watchdog/sc1200wdt.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/telephony/ixj.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/scsi/sym53c416.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/scsi/g_NCR5380_mmio.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/scsi/g_NCR5380.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/scsi/aha1542.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/scsi/aha152x.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/pcmcia/i82365.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/parport/parport_pc.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/smc-ultra.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/sb1000.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/ne.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/irda/smsc-ircc2.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/irda/nsc-ircc.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/3c515.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/3c509.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/mmc/host/wbsd.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/media/radio/radio-sf16fmi.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/media/radio/radio-cadet.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/isdn/hisax/hisax_fcpcipnp.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/isdn/hisax/hisax.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/input/gameport/ns558.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/ide/ide-pnp.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/char/tpm/tpm_tis.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/char/tpm/tpm_infineon.ko] undefined!
+Build FAILED
 
-> +/*
-> + * Release a peer group ID
-> + */
-> +void mnt_release_group_id(struct vfsmount *mnt)
-> +{
-> +	ida_remove(&mnt_group_ida, mnt->mnt_group_id);
-> +	mnt->mnt_group_id = 0;
-> +}
+x86_64:
 
-Erm...  What if that sucker has zero group ID to start with?  You
-do call it that way later.
+#33 errs.allmodconfig
+Cleaning...Building...
+ERROR: "pnp_get_resource" [sound/oss/sb.ko] undefined!
+ERROR: "pnp_get_resource" [sound/drivers/mpu401/snd-mpu401.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/watchdog/sc1200wdt.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/serial/8250_pnp.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/rtc/rtc-cmos.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/parport/parport_pc.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/sb1000.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/irda/smsc-ircc2.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/irda/nsc-ircc.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/mmc/host/wbsd.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/input/serio/i8042.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/input/gameport/ns558.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/ide/ide-pnp.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/char/tpm/tpm_tis.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/char/tpm/tpm_infineon.ko] undefined!
+Build FAILED
 
-> +static void cleanup_group_ids(struct vfsmount *mnt, struct vfsmount *end)
-> +{
-> +	struct vfsmount *p;
-> +
-> +	for (p = mnt; p != end; p = next_mnt(p, mnt)) {
-> +		if (list_empty(&p->mnt_share) && !IS_MNT_SHARED(p))
-> +			mnt_release_group_id(p);
-> +	}
-> +}
 
-I'd make that p->mnt_group_id && !IS_MNT_SHARED(p), actually...
+ia64:
 
-> +static int invent_group_ids(struct vfsmount *mnt, bool recurse)
-> +{
-> +	struct vfsmount *p;
-> +
-> +	for (p = mnt; p; p = recurse ? next_mnt(p, mnt) : NULL) {
-> +		if (list_empty(&p->mnt_share) && !IS_MNT_SHARED(p)) {
-> +			int err = mnt_alloc_group_id(p);
-> +			if (err) {
-> +				cleanup_group_ids(mnt, p);
-> +				return err;
-> +			}
-> +		}
-> +	}
-
-Same comment
-
-> @@ -58,9 +62,9 @@ static int do_make_slave(struct vfsmount
->  		list_splice(&mnt->mnt_slave_list, master->mnt_slave_list.prev);
->  		INIT_LIST_HEAD(&mnt->mnt_slave_list);
->  	} else {
-> -		struct list_head *p = &mnt->mnt_slave_list;
-> -		while (!list_empty(p)) {
-> -                        slave_mnt = list_first_entry(p,
-> +		struct list_head *slaves = &mnt->mnt_slave_list;
-> +		while (!list_empty(slaves)) {
-> +                        slave_mnt = list_first_entry(slaves,
->  					struct vfsmount, mnt_slave);
->  			list_del_init(&slave_mnt->mnt_slave);
->  			slave_mnt->mnt_master = NULL;
-
-What is that renaming doing here?
+#9 errs.allmodconfig
+Cleaning...Building...
+ERROR: "pnp_get_resource" [sound/drivers/mpu401/snd-mpu401.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/serial/8250_pnp.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/parport/parport_pc.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/net/sb1000.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/input/serio/i8042.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/input/gameport/ns558.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/ide/ide-pnp.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/char/tpm/tpm_tis.ko] undefined!
+ERROR: "pnp_get_resource" [drivers/char/tpm/tpm_infineon.ko] undefined!
+Build FAILED
