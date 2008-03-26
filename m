@@ -1,103 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbYCZVEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYCZVH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760044AbYCZVEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbYCZVEZ
+	id S1760217AbYCZVH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYCZVHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:04:25 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:32374 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756558AbYCZVEY (ORCPT
+	Wed, 26 Mar 2008 17:07:11 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:49259 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755847AbYCZVHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:04:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KzECZIhhXaYzJUSyboKBsnAru+VCjqLGIrdNbfUuScQ3AJe7MhZs4D8qv8gKEeIJF27CkkdLz+hdhunIumpX8tHVLGq6sZnlGIMHpmtMcA3avoCayJPbIOimyYyCkphLZ1RYCEaqV9sARKZC9iUonF8ZhtB7Tz95tCwebhLEhEI=
-Message-ID: <9a8748490803261404u2ef0f6f0rf4cccc2602cca726@mail.gmail.com>
-Date: Wed, 26 Mar 2008 22:04:21 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Ben Castricum" <lk08@bencastricum.nl>
-Subject: Re: [TRIVIAL PATCH] Microcode: show results on success too plus fix typo
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080326134053.c75656dc.randy.dunlap@oracle.com>
+	Wed, 26 Mar 2008 17:07:10 -0400
+Message-ID: <47EABA4A.6030705@oracle.com>
+Date: Wed, 26 Mar 2008 14:04:10 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: devzero@web.de
+CC: Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
+       david-b@pacbell.net, greg@kroah.com, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: some minor issues with 2.6.25-rc6-git7-default
+References: <213384793@web.de>
+In-Reply-To: <213384793@web.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <001701c88f7f$1e2b6c80$0602a8c0@links>
-	 <20080326134053.c75656dc.randy.dunlap@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/03/2008, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Wed, 26 Mar 2008 21:22:25 +0100 Ben Castricum wrote:
->
->  > Show a bit more info when updating microcode. It used to be there but
->  > no with DEBUG unset makes it very silent.
->  >
->  > This is my first patch, please let me know if I did anything wrong.
->  >
->  > Signed-off-by: Ben Castricum <lk08@bencastricum.nl>
+devzero@web.de wrote:
+>> Can you post the full kernel log up to this BUG?
+>> It should show that causes the Taint.
+> 
+> oh - yes:
+> 
+> Mar 23 09:12:20 opensuse103 kernel: ac97_codec: module license 'unspecified' taints kernel.
+> 
+> modinfo ac97_codec
+> filename:       /lib/modules/2.6.25-rc6-git7-default/kernel/sound/oss/ac97_codec.ko
+> srcversion:     8665939D5E471F7E331BB3E
+> depends:
+> vermagic:       2.6.25-rc6-git7-default SMP mod_unload 586
+> 
+> 
+> seems MODULE_LICENSE is missing in ./sound/oss/ac97_codec.c !?
 
-A line with "---" after Signed-off-by: is prefered.
+It was recently removed for some reason.
 
-A diffstat is also common.
+I get the impression that you (we) should be using ALSA drivers/codecs
+instead of the OSS ones that in the process of being removed.
 
-To quote Documentation/SubmittingPatches :
-"The canonical patch message body contains the following:
 
-  - A "from" line specifying the patch author.
+>>>>> CCing Dave Brownell.
+>>>>>
+>>>>>> Mar 23 09:14:23 opensuse103 kernel: Generic RTC Driver v1.07
+>>>>>> Mar 23 09:14:23 opensuse103 kernel: proc_dir_entry 'rtc' already registered
+>>>>>> Mar 23 09:14:23 opensuse103 kernel: Pid: 3994, comm: modprobe Tainted: P         2.6.25-rc6-git7-default #1
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c019a602>] proc_register+0xf3/0x11f
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c019a719>] create_proc_entry+0x69/0x7b
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<e0c5f02d>] rtc_generic_init+0x2d/0x54 [genrtc]
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c013c1de>] sys_init_module+0x16b6/0x17c9
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c0108a6a>] sys_mmap2+0x62/0x77
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c01059c4>] sysenter_past_esp+0x6d/0xa9
+>>>>>> Mar 23 09:14:23 opensuse103 kernel:  =======================
+>>>> uh, "known problem": multiple rtc drivers are being run.
+>>>>
+>>>> I don't really understand why we haven't been able to fix this - there have
+>>>> been numerous reports..
+>>> i will take a closer look to determine how/when this happens.
+>> I thought that David B. sent a (Kconfig ?) patch for this...
+>>
+>> ---
+>> ~Randy
+> 
+> do you mean this one ?
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=55ff1aba940ff46d4f6d4fd790ea3e1a47aaa84f
+> 
+> ok, it may be sort of "dumb" to blindly load one module after the other but i would expect a more meaningful message.
 
-  - An empty line.
-
-  - The body of the explanation, which will be copied to the
-    permanent changelog to describe this patch.
-
-  - The "Signed-off-by:" lines, described above, which will
-    also go in the changelog.
-
-  - A marker line containing simply "---".
-
-  - Any additional comments not suitable for the changelog.
-
-  - The actual patch (diff output).
-"
-
->  >
->  > diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
->  > index f2702d0..ca1fd52 100644
->  > --- a/arch/x86/kernel/microcode.c
->  > +++ b/arch/x86/kernel/microcode.c
->  > @@ -336,11 +336,11 @@ static void apply_microcode(int cpu)
->  >
->  >   spin_unlock_irqrestore(&microcode_update_lock, flags);
->  >   if (val[1] != uci->mc->hdr.rev) {
->  > -  printk(KERN_ERR "microcode: CPU%d updated from revision "
->  > +  printk(KERN_ERR "microcode: CPU%d update from revision "
->  >     "0x%x to 0x%x failed\n", cpu_num, uci->rev, val[1]);
->  >    return;
->  >   }
->  > - pr_debug("microcode: CPU%d updated from revision "
->  > + printk(KERN_INFO "microcode: CPU%d updated from revision "
->  >          "0x%x to 0x%x, date = %08x \n",
->  >          cpu_num, uci->rev, val[1], uci->mc->hdr.date);
->  >   uci->rev = val[1];
->
->
-> Your mailer client (*cough*) converted tabs to spaces,
->  so the patch does not apply cleanly now.
->  You'll need to find a way to send patches that does not mangle
->  whitespace.
->
-
-Also, since this is a rather trivial patch (even hinted at in the
-subject) you should probably have added trivial@kernel.org to Cc: - if
-you don't, the chances that I will notice it and pick it up in the
-trivial tree are pretty slim.
+No, I meant something else, but I can't find it just now.
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+~Randy
