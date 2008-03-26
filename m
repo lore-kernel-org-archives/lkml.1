@@ -1,82 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYCZI6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYCZJNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbYCZI6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 04:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYCZI6L
+	id S1754951AbYCZJNb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 05:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYCZJNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 04:58:11 -0400
-Received: from isuela.unizar.es ([155.210.1.53]:34397 "EHLO relay.unizar.es"
+	Wed, 26 Mar 2008 05:13:23 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57598 "EHLO elijah.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753233AbYCZI6K convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 04:58:10 -0400
-X-Greylist: delayed 1948 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 04:58:09 EDT
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-Message-Id: <8CAC9F9E-60FE-40A5-A720-27BA63BEEADC@ono.com>
-From: "=?ISO-8859-1?Q?=22J.A._Magall=F3n=22?=" <jamagallon@ono.com>
-To: Emmanuel Florac <eflorac@intellique.com>
-In-Reply-To: <20080326090527.42286e8e@galadriel.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: RAID-1 performance under 2.4 and 2.6
-Date: Wed, 26 Mar 2008 09:25:29 +0100
-References: <20080325194306.4ac71ff2@galadriel.home> <47E975F8.3000702@redhat.com> <47E98108.9000906@tmr.com> <47E98712.6090203@redhat.com> <47E98DE4.9000906@tmr.com> <20080326090527.42286e8e@galadriel.home>
-X-Mailer: Apple Mail (2.919.2)
-X-Mail-Scanned: Criba 2.0 + Clamd & Bogofilter
+	id S1753275AbYCZJNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 05:13:21 -0400
+Subject: Re: [PATCH] Discard notification signals when a tracer exits
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+In-Reply-To: <20080325163316.GA176@tv-sign.ru>
+References: <1206455513.17227.4.camel@elijah.suse.cz>
+	 <20080325161606.GA93@tv-sign.ru>  <20080325163316.GA176@tv-sign.ru>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: SuSE CR
+Date: Wed, 26 Mar 2008 10:13:18 +0100
+Message-Id: <1206522798.30244.32.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-03-25 at 19:33 +0300, Oleg Nesterov wrote:
+> On 03/25, Oleg Nesterov wrote:
+> >
+> > This patch needs Roland's opinion. I can't really judge, but I
+> > have some (perhaps wrong) doubts.
+> > 
+> > On 03/25, Petr Tesarik wrote:
+> > >
+> > > When a tracer exits without detaching from the traced process, the
+> > > tracee may be at a tracer notification stop and will thus interpret
+> > > the value in task->exit_code (SIGTRAP | 0x80) as the signal to be
+> > > delivered.
+> > > 
+> > > This patch fixes the problem by clearing exit_code when detaching
+> > > the traced process from a dying tracer.
+> > > 
+> > > Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> > > 
+> > > ---
+> > >  exit.c |    8 +++++++-
+> > >  1 file changed, 7 insertions(+), 1 deletion(-)
+> > > 
+> > > --- a/kernel/exit.c
+> > > +++ b/kernel/exit.c
+> > > @@ -642,8 +642,10 @@ reparent_thread(struct task_struct *p, s
+> > >  			/*
+> > >  			 * If it was at a trace stop, turn it into
+> > >  			 * a normal stop since it's no longer being
+> > > -			 * traced.
+> > > +			 * traced.  Cancel the notification signal,
+> > > +			 * or the tracee may get a SIGTRAP.
+> > >  			 */
+> > > +			p->exit_code = 0;
+> > >  			ptrace_untrace(p);
+> > >  		}
+> > >  	}
+> > > @@ -713,6 +715,10 @@ static void forget_original_parent(struc
+> > >  			p->real_parent = reaper;
+> > >  			reparent_thread(p, father, 0);
+> > >  		} else {
+> > > +			/* cancel the notification signal at a trace stop */
+> > > +			if (p->state == TASK_TRACED)
+> > > +				p->exit_code = 0;
+> > 
+> > This reduce the likelihood that the tracee will be SIGTRAP'ed, but doesn't
+> > solve the problem, no?
+> > 
+> > Suppose that the tracee does send_sigtrap(current) in do_syscall_trace()
+> > and then ptracer exits. Or ptracer wakes up the TASK_TRACED tracee without
+> > clearing its ->exit_code and then you kill(ptracer, SIGKILL).
+> > 
+> > If we really need this, _perhaps_ it is better to change do_syscall_trace(),
+> > so that the tracee checks ->ptrace before sending the signal to itself.
+> > 
+> > 
+> > But actually, I don't understand what is the problem. Ptracer has full control,
+> > you should not kill it with SIGKILL, this may leave the child in some bad/
+> > inconsistent change.
+> 
+> Additional note. Suppose that the tracee dequeues the "good" signal, notices
+> PT_PTRACED and calls ptrace_stop(). We set TASK_TRACED under ->siglock, without
+> holding tasklist_lock. At this moment you kill strace, it clears ->exit_code.
+> The tracee notices it is not traced any longer and returns to get_signal_to_deliver().
+> Since ->exit_code is cleared, the "right" signal is lost.
 
-On 2008.03.26, at 09:05, Emmanuel Florac wrote:
-> Le Tue, 25 Mar 2008 19:42:28 -0400 vous écriviez:
->
->> And this is what I was saying earlier, there is a trend to blame the
->> benchmark when in fact the same benchmark runs well on 2.4.
->
-> As I mentioned, it looks like 2.4 actually buffers write data on  
-> RAID-1
-> which is inherently bad (after all if I do RAID-1 it's for the sake of
-> data integrity, and write caching just counters that).
+Yes, you're right. My patch only works OK in the ptrace_notify() case,
+not when it is called from get_signal_to_deliver().
 
-Not bad, it buffer flushing is secure. You just have 'one buffer size'
-delay. If your system crashes, think it just crashed 'one buffer size'
-before...
+So, do you think it's a better idea to add a new flag to notify the
+tracee that its tracer disappeared? That way it can decide how to handle
+the situation in ptrace_stop(), something along these lines:
 
->
-> However, how bad dd may be, it reflects broadly my problem : on small
-> systems using software RAID, IO is overall way better with 2.4 than
-> 2.6, especially NFS thruput.
-> Though I can substantially enhance 2.6 performance through tweaking
-> (playing with read ahead, disk queue length etc), it still lags behind
-> 2.4 with defaults settings by a clear margin (10% or more).
-> This isn't true - fortunately - of larger systems with 12, 24, 48  
-> disks
-> drives, hardware RAID, Fibre Channel and al.
->
->
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1628,6 +1628,8 @@ ptrace_stop(int exit_code, int c
+ 		do_notify_parent_cldstop(current, CLD_TRAPPED);
+ 		read_unlock(&tasklist_lock);
+ 		schedule();
++		if (current->flags & PF_PTRACEORPHAN & clear_code)
++			current->exit_code = 0;
+ 	} else {
+ 		/*
+ 		 * By the time we got the lock, our tracer went away.
 
-But you shouldn't have to tweak anything.
-Let's forget for a moment calling dd a 'benchmark'. The fact is that a
-certain program (in its default behaviour, dd if=xxx of=yyy) is waaay
-slower in 2.6 than in 2.4. So something has gone nuts.
-The typical question is 'who cares dd ?'. And the answer: all normal
-applications that just read and write, that do not use any *advise()
-because they tried to be portable, that are not rewritten and fancy
-optimized to take advantage of latest kernel knobs, in short, any normal
-app that just fopen()s and fread()s...
-Seriously, are people telling that I have to tweak my app to get the
-same performance that in 2.4 ? The basic performance should be the same,
-and all those knobs should let you get _better_ throughput, not just the
-same. To say anything else is to hide the head on the floor...
+And then replace p->exit_code = 0 in my original patch with something
+like p->flags |= PF_PTRACEORPHAN. Better?
 
---
-J.A. Magallon <jamagallon()ono!com>     \              Software is  
-like sex:
-                                          \        It's better when  
-it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
+Cheers,
+Petr Tesarik
 
-
-
+> So I think this patch adds a race. In some sense (yes I am biased) this is
+> even worse than the problem this patch tries to solve, because this race
+> is unlikely and is hard to trigger/debug, and it could be easily unnoticed.
+> 
+> Oleg.
+> 
