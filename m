@@ -1,479 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbYCZBky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbYCZBlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbYCZBky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 21:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757804AbYCZBia
+	id S1762098AbYCZBlc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 21:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbYCZBic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 21:38:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53199 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752281AbYCZBiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 21:38:14 -0400
-Message-Id: <20080326013812.622459000@polaris-admin.engr.sgi.com>
-References: <20080326013811.569646000@polaris-admin.engr.sgi.com>
+	Tue, 25 Mar 2008 21:38:32 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43818 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752625AbYCZBiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 21:38:15 -0400
+Message-Id: <20080326013811.569646000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Mar 2008 18:38:17 -0700
+Date: Tue, 25 Mar 2008 18:38:11 -0700
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-       David Howells <dhowells@redhat.com>, Tony Luck <tony.luck@intel.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 06/12] cpumask: create pointer to node_to_cpumask array element v2
-Content-Disposition: inline; filename=node_to_cpumask_ptr
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 00/12] cpumask: reduce stack pressure from local/passed cpumask variables v2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create a simple macro to always return a pointer to the 
-node_to_cpumask(node) value.  This relies on compiler optimization
-to remove the extra indirection:
 
-#define	node_to_cpumask_ptr(v, node) 		\
-		cpumask_t _##v = node_to_cpumask(node), *v = &_##v
+Modify usage of cpumask_t variables to use pointers as much as possible.
 
-For those systems with a large cpumask size, then a true pointer
-to the array element is used:
+Changes are:
 
-#define node_to_cpumask_ptr(v, node)		\
-		cpumask_t *v = &(node_to_cpumask_map[node])
+	* Use an allocated array of cpumask_t's for cpumask_of_cpu() when
+	  large NR_CPUS count is present.  This removes 26168 bytes of stack
+	  usage (see chart below), as well as reduces the code generated for
+	  each usage.
 
-A node_to_cpumask_ptr_next() macro is provided to access another
-node_to_cpumask value.
+	* Modify set_cpus_allowed to pass a pointer to the "newly allowed"
+	  cpumask.  This removes 10792 bytes of stack usage but is an
+	  ABI change.
 
-This removes 10256 bytes of stack usage.
+	* Add node_to_cpumask_ptr that returns pointer to cpumask for the
+	  specified node.  This removes 10256 bytes of stack usage.
+
+	* Modify build_sched_domains and related sub-functions to pass
+	  pointers to cpumask temp variables.  This consolidates stack
+	  space that was spread over various functions.
+
+	* Remove large array from numa_initmem_init() [-8248 bytes].
+
+	* Optimize usages of {CPU,NODE}_MASK_{NONE,ALL} [-9408 bytes].
+
+	* Various other changes to reduce stacksize and silence checkpatch
+	  warnings [-7672 bytes].
 
 Based on:
 	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-# alpha
-Cc: Richard Henderson <rth@twiddle.net>
-
-# fujitsu
-Cc: David Howells <dhowells@redhat.com>
-
-# ia64
-Cc: Tony Luck <tony.luck@intel.com>
-
-# powerpc
-Cc: Paul Mackerras <paulus@samba.org>
 Cc: Anton Blanchard <anton@samba.org>
-
-# sparc
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Cliff Wickman <cpw@sgi.com>
+Cc: Dave Jones <davej@codemonkey.org.uk>
+Cc: David Howells <dhowells@redhat.com>
 Cc: David S. Miller <davem@davemloft.net>
-Cc: William L. Irwin <wli@holomorphy.com>
-
-# x86
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
 Cc: H. Peter Anvin <hpa@zytor.com>
-
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jack Steiner <steiner@sgi.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: William L. Irwin <wli@holomorphy.com>
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
-v2: rebased on linux-2.6.git + linux-2.6-x86.git
 
-One checkpatch error that I don't think can be fixed (was already in source):
+v2: resubmitted based on x86/latest.
 
-ERROR: Macros with complex values should be enclosed in parenthesis
-#230: FILE: include/linux/topology.h:49:
+Summaries:
 
-#define for_each_node_with_cpus(node)			\
-        for_each_online_node(node)                      \
-		if (nr_cpus_node(node))
+	1 - Memory Usages Changes
+	2 - Build & Test Results
 
-total: 1 errors, 0 warnings, 315 lines checked
+--- ---------------------------------------------------------
+* Memory Usages Changes
 
----
- drivers/base/node.c            |    4 ++--
- drivers/pci/pci-driver.c       |    4 ++--
- include/asm-alpha/topology.h   |    3 +--
- include/asm-frv/topology.h     |    4 +---
- include/asm-generic/topology.h |   14 ++++++++++++++
- include/asm-ia64/topology.h    |    5 +++++
- include/asm-powerpc/topology.h |    3 +--
- include/asm-x86/topology.h     |   15 +++++++++++++--
- include/linux/topology.h       |   13 ++++++-------
- kernel/sched.c                 |   29 ++++++++++++++---------------
- mm/page_alloc.c                |    6 +++---
- mm/slab.c                      |    5 ++---
- mm/vmscan.c                    |   18 ++++++++----------
- net/sunrpc/svc.c               |    4 ++--
- 14 files changed, 74 insertions(+), 53 deletions(-)
+Patch list summary of various memory usage changes using the akpm2
+config file with NR_CPUS=4096 and MAX_NUMNODES=512.
 
---- linux.trees.git.orig/drivers/base/node.c
-+++ linux.trees.git/drivers/base/node.c
-@@ -22,13 +22,13 @@ static struct sysdev_class node_class = 
- static ssize_t node_read_cpumap(struct sys_device * dev, char * buf)
- {
- 	struct node *node_dev = to_node(dev);
--	cpumask_t mask = node_to_cpumask(node_dev->sysdev.id);
-+	node_to_cpumask_ptr(mask, node_dev->sysdev.id);
- 	int len;
- 
- 	/* 2004/06/03: buf currently PAGE_SIZE, need > 1 char per 4 bits. */
- 	BUILD_BUG_ON(MAX_NUMNODES/4 > PAGE_SIZE/2);
- 
--	len = cpumask_scnprintf(buf, PAGE_SIZE-1, mask);
-+	len = cpumask_scnprintf(buf, PAGE_SIZE-1, *mask);
- 	len += sprintf(buf + len, "\n");
- 	return len;
- }
---- linux.trees.git.orig/drivers/pci/pci-driver.c
-+++ linux.trees.git/drivers/pci/pci-driver.c
-@@ -184,8 +184,8 @@ static int pci_call_probe(struct pci_dri
- 	int node = dev_to_node(&dev->dev);
- 
- 	if (node >= 0) {
--		cpumask_t nodecpumask = node_to_cpumask(node);
--		set_cpus_allowed(current, &nodecpumask);
-+		node_to_cpumask_ptr(nodecpumask, node);
-+		set_cpus_allowed(current, nodecpumask);
- 	}
- 
- 	/* And set default memory allocation policy */
---- linux.trees.git.orig/include/asm-alpha/topology.h
-+++ linux.trees.git/include/asm-alpha/topology.h
-@@ -41,8 +41,7 @@ static inline cpumask_t node_to_cpumask(
- 
- #define pcibus_to_cpumask(bus)	(cpu_online_map)
- 
--#else /* CONFIG_NUMA */
--# include <asm-generic/topology.h>
- #endif /* !CONFIG_NUMA */
-+# include <asm-generic/topology.h>
- 
- #endif /* _ASM_ALPHA_TOPOLOGY_H */
---- linux.trees.git.orig/include/asm-frv/topology.h
-+++ linux.trees.git/include/asm-frv/topology.h
-@@ -5,10 +5,8 @@
- 
- #error NUMA not supported yet
- 
--#else /* !CONFIG_NUMA */
-+#endif /* CONFIG_NUMA */
- 
- #include <asm-generic/topology.h>
- 
--#endif /* CONFIG_NUMA */
--
- #endif /* _ASM_TOPOLOGY_H */
---- linux.trees.git.orig/include/asm-generic/topology.h
-+++ linux.trees.git/include/asm-generic/topology.h
-@@ -27,6 +27,8 @@
- #ifndef _ASM_GENERIC_TOPOLOGY_H
- #define _ASM_GENERIC_TOPOLOGY_H
- 
-+#ifndef	CONFIG_NUMA
-+
- /* Other architectures wishing to use this simple topology API should fill
-    in the below functions as appropriate in their own <asm/topology.h> file. */
- #ifndef cpu_to_node
-@@ -52,4 +54,16 @@
- 				)
- #endif
- 
-+#endif	/* CONFIG_NUMA */
-+
-+/* returns pointer to cpumask for specified node */
-+#ifndef node_to_cpumask_ptr
-+
-+#define	node_to_cpumask_ptr(v, node) 					\
-+		cpumask_t _##v = node_to_cpumask(node), *v = &_##v
-+
-+#define node_to_cpumask_ptr_next(v, node)				\
-+			  _##v = node_to_cpumask(node)
-+#endif
-+
- #endif /* _ASM_GENERIC_TOPOLOGY_H */
---- linux.trees.git.orig/include/asm-ia64/topology.h
-+++ linux.trees.git/include/asm-ia64/topology.h
-@@ -116,6 +116,11 @@ void build_cpu_to_node_map(void);
- #define smt_capable() 				(smp_num_siblings > 1)
- #endif
- 
-+#define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
-+					CPU_MASK_ALL : \
-+					node_to_cpumask(pcibus_to_node(bus)) \
-+				)
-+
- #include <asm-generic/topology.h>
- 
- #endif /* _ASM_IA64_TOPOLOGY_H */
---- linux.trees.git.orig/include/asm-powerpc/topology.h
-+++ linux.trees.git/include/asm-powerpc/topology.h
-@@ -96,11 +96,10 @@ static inline void sysfs_remove_device_f
- {
- }
- 
-+#endif /* CONFIG_NUMA */
- 
- #include <asm-generic/topology.h>
- 
--#endif /* CONFIG_NUMA */
--
- #ifdef CONFIG_SMP
- #include <asm/cputable.h>
- #define smt_capable()		(cpu_has_feature(CPU_FTR_SMT))
---- linux.trees.git.orig/include/asm-x86/topology.h
-+++ linux.trees.git/include/asm-x86/topology.h
-@@ -89,6 +89,17 @@ static inline int cpu_to_node(int cpu)
- #endif
- 	return per_cpu(x86_cpu_to_node_map, cpu);
- }
-+
-+#ifdef	CONFIG_NUMA
-+
-+/* Returns a pointer to the cpumask of CPUs on Node 'node'. */
-+#define node_to_cpumask_ptr(v, node)		\
-+		cpumask_t *v = &(node_to_cpumask_map[node])
-+
-+#define node_to_cpumask_ptr_next(v, node)	\
-+			   v = &(node_to_cpumask_map[node])
-+#endif
-+
- #endif /* CONFIG_X86_64 */
- 
- /*
-@@ -186,10 +197,10 @@ static inline void set_mp_bus_to_node(in
- {
- }
- 
--#include <asm-generic/topology.h>
--
- #endif
- 
-+#include <asm-generic/topology.h>
-+
- extern cpumask_t cpu_coregroup_map(int cpu);
- 
- #ifdef ENABLE_TOPO_DEFINES
---- linux.trees.git.orig/include/linux/topology.h
-+++ linux.trees.git/include/linux/topology.h
-@@ -38,16 +38,15 @@
- #endif
- 
- #ifndef nr_cpus_node
--#define nr_cpus_node(node)							\
--	({									\
--		cpumask_t __tmp__;						\
--		__tmp__ = node_to_cpumask(node);				\
--		cpus_weight(__tmp__);						\
-+#define nr_cpus_node(node)				\
-+	({						\
-+		node_to_cpumask_ptr(__tmp__, node);	\
-+		cpus_weight(*__tmp__);			\
- 	})
- #endif
- 
--#define for_each_node_with_cpus(node)						\
--	for_each_online_node(node)						\
-+#define for_each_node_with_cpus(node)			\
-+	for_each_online_node(node)			\
- 		if (nr_cpus_node(node))
- 
- void arch_update_cpu_topology(void);
---- linux.trees.git.orig/kernel/sched.c
-+++ linux.trees.git/kernel/sched.c
-@@ -6252,7 +6252,7 @@ init_sched_build_groups(cpumask_t span, 
-  *
-  * Should use nodemask_t.
-  */
--static int find_next_best_node(int node, unsigned long *used_nodes)
-+static int find_next_best_node(int node, nodemask_t *used_nodes)
- {
- 	int i, n, val, min_val, best_node = 0;
- 
-@@ -6266,7 +6266,7 @@ static int find_next_best_node(int node,
- 			continue;
- 
- 		/* Skip already used nodes */
--		if (test_bit(n, used_nodes))
-+		if (node_isset(n, *used_nodes))
- 			continue;
- 
- 		/* Simple min distance search */
-@@ -6278,14 +6278,13 @@ static int find_next_best_node(int node,
- 		}
- 	}
- 
--	set_bit(best_node, used_nodes);
-+	node_set(best_node, *used_nodes);
- 	return best_node;
- }
- 
- /**
-  * sched_domain_node_span - get a cpumask for a node's sched_domain
-  * @node: node whose cpumask we're constructing
-- * @size: number of nodes to include in this span
-  *
-  * Given a node, construct a good cpumask for its sched_domain to span. It
-  * should be one that prevents unnecessary balancing, but also spreads tasks
-@@ -6293,22 +6292,22 @@ static int find_next_best_node(int node,
-  */
- static cpumask_t sched_domain_node_span(int node)
- {
--	DECLARE_BITMAP(used_nodes, MAX_NUMNODES);
--	cpumask_t span, nodemask;
-+	nodemask_t used_nodes;
-+	cpumask_t span;
-+	node_to_cpumask_ptr(nodemask, node);
- 	int i;
- 
- 	cpus_clear(span);
--	bitmap_zero(used_nodes, MAX_NUMNODES);
-+	nodes_clear(used_nodes);
- 
--	nodemask = node_to_cpumask(node);
--	cpus_or(span, span, nodemask);
--	set_bit(node, used_nodes);
-+	cpus_or(span, span, *nodemask);
-+	node_set(node, used_nodes);
- 
- 	for (i = 1; i < SD_NODES_PER_DOMAIN; i++) {
--		int next_node = find_next_best_node(node, used_nodes);
-+		int next_node = find_next_best_node(node, &used_nodes);
- 
--		nodemask = node_to_cpumask(next_node);
--		cpus_or(span, span, nodemask);
-+		node_to_cpumask_ptr_next(nodemask, next_node);
-+		cpus_or(span, span, *nodemask);
- 	}
- 
- 	return span;
-@@ -6705,6 +6704,7 @@ static int build_sched_domains(const cpu
- 		for (j = 0; j < MAX_NUMNODES; j++) {
- 			cpumask_t tmp, notcovered;
- 			int n = (i + j) % MAX_NUMNODES;
-+			node_to_cpumask_ptr(nodemask, n);
- 
- 			cpus_complement(notcovered, covered);
- 			cpus_and(tmp, notcovered, *cpu_map);
-@@ -6712,8 +6712,7 @@ static int build_sched_domains(const cpu
- 			if (cpus_empty(tmp))
- 				break;
- 
--			nodemask = node_to_cpumask(n);
--			cpus_and(tmp, tmp, nodemask);
-+			cpus_and(tmp, tmp, *nodemask);
- 			if (cpus_empty(tmp))
- 				continue;
- 
---- linux.trees.git.orig/mm/page_alloc.c
-+++ linux.trees.git/mm/page_alloc.c
-@@ -2029,6 +2029,7 @@ static int find_next_best_node(int node,
- 	int n, val;
- 	int min_val = INT_MAX;
- 	int best_node = -1;
-+	node_to_cpumask_ptr(tmp, 0);
- 
- 	/* Use the local node if we haven't already */
- 	if (!node_isset(node, *used_node_mask)) {
-@@ -2037,7 +2038,6 @@ static int find_next_best_node(int node,
- 	}
- 
- 	for_each_node_state(n, N_HIGH_MEMORY) {
--		cpumask_t tmp;
- 
- 		/* Don't want a node to appear more than once */
- 		if (node_isset(n, *used_node_mask))
-@@ -2050,8 +2050,8 @@ static int find_next_best_node(int node,
- 		val += (n < node);
- 
- 		/* Give preference to headless and unused nodes */
--		tmp = node_to_cpumask(n);
--		if (!cpus_empty(tmp))
-+		node_to_cpumask_ptr_next(tmp, n);
-+		if (!cpus_empty(*tmp))
- 			val += PENALTY_FOR_NODE_WITH_CPUS;
- 
- 		/* Slight preference for less loaded node */
---- linux.trees.git.orig/mm/slab.c
-+++ linux.trees.git/mm/slab.c
-@@ -1160,14 +1160,13 @@ static void __cpuinit cpuup_canceled(lon
- 	struct kmem_cache *cachep;
- 	struct kmem_list3 *l3 = NULL;
- 	int node = cpu_to_node(cpu);
-+	node_to_cpumask_ptr(mask, node);
- 
- 	list_for_each_entry(cachep, &cache_chain, next) {
- 		struct array_cache *nc;
- 		struct array_cache *shared;
- 		struct array_cache **alien;
--		cpumask_t mask;
- 
--		mask = node_to_cpumask(node);
- 		/* cpu is dead; no one can alloc from it. */
- 		nc = cachep->array[cpu];
- 		cachep->array[cpu] = NULL;
-@@ -1183,7 +1182,7 @@ static void __cpuinit cpuup_canceled(lon
- 		if (nc)
- 			free_block(cachep, nc->entry, nc->avail, node);
- 
--		if (!cpus_empty(mask)) {
-+		if (!cpus_empty(*mask)) {
- 			spin_unlock_irq(&l3->list_lock);
- 			goto free_array_cache;
- 		}
---- linux.trees.git.orig/mm/vmscan.c
-+++ linux.trees.git/mm/vmscan.c
-@@ -1664,11 +1664,10 @@ static int kswapd(void *p)
- 	struct reclaim_state reclaim_state = {
- 		.reclaimed_slab = 0,
- 	};
--	cpumask_t cpumask;
-+	node_to_cpumask_ptr(cpumask, pgdat->node_id);
- 
--	cpumask = node_to_cpumask(pgdat->node_id);
--	if (!cpus_empty(cpumask))
--		set_cpus_allowed(tsk, &cpumask);
-+	if (!cpus_empty(*cpumask))
-+		set_cpus_allowed(tsk, cpumask);
- 	current->reclaim_state = &reclaim_state;
- 
- 	/*
-@@ -1897,17 +1896,16 @@ out:
- static int __devinit cpu_callback(struct notifier_block *nfb,
- 				  unsigned long action, void *hcpu)
- {
--	pg_data_t *pgdat;
--	cpumask_t mask;
- 	int nid;
- 
- 	if (action == CPU_ONLINE || action == CPU_ONLINE_FROZEN) {
- 		for_each_node_state(nid, N_HIGH_MEMORY) {
--			pgdat = NODE_DATA(nid);
--			mask = node_to_cpumask(pgdat->node_id);
--			if (any_online_cpu(mask) < nr_cpu_ids)
-+			pg_data_t *pgdat = NODE_DATA(nid);
-+			node_to_cpumask_ptr(mask, pgdat->node_id);
-+
-+			if (any_online_cpu(*mask) < nr_cpu_ids)
- 				/* One of our CPUs online: restore mask */
--				set_cpus_allowed(pgdat->kswapd, &mask);
-+				set_cpus_allowed(pgdat->kswapd, mask);
- 		}
- 	}
- 	return NOTIFY_OK;
---- linux.trees.git.orig/net/sunrpc/svc.c
-+++ linux.trees.git/net/sunrpc/svc.c
-@@ -323,10 +323,10 @@ svc_pool_map_set_cpumask(unsigned int pi
- 	case SVC_POOL_PERNODE:
- 	{
- 		unsigned int node = m->pool_to[pidx];
--		cpumask_t nodecpumask = node_to_cpumask(node);
-+		node_to_cpumask_ptr(nodecpumask, node);
- 
- 		*oldmask = current->cpus_allowed;
--		set_cpus_allowed(current, &nodecpumask);
-+		set_cpus_allowed(current, nodecpumask);
- 		return 1;
- 	}
- 	}
+
+====== Data (-l 500)
+    1 - initial
+    2 - cpumask_of_cpu
+    8 - sched_domain
+   13 - CPU_NODE_MASK
+
+   .1.   .2.    .8.  .13.    ..final..
+  3553     .  -1146  +320 2727   -23%  build_sched_domains(.text)
+   533  -533      .     .    .  -100%  hpet_enable(.init.text)
+   512     .      .  -512    .  -100%  C(.rodata)
+     0     .      .  +512  512      .  cpu_mask_all(.data)
+ 4598 -533 -1146 +320 3239  -29%  Totals
+
+====== Text/Data ()
+    1 - initial
+    2 - cpumask_of_cpu
+    3 - set_cpus_allowed
+    6 - numa_initmem_init
+    9 - kern_sched
+   13 - CPU_NODE_MASK
+
+        .1.    .2.    .3.    .6.    .9.   .13.    ..final..
+    3397632  -2048      .      .      .      .   3395584    <1%  TextSize
+    1642496  +2048  +4096      .  -4096  -4096   1640448    <1%  DataSize
+    1658880      .      .  +8192      .      .   1667072    <1%  InitSize
+  287709184      .  +4096      .  -4096  +4096 287713280    <1%  OtherSize
+  294408192      .  +8192  +8192  -8192      . 294416384    +0%  Totals
+
+====== Stack (-l 500)
+    1 - initial
+    2 - cpumask_of_cpu
+    3 - set_cpus_allowed
+    4 - cpumask_affinity
+    6 - numa_initmem_init
+    7 - node_to_cpumask_ptr
+    8 - sched_domain
+    9 - kern_sched
+   11 - build_sched_domains
+   12 - cpu_coregroup_map
+   13 - CPU_NODE_MASK
+
+    .1.    .2.    .3.    .4.    .6.    .7.    .8.   .9.  .11.  .12.   .13.    ..final..
+  11080      .      .      .      .   -512  -6352     .  -976   +16   -512 2744   -75%  build_sched_domains
+   8248      .      .      .  -8248      .      .     .     .     .      .    .  -100%  numa_initmem_init
+   3672  -1024   -496      .      .      .      .     .     .     .      . 2152   -41%  centrino_target
+   3176      .      .      .      .  -2576      .     .     .     .      .  600   -81%  sched_domain_node_span
+   3096  -1536   -520      .      .      .      .     .     .     .      . 1040   -66%  acpi_processor_set_throttling
+   2600  -1536      .      .      .      .      .     .     .     .   -512  552   -78%  powernowk8_cpu_init
+   2120  -1024   -512      .      .      .      .     .     .     .      .  584   -72%  cache_add_dev
+   2104  -1008      .      .      .      .      .     .     .     .   -512  584   -72%  powernowk8_target
+   2104      .   -512      .      .      .      .     .     .     .   -512 1080   -48%  _cpu_down
+   2072   -512      .      .      .      .      .     .     .     .      . 1560   -24%  tick_notify
+   2064  -1024      .      .      .      .      .     .     .     .   -504  536   -74%  check_supported_cpu
+   2056      .  -1544   +520      .      .      .     .     .     .      . 1032   -49%  sched_setaffinity
+   2056  -1024   -512      .      .      .      .     .     .     .      .  520   -74%  get_cur_freq
+   2056      .   -512  -1032      .      .      .     .     .     .   -512    .  -100%  affinity_set
+   2056  -1024   -520      .      .      .      .     .     .     .      .  512   -75%  acpi_processor_get_throttling
+   2056  -1024   -512      .      .      .      .     .     .     .      .  520   -74%  acpi_processor_ffh_cstate_probe
+   2048  -1016   -520      .      .      .      .     .     .     .      .  512   -75%  powernowk8_get
+   1784  -1024      .      .      .      .      .     .     .     .      .  760   -57%  cpufreq_add_dev
+   1768      .   -512      .      .  -1256      .     .     .     .      .    .  -100%  kswapd
+   1608  -1608      .      .      .      .      .     .     .     .      .    .  -100%  disable_smp
+   1592      .      .      .      .  -1592      .     .     .     .      .    .  -100%  do_tune_cpucache
+   1576      .      .      .      .      .      .  -480     .     .  -1096    .  -100%  init_sched_build_groups
+   1560      .   -528      .      .   -512      .     .     .     .      .  520   -66%  pci_device_probe
+   1552      .   -512      .      .      .      .     .     .     .  -1040    .  -100%  kthreadd
+   1544  -1024   -520      .      .      .      .     .     .     .      .    .  -100%  stopmachine
+   1544  -1032   -512      .      .      .      .     .     .     .      .    .  -100%  native_machine_shutdown
+   1544  -1008      .      .      .      .      .     .     .     .      .  536   -65%  alloc_ldt
+   1536   -504      .      .      .      .      .     .     .     .      . 1032   -32%  smp_call_function_single
+   1536  -1024      .      .      .      .      .     .     .     .      .  512   -66%  native_smp_send_reschedule
+   1176      .      .      .      .      .      .  -512     .     .      .  664   -43%  thread_return
+   1176      .      .      .      .      .      .  -512     .     .      .  664   -43%  schedule
+   1160      .      .      .      .      .      .  -512     .     .      .  648   -44%  run_rebalance_domains
+   1160      .      .      .      .  -1160      .     .     .     .      .    .  -100%  __build_all_zonelists
+   1144      .      .   +512      .      .      .     .     .     .   -512 1144      .  threshold_create_device
+   1080      .   -520      .      .      .      .     .     .     .      .  560   -48%  pdflush
+   1080      .   -512      .      .      .      .     .     .     .   -568    .  -100%  kernel_init
+   1064      .      .      .      .  -1064      .     .     .     .      .    .  -100%  cpuup_canceled
+   1064      .      .      .      .  -1064      .     .     .     .      .    .  -100%  cpuup_callback
+   1032  -1032      .      .      .      .      .     .     .     .      .    .  -100%  setup_pit_timer
+   1032      .      .      .      .      .      .     .     .     .   -520  512   -50%  physflat_vector_allocation_domain
+   1032  -1032      .      .      .      .      .     .     .     .      .    .  -100%  init_workqueues
+   1032  -1032      .      .      .      .      .     .     .     .      .    .  -100%  init_idle
+   1032      .      .      .      .      .      .     .     .     .   -512  520   -49%  destroy_irq
+   1024      .      .   -512      .      .      .     .     .     .      .  512   -50%  sys_sched_setaffinity
+   1024  -1024      .      .      .      .      .     .     .     .      .    .  -100%  setup_APIC_timer
+   1024      .   -504      .      .      .      .     .     .     .      .  520   -49%  sched_init_smp
+   1024  -1024      .      .      .      .      .     .     .     .      .    .  -100%  native_smp_prepare_cpus
+   1024  -1024      .      .      .      .      .     .     .     .      .    .  -100%  kthread_bind
+   1024  -1024      .      .      .      .      .     .     .     .      .    .  -100%  hpet_enable
+   1024      .      .   -512      .      .      .     .     .     .      .  512   -50%  compat_sys_sched_setaffinity
+   1024      .      .      .      .      .      .     .     .     .   -512  512   -50%  __percpu_populate_mask
+   1024      .   -512      .      .      .      .     .     .     .   -512    .  -100%  ____call_usermodehelper
+    568      .      .      .      .      .      .  -568     .     .      .    .  -100%  cpu_attach_domain
+    552      .      .      .      .      .      .     .     .     .   -552    .  -100%  migration_call
+    520      .      .      .      .   -520      .     .     .     .      .    .  -100%  node_read_cpumap
+    520      .      .      .      .      .      .     .     .     .   -520    .  -100%  dynamic_irq_init
+    520      .      .      .      .      .      .    -8     .  -512      .    .  -100%  cpu_to_phys_group
+    520      .      .      .      .      .      .  -520     .     .      .    .  -100%  cpu_to_core_group
+      0      .      .      .      .      .   +760     .     .     .      .  760      .  sd_init_SIBLING
+      0      .      .      .      .      .   +760     .     .     .      .  760      .  sd_init_NODE
+      0      .      .      .      .      .   +752     .     .     .      .  752      .  sd_init_MC
+      0      .      .      .      .      .   +752     .     .     .      .  752      .  sd_init_CPU
+      0      .      .      .      .      .   +752     .     .     .      .  752      .  sd_init_ALLNODES
+      0      .      .      .      .      .      .  +512     .     .      .  512      .  detach_destroy_domains
+ 101488 -26168 -10792  -1024  -8248 -10256  -2576 -2600  -976  -496  -9408 28944  -71%  Totals
+
+--- ---------------------------------------------------------
+* Build & Test Results
+
+Built/tested:
+
+    nosmp
+    nonuma
+    defconfig (NR_CPUS/MAX_NUMANODES: 32/64 and 4096/512)
+    akpm2 config (NR_CPUS/MAX_NUMANODES: 255/64 and 4096/512)
+
+Built no errors:
+
+    allyesconfig
+    allnoconfig
+    allmodconfig
+    current-x86_64-default
+    current-ia64-sn2
+    current-ia64-default
+    current-ia64-nosmp
+    current-ia64-zx1
+    current-s390-default
+    current-arm-default
+    current-sparc-default
+    current-sparc64-default
+    current-sparc64-smp
+    current-ppc-pmac32
+
+Not Built (previous errors):
+
+    current-x86_64-single
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x814bd): undefined reference to `request_firmware'
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x81556): undefined reference to `release_firmware'
+    current-x86_64-8psmp
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x814bd): undefined reference to `request_firmware'
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x81556): undefined reference to `release_firmware'
+    current-x86_64-debug
+	sas_scsi_host.c:1091: undefined reference to `request_firmware'
+	sas_scsi_host.c:1103: undefined reference to `release_firmware'
+    current-x86_64-numa
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x8540d): undefined reference to `request_firmware'
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x854a6): undefined reference to `release_firmware'
+    current-i386-single
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x7617a): undefined reference to `request_firmware'
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x76208): undefined reference to `release_firmware'
+    current-i386-smp
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x7985a): undefined reference to `request_firmware'
+	drivers/built-in.o: In function `sas_request_addr':
+	(.text+0x798e8): undefined reference to `release_firmware'
+    current-ppc-smp
+	WRAP    arch/powerpc/boot/uImage
+	ln: accessing `arch/powerpc/boot/uImage': No such file or directory
+
+(Note: build with patches applied did not change errors.)
+
+
+--- ---------------------------------------------------------
 
 -- 
