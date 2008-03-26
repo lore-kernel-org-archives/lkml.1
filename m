@@ -1,99 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbYCZUae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYCZUcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761251AbYCZUae (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYCZUaY
+	id S1760163AbYCZUcP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbYCZUcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:30:24 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58990 "EHLO e3.ny.us.ibm.com"
+	Wed, 26 Mar 2008 16:32:00 -0400
+Received: from mga01.intel.com ([192.55.52.88]:56325 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754795AbYCZUaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:30:22 -0400
-Date: Wed, 26 Mar 2008 13:30:12 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pm@debian.org
-Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
-Message-ID: <20080326203012.GB6249@us.ibm.com>
-References: <20080325165007.GA7775@elte.hu> <47E94557.4030001@m3y3r.de> <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru> <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com> <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	id S1754960AbYCZUb7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 16:31:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,560,1199692800"; 
+   d="scan'208";a="540528166"
+X-MIMEOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: What if a TLB flush needed to sleep?
+Date: Wed, 26 Mar 2008 13:29:58 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843ECE9EB1C@orsmsx424.amr.corp.intel.com>
+In-reply-to: <20080326123239.GG16721@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: What if a TLB flush needed to sleep?
+Thread-Index: AciPPcfIXkkMTROwR9WCexsyhY5+gAAQUVRw
+References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com> <20080326123239.GG16721@parisc-linux.org>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Cc: <linux-arch@vger.kernel.org>, <linux-mm@kvack.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 26 Mar 2008 20:30:07.0353 (UTC) FILETIME=[2E2FCE90:01C88F80]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 11:33:24AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 26 Mar 2008, Gary Hade wrote:
-> >
-> > I have a fix for the ThinkPad docking Oops but if the issue being
-> > discussed here is caused by the transparent bridge sizing removal
-> > change I totally agree that it should be reverted.  
-> 
-> Ok, I reverted it, but the docking Oops is still interesting, in that it 
-> implies that some piece of code wasn't exactly robust. I haven't seen the 
-> patch, but it sounds like that should be fixed independently..
+> Of course, someone who wrote it could do better ;-)
 
-Could be but without the sizing removal I doubt that the fix I
-was going to propose (see below) would be the same.  What I had
-found is that the removal of the transparent bridge sizing was
-leaving the resource record for at least region 7 (IO) of a
-hot-added transparent bridge on the docking station in a state
-that was not palatable with later executed code in pdev_sort_resource().
-Even though the restoration of the transparent bridge sizing
-corrects the problem, pdev_sort_resource() could probably use
-some bulletproofing.  I will take a look at this.
+Here is Willy's code in patch format (against linux-next
+tree tag next-20080326 which includes his re-write of the
+semaphore code).
 
-Thanks,
-Gary
+This looks a lot cleaner than my ia64 specific code that
+used cmpxchg() for the down() operation and fetchadd for
+the up() ... using a brand new semaphore_spin data type.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+It appears to work ... I tried to do some timing comparisons
+of this generic version against my arch specific one, but the
+hackbench test case has a run to run variation of a factor of
+three (from 1min9sec to 3min44sec) so it is hopeless to try
+and see some small percentage difference.
 
+commit 0359fbb64297d44328f26ec5fda3a3c26f1c5ba7
+Author: Matthew Wilcox <matthew@wil.cx>
+Date:   Wed Mar 26 11:08:18 2008 -0700
 
---- linux-2.6.25-rc6/drivers/pci/probe.c.orig	2008-03-20 12:09:14.000000000 -0700
-+++ linux-2.6.25-rc6/drivers/pci/probe.c	2008-03-20 12:11:29.000000000 -0700
-@@ -328,6 +328,8 @@ void __devinit pci_read_bridge_bases(str
- 		if (!res->end)
- 			res->end = limit + 0xfff;
- 	}
-+	if (!res->start && dev->transparent)
-+		res->flags = 0;
+    Add "down_spin()" API for semaphores
+    
+    For those places that need semaphore semantics but cannot sleep
+    
+    Signed-off-by: Tony Luck <tony.luck@intel.com>
+
+diff --git a/include/linux/semaphore.h b/include/linux/semaphore.h
+index a7125da..3404ce5 100644
+--- a/include/linux/semaphore.h
++++ b/include/linux/semaphore.h
+@@ -53,6 +53,12 @@ static inline void sema_init(struct semaphore *sem, int val)
+ extern void down(struct semaphore *sem);
  
- 	res = child->resource[1];
- 	pci_read_config_word(dev, PCI_MEMORY_BASE, &mem_base_lo);
-@@ -339,6 +341,8 @@ void __devinit pci_read_bridge_bases(str
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 	}
-+	if (!res->start && dev->transparent)
-+		res->flags = 0;
+ /*
++ * Attempt to acquire the semaphore.  If another task is already holding the
++ * semaphore, spin until the semaphore is released.
++ */
++extern void down_spin(struct semaphore *sem);
++
++/*
+  * As down(), except the sleep may be interrupted by a signal.  If it is,
+  * this function will return -EINTR.
+  */
+diff --git a/kernel/semaphore.c b/kernel/semaphore.c
+index bef977b..d3eb559 100644
+--- a/kernel/semaphore.c
++++ b/kernel/semaphore.c
+@@ -23,6 +23,7 @@
+  */
  
- 	res = child->resource[2];
- 	pci_read_config_word(dev, PCI_PREF_MEMORY_BASE, &mem_base_lo);
-@@ -373,6 +377,8 @@ void __devinit pci_read_bridge_bases(str
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 	}
-+	if (!res->start && dev->transparent)
-+		res->flags = 0;
+ static noinline void __down(struct semaphore *sem);
++static noinline void __down_spin(struct semaphore *sem);
+ static noinline int __down_interruptible(struct semaphore *sem);
+ static noinline int __down_killable(struct semaphore *sem);
+ static noinline int __down_timeout(struct semaphore *sem, long jiffies);
+@@ -41,6 +42,21 @@ void down(struct semaphore *sem)
+ }
+ EXPORT_SYMBOL(down);
+ 
++void down_spin(struct semaphore *sem)
++{
++	unsigned long flags;
++	int count;
++
++	spin_lock_irqsave(&sem->lock, flags);
++	count = sem->count - 1;
++	if (likely(count >= 0))
++		sem->count = count;
++	else
++		__down_spin(sem);
++	spin_unlock_irqrestore(&sem->lock, flags);
++}
++EXPORT_SYMBOL(down_spin);
++
+ int down_interruptible(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+@@ -197,6 +213,20 @@ static noinline int __sched __down_timeout(struct semaphore *sem, long jiffies)
+ 	return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
  }
  
- static struct pci_bus * pci_alloc_bus(void)
++static noinline void __sched __down_spin(struct semaphore *sem)
++{
++	struct semaphore_waiter waiter;
++
++	list_add_tail(&waiter.list, &sem->wait_list);
++	waiter.task = current;
++	waiter.up = 0;
++
++	spin_unlock_irq(&sem->lock);
++	while (!waiter.up)
++		cpu_relax();
++	spin_lock_irq(&sem->lock);
++}
++
+ static noinline void __sched __up(struct semaphore *sem)
+ {
+ 	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
