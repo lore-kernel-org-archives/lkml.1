@@ -1,95 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbYCZSoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbYCZStU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761928AbYCZSoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbYCZSoi
+	id S1761251AbYCZStU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYCZStM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:44:38 -0400
-Received: from lobo.ruivo.org ([66.92.68.119]:55400 "EHLO lobo.ruivo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755983AbYCZSoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:44:38 -0400
-Date: Wed, 26 Mar 2008 14:44:27 -0400
-From: Aristeu Rozanski <aris@ruivo.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
-Message-ID: <20080326184427.GG25854@cathedrallabs.org>
-References: <20080313180538.GC4620@cathedrallabs.org> <20080321114752.GA25225@elte.hu> <20080326152417.GE25854@cathedrallabs.org> <20080326182333.GA11187@elte.hu>
+	Wed, 26 Mar 2008 14:49:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53507 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755497AbYCZStL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 14:49:11 -0400
+Date: Wed, 26 Mar 2008 13:49:10 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alan Mayer <ajm@sgi.com>, torvalds@linux-foundation.org, mingo@elte.hu,
+       linux-kernel list <linux-kernel@vger.kernel.org>,
+       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines
+In-Reply-To: <20080325231034.GA3894@ucw.cz>
+Message-ID: <Pine.SGI.3.96.1080326134839.7873204Y-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080326182333.GA11187@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > stop_apic_nmi_watchdog() doesnt currently properly disable the 
-> > > generation of NMIs when they come from an IO-APIC, so this will need 
-> > > more fixes i believe. One approach would be to save the IO-APIC id and 
-> > > pin when the watchdog is set up, and use it later on to poke that 
-> > > IO-APIC register to disable NMI generation there.
-> > the patch I sent has this change:
-> > 
-> > @@ -270,6 +270,8 @@ void stop_apic_nmi_watchdog(void *unused
-> >                 return;
-> >         if (nmi_watchdog == NMI_LOCAL_APIC)
-> >                 lapic_watchdog_stop();
-> > +       else
-> > +               __acpi_nmi_disable(NULL);
-> >         __get_cpu_var(wd_enabled) = 0;
-> >         atomic_dec(&nmi_active);
-> >  }
-> > 
-> > and:
-> > static void __acpi_nmi_disable(void *__unused)
-> > {       
-> >         apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
-> > }
-> > 
-> > do you think this isn't enough?
+
+On Wed, 26 Mar 2008, Pavel Machek wrote:
+
+> Hi!
 > 
-> but this stops all NMIs, not just the IO-APIC generated ones, doesnt it? 
-This is the reverse of:
+> > Subject: [PATCH] x86_64: resize NR_IRQS for large machines
+> > 
+> > From: Alan Mayer <ajm@sgi.com>
+> > 
+> > On machines with very large numbers of cpus, tables that are dimensioned
+> > by NR_IRQS get very large, especially the irq_desc table.  They are also
+> > very sparsely used.  When the cpu count is > MAX_IO_APICS, use MAX_IO_APICS
+> > to set NR_IRQS, otherwise use NR_CPUS.
+> > 
+> > Signed-off-by: Alan Mayer <ajm@sgi.com>
+> > 
+> > Reviewed-by: Christoph Lameter <clameter@sgi.com>
+> 
+> > ===================================================================
+> > --- v2.6.25-rc6.orig/include/asm-x86/irq_64.h	2008-03-19 16:52:52.000000000 -0500
+> > +++ v2.6.25-rc6/include/asm-x86/irq_64.h	2008-03-20 16:46:51.000000000 -0500
+> > @@ -10,6 +10,10 @@
+> >   *	<tomsoft@informatik.tu-chemnitz.de>
+> >   */
+> >  
+> > +#if !defined(MAX_IO_APICS)
+> > +#include <asm/apicdef.h>
+> > +#endif
+> > +
+> 
+> This is very ugly. Why not include it unconditionally -- with guard in
+> apicdef.h?
+> 							Pavel
 
-static void __init setup_nmi(void)
-{       
-        /*
-         * Dirty trick to enable the NMI watchdog ...
-         * We put the 8259A master into AEOI mode and
-         * unmask on all local APICs LVT0 as NMI.
-         *
-         * The idea to use the 8259A in AEOI mode ('8259A Virtual Wire')
-         * is from Maciej W. Rozycki - so we do not have to EOI from
-         * the NMI handler or the timer interrupt.
-         */
-        apic_printk(APIC_VERBOSE, KERN_INFO "activating NMI Watchdog ...");
+Okay, I can change that.
 
-        enable_NMI_through_LVT0();
+		--ajm
 
-        apic_printk(APIC_VERBOSE, " done.\n");
-}
-where:
-void __cpuinit enable_NMI_through_LVT0(void)
-{       
-        unsigned int v;
-        
-        /* unmask and set to NMI */
-        v = APIC_DM_NMI;
-        apic_write(APIC_LVT0, v);
-}
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
 
-I must admit I don't really understand how the NMI watchdog thru IOAPIC
-works. Couldn't find proper documentation on that. I just tried to
-revert what's done when it's enabled and everything worked as expected,
-including a customer who is using those development boxes with a NMI
-button. First the NMI watchdog was disabled using a patch much like the
-one I sent then NMI was generated by pushing the button and the box
-crashed as it should (the old unknown_nmi_panic sysctl was set). So,
-unless the NMI button does something different to deliver the NMI, other
-NMIs should keep working.
-
--- 
-Aristeu
+--
+Alan J. Mayer
+SGI
+ajm@sgi.com
+WORK: 651-683-3131
+HOME: 651-407-0134
+--
 
