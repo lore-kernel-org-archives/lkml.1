@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYCZDxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbYCZEQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbYCZDxo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 23:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYCZDxf
+	id S1752587AbYCZEQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 00:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbYCZEQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 23:53:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33050
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752043AbYCZDxf (ORCPT
+	Wed, 26 Mar 2008 00:16:34 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:9198 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbYCZEQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 23:53:35 -0400
-Date: Tue, 25 Mar 2008 20:53:31 -0700 (PDT)
-Message-Id: <20080325.205331.02412053.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: yang.shi@windriver.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47E9C784.6050807@garzik.org>
-References: <20080325.203043.196469543.davem@davemloft.net>
-	<47E9C56F.2070508@pobox.com>
-	<47E9C784.6050807@garzik.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 26 Mar 2008 00:16:33 -0400
+Message-ID: <47E9CE00.7060106@fc.hp.com>
+Date: Tue, 25 Mar 2008 22:16:00 -0600
+From: John Marvin <jsm@fc.hp.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: linux-ia64@vger.kernel.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: larger default page sizes...
+References: <Pine.LNX.4.64.0803241402060.7762@schroedinger.engr.sgi.com>	<20080324.144356.104645106.davem@davemloft.net>	<Pine.LNX.4.64.0803251045510.16206@schroedinger.engr.sgi.com>	<20080325.162244.61337214.davem@davemloft.net>	<87tziu5q37.wl%peter@chubb.wattle.id.au>	<ed5aea430803251734u70f199w10951bc4f0db6262@mail.gmail.com> <87lk465mks.wl%peter@chubb.wattle.id.au>
+In-Reply-To: <87lk465mks.wl%peter@chubb.wattle.id.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Tue, 25 Mar 2008 23:48:20 -0400
+Peter Chubb wrote:
 
-> Jeff Garzik wrote:
-> > I am being realistic...  it's
-> > 
-> > * not needed
-> > * increases code size
-> > * increases number of CPU instructions executed
-> > * not needed
 > 
-> I also wonder if using spin_lock_irqsave() makes moving to a real-time 
-> kernel with interrupt threads more difficult for that driver.
+> You end up having to repeat PTEs to fit into Linux's page table
+> structure *anyway* (unless we can change Linux's page table).  But
+> there's no place in the short format hardware-walked page table (that
+> reuses the leaf entries in Linux's table) for a page size.  And if you
+> use some of the holes in the format, the hardware walker doesn't
+> understand it --- so you have to turn off the hardware walker for
+> *any* regions where there might be a superpage.  
+
+No, you can set an illegal memory attribute in the pte for any superpage entry, 
+and leave the hardware walker enabled for the base page size. The software tlb 
+miss handler can then install the superpage tlb entry. I posted a working 
+prototype of Shimizu superpages working on ia64 using short format vhpt's to the 
+linux kernel list a while back.
+
 > 
-> And of course we're talking about a hot path here.
+> If you use the long format VHPT, you have a choice:  load the
+> hash table with just the translation that caused the miss, load all
+> possible hash entries that could have caused the miss for the page, or
+> preload the hash table when the page is instantiated, with all
+> possible entries that could hash to the huge page.  I don't remember
+> the details, but I seem to remember all these being bad choices for
+> one reason or other ... Ian, can you elaborate?
 
-First, if you mention CPU instructions executed you're
-totally ignoring what I wrote.  Which is that we're
-about to sit spinning on hundreds of cycles doing a PIO
-read on a status register.
+When I was doing measurements of long format vs. short format, the two main 
+problems with long format (and why I eventually chose to stick with short 
+format) were:
 
-Those hand full of cycles doing the irqsave/irqrestore don't matter,
-at all.
+1) There was no easy way of determining what size the long format vhpt cache 
+should be automatically, and changing it dynamically would be too painful. 
+Different workloads performed better with different size vhpt caches.
 
-Again, you're arguing for 18 cycles or so out of say 800.
-It's peanuts, at best.
+2) Regardless of the size, the vhpt cache is duplicated information. Using long 
+format vhpt's significantly increased the number of cache misses for some 
+workloads. Theoretically there should have been some cases where the long format 
+solution would have performed better than the short format solution, but I was 
+never able to create such a case. In many cases the performance difference 
+between the long format solution and the short format solution was essentially 
+the same. In other cases the short format vhpt solution outperformed the long 
+format solution, and in those cases there was a significant difference in cache 
+misses that I believe explained the performance difference.
 
-Secondly, this isn't a hot path.  The "hot path" is in the
-->poll() handler which does all of the real packet RX work.
-And that runs lockless, in software interrupt context.
-
-The HW interrupt handler's cost is lower bound by the cost of doing a
-PIO on the status register, it's impractical to perform any
-micro-optimizations of any sort here.
-
-Especially those that sacrifice consistency.
+John
