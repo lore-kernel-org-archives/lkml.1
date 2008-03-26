@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbYCZM5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYCZM7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758301AbYCZM5r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 08:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYCZM5j
+	id S1758910AbYCZM7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 08:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYCZM7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 08:57:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60554 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754398AbYCZM5j (ORCPT
+	Wed, 26 Mar 2008 08:59:39 -0400
+Received: from usea-naimss2.unisys.com ([192.61.61.104]:4471 "EHLO
+	usea-naimss2.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753972AbYCZM7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 08:57:39 -0400
-Date: Wed, 26 Mar 2008 14:00:52 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: iommu breaks usb after resume
-Message-ID: <20080326130052.GF2170@one.firstfloor.org>
-References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org> <20080326102151.GB18965@elf.ucw.cz>
+	Wed, 26 Mar 2008 08:59:38 -0400
+Subject: Re: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
+From: Daniel Yeisley <dan.yeisley@unisys.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       mel@csn.ul.ie, olaf@aepfle.de, linux-kernel@vger.kernel.org
+In-Reply-To: <47E9EB77.9060909@cs.helsinki.fi>
+References: <Pine.LNX.4.64.0803252357330.4422@sbz-30.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0803252023530.20780@schroedinger.engr.sgi.com>
+	 <47E9EB77.9060909@cs.helsinki.fi>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Mar 2008 08:37:28 -0400
+Message-Id: <1206535048.7468.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080326102151.GB18965@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.0 (2.22.0-2.fc9) 
+X-OriginalArrivalTime: 26 Mar 2008 12:55:58.0993 (UTC) FILETIME=[BCE60810:01C88F40]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> CONFIG_AGP=y
-> CONFIG_AGP_AMD64=y
-> CONFIG_AGP_INTEL=y
-> # CONFIG_AGP_SIS is not set
-> CONFIG_AGP_VIA=y
-> CONFIG_DRM=y
-> # CONFIG_DRM_TDFX is not set
+On Wed, 2008-03-26 at 08:21 +0200, Pekka Enberg wrote:
+> Christoph Lameter wrote:
+> > Will merge if I get confirmation that this indeed addresses the issue.
 > 
-> ...do I need to enable something more?
+> It fixes the problem reported by Daniel:
+> 
+> http://lkml.org/lkml/2008/3/25/249
+> 
+> But what I worry about is breaking setups that have memoryless nodes.
+> 
+> 			Pekka
 
-Should have worked then. Ok modulo bugs. Maybe the ordering
-is wrong now (AGP resume would need to run before anything
-using the IOMMU)
+The only way I could get the ES7000 to boot with 2.6.24.x was with
+memoryless nodes (or numa=off).  The list corruption I saw was due to
+CPU 0 not being on node 0.  
+I do see problems with memoryless nodes on 2.6.25-rc.  I'll post a patch
+for that shortly.
 
--Andi
+Dan
