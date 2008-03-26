@@ -1,74 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbYCZRY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbYCZRaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932639AbYCZRY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764108AbYCZRVA
+	id S1759844AbYCZRaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYCZR34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:21:00 -0400
-Received: from usea-naimss1.unisys.com ([192.61.61.103]:4793 "EHLO
-	usea-naimss1.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764098AbYCZRU6 convert rfc822-to-8bit (ORCPT
+	Wed, 26 Mar 2008 13:29:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41252 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752485AbYCZR3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:20:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
-Date: Wed, 26 Mar 2008 12:16:46 -0500
-Message-ID: <7ECBFE60CB7F02478CDDDE40C985813A089119F0@USEA-EXCH4.na.uis.unisys.com>
-In-Reply-To: <Pine.LNX.4.64.0803260927470.27909@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
-Thread-Index: AciPXrCJR6SKuzLLTkypY9Lf6Jr3bQABUNeA
-References: <Pine.LNX.4.64.0803252357330.4422@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0803252023530.20780@schroedinger.engr.sgi.com> <47E9EB77.9060909@cs.helsinki.fi> <1206535048.7468.4.camel@localhost.localdomain> <Pine.LNX.4.64.0803260927470.27909@schroedinger.engr.sgi.com>
-From: "Yeisley, Dan P." <dan.yeisley@unisys.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, <akpm@linux-foundation.org>,
-       <mel@csn.ul.ie>, <olaf@aepfle.de>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 26 Mar 2008 17:16:46.0983 (UTC) FILETIME=[2BD3D170:01C88F65]
+	Wed, 26 Mar 2008 13:29:54 -0400
+Date: Wed, 26 Mar 2008 10:29:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marcus Better <marcus@better.se>
+Cc: stefanr@s5r6.in-berlin.de, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10327] New: keyboard stops responding after
+ "ifdown eth0"
+Message-Id: <20080326102931.484285f3.akpm@linux-foundation.org>
+In-Reply-To: <47EA152C.6000008@better.se>
+References: <bug-10327-10286@http.bugzilla.kernel.org/>
+	<20080325143941.300d415f.akpm@linux-foundation.org>
+	<47E9721C.2000306@better.se>
+	<47E99258.3060005@s5r6.in-berlin.de>
+	<20080325171608.509f4ca7.akpm@linux-foundation.org>
+	<47EA152C.6000008@better.se>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 26 Mar 2008 10:19:40 +0100
+Marcus Better <marcus@better.se> wrote:
 
-
-> -----Original Message-----
-> From: Christoph Lameter [mailto:clameter@sgi.com]
-> Sent: Wednesday, March 26, 2008 12:28
-> To: Yeisley, Dan P.
-> Cc: Pekka Enberg; akpm@linux-foundation.org; mel@csn.ul.ie;
-> olaf@aepfle.de; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] slab: fix cache_cache bootstrap in
-kmem_cache_init()
+> Andrew Morton wrote:
+> > 	( sleep 10 ; echo t > /proc/sysrq-trigger ) &
+> > 	ifdown eth0
+> > 
+> > 
+> > - See if the sysrq-t output made it to /var/log/messages
 > 
-> On Wed, 26 Mar 2008, Daniel Yeisley wrote:
+> No, not a word. It hung after printing this:
 > 
-> > The only way I could get the ES7000 to boot with 2.6.24.x was with
-> > memoryless nodes (or numa=off).  The list corruption I saw was due
-to
-> > CPU 0 not being on node 0.
+> ...
+> DHCPRELEASE ...
+> send_packet: Network is unreachable
+> send_packet: please consult README ...
+> sky2 eth0: disabling interface
+> ~# sky2 eth0: enabling interface
 > 
-> What is the ES7000?
+> I'm running ifplugd, but this time there was no network cable connected. 
+> Also ran from virtual console this time, the keyboard locked up like before.
 > 
+> SysRq keys work, so I could do sysrq-s, sysrq-b. Also pressed sysrq-t 
+> before rebooting.
 
-The ES7000 is a server built by Unisys that supports up to 32 CPU
-sockets (Xeon or Itanium).
+It certainy does sound like networking has gummed up the keventd queue(s).
 
-> > I do see problems with memoryless nodes on 2.6.25-rc.  I'll post a
-patch
-> > for that shortly.
-> 
-> Another patch in addition to the one we are discussing? Or another
-> revision of the patch?
+> Any use trying netconsole? Can I run it over the wireless interface?
 
-I wrote another patch that affects arch/x86.  
+I don't think many (or any?) wireless drivers support netconsole.
 
-http://lkml.org/lkml/2008/3/26/165
+I'd suggest running (and perhaps suitably modifying) this:
 
-CPUs on memoryless nodes aren't being moved to nodes with memory.  
+diff -puN drivers/net/sky2.c~a drivers/net/sky2.c
+--- a/drivers/net/sky2.c~a
++++ a/drivers/net/sky2.c
+@@ -50,6 +50,8 @@
+ 
+ #include "sky2.h"
+ 
++#define D() printk("%s:%d\n", __FILE__, __LINE__)
++
+ #define DRV_NAME		"sky2"
+ #define DRV_VERSION		"1.21"
+ #define PFX			DRV_NAME " "
+@@ -2931,32 +2933,42 @@ static void sky2_restart(struct work_str
+ 	struct net_device *dev;
+ 	int i, err;
+ 
++	D();
+ 	rtnl_lock();
++	D();
+ 	for (i = 0; i < hw->ports; i++) {
++		D();
+ 		dev = hw->dev[i];
+ 		if (netif_running(dev))
+ 			sky2_down(dev);
+ 	}
+-
++	D();
+ 	napi_disable(&hw->napi);
++	D();
+ 	sky2_write32(hw, B0_IMSK, 0);
+ 	sky2_reset(hw);
+ 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
+ 	napi_enable(&hw->napi);
+-
++	D();
+ 	for (i = 0; i < hw->ports; i++) {
++		D();
+ 		dev = hw->dev[i];
+ 		if (netif_running(dev)) {
++			D();
+ 			err = sky2_up(dev);
++			D();
+ 			if (err) {
++				D();
+ 				printk(KERN_INFO PFX "%s: could not restart %d\n",
+ 				       dev->name, err);
+ 				dev_close(dev);
++			D();
+ 			}
+ 		}
+ 	}
+-
++	D();
+ 	rtnl_unlock();
++	D();
+ }
+ 
+ static inline u8 sky2_wol_supported(const struct sky2_hw *hw)
+_
 
-Dan
+to see if things are getting stuck and if so, where.
