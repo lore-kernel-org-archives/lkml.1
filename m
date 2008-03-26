@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYCZXpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYCZXqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbYCZXpF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 19:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYCZXoy
+	id S1755998AbYCZXqz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 19:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYCZXqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 19:44:54 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37291 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbYCZXox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 19:44:53 -0400
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and
-	hibernation callbacks (rev. 4)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>
-In-Reply-To: <47EADBD0.6040400@suse.de>
-References: <200803262353.30566.rjw@sisk.pl>
-	 <200803270003.51570.rjw@sisk.pl>  <47EADBD0.6040400@suse.de>
-Content-Type: text/plain
-Date: Thu, 27 Mar 2008 10:43:02 +1100
-Message-Id: <1206574982.6926.53.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 19:46:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51663 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754047AbYCZXqr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 19:46:47 -0400
+Date: Wed, 26 Mar 2008 16:43:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+cc: Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pm@debian.org
+Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
+In-Reply-To: <20080326232922.GA15784@jurassic.park.msu.ru>
+Message-ID: <alpine.LFD.1.00.0803261638350.2775@woody.linux-foundation.org>
+References: <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru> <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com> <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org>
+ <20080326203012.GB6249@us.ibm.com> <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org> <20080326205828.GA15225@jurassic.park.msu.ru> <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org> <20080326232922.GA15784@jurassic.park.msu.ru>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-03-27 at 02:27 +0300, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki wrote:
-> > This is the 4th revision of the patch.
-> > + * struct pm_noirq_ops - device PM callbacks executed with interrupts disabled
-> > + *
-> > + * The following callbacks included in 'struct pm_noirq_ops' are executed with
-> > + * the nonboot CPUs switched off and with interrupts disabled on the only
-> > + * functional CPU.  They also are executed with the PM core list of devices
-> > + * locked, so they must NOT unregister any devices.
-> > + *
-> > + * @suspend_noirq: Complete the operations of ->suspend() by carrying out any
-> > + *	actions required for suspending the device that need interrupts to be
-> > + *	disabled
-> IMHO, no need to add _noirq in both struct and struct members.
-> pm_noirq->suspend_noirq does not look good...
 
-There is absolutely no point getting a second struct anymore.
+On Thu, 27 Mar 2008, Ivan Kokshaysky wrote:
+> 
+> If the new "align" field (and then, maybe, "size" instead of "end"?)
+> is OK, then I'm definitely willing to give it a try.
 
-BTW. I haven't had a chance to review the rest of the discussion on that
-thread yet, been busy with other things, I'll try to go back to it today
-or tomorrow.
+Adding an alignment field should be a non-issue: the size of this 
+structure is not likely to be a big deal (yeah, we have something like 12 
+of them in each PCI device etc, so smaller is better, but it's still not 
+going to be something anybody really notices).
 
-Cheers,
-Ben.
+And yeah, it might be nice to have "size" instead of "end", but the real 
+problem with that one is actually that on 32-bit (without the 64-bit 
+resource configuration) we want it to be "size-1" in order to be able to 
+fit a whole 0-0xffffffff resource into a resource.
 
+And *that* would be really ugly with "size": at least right now it makes a 
+certain amount of sense with "end" pointing to the last entry.
+
+So while I can understand your wish for "start+len" rather than 
+"start+end", I don't think it's really practical.
+
+		Linus
