@@ -1,91 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYCZJlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYCZJui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbYCZJlt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 05:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYCZJll
+	id S1756816AbYCZJui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 05:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYCZJu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 05:41:41 -0400
-Received: from mga09.intel.com ([134.134.136.24]:63983 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752286AbYCZJlk convert rfc822-to-8bit (ORCPT
+	Wed, 26 Mar 2008 05:50:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47453 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbYCZJu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 05:41:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,557,1199692800"; 
-   d="scan'208";a="309732548"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: RE: [patch] x86, ptrace: support pebs in ds.c and disable ptraceand ds support
-Date: Wed, 26 Mar 2008 09:39:46 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF55444019B50A0@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <20080321125338.GB27245@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] x86, ptrace: support pebs in ds.c and disable ptraceand ds support
-Thread-Index: AciLUuejBWYZHjOzQLSSWBz/W0FKSADzzspg
-References: <20080312125318.A15510@sedona.ch.intel.com> <20080321125338.GB27245@elte.hu>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>, <roland@redhat.com>
-Cc: <ak@suse.de>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
-       <tglx@linutronix.de>, <markus.t.metzger@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
-       <eranian@googlemail.com>, "Villacis, Juan" <juan.villacis@intel.com>
-X-OriginalArrivalTime: 26 Mar 2008 09:39:02.0473 (UTC) FILETIME=[39B42B90:01C88F25]
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Wed, 26 Mar 2008 05:50:28 -0400
+Subject: Re: [PATCH -rt] avoid deadlock related with PG_nonewrefs and
+	swap_lock
+From: Peter Zijlstra <peterz@infradead.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Clark Williams <williams@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, hugh <hugh@veritas.com>
+In-Reply-To: <47E7F1D1.6010407@ct.jp.nec.com>
+References: <47DEB7F0.8040207@ct.jp.nec.com>
+	 <47DF097B.4090200@ct.jp.nec.com>
+	 <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com>
+	 <1205833218.8514.338.camel@twins>  <47E7F1D1.6010407@ct.jp.nec.com>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 10:50:12 +0100
+Message-Id: <1206525012.8514.488.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu] 
->Sent: Freitag, 21. März 2008 13:54
+On Mon, 2008-03-24 at 11:24 -0700, Hiroshi Shimamoto wrote:
+> Hi Peter,
+> 
+> I've updated the patch. Could you please review it?
+> 
+> I'm also thinking that it can be in the mainline because it makes
+> the lock period shorter, correct?
 
+Possibly yeah, Nick, Hugh?
 
->> Ds.c is meant to be the resource allocator for per-thread and per-cpu
->> BTS and PEBS recording.
->> It is used by ptrace to provide execution tracing of debugged tasks.
->> It will be used by utrace for the same purpose.
->> It will be used by profilers (e.g. perfmon2).
->> It may be used by kernel debuggers to provide a kernel 
->execution trace.
->
->we could apply this if Roland Acks it - 
+> ---
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> There is a deadlock scenario; remove_mapping() vs free_swap_and_cache().
+> remove_mapping() turns PG_nonewrefs bit on, then locks swap_lock.
+> free_swap_and_cache() locks swap_lock, then wait to turn PG_nonewrefs bit
+> off in find_get_page().
+> 
+> swap_lock can be unlocked before calling find_get_page().
+> 
+> In remove_exclusive_swap_page(), there is similar lock sequence;
+> swap_lock, then PG_nonewrefs bit. swap_lock can be unlocked before
+> turning PG_nonewrefs bit on.
 
-I moved Roland to the To: list. I hope we can resolve this in a technical discussion.
+I worry about this, Once we free the swap entry with swap_entry_free(),
+and drop the swap_lock, another task is basically free to re-use that
+swap location and try to insert another page in that same spot in
+add_to_swap() - read_swap_cache_async() can't race because it would mean
+it still has a swap entry pinned.
 
+However, add_to_swap() can already handle the race, because it used to
+race against read_swap_cache_async(). It also swap_free()s the entry so
+as to not leak entries. So I think this is indeed correct.
 
->but i guess a precondition for 
->that is to not include more ptrace extensions and to also 
->start working 
->on utrace support for it. Ptrace is something we want to reduce usage 
->of, not extend.
+[ I ought to find some time to port the concurrent page-cache patches on
+  top of Nick's latest lockless series, Hugh's suggestion makes the
+  speculative get much nicer. ]
 
-The patch is targeting application debuggers (in the first place). As far as I know, today's application debuggers are using ptrace. And I expect them to continue to use ptrace for some time.
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-I would not want to exclude existing debuggers from this feature; nor would I want to put a too big burden on debuggers if they wished to support execution tracing.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-I will look into utrace as an additional interface.
-
-Until utrace has been adopted by debuggers, I think ptrace (as its predecessor) is a good choice for an interim solution. 
-
-
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+> ---
+>  mm/swapfile.c |   10 ++++++----
+>  1 files changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/swapfile.c b/mm/swapfile.c
+> index 5036b70..6fbc77e 100644
+> --- a/mm/swapfile.c
+> +++ b/mm/swapfile.c
+> @@ -366,6 +366,7 @@ int remove_exclusive_swap_page(struct page *page)
+>  	/* Is the only swap cache user the cache itself? */
+>  	retval = 0;
+>  	if (p->swap_map[swp_offset(entry)] == 1) {
+> +		spin_unlock(&swap_lock);
+>  		/* Recheck the page count with the swapcache lock held.. */
+>  		lock_page_ref_irq(page);
+>  		if ((page_count(page) == 2) && !PageWriteback(page)) {
+> @@ -374,8 +375,8 @@ int remove_exclusive_swap_page(struct page *page)
+>  			retval = 1;
+>  		}
+>  		unlock_page_ref_irq(page);
+> -	}
+> -	spin_unlock(&swap_lock);
+> +	} else
+> +		spin_unlock(&swap_lock);
+>  
+>  	if (retval) {
+>  		swap_free(entry);
+> @@ -400,13 +401,14 @@ void free_swap_and_cache(swp_entry_t entry)
+>  	p = swap_info_get(entry);
+>  	if (p) {
+>  		if (swap_entry_free(p, swp_offset(entry)) == 1) {
+> +			spin_unlock(&swap_lock);
+>  			page = find_get_page(&swapper_space, entry.val);
+>  			if (page && unlikely(TestSetPageLocked(page))) {
+>  				page_cache_release(page);
+>  				page = NULL;
+>  			}
+> -		}
+> -		spin_unlock(&swap_lock);
+> +		} else
+> +			spin_unlock(&swap_lock);
+>  	}
+>  	if (page) {
+>  		int one_user;
 
