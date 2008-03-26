@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYCZVhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYCZVkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbYCZVhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbYCZVhg
+	id S1760057AbYCZVkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYCZVk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:37:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35793 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755346AbYCZVhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:37:35 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: linux1394-devel@lists.sourceforge.net
-Subject: Re: [PATCH] firewire: fw-ohci: plug dma memory leak in AR handler
-Date: Wed, 26 Mar 2008 17:37:30 -0400
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200803251647.16227.jwilson@redhat.com>
-In-Reply-To: <200803251647.16227.jwilson@redhat.com>
+	Wed, 26 Mar 2008 17:40:27 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53150 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755959AbYCZVk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 17:40:27 -0400
+Date: Wed, 26 Mar 2008 16:40:26 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Mayer <ajm@sgi.com>, torvalds@linux-foundation.org,
+       linux-kernel list <linux-kernel@vger.kernel.org>,
+       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines (re-submit)
+In-Reply-To: <20080326212312.GA27594@elte.hu>
+Message-ID: <Pine.SGI.3.96.1080326163708.7873204c-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803261737.30717.jwilson@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 March 2008 04:47:16 pm Jarod Wilson wrote:
-> There's a nasty memory leak in firewire-ohci's ar_context_tasklet(), in
-> that we're not freeing up some of the memory we use for each ar_buffer, due
-> to a moving pointer. The problem has been there for a while, but didn't
-> start to be noticed until we were doing a coherent allocation for the
-> ar_buffer -- meaning we have a smaller pool of memory to work with now, so
-> the problem crops up sooner. The manifestation of this comes after doing a
-> bunch of I/O to a firewire disk, which eventually stalls, and this starts
-> spewing to the console:
->
-> PCI-DMA: Out of IOMMU space for 53248 bytes at device 0000:04:09.0
->
-> The device there is one of my FireWire controllers trying to do I/O. The
-> host is a fairly new rev. opteron.
->
-> Just need to make sure we're freeing the correct memory range is pass
-> through ar_context_tasklet to fix it. Probably something we ought to sneak
-> into 2.6.25 if its still doable...
+On Wed, 26 Mar 2008, Ingo Molnar wrote:
 
-So as it turns out, while this is indeed a leak that needs to be plugged, it 
-does NOT remedy the 'out of iommu space' issue, it just delays it a while 
-longer. Still working on tracing the root cause of the memory exhaustion.
+> 
+> * Alan Mayer <ajm@sgi.com> wrote:
+> 
+> > On machines with very large numbers of cpus, tables that are 
+> > dimensioned by NR_IRQS get very large, especially the irq_desc table.  
+> > They are also very sparsely used.  When the cpu count is > 
+> > MAX_IO_APICS, use MAX_IO_APICS to set NR_IRQS, otherwise use NR_CPUS.
+> 
+> thanks Alan, applied this in place of the other patch.
+> 
+> this bit is still ugly:
+> 
+> > -#define NR_IRQS (NR_VECTORS + (32 *NR_CPUS))
+> > +#if NR_CPUS < MAX_IO_APICS
+> > +#define NR_IRQS (NR_VECTORS + (32 * NR_CPUS))
+> > +#else
+> > +#define NR_IRQS (NR_VECTORS + (32 * MAX_IO_APICS))
+> > +#endif
+> >  #define NR_IRQ_VECTORS NR_IRQS
+> 
+> but it doesnt really depart from the current status quo of huge 
+> [NR_IRQS] arrays either. Patches that make NR_IRQS a variable are 
+> welcome :)
+> 
+> 	Ingo
+> 
 
+Good luck with that.  If i come up with something that's elegant enough
+to make it worth the risk, I'll let you know.  Changing NR_IRQS to a variable
+touches every arch and a lot of drivers.  Someone is bound to choke
+on it, so it has to be something worth fighting for.
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+		--ajm
+
+Lately it occurs to me,
+What a long, strange trip it's been.
+--
+Alan J. Mayer
+SGI
+ajm@sgi.com
+WORK: 651-683-3131
+HOME: 651-407-0134
+--
+
