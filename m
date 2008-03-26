@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYCZPsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbYCZPtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758733AbYCZPsQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 11:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbYCZPsF
+	id S1758871AbYCZPtf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbYCZPt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 11:48:05 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43711 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754788AbYCZPsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 11:48:03 -0400
-Message-ID: <47EA7030.2080301@sgi.com>
-Date: Wed, 26 Mar 2008 08:48:00 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 26 Mar 2008 11:49:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:50661 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484AbYCZPt0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:49:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=dMX/f5p+CfWUw0LdOk2MZLNDQ0DD3wIa1xoAasaXpD71mKA4hkOrBepDQ+epInpIao3xSTGvpMIszuBTQS9AzucOTw8cQgtr+xUubnFeJoDvyycEZa4plACU8OtUhF9LQ+yDYiLUPh2cbxPRt6JgzE439P0K/7JrDj+Tv1TOQRM=
+Date: Wed, 26 Mar 2008 18:49:13 +0300
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, hskinnemoen@atmel.com, domen.puncer@telargo.com,
+       lethal@linux-sh.org, tony@atomide.com, rmk+kernel@arm.linux.org.uk,
+       paul@pwsan.com
+Subject: [PATCH 0/3] Clocklib: generic clocks framework
+Message-ID: <20080326154913.GA15326@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/10] NR_CPUS: third reduction of NR_CPUS memory usage
- x86-version v2
-References: <20080325220650.835342000@polaris-admin.engr.sgi.com> <20080326063401.GE18301@elte.hu>
-In-Reply-To: <20080326063401.GE18301@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> Wii, isn't this fun...!  This is a resubmission of yesterday's patches 
->> based on the x86.git/latest tree.  Yes, it _is_ a maze of twisty litle 
->> passages. ;-)
-> 
-> just to make patch dependencies clear: most of the patches here can be 
-> applied to their base trees as-is, without depending on any other patch, 
-> correct?
-> 
-> the only undeclared dependency i found was the cpumask_scnprintf_len() 
-> patch - please prominently list dependencies in the changelog like this:
-> 
->  [ this patch depends on "cpumask: Add cpumask_scnprintf_len function" ]
-> 
-> 	Ingo
+Hi,
 
+The <linux/clk.h> provides the API to use clocks.
+However there is no API for clock providers. Commonly
+clocks are provided by platform-specific code, which
+implements full <linux/clk.h> API for itself. It results
+in massive code duplication and lack of flexibility.
+If I'd like to be able to provide clocks from the driver
+for e.g. CPU companion chip, I'd either have to implement
+a lot of platform-specific hooks, or invent some other
+dirty hacks.
 
-Ahh, ok.  I was under the assumption that an entire patchset would be
-applied en-mass and only divided up by bi-sect debugging...?
+In the followup I'd like to propose the generic <linux/clk.h>
+implementation, that can be used to hook clock definitions
+from various sources. Also as an example there will be a patch
+to convert ARM SA-1100 to the clocklib.
 
-The second patchset (cpumask) is highly incremental and I did it like
-this to show memory gains (or losses).  I tossed a few patches that
-didn't have any overall goodness (and have a few more to help with
-the memory footprint or performance in the queue.)
+I'd like arch maintainers to check whether there is somthing
+in this implementation that wouldn't work for their piece
+of kernel, whether is's suitable for them to drop their own
+clock implementation (if any) and to use clocklib.
 
-Thanks,
-Mike
+-- 
+With best wishes
+Dmitry
+
