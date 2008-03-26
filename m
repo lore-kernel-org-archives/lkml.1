@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYCZKsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbYCZK44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbYCZKsk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYCZKsd
+	id S1758179AbYCZK44 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 06:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYCZK4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:48:33 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39918 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753849AbYCZKsc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:48:32 -0400
-Date: Wed, 26 Mar 2008 10:48:21 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: J?rn Engel <joern@logfs.org>, David Miller <davem@davemloft.net>,
-       jirislaby@gmail.com, joe@perches.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [patch] bkl2mtd: cleanup
-Message-ID: <20080326104821.GS10722@ZenIV.linux.org.uk>
-References: <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325160734.GA14583@logfs.org> <20080326101452.GA17176@elte.hu>
-Mime-Version: 1.0
+	Wed, 26 Mar 2008 06:56:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48967 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753536AbYCZK4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 06:56:46 -0400
+Date: Wed, 26 Mar 2008 11:56:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: joern@logfs.org, jirislaby@gmail.com, viro@ZenIV.linux.org.uk,
+       joe@perches.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups
+	- formatting only
+Message-ID: <20080326105628.GC17176@elte.hu>
+References: <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325.161142.65862968.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080326101452.GA17176@elte.hu>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080325.161142.65862968.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 11:14:52AM +0100, Ingo Molnar wrote:
->  /* Info for the block device */
->  struct block2mtd_dev {
-> -	struct list_head list;
-> -	struct block_device *blkdev;
-> -	struct mtd_info mtd;
-> -	struct mutex write_mutex;
-> +	struct list_head	list;
-> +	struct block_device	*blkdev;
-> +	struct mtd_info		mtd;
-> +	/* serializes writes with each other and also with erase: */
-> +	struct mutex		write_mutex;
->  };
 
-Why the hell?
+* David Miller <davem@davemloft.net> wrote:
 
-> -static int _block2mtd_write(struct block2mtd_dev *dev, const u_char *buf,
-> -		loff_t to, size_t len, size_t *retlen)
-> +static int
-> +_block2mtd_write(struct block2mtd_dev *dev, const u_char *buf, loff_t to,
-> +		 size_t len, size_t *retlen)
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 25 Mar 2008 14:45:56 +0100
+> 
+> > and let me give an example with the your very own code that you wrote 
+> > and maintain, drivers/mtd/devices/block2mtd.c:
+> > 
+> >                                     errors   lines of code   errors/KLOC
+> > drivers/mtd/devices/block2mtd.c         10             490          20.4
+> 
+> Ingo, this is devolving into a "code I maintain is great, code you 
+> maintain sucks, checkpatch says so" kind of discussion, please stop.
 
-That's actually worse...  BTW, single-underscore-... for identifiers?  Odd.
+Firstly, had you read my previous mails you'd realize that a score of 
+20.4 errors/KLOC is pretty clean code for a driver. (and a manual view 
+of drivers/mtd/devices/block2mtd.c confirmed that first quick 
+impression.)
 
-> -static int block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
-> +static int
-> +block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
->  		size_t *retlen, const u_char *buf)
+Secondly, it was you who claimed that checkpatch.pl warnings were bogus, 
+i asked for hard data which you refused to provide, so i had to come up 
+with examples to counter that.
 
-Again, why split it that way?
+What did you expect me to express my checkpatch.pl experience about, if 
+not about code that i maintain? How did you expect me to show to you 
+that the warnings are correct, if not code that you maintain? Why should 
+i talk about any code that neither you nor i am directly interested in? 
+Do you want me to talk about FreeBSD, so that i dont hurt anyone's 
+feelings? Feel free to use my code as an example to make your points.
 
-> -	dev->mtd.size = dev->blkdev->bd_inode->i_size & PAGE_MASK;
-> -	dev->mtd.erasesize = erase_size;
-> -	dev->mtd.writesize = 1;
-> -	dev->mtd.type = MTD_RAM;
-> -	dev->mtd.flags = MTD_CAP_RAM;
-> -	dev->mtd.erase = block2mtd_erase;
-> -	dev->mtd.write = block2mtd_write;
-> -	dev->mtd.writev = default_mtd_writev;
-> -	dev->mtd.sync = block2mtd_sync;
-> -	dev->mtd.read = block2mtd_read;
-> -	dev->mtd.priv = dev;
-> -	dev->mtd.owner = THIS_MODULE;
-> +	dev->mtd.size		= dev->blkdev->bd_inode->i_size & PAGE_MASK;
-> +	dev->mtd.erasesize	= erase_size;
-> +	dev->mtd.writesize	= 1;
-> +	dev->mtd.type		= MTD_RAM;
-> +	dev->mtd.flags		= MTD_CAP_RAM;
-> +	dev->mtd.erase		= block2mtd_erase;
-> +	dev->mtd.write		= block2mtd_write;
-> +	dev->mtd.writev		= default_mtd_writev;
-> +	dev->mtd.sync		= block2mtd_sync;
-> +	dev->mtd.read		= block2mtd_read;
-> +	dev->mtd.priv		= dev;
-> +	dev->mtd.owner		= THIS_MODULE;
+> You're not making any friends by making your arguments this way.
 
-Bogus.
+just to make it clear, i'm not here on lkml to "make friends", i'm here 
+to make Linux better. The two goals are not fundamentally incompatible 
+but sometimes they do clash ;-)
 
-> -		if (ret) {
-> +		if (ret)
->  			parse_err("illegal erase size");
-> -		}
->  	}
-
-BTW, I certainly wouldn't inflict that on patches; at some point in
-series the body of if may shrink to one line only to get longer in
-the next patch.  Removing and restoring {} would only add noise.
-
-OTOH, you've missed quite a few of my pet peeves, starting with
-u_char in the quoted part...
+	Ingo
