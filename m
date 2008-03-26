@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763246AbYCZRZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbYCZRY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763246AbYCZRZM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761169AbYCZRYy
+	id S932639AbYCZRY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764108AbYCZRVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:24:54 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:47294 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760914AbYCZRYw (ORCPT
+	Wed, 26 Mar 2008 13:21:00 -0400
+Received: from usea-naimss1.unisys.com ([192.61.61.103]:4793 "EHLO
+	usea-naimss1.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764098AbYCZRU6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:24:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=iCy0hBKrFM1+4yHLDUydoUTICHA1uDtUl7NfmA7uYrnefyZv6ou1GAuZa4fqycfEMzZKJMO1/ORlpnPDalvqZxJh2pLOg59kMuCSWpgsnCjIGruWBJjDSRoWxOcxR+SGULEsI8R3S7MrUkx36lchccijZk952BXgR6KiWiwwr04=
-Message-ID: <47EA86D9.7040404@gmail.com>
-Date: Wed, 26 Mar 2008 20:24:41 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 26 Mar 2008 13:20:58 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Corentin CHARY <corentincj@iksaif.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for 2.6.25-rc6)
-References: <200803180510.47670.lenb@kernel.org> <20080326081653.GA8247@elte.hu> <200803261132.21448.lenb@kernel.org> <200803260956.55804.bjorn.helgaas@hp.com>
-In-Reply-To: <200803260956.55804.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
+Date: Wed, 26 Mar 2008 12:16:46 -0500
+Message-ID: <7ECBFE60CB7F02478CDDDE40C985813A089119F0@USEA-EXCH4.na.uis.unisys.com>
+In-Reply-To: <Pine.LNX.4.64.0803260927470.27909@schroedinger.engr.sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] slab: fix cache_cache bootstrap in kmem_cache_init()
+Thread-Index: AciPXrCJR6SKuzLLTkypY9Lf6Jr3bQABUNeA
+References: <Pine.LNX.4.64.0803252357330.4422@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0803252023530.20780@schroedinger.engr.sgi.com> <47E9EB77.9060909@cs.helsinki.fi> <1206535048.7468.4.camel@localhost.localdomain> <Pine.LNX.4.64.0803260927470.27909@schroedinger.engr.sgi.com>
+From: "Yeisley, Dan P." <dan.yeisley@unisys.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, <akpm@linux-foundation.org>,
+       <mel@csn.ul.ie>, <olaf@aepfle.de>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 26 Mar 2008 17:16:46.0983 (UTC) FILETIME=[2BD3D170:01C88F65]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> I'm curious about how this works.  I disassembled the DSDT from
-> http://bugzilla.kernel.org/show_bug.cgi?id=4773 (I attached the disassembly
-> at http://bugzilla.kernel.org/attachment.cgi?id=15448&action=view), and
-> the _PRT contains "_SB" and "ISA" (no trailing underscores):
->
->                 Package (0x04)
->                 {
->                     0x000DFFFF, 
->                     0x00, 
->                     \_SB.PCI0.ISA.LNKA, 
->                     0x00
->                 }
->
-> But by the time we get to acpi_pci_irq_add_entry(), we've added the
-> underscores somewhere (see
-> http://bugzilla.kernel.org/attachment.cgi?id=15423&action=view):
->
->   0000:00:0d[A] -> \_SB_.PCI0.ISA_.LNKA
->
-> I don't know where this happens, but it certainly confused me, and
-> it seems like it could lead to other bugs.
->   
-ACPI is supposed to add trailing underscore for pad all names to 4 bytes.
-So ISA will be padded to ISA_.
 
-Regards,
-Alex.
+
+> -----Original Message-----
+> From: Christoph Lameter [mailto:clameter@sgi.com]
+> Sent: Wednesday, March 26, 2008 12:28
+> To: Yeisley, Dan P.
+> Cc: Pekka Enberg; akpm@linux-foundation.org; mel@csn.ul.ie;
+> olaf@aepfle.de; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] slab: fix cache_cache bootstrap in
+kmem_cache_init()
+> 
+> On Wed, 26 Mar 2008, Daniel Yeisley wrote:
+> 
+> > The only way I could get the ES7000 to boot with 2.6.24.x was with
+> > memoryless nodes (or numa=off).  The list corruption I saw was due
+to
+> > CPU 0 not being on node 0.
+> 
+> What is the ES7000?
+> 
+
+The ES7000 is a server built by Unisys that supports up to 32 CPU
+sockets (Xeon or Itanium).
+
+> > I do see problems with memoryless nodes on 2.6.25-rc.  I'll post a
+patch
+> > for that shortly.
+> 
+> Another patch in addition to the one we are discussing? Or another
+> revision of the patch?
+
+I wrote another patch that affects arch/x86.  
+
+http://lkml.org/lkml/2008/3/26/165
+
+CPUs on memoryless nodes aren't being moved to nodes with memory.  
+
+Dan
