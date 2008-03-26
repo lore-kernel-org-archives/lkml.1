@@ -1,177 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759182AbYCZT6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbYCZUMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759182AbYCZT6g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 15:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbYCZT62
+	id S1758022AbYCZUMl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYCZUM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 15:58:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36032 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755855AbYCZT61 (ORCPT
+	Wed, 26 Mar 2008 16:12:28 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:62239 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbYCZUM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 15:58:27 -0400
-Subject: Re: [RFC][-mm] [1/2] Simple stats for cpu resource controller
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: linux-kernel@vger.kernel.org, menage@google.com, balbir@in.ibm.com,
-       containers@lists.osdl.org, dhaval@linux.vnet.ibm.com
-In-Reply-To: <200803262348.45219.balajirrao@gmail.com>
-References: <200803262348.45219.balajirrao@gmail.com>
-Content-Type: text/plain
-Date: Wed, 26 Mar 2008 20:58:10 +0100
-Message-Id: <1206561490.24529.2.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Wed, 26 Mar 2008 16:12:28 -0400
+Message-ID: <47EAAD44.8000908@indt.org.br>
+Date: Wed, 26 Mar 2008 16:08:36 -0400
+From: Carlos Aguiar <carlos.aguiar@indt.org.br>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: ext Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/18] MMC: OMAP: Sync MMC OMAP driver with mainline tree
+References: <47DAD39C.90405@indt.org.br> <20080324132631.1e0d2125@mjolnir.drzeus.cx>
+In-Reply-To: <20080324132631.1e0d2125@mjolnir.drzeus.cx>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Mar 2008 20:11:19.0530 (UTC) FILETIME=[8DF3ACA0:01C88F7D]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-26 at 23:48 +0530, Balaji Rao wrote:
-> This patch implements trivial statistics for the cpu controller.
-> 
-> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 9fbfa05..eac9333 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -164,10 +164,38 @@ struct cfs_rq;
->  
->  static LIST_HEAD(task_groups);
->  
-> +#ifdef CONFIG_CGROUP_SCHED
-> +enum cpu_cgroup_stat_index {
-> +	CPU_CGROUP_STAT_UTIME, /* Usertime of the task group */
-> +	CPU_CGROUP_STAT_STIME, /* Kerneltime of the task group */
-> +
-> +	CPU_CGROUP_STAT_NSTATS,
-> +};
-> +
-> +struct cpu_cgroup_stat_cpu {
-> +	s64 count[CPU_CGROUP_STAT_NSTATS];
-> +} ____cacheline_aligned_in_smp;
-> +
-> +struct cpu_cgroup_stat {
-> +	struct cpu_cgroup_stat_cpu cpustat[NR_CPUS];
-> +};
-> +
-> +/* Called under irq disable. */
-> +static void __cpu_cgroup_stat_add_safe(struct cpu_cgroup_stat *stat,
-> +		enum cpu_cgroup_stat_index idx, int val)
+ext Pierre Ossman wrote:
+> On Fri, 14 Mar 2008 15:35:56 -0400
+> Carlos Aguiar <carlos.aguiar@indt.org.br> wrote:
+>
+> Except for the issue with the device attributes, the patch set looks fine. Send me a fix for that patch (and affected subsequent) and I'll queue it up.
+>
+>   
+Hi Pierre,
 
-What is safe about this function?
+I'm resending the whole series with the device attributes issues solved,
+as you mentioned.
 
-> +{
-> +	int cpu = smp_processor_id();
-> +
-> +	BUG_ON(!irqs_disabled());
-> +	stat->cpustat[cpu].count[idx] += val;
-> +}
-> +#endif
-> +
->  /* task group related information */
->  struct task_group {
->  #ifdef CONFIG_CGROUP_SCHED
->  	struct cgroup_subsys_state css;
-> +	struct cpu_cgroup_stat stat;
->  #endif
->  
->  #ifdef CONFIG_FAIR_GROUP_SCHED
-> @@ -3670,6 +3698,16 @@ void account_user_time(struct task_struct *p, cputime_t cputime)
->  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
->  	else
->  		cpustat->user = cputime64_add(cpustat->user, tmp);
-> +
-> +	/* Charge the task's group */
-> +#ifdef CONFIG_CGROUP_SCHED 
-> +	{
-> +	struct task_group *tg;
-> +	tg = task_group(p);
-> +	__cpu_cgroup_stat_add_safe(&tg->stat, CPU_CGROUP_STAT_UTIME,
-> +			cputime_to_msecs(cputime));
-> +	}
-> +#endif
->  }
->  
->  /*
-> @@ -3733,6 +3771,15 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
->  		cpustat->idle = cputime64_add(cpustat->idle, tmp);
->  	/* Account for system time used */
->  	acct_update_integrals(p);
-> +
-> +#ifdef CONFIG_CGROUP_SCHED
-> +	{
-> +	struct task_group *tg;
-> +	tg = task_group(p);
-> +	__cpu_cgroup_stat_add_safe(&tg->stat, CPU_CGROUP_STAT_STIME,
-> +			cputime_to_msecs(cputime));
-> +	}
-> +#endif
->  }
+Sorry for the delay - I promised to send you the series on Monday - but
+I have some mmc issues on Linux-OMAP mailing list to handle.
 
-So both of these are tick based? The normal CFS [us]time stats are not.
+So, feel free to queue it up.
 
->  /*
-> @@ -7939,6 +7986,40 @@ static u64 cpu_shares_read_u64(struct cgroup *cgrp, struct cftype *cft)
->  
->  	return (u64) tg->shares;
->  }
-> +
-> +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
-> +		enum cpu_cgroup_stat_index idx)
-> +{
-> +	int cpu;
-> +	s64 ret = 0;
-> +	for_each_possible_cpu(cpu)
-> +		ret += stat->cpustat[cpu].count[idx];
-> +	return ret;
-> +}
-> +
-> +static const struct cpu_cgroup_stat_desc {
-> +	const char *msg;
-> +	u64 unit;
-> +} cpu_cgroup_stat_desc[] = {
-> +	[CPU_CGROUP_STAT_UTIME] = { "utime", 1, },
-> +	[CPU_CGROUP_STAT_STIME] = { "stime", 1, },
-> +};
-> +
-> +static int cpu_cgroup_stats_show(struct cgroup *cgrp, struct cftype *cft,
-> +				struct cgroup_map_cb *cb)
-> +{
-> +	struct task_group *tg = cgroup_tg(cgrp);
-> +	struct cpu_cgroup_stat *stat = &tg->stat;
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(stat->cpustat[0].count); i++) {
-> +		s64 val;
-> +		val = cpu_cgroup_read_stat(stat, i);
-> +		val *= cpu_cgroup_stat_desc[i].unit;
-> +		cb->fill(cb, cpu_cgroup_stat_desc[i].msg, val);
-> +	}
-> +	return 0;
-> +}
->  #endif
->  
->  #ifdef CONFIG_RT_GROUP_SCHED
-> @@ -7961,6 +8042,11 @@ static struct cftype cpu_files[] = {
->  		.read_u64 = cpu_shares_read_u64,
->  		.write_u64 = cpu_shares_write_u64,
->  	},
-> +
-> +	{
-> +		.name = "stat",
-> +		.read_map = cpu_cgroup_stats_show,
-> +	},
->  #endif
->  #ifdef CONFIG_RT_GROUP_SCHED
->  	{
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks in advance,
+
+Carlos.
+
+-- 
+Carlos Eduardo Aguiar
+Nokia Institute of Technology - INdT
+Open Source Mobile Research Center - OSMRC - Manaus
+Core Team
+Phone: +55 92 2126-1079
+Mobile: +55 92 8127-1797
+E-mail: carlos.aguiar@indt.org.br
 
