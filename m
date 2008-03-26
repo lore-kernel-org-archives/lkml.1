@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbYCZMdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbYCZMeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbYCZMdP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 08:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbYCZMc5
+	id S1759350AbYCZMeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 08:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbYCZMeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 08:32:57 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52770 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758023AbYCZMc4 (ORCPT
+	Wed, 26 Mar 2008 08:34:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41530 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755567AbYCZMeC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 08:32:56 -0400
-Date: Wed, 26 Mar 2008 06:32:39 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: What if a TLB flush needed to sleep?
-Message-ID: <20080326123239.GG16721@parisc-linux.org>
-References: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com>
+	Wed, 26 Mar 2008 08:34:02 -0400
+Date: Wed, 26 Mar 2008 11:21:51 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: iommu breaks usb after resume
+Message-ID: <20080326102151.GB18965@elf.ucw.cz>
+References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9DF60@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080321135418.GB2346@one.firstfloor.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2008 at 01:49:54PM -0700, Luck, Tony wrote:
-> 1) Is holding a spin lock a problem for any other arch when
-> doing a TLB flush (I'm particularly thinking of those that
-> need to use IPI shootdown for the purge)?
+Hi!
 
-parisc certainly has that problem too.  It won't happen very often, but
-it will do an on_each_cpu() and wait for the outcome once in a while.
+> > On 64-bit machine with 4GB ram (8core from amd), iommu breaks USB
+> > after swsusp. iommu=soft fixes that issue.
+> > 
+> > I guess iommu handling in arch/x86/kernel/ should have some
+> > suspend/resume support, as it manipulates hardware registers...?
+> 
+> AGP suspend/resume should already handle restoring of the aperture
+> and the IOMMU code uses the same.  It has not other state. It might not work 
+> when the AGP driver is not compiled in/loaded though (I suspect
+> that is what happened to you) One simple fix would be to just enforce
+> that in Kconfig when suspend/resume is enabled.
 
-> 2) Is it feasible to rearrange the MM code so that we don't
-> hold any locks while doing a TLB flush?  Or should I implement
-> some sort of spin_only_semaphore?
+I had:
 
-down_spin() is trivial to implement without knowing the details of the
-semaphore code:
+CONFIG_AGP=y
+CONFIG_AGP_AMD64=y
+CONFIG_AGP_INTEL=y
+# CONFIG_AGP_SIS is not set
+CONFIG_AGP_VIA=y
+CONFIG_DRM=y
+# CONFIG_DRM_TDFX is not set
 
-void down_spin(struct semaphore *sem)
-{
-	while (down_trylock(sem))
-		cpu_relax();
-}
-
-Of course, someone who wrote it could do better ;-)
-
-void down_spin(struct semaphore *sem)
-{
-	unsigned long flags;
-	int count;
-
-	spin_lock_irqsave(&sem->lock, flags);
-	count = sem->count - 1;
-	if (likely(count >= 0))
-		sem->count = count;
-	else
-		__down_spin(sem);
-	spin_unlock_irqrestore(&sem->lock, flags);
-}
-
-void __down_spin(struct semaphore *sem)
-{
-	struct semaphore_waiter waiter;
-
-	list_add_tail(&waiter.list, &sem->wait_list);
-	waiter.task = current;
-	waiter.up = 0;
-
-	spin_unlock_irq(&sem->lock);
-	while (!waiter.up)
-		cpu_relax();
-	spin_lock_irq(&sem->lock);
-}
-
-This more complex implementation is better because:
- - It queues properly (see also down_timeout)
- - It spins on a stack-local variable, not on a global structure
-
-Having done all that ... I bet parisc and ia64 aren't the only two
-architectures which can sleep in their tlb flush handlers.
-
+...do I need to enable something more?
+									Pavel
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
