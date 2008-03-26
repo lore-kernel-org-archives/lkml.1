@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYCZF3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYCZFaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbYCZF3t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 01:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYCZF3k
+	id S1756897AbYCZFaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 01:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYCZFaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 01:29:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51588 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751128AbYCZF3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 01:29:40 -0400
-Date: Wed, 26 Mar 2008 06:29:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       venkatesh.pallipadi@intel.com, arjan@linux.intel.com,
-       bug-track@fisher-privat.net
-Subject: Re: [Bug 10328] New: [regression] performance drop for glx
-Message-ID: <20080326052911.GA8173@elte.hu>
-References: <bug-10328-27@http.bugzilla.kernel.org/> <20080325152809.e2b07251.akpm@linux-foundation.org> <20080326003912.GB3313@linux-os.sc.intel.com>
+	Wed, 26 Mar 2008 01:30:22 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:50855 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbYCZFaV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 01:30:21 -0400
+To: =?utf-8?b?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>
+Cc: "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: gcc-4.3 considers unaligned accesses on X86 as undefined
+References: <47E965BD.7010604@gmail.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 26 Mar 2008 06:30:17 +0100
+In-Reply-To: <47E965BD.7010604@gmail.com>
+Message-ID: <87d4pinjbq.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080326003912.GB3313@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 26 Mar 2008 05:23:40.0189 (UTC) FILETIME=[8CE92CD0:01C88F01]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Török Edwin <edwintorok@gmail.com> writes:
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> At -O3 it generates vectorized code that  _relies_  on the fact that
+> pointers are always aligned (unless you use packed attributes, etc.),
+> and the resulting code crashes if the pointer is unaligned.  (-O3 -msse
+> on 32-bit, and simply -O3 on 64-bit since -msse is default)
 
-> fb drivers are using ioremap()/ioremap_nocache(), followed by mtrr_add 
-> with WC attribute. Recent changes in page attribute code made both 
-> ioremap()/ioremap_nocache() mappings as UC (instead of previous UC-). 
-> This breaks the graphics performance, as the effective memory type is 
-> UC instead of expected WC.
-> 
-> The correct way to fix this is to add ioremap_wc() (which uses UC- in 
-> the absence of PAT kernel support and WC with PAT) and change all the 
-> fb drivers to use this new ioremap_wc() API.
-> 
-> We can take this correct and longer route for post 2.6.25. For now, 
-> revert back to the UC- behavior for ioremap/ioremap_nocache.
+The 2.6 kernel disables SSE and MMX code generation explicitely.
+2.4 should be also safe unless someone misguided recompiles it with -O3.
 
-thanks Suresh, applied.
-
-	Ingo
+-Andi
