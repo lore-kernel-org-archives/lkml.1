@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYCZO6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYCZPCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYCZO6Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYCZO6K
+	id S1757215AbYCZPCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 11:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYCZPCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:58:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:52972 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbYCZO6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:58:08 -0400
-Date: Wed, 26 Mar 2008 15:51:40 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gabriel C <crazy@frugalware.org>
-cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, andi-bz@firstfloor.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc5-git6: Reported regressions from 2.6.24
-In-Reply-To: <47EA4500.9090708@frugalware.org>
-Message-ID: <alpine.LFD.1.00.0803261418330.3781@apollo.tec.linutronix.de>
-References: <200803170018.52663.rjw@sisk.pl> <alpine.LFD.1.00.0803211944250.3781@apollo.tec.linutronix.de> <47E40B1C.30407@frugalware.org> <47E420C5.1050407@frugalware.org> <alpine.LFD.1.00.0803212208300.3781@apollo.tec.linutronix.de> <47E42FAB.6000906@frugalware.org>
- <alpine.LFD.1.00.0803212302390.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803220847020.3781@apollo.tec.linutronix.de> <47E50AF9.5070801@frugalware.org> <alpine.LFD.1.00.0803221441370.3781@apollo.tec.linutronix.de> <47E5221B.5040900@frugalware.org>
- <alpine.LFD.1.00.0803221730560.3781@apollo.tec.linutronix.de> <alpine.LFD.1.00.0803222113541.3781@apollo.tec.linutronix.de> <47E58B06.8020905@frugalware.org> <47E63851.7000702@frugalware.org> <47E6E85E.9030008@frugalware.org>
- <alpine.LFD.1.00.0803241038420.3781@apollo.tec.linutronix.de> <47E82C1F.7070304@frugalware.org> <alpine.LFD.1.00.0803250902310.3781@apollo.tec.linutronix.de> <47EA4500.9090708@frugalware.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 26 Mar 2008 11:02:05 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:23159 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754171AbYCZPCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 11:02:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rirJ0rKGj9SRKe6cRK9r9QLwt0lyd0l3x8jC/dZAe85yluyPCju2ny1quS1zJx989lVGPubiWWJrv1mH+mm000OGCmYZxiadwuqTZhPE0rImijhBfzdC786PsSWOdYy3+2HuwqptpxyxyGheEJJ9yjkIyKIC2bn+i8pi60WppOw=
+Message-ID: <8bd0f97a0803260802u4fb4d83aq6da1268e0ce7fa0@mail.gmail.com>
+Date: Wed, 26 Mar 2008 11:02:02 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] Blackfin Watchdog Driver: split platform device/driver registering from actual watchdog device/driver registering so we can cleanly load/unload
+Cc: "Bryan Wu" <cooloney@kernel.org>, wim@iguana.be,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47EA2D32.1020109@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1206581401-26046-1-git-send-email-cooloney@kernel.org>
+	 <47EA2D32.1020109@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008, Gabriel C wrote:
-> Thomas Gleixner wrote:
-> > On Mon, 24 Mar 2008, Gabriel C wrote:
-> >>> Hmm. Can you please apply the patch below. It add some more info and
-> >>> triggers the sysrq-q timer list printout when the watchdog
-> >>> triggers. That might us give some insight into this.
-> >> Sorry for the lag , I was out the whole day.
-> >>
-> >> Here is what I've found in dmesg ( the box was idling at that time , as said I was not around ):
-> >>
-> >> ...
-> >>
-> >> [34528.893366] Clocksource tsc unstable (delta = 4686697613 ns) E:34204592 J:34210723
-> > 
-> > Ok. The timer got delayed. It got delayed because it is initialized as
-> > a deferrable timer, which is obviously wrong. Sigh, I signed off on
-> > that commit myself without thinking about the consequences.
-> > 
-> > Can you please apply the patch below on top of the others?
-> 
-> Box is up for almost one day with that patch on top the other ones and everything is fine so far.
+2008/3/26 Jiri Slaby <jirislaby@gmail.com>:
+> On 03/27/2008 02:30 AM, Bryan Wu wrote:
+>  > From: Mike Frysinger <vapier.adi@gmail.com>
+>  > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
+>
+>  Ah and here. __devinitconst
 
-Thanks for testing. I push the patches Linuswards.
-
-@Andi: The revert of the reverted clocksource watchdog is staged for .26
-
-Thanks,
-
-	tglx
+that define doesnt exist for me so it'd be hard to use it ... where
+are you finding this ?
+-mike
