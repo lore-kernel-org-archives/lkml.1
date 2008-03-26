@@ -1,107 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYCZWxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYCZW5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYCZWxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 18:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYCZWx1
+	id S1755913AbYCZW5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 18:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYCZW5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 18:53:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47836 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbYCZWx0 (ORCPT
+	Wed, 26 Mar 2008 18:57:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:9108 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbYCZW5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 18:53:26 -0400
-Date: Wed, 26 Mar 2008 23:54:07 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: iommu breaks usb after resume
-Message-ID: <20080326225407.GA9378@elf.ucw.cz>
-References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org> <20080326102151.GB18965@elf.ucw.cz> <20080326130052.GF2170@one.firstfloor.org>
+	Wed, 26 Mar 2008 18:57:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OEDj5LGAVPZqnuw/Q5SEiE/qbvJ4ufc8p3QRzR4ocmJQ5JADOdf+8CgQQOChv7VPVFhRuZFpS0bPYOb+FlDWkI+zxIoIt+Wvy47g2su28bjq3n/S5bDyj0TZwoma55rgCHmpAtAhxsrBoHvswsxh4Ok1fW5oDGwVQDpaAH6gmR4=
+Message-ID: <5b1d25eb0803261557v33e67eb8v22dc0861d3e1b255@mail.gmail.com>
+Date: Wed, 26 Mar 2008 15:57:07 -0700
+From: "Sreen Tallam" <tallam.sreen@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Passing parameters from u-boot to kernel in 2.6.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080326130052.GF2170@one.firstfloor.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi All,
 
-> > CONFIG_AGP=y
-> > CONFIG_AGP_AMD64=y
-> > CONFIG_AGP_INTEL=y
-> > # CONFIG_AGP_SIS is not set
-> > CONFIG_AGP_VIA=y
-> > CONFIG_DRM=y
-> > # CONFIG_DRM_TDFX is not set
-> > 
-> > ...do I need to enable something more?
-> 
-> Should have worked then. Ok modulo bugs. Maybe the ordering
-> is wrong now (AGP resume would need to run before anything
-> using the IOMMU)
+I am passing the bd_info structure from u-boot to bd_t (bd info)
+structure of the kernel.
 
-So agp_amd64_resume() is responsible for reiniting iommu on new amd64
-boxes?
+And within my platform_init, I am have the below line which assigns
+the u-boot parameter to the bd structure.
+Will this be enough ..
 
-It is registered as normal pci driver:
+memcpy(&bd, (bd_t *)r3, sizeof(bd));
 
-static struct pci_driver agp_amd64_pci_driver = {
-	.name		= "agpgart-amd64",
-	.id_table	= agp_amd64_pci_table,
-	.probe		= agp_amd64_probe,
-	.remove		= agp_amd64_remove,
-#ifdef CONFIG_PM
-	.suspend	= agp_amd64_suspend,
-	.resume		= agp_amd64_resume,
-#endif
-};
+Reason is, I am not seeing the same values that I am passing from the
+u-boot. Hence the question.
 
-...should it be modified to run early, as other pci devices (USB
-controllers) may rely on this?
+Is there any kernel hacking that I need to set or any thing that I may
+need to be aware of?
 
-I did this... I'll verify it in 10 hours or so. If someone has amd64
-system with >=4G ram, there should be hibernation problems. This
-should fix it:
+Appreciate your help.
 
-diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
-index d8200ac..4e85178 100644
---- a/drivers/char/agp/amd64-agp.c
-+++ b/drivers/char/agp/amd64-agp.c
-@@ -594,12 +594,14 @@ static int agp_amd64_suspend(struct pci_
- 
- static int agp_amd64_resume(struct pci_dev *pdev)
- {
-+	printk("agp_amd64: resume\n");
- 	pci_set_power_state(pdev, PCI_D0);
- 	pci_restore_state(pdev);
- 
- 	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA)
- 		nforce3_agp_init(pdev);
- 
-+	printk("agp_amd64: 8151 configure\n");
- 	return amd_8151_configure();
- }
- 
-@@ -733,8 +735,8 @@ static struct pci_driver agp_amd64_pci_d
- 	.probe		= agp_amd64_probe,
- 	.remove		= agp_amd64_remove,
- #ifdef CONFIG_PM
--	.suspend	= agp_amd64_suspend,
--	.resume		= agp_amd64_resume,
-+	.suspend_late	= agp_amd64_suspend,
-+	.resume_early	= agp_amd64_resume,
- #endif
- };
- 
-
-
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-pomozte zachranit klanovicky les:  http://www.ujezdskystrom.info/
+Thanks,
+Sreen
