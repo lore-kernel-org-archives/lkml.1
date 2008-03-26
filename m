@@ -1,114 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbYCZXIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYCZXJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbYCZXIo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 19:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYCZXIh
+	id S1755218AbYCZXJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 19:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYCZXJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 19:08:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38613 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752887AbYCZXIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 19:08:36 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 26 Mar 2008 19:09:06 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:20437 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbYCZXJF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 19:09:05 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [patch 00/37] PNP resource_table cleanups
+Date: Wed, 26 Mar 2008 17:13:00 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Jaroslav Kysela <perex@perex.cz>,
        Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] procfs mem permission cleanup
-X-Shopping-List: (1) Musical global vagrant lotion
-   (2) Ancient obsessions
-   (3) Throwaway fads
-   (4) Cognizant auctions
-   (5) Concurrent load putty
-Message-Id: <20080326230727.8802C26FA1C@magilla.localdomain>
-Date: Wed, 26 Mar 2008 16:07:27 -0700 (PDT)
+References: <20080326171058.099442579@ldl.fc.hp.com> <200803261842.11023.lenb@kernel.org>
+In-Reply-To: <200803261842.11023.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803261713.03248.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cleans up the permission checks done for /proc/PID/mem i/o calls.
-It puts all the logic in a new function, check_mem_permission().
+On Wednesday 26 March 2008 04:42:10 pm Len Brown wrote:
+> i386:
+> 
+> #1 errs.ACPI.ACPI_DEBUG.ACPI_PROCFS.HIBERNATION.X86_LOCAL_APIC.X86_IO_APIC
+> Cleaning...Building...
+> ERROR: "pnp_get_resource" [sound/oss/sb.ko] undefined!
+> ERROR: "pnp_get_resource" [sound/oss/ad1848.ko] undefined!
 
-The old code repeated the (!MAY_PTRACE(task) || !ptrace_may_attach(task))
-magical expression multiple times.  The new function does all that work
-in one place, with clear comments.
+Oops, sorry, I forgot to export pnp_get_resource().  I'll post an
+updated patch as a response to the original.  Is that easy for you
+to handle, Len?  If not, let me know what you'd prefer.
 
-The old code called security_ptrace() twice on successful checks,
-once in MAY_PTRACE() and once in __ptrace_may_attach().  Now it's
-only called once, and only if all other checks have succeeded.
+Bjorn
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- fs/proc/base.c |   38 +++++++++++++++++++++++++++++---------
- 1 files changed, 29 insertions(+), 9 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 81d7d14..299ad71 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -195,12 +195,32 @@ static int proc_root_link(struct inode *inode, struct path *path)
- 	return result;
- }
- 
--#define MAY_PTRACE(task) \
--	(task == current || \
--	(task->parent == current && \
--	(task->ptrace & PT_PTRACED) && \
--	 (task_is_stopped_or_traced(task)) && \
--	 security_ptrace(current,task) == 0))
-+/*
-+ * Return zero if current may access user memory in @task, -error if not.
-+ */
-+static int check_mem_permission(struct task_struct *task)
-+{
-+	/*
-+	 * A task can always look at itself, in case it chooses
-+	 * to use system calls instead of load instructions.
-+	 */
-+	if (task == current)
-+		return 0;
-+
-+	/*
-+	 * If current is actively ptrace'ing, and would also be
-+	 * permitted to freshly attach with ptrace now, permit it.
-+	 */
-+	if (task->parent == current && (task->ptrace & PT_PTRACED) &&
-+	    task_is_stopped_or_traced(task) &&
-+	    ptrace_may_attach(task))
-+		return 0;
-+
-+	/*
-+	 * Noone else is allowed.
-+	 */
-+	return -EPERM;
-+}
- 
- struct mm_struct *mm_for_maps(struct task_struct *task)
- {
-@@ -715,7 +735,7 @@ static ssize_t mem_read(struct file * file, char __user * buf,
- 	if (!task)
- 		goto out_no_task;
- 
--	if (!MAY_PTRACE(task) || !ptrace_may_attach(task))
-+	if (check_mem_permission(task))
- 		goto out;
- 
- 	ret = -ENOMEM;
-@@ -741,7 +761,7 @@ static ssize_t mem_read(struct file * file, char __user * buf,
- 
- 		this_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
- 		retval = access_process_vm(task, src, page, this_len, 0);
--		if (!retval || !MAY_PTRACE(task) || !ptrace_may_attach(task)) {
-+		if (!retval || check_mem_permission(task)) {
- 			if (!ret)
- 				ret = -EIO;
- 			break;
-@@ -785,7 +805,7 @@ static ssize_t mem_write(struct file * file, const char __user *buf,
- 	if (!task)
- 		goto out_no_task;
- 
--	if (!MAY_PTRACE(task) || !ptrace_may_attach(task))
-+	if (check_mem_permission(task))
- 		goto out;
- 
- 	copied = -ENOMEM;
