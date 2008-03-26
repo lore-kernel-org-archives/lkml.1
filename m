@@ -1,124 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYCZJui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbYCZJxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbYCZJui (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 05:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYCZJu3
+	id S1757559AbYCZJxY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 05:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYCZJxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 05:50:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47453 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbYCZJu2 (ORCPT
+	Wed, 26 Mar 2008 05:53:17 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1333 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752286AbYCZJxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 05:50:28 -0400
-Subject: Re: [PATCH -rt] avoid deadlock related with PG_nonewrefs and
-	swap_lock
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Clark Williams <williams@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, hugh <hugh@veritas.com>
-In-Reply-To: <47E7F1D1.6010407@ct.jp.nec.com>
-References: <47DEB7F0.8040207@ct.jp.nec.com>
-	 <47DF097B.4090200@ct.jp.nec.com>
-	 <Pine.LNX.4.58.0803172150360.8231@gandalf.stny.rr.com>
-	 <1205833218.8514.338.camel@twins>  <47E7F1D1.6010407@ct.jp.nec.com>
-Content-Type: text/plain
-Date: Wed, 26 Mar 2008 10:50:12 +0100
-Message-Id: <1206525012.8514.488.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 05:53:16 -0400
+Date: Wed, 26 Mar 2008 09:52:49 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       jirislaby@gmail.com, viro@ZenIV.linux.org.uk, joe@perches.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 109/148] include/asm-x86/serial.h: checkpatch cleanups - formatting only
+Message-ID: <20080326095249.GD22584@shadowen.org>
+References: <20080323.032013.79276201.davem@davemloft.net> <47E647AC.1060906@gmail.com> <20080323.051929.267232495.davem@davemloft.net> <20080325104841.GA24211@elte.hu> <20080325111129.GB11359@logfs.org> <20080325122413.GA8729@elte.hu> <20080325131258.GC11359@logfs.org> <20080325133810.GA10044@elte.hu> <20080325134556.GA10424@elte.hu> <20080325160734.GA14583@logfs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080325160734.GA14583@logfs.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-24 at 11:24 -0700, Hiroshi Shimamoto wrote:
-> Hi Peter,
+On Tue, Mar 25, 2008 at 05:07:35PM +0100, Jörn Engel wrote:
+> On Tue, 25 March 2008 14:45:56 +0100, Ingo Molnar wrote:
+> > 
+> > and let me give an example with the your very own code that you wrote 
+> > and maintain, drivers/mtd/devices/block2mtd.c:
+> > 
+> >                                     errors   lines of code   errors/KLOC
+> > drivers/mtd/devices/block2mtd.c         10             490          20.4
+> > 
+> > that's pretty OK code, but not perfect, the 10 errors are:
+> > 
+> >  ERROR: do not use C99 // comments
+> >  ERROR: need spaces around that '=' (ctx:VxV)
+> >  ERROR: need spaces around that '<' (ctx:VxV)
+> >  ERROR: do not use C99 // comments
+> >  ERROR: do not use C99 // comments
+> >  ERROR: do not use C99 // comments
+> >  ERROR: do not use C99 // comments
+> >  ERROR: do not use C99 // comments
+> >  ERROR: do not use C99 // comments
+> >  ERROR: do not initialise statics to 0 or NULL
 > 
-> I've updated the patch. Could you please review it?
+> The last should and will be fixed.  The // I don't really care about.
+> Send a patch if you do.
 > 
-> I'm also thinking that it can be in the mainline because it makes
-> the lock period shorter, correct?
-
-Possibly yeah, Nick, Hugh?
-
-> ---
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Going over my logfs patch, I found several things that are either false
+> positives or rather questionable in my book.  <adds Andy to Cc:>
 > 
-> There is a deadlock scenario; remove_mapping() vs free_swap_and_cache().
-> remove_mapping() turns PG_nonewrefs bit on, then locks swap_lock.
-> free_swap_and_cache() locks swap_lock, then wait to turn PG_nonewrefs bit
-> off in find_get_page().
 > 
-> swap_lock can be unlocked before calling find_get_page().
+> (foo*) should be (foo *)
+> 	What does that extra space gain us?
+
+It really gains us nothing, however that is not really the point.
+The point is that consistancy is good, with the space is the more normal
+'C' usage, without for 'C++'; something to do with the implication that
+(foo *) is a pointer to a foo (separate things), and (foo*) is a thing
+of type pointer to foo (one thing) which is more object oriented.
+
+The "norm" is with and so it makes sense to maintain it that way.  A lot
+of the layout and style choises are arbitrary, and disliked by many of us,
+but we follow the style to maintain that common feel.
+
+> ERROR: no space before that close parenthesis ')'
+> #2565: FILE: fs/logfs/gc.c:294:
+> +                       seg_ofs + sizeof(oh) < super->s_segsize; ) {
 > 
-> In remove_exclusive_swap_page(), there is similar lock sequence;
-> swap_lock, then PG_nonewrefs bit. swap_lock can be unlocked before
-> turning PG_nonewrefs bit on.
-
-I worry about this, Once we free the swap entry with swap_entry_free(),
-and drop the swap_lock, another task is basically free to re-use that
-swap location and try to insert another page in that same spot in
-add_to_swap() - read_swap_cache_async() can't race because it would mean
-it still has a swap entry pinned.
-
-However, add_to_swap() can already handle the race, because it used to
-race against read_swap_cache_async(). It also swap_free()s the entry so
-as to not leak entries. So I think this is indeed correct.
-
-[ I ought to find some time to port the concurrent page-cache patches on
-  top of Nick's latest lockless series, Hugh's suggestion makes the
-  speculative get much nicer. ]
-
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> ---
->  mm/swapfile.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
+> Actual code is this:
+> 	for (seg_ofs = LOGFS_SEGMENT_HEADERSIZE;
+> 			seg_ofs + sizeof(oh) < super->s_segsize; ) {
+> The for() loop is missing one of its three terms.  I assume this is one
+> of the effects of not having a perfect C parser.
 > 
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index 5036b70..6fbc77e 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -366,6 +366,7 @@ int remove_exclusive_swap_page(struct page *page)
->  	/* Is the only swap cache user the cache itself? */
->  	retval = 0;
->  	if (p->swap_map[swp_offset(entry)] == 1) {
-> +		spin_unlock(&swap_lock);
->  		/* Recheck the page count with the swapcache lock held.. */
->  		lock_page_ref_irq(page);
->  		if ((page_count(page) == 2) && !PageWriteback(page)) {
-> @@ -374,8 +375,8 @@ int remove_exclusive_swap_page(struct page *page)
->  			retval = 1;
->  		}
->  		unlock_page_ref_irq(page);
-> -	}
-> -	spin_unlock(&swap_lock);
-> +	} else
-> +		spin_unlock(&swap_lock);
->  
->  	if (retval) {
->  		swap_free(entry);
-> @@ -400,13 +401,14 @@ void free_swap_and_cache(swp_entry_t entry)
->  	p = swap_info_get(entry);
->  	if (p) {
->  		if (swap_entry_free(p, swp_offset(entry)) == 1) {
-> +			spin_unlock(&swap_lock);
->  			page = find_get_page(&swapper_space, entry.val);
->  			if (page && unlikely(TestSetPageLocked(page))) {
->  				page_cache_release(page);
->  				page = NULL;
->  			}
-> -		}
-> -		spin_unlock(&swap_lock);
-> +		} else
-> +			spin_unlock(&swap_lock);
->  	}
->  	if (page) {
->  		int one_user;
 
+Yes that is a false positive.  I'll have a look at fixing it.
+
+> ERROR: trailing statements should be on next line
+> #5000: FILE: fs/logfs/readwrite.c:203:
+> +       } else while (unlikely(TestSetPageLocked(page))) {
+> 
+> We have an explicit exception for "else if".  "else while" makes imo
+> just as much (or as little) sense.
+
+"else if" is at least creating an additional arm of the same control
+structure.  else while is mixing two different paradigms.
+
+> ERROR: need space after that ',' (ctx:VxV)
+> #5801: FILE: fs/logfs/readwrite.c:1004:
+> +               ret = logfs_segment_read(inode, ipage, this_wc->ofs, bix,level);
+>                                       
+> One of those examples where a missing space is the lesser of two or
+> three evils.
+
+Because to add the space would mean breaking the line to avoid exceeding
+80 characters?
+
+> ERROR: need consistent spacing around '|' (ctx:WxV)
+> #8293: FILE: fs/logfs/dev_mtd.c:376:
+> +                       |SLAB_MEM_SPREAD|SLAB_PANIC),
+
+That is a false positive triggered by the '    |S' at the start of
+the line.  This one is fixed in the head of my tree.  The more normal
+form would be for that leading | to be on the end of the previous line,
+and the exception for that was already there.
+
+> I have no idea what this is about.  Original code:
+> 	mtd_cache = kmem_cache_create("mtd_cache", sizeof(struct mtd_inode), 0,
+> 			(SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT
+> 			 |SLAB_MEM_SPREAD|SLAB_PANIC),
+> 
+
+-apw
