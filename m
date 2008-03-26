@@ -1,69 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbYCZWAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbYCZWAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760086AbYCZWAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 18:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756558AbYCZWAF
+	id S1761396AbYCZWAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 18:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760179AbYCZWAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 18:00:05 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59721 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755382AbYCZWAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 18:00:03 -0400
-Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>, pm@debian.org
-In-Reply-To: <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org>
-References: <20080325201125.GD15330@elte.hu>
-	 <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de>
-	 <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org>
-	 <20080326101450.GA9060@jurassic.park.msu.ru>
-	 <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com>
-	 <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org>
-	 <20080326203012.GB6249@us.ibm.com>
-	 <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>
-	 <20080326205828.GA15225@jurassic.park.msu.ru>
-	 <alpine.LFD.1.00.0803261416390.2775@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 27 Mar 2008 08:57:55 +1100
-Message-Id: <1206568675.6926.7.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Mar 2008 18:00:20 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:44065 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759972AbYCZWAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 18:00:17 -0400
+Date: Wed, 26 Mar 2008 17:00:16 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: jes@sgi.com, tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: [Patch 1/5] add multi-page allocation to the uncached allocator -v3
+Message-ID: <20080326220016.GA31138@sgi.com>
+References: <20080326215807.GF31340@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=uncached-pages
+In-Reply-To: <20080326215807.GF31340@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Enable the uncached allocator to allocate multiple pages of contiguous
+uncached memory.
+ 
+Signed-off-by: Dean Nelson <dcn@sgi.com>
+ 
+---
+ 
+ arch/ia64/kernel/uncached.c |   21 ++++++++++++---------
+ drivers/char/mspec.c        |   12 ++++++------
+ include/asm-ia64/uncached.h |    4 ++--
+ 3 files changed, 20 insertions(+), 17 deletions(-)
 
-> NOTE! This will also consider a bridge resource at 0 to be an invalid 
-> resource (since now the alignment will be zero), which is a bit odd and 
-> makes me worry a bit. I wouldn't be surprised if some non-PC architectures 
-> have PCI bridges at zero. But maybe they should be (or already are?) 
-> marked IORESOURCE_PCI_FIXED?
-
-PCI bridges at zero is perfectly valid indeed and I'm sure we have that
-around at least for IO space. In fact, I'm surprised you don't have that
-on x86. Typically, things like an HT segment with a P2P bridge and
-behind that bridge an ISA bridge could well have the P2P bridge with a
-resource forwarding 0...0x1000 IO downstream for example even on x86
-no ? (I'm not -that- familiar with the crazyness of legacy ISA on x86
-but I've definitely seen such setup on other archs).
-
-For MMIO, it mostly depends whether the code gets to work on raw bus
-values, in which case 0 will be around, or already fixed up values (ie,
-translated in CPU bus space) in which case 0 is unlikely.
-
-In the case of pdev_sort_resources(), it will manipulate already fixed
-up resources, so MMIO should work, but I'm a bit worried by PIO.
-
-Ben.
-
-
+Index: linux-2.6/arch/ia64/kernel/uncached.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/uncached.c	2007-10-04 06:52:20.000000000 -0500
++++ linux-2.6/arch/ia64/kernel/uncached.c	2007-11-08 12:14:31.408258515 -0600
+@@ -177,12 +177,13 @@
+  * uncached_alloc_page
+  *
+  * @starting_nid: node id of node to start with, or -1
++ * @n_pages: number of contiguous pages to allocate
+  *
+- * Allocate 1 uncached page. Allocates on the requested node. If no
+- * uncached pages are available on the requested node, roundrobin starting
+- * with the next higher node.
++ * Allocate the specified number of contiguous uncached pages on the
++ * the requested node. If not enough contiguous uncached pages are available
++ * on the requested node, roundrobin starting with the next higher node.
+  */
+-unsigned long uncached_alloc_page(int starting_nid)
++unsigned long uncached_alloc_page(int starting_nid, int n_pages)
+ {
+ 	unsigned long uc_addr;
+ 	struct uncached_pool *uc_pool;
+@@ -202,7 +203,8 @@
+ 		if (uc_pool->pool == NULL)
+ 			continue;
+ 		do {
+-			uc_addr = gen_pool_alloc(uc_pool->pool, PAGE_SIZE);
++			uc_addr = gen_pool_alloc(uc_pool->pool,
++						 n_pages * PAGE_SIZE);
+ 			if (uc_addr != 0)
+ 				return uc_addr;
+ 		} while (uncached_add_chunk(uc_pool, nid) == 0);
+@@ -217,11 +219,12 @@
+ /*
+  * uncached_free_page
+  *
+- * @uc_addr: uncached address of page to free
++ * @uc_addr: uncached address of first page to free
++ * @n_pages: number of contiguous pages to free
+  *
+- * Free a single uncached page.
++ * Free the specified number of uncached pages.
+  */
+-void uncached_free_page(unsigned long uc_addr)
++void uncached_free_page(unsigned long uc_addr, int n_pages)
+ {
+ 	int nid = paddr_to_nid(uc_addr - __IA64_UNCACHED_OFFSET);
+ 	struct gen_pool *pool = uncached_pools[nid].pool;
+@@ -232,7 +235,7 @@
+ 	if ((uc_addr & (0XFUL << 60)) != __IA64_UNCACHED_OFFSET)
+ 		panic("uncached_free_page invalid address %lx\n", uc_addr);
+ 
+-	gen_pool_free(pool, uc_addr, PAGE_SIZE);
++	gen_pool_free(pool, uc_addr, n_pages * PAGE_SIZE);
+ }
+ EXPORT_SYMBOL(uncached_free_page);
+ 
+Index: linux-2.6/drivers/char/mspec.c
+===================================================================
+--- linux-2.6.orig/drivers/char/mspec.c	2007-10-04 06:52:21.000000000 -0500
++++ linux-2.6/drivers/char/mspec.c	2007-11-08 12:07:17.458415225 -0600
+@@ -180,7 +180,7 @@
+ 		my_page = vdata->maddr[index];
+ 		vdata->maddr[index] = 0;
+ 		if (!mspec_zero_block(my_page, PAGE_SIZE))
+-			uncached_free_page(my_page);
++			uncached_free_page(my_page, 1);
+ 		else
+ 			printk(KERN_WARNING "mspec_close(): "
+ 			       "failed to zero page %ld\n", my_page);
+@@ -209,7 +209,7 @@
+ 	index = (address - vdata->vm_start) >> PAGE_SHIFT;
+ 	maddr = (volatile unsigned long) vdata->maddr[index];
+ 	if (maddr == 0) {
+-		maddr = uncached_alloc_page(numa_node_id());
++		maddr = uncached_alloc_page(numa_node_id(), 1);
+ 		if (maddr == 0)
+ 			return NOPFN_OOM;
+ 
+@@ -218,7 +218,7 @@
+ 			vdata->count++;
+ 			vdata->maddr[index] = maddr;
+ 		} else {
+-			uncached_free_page(maddr);
++			uncached_free_page(maddr, 1);
+ 			maddr = vdata->maddr[index];
+ 		}
+ 		spin_unlock(&vdata->lock);
+@@ -367,7 +367,7 @@
+ 				int nasid;
+ 				unsigned long phys;
+ 
+-				scratch_page[nid] = uncached_alloc_page(nid);
++				scratch_page[nid] = uncached_alloc_page(nid, 1);
+ 				if (scratch_page[nid] == 0)
+ 					goto free_scratch_pages;
+ 				phys = __pa(scratch_page[nid]);
+@@ -414,7 +414,7 @@
+  free_scratch_pages:
+ 	for_each_node(nid) {
+ 		if (scratch_page[nid] != 0)
+-			uncached_free_page(scratch_page[nid]);
++			uncached_free_page(scratch_page[nid], 1);
+ 	}
+ 	return ret;
+ }
+@@ -431,7 +431,7 @@
+ 
+ 		for_each_node(nid) {
+ 			if (scratch_page[nid] != 0)
+-				uncached_free_page(scratch_page[nid]);
++				uncached_free_page(scratch_page[nid], 1);
+ 		}
+ 	}
+ }
+Index: linux-2.6/include/asm-ia64/uncached.h
+===================================================================
+--- linux-2.6.orig/include/asm-ia64/uncached.h	2007-10-04 06:52:25.000000000 -0500
++++ linux-2.6/include/asm-ia64/uncached.h	2007-11-08 12:05:00.633469891 -0600
+@@ -8,5 +8,5 @@
+  * Prototypes for the uncached page allocator
+  */
+ 
+-extern unsigned long uncached_alloc_page(int nid);
+-extern void uncached_free_page(unsigned long);
++extern unsigned long uncached_alloc_page(int, int);
++extern void uncached_free_page(unsigned long, int);
