@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYCZDKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYCZDOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYCZDKk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 23:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYCZDKb
+	id S1754073AbYCZDOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 23:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYCZDOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 23:10:31 -0400
-Received: from eastrmmtao102.cox.net ([68.230.240.8]:50328 "EHLO
-	eastrmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbYCZDKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 23:10:30 -0400
-X-Greylist: delayed 2265 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Mar 2008 23:10:30 EDT
-Date: Tue, 25 Mar 2008 22:32:43 -0400
-From: Brad Sawatzky <brad+debian@swatter.net>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [PATCH] usb-serial: fix regression in Visor/Palm OS module for
-	kernels >= 2.6.24
-Message-ID: <20080326023243.GA25564@enigma.swatter.net>
-Mail-Followup-To: Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+	Tue, 25 Mar 2008 23:14:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59820 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751281AbYCZDOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 23:14:07 -0400
+Message-ID: <47E9BF7B.3030003@pobox.com>
+Date: Tue, 25 Mar 2008 23:14:03 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: David Miller <davem@davemloft.net>
+CC: yang.shi@windriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
+References: <47E9B115.9060109@windriver.com>	<47E9B39C.5010502@pobox.com> <20080325.194221.16658596.davem@davemloft.net>
+In-Reply-To: <20080325.194221.16658596.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes a bug/inconsistency revealed by the additional sanity checking in
-   commit 063a2da8f01806906f7d7b1a1424b9afddebc443
-introduced in the original 2.6.24 branch.
+David Miller wrote:
+> From: Jeff Garzik <jgarzik@pobox.com>
+> Date: Tue, 25 Mar 2008 22:23:24 -0400
+> 
+>> This is bogus -- you should never need to slow down the hot path in such 
+>> a way.
+> 
+> Slow down in what way?  Even on x86 saving the flags is just
+> about as expensive as a plain sti/cli.
 
-The Handspring Visor / PalmOS 4 device structure defines .num_bulk_out=2
-but the usb-serial probe returns num_bulk_out=3, triggering the check in
-the above commit and forcing a bail out when the device (a Garmin iQue in
-my case) attempts to connect.  The patch bumps the expected number of
-endpoints to 3.
-
-I suppose it's possible that the kernel is identifying 3 bulk endpoints
-when there should only be 2 and there is some issue with the lower level
-endpoint probe?
-
-FWIW, this patch will probably solve the following kernel bug report for
-Treo users (identical symptoms, different model PalmOS units):
-  <http://bugzilla.kernel.org/show_bug.cgi?id=10118>
+Replacing spin_lock() [current 8139too.c] with spin_lock_irqsave() 
+results in a larger interrupt handler... more CPU instructions for the 
+same result.
 
 
-Signed-off-by: Brad Sawatzky <brad+kernel@swatter.net>
----
+> I would in fact prefer to see drivers unconditionally use
+> spin_lock_irqsave() et al. in the interrupt handler, for
+> consistency.
 
---- drivers/usb/serial/visor.c.orig	2008-03-25 21:32:40.000000000 -0400
-+++ drivers/usb/serial/visor.c	2008-03-25 21:29:57.000000000 -0400
-@@ -191,7 +191,7 @@ static struct usb_serial_driver handspri
- 	.id_table =		id_table,
- 	.num_interrupt_in =	NUM_DONT_CARE,
- 	.num_bulk_in =		2,
--	.num_bulk_out =		2,
-+	.num_bulk_out =		3,
- 	.num_ports =		2,
- 	.open =			visor_open,
- 	.close =		visor_close,
+The entire spin_lock() apparatus in the interrupt handler disappears 
+nicely on uniprocessor machines.
+
+Plus, you are not competing with any other interrupts other than your 
+own, which is the only major class of problems where spin_lock_irqsave() 
+in interrupt handler is really needed (PS/2 kbd + mouse is an example).
+
+Or more simply, it's not needed, so nothing is gained by doing 
+additional work in the hot path for the sake of consistency.
+
+	Jeff
+
+
