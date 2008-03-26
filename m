@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbYCZU6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbYCZVCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbYCZU6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYCZU6d
+	id S1759195AbYCZVCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYCZVB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:58:33 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:46032 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753866AbYCZU6c (ORCPT
+	Wed, 26 Mar 2008 17:01:57 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48876 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754068AbYCZVB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:58:32 -0400
-Date: Wed, 26 Mar 2008 23:58:28 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Meyer <thomas@m3y3r.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pm@debian.org
-Subject: Re: [patch] pci: revert "PCI: remove transparent bridge sizing"
-Message-ID: <20080326205828.GA15225@jurassic.park.msu.ru>
-References: <20080325201125.GD15330@elte.hu> <20080325202954.GA22007@elte.hu> <47E969E1.6080608@m3y3r.de> <alpine.LFD.1.00.0803251445500.2775@woody.linux-foundation.org> <20080326101450.GA9060@jurassic.park.msu.ru> <20080326135458.GA27621@elte.hu> <20080326180701.GA6249@us.ibm.com> <alpine.LFD.1.00.0803261132310.2775@woody.linux-foundation.org> <20080326203012.GB6249@us.ibm.com> <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>
+	Wed, 26 Mar 2008 17:01:57 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47EAB9BB.5070209@s5r6.in-berlin.de>
+Date: Wed, 26 Mar 2008 22:01:47 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803261344430.2775@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: linux-kernel@vger.kernel.org
+Subject: "make -j5 clean" breaks subsequent build
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 01:46:33PM -0700, Linus Torvalds wrote:
-> Ahh, ok, so it was directly caused by simply not sizing and setting up the 
-> bus resources properly.
+linux-2.6.25-rc6:
 
-Indeed.
+$ while make -j5 clean all; do :; done
 
-This should prevent an oops in all cases.
+will eventually fail in make all due to target files not found.  The 
+files differ from failure to failure.
 
-Ivan.
+$ while make clean && make -j5 all; do :; done
 
----
-PCI: improved sanity check for pdev_sort_resources()
+works fine in the very same source tree.  Happens on two different dual 
+core PCs and different filesystems.  I have not yet tested if any other 
+linux versions are affected.
 
-Prevent potential oops with unsized PCI bridge resources.
-
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- drivers/pci/setup-res.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 4be7ccf..fb57c8b 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -226,18 +226,17 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 		if (r->flags & IORESOURCE_PCI_FIXED)
- 			continue;
- 
--		r_align = r->end - r->start;
--		
-+		r_align = (i < PCI_BRIDGE_RESOURCES) ? r->end - r->start + 1 :
-+						       r->start;
- 		if (!(r->flags) || r->parent)
- 			continue;
--		if (!r_align) {
-+		if (r_align <= 1) {
- 			printk(KERN_WARNING "PCI: Ignore bogus resource %d "
- 				"[%llx:%llx] of %s\n",
- 				i, (unsigned long long)r->start,
- 				(unsigned long long)r->end, pci_name(dev));
- 			continue;
- 		}
--		r_align = (i < PCI_BRIDGE_RESOURCES) ? r_align + 1 : r->start;
- 		for (list = head; ; list = list->next) {
- 			resource_size_t align = 0;
- 			struct resource_list *ln = list->next;
+(This has to be a known issue; isn't it?)
+-- 
+Stefan Richter
+-=====-==--- --== ==-=-
+http://arcgraph.de/sr/
