@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762741AbYCZSyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbYCZSzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762741AbYCZSyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760423AbYCZSyc
+	id S1762798AbYCZSzg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbYCZSz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:54:32 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:36646 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760291AbYCZSyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:54:31 -0400
-Date: Wed, 26 Mar 2008 18:54:27 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Nish Aravamudan <nish.aravamudan@gmail.com>,
-       David Miller <davem@davemloft.net>, paulus@samba.org, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, torvalds@linux-foundation.org,
-       agl@us.ibm.com
-Subject: Re: larger default page sizes...
-Message-ID: <20080326185427.GA874@csn.ul.ie>
-References: <18408.29107.709577.374424@cargo.ozlabs.ibm.com> <20080324.211532.33163290.davem@davemloft.net> <18408.59112.945786.488350@cargo.ozlabs.ibm.com> <20080325.163240.102401706.davem@davemloft.net> <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com> <29495f1d0803260854j46d37eedrc0927af226b3b8c8@mail.gmail.com> <1FE6DD409037234FAB833C420AA843ECE9E7AC@orsmsx424.amr.corp.intel.com>
+	Wed, 26 Mar 2008 14:55:26 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:44631 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760003AbYCZSzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 14:55:24 -0400
+Date: Wed, 26 Mar 2008 13:55:23 -0500 (CDT)
+From: Alan Mayer <ajm@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Alan Mayer <ajm@sgi.com>, mingo@elte.hu,
+       linux-kernel list <linux-kernel@vger.kernel.org>,
+       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines
+In-Reply-To: <alpine.LFD.1.00.0803260920020.2775@woody.linux-foundation.org>
+Message-ID: <Pine.SGI.3.96.1080326134915.7873204Z-100000@fergus.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843ECE9E7AC@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (26/03/08 10:05), Luck, Tony didst pronounce:
-> > That's not entirely true. We have a dynamic pool now, thanks to Adam
-> > Litke [added to Cc], which can be treated as a high watermark for the
-> > hugetlb pool (and the static pool value serves as a low watermark).
-> > Unless by hugepages you mean something other than what I think (but
-> > referring to a 2M size on x86 imples you are not). And with the
-> > antifragmentation improvements, hugepage pool changes at run-time are
-> > more likely to succeed [added Mel to Cc].
+On Wed, 26 Mar 2008, Linus Torvalds wrote:
+
 > 
-> Things are better than I thought ... though the phrase "more likely
-> to succeed" doesn't fill me with confidence. 
-
-It's a lot more likely to succeed since 2.6.24 than it has in the past. On
-workloads where it is mainly user data that is occuping memory, the chances
-are even better. If min_free_kbytes is hugepage_size*num_online_nodes(),
-it becomes a harder again to fragment memory.
-
-> Instead I imagine a
-> system where an occasional spike in memory load causes some memory
-> fragmentation that can't be handled, and so from that point many of
-> the applications that relied on huge pages take a 10% performance
-> hit. 
-
-If it was found to be a problem and normal anti-frag is not coping for hugepage
-pool resizes, then specify movablecore=MAX_POSSIBLE_POOL_SIZE_YOU_WOULD_NEED
-on the command-line and the hugepage pool will be able to expand to that
-side independent of workload. This would avoid the need to scheduled regular
-reboots.
-
-> This results in sysadmins scheduling regular reboots to unjam
-> things. [Reminds me of the instructions that came with my first
-> flatbed scanner that recommended rebooting the system before and
-> after each use :-( ]
 > 
-> > I feel like I should promote libhugetlbfs here.
+> On Wed, 26 Mar 2008, Pavel Machek wrote:
+> > 
+> > This is very ugly. Why not include it unconditionally -- with guard in
+> > apicdef.h?
 > 
-> This is also better than I thought ... sounds like some really
-> good things have already happened here.
+> I do agree that it's ugly, but I think the ugliness is more serious than 
+> that.
+> 
+> What I think we should do is to make NR_IRQS no longer be a compile-time 
+> constant, but instead just do something like
+> 
+> 	unsigned int NR_IRQS __read_mostly;
+> 
+> and then just set it early in the boot sequence depending on the real CPU 
+> numbers etc.
+> 
+> I realize that this will require some changes to a few arrays that are 
+> statically allocated and depend on NR_IRQ's (notably "irq_desc"), but 
+> don't you guys think that this would be a cleaner thing?
+> 
+> [ I suspect that irq_desc[] itself could quite reasonably be a rather much 
+>   smaller __read_mostly hash-table of dynamically allocated entries - the 
+>   thing would be only modified at boot, so it should cache beautifully 
+>   even across hundreds of CPU's ]
+> 
+> Whatever. I'm not opposed to this whole static thing, but I do wonder if 
+> it's worth doing that way. There *may* be performance reasons for doing it 
+> the way we're doing it, but quite frankly, I think the #define is mostly 
+> purely historical, from when it was just a fixed number (originally 16!) 
+> and it made sense to think of it as a small static array.
+> 
+> 			Linus
 > 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Well, I was looking at it from that point of view.  But, when I found myself
+looking at code, particularly in drivers, that indexed into the irq_desc array
+and started modifying the descriptor in place and then calling setup_irq(),
+I realized that what was needed was a redesign of the whole mess from first
+principals.  I still think that's what needs to be done, but by some one with
+more experience and credibility than me.  Maybe in a year I'd be willing
+to attempt it, but not today.
+
+		--ajm
+
+
+--
+Alan J. Mayer
+SGI
+ajm@sgi.com
+WORK: 651-683-3131
+HOME: 651-407-0134
+--
+
