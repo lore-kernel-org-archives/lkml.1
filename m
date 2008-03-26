@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbYCYX4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbYCZABW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761470AbYCYX4O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 19:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbYCYXz6
+	id S1759831AbYCZABW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYCZABO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 19:55:58 -0400
-Received: from mga11.intel.com ([192.55.52.93]:24204 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755869AbYCYXz5 convert rfc822-to-8bit (ORCPT
+	Tue, 25 Mar 2008 20:01:14 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:34209 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753825AbYCZABM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 19:55:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,555,1199692800"; 
-   d="scan'208";a="539956273"
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 25 Mar 2008 20:01:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=I3+HXD1JX9GZ+WckxzKyLh+O27ydIkqS6RnvD8KJNhDc8DJeH+MnHLyHwJVlUGYe9CX1ITBUg7a3TwmdO2Rw5Q+uF/BK/FM2aiM2iqXj7C9EX/iOCW+uXSU1D6a9+yXPrXa3BTsX6p2qCBJxwLyAWv3KF6tjig//p2evNmWNEmc=
+Message-ID: <86802c440803251701s125ce73dp3c5c03aa4a9e89ef@mail.gmail.com>
+Date: Tue, 25 Mar 2008 17:01:12 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEC3E1EB@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: larger default page sizes...
-Date: Tue, 25 Mar 2008 16:49:23 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843ECE9E2CA@orsmsx424.amr.corp.intel.com>
-In-reply-to: <20080325.163240.102401706.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: larger default page sizes...
-Thread-Index: AciO0YIlyjg9GQexRcW7W5ufmVfZRAAAB2EQ
-References: <18408.29107.709577.374424@cargo.ozlabs.ibm.com><20080324.211532.33163290.davem@davemloft.net><18408.59112.945786.488350@cargo.ozlabs.ibm.com> <20080325.163240.102401706.davem@davemloft.net>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "David Miller" <davem@davemloft.net>, <paulus@samba.org>
-Cc: <clameter@sgi.com>, <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
-       <linux-ia64@vger.kernel.org>, <torvalds@linux-foundation.org>
-X-OriginalArrivalTime: 25 Mar 2008 23:49:24.0607 (UTC) FILETIME=[DADA38F0:01C88ED2]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803242324.35357.yhlu.kernel@gmail.com>
+	 <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com>
+	 <20080325190851.GC30998@linux-os.sc.intel.com>
+	 <20080325200830.GB15330@elte.hu> <47E962AE.9040307@zytor.com>
+	 <47E9843A.1060702@zytor.com>
+	 <86802c440803251605w7021b60cmbc312eb9ca87d277@mail.gmail.com>
+	 <47E98572.704@zytor.com>
+	 <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
+	 <924EFEDD5F540B4284297C4DC59F3DEEC3E1EB@orsmsx423.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > How do I get gcc to use hugepages, for instance?
+On Tue, Mar 25, 2008 at 4:38 PM, Pallipadi, Venkatesh
+<venkatesh.pallipadi@intel.com> wrote:
 >
-> Implementing transparent automatic usage of hugepages has been
-> discussed many times, it's definitely doable and other OSs have
-> implemented this for years.
 >
-> This is what I was implying.
+>
+>  >-----Original Message-----
+>  >From: Yinghai Lu [mailto:yhlu.kernel@gmail.com]
+>  >Sent: Tuesday, March 25, 2008 4:09 PM
+>  >To: H. Peter Anvin
+>  >Cc: Ingo Molnar; Pallipadi, Venkatesh; Thomas Gleixner; Andrew
+>  >Morton; kernel list; Siddha, Suresh B
+>  >Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
+>  >
+>  >On Tue, Mar 25, 2008 at 4:06 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+>  >> Yinghai Lu wrote:
+>  >>  >>
+>  >>  >>  By the way, I want to clarify: I didn't mean it was
+>  >*intended* as
+>  >>  >>  vendor-lockin, just that it's an undesirable effect of this.
+>  >>  >
+>  >>  > if the PAT works, we may need to trim the memory
+>  >according to MTRR, right?
+>  >>  >
+>  >>
+>  >>  That doesn't seem like it's specific to PAT?
+>  >
+>  >could page table to  set WRBACK the range that is not covered
+>  >by MTRR in e820..
+>  >
+>
+>  Trimming of e820 memory is already done by Jesse's patch here
+>  commit 99fc8d424bc5d80
+>  Are you referring to similar thing?
+>
+Yes.
 
-"large" pages, or "super" pages perhaps ... but Linux "huge" pages
-seem pretty hard to adapt for generic use by applications.  They
-are generally a somewhere between a bit too big (2MB on X86) to
-way too big (64MB, 256MB, 1GB or 4GB on ia64) for general use.
-
-Right now they also suffer from making the sysadmin pick at
-boot time how much memory to allocate as huge pages (while it
-is possible to break huge pages into normal pages, going in
-the reverse direction requires a memory defragmenter that
-doesn't exist).
-
-Making an application use huge pages as heap may be simple
-(just link with a different library to provide with a different
-version of malloc()) ... code, stack, mmap'd files are all
-a lot harder to do transparently.
-
--Tony
+YH
