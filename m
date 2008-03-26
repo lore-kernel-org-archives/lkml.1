@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYCZJUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbYCZJXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbYCZJUD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 05:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYCZJTw
+	id S1756599AbYCZJXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 05:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYCZJWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 05:19:52 -0400
-Received: from public.bindows.net ([66.135.40.169]:57539 "EHLO
-	public.bindows.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbYCZJTv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 05:19:51 -0400
-Message-ID: <47EA152C.6000008@better.se>
-Date: Wed, 26 Mar 2008 10:19:40 +0100
-From: Marcus Better <marcus@better.se>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 26 Mar 2008 05:22:53 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:12742 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750953AbYCZJWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 05:22:52 -0400
+Date: Wed, 26 Mar 2008 18:22:27 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org,
+       Ian Molton <spyro@f2s.com>, Alain L Knaff <Alain.Knaff@lll.lu>,
+       David C Niemi <niemi@tux.org>,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] SuperH floppy: kill 'register' keyword from floppy.h header
+Message-ID: <20080326092227.GB7867@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jesper Juhl <jesper.juhl@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org,
+	Ian Molton <spyro@f2s.com>, Alain L Knaff <Alain.Knaff@lll.lu>,
+	David C Niemi <niemi@tux.org>,
+	Trivial Patch Monkey <trivial@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LNX.1.00.0803260213550.1901@dragon.funnycrock.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 10327] New: keyboard stops responding after
- "ifdown eth0"
-References: <bug-10327-10286@http.bugzilla.kernel.org/>	<20080325143941.300d415f.akpm@linux-foundation.org>	<47E9721C.2000306@better.se>	<47E99258.3060005@s5r6.in-berlin.de> <20080325171608.509f4ca7.akpm@linux-foundation.org>
-In-Reply-To: <20080325171608.509f4ca7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.00.0803260213550.1901@dragon.funnycrock.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 	( sleep 10 ; echo t > /proc/sysrq-trigger ) &
-> 	ifdown eth0
+On Wed, Mar 26, 2008 at 02:16:32AM +0100, Jesper Juhl wrote:
+> 
+> When compilers became generally better at optimizing code than humans, the
+> register keyword became mostly useless. For the floppy driver it certainly
+> is since it's so slow compared to the rest of the system that optimizing
+> access to a single variable or two isn't going to make any real
+> difference
+> So let's just leave it to the compiler - it'll do a better job anyway.
+> 
+> This patch does away with a few register keywords in the SuperH floppy
+> driver.
 > 
 > 
-> - See if the sysrq-t output made it to /var/log/messages
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-No, not a word. It hung after printing this:
-
-...
-DHCPRELEASE ...
-send_packet: Network is unreachable
-send_packet: please consult README ...
-sky2 eth0: disabling interface
-~# sky2 eth0: enabling interface
-
-I'm running ifplugd, but this time there was no network cable connected. 
-Also ran from virtual console this time, the keyboard locked up like before.
-
-SysRq keys work, so I could do sysrq-s, sysrq-b. Also pressed sysrq-t 
-before rebooting.
-
-Any use trying netconsole? Can I run it over the wireless interface?
-
-Marcus
+applied, thanks.
