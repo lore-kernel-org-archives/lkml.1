@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbYCZQ7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbYCZRCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761406AbYCZQ7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 12:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYCZQ7F
+	id S1759438AbYCZRCd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbYCZRC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 12:59:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:42441 "EHLO mail.goop.org"
+	Wed, 26 Mar 2008 13:02:26 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50281 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757725AbYCZQ7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 12:59:04 -0400
-Message-ID: <47EA80D5.1040002@goop.org>
-Date: Wed, 26 Mar 2008 09:59:01 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1752424AbYCZRCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 13:02:25 -0400
+Date: Wed, 26 Mar 2008 19:02:19 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.25-rc6-git6: Reported regressions from 2.6.24
+Message-ID: <20080326170219.GE1789@cs181133002.pp.htv.fi>
+References: <200803220259.48534.rjw@sisk.pl> <2c0942db0803260930y741dfe81r114bd18b35e0bbe5@mail.gmail.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 06/10] x86: reduce memory and stack usage in	intel_cacheinfo
-References: <20080325220650.835342000@polaris-admin.engr.sgi.com> <20080325220651.683748000@polaris-admin.engr.sgi.com> <20080326065023.GG18301@elte.hu> <47EA6EA3.1070609@sgi.com> <47EA7633.1080909@goop.org> <47EA7958.6050202@sgi.com>
-In-Reply-To: <47EA7958.6050202@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2c0942db0803260930y741dfe81r114bd18b35e0bbe5@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Hmm, I hadn't thought of that.  There is commonly a format spec called
-> %b for diags, etc. to print bit strings.  Maybe something like:
->
-> 	"... %*b ...", nr_cpu_ids, ptr_to_bitmap
->
-> where the length arg is rounded up to 32 or 64 bits...? 
->   
+On Wed, Mar 26, 2008 at 09:30:14AM -0700, Ray Lee wrote:
+>...
+> This is one of those things that'd be nice to have in a Known Issues
+> document in the kernel release. "Debian and derivative distributions
+> may need to install dbus-x11 package to avoid a known userspace issue
+> in the dbus package. [gnome bug 395488]"
 
-I think that would need to be %.*b, but I always need to try it both 
-ways anyway...
+http://kernelnewbies.org/Linux_2_6_25 seems to be the right place for 
+such stuff.
 
-But yes, that seems like the right way to go.
+Diego is for quite some time doing a great job with these changes pages, 
+and the big penguin might perhaps be convinced to mention it in his 
+announcement of the final 2.6.25 kernel?
 
->> Eh?  What's the difference between snprintf and scnprintf?
->>     
->
-> Good question... I'll have to ask the cpumask person. ;-)
->   
+cu
+Adrian
 
-It's in generic lib/vsprintf.c.  The two functions are pretty much 
-identical...  Oh, I see; snprintf returns the total output size, 
-regardless of whether it fits into the provided buffer, but scnprintf 
-returns the actual output size, clipped by the buffer length.
+-- 
 
-    J
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
