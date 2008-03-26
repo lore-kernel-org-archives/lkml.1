@@ -1,130 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbYCZRaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbYCZRak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759844AbYCZRaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYCZR34
+	id S1760983AbYCZRak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbYCZRaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:29:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41252 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752485AbYCZR3y (ORCPT
+	Wed, 26 Mar 2008 13:30:00 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39399 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755986AbYCZR35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:29:54 -0400
-Date: Wed, 26 Mar 2008 10:29:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marcus Better <marcus@better.se>
-Cc: stefanr@s5r6.in-berlin.de, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 10327] New: keyboard stops responding after
- "ifdown eth0"
-Message-Id: <20080326102931.484285f3.akpm@linux-foundation.org>
-In-Reply-To: <47EA152C.6000008@better.se>
-References: <bug-10327-10286@http.bugzilla.kernel.org/>
-	<20080325143941.300d415f.akpm@linux-foundation.org>
-	<47E9721C.2000306@better.se>
-	<47E99258.3060005@s5r6.in-berlin.de>
-	<20080325171608.509f4ca7.akpm@linux-foundation.org>
-	<47EA152C.6000008@better.se>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Mar 2008 13:29:57 -0400
+Message-ID: <47EA87D8.8030305@zytor.com>
+Date: Wed, 26 Mar 2008 10:28:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 06/10] x86: reduce memory and stack usage in	intel_cacheinfo
+References: <20080325220650.835342000@polaris-admin.engr.sgi.com> <20080325220651.683748000@polaris-admin.engr.sgi.com> <20080326065023.GG18301@elte.hu> <47EA6EA3.1070609@sgi.com> <20080326171241.GC20016@elte.hu>
+In-Reply-To: <20080326171241.GC20016@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008 10:19:40 +0100
-Marcus Better <marcus@better.se> wrote:
-
-> Andrew Morton wrote:
-> > 	( sleep 10 ; echo t > /proc/sysrq-trigger ) &
-> > 	ifdown eth0
-> > 
-> > 
-> > - See if the sysrq-t output made it to /var/log/messages
+Ingo Molnar wrote:
+>> The main goal was to avoid allocating 4096 bytes when only 32 would do 
+>> (characters needed to represent nr_cpu_ids cpus instead of NR_CPUS 
+>> cpus.) But I'll look at cleaning it up a bit more.  It wouldn't have 
+>> to be a function if CHUNKSZ in cpumask_scnprintf() were visible (or a 
+>> non-changeable constant.)
 > 
-> No, not a word. It hung after printing this:
-> 
-> ...
-> DHCPRELEASE ...
-> send_packet: Network is unreachable
-> send_packet: please consult README ...
-> sky2 eth0: disabling interface
-> ~# sky2 eth0: enabling interface
-> 
-> I'm running ifplugd, but this time there was no network cable connected. 
-> Also ran from virtual console this time, the keyboard locked up like before.
-> 
-> SysRq keys work, so I could do sysrq-s, sysrq-b. Also pressed sysrq-t 
-> before rebooting.
+> well, do we care about allocating 4096 bytes, as long as we also free 
+> it? It's not like we need to clear all the bytes or something. Am i 
+> missing something here?
 
-It certainy does sound like networking has gummed up the keventd queue(s).
+Well, 32 bytes fits on the stack, whereas 4096 bytes requires allocating 
+a page -- which means either taking the risk of failing or blocking.  Of 
+course, we're doing this for output, which has the same issue.
 
-> Any use trying netconsole? Can I run it over the wireless interface?
-
-I don't think many (or any?) wireless drivers support netconsole.
-
-I'd suggest running (and perhaps suitably modifying) this:
-
-diff -puN drivers/net/sky2.c~a drivers/net/sky2.c
---- a/drivers/net/sky2.c~a
-+++ a/drivers/net/sky2.c
-@@ -50,6 +50,8 @@
- 
- #include "sky2.h"
- 
-+#define D() printk("%s:%d\n", __FILE__, __LINE__)
-+
- #define DRV_NAME		"sky2"
- #define DRV_VERSION		"1.21"
- #define PFX			DRV_NAME " "
-@@ -2931,32 +2933,42 @@ static void sky2_restart(struct work_str
- 	struct net_device *dev;
- 	int i, err;
- 
-+	D();
- 	rtnl_lock();
-+	D();
- 	for (i = 0; i < hw->ports; i++) {
-+		D();
- 		dev = hw->dev[i];
- 		if (netif_running(dev))
- 			sky2_down(dev);
- 	}
--
-+	D();
- 	napi_disable(&hw->napi);
-+	D();
- 	sky2_write32(hw, B0_IMSK, 0);
- 	sky2_reset(hw);
- 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
- 	napi_enable(&hw->napi);
--
-+	D();
- 	for (i = 0; i < hw->ports; i++) {
-+		D();
- 		dev = hw->dev[i];
- 		if (netif_running(dev)) {
-+			D();
- 			err = sky2_up(dev);
-+			D();
- 			if (err) {
-+				D();
- 				printk(KERN_INFO PFX "%s: could not restart %d\n",
- 				       dev->name, err);
- 				dev_close(dev);
-+			D();
- 			}
- 		}
- 	}
--
-+	D();
- 	rtnl_unlock();
-+	D();
- }
- 
- static inline u8 sky2_wol_supported(const struct sky2_hw *hw)
-_
-
-to see if things are getting stuck and if so, where.
+	-hpa
