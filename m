@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYCZVH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbYCZVIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbYCZVH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYCZVHL
+	id S1757774AbYCZVIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbYCZVH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:07:11 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49259 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755847AbYCZVHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:07:10 -0400
-Message-ID: <47EABA4A.6030705@oracle.com>
-Date: Wed, 26 Mar 2008 14:04:10 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: devzero@web.de
-CC: Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       david-b@pacbell.net, greg@kroah.com, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: some minor issues with 2.6.25-rc6-git7-default
-References: <213384793@web.de>
-In-Reply-To: <213384793@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 26 Mar 2008 17:07:57 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39358 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756589AbYCZVH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 17:07:56 -0400
+Date: Wed, 26 Mar 2008 22:08:19 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH 1/1] [Blackfin try #2] char driver for Blackfin on-chip OTP memory
+Message-ID: <20080326210819.GC24954@uranus.ravnborg.org>
+References: <1206580131-22527-1-git-send-email-cooloney@kernel.org> <47EA268F.8070006@gmail.com> <8bd0f97a0803260731x4378c71q1e2e5598c1728e1d@mail.gmail.com> <47EA971B.1020502@gmail.com> <8bd0f97a0803261140w7498b0cfwff38302779f589dc@mail.gmail.com> <20080326190917.GB24954@uranus.ravnborg.org> <8bd0f97a0803261214y3db259edxbb22b8655a5c6693@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0803261214y3db259edxbb22b8655a5c6693@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de wrote:
->> Can you post the full kernel log up to this BUG?
->> It should show that causes the Taint.
+On Wed, Mar 26, 2008 at 03:14:14PM -0400, Mike Frysinger wrote:
+> On Wed, Mar 26, 2008 at 3:09 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> >  > >  > also, it isnt "broken" in the sense that it "doesnt work" ;)
+> >  > >
+> >  > >  Gcc simply doesn't allow that, you likely got 2 sections with init.data, with
+> >  > >  and without readonly bit set, which is wrong, and it seems, that on some systems
+> >  > >  (debian) you won't even compile it.
+> >  >
+> >  > gcc-4.1.2/binutils-2.17 doesnt have a problem compiling/linking the
+> >  > code in question.  and i imagine i would have noticed a build/link
+> >  > failure long before testing it on actual hardware.
+> >
+> >  target arch dependent. Try with 64 bit powerpc.
 > 
-> oh - yes:
+> this code appears in drivers that are for Blackfin-specific pieces of
+> hardware.  it may fail to build on
+> some-random-arch-that-isnt-Blackfin, but if it works for Blackfin,
+> what do the other arches realistically matter ?
 > 
-> Mar 23 09:12:20 opensuse103 kernel: ac97_codec: module license 'unspecified' taints kernel.
-> 
-> modinfo ac97_codec
-> filename:       /lib/modules/2.6.25-rc6-git7-default/kernel/sound/oss/ac97_codec.ko
-> srcversion:     8665939D5E471F7E331BB3E
-> depends:
-> vermagic:       2.6.25-rc6-git7-default SMP mod_unload 586
-> 
-> 
-> seems MODULE_LICENSE is missing in ./sound/oss/ac97_codec.c !?
+> yes, the code will get changed as suggested as it is the right thing
+> to do, it just isnt a real problem today.
+It is a real problem for build monkeys (like me sometimes) if
+an allyesconfig suddenly does not build.
 
-It was recently removed for some reason.
+If this driver can be build for other than blackfin I do not
+know.
 
-I get the impression that you (we) should be using ALSA drivers/codecs
-instead of the OSS ones that in the process of being removed.
-
-
->>>>> CCing Dave Brownell.
->>>>>
->>>>>> Mar 23 09:14:23 opensuse103 kernel: Generic RTC Driver v1.07
->>>>>> Mar 23 09:14:23 opensuse103 kernel: proc_dir_entry 'rtc' already registered
->>>>>> Mar 23 09:14:23 opensuse103 kernel: Pid: 3994, comm: modprobe Tainted: P         2.6.25-rc6-git7-default #1
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c019a602>] proc_register+0xf3/0x11f
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c019a719>] create_proc_entry+0x69/0x7b
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<e0c5f02d>] rtc_generic_init+0x2d/0x54 [genrtc]
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c013c1de>] sys_init_module+0x16b6/0x17c9
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c0108a6a>] sys_mmap2+0x62/0x77
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  [<c01059c4>] sysenter_past_esp+0x6d/0xa9
->>>>>> Mar 23 09:14:23 opensuse103 kernel:  =======================
->>>> uh, "known problem": multiple rtc drivers are being run.
->>>>
->>>> I don't really understand why we haven't been able to fix this - there have
->>>> been numerous reports..
->>> i will take a closer look to determine how/when this happens.
->> I thought that David B. sent a (Kconfig ?) patch for this...
->>
->> ---
->> ~Randy
-> 
-> do you mean this one ?
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=55ff1aba940ff46d4f6d4fd790ea3e1a47aaa84f
-> 
-> ok, it may be sort of "dumb" to blindly load one module after the other but i would expect a more meaningful message.
-
-No, I meant something else, but I can't find it just now.
-
--- 
-~Randy
+	Sam
