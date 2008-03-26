@@ -1,106 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbYCZMey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYCZMgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759757AbYCZMey (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 08:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbYCZMeo
+	id S1759338AbYCZMgi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 08:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbYCZMga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 08:34:44 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:56740 "EHLO zombie.ncsc.mil"
+	Wed, 26 Mar 2008 08:36:30 -0400
+Received: from smtp8-g19.free.fr ([212.27.42.65]:34071 "EHLO smtp8-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755570AbYCZMem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 08:34:42 -0400
-Subject: Re: r-o bind in nfsd
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: NeilBrown <neilb@suse.de>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, miklos@szeredi.hu,
-       viro@zeniv.linux.org.uk, haveblue@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org,
-       linux-security-module@vger.kernel.org, jmorris@namei.org
-In-Reply-To: <57096.192.168.1.70.1206484328.squirrel@neil.brown.name>
-References: <20080321155451.GU10722@ZenIV.linux.org.uk>
-	 <E1Jck2N-0001Q3-7W@pomaz-ex.szeredi.hu>
-	 <20080321163520.GV10722@ZenIV.linux.org.uk>
-	 <E1JckW9-0001Ub-Rs@pomaz-ex.szeredi.hu>
-	 <18408.26863.617591.836548@notabene.brown>
-	 <200803252045.CGB04105.HLSQFOJMtOFVOF@I-love.SAKURA.ne.jp>
-	 <57096.192.168.1.70.1206484328.squirrel@neil.brown.name>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 26 Mar 2008 08:04:02 -0400
-Message-Id: <1206533042.3302.266.camel@moss-spartans.epoch.ncsc.mil>
+	id S1753088AbYCZMga convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 08:36:30 -0400
+Date: Wed, 26 Mar 2008 13:36:32 +0100
+From: Emmanuel Florac <eflorac@intellique.com>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RAID-1 performance under 2.4 and 2.6
+Message-ID: <20080326133632.640aa0d2@harpe.intellique.com>
+In-Reply-To: <e2e108260803260415w64fa4feave44560dd7ac7cbdb@mail.gmail.com>
+References: <20080325194306.4ac71ff2@galadriel.home>
+	<e2e108260803260142o34c33e7ajf395d5cb62824cb4@mail.gmail.com>
+	<20080326120713.24cb8093@harpe.intellique.com>
+	<e2e108260803260415w64fa4feave44560dd7ac7cbdb@mail.gmail.com>
+Organization: Intellique
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.9; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le Wed, 26 Mar 2008 12:15:57 +0100
+"Bart Van Assche" <bart.vanassche@gmail.com> écrivait:
 
-On Wed, 2008-03-26 at 09:32 +1100, NeilBrown wrote:
-> On Tue, March 25, 2008 10:45 pm, Tetsuo Handa wrote:
-> > Hello.
-> >
-> >> Maybe some enhancement to the 'intent' structure with a similar
-> >> effect could be done instead.
-> >>
-> >> Then you could, presumably, put a security hook somewhere in
-> >> link_path_walk for those modules (like AppArmor) which want to do
-> >> checks based on the namespace.
-> >
-> > I think link_path_walk() is not a good place to insert new LSM hooks
-> > for pathname based access control (AppArmor and TOMOYO) purpose because
-> >
-> >   (1) The kernel don't know what operation (open/create/truncate etc.)
-> > will be
-> >       done at the moment of link_path_walk().
-> 
-> Though the 'indent' data structure could be used to carry this information.
-> 
-> >
-> >   (2) Not all operations call link_path_walk() before these operations
-> >       are done. For example, ftruncate() doesn't call link_path_walk().
-> 
-> But do you want to impose path-name based controls to ftruncate?
-> Surely once you have a file open for write (not O_APPEND), then no
-> other permission is required to truncate the file, is it?
-> If it is, then maybe the 'struct file' should be tagged at open time
-> to say whether 'truncate' is allowed.
-> 
-> >
-> >   (3) The rename() and link() operations handle two pathnames.
-> >       But, it is not possible to know both pathnames at the moment of
-> >       link_path_walk().
-> 
-> Not an insolvable problem.
-> One could imagine an implementation where a TYPE_RENAME_FROM security
-> check produced a cookie that was consumed by a TYPE_RENAME_TO security
-> check.  The cookie could then be used by the security module to
-> make any connection between the two names that might be appropriate.
-> 
-> >
-> > I think we need to introduce new LSM hooks outside link_path_walk().
-> > http://kerneltrap.org/mailarchive/linux-fsdevel/2008/2/17/882024
-> >
-> <rant>
-> I suspect we would be much better off removing all the security hooks.
-> Security done at that level seems to be way too complex such that most
-> people don't really understand it.  And people who don't understand
-> security don't use it.
-> We'd be much better off getting rid of the whole "micro-manage security"
-> concept and provide isolation via some sort of high level container
-> approach.
-> </rant>
+> You are welcome to post the numbers you obtained with dd for direct
+> I/O on a RAID-1 setup for 2.4 versus 2.6 kernel.
 
-Containers can be useful, but they aren't a substitute for access
-control, and they don't solve the same problem.
+Here we go (tested on a slightly slower hardware : Athlon64 3000+,
+nVidia chipset) . Actually, direct IO result is identical. However, the
+significant number for the end user in this case is the NFS thruput.
 
-And SELinux does get used, and recent stats on Fedora 8 suggest that few
-people disable it anymore.  Advances in the SELinux tools (loadable
-modules, semanage, system-config-selinux, setroubleshoot, etc) have gone
-a long way to enabling users to solve problems they encounter.
+2.4 kernel (2.4.32), async write
+--------------------------------
+root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd01 bs=1M count=1024 
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 13.407 seconds, 80.1 MB/s
+
+2.4 kernel (2.4.32), async write thru NFS mount
+--------------------------------
+emmanuel[/mnt/temp]$ dd if=/dev/zero of=./testdd01 bs=1M count=1024 
+1024+0 enregistrements lus
+1024+0 enregistrements écrits
+1073741824 bytes (1,1 GB) copied, 15,5176 s, 69,2 MB/s
+
+2.4 kernel (2.4.32), async read
+--------------------------------
+root@0[root]# ./dd if=/mnt/raid/testdd01 of=/dev/null bs=1M
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 15.752 seconds, 68.2 MB/s
+
+2.4 kernel (2.4.32), sync write
+--------------------------------
+root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd01 bs=1M count=1024 \
+oflag=direct,dsync 
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 21.7874 seconds, 49.3 MB/s
+
+2.6 kernel (2.6.22.18), async write
+--------------------------------
+root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd02 bs=1M
+count=1024 1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 17.1347 seconds, 62.7 MB/s
+
+2.6 kernel (2.6.22.18), async write thru NFS mount
+--------------------------------
+emmanuel[/mnt/temp]$ dd if=/dev/zero of=./testdd02 bs=1M count=1024
+1024+0 enregistrements lus
+1024+0 enregistrements écrits
+1073741824 bytes (1,1 GB) copied, 21,3618 s, 50,3 MB/s
+
+2.6 kernel (2.6.22.18), async read
+--------------------------------
+root@0[root]# ./dd if=/mnt/raid/testdd02 of=/dev/null bs=1M
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 15.7599 seconds, 68.1 MB/s
+
+2.6 kernel (2.6.22.18), sync write
+--------------------------------
+root@0[root]# ./dd if=/dev/zero of=/mnt/raid/testdd02 bs=1M count=1024 \
+oflag=direct,dsync 
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB) copied, 21.7011 seconds, 49.5 MB/s
 
 -- 
-Stephen Smalley
-National Security Agency
+----------------------------------------
+Emmanuel Florac     |   Intellique
+----------------------------------------
 
