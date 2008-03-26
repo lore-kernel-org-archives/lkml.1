@@ -1,55 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYCZXAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYCZXDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbYCZXAk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 19:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYCZXAc
+	id S1756087AbYCZXDV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 19:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYCZXDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 19:00:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54712 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752758AbYCZXAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 19:00:32 -0400
-Date: Thu, 27 Mar 2008 00:00:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: iommu breaks usb after resume
-Message-ID: <20080326230017.GA21017@elte.hu>
-References: <20080320111429.GA14764@elf.ucw.cz> <20080321135418.GB2346@one.firstfloor.org> <20080326102151.GB18965@elf.ucw.cz> <20080326130052.GF2170@one.firstfloor.org> <20080326225407.GA9378@elf.ucw.cz>
+	Wed, 26 Mar 2008 19:03:07 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:10407 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752978AbYCZXDF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 19:03:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=GWrVGKdOCxmrBQn+l4I3T1yFfVP3sz0owEm4kSRJ3sCmqC0xeI8cLvEBg2vvGdzAizDoywgcj3QjywYSNLP+m+NZZmqC+CwC77XednRylmmbTpIGw9FctQeTpRMLGGGa65QqYkJ3KIq3Z7F4VnJ/vbDR3Jak15T3UrYwqzWip3k=
+Message-ID: <47EAD8A5.3070806@gmail.com>
+Date: Thu, 27 Mar 2008 00:13:41 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080326225407.GA9378@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, marcus@better.se,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Bugme-new] [Bug 10326] New: inconsistent lock state in   net_rx_action
+References: <bug-10326-10286@http.bugzilla.kernel.org/> <20080325134320.21525479.akpm@linux-foundation.org>
+In-Reply-To: <20080325134320.21525479.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote, On 03/25/2008 09:43 PM:
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+> 
+> On Tue, 25 Mar 2008 13:21:23 -0700 (PDT)
+> bugme-daemon@bugzilla.kernel.org wrote:
+> 
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10326
+>>
+>>            Summary: inconsistent lock state in net_rx_action
+>>            Product: Networking
+>>            Version: 2.5
+>>      KernelVersion: 2.6.25-rc6 (git
+>>                     a4083c9271e0a697278e089f2c0b9a95363ada0a)
+>>           Platform: All
+>>         OS/Version: Linux
+>>               Tree: Mainline
+>>             Status: NEW
+>>           Severity: normal
+>>           Priority: P1
+>>          Component: Other
+>>         AssignedTo: acme@ghostprotocols.net
+>>         ReportedBy: marcus@better.se
+>>
+>>
+>> Latest working kernel version: 2.6.24
+>> Earliest failing kernel version: 2.6.25-rc6 (git
+>> a4083c9271e0a697278e089f2c0b9a95363ada0a)
+> 
+> A post-2.624 regression.
+> 
+>> Distribution: Debian testing/unstable
+>> Hardware Environment: LG LE50 Express laptop, i386
+>> Software Environment: Debian i386, X.org 7.3, KDE 4
+>>
+>> Problem Description:
+>>
+>> Got this during bootup, somewhere before launching X. It only happened once, I
+>> have rebooted a few times and didn't reproduce it.
+>>
+>> Mar 25 19:48:46 better kernel: =================================
+>> Mar 25 19:48:46 better kernel: [ INFO: inconsistent lock state ]
+>> Mar 25 19:48:46 better kernel: 2.6.25-rc6-lg #4
+>> Mar 25 19:48:46 better kernel: ---------------------------------
+>> Mar 25 19:48:46 better kernel: inconsistent {in-softirq-W} -> {softirq-on-W}
+>> usage.
+>> Mar 25 19:48:46 better kernel: syslogd/2773 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>> Mar 25 19:48:46 better kernel:  (&napi->poll_lock){-+..}, at: [<c03db11c>]
+>> netpoll_poll+0xbc/0x390
+>> Mar 25 19:48:46 better kernel: {in-softirq-W} state was registered at:
+>> Mar 25 19:48:46 better kernel:   [<c024171a>] __lock_acquire+0x36a/0x1070
+>> Mar 25 19:48:46 better kernel:   [<c024153f>] __lock_acquire+0x18f/0x1070
+>> Mar 25 19:48:46 better kernel:   [<c024247f>] lock_acquire+0x5f/0x80
+>> Mar 25 19:48:46 better kernel:   [<c03cfafc>] net_rx_action+0xbc/0x1d0
+>> Mar 25 19:48:46 better kernel:   [<c044a9e4>] _spin_lock+0x34/0x40
+>> Mar 25 19:48:46 better kernel:   [<c03cfafc>] net_rx_action+0xbc/0x1d0
+>> Mar 25 19:48:46 better kernel:   [<c03cfafc>] net_rx_action+0xbc/0x1d0
+>> Mar 25 19:48:46 better kernel:   [<c03cfaa0>] net_rx_action+0x60/0x1d0
+>> Mar 25 19:48:46 better kernel:   [<c02254f2>] __do_softirq+0x62/0xc0
+>> Mar 25 19:48:46 better kernel:   [<c0225595>] do_softirq+0x45/0x50
+>> Mar 25 19:48:46 better kernel:   [<c0225797>] irq_exit+0x77/0x80
+>> Mar 25 19:48:46 better kernel:   [<c0211a95>]
+>> smp_apic_timer_interrupt+0x45/0x80
+>> Mar 25 19:48:46 better kernel:   [<c02058ad>] apic_timer_interrupt+0x29/0x38
+>> Mar 25 19:48:46 better kernel:   [<c02058b7>] apic_timer_interrupt+0x33/0x38
+>> Mar 25 19:48:46 better kernel:   [<c022007b>] __set_personality+0x2b/0x240
+>> Mar 25 19:48:46 better kernel:   [<c0220e51>] release_console_sem+0x191/0x1e0
+>> Mar 25 19:48:46 better kernel:   [<c05751aa>] init_netconsole+0x1da/0x1f0
+>> Mar 25 19:48:46 better kernel:   [<c0558700>] kernel_init+0x90/0x270
+>> Mar 25 19:48:46 better kernel:   [<c0204ecf>] restore_nocheck+0x12/0x15
+>> Mar 25 19:48:46 better kernel:   [<c0240eec>] trace_hardirqs_on+0x9c/0x110
+>> Mar 25 19:48:46 better kernel:   [<c0558670>] kernel_init+0x0/0x270
+>> Mar 25 19:48:46 better kernel:   [<c0558670>] kernel_init+0x0/0x270
+>> Mar 25 19:48:46 better kernel:   [<c0205a23>] kernel_thread_helper+0x7/0x14
+>> Mar 25 19:48:46 better kernel:   [<ffffffff>] 0xffffffff
+>> Mar 25 19:48:46 better kernel: irq event stamp: 174638
+>> Mar 25 19:48:46 better kernel: hardirqs last  enabled at (174637): [<c0204ecf>]
+>> restore_nocheck+0x12/0x15
+>> Mar 25 19:48:46 better kernel: hardirqs last disabled at (174638): [<c044ac65>]
+>> _spin_lock_irqsave+0x15/0x60
+>> Mar 25 19:48:46 better kernel: softirqs last  enabled at (174636): [<c0225595>]
+>> do_softirq+0x45/0x50
+>> Mar 25 19:48:46 better kernel: softirqs last disabled at (174629): [<c0225595>]
+>> do_softirq+0x45/0x50
+>> Mar 25 19:48:46 better kernel: 
+>> Mar 25 19:48:46 better kernel: other info that might help us debug this:
+>> Mar 25 19:48:46 better kernel: 3 locks held by syslogd/2773:
+>> Mar 25 19:48:46 better kernel:  #0:  (&tty->atomic_write_lock){--..}, at:
+>> [<c036c699>] tty_write_lock+0x19/0x50
+>> Mar 25 19:48:46 better kernel:  #1:  (target_list_lock){--..}, at: [<c0399c0d>]
+>> write_msg+0x2d/0xd0
+>> Mar 25 19:48:46 better kernel:  #2:  (&napi->poll_lock){-+..}, at: [<c03db11c>]
+>> netpoll_poll+0xbc/0x390
+>> Mar 25 19:48:46 better kernel: 
+>> Mar 25 19:48:46 better kernel: stack backtrace:
+>> Mar 25 19:48:46 better kernel: Pid: 2773, comm: syslogd Not tainted
+>> 2.6.25-rc6-lg #4
+>> Mar 25 19:48:46 better kernel:  [<c023ff6f>] print_usage_bug+0x15f/0x170
+>> Mar 25 19:48:46 better kernel:  [<c0240bd1>] mark_lock+0x401/0x590
+>> Mar 25 19:48:46 better kernel:  [<c0240d98>] mark_held_locks+0x38/0x70
+>> Mar 25 19:48:46 better kernel:  [<c0398a43>] sky2_poll+0x7a3/0xad0
+>> Mar 25 19:48:46 better kernel:  [<c0240eec>] trace_hardirqs_on+0x9c/0x110
+>> Mar 25 19:48:46 better kernel:  [<c0398a43>] sky2_poll+0x7a3/0xad0
+>> Mar 25 19:48:46 better kernel:  [<c03db11c>] netpoll_poll+0xbc/0x390
+>> Mar 25 19:48:46 better kernel:  [<c044adb2>] _spin_trylock+0x42/0x80
+>> Mar 25 19:48:46 better kernel:  [<c03db0d3>] netpoll_poll+0x73/0x390
+>> Mar 25 19:48:46 better kernel:  [<c03db51f>] netpoll_send_skb+0x12f/0x1d0
+>> Mar 25 19:48:46 better kernel:  [<c0399c7c>] write_msg+0x9c/0xd0
 
-> @@ -733,8 +735,8 @@ static struct pci_driver agp_amd64_pci_d
->  	.probe		= agp_amd64_probe,
->  	.remove		= agp_amd64_remove,
->  #ifdef CONFIG_PM
-> -	.suspend	= agp_amd64_suspend,
-> -	.resume		= agp_amd64_resume,
-> +	.suspend_late	= agp_amd64_suspend,
-> +	.resume_early	= agp_amd64_resume,
->  #endif
 
-ah, makes sense. I've queued up your fix in x86.git (sans the debug 
-printks), please send your signoff once you can verify that it solves 
-the hibernation hang on your box and we'll push it into 2.6.25.
+netconsole's write_msg calls netpoll_send_udp (then netpoll_send_skb) always
+under spin_lock_irqsave(&target_list_lock, flags), and here this lock (and 
+afterwards napi->poll_lock) is seen taken with irqs enabled. So, IMHO, it
+looks like some other irq (tracking?) imbalance and not networking bug.
 
-	Ingo
+Regards,
+Jarek P.
+
+PS: linux-kernel added to CC.
+
+>> Mar 25 19:48:46 better kernel:  [<c0220bd4>] __call_console_drivers+0x54/0x70
+>> Mar 25 19:48:46 better kernel:  [<c0220d90>] release_console_sem+0xd0/0x1e0
+>> Mar 25 19:48:46 better kernel:  [<c037a8d9>] do_con_write+0x189/0x1a80
+>> Mar 25 19:48:46 better kernel:  [<c0240d98>] mark_held_locks+0x38/0x70
+>> Mar 25 19:48:46 better kernel:  [<c044affc>] _spin_unlock_irqrestore+0x4c/0x60
+>> Mar 25 19:48:46 better kernel:  [<c0240eec>] trace_hardirqs_on+0x9c/0x110
+>> Mar 25 19:48:46 better kernel:  [<c044afe7>] _spin_unlock_irqrestore+0x37/0x60
+>> Mar 25 19:48:46 better kernel:  [<c037c1f7>] con_put_char+0x27/0x30
+>> Mar 25 19:48:46 better kernel:  [<c036e6ed>] opost+0xad/0x220
+>> Mar 25 19:48:46 better kernel:  [<c036f08b>] write_chan+0x1ab/0x350
+>> Mar 25 19:48:46 better kernel:  [<c021a790>] default_wake_function+0x0/0x10
+>> Mar 25 19:48:46 better kernel:  [<c036c87b>] tty_write+0x13b/0x1d0
+>> Mar 25 19:48:47 better kernel:  [<c036eee0>] write_chan+0x0/0x350
+>> Mar 25 19:48:47 better kernel:  [<c02802e3>] do_loop_readv_writev+0x33/0x60
+>> Mar 25 19:48:47 better kernel:  [<c0280d50>] do_readv_writev+0x170/0x180
+>> Mar 25 19:48:47 better kernel:  [<c036c740>] tty_write+0x0/0x1d0
+>> Mar 25 19:48:47 better kernel:  [<c0280d9c>] vfs_writev+0x3c/0x50
+>> Mar 25 19:48:47 better kernel:  [<c0281261>] sys_writev+0x41/0x70
+>> Mar 25 19:48:47 better kernel:  [<c0204de6>] sysenter_past_esp+0x5f/0xa5
+>> Mar 25 19:48:47 better kernel:  =======================
+>>
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
