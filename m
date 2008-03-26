@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761875AbYCZSnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbYCZSoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761875AbYCZSnv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761516AbYCZSnh
+	id S1761928AbYCZSoq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbYCZSoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:43:37 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:19517 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761489AbYCZSnf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:43:35 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for 2.6.25-rc6)
-Date: Wed, 26 Mar 2008 12:47:29 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Corentin CHARY <corentincj@iksaif.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <200803180510.47670.lenb@kernel.org> <200803260956.55804.bjorn.helgaas@hp.com> <47EA86D9.7040404@gmail.com>
-In-Reply-To: <47EA86D9.7040404@gmail.com>
+	Wed, 26 Mar 2008 14:44:38 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:55400 "EHLO lobo.ruivo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755983AbYCZSoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 14:44:38 -0400
+Date: Wed, 26 Mar 2008 14:44:27 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
+Message-ID: <20080326184427.GG25854@cathedrallabs.org>
+References: <20080313180538.GC4620@cathedrallabs.org> <20080321114752.GA25225@elte.hu> <20080326152417.GE25854@cathedrallabs.org> <20080326182333.GA11187@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803261247.31531.bjorn.helgaas@hp.com>
+In-Reply-To: <20080326182333.GA11187@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 March 2008 11:24:41 am Alexey Starikovskiy wrote:
-> Bjorn Helgaas wrote:
-> > I'm curious about how this works.  I disassembled the DSDT from
-> > http://bugzilla.kernel.org/show_bug.cgi?id=4773 (I attached the disassembly
-> > at http://bugzilla.kernel.org/attachment.cgi?id=15448&action=view), and
-> > the _PRT contains "_SB" and "ISA" (no trailing underscores):
-> >
-> >                 Package (0x04)
-> >                 {
-> >                     0x000DFFFF, 
-> >                     0x00, 
-> >                     \_SB.PCI0.ISA.LNKA, 
-> >                     0x00
-> >                 }
-> >
-> > But by the time we get to acpi_pci_irq_add_entry(), we've added the
-> > underscores somewhere (see
-> > http://bugzilla.kernel.org/attachment.cgi?id=15423&action=view):
-> >
-> >   0000:00:0d[A] -> \_SB_.PCI0.ISA_.LNKA
-> >
-> > I don't know where this happens, but it certainly confused me, and
-> > it seems like it could lead to other bugs.
-> >   
-> ACPI is supposed to add trailing underscore for pad all names to 4 bytes.
-> So ISA will be padded to ISA_.
+> > > stop_apic_nmi_watchdog() doesnt currently properly disable the 
+> > > generation of NMIs when they come from an IO-APIC, so this will need 
+> > > more fixes i believe. One approach would be to save the IO-APIC id and 
+> > > pin when the watchdog is set up, and use it later on to poke that 
+> > > IO-APIC register to disable NMI generation there.
+> > the patch I sent has this change:
+> > 
+> > @@ -270,6 +270,8 @@ void stop_apic_nmi_watchdog(void *unused
+> >                 return;
+> >         if (nmi_watchdog == NMI_LOCAL_APIC)
+> >                 lapic_watchdog_stop();
+> > +       else
+> > +               __acpi_nmi_disable(NULL);
+> >         __get_cpu_var(wd_enabled) = 0;
+> >         atomic_dec(&nmi_active);
+> >  }
+> > 
+> > and:
+> > static void __acpi_nmi_disable(void *__unused)
+> > {       
+> >         apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
+> > }
+> > 
+> > do you think this isn't enough?
+> 
+> but this stops all NMIs, not just the IO-APIC generated ones, doesnt it? 
+This is the reverse of:
 
-The questions are "where does this happen?" and "why does it not
-apply to other things like asus_acpi.c?"
+static void __init setup_nmi(void)
+{       
+        /*
+         * Dirty trick to enable the NMI watchdog ...
+         * We put the 8259A master into AEOI mode and
+         * unmask on all local APICs LVT0 as NMI.
+         *
+         * The idea to use the 8259A in AEOI mode ('8259A Virtual Wire')
+         * is from Maciej W. Rozycki - so we do not have to EOI from
+         * the NMI handler or the timer interrupt.
+         */
+        apic_printk(APIC_VERBOSE, KERN_INFO "activating NMI Watchdog ...");
+
+        enable_NMI_through_LVT0();
+
+        apic_printk(APIC_VERBOSE, " done.\n");
+}
+where:
+void __cpuinit enable_NMI_through_LVT0(void)
+{       
+        unsigned int v;
+        
+        /* unmask and set to NMI */
+        v = APIC_DM_NMI;
+        apic_write(APIC_LVT0, v);
+}
+
+I must admit I don't really understand how the NMI watchdog thru IOAPIC
+works. Couldn't find proper documentation on that. I just tried to
+revert what's done when it's enabled and everything worked as expected,
+including a customer who is using those development boxes with a NMI
+button. First the NMI watchdog was disabled using a patch much like the
+one I sent then NMI was generated by pushing the button and the box
+crashed as it should (the old unknown_nmi_panic sysctl was set). So,
+unless the NMI button does something different to deliver the NMI, other
+NMIs should keep working.
+
+-- 
+Aristeu
+
