@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYCZAMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbYCZANG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759542AbYCZAMI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 20:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYCZALz
+	id S1761457AbYCZANG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 20:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbYCZAMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 20:11:55 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49306 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753809AbYCZALz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 20:11:55 -0400
-Message-ID: <47E9948C.3070807@zytor.com>
-Date: Tue, 25 Mar 2008 17:10:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
+	Tue, 25 Mar 2008 20:12:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:48433 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756343AbYCZAMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 20:12:54 -0400
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+	regressions from 2.6.24)
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Thomas Meyer <thomas@m3y3r.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH] x86: pat cpu feature bit setting for known cpus
-References: <200803242324.35357.yhlu.kernel@gmail.com>	 <47E9003B.5010002@zytor.com>	 <86802c440803251103taf4c8f2mb674c3d17f3c2345@mail.gmail.com>	 <20080325190851.GC30998@linux-os.sc.intel.com>	 <20080325200830.GB15330@elte.hu> <47E962AE.9040307@zytor.com>	 <47E9843A.1060702@zytor.com>	 <86802c440803251605w7021b60cmbc312eb9ca87d277@mail.gmail.com>	 <47E98572.704@zytor.com> <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
-In-Reply-To: <86802c440803251608v6f09f531x57d9688601cc84fd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Natalie Protasevich <protasnb@gmail.com>,
+       Myles Watson <mylesgw@gmail.com>
+In-Reply-To: <86802c440803251703o3f46e6dct754c81eecb82dae1@mail.gmail.com>
+References: <200803220259.48534.rjw@sisk.pl>
+	 <47E5350D.101@s5r6.in-berlin.de> <47E540E7.7030108@m3y3r.de>
+	 <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de>
+	 <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org>
+	 <1206488005.10573.8.camel@pasglop>
+	 <86802c440803251703o3f46e6dct754c81eecb82dae1@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 11:12:01 +1100
+Message-Id: <1206490321.10573.10.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Mar 25, 2008 at 4:06 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->> Yinghai Lu wrote:
->>  >>
->>  >>  By the way, I want to clarify: I didn't mean it was *intended* as
->>  >>  vendor-lockin, just that it's an undesirable effect of this.
->>  >
->>  > if the PAT works, we may need to trim the memory according to MTRR, right?
->>  >
->>
->>  That doesn't seem like it's specific to PAT?
-> 
-> could page table to  set WRBACK the range that is not covered by MTRR in e820..
-> 
 
-We have to trim anyway... lest we end up using uncached memory and then 
-we're in a world of hurt.
+On Tue, 2008-03-25 at 17:03 -0700, Yinghai Lu wrote:
+> >  The good news is that I have done a patch to fix it, which has been
+> >  in -mm for about a month:
+> iomap-fix-64-bits-resources-on-32-bits.patch
+> 
+> does it support if size is 4G above, like 256G?
 
-	-hpa
+The patch just fixes pci_iomap to use resource_size_t, which fixes bugs
+with MMIO addresses/size being cropped. It doesn't fix some limitations
+we still, I think, have in the PCI code with 64 bits BARs on 32 bits
+platforms (that we could, in fact, probably remove when resource_size_t
+is 64 bits but we haven't done it yet, at least as far as I remember).
+
+Ben.
+
+
