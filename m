@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbYCZUgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbYCZUgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759239AbYCZUgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 16:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbYCZUgN
+	id S1761100AbYCZUgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 16:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758962AbYCZUgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 16:36:13 -0400
-Received: from mail.bencastricum.nl ([213.84.203.196]:57689 "EHLO
-	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755429AbYCZUgM (ORCPT
+	Wed, 26 Mar 2008 16:36:44 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43881 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758043AbYCZUgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 16:36:12 -0400
-X-Greylist: delayed 804 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Mar 2008 16:36:11 EDT
-Message-ID: <001701c88f7f$1e2b6c80$0602a8c0@links>
-From: "Ben Castricum" <lk08@bencastricum.nl>
-To: <linux-kernel@vger.kernel.org>
-Subject: [TRIVIAL PATCH] Microcode: show results on success too plus fix typo 
-Date: Wed, 26 Mar 2008 21:22:25 +0100
+	Wed, 26 Mar 2008 16:36:43 -0400
+Date: Wed, 26 Mar 2008 16:36:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] PM: Introduce new top level suspend and hibernation
+ callbacks (rev. 3)
+In-Reply-To: <200803262126.58357.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803261633190.9881-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=response
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Show a bit more info when updating microcode. It used to be there but 
-no with DEBUG unset makes it very silent.
+On Wed, 26 Mar 2008, Rafael J. Wysocki wrote:
 
-This is my first patch, please let me know if I did anything wrong.
+> On Wednesday, 26 of March 2008, Alan Stern wrote:
+> > On Tue, 25 Mar 2008, Rafael J. Wysocki wrote:
+> > 
+> > > > I just thought of another problem.  At the point where
+> > > > local_irq_disable() is called, in between device_suspend() and
+> > > > device_power_down(), it is possible in a preemptible kernel that
+> > > > another task is holding dpm_list_mtx and is in the middle of updating
+> > > > the list pointers.  This would mess up the traversal in
+> > > > device_power_down().
+> > > > 
+> > > > I'm not sure about the best way to prevent this.  Is it legal to call
+> > > > unlock_mutex() while interrupts or preemption are disabled?
+> > > 
+> > > Well, I think it is, but I'm not sure how that can help.
+> > > 
+> > > To prevent the race from happening, we can lock dpm_list_mtx before switching
+> > > interrupts off in kernel/power/main.c:suspend_enter() and analogously in
+> > > kernel/power/disk.c .
+> > 
+> > That's right.  And once interrupts are turned off you should unlock 
+> > dpm_list_mtx again, in case a noirq method wants to unregister a 
+> > device.
+> 
+> Why would a noirq method want to do that?  IMO, it's not a big deal if noirq
+> methods are not allowed to unregister devices.
 
-Signed-off-by: Ben Castricum <lk08@bencastricum.nl>
+Okay, that's fine.  It keeps things simple.
 
-diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index f2702d0..ca1fd52 100644
---- a/arch/x86/kernel/microcode.c
-+++ b/arch/x86/kernel/microcode.c
-@@ -336,11 +336,11 @@ static void apply_microcode(int cpu)
+> > Hence my question: Is it legal to call unlock_mutex() while interrupts are
+> > disabled? 
+> 
+> Well, I suspect that will confuse lockdep quite a bit.  Otherwise, I don't see
+> a problem with it (it's just changing the value of a shared variable after
+> all).
 
-  spin_unlock_irqrestore(&microcode_update_lock, flags);
-  if (val[1] != uci->mc->hdr.rev) {
--  printk(KERN_ERR "microcode: CPU%d updated from revision "
-+  printk(KERN_ERR "microcode: CPU%d update from revision "
-    "0x%x to 0x%x failed\n", cpu_num, uci->rev, val[1]);
-   return;
-  }
-- pr_debug("microcode: CPU%d updated from revision "
-+ printk(KERN_INFO "microcode: CPU%d updated from revision "
-         "0x%x to 0x%x, date = %08x \n",
-         cpu_num, uci->rev, val[1], uci->mc->hdr.date);
-  uci->rev = val[1];
+Then you have your answer.  Perhaps have device_suspend() exit with the
+mutex held and have device_resume() release it (with appropriate
+handling for error situations, of course).
+
+Alan Stern
 
