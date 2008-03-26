@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbYCZWHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbYCZWLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbYCZWHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 18:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYCZWHX
+	id S1756144AbYCZWLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 18:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYCZWLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 18:07:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32792 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754166AbYCZWHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 18:07:21 -0400
-Date: Wed, 26 Mar 2008 15:06:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: viro@zeniv.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/7] vfs: mountinfo (v3)
-Message-Id: <20080326150655.43e9acd7.akpm@linux-foundation.org>
-In-Reply-To: <20080326211131.705321084@szeredi.hu>
-References: <20080326211131.705321084@szeredi.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Mar 2008 18:11:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41429 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752629AbYCZWLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 18:11:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: 2.6.25-rc6-git6: Reported regressions from 2.6.24
+Date: Wed, 26 Mar 2008 23:11:13 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Natalie Protasevich" <protasnb@gmail.com>
+References: <200803220259.48534.rjw@sisk.pl> <2c0942db0803260930y741dfe81r114bd18b35e0bbe5@mail.gmail.com>
+In-Reply-To: <2c0942db0803260930y741dfe81r114bd18b35e0bbe5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803262311.15024.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008 22:11:31 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> Here's an updated mountinfo patch with the following changes relative
-> to the last submission (the one currently in -mm):
+On Wednesday, 26 of March 2008, Ray Lee wrote:
+> 2008/3/21 Rafael J. Wysocki <rjw@sisk.pl>:
+> > This message contains a list of some regressions from 2.6.24 reported since
+> >  2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> >  of.  If any of them have been fixed already, please let me know.
+> [...]
+> >  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10041
+> >  Subject         : 2.6.25-rc1/2 regression: first-time login into gnome fails
+> >  Submitter       : Romano Giannetti <romanol@upcomillas.es>
+> >  Date            : 2008-02-18 11:56 (33 days old)
+> >  References      : http://lkml.org/lkml/2008/2/18/145
+> >  Handled-By      : Ray Lee <ray-lk@madrabbit.org>
 > 
->  - in __d_path() don't add extra parameter for checking unreachable path
->  - reduce proliferation of #ifdef CONFIG_PROC_FS into dcache.c and seq_file.c
->  - make peer group ID allocation a separate pass from setting mount shared
->  - change order and format of fields in /proc/<pid>/mountinfo
->  - remove dubious cleanups
->  - consolidate locking: don't use vfsmount_lock where namespace_sem suffices
->  - patch history was getting tangled up, merge and resplit into logical chunks
+> This appears to be a race in user space that people have been hitting
+> for some time, but has gotten more likely with the latest kernel. It
+> matches the behavior of a gnome dbus bug [
+> http://bugzilla.gnome.org/show_bug.cgi?id=395488 ]. The way to avoid
+> that bug is to install the dbus-x11 package which forces dbus to start
+> up earlier, avoiding the race.
 > 
-> This series is also available here:
+> Though the original reporter hasn't replied, Christoph Hellwig hit the
+> same issue and was able to confirm that installing the dbus-x11
+> package avoids the issue, papering over bug, wherever it may lie.
+> Regardless, there are reports of this issue that go back before
+> 2.6.25, so I don't think this is a regression, just a timing issue
+> that's a lot easier to hit with the latest kernel.
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git mountinfo
+> This is one of those things that'd be nice to have in a Known Issues
+> document in the kernel release. "Debian and derivative distributions
+> may need to install dbus-x11 package to avoid a known userspace issue
+> in the dbus package. [gnome bug 395488]"
 
-I coudn't get that to work, perhaps due to lack of gittiness.
+Okay, I closed the bug (resolution WILL_NOT_FIX).
 
-> I guess the simplest for all involved parties would be if this went
-> into Al's tree (if it looks OK) and then Andrew can suck that tree (*)
-> containing all sort of goodies into -mm.
-> 
-> (*) git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git vfs-2.6.25
-
-I recently added that tree to the -mm lineup as git-vfs.patch, and it's in
-linux-next.
-
-This patch series applied happily on top of git-vfs (and 887 other patches ;))
-
+Thanks,
+Rafael
