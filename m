@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYCZOYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYCZO3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755039AbYCZOYb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 10:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYCZOYU
+	id S1755478AbYCZO3O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 10:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbYCZO27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 10:24:20 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:43963 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYCZOYT convert rfc822-to-8bit (ORCPT
+	Wed, 26 Mar 2008 10:28:59 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39119 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751202AbYCZO26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 10:24:19 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce new top level =?iso-8859-1?q?suspend=09and_hibernation_callbacks?= (rev. 2)
-Date: Wed, 26 Mar 2008 15:24:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0803261003540.4755-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803261003540.4755-100000@iolanthe.rowland.org>
+	Wed, 26 Mar 2008 10:28:58 -0400
+Date: Wed, 26 Mar 2008 10:28:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: rpurdie@rpsys.net, <gitster@pobox.com>, <corbet@lwn.net>, <mingo@elte.hu>,
+       <mb@bu3sch.de>, <linux-kernel@vger.kernel.org>, <khali@linux-fr.org>,
+       <hmh@hmh.eng.br>, <geert@linux-m68k.org>, <akpm@linux-foundation.org>
+Subject: Re: use of preempt_count instead of in_atomic() at leds-gpio.c
+In-Reply-To: <20080325232042.4EDA7346532@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0803261027580.4969-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803261524.18300.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 26. März 2008 15:10:01 schrieb Alan Stern:
-> > > IMO you must always keep the ordering invariant. If a parent returns an error
-> > > the PM core must not wake its children.
+On Tue, 25 Mar 2008, David Brownell wrote:
+
+> I _almost_ hate bringing this lovely flamage back onto $SUBJECT ... but
+> what's the resolution for the leds-gpio.c issue?  I've not seen a merge
+> notice for the patch I submitted a week ago now:
 > 
-> Don't think of it that way.  The PM core doesn't wake anything.  It
-> merely notifies drivers that the system sleep is ending, so that the
-> drivers can wake their devices.  It's up to the driver to detect
-> whether the parent failed to resume, in which case the driver should
-> take appropriate action.
+> 	http://marc.info/?l=linux-kernel&m=120597839009399&w=2
+> 
+> Just a "leaning..." comment:
+> 
+> 	http://marc.info/?l=linux-kernel&m=120606104619198&w=2
+> 
+> Seems to me that by now there ought to be resolution on at least
+> one of the issues brought up on this thread.  :)
 
-How do you propose that every driver should check the power state
-of its parent? Without locking the parent?
+Is it reasonable to have two version of that subroutine: one meant to 
+be called in a sleepable context and the other to be called when 
+sleeping isn't allowed?
 
-> The situation is no different from what happens when the user tries to 
-> access a mounted USB disk drive after the USB cable has been unplugged.  
-> The drivers take care of everything.
+Alan Stern
 
-That completely throws away the reason to have a PM core. We've made
-a guarantee to drivers that they wil not be woken unless their parents are
-awake. In fact the semantics of the callbacks are defined in a way that
-adding devices to a parent can be enabled. You cannot add children to a
-dead parent. It's the very reason for this rewrite.
-
-	Regards
-		Oliver
