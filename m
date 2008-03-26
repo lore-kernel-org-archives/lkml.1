@@ -1,196 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbYCZKaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbYCZKdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759948AbYCZKaY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 06:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYCZKaI
+	id S1758887AbYCZKdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 06:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYCZKdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 06:30:08 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:61938 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755243AbYCZKaG (ORCPT
+	Wed, 26 Mar 2008 06:33:04 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:55210 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbYCZKdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 06:30:06 -0400
-X-IronPort-AV: E=Sophos;i="4.25,557,1199682000"; 
-   d="scan'208";a="50790921"
-From: Bryan Wu <cooloney@kernel.org>
-To: wim@iguana.be, linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] Blackfin Watchdog Driver: split platform device/driver registering from actual watchdog device/driver registering so we can cleanly load/unload
-Date: Wed, 26 Mar 2008 18:30:01 -0700
-Message-Id: <1206581401-26046-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Wed, 26 Mar 2008 06:33:01 -0400
+Message-ID: <47EA2592.7090600@linux.vnet.ibm.com>
+Date: Wed, 26 Mar 2008 15:59:38 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][-mm] Memory controller add mm->owner
+References: <20080324140142.28786.97267.sendpatchset@localhost.localdomain> <6599ad830803240803s5160101bi2bf68b36085f777f@mail.gmail.com> <47E7D51E.4050304@linux.vnet.ibm.com> <6599ad830803240934g2a70d904m1ca5548f8644c906@mail.gmail.com> <47E7E5D0.9020904@linux.vnet.ibm.com> <6599ad830803241046l61e2965t52fd28e165d5df7a@mail.gmail.com> <47E8E4F3.6090604@linux.vnet.ibm.com>
+In-Reply-To: <47E8E4F3.6090604@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+Balbir Singh wrote:
+> Paul Menage wrote:
+>> On Mon, Mar 24, 2008 at 10:33 AM, Balbir Singh
+>> <balbir@linux.vnet.ibm.com> wrote:
+>>>  > OK, so we don't need to handle this for NPTL apps - but for anything
+>>>  > still using LinuxThreads or manually constructed clone() calls that
+>>>  > use CLONE_VM without CLONE_PID, this could still be an issue.
+>>>
+>>>  CLONE_PID?? Do you mean CLONE_THREAD?
+>> Yes, sorry - CLONE_THREAD.
+>>
+>>>  For the case you mentioned, mm->owner is a moving target and we don't want to
+>>>  spend time finding the successor, that can be expensive when threads start
+>>>  exiting one-by-one quickly and when the number of threads are high. I wonder if
+>>>  there is an efficient way to find mm->owner in that case.
+>>>
+>> But:
+>>
+>> - running a high-threadcount LinuxThreads process is by definition
+>> inefficient and expensive (hence the move to NPTL)
+>>
+>> - any potential performance hit is only paid at exit time
+>>
+>> - in the normal case, any of your children or one of your siblings
+>> will be a suitable alternate owner
+>>
+>> - in the worst case, it's not going to be worse than doing a
+>> for_each_thread() loop
+>>
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/watchdog/bfin_wdt.c |  109 +++++++++++++++++++++++++++---------------
- 1 files changed, 70 insertions(+), 39 deletions(-)
+This will have to be the common case, since you never know what combination of
+clone calls did CLONE_VM and what did CLONE_THREAD. At exit time, we need to pay
+a for_each_process() overhead. Although very unlikely, an application can call
+pthread_* functions (NPTL) and then do a clone with CLONE_VM, thus forcing
+threads in a thread group and another process to share the mm_struct. This makes
+mm->owner struct approach hard to implement.
 
-diff --git a/drivers/watchdog/bfin_wdt.c b/drivers/watchdog/bfin_wdt.c
-index 1237113..c9944ba 100644
---- a/drivers/watchdog/bfin_wdt.c
-+++ b/drivers/watchdog/bfin_wdt.c
-@@ -29,6 +29,7 @@
- 
- #define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
- #define stampit() stamp("here i am")
-+#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
- #define pr_init(fmt, args...) ({ static const __initdata char __fmt[] = fmt; printk(__fmt, ## args); })
- 
- #define WATCHDOG_NAME "bfin-wdt"
-@@ -377,20 +378,6 @@ static int bfin_wdt_resume(struct platform_device *pdev)
- # define bfin_wdt_resume NULL
- #endif
- 
--static struct platform_device bfin_wdt_device = {
--	.name          = WATCHDOG_NAME,
--	.id            = -1,
--};
--
--static struct platform_driver bfin_wdt_driver = {
--	.driver    = {
--		.name  = WATCHDOG_NAME,
--		.owner = THIS_MODULE,
--	},
--	.suspend   = bfin_wdt_suspend,
--	.resume    = bfin_wdt_resume,
--};
--
- static const struct file_operations bfin_wdt_fops = {
- 	.owner    = THIS_MODULE,
- 	.llseek   = no_llseek,
-@@ -418,11 +405,67 @@ static struct notifier_block bfin_wdt_notifier = {
- };
- 
- /**
-- *	bfin_wdt_init - Initialize module
-+ *	bfin_wdt_probe - Initialize module
-  *
-- *	Registers the device and notifier handler. Actual device
-+ *	Registers the misc device and notifier handler.  Actual device
-  *	initialization is handled by bfin_wdt_open().
-  */
-+static int __devinit bfin_wdt_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	ret = register_reboot_notifier(&bfin_wdt_notifier);
-+	if (ret) {
-+		pr_devinit(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n", ret);
-+		return ret;
-+	}
-+
-+	ret = misc_register(&bfin_wdt_miscdev);
-+	if (ret) {
-+		pr_devinit(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
-+		       WATCHDOG_MINOR, ret);
-+		unregister_reboot_notifier(&bfin_wdt_notifier);
-+		return ret;
-+	}
-+
-+	pr_devinit(KERN_INFO PFX "initialized: timeout=%d sec (nowayout=%d)\n",
-+	       timeout, nowayout);
-+
-+	return 0;
-+}
-+
-+/**
-+ *	bfin_wdt_remove - Initialize module
-+ *
-+ *	Unregisters the misc device and notifier handler.  Actual device
-+ *	deinitialization is handled by bfin_wdt_close().
-+ */
-+static int __devexit bfin_wdt_remove(struct platform_device *pdev)
-+{
-+	misc_deregister(&bfin_wdt_miscdev);
-+	unregister_reboot_notifier(&bfin_wdt_notifier);
-+	return 0;
-+}
-+
-+static struct platform_device *bfin_wdt_device;
-+
-+static struct platform_driver bfin_wdt_driver = {
-+	.probe     = bfin_wdt_probe,
-+	.remove    = __devexit_p(bfin_wdt_remove),
-+	.suspend   = bfin_wdt_suspend,
-+	.resume    = bfin_wdt_resume,
-+	.driver    = {
-+		.name  = WATCHDOG_NAME,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+/**
-+ *	bfin_wdt_init - Initialize module
-+ *
-+ *	Checks the module params and registers the platform device & driver.
-+ *	Real work is in the platform probe function.
-+ */
- static int __init bfin_wdt_init(void)
- {
- 	int ret;
-@@ -436,44 +479,32 @@ static int __init bfin_wdt_init(void)
- 	/* Since this is an on-chip device and needs no board-specific
- 	 * resources, we'll handle all the platform device stuff here.
- 	 */
--	ret = platform_device_register(&bfin_wdt_device);
--	if (ret)
--		return ret;
--
--	ret = platform_driver_probe(&bfin_wdt_driver, NULL);
--	if (ret)
--		return ret;
--
--	ret = register_reboot_notifier(&bfin_wdt_notifier);
-+	ret = platform_driver_register(&bfin_wdt_driver);
- 	if (ret) {
--		pr_init(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n", ret);
-+		pr_init(KERN_ERR PFX "unable to register driver\n");
- 		return ret;
- 	}
- 
--	ret = misc_register(&bfin_wdt_miscdev);
--	if (ret) {
--		pr_init(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
--		       WATCHDOG_MINOR, ret);
--		unregister_reboot_notifier(&bfin_wdt_notifier);
--		return ret;
-+	bfin_wdt_device = platform_device_register_simple(WATCHDOG_NAME, -1, NULL, 0);
-+	if (IS_ERR(bfin_wdt_device)) {
-+		pr_init(KERN_ERR PFX "unable to register device\n");
-+		platform_driver_unregister(&bfin_wdt_driver);
-+		return PTR_ERR(bfin_wdt_device);
- 	}
- 
--	pr_init(KERN_INFO PFX "initialized: timeout=%d sec (nowayout=%d)\n",
--	       timeout, nowayout);
--
- 	return 0;
- }
- 
- /**
-  *	bfin_wdt_exit - Deinitialize module
-  *
-- *	Unregisters the device and notifier handler. Actual device
-- *	deinitialization is handled by bfin_wdt_close().
-+ *	Back out the platform device & driver steps.  Real work is in the
-+ *	platform remove function.
-  */
- static void __exit bfin_wdt_exit(void)
- {
--	misc_deregister(&bfin_wdt_miscdev);
--	unregister_reboot_notifier(&bfin_wdt_notifier);
-+	platform_device_unregister(bfin_wdt_device);
-+	platform_driver_unregister(&bfin_wdt_driver);
- }
- 
- module_init(bfin_wdt_init);
+>> so I don't think this would be a major problem
+>>
+> 
+> I've been looking at zap_threads, I suspect we'll end up implementing a similar
+> loop, which makes me very uncomfortable. Adding code for the least possible
+> scenario. It will not get invoked for CLONE_THREAD, but will get invoked for the
+> case when CLONE_VM is set without CLONE_THREAD.
+> 
+> I'll try and experiment a bit more and see what I come up with
+
+I am yet to benchmark the cost of doing for_each_process() on every exit. I
+suspect, we'll see a big drop in performance. I am not sure anymore if mm->owner
+is worth the overhead.
+
+
 -- 
-1.5.4.3
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
