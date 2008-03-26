@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbYCZRX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763246AbYCZRZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760831AbYCZRX4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 13:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763954AbYCZRTx
+	id S1763246AbYCZRZM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 13:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761169AbYCZRYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 13:19:53 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:31501 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763952AbYCZRTv (ORCPT
+	Wed, 26 Mar 2008 13:24:54 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:47294 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760914AbYCZRYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 13:19:51 -0400
+	Wed, 26 Mar 2008 13:24:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XSeFUrznR1rM50AvT54N/Bg4B3tbjLgCDekWzXwaqduEmNnwVwOfPijmChAlFxDBp8NB3m17bIX6vFFt/zHnqj+88RCBIjq1+8vFvKch/0qoKC8DjVFK7ZdJUOLWYWTzzPE/gN9/ZDGFMnl1HS+bgXCDdlgr64SSPDKrnyA4xFw=
-Message-ID: <8bd0f97a0803261019o3d4b176eg9817124963b9bc4e@mail.gmail.com>
-Date: Wed, 26 Mar 2008 13:19:50 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Bryan Wu" <cooloney@kernel.org>,
-       wim@iguana.be, linux-kernel@vger.kernel.org,
-       "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH 1/1] Blackfin Watchdog Driver: split platform device/driver registering from actual watchdog device/driver registering so we can cleanly load/unload
-In-Reply-To: <20080326163736.GA12632@linux-sh.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=iCy0hBKrFM1+4yHLDUydoUTICHA1uDtUl7NfmA7uYrnefyZv6ou1GAuZa4fqycfEMzZKJMO1/ORlpnPDalvqZxJh2pLOg59kMuCSWpgsnCjIGruWBJjDSRoWxOcxR+SGULEsI8R3S7MrUkx36lchccijZk952BXgR6KiWiwwr04=
+Message-ID: <47EA86D9.7040404@gmail.com>
+Date: Wed, 26 Mar 2008 20:24:41 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Corentin CHARY <corentincj@iksaif.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: ISA -> ISA_ (Re: [GIT PATCH] ACPI patches for 2.6.25-rc6)
+References: <200803180510.47670.lenb@kernel.org> <20080326081653.GA8247@elte.hu> <200803261132.21448.lenb@kernel.org> <200803260956.55804.bjorn.helgaas@hp.com>
+In-Reply-To: <200803260956.55804.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1206581401-26046-1-git-send-email-cooloney@kernel.org>
-	 <20080326163736.GA12632@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 12:37 PM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Wed, Mar 26, 2008 at 06:30:01PM -0700, Bryan Wu wrote:
->  > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
->  >  #define pr_init(fmt, args...) ({ static const __initdata char __fmt[] = fmt; printk(__fmt, ## args); })
+Bjorn Helgaas wrote:
+> I'm curious about how this works.  I disassembled the DSDT from
+> http://bugzilla.kernel.org/show_bug.cgi?id=4773 (I attached the disassembly
+> at http://bugzilla.kernel.org/attachment.cgi?id=15448&action=view), and
+> the _PRT contains "_SB" and "ISA" (no trailing underscores):
 >
->  WTF? You are trying to micro-optimize the string? And you have a printk
->  that changes behaviour if you have hotplug enabled or not. That's so
->  utterly bizarre that the rationale must be fascinating.
+>                 Package (0x04)
+>                 {
+>                     0x000DFFFF, 
+>                     0x00, 
+>                     \_SB.PCI0.ISA.LNKA, 
+>                     0x00
+>                 }
+>
+> But by the time we get to acpi_pci_irq_add_entry(), we've added the
+> underscores somewhere (see
+> http://bugzilla.kernel.org/attachment.cgi?id=15423&action=view):
+>
+>   0000:00:0d[A] -> \_SB_.PCI0.ISA_.LNKA
+>
+> I don't know where this happens, but it certainly confused me, and
+> it seems like it could lead to other bugs.
+>   
+ACPI is supposed to add trailing underscore for pad all names to 4 bytes.
+So ISA will be padded to ISA_.
 
-the rationale behind it seems fairly obvious to me.  the strings are
-placed into the respective init sections so they get released as
-needed.  it isnt a matter of tying it to hotplug as tying it to the
-function: __init or __devinit.
-
->  pr_xxx() also is a protected namespace that belongs in
->  include/linux/kernel.h, though I can see why you opted to hide these in
->  your driver rather than post them for general inclusion.
-
-actually, it was already posted to lkml some time ago as an idea.  the
-idea stalled so i just use it in my drivers in the meantime.  it's
-certainly much cleaner than what was proposed by someone else
-originally:
-char __init foo[] = "moo";
-...
-    printk(foo, ...)
-...
-
->  If you are hurting that badly for space, just turn off CONFIG_PRINTK and
->  move on with life. This is just insane.
-
-doing it this way seems pretty clean to me using existing section markings.
--mike
+Regards,
+Alex.
