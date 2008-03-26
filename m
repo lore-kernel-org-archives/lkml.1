@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYCZXzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYCZX6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbYCZXzM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 19:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYCZXy7
+	id S1756718AbYCZX6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 19:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYCZX6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 19:54:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41946 "EHLO ogre.sisk.pl"
+	Wed, 26 Mar 2008 19:58:08 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:50460 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbYCZXy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 19:54:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC][PATCH 1/3] PM: Introduce new top level suspend and hibernation callbacks (rev. 4)
-Date: Thu, 27 Mar 2008 00:54:57 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
-       Oliver Neukum <oliver@neukum.org>
-References: <200803262353.30566.rjw@sisk.pl> <47EADBD0.6040400@suse.de> <1206574982.6926.53.camel@pasglop>
-In-Reply-To: <1206574982.6926.53.camel@pasglop>
+	id S1753374AbYCZX6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 19:58:07 -0400
+Date: Thu, 27 Mar 2008 00:57:57 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Markus Rehbach <markus.rehbach@gmx.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc6: BUG: unable to handle kernel NULL pointer
+ dereference
+In-Reply-To: <20080325233357.17d6ac41.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0803270046130.5041@sheep.housecafe.de>
+References: <alpine.DEB.1.00.0803252358340.22105@sheep.housecafe.de> <20080325233357.17d6ac41.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803270054.58546.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 of March 2008, Benjamin Herrenschmidt wrote:
-> 
-> On Thu, 2008-03-27 at 02:27 +0300, Alexey Starikovskiy wrote:
-> > Rafael J. Wysocki wrote:
-> > > This is the 4th revision of the patch.
-> > > + * struct pm_noirq_ops - device PM callbacks executed with interrupts disabled
-> > > + *
-> > > + * The following callbacks included in 'struct pm_noirq_ops' are executed with
-> > > + * the nonboot CPUs switched off and with interrupts disabled on the only
-> > > + * functional CPU.  They also are executed with the PM core list of devices
-> > > + * locked, so they must NOT unregister any devices.
-> > > + *
-> > > + * @suspend_noirq: Complete the operations of ->suspend() by carrying out any
-> > > + *	actions required for suspending the device that need interrupts to be
-> > > + *	disabled
-> > IMHO, no need to add _noirq in both struct and struct members.
-> > pm_noirq->suspend_noirq does not look good...
->
-> There is absolutely no point getting a second struct anymore.
+On Tue, 25 Mar 2008, Andrew Morton wrote:
+> Markus reported what looks to be the same thing here:
+> http://lkml.org/lkml/2008/3/21/202 and it's already in the regresison list.
 
-I obviously disagree with that opinion, so please elaborate.
+Yes, I've found 3 more reports for __d_lookup on kerneloops.org, first 
+seen for 2.6.25-rc5-git5.
 
-> BTW. I haven't had a chance to review the rest of the discussion on that
-> thread yet, been busy with other things, I'll try to go back to it today
-> or tomorrow.
+> I can't think what we did to cause this.  Were you doing anything unusual
+> on that machine?
 
-OK
+Well, I was reading mail...and suddenly alpine complained that the imap 
+server was gone - and indeed "imap" was in the Oops message. But apart 
+from that, nothing exotic going on.
 
-Thanks,
-Rafael
+>  I see the fuse module was loaded - was it being used?
+
+No, it's loaded, but it was not in use.
+
+> Were any oddball (ie: non-ext3 ;)) filesystems being used?  etc.
+
+There's ext2/3/4, jfs, xfs, reiserfs (not reiser4) - the whole family.
+The only oddball coming to mind is zd1211rw with its binary firmware. But 
+no SMP, no ACPI, no preempt...
+
+Christian.
+-- 
+BOFH excuse #90:
+
+Budget cuts
