@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbYCZSzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762183AbYCZS5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762798AbYCZSzg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 14:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbYCZSz0
+	id S1762183AbYCZS5N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 14:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYCZS46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 14:55:26 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:44631 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760003AbYCZSzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 14:55:24 -0400
-Date: Wed, 26 Mar 2008 13:55:23 -0500 (CDT)
-From: Alan Mayer <ajm@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Alan Mayer <ajm@sgi.com>, mingo@elte.hu,
-       linux-kernel list <linux-kernel@vger.kernel.org>,
-       Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH] x86_64: resize NR_IRQS for large machines
-In-Reply-To: <alpine.LFD.1.00.0803260920020.2775@woody.linux-foundation.org>
-Message-ID: <Pine.SGI.3.96.1080326134915.7873204Z-100000@fergus.americas.sgi.com>
+	Wed, 26 Mar 2008 14:56:58 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:59268 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757086AbYCZS46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 14:56:58 -0400
+Message-ID: <47EA9BB0.3030202@linux.vnet.ibm.com>
+Date: Thu, 27 Mar 2008 00:23:36 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Menage <menage@google.com>
+CC: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, balbir@in.ibm.com, dhaval@linux.vnet.ibm.com
+Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
+References: <200803262348.59785.balajirrao@gmail.com> <6599ad830803261152j1973e3c8oa82181a830f89260@mail.gmail.com>
+In-Reply-To: <6599ad830803261152j1973e3c8oa82181a830f89260@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Mar 2008, Linus Torvalds wrote:
+Paul Menage wrote:
+> On Wed, Mar 26, 2008 at 11:18 AM, Balaji Rao <balajirrao@gmail.com> wrote:
+>>         [MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+>>  +       [MEM_CGROUP_STAT_PGIN_COUNT] = {"page_in_count", 1, },
+>>  +       [MEM_CGROUP_STAT_PGOUT_COUNT] = {"page_out_count", 1, },
+>>   };
+>>
+> 
+> Should these be called "pgpgin" and "pgpgout" for consistency with /proc/vmstat?
+> 
+> Paul
 
-> 
-> 
-> On Wed, 26 Mar 2008, Pavel Machek wrote:
-> > 
-> > This is very ugly. Why not include it unconditionally -- with guard in
-> > apicdef.h?
-> 
-> I do agree that it's ugly, but I think the ugliness is more serious than 
-> that.
-> 
-> What I think we should do is to make NR_IRQS no longer be a compile-time 
-> constant, but instead just do something like
-> 
-> 	unsigned int NR_IRQS __read_mostly;
-> 
-> and then just set it early in the boot sequence depending on the real CPU 
-> numbers etc.
-> 
-> I realize that this will require some changes to a few arrays that are 
-> statically allocated and depend on NR_IRQ's (notably "irq_desc"), but 
-> don't you guys think that this would be a cleaner thing?
-> 
-> [ I suspect that irq_desc[] itself could quite reasonably be a rather much 
->   smaller __read_mostly hash-table of dynamically allocated entries - the 
->   thing would be only modified at boot, so it should cache beautifully 
->   even across hundreds of CPU's ]
-> 
-> Whatever. I'm not opposed to this whole static thing, but I do wonder if 
-> it's worth doing that way. There *may* be performance reasons for doing it 
-> the way we're doing it, but quite frankly, I think the #define is mostly 
-> purely historical, from when it was just a fixed number (originally 16!) 
-> and it made sense to think of it as a small static array.
-> 
-> 			Linus
-> 
-
-Well, I was looking at it from that point of view.  But, when I found myself
-looking at code, particularly in drivers, that indexed into the irq_desc array
-and started modifying the descriptor in place and then calling setup_irq(),
-I realized that what was needed was a redesign of the whole mess from first
-principals.  I still think that's what needs to be done, but by some one with
-more experience and credibility than me.  Maybe in a year I'd be willing
-to attempt it, but not today.
-
-		--ajm
+Yes, that is a good name. We also want to instantaneous metrics like
+page_in_count per second and page_out_count per second to help the administrator
+monitor what is going on within the tasks in the cgroup w.r.t. memory.
 
 
---
-Alan J. Mayer
-SGI
-ajm@sgi.com
-WORK: 651-683-3131
-HOME: 651-407-0134
---
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
