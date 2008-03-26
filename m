@@ -1,56 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbYCZVIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761311AbYCZVIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757774AbYCZVIJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Mar 2008 17:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbYCZVH5
+	id S1761311AbYCZVIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Mar 2008 17:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYCZVIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Mar 2008 17:07:57 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39358 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756589AbYCZVH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Mar 2008 17:07:56 -0400
-Date: Wed, 26 Mar 2008 22:08:19 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [PATCH 1/1] [Blackfin try #2] char driver for Blackfin on-chip OTP memory
-Message-ID: <20080326210819.GC24954@uranus.ravnborg.org>
-References: <1206580131-22527-1-git-send-email-cooloney@kernel.org> <47EA268F.8070006@gmail.com> <8bd0f97a0803260731x4378c71q1e2e5598c1728e1d@mail.gmail.com> <47EA971B.1020502@gmail.com> <8bd0f97a0803261140w7498b0cfwff38302779f589dc@mail.gmail.com> <20080326190917.GB24954@uranus.ravnborg.org> <8bd0f97a0803261214y3db259edxbb22b8655a5c6693@mail.gmail.com>
+	Wed, 26 Mar 2008 17:08:39 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43951 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756589AbYCZVIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Mar 2008 17:08:37 -0400
+Subject: Re: [PATCH 0/3 (RFC)](memory hotplug) freeing pages allocated by
+	bootmem for hotremove
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20080322090539.2B1B.E1E9C6FF@jp.fujitsu.com>
+References: <20080314231112.20D7.E1E9C6FF@jp.fujitsu.com>
+	 <1206119137.8476.1.camel@dyn9047017100.beaverton.ibm.com>
+	 <20080322090539.2B1B.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 14:08:59 -0800
+Message-Id: <1206569339.31756.0.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0803261214y3db259edxbb22b8655a5c6693@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 26, 2008 at 03:14:14PM -0400, Mike Frysinger wrote:
-> On Wed, Mar 26, 2008 at 3:09 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> >  > >  > also, it isnt "broken" in the sense that it "doesnt work" ;)
-> >  > >
-> >  > >  Gcc simply doesn't allow that, you likely got 2 sections with init.data, with
-> >  > >  and without readonly bit set, which is wrong, and it seems, that on some systems
-> >  > >  (debian) you won't even compile it.
-> >  >
-> >  > gcc-4.1.2/binutils-2.17 doesnt have a problem compiling/linking the
-> >  > code in question.  and i imagine i would have noticed a build/link
-> >  > failure long before testing it on actual hardware.
-> >
-> >  target arch dependent. Try with 64 bit powerpc.
+On Sat, 2008-03-22 at 09:09 +0900, Yasunori Goto wrote:
+> > 
+> > Do you have any updates to this. I am getting following boot panic while
+> > testing this. Before I debug it, I want to make sure its not already 
+> > fixed. Please let me know.
 > 
-> this code appears in drivers that are for Blackfin-specific pieces of
-> hardware.  it may fail to build on
-> some-random-arch-that-isnt-Blackfin, but if it works for Blackfin,
-> what do the other arches realistically matter ?
+> Hmmmm. No, I don't. Could you debug it?
+> This may come from powerpc environment.
 > 
-> yes, the code will get changed as suggested as it is the right thing
-> to do, it just isnt a real problem today.
-It is a real problem for build monkeys (like me sometimes) if
-an allyesconfig suddenly does not build.
+> Thanks.
+> 
+> 
+> > 
+> > Thanks,
+> > Badari
+> > 
+> > Linux version 2.6.25-rc5-mm1 (root@elm3b155) (gcc version 3.3.3 (SuSE Linux)) #2 SMP Fri Mar 21 07:48:29 PST 2008
+> > [boot]0012 Setup Arch
+> > NUMA associativity depth for CPU/Memory: 3
+> > adding cpu 0 to node 0
+> > node 0
+> > NODE_DATA() = c000000071fea100
+> > start_paddr = 0
+> > end_paddr = 72000000
+> > bootmap_paddr = 71fdb000
+> > reserve_bootmem 0 7cc000
+> > reserve_bootmem 23d0000 10000
+> > reserve_bootmem 77b6000 84a000
+> > reserve_bootmem 71fdb000 f000
+> > reserve_bootmem 71fea100 1e00
+> > reserve_bootmem 71febf68 14098
+> > PCI host bridge /pci@800000020000002  ranges:
+> >   IO 0x000003fe00200000..0x000003fe002fffff -> 0x0000000000000000
+> >  MEM 0x0000040080000000..0x00000400bfffffff -> 0x00000000c0000000
+> > PCI host bridge /pci@800000020000003  ranges:
+> >   IO 0x000003fe00700000..0x000003fe007fffff -> 0x0000000000000000
+> >  MEM 0x00000401c0000000..0x00000401ffffffff -> 0x00000000c0000000
+> > EEH: PCI Enhanced I/O Error Handling Enabled
+> > PPC64 nvram contains 7168 bytes
+> > Zone PFN ranges:
+> >   DMA             0 ->   466944
+> >   Normal     466944 ->   466944
+> > Movable zone start PFN for each node
+> >   Node 0: 262144
+> > early_node_map[1] active PFN ranges
+> >     0:        0 ->   466944
+> > [boot]0015 Setup Done
+> > Built 1 zonelists in Node order, mobility grouping on.  Total pages: 451440
+> > Policy zone: DMA
+> > Kernel command line: root=/dev/sda3 selinux=0 elevator=cfq numa=debug kernelcore=1024M
+> > [boot]0020 XICS Init
+> > [boot]0021 XICS Done
+> > PID hash table entries: 4096 (order: 12, 32768 bytes)
+> > clocksource: timebase mult[1352e86] shift[22] registered
+> > Console: colour dummy device 80x25
+> > console handover: boot [udbg-1] -> real [hvc0]
+> > Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
+> > Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
+> > freeing bootmem node 0
+> > Unable to handle kernel paging request for data at address 0xcf7f80000000000c
+> > Faulting instruction address: 0xc0000000000ce3e8
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > SMP NR_CPUS=32 NUMA pSeries
+> > Modules linked in:
+> > NIP: c0000000000ce3e8 LR: c0000000000cf714 CTR: 800000000013f270
+> > REGS: c0000000007639f0 TRAP: 0300   Not tainted  (2.6.25-rc5-mm1)
+> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44002022  XER: 00000008
+> > DAR: cf7f80000000000c, DSISR: 0000000042010000
+> > TASK = c000000000689910[0] 'swapper' THREAD: c000000000760000 CPU: 0
+> > GPR00: fffffffffffffffd c000000000763c70 c000000000761be0 0000000000000000
+> > GPR04: cf7f800000000000 0000000000000000 0000000000000000 0000000000000001
+> > GPR08: 0000000000000000 fffffffffffffffe 0000000000000088 cf00000000000000
+> > GPR12: 0000000000004000 c00000000068a380 0000000000000000 0000000000000000
+> > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> > GPR20: 4000000001c00000 0000000000000000 0000000002241ed8 0000000000000000
+> > GPR24: 0000000002242148 0000000000000000 c000000071feb000 0000000000000000
+> > GPR28: c000000071feb000 0000000000000001 c0000000006e2bd8 cf7f800000000000
+> > NIP [c0000000000ce3e8] .set_page_bootmem_info+0x10/0x38
+> > LR [c0000000000cf714] .register_page_bootmem_info_section+0xc4/0x17c
+> > Call Trace:
+> > [c000000000763c70] [000000000000001a] 0x1a (unreliable)
+> > [c000000000763d10] [c0000000000cf8f0] .register_page_bootmem_info_node+0x124/0x158
+> > [c000000000763dc0] [c0000000006290e4] .free_all_bootmem_node+0x1c/0x3c
+> > [c000000000763e50] [c00000000061d618] .mem_init+0xbc/0x260
+> > [c000000000763ee0] [c00000000060bbcc] .start_kernel+0x2f4/0x3f4
+> > [c000000000763f90] [c000000000008594] .start_here_common+0x54/0xc0
+> > Instruction dump:
+> > eb61ffd8 eb81ffe0 eba1ffe8 7c0803a6 ebc1fff0 ebe1fff8 7d808120 4e800020
+> > 2fa50000 3920fffe 3800fffd 409e000c <9124000c> 48000008 9004000c 38000800
+> > ---[ end trace 31fd0ba7d8756001 ]---
+> > Kernel panic - not syncing: Attempted to kill the idle task!
 
-If this driver can be build for other than blackfin I do not
-know.
+Okay, its an issue with CONFIG_SPARSEMEM_VMEMMAP=y
 
-	Sam
+I disabled it for now.
+
+Thanks,
+Badari
+
