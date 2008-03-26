@@ -1,72 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYCZDjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYCZDlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbYCZDjm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Mar 2008 23:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYCZDjd
+	id S1755350AbYCZDlx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Mar 2008 23:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYCZDlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Mar 2008 23:39:33 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:32809 "EHLO mail.dvmed.net"
+	Tue, 25 Mar 2008 23:41:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52814 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751789AbYCZDjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Mar 2008 23:39:32 -0400
-Message-ID: <47E9C56F.2070508@pobox.com>
-Date: Tue, 25 Mar 2008 23:39:27 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: yang.shi@windriver.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Improvev netconsole support for RTL8139 NIC driver
-References: <47E9B39C.5010502@pobox.com>	<20080325.194221.16658596.davem@davemloft.net>	<47E9BF7B.3030003@pobox.com> <20080325.203043.196469543.davem@davemloft.net>
-In-Reply-To: <20080325.203043.196469543.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752394AbYCZDlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Mar 2008 23:41:44 -0400
+Subject: Re: ohci1394 problem (MMIO broken) (was 2.6.25-rc6-git6: Reported
+	regressions from 2.6.24)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Meyer <thomas@m3y3r.de>, Ingo Molnar <mingo@elte.hu>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+In-Reply-To: <alpine.LFD.1.00.0803241343350.2775@woody.linux-foundation.org>
+References: <200803220259.48534.rjw@sisk.pl>
+	 <47E5350D.101@s5r6.in-berlin.de> <47E540E7.7030108@m3y3r.de>
+	 <47E54FA6.3060809@s5r6.in-berlin.de> <47E557D5.9020604@s5r6.in-berlin.de>
+	 <alpine.LFD.1.00.0803221423060.3020@woody.linux-foundation.org>
+	 <alpine.LFD.1.00.0803221558450.3020@woody.linux-foundation.org>
+	 <47E59B39.90306@s5r6.in-berlin.de> <20080323063524.GA13018@elte.hu>
+	 <47E80247.8090702@m3y3r.de> <20080324194706.GA1391@elte.hu>
+	 <47E80C64.7020907@m3y3r.de>
+	 <alpine.LFD.1.00.0803241343350.2775@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 26 Mar 2008 14:39:10 +1100
+Message-Id: <1206502750.10573.12.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jeff Garzik <jgarzik@pobox.com>
-> Date: Tue, 25 Mar 2008 23:14:03 -0400
+
+On Mon, 2008-03-24 at 13:47 -0700, Linus Torvalds wrote:
 > 
->> David Miller wrote:
->>> From: Jeff Garzik <jgarzik@pobox.com>
->>> Date: Tue, 25 Mar 2008 22:23:24 -0400
->>>
->>>> This is bogus -- you should never need to slow down the hot path in such 
->>>> a way.
->>> Slow down in what way?  Even on x86 saving the flags is just
->>> about as expensive as a plain sti/cli.
->> Replacing spin_lock() [current 8139too.c] with spin_lock_irqsave() 
->> results in a larger interrupt handler... more CPU instructions for the 
->> same result.
+> On Mon, 24 Mar 2008, Thomas Meyer wrote:
+> > Ingo Molnar schrieb:
+> > > 
+> > > the bootlog should have such entries:
+> > > 
+> > >   ioremap: 0x12340000(0x00001000) => 0x12340000
+> > > 
+> > > near the ohci1394 initialization messages.
+> >
+> > Second try. See attached file.
 > 
-> Jeff, please be realistic.
+> Hmm. This isn't with my suggested patch, is it?
 > 
-> These interrupt handlers about to do a PIO on a status register, which
-> will consume on the order of a few hundred cpu cycles.
+> You are still losing the high 32 bits, and we see:
 > 
-> Counting an I-cache line or two, or 18 cycles here or there,
-> is immaterial by comparison.
+> 	[  162.485695] ioremap: 00000000(00000800) => f8978000
+> 		<3>ohci1394: fw-host0: Get PHY Reg timeout [0x00008400/0x00000000/100]
+> 
+> because it's trying to ioremap the resource that is at 0x100000000, and it 
+> gets truncated to 0x00000000.
+> 
+> I already committed my patch as "obviously correct", so if you're a git 
+> user, you can just update to current git, but here it is again if you 
+> missed it and aren't a git person.
 
-I am being realistic...  it's
+Misses your patch (email problems yesterday).
 
-* not needed
-* increases code size
-* increases number of CPU instructions executed
-* not needed
+I suggest you merge the one bulk-fixing iomap and then apply your x86
+ioremap fixup on top of it, if not too late..
 
-Thus applying this consistency rule across N drivers needlessly 
-increases the code size of N drivers.
+Cheers,
+Ben.
 
-Mainly I see such a change as a violation of a basic Linux principle: 
-do what you must, and no more.
-
-	Jeff
-
-
+> 		Linus
+> 
+> ---
+> commit b9e76a00749521f2b080fa8a4fb15f66538ab756
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Mon Mar 24 11:22:39 2008 -0700
+> 
+>     x86-32: Pass the full resource data to ioremap()
+>     
+>     It appears that 64-bit PCI resources cannot possibly ever have worked on
+>     x86-32 even when the RESOURCES_64BIT config option was set, because any
+>     driver that tried to [pci_]ioremap() the resource would have been unable
+>     to do so because the high 32 bits would have been silently dropped on
+>     the floor by the ioremap() routines that only used "unsigned long".
+>     
+>     Change them to use "resource_size_t" instead, which properly encodes the
+>     whole 64-bit resource data if RESOURCES_64BIT is enabled.
+>     
+>     Acked-by: H. Peter Anvin <hpa@kernel.org>
+>     Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+>     Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> ---
+>  arch/x86/mm/ioremap.c   |    6 +++---
+>  include/asm-x86/io_32.h |    6 +++---
+>  include/asm-x86/io_64.h |    6 +++---
+>  lib/iomap.c             |    2 +-
+>  4 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+> index 8fe576b..4afaba0 100644
+> --- a/arch/x86/mm/ioremap.c
+> +++ b/arch/x86/mm/ioremap.c
+> @@ -106,7 +106,7 @@ static int ioremap_change_attr(unsigned long vaddr, unsigned long size,
+>   * have to convert them into an offset in a page-aligned mapping, but the
+>   * caller shouldn't need to know that small detail.
+>   */
+> -static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+> +static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
+>  			       enum ioremap_mode mode)
+>  {
+>  	unsigned long pfn, offset, last_addr, vaddr;
+> @@ -193,13 +193,13 @@ static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+>   *
+>   * Must be freed with iounmap.
+>   */
+> -void __iomem *ioremap_nocache(unsigned long phys_addr, unsigned long size)
+> +void __iomem *ioremap_nocache(resource_size_t phys_addr, unsigned long size)
+>  {
+>  	return __ioremap(phys_addr, size, IOR_MODE_UNCACHED);
+>  }
+>  EXPORT_SYMBOL(ioremap_nocache);
+>  
+> -void __iomem *ioremap_cache(unsigned long phys_addr, unsigned long size)
+> +void __iomem *ioremap_cache(resource_size_t phys_addr, unsigned long size)
+>  {
+>  	return __ioremap(phys_addr, size, IOR_MODE_CACHED);
+>  }
+> diff --git a/include/asm-x86/io_32.h b/include/asm-x86/io_32.h
+> index 58d2c45..d4d8fbd 100644
+> --- a/include/asm-x86/io_32.h
+> +++ b/include/asm-x86/io_32.h
+> @@ -114,13 +114,13 @@ static inline void * phys_to_virt(unsigned long address)
+>   * If the area you are trying to map is a PCI BAR you should have a
+>   * look at pci_iomap().
+>   */
+> -extern void __iomem *ioremap_nocache(unsigned long offset, unsigned long size);
+> -extern void __iomem *ioremap_cache(unsigned long offset, unsigned long size);
+> +extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
+> +extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
+>  
+>  /*
+>   * The default ioremap() behavior is non-cached:
+>   */
+> -static inline void __iomem *ioremap(unsigned long offset, unsigned long size)
+> +static inline void __iomem *ioremap(resource_size_t offset, unsigned long size)
+>  {
+>  	return ioremap_nocache(offset, size);
+>  }
+> diff --git a/include/asm-x86/io_64.h b/include/asm-x86/io_64.h
+> index f64a59c..db0be20 100644
+> --- a/include/asm-x86/io_64.h
+> +++ b/include/asm-x86/io_64.h
+> @@ -158,13 +158,13 @@ extern void early_iounmap(void *addr, unsigned long size);
+>   * it's useful if some control registers are in such an area and write combining
+>   * or read caching is not desirable:
+>   */
+> -extern void __iomem *ioremap_nocache(unsigned long offset, unsigned long size);
+> -extern void __iomem *ioremap_cache(unsigned long offset, unsigned long size);
+> +extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
+> +extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
+>  
+>  /*
+>   * The default ioremap() behavior is non-cached:
+>   */
+> -static inline void __iomem *ioremap(unsigned long offset, unsigned long size)
+> +static inline void __iomem *ioremap(resource_size_t offset, unsigned long size)
+>  {
+>  	return ioremap_nocache(offset, size);
+>  }
+> diff --git a/lib/iomap.c b/lib/iomap.c
+> index db004a9..dd6ca48 100644
+> --- a/lib/iomap.c
+> +++ b/lib/iomap.c
+> @@ -256,7 +256,7 @@ EXPORT_SYMBOL(ioport_unmap);
+>   * */
+>  void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+>  {
+> -	unsigned long start = pci_resource_start(dev, bar);
+> +	resource_size_t start = pci_resource_start(dev, bar);
+>  	unsigned long len = pci_resource_len(dev, bar);
+>  	unsigned long flags = pci_resource_flags(dev, bar);
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
